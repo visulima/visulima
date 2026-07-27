@@ -3,7 +3,7 @@ import { basename, isAbsolute, resolve as resolvePath } from "node:path";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { renderToString } from "@visulima/tui";
-import { Table } from "@visulima/tui/components/table";
+import { Table } from "@visulima/tui-kit/table";
 import React from "react";
 
 import { detectPm } from "../../pm/pm-runner";

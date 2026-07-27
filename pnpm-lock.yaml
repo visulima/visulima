@@ -403,8 +403,8 @@ catalogs:
       specifier: 3.4.0
       version: 3.4.0
     postcss:
-      specifier: ^8.5.16
-      version: 8.5.22
+      specifier: ^8.5.18
+      version: 8.5.23
     preact:
       specifier: ^10.29.3
       version: 10.29.4
@@ -1360,9 +1360,6 @@ catalogs:
     wrap-ansi:
       specifier: 10.0.0
       version: 10.0.0
-    ws:
-      specifier: ^8.21.0
-      version: 8.21.0
     yaml:
       specifier: 2.9.0
       version: 2.9.0
@@ -1545,9 +1542,6 @@ catalogs:
     '@types/webpack':
       specifier: ^5.28.5
       version: 5.28.5
-    '@types/ws':
-      specifier: ^8.18.1
-      version: 8.18.1
     '@types/yargs':
       specifier: ^17.0.35
       version: 17.0.35
@@ -1601,14 +1595,14 @@ overrides:
   '@sveltejs/kit@>=2.38.0 <=2.60.0': ^2.60.1
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
   '@tootallnate/once@<3.0.1': ^3.0.1
-  '@yarnpkg/parsers>js-yaml': ^3.14.2
+  '@yarnpkg/parsers>js-yaml': '>=3.15.0 <4'
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@>=1.0.0 <1.15.2: ^1.15.2
   basic-ftp@<=5.3.0: ^5.3.1
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   brace-expansion@<5.0.5: '>=5.0.5'
-  brace-expansion@>=5.0.0 <5.0.6: ^5.0.6
+  brace-expansion@>=5.0.0 <5.0.7: '>=5.0.7 <6'
   chrono-node@<2.2.4: '>=2.9.0'
   cookie@<0.7.0: '>=1.0.2'
   defu@<=6.1.4: '>=6.1.5'
@@ -1740,9 +1734,9 @@ overrides:
   dompurify@<3.4.9: ^3.4.9
   dompurify@<=3.4.10: ^3.4.11
   dompurify@<=3.4.5: ^3.4.6
-  posthog-js>dompurify: ^3.4.11
-  redoc>dompurify: ^3.4.11
-  swagger-ui-react>dompurify: ^3.4.11
+  posthog-js>dompurify: ^3.4.12
+  redoc>dompurify: ^3.4.12
+  swagger-ui-react>dompurify: ^3.4.12
   dompurify@<=3.4.6: ^3.4.7
   dompurify@>=3.0.0 <=3.4.7: ^3.4.8
   form-data@<2.5.6: ^2.5.6
@@ -1769,44 +1763,32 @@ overrides:
   vite@>=8.0.0 <=8.0.15: ^8.0.16
   ws@>=7.0.0 <7.5.11: ^7.5.11
   ws@>=8.0.0 <8.21.0: ^8.21.0
-  '@hono/node-server@>=2.0.0 <=2.0.9': ^2.0.10
-  '@modelcontextprotocol/sdk>@hono/node-server': ^2.0.10
-  '@vitest/browser@>=4.0.0 <4.1.10': ^4.1.10
-  axios@>=1.0.0 <1.18.0: ^1.18.0
-  axios@>=1.13.0 <1.18.0: ^1.18.0
-  axios@>=1.15.0 <1.18.0: ^1.18.0
-  axios@>=1.15.1 <1.18.0: ^1.18.0
-  axios@>=1.15.2 <1.18.0: ^1.18.0
-  axios@>=1.7.0 <1.18.0: ^1.18.0
-  body-parser@>=2.0.0 <2.3.0: ^2.3.0
-  brace-expansion@<=5.0.7: ^5.0.8
-  brace-expansion@>=3.0.0 <5.0.7: ^5.0.7
-  dompurify@<=3.4.11: ^3.4.12
-  fast-uri@>=3.0.0 <3.1.3: ^3.1.3
-  fast-uri@>=3.0.0 <=3.1.3: ^3.1.4
-  fast-xml-parser@>=5.9.3 <5.10.1: ^5.10.1
-  find-my-way@<=9.6.0: ^9.6.1
-  js-yaml@>=3.0.0 <3.15.0: ^3.15.0
-  js-yaml@>=4.0.0 <4.3.0: ^4.3.0
-  js-yaml@>=5.0.0 <=5.2.1: ^5.2.2
-  linkify-it@<=5.0.1: ^5.0.2
-  next@>=16.0.0 <16.2.11: ^16.2.11
-  postcss@<=8.5.17: ^8.5.18
-  protobufjs@>=7.5.0 <=7.6.4: ^7.6.5
-  protobufjs@>=8.0.0 <=8.6.5: ^8.6.6
-  react-router@>=6.0.0 <7.18.0: ^7.18.0
-  react-router@>=6.4.0 <7.18.0: ^7.18.0
-  react-router@>=7.0.0 <7.18.0: ^7.18.0
-  react-router@>=7.11.0 <7.18.0: ^7.18.0
-  react-router@>=7.12.0 <8.3.0: ^8.3.0
-  sharp@<0.35.0: ^0.35.0
-  shell-quote@<=1.8.4: ^1.8.5
-  svgo@>=4.0.0 <4.0.2: ^4.0.2
-  tar@<=7.5.16: ^7.5.17
-  tar@<=7.5.17: ^7.5.18
-  tar@<=7.5.18: ^7.5.19
-  tar@<=7.5.20: ^7.5.21
-  valibot@<=1.4.1: ^1.4.2
+  '@hono/node-server@2': '>=2.0.10 <3'
+  axios@1: '>=1.18.0 <2'
+  body-parser@2: '>=2.3.0 <3'
+  brace-expansion@5: '>=5.0.8 <6'
+  dompurify@3: '>=3.4.12 <4'
+  fast-uri@3: '>=3.1.4 <4'
+  fast-xml-parser@5: '>=5.10.1 <6'
+  find-my-way@9: '>=9.6.1 <10'
+  js-yaml@3: '>=3.15.0 <4'
+  js-yaml@4: '>=4.3.0 <5'
+  js-yaml@5: '>=5.2.2 <6'
+  linkify-it@5: '>=5.0.2 <6'
+  next@16: '>=16.2.11 <17'
+  postcss@8: '>=8.5.18 <9'
+  protobufjs@7: '>=7.6.5 <8'
+  protobufjs@8: '>=8.6.6 <9'
+  react-router@7: '>=8.3.0 <9'
+  react-router@8: '>=8.3.0 <9'
+  sharp@0.34: '>=0.35.0 <0.36'
+  shell-quote@1: '>=1.8.5 <2'
+  svgo@4: '>=4.0.2 <5'
+  tar@7: '>=7.5.21 <8'
+  valibot@1: '>=1.4.2 <2'
+  '@modelcontextprotocol/sdk>@hono/node-server': '>=2.0.10 <3'
+  minimatch>brace-expansion: '>=5.0.8 <6'
+  minimizer-webpack-plugin>postcss: '>=8.5.18 <9'
 
 packageExtensionsChecksum: sha256-hFPEAqASIfyXCX39BqjdcN2lMGkCn19x0N1yW/52z5s=
 
@@ -1947,7 +1929,7 @@ importers:
         version: 3.0.0(@storybook/addon-actions@9.0.8)(react@19.2.6)
       '@storybook/addon-docs':
         specifier: catalog:docs
-        version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@storybook/addon-essentials':
         specifier: catalog:docs
         version: 8.6.14(@types/react@19.2.17)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
@@ -1962,7 +1944,7 @@ importers:
         version: 10.4.6(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
       '@storybook/builder-vite':
         specifier: catalog:docs
-        version: 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@storybook/core-server':
         specifier: catalog:docs
         version: 8.6.14(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
@@ -1971,7 +1953,7 @@ importers:
         version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)
       '@storybook/react-vite':
         specifier: catalog:docs
-        version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@storybook/test-runner':
         specifier: catalog:test
         version: 0.24.4(@types/node@26.1.0)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3))
@@ -1992,7 +1974,7 @@ importers:
         version: 6.0.3(@rolldown/plugin-babel@0.2.3(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.1.4)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(babel-plugin-react-compiler@19.1.0-rc.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       autoprefixer:
         specifier: catalog:dev
-        version: 10.5.2(postcss@8.5.22)
+        version: 10.5.2(postcss@8.5.23)
       eslint:
         specifier: catalog:lint
         version: 10.6.0(jiti@2.7.0)
@@ -2025,7 +2007,7 @@ importers:
         version: 0.1.1(eslint@10.6.0(jiti@2.7.0))
       postcss:
         specifier: catalog:dev
-        version: 8.5.22
+        version: 8.5.23
       publint:
         specifier: catalog:dev
         version: 0.3.21
@@ -2097,7 +2079,7 @@ importers:
         version: 1.167.0(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@tanstack/router-core@1.171.14)(csstype@3.2.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@tanstack/react-virtual':
         specifier: catalog:frontend
         version: 3.14.5(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2251,7 +2233,7 @@ importers:
         version: 1.4.0
       '@netlify/vite-plugin-tanstack-start':
         specifier: catalog:build
-        version: 1.3.16(1367ead1313dcc4bc8502e10719a1f61)
+        version: 1.3.16(5598f75c30fbdb418ccda30f1fdb7bfd)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 13.0.2
@@ -2366,7 +2348,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2499,10 +2481,10 @@ importers:
         version: 26.1.0
       '@types/webpack':
         specifier: catalog:types
-        version: 5.28.5(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)
+        version: 5.28.5(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(a599289487fc3a11cd395138c8c58264)
+        version: 2.0.0-alpha.89(3a26b4924721e46307276c305f957ba1)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2548,7 +2530,7 @@ importers:
         version: 15.0.0
       webpack:
         specifier: catalog:build
-        version: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)
+        version: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)
 
   packages/api/jsdoc-open-api/__fixtures__: {}
 
@@ -2592,7 +2574,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2676,7 +2658,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2754,7 +2736,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2832,7 +2814,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -2978,7 +2960,7 @@ importers:
         version: 2.16.1
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3068,7 +3050,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3174,7 +3156,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3275,7 +3257,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3363,7 +3345,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3481,7 +3463,7 @@ importers:
         version: 2.0.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3653,7 +3635,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/tabular':
         specifier: 4.0.0
         version: link:../../terminal/tabular
@@ -3777,7 +3759,7 @@ importers:
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(f824766d12a4115c4cc08d5d92a9cec0)
+        version: 2.0.0-alpha.89(3d98dc2503c33a0f54b2021028f16d81)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3824,7 +3806,7 @@ importers:
         specifier: catalog:lint
         version: 2.104.0
       fast-xml-parser:
-        specifier: ^5.10.1
+        specifier: '>=5.10.1 <6'
         version: 5.10.1
       handlebars:
         specifier: catalog:dev
@@ -3900,7 +3882,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -3982,7 +3964,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -4076,7 +4058,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/tabular':
         specifier: 4.0.0
         version: link:../../terminal/tabular
@@ -4221,7 +4203,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -4242,7 +4224,7 @@ importers:
         version: 10.2.0
       cssnano:
         specifier: catalog:dev
-        version: 8.0.2(postcss@8.5.22)
+        version: 8.0.2(postcss@8.5.23)
       esbuild:
         specifier: catalog:build
         version: 0.28.1
@@ -4554,7 +4536,7 @@ importers:
         version: 1.167.0(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@tanstack/router-core@1.171.14)(csstype@3.2.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -4591,7 +4573,7 @@ importers:
         version: 6.0.3(@rolldown/plugin-babel@0.2.3(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.1.4)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(babel-plugin-react-compiler@19.1.0-rc.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       postcss:
         specifier: catalog:dev
-        version: 8.5.22
+        version: 8.5.23
       tailwindcss:
         specifier: catalog:style
         version: 4.3.2
@@ -4612,7 +4594,7 @@ importers:
         version: 1.167.0(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@tanstack/router-core@1.171.14)(csstype@3.2.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -4658,7 +4640,7 @@ importers:
         version: 4.12.1
       postcss:
         specifier: catalog:dev
-        version: 8.5.22
+        version: 8.5.23
       tailwindcss:
         specifier: catalog:style
         version: 4.3.2
@@ -4700,7 +4682,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -4788,7 +4770,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -4920,7 +4902,7 @@ importers:
         version: link:../../terminal/colorize
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/browser':
         specifier: catalog:test
         version: 4.1.10(msw@2.14.6(@types/node@26.1.0)(typescript@6.0.3))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(vitest@4.1.10)
@@ -5075,7 +5057,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -5084,7 +5066,7 @@ importers:
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       cssnano:
         specifier: catalog:dev
-        version: 8.0.2(postcss@8.5.22)
+        version: 8.0.2(postcss@8.5.23)
       esbuild:
         specifier: catalog:build
         version: 0.28.1
@@ -5207,7 +5189,7 @@ importers:
         specifier: '>=4.10.2'
         version: 4.12.27
       next:
-        specifier: ^16.2.11
+        specifier: '>=16.2.11 <17'
         version: 16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     devDependencies:
       '@anolilab/eslint-config':
@@ -5251,7 +5233,7 @@ importers:
         version: link:../inspector
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(a599289487fc3a11cd395138c8c58264)
+        version: 2.0.0-alpha.89(3a26b4924721e46307276c305f957ba1)
       '@visulima/redact':
         specifier: 3.0.0
         version: link:../../data-manipulation/redact
@@ -5455,7 +5437,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -5579,7 +5561,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -5594,7 +5576,7 @@ importers:
         version: 10.2.0
       cssnano:
         specifier: catalog:dev
-        version: 8.0.2(postcss@8.5.22)
+        version: 8.0.2(postcss@8.5.23)
       csstype:
         specifier: catalog:dev
         version: 3.2.3
@@ -5964,7 +5946,7 @@ importers:
         version: 1.167.0(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@tanstack/router-core@1.171.14)(csstype@3.2.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+        version: 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -5995,10 +5977,10 @@ importers:
         version: 6.0.3(@rolldown/plugin-babel@0.2.3(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.1.4)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(babel-plugin-react-compiler@19.1.0-rc.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       autoprefixer:
         specifier: catalog:dev
-        version: 10.5.2(postcss@8.5.22)
+        version: 10.5.2(postcss@8.5.23)
       postcss:
         specifier: catalog:dev
-        version: 8.5.22
+        version: 8.5.23
       tailwindcss:
         specifier: catalog:style
         version: 4.3.2
@@ -6077,7 +6059,7 @@ importers:
         version: 5.0.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../path
@@ -6168,7 +6150,7 @@ importers:
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6345,7 +6327,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6457,7 +6439,7 @@ importers:
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/workflow':
         specifier: 1.0.0
         version: link:../../workflow/workflow
@@ -6653,7 +6635,7 @@ importers:
         version: link:../../data-manipulation/humanizer
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(30c042e6d53e1ce3e6b05cd4624bedfe)
+        version: 2.0.0-alpha.89(31d024fbb1649e540020662c62a59914)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -6836,7 +6818,7 @@ importers:
         version: 8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6923,7 +6905,7 @@ importers:
         version: 1.8.0(svelte@5.56.4(@typescript-eslint/types@8.62.1))
       svelte-preprocess:
         specifier: catalog:frontend
-        version: 6.0.5(@babel/core@8.0.1)(postcss@8.5.22)(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)
+        version: 6.0.5(@babel/core@8.0.1)(postcss@8.5.23)(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -7723,7 +7705,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -7819,7 +7801,7 @@ importers:
         version: 2.0.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -7949,7 +7931,7 @@ importers:
         version: link:../../filesystem/find-cache-dir
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(7e6a832c8ef183faa047d3278f5c3bd9)
+        version: 2.0.0-alpha.89(18bd16408c3e4e82a794d66b1def4be0)
       '@visulima/pail':
         specifier: 4.0.1
         version: link:../../error-debugging/pail
@@ -8142,7 +8124,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8296,7 +8278,7 @@ importers:
         version: 16.2.11(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.6.0(jiti@2.7.0)))(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
       postcss:
         specifier: catalog:dev
-        version: 8.5.22
+        version: 8.5.23
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
@@ -8342,7 +8324,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8472,7 +8454,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8575,7 +8557,7 @@ importers:
         version: link:../ansi
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/string':
         specifier: 3.0.0
         version: link:../../data-manipulation/string
@@ -8659,7 +8641,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8747,7 +8729,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8829,7 +8811,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -8916,7 +8898,7 @@ importers:
         version: 2.0.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@visulima/string':
         specifier: 3.0.0
         version: link:../../data-manipulation/string
@@ -9022,33 +9004,9 @@ importers:
       '@visulima/error':
         specifier: 6.0.0
         version: link:../../error-debugging/error
-      '@visulima/spinner':
-        specifier: 1.0.0
-        version: link:../spinner
       '@visulima/string':
         specifier: 3.0.0
         version: link:../../data-manipulation/string
-      '@visulima/tabular':
-        specifier: 4.0.0
-        version: link:../tabular
-      cfonts:
-        specifier: catalog:prod
-        version: 3.3.1
-      cli-boxes:
-        specifier: catalog:prod
-        version: 4.0.1
-      code-excerpt:
-        specifier: catalog:prod
-        version: 4.0.0
-      diff:
-        specifier: catalog:prod
-        version: 9.0.0
-      is-in-ci:
-        specifier: catalog:prod
-        version: 2.0.0
-      patch-console:
-        specifier: catalog:prod
-        version: 2.0.0
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -9061,15 +9019,6 @@ importers:
       scheduler:
         specifier: catalog:prod
         version: 0.27.0
-      signal-exit:
-        specifier: catalog:prod
-        version: 4.1.0
-      terminal-size:
-        specifier: catalog:prod
-        version: 4.0.1
-      tseep:
-        specifier: catalog:prod
-        version: 1.3.1
       yoga-layout:
         specifier: catalog:prod
         version: 3.2.1
@@ -9122,21 +9071,24 @@ importers:
       '@types/scheduler':
         specifier: catalog:types
         version: 0.26.0
-      '@types/ws':
-        specifier: catalog:types
-        version: 8.18.1
       '@visulima/boxen':
         specifier: 3.0.0
         version: link:../boxen
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(35c4c104bb186c4cc01fa774ad9c455e)
+        version: 2.0.0-alpha.89(2210e1833635e70152132686fcc3cfc4)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.10(vitest@4.1.10)
+      cli-boxes:
+        specifier: catalog:prod
+        version: 4.0.1
+      code-excerpt:
+        specifier: catalog:prod
+        version: 4.0.0
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 10.2.0
@@ -9173,12 +9125,18 @@ importers:
       fallow:
         specifier: catalog:lint
         version: 2.104.0
+      is-in-ci:
+        specifier: catalog:prod
+        version: 2.0.0
       marked:
         specifier: catalog:dev
         version: 18.0.5
       node-pty:
         specifier: catalog:dev
         version: 1.1.0
+      patch-console:
+        specifier: catalog:prod
+        version: 2.0.0
       prettier:
         specifier: catalog:lint
         version: 3.9.4
@@ -9197,6 +9155,15 @@ importers:
       shiki:
         specifier: catalog:syntax
         version: 4.3.1
+      signal-exit:
+        specifier: catalog:prod
+        version: 4.1.0
+      terminal-size:
+        specifier: catalog:prod
+        version: 4.0.1
+      tseep:
+        specifier: catalog:prod
+        version: 1.3.1
       tsx:
         specifier: catalog:dev
         version: 4.23.0
@@ -9209,9 +9176,6 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.0)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.1.0)(typescript@6.0.3))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      ws:
-        specifier: catalog:prod
-        version: 8.21.0
     optionalDependencies:
       '@visulima/tui-binding-darwin-arm64':
         specifier: workspace:*
@@ -9237,6 +9201,85 @@ importers:
       '@visulima/tui-binding-win32-x64-msvc':
         specifier: workspace:*
         version: link:npm/win32-x64-msvc
+
+  packages/terminal/tui-kit:
+    dependencies:
+      '@visulima/ansi':
+        specifier: 4.0.0
+        version: link:../ansi
+      '@visulima/colorize':
+        specifier: 2.0.0
+        version: 2.0.0
+      '@visulima/spinner':
+        specifier: 1.0.0
+        version: link:../spinner
+      '@visulima/tabular':
+        specifier: 4.0.0
+        version: link:../tabular
+      cfonts:
+        specifier: catalog:prod
+        version: 3.3.1
+      diff:
+        specifier: catalog:prod
+        version: 9.0.0
+      type-fest:
+        specifier: catalog:prod
+        version: 5.7.0
+    devDependencies:
+      '@shikijs/core':
+        specifier: ^4.3.0
+        version: 4.3.1
+      '@shikijs/langs':
+        specifier: catalog:prod
+        version: 4.3.1
+      '@shikijs/themes':
+        specifier: catalog:dev
+        version: 4.3.1
+      '@shikijs/types':
+        specifier: ^4.3.0
+        version: 4.3.1
+      '@types/qrcode':
+        specifier: ^1.5.5
+        version: 1.5.6
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.17
+      '@visulima/packem':
+        specifier: catalog:dev
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
+      '@visulima/tui':
+        specifier: workspace:*
+        version: link:../tui
+      '@vitest/coverage-v8':
+        specifier: catalog:test
+        version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
+      delay:
+        specifier: catalog:dev
+        version: 7.0.0
+      esbuild:
+        specifier: catalog:build
+        version: 0.28.1
+      marked:
+        specifier: catalog:dev
+        version: 18.0.5
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
+      react:
+        specifier: 19.2.6
+        version: 19.2.6
+      react-reconciler:
+        specifier: ^0.33.0
+        version: 0.33.0(react@19.2.6)
+      shiki:
+        specifier: catalog:syntax
+        version: 4.3.1
+      typescript:
+        specifier: catalog:tsc
+        version: 6.0.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.0)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.1.0)(typescript@6.0.3))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
 
   packages/terminal/tui/__bench__:
     dependencies:
@@ -9313,7 +9356,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -9410,7 +9453,7 @@ importers:
         version: 2.4.4
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -9537,7 +9580,7 @@ importers:
         version: 5.0.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(88ca90f9d677374b2a1cc2f9966014fb)
+        version: 2.0.0-alpha.89(0931c4c45c1167960674ea986b292811)
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
@@ -9696,7 +9739,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -9719,7 +9762,7 @@ importers:
         specifier: catalog:lint
         version: 3.9.4
       protobufjs:
-        specifier: ^8.6.6
+        specifier: '>=8.6.6 <9'
         version: 8.7.1
       publint:
         specifier: catalog:dev
@@ -9793,7 +9836,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -9910,7 +9953,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -10007,6 +10050,9 @@ importers:
       '@visulima/tui':
         specifier: 1.0.8
         version: link:../../terminal/tui
+      '@visulima/tui-kit':
+        specifier: workspace:*
+        version: link:../../terminal/tui-kit
       fb-watchman:
         specifier: '>=2.0.0'
         version: 2.0.2
@@ -10148,7 +10194,7 @@ importers:
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(e20ed82aa44bf1a61461a78f7dd386e9)
+        version: 2.0.0-alpha.89(642e88c132ee5307aa7f8e5f7b24786d)
       '@visulima/pail':
         specifier: 4.0.1
         version: link:../../error-debugging/pail
@@ -10190,7 +10236,7 @@ importers:
         version: 7.0.0
       cssnano:
         specifier: catalog:dev
-        version: 8.0.2(postcss@8.5.22)
+        version: 8.0.2(postcss@8.5.23)
       esbuild:
         specifier: catalog:build
         version: 0.28.1
@@ -10384,7 +10430,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -10579,7 +10625,7 @@ importers:
         version: 26.1.0
       '@visulima/packem':
         specifier: catalog:dev
-        version: 2.0.0-alpha.89(612c72115f60b04373025d4461363f66)
+        version: 2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -11969,7 +12015,7 @@ packages:
     resolution: {integrity: sha512-x5a/Occd8MrNMlEqwGNKHrQqhURNE0b9rVGX80OJYYOvYfAuHvNBLURluC+KHNMoZKPlMygytwRlHjHUBfAmjw==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   '@csstools/selector-resolve-nested@4.0.0':
     resolution: {integrity: sha512-9vAPxmp+Dx3wQBIUwc1v7Mdisw1kbbaGqXUM8QLTgWg7SoPGYtXBsMXvsFs/0Bn5yoFhcktzxNZGNaUt0VjgjA==}
@@ -18765,6 +18811,9 @@ packages:
   '@types/picomatch@4.0.3':
     resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
 
+  '@types/qrcode@1.5.6':
+    resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
+
   '@types/qs@6.15.1':
     resolution: {integrity: sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==}
 
@@ -19192,7 +19241,7 @@ packages:
   '@unpic/react@1.0.2':
     resolution: {integrity: sha512-5RmRfELwTF8w+4zjtQGqjpvX+RU2VLvis3xDCS1O2uWk0PZN2cvatL+3/KAR3mshAuRrkFGTX1XwyAezSXaoCA==}
     peerDependencies:
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       react: 19.2.6
       react-dom: 19.2.6
     peerDependenciesMeta:
@@ -19519,7 +19568,7 @@ packages:
       less: '>=4.6.4'
       lightningcss: '>=1.32.0'
       package-manager-detector: ^1.6.0
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
       postcss-load-config: '>=6.0.1'
       postcss-modules-extract-imports: '>=3.1.0'
       postcss-modules-local-by-default: '>=4.2.0'
@@ -19613,7 +19662,7 @@ packages:
       express: '>=4.22.0'
       fastify: '>=5.8.3'
       hono: '>=4.10.2'
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       rotating-file-stream: '>=3.2.9'
     peerDependenciesMeta:
       '@opentelemetry/api':
@@ -19647,7 +19696,7 @@ packages:
       express: '>=4.22.0'
       fastify: '>=5.8.3'
       hono: '>=4.10.2'
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       rotating-file-stream: 3.2.9
     peerDependenciesMeta:
       '@opentelemetry/api':
@@ -19698,7 +19747,7 @@ packages:
       icss-utils: '>=5.1.0'
       less: '>=4.6.4'
       lightningcss: '>=1.32.0'
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
       postcss-load-config: '>=6.0.1'
       postcss-modules-extract-imports: '>=3.1.0'
       postcss-modules-local-by-default: '>=4.2.0'
@@ -20641,14 +20690,14 @@ packages:
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   autoprefixer@10.5.2:
     resolution: {integrity: sha512-rD5t5DwOjJdmSORcTq64j8MawTC+tbQ+HHqjR4NDumamy/ambn1UJrlKL+KdwujWxMkFjPM3pPHOEA9tl4767Q==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
@@ -21851,7 +21900,7 @@ packages:
     resolution: {integrity: sha512-LTuzjPoyA2vMGKKcaOqKSp7Ub2eGrNfKiZH4LpezxpNrsICGCSFvsQOI29psISxNZtaXibkC2CXzrQ5enMeGGw==}
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   css-select@5.2.2:
     resolution: {integrity: sha512-TizTzUddG/xYLA3NXodFM0fSbNizXjOKhqiQQwvhlspadZokn1KDy0NZFS0wuEubIYAV5/c1/lAr0TaaFXEXzw==}
@@ -21892,43 +21941,43 @@ packages:
     resolution: {integrity: sha512-11qO63A+czwguQFJCaTdICvbaxn0pJzz/XghLlv+OT7WyToDxAMR0Xb3/26/l0y0hQJywwNbj/SLSQlGBHE1OA==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano-preset-default@8.0.2:
     resolution: {integrity: sha512-+jQAqIKCqMmBjZs7741XkilU93ITZ/EW8gjAkMmujdCzfDkfjrDBv2VqkSu29Fzeig/0rZ3S9IAwfPLlmXEUfQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano-preset-lite@4.0.4:
     resolution: {integrity: sha512-iV7xT9JEk0OJwRWuSV2Y48IkntNjvoiscoioFDcgmuoIvpZV8gIg1++GBHTj72HgmDCALH8y9ELgt+aFM2Nh9g==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano-utils@5.0.3:
     resolution: {integrity: sha512-ynIREMICLxkxm7e9bCR9sh75s4Q5drICi0ua1yxo5jH2XPBqSKkl4dOh4EbFqtUmnTMhRffHgYL0EKKkMjtJTg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano-utils@6.0.1:
     resolution: {integrity: sha512-zk65GIxA8tCjqVk7nTm1mE+ZKxtnxAvU5JSUaBLXbAr3ZF7IOvz3fbPOnEDvZKhnS7GOIitXTS5BgehLzNoc8Q==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano@7.1.9:
     resolution: {integrity: sha512-uPR75+5Dk/WJ/YSPR1/YDHdwMM9c5FsaARljfKWgeCKLKOtJ0we21xy/RcCjn53fZnD/f6yYEIZ8pu18+GnbNQ==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   cssnano@8.0.2:
     resolution: {integrity: sha512-K+a76gA1v0/CsYgcsE95HGGyIuPKxpQSetwSwz4nHEM8fFXqSkzq2JzEXFL8v5+CCjxzVVVhPcTK3Oo8SaF/xA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   csso@5.0.5:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
@@ -22239,7 +22288,7 @@ packages:
     resolution: {integrity: sha512-bEOVpHU9picRZux5XnwGsmCN4+8oZo7vSW0O0/Enq/TO5R2pIAP2279NsszpJR7ocnQt4WXU0+nnh/0JuK4KHQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   detective-sass@6.0.1:
     resolution: {integrity: sha512-jSGPO8QDy7K7pztUmGC6aiHkexBQT4GIH+mBAL9ZyBmnUIOFbkfZnO8wPRRJFP/QP83irObgsZHCoDHZ173tRw==}
@@ -22294,6 +22343,9 @@ packages:
 
   diffable-html@4.1.0:
     resolution: {integrity: sha512-++kyNek+YBLH8cLXS+iTj/Hiy2s5qkRJEJ8kgu/WHbFrVY2vz9xPFUT+fii2zGF0m1CaojDlQJjkfrCt7YWM1g==}
+
+  dijkstrajs@1.0.3:
+    resolution: {integrity: sha512-qiSlmBq9+BCdCA/L46dw8Uy93mloxsPSbwnm5yrKn2vMPiy8KyAskTF6zuV/j5BMsmOGZDPs7KjU+mjb670kfA==}
 
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
@@ -23939,10 +23991,10 @@ packages:
       algoliasearch: 5.x.x
       flexsearch: '*'
       lucide-react: '*'
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       react: 19.2.6
       react-dom: 19.2.6
-      react-router: ^8.3.0
+      react-router: '>=8.3.0 <9'
       waku: '*'
       zod: 4.x.x
     peerDependenciesMeta:
@@ -23992,7 +24044,7 @@ packages:
       '@types/react': '*'
       fumadocs-core: ^16.7.0
       mdast-util-directive: '*'
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       react: 19.2.6
       rolldown: '*'
       vite: ^7.3.5
@@ -24034,7 +24086,7 @@ packages:
       '@types/mdx': '*'
       '@types/react': '*'
       fumadocs-core: 16.10.7
-      next: ^16.2.11
+      next: '>=16.2.11 <17'
       react: 19.2.6
       react-dom: 19.2.6
     peerDependenciesMeta:
@@ -24728,11 +24780,11 @@ packages:
     hasBin: true
     peerDependencies:
       cssnano: ^7.0.0 || ^8.0.0
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
       purgecss: ^8.0.0
       relateurl: ^0.2.7
       srcset: ^5.0.1
-      svgo: ^4.0.2
+      svgo: '>=4.0.2 <5'
       terser: ^5.21.0
       uncss: ^0.17.3
     peerDependenciesMeta:
@@ -28408,6 +28460,10 @@ packages:
     resolution: {integrity: sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  path-expression-matcher@1.5.0:
+    resolution: {integrity: sha512-cbrerZV+6rvdQrrD+iGMcZFEiiSrbv9Tfdkvnusy6y0x0GKBXREFg/Y65GhIfm0tnLntThhzCnfKwp1WRjeCyQ==}
+    engines: {node: '>=14.0.0'}
+
   path-expression-matcher@1.6.2:
     resolution: {integrity: sha512-enSlaiat05iasnzmgNxRj8reFdj3puY2QpNgP1aPIaVfT6nn9ICuPoFlKHk8EN22HcwewshO+mN2DGbkCEOtqQ==}
     engines: {node: '>=14.0.0'}
@@ -28635,6 +28691,10 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
+  pngjs@5.0.0:
+    resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
+    engines: {node: '>=10.13.0'}
+
   pngjs@7.0.0:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
@@ -28657,85 +28717,85 @@ packages:
     resolution: {integrity: sha512-NYEsLHh8DgG/PRH2+G9BTuUdtf9ViS+vdoQ0YA5OQdGsfN4ztiwtDWNtBl9EKeqNMFnIu8IKZ0cLxEQ5r5KVMw==}
     engines: {node: ^18.12 || ^20.9 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-colormin@7.0.10:
     resolution: {integrity: sha512-yFr6JezOolHLta/buLE71VKPh2mXursp4saVe98/ol8ZnEWhL+racShqPKlvd/DKWLre/39B6HhcMXf7RZ3hxg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-colormin@8.0.1:
     resolution: {integrity: sha512-qBY4ABQ6d8/mk5RRZHwMllrZMxeMey3azVY2dZUEk+RgiUC4ARdPR3/AITzNqqKTbvW/3y/MJKinDrzwqn8RDQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-convert-values@7.0.12:
     resolution: {integrity: sha512-xurKu5qqk4viR3Cp3p4xBR4KfnZm4w4ys6+UBwBmeuBSNkH7+DtLnYOYnOffgtE4yx8sH9S1VZ6RAAvROXzP2Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-convert-values@8.0.1:
     resolution: {integrity: sha512-IdOSIX3BzfMvCc1TAHIha2gfy17xnb5vfML8e2BIKARnFOghksESfaSAB/3CXgyLfMozZAbTRPVQF5dbuKOidw==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-comments@7.0.8:
     resolution: {integrity: sha512-CvvS5S9WrXblFXCEJ9nVo+4z+eA7zSC7Z88V1HEJuwlQhlFnYTIjg1xJY+BCUiG2bvICap2tXii4mP22BD108Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-comments@8.0.1:
     resolution: {integrity: sha512-FDvzm3tXlEsQBO2XQgnta5ugsAqwBrgWH+j5QgXpegEIDYA0VPnZg2aP7LtmWtC49POskeIhXesFiU/k3NyFHA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-duplicates@7.0.4:
     resolution: {integrity: sha512-VBNn1+EuMZkeGVVtz0gRfbNGtx9IFgAsAV+E2pHtXPrp4qfGBkhTIiAuE/wrb+Y6Pakg9NewAlfTpYIFAWODtw==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-duplicates@8.0.1:
     resolution: {integrity: sha512-stTDXkI8YkCUfADurQhp03oq5ynsgSx6Qrw5B1swds6oTHtAeOZ9I0SHGK8cY/VpWUsIYFDWMs3IWf9jIEfFvA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-empty@7.0.3:
     resolution: {integrity: sha512-M2pyjQCU+/7cMHVtL6bKTHjv0lZnPLMpicgr67Dlth7AbuV9gjVTtUqaRwn6Pp6BwSDspUzhz8SaUrRykJU5Dw==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-empty@8.0.1:
     resolution: {integrity: sha512-Zv4fM1Yfhk71tbt6gfiptbL6jDHi+7apSnaMeaO9n1uET+1embrXQw5m93Zp5x28UyQSuv+AVkFY193jdwZ33w==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-overridden@7.0.3:
     resolution: {integrity: sha512-aNovXo9UsZuRNLzHJtp13lHIvinDPfiXBPePpXkSjCbgp++iU2FqE+YxvjIsg6EdyPZsASFbfu+JcBFVsErXIQ==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-discard-overridden@8.0.1:
     resolution: {integrity: sha512-ykt4fvrC7yYGzbxKyqBVjDCbsjF/11JgWK8enrdkobRyqqEtb/uDUCbKOGdvrK8X7BrShW8Lv5cCRNbdkNHGkQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-load-config@3.1.4:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
     engines: {node: '>= 10'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
       ts-node: '>=9.0.0'
     peerDependenciesMeta:
       postcss:
@@ -28747,235 +28807,235 @@ packages:
     resolution: {integrity: sha512-b3mfYUxR388u5Pt0HPcVIUtUDn/k15UfTY9M+ORW+meCR6JLNxoZffiYvXyOYQoRYQNZyX/UFkMCM/mNHxe1qA==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-merge-longhand@8.0.1:
     resolution: {integrity: sha512-huTfSYgQ13O81SFvAuOi7GWnO48vvybjj3xF+X3qUoPjzvvaLpJH5DcUqqXcwOEulZUcvaV4s0V9WtWs+IAQPA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-merge-rules@7.0.11:
     resolution: {integrity: sha512-SJUPM18g2BmPhf8BVlbwqWz4aK3pLu6u6xjfwEzra7xL6IBR10sUaiB++EzqcVfadPHrKBSMlNdP+XieykhI+Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-merge-rules@8.0.1:
     resolution: {integrity: sha512-o3rk4UpnPNg469tklYwbR/NtvKc/f/wJiVDTnNQ/EFPw/LeiPOHUCvV1GIBQIZHGrBAYdPjToK6a+ojYprsrxQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-font-values@7.0.3:
     resolution: {integrity: sha512-yilG/VOaNI74IylQvAQQxm3/wZVBkXyYUqNUAdxqwtbWUXPsbK1q8Ms0mL83v+f8YicgcyfYCRZtWACUdYajpA==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-font-values@8.0.1:
     resolution: {integrity: sha512-L8Nzs/PRlBSPrLdY/7rAiU5ZN5800+2J/4LRbfyG8SJnPljmgMaXVmQiCklvRS+yObfVRNtvmk/Ean/eoYcSeg==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-gradients@7.0.5:
     resolution: {integrity: sha512-YraROyQRg3BI1+Hg8E05B/JPdnTm8EDSVu4P2BxdM+CRiOyfmou809+chGIqo6fQqwjPGQ947nbGncSjmTU1WQ==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-gradients@8.0.1:
     resolution: {integrity: sha512-qf+4s/hZMqTwpWN2teqf6+1yvR/SZK5HgHqXYuACeJXV7ABe7AXtBEomgxagUzcN4bSnmqBh5vnIml0dYqykYg==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-params@7.0.9:
     resolution: {integrity: sha512-R8itbB8BhlpoYyBm1ou0dD+vJnQ3F6adQipR4UnkCHUwlo+S9WXJaDRg1RHjC8YVAtIdrQzSWvJl40HnGDTKjA==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-params@8.0.1:
     resolution: {integrity: sha512-L0h3H59deFfFg0wQN1NVaS/8E/LfGvaMuZKGO7siwlG995zo3OshtQyRkqKdVqcBwAORBvZ1nDZrKPLRapYkQw==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-selectors@7.1.2:
     resolution: {integrity: sha512-aQtrEWKwqafNlExcKHQvPGsXR2+vlUqqJtf5XsCQcgsSb5PL4wlujWBYDJuWsP4UnQX1YHDHU8qRlD+1PzTQ+Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-minify-selectors@8.0.2:
     resolution: {integrity: sha512-3icdxc/zght5UAizdwqZBDE2KOWHf1jMQCxET6iLACeNlRxfTPyXS0/COpGk8CQ2cECyaEKTRUd/i/k8Gxmz4g==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-nesting@14.0.0:
     resolution: {integrity: sha512-YGFOfVrjxYfeGTS5XctP1WCI5hu8Lr9SmntjfRC+iX5hCihEO+QZl9Ra+pkjqkgoVdDKvb2JccpElcowhZtzpw==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-charset@7.0.3:
     resolution: {integrity: sha512-NoBfZu8PR4c2NlmjvrqQTzCzLY79hwcSRgNQ3ZiNK0ABzf9kYKloE/jNj+/8GQY1wsm8pRRgANk6ydLH8cwo0Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-charset@8.0.1:
     resolution: {integrity: sha512-xzqr36F8UeIZOvOHsf3aul+RVJCADvSwuwpMLgizqKjisHZpBfztgW0XFLBfJvz9pJgaStaOXAtGb0zLqT6B0w==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-display-values@7.0.3:
     resolution: {integrity: sha512-ldsCX0QIt05pKIOobZtVQ48wXJecr+czw4+e1/YjVhLMqslShgpVxgPtI2CefURR8oyVoYaU/l829MMwExDMLw==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-display-values@8.0.1:
     resolution: {integrity: sha512-ZDWOijOK1FFMlpgiQCUO9fCNKd7HJ9L7z9HWEq4iyubnUFWzdTSwm/LcrMbNW6iZ1oAtqeLYA0WA3xHszOI08g==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-positions@7.0.4:
     resolution: {integrity: sha512-VEvlpeGd3Ju1Hqa/oN4jaP3+ms4laYwkEL9N9u+B6k54PZjXbW1n6wI+aVprf1BQXlCYpS5+1pl/7/vHiKgARg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-positions@8.0.1:
     resolution: {integrity: sha512-uuivan2poSqbE48ST4do20dGaFUeXey9/H8rhHzoyVHB2I6BmkoVLZ/C9+BRjUlpaAFYVOoDY7epkiidzaYbvA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-repeat-style@7.0.4:
     resolution: {integrity: sha512-6mPKlY/8cSaDHxX502wERADarJsccwlky6yIrOapHH2ZgfoKAV94SbiTKfKEs4EEpdazuc3J72WsqeYk7hp9+Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-repeat-style@8.0.1:
     resolution: {integrity: sha512-q2hq5fmKxk29K6DjKA3nZ17Q2dtjhLYFNmFweKALmooUqx6UWAHF1bBoWTu/EqlJ88josb82A/J0Atj9LJUmpQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-string@7.0.3:
     resolution: {integrity: sha512-HnEQPUchi1eznmDKEYrKUTqrprEq97SrpUYClgUkv7V2zRODD9DFoUsYU+m9ZOetmD5ku7fEMZB/lwy8IT6xVQ==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-string@8.0.1:
     resolution: {integrity: sha512-+Wf+kQJhm1WgSGEAuUaswE9rdpR9QbrKRVemcVHs6rhOoOTVIdAbgaicftfYA6vLM346P8onRzkEVbFN29ktKQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-timing-functions@7.0.3:
     resolution: {integrity: sha512-zmEzHdvpZBZu0OKlbJSfgASQvaayyAoVuWtvyr34IJ/LyS+DaOKvvR3EvFJ9RWWtNIx+CMvO125OVophaxNYew==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-timing-functions@8.0.1:
     resolution: {integrity: sha512-W8/tvwRlm3T+yjGkg0IRTF4bvHj0vILYr/LOogCrJKHz2ey2HFRwfsAA8Bk9N4BGR7z7WmmDu/KzzwhJ6FoGPQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-unicode@7.0.9:
     resolution: {integrity: sha512-DRAdWfeh/TjmhLJsw91vdiWCnUod9iwvM7xyS02/nF/sLsCR3A8l3pztrSUrWG8DSBqfX7yEk9FM0USaVJ2mSg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-unicode@8.0.1:
     resolution: {integrity: sha512-Ad0YHNRBp4WHEOYUM/4wL/8MoL2fimEF8se/0q+Rt/owMzYpbxsypC1P8fN/oluwoRmRKdNVX7X2oycEobPWcQ==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-url@7.0.3:
     resolution: {integrity: sha512-CL93wmloq5qsffmFv+bw24MIRbmhHrp53qoh1LDAb/5TtjWEXI/np4xcP/Gw9oWCb2XyWnqHYLDUwiKRoJBA1Q==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-url@8.0.1:
     resolution: {integrity: sha512-tkYcip6pCDY806xuxpJYqMW2M3/623jzGFJmz3m5Us47q8P28+gbRZxaea3Rr/CmwwLUiVlh+BTGYwQ6gvaP8A==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-whitespace@7.0.3:
     resolution: {integrity: sha512-FdHjjn+Ht5Z2ZRjNOmeCbNq6lq09sUYKpmlF/Aq0XjVNSLTL6fmHlA/3swN2wP2caY9GV/tjSDcIIyS7aN7W0A==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-normalize-whitespace@8.0.1:
     resolution: {integrity: sha512-XzORadNfSrKWDZZpgAEHPKINKx8r9r9RIfE9c70g/HThdpbmPHhDYCodHSVESDxmKeySAYw1p4liuBCf7j6LyA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-ordered-values@7.0.4:
     resolution: {integrity: sha512-nubSi49hDHQk4E8KIj+IbLY8Bg+8OcSUEhgyolgM+atnOvXjV7EjaR6bac4YGZoFyPa9mWoAF3EaYbWdFkKqVg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-ordered-values@8.0.1:
     resolution: {integrity: sha512-OLXq5lR1yk3KWQ1FPK6aWjFFdktHE9f9kb8cnt4LmIw7w30DnzgD9+sOVYJc5HenkWCX8i1MJhhFwmqc/GYqLg==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-reduce-initial@7.0.9:
     resolution: {integrity: sha512-ztTNPdIxXTxtBcG03E9u8v44M4ElXbMIRT7pf2onlquGula0Y83nKKxqM22FA/hMgkfCjN7ohevkVlaNwI8iOQ==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-reduce-initial@8.0.1:
     resolution: {integrity: sha512-+aQsR6+61KRoIfcFNLP3v9RM7+0iYOTtPnjl1wr6JqMW1zx6S+t2ktHRefXwacFdHIDj5+ETG0KY7K3+SGQ4Nw==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-reduce-transforms@7.0.3:
     resolution: {integrity: sha512-FXsnN9ZwcZTT8Yf8cAHA8qIGUXcX6WfLd9JoYhrdDfmvsVhhfqkkv7m4AC3rwFOfz+GzkUa87OCKF9dUcicd+g==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-reduce-transforms@8.0.1:
     resolution: {integrity: sha512-x71slHVykiFi5RuKEXM0wgYpY2PngC78x6R8TnZhHF3lhqt+u/w3MGwYLX+2t5O87ssRiMfEAhQH+3J4QwVzCw==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-safe-parser@7.0.1:
     resolution: {integrity: sha512-0AioNCJZ2DPYz5ABT6bddIqlhgwhpHZ/l65YAYo0BCIn0xiDpsnTHz0gnoTGk0OXZW0JRs+cDwL8u/teRdz+8A==}
     engines: {node: '>=18.0'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-scss@4.0.9:
     resolution: {integrity: sha512-AjKOeiwAitL/MXxQW2DliT28EKukvvbEWx3LBmJIRN8KfBGZbRTxNYW0kSqi1COiTZ57nZ9NW06S6ux//N1c9A==}
     engines: {node: '>=12.0'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-selector-parser@6.0.10:
     resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
@@ -28989,25 +29049,25 @@ packages:
     resolution: {integrity: sha512-2QfoFOYMcj8lwcVEf9WeTlkVIAm7u2QvOEhMzkQU3KUhhGX/l8hVV9EtjMv4iq3E9iI3OeeMN0YoMLbGusuigw==}
     engines: {node: ^18.12.0 || ^20.9.0 || >= 18}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-svgo@8.0.1:
     resolution: {integrity: sha512-HpnvWii7W0/FPrsejJa6ZTi0kNtTJP/Iba7CUMPX0xPV6QpnndOp+SDP74tFtgjA2cYKYNWJPOlmLXMsvi/9yA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-unique-selectors@7.0.7:
     resolution: {integrity: sha512-d+sCkaRnSefghOUdH8CMJZV9yUQhj2ojpe8Nw/lA+LV1UOfeleGkLTl6XdCFFSai9UJ+DJPb69FFuqthXYsY8w==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-unique-selectors@8.0.1:
     resolution: {integrity: sha512-+xvKI5+/Cl8yYQwxDV39Uhuc4WV951xngFvPPjiPj2NIbIfm6vbbRTXblyw0FioLkIoGlw+7qUcY1h2YhaZYgw==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
@@ -29016,16 +29076,16 @@ packages:
     resolution: {integrity: sha512-YLJpK0N1brcNJrs9WatuJFtHaV9q5aAOj+S4DI5S7jgHlRfm0PIbDCAFRYMQD5SHq7Fy6xsDhyutgS0QOAs0qw==}
     engines: {node: '>=10'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   postcss-var-replace@1.0.0:
     resolution: {integrity: sha512-Aw8t/L0wmuJMNUbYHl7AfJmQ7pUgLrS0zXz+AR+380QxJ85HA8Gxkg3+HvkWK0RoRKpoErpVhakd0k/aHOlNzw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
-  postcss@8.5.22:
-    resolution: {integrity: sha512-KBDEIpLrvpv16pp3K0Fw+UCoZfopFjjgeB+0tA/aaThfEE74kKDLrgg603YvOWJyg3+WYtyq3xYsQWsIyZlPqQ==}
+  postcss@8.5.23:
+    resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
     engines: {node: ^10 || ^12 || >=14}
 
   postgres-array@2.0.0:
@@ -29330,6 +29390,11 @@ packages:
 
   qrcode-generator@2.0.4:
     resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
+
+  qrcode@1.5.4:
+    resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
 
   qs@6.15.2:
     resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
@@ -30929,13 +30994,13 @@ packages:
     resolution: {integrity: sha512-iODNfhXVLqc5LADs+Y6Oh5wJuK5ZcHbVng8aiK3y9pjMQdc5hLrBW0eFU6FtnpNrE6PoEg/MmFTU4waotj5WNg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   stylehacks@8.0.1:
     resolution: {integrity: sha512-Gv095oTD0N+BdJALNFDsxZpETHZLTxbOl5RyIO7y6VAE6sR3z0MnV3Nix7N0IATNldNTrkvSASp2KR1Yt526HA==}
     engines: {node: ^22.11.0 || ^24.11.0 || >=26.0}
     peerDependencies:
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
 
   suffix-thumb@5.0.2:
     resolution: {integrity: sha512-I5PWXAFKx3FYnI9a+dQMWNqTxoRt6vdBdb0O+BJ1sxXCWtSoQCusc13E58f+9p4MYx/qCnEMkD5jac6K2j3dgA==}
@@ -31013,7 +31078,7 @@ packages:
       '@babel/core': ^7.29.1
       coffeescript: ^2.5.1
       less: ^3.11.3 || ^4.0.0
-      postcss: ^8.5.18
+      postcss: '>=8.5.18 <9'
       postcss-load-config: '>=3'
       pug: ^3.0.0
       sass: ^1.26.8
@@ -31133,8 +31198,8 @@ packages:
   tar-stream@3.1.8:
     resolution: {integrity: sha512-U6QpVRyCGHva435KoNWy9PRoi2IFYCgtEhq9nmrPPpbRacPs9IH4aJ3gbrFC8dPcXvdSZ4XXfXT5Fshbp2MtlQ==}
 
-  tar@7.5.21:
-    resolution: {integrity: sha512-XdhtCvlMywwxpCW8YEq3lOXBJpUPTR2OHHcwLPO3HwsJqOHa2Ok/oJ7ruGzp+JrKoRPVCzJwAdEjqLW/vNRPHA==}
+  tar@7.5.22:
+    resolution: {integrity: sha512-MFO/QzvtAOmJbkhOaCTvbGcFN9L9b+JunIsDwaKljSOdcLMea3NJ1k9Usz/rjdfSXTq4dfzfeS7W4p4YOAAHeA==}
     engines: {node: '>=18'}
 
   teeny-request@10.1.3:
@@ -35164,9 +35229,9 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22)':
+  '@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23)':
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
   '@csstools/selector-resolve-nested@4.0.0(postcss-selector-parser@7.1.4)':
     dependencies:
@@ -36668,7 +36733,7 @@ snapshots:
       node-fetch: 2.7.0
       nopt: 8.1.0
       semver: 7.8.5
-      tar: 7.5.21
+      tar: 7.5.22
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -37233,7 +37298,7 @@ snapshots:
       parse-imports: 2.2.1
       path-key: 4.0.0
       semver: 7.8.5
-      tar: 7.5.21
+      tar: 7.5.22
       tmp-promise: 3.0.3
       urlpattern-polyfill: 8.0.2
 
@@ -37366,12 +37431,12 @@ snapshots:
 
   '@netlify/types@2.8.0': {}
 
-  '@netlify/vite-plugin-tanstack-start@1.3.16(1367ead1313dcc4bc8502e10719a1f61)':
+  '@netlify/vite-plugin-tanstack-start@1.3.16(5598f75c30fbdb418ccda30f1fdb7bfd)':
     dependencies:
       '@netlify/vite-plugin': 2.12.8(@azure/storage-blob@12.33.0)(@types/node@26.1.0)(@vercel/blob@2.5.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.5.4)(mysql2@3.22.5(@types/node@26.1.0)))(ioredis@5.10.1)(rollup@4.62.2)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.2))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       vite: 8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
     optionalDependencies:
-      '@tanstack/react-start': 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@tanstack/react-start': 1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -37786,9 +37851,9 @@ snapshots:
       '@rollup/plugin-replace': 6.0.3(rollup@4.62.2)
       '@vitejs/plugin-vue': 6.0.7(vite@7.3.5(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
       '@vitejs/plugin-vue-jsx': 5.1.5(vite@7.3.5(@types/node@26.1.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
-      autoprefixer: 10.5.2(postcss@8.5.22)
+      autoprefixer: 10.5.2(postcss@8.5.23)
       consola: 3.4.2
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       defu: 6.1.7
       escape-string-regexp: 5.0.0
       exsolve: 1.0.8
@@ -37802,7 +37867,7 @@ snapshots:
       nypm: 0.6.6
       pathe: 2.0.3
       pkg-types: 2.3.1
-      postcss: 8.5.22
+      postcss: 8.5.23
       seroval: 1.5.4
       std-env: 4.1.0
       ufo: 1.6.4
@@ -41034,10 +41099,10 @@ snapshots:
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       ts-dedent: 2.2.0
 
-  '@storybook/addon-docs@10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@storybook/addon-docs@10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@19.2.17)(react@19.2.6)
-      '@storybook/csf-plugin': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@storybook/csf-plugin': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@storybook/icons': 2.0.2(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@storybook/react-dom-shim': 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
       react: 19.2.6
@@ -41139,9 +41204,9 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
-  '@storybook/builder-vite@10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@storybook/builder-vite@10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
-      '@storybook/csf-plugin': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@storybook/csf-plugin': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       ts-dedent: 2.2.0
       vite: 8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
@@ -41154,7 +41219,7 @@ snapshots:
     dependencies:
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
 
-  '@storybook/csf-plugin@10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@storybook/csf-plugin@10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       unplugin: 2.3.11
@@ -41162,7 +41227,7 @@ snapshots:
       esbuild: 0.28.1
       rollup: 4.62.2
       vite: 8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
-      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)
+      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)
 
   '@storybook/csf-plugin@8.6.14(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))':
     dependencies:
@@ -41202,11 +41267,11 @@ snapshots:
       react-dom: 19.2.6(react@19.2.6)
       storybook: 10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
 
-  '@storybook/react-vite@10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@storybook/react-vite@10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript': 0.7.0(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
-      '@storybook/builder-vite': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@storybook/builder-vite': 10.4.6(esbuild@0.28.1)(rollup@4.62.2)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@storybook/react': 10.4.6(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(storybook@10.4.6(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.9.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3)
       empathic: 2.0.1
       magic-string: 0.30.21
@@ -41568,7 +41633,7 @@ snapshots:
       '@alloc/quick-lru': 5.2.0
       '@tailwindcss/node': 4.3.2
       '@tailwindcss/oxide': 4.3.2
-      postcss: 8.5.22
+      postcss: 8.5.23
       tailwindcss: 4.3.2
 
   '@tailwindcss/typography@0.5.20(tailwindcss@4.3.2)':
@@ -41701,14 +41766,14 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
-  '@tanstack/react-start-rsc@0.1.26(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@tanstack/react-start-rsc@0.1.26(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@tanstack/react-router': 1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/router-core': 1.171.14
       '@tanstack/router-utils': 1.162.2
       '@tanstack/start-client-core': 1.170.13
       '@tanstack/start-fn-stubs': 1.162.0
-      '@tanstack/start-plugin-core': 1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@tanstack/start-plugin-core': 1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@tanstack/start-server-core': 1.169.16(crossws@0.4.5(srvx@0.11.16))
       '@tanstack/start-storage-context': 1.167.16
       pathe: 2.0.3
@@ -41753,15 +41818,15 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@tanstack/react-start@1.168.27(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@tanstack/react-router': 1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/react-start-client': 1.168.15(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@tanstack/react-start-rsc': 0.1.26(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@tanstack/react-start-rsc': 0.1.26(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@tanstack/react-start-server': 1.167.21(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@tanstack/router-utils': 1.162.2
       '@tanstack/start-client-core': 1.170.13
-      '@tanstack/start-plugin-core': 1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@tanstack/start-plugin-core': 1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@tanstack/start-server-core': 1.169.16(crossws@0.4.5(srvx@0.11.16))
       pathe: 2.0.3
       react: 19.2.6
@@ -41840,7 +41905,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@tanstack/router-plugin@1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/template': 7.29.7
@@ -41855,7 +41920,7 @@ snapshots:
       '@tanstack/react-router': 1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       vite: 8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)
+      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)
     transitivePeerDependencies:
       - supports-color
 
@@ -41921,14 +41986,14 @@ snapshots:
 
   '@tanstack/start-fn-stubs@1.162.0': {}
 
-  '@tanstack/start-plugin-core@1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))':
+  '@tanstack/start-plugin-core@1.171.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(crossws@0.4.5(srvx@0.11.16))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.7
       '@babel/types': 7.29.7
       '@tanstack/router-core': 1.171.14
       '@tanstack/router-generator': 1.167.18
-      '@tanstack/router-plugin': 1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      '@tanstack/router-plugin': 1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.14)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       '@tanstack/router-utils': 1.162.2
       '@tanstack/start-server-core': 1.169.16(crossws@0.4.5(srvx@0.11.16))
       exsolve: 1.0.8
@@ -42938,6 +43003,10 @@ snapshots:
 
   '@types/picomatch@4.0.3': {}
 
+  '@types/qrcode@1.5.6':
+    dependencies:
+      '@types/node': 26.1.0
+
   '@types/qs@6.15.1': {}
 
   '@types/range-parser@1.2.7': {}
@@ -43088,11 +43157,11 @@ snapshots:
 
   '@types/webidl-conversions@7.0.3': {}
 
-  '@types/webpack@5.28.5(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)':
+  '@types/webpack@5.28.5(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)':
     dependencies:
       '@types/node': 26.1.0
       tapable: 2.3.3
-      webpack: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)
+      webpack: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@swc/core'
@@ -43941,7 +44010,229 @@ snapshots:
       - smol-toml
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.89(30c042e6d53e1ce3e6b05cd4624bedfe)':
+  '@visulima/packem@2.0.0-alpha.89(0931c4c45c1167960674ea986b292811)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 1.5.0
+      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
+      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/find-cache-dir@packages+filesystem+find-cache-dir)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
+      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
+      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
+      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
+      browserslist: 4.28.2
+      cjs-module-lexer: 2.2.0
+      clean-css: 5.3.3
+      defu: 6.1.7
+      estree-walker: 3.0.3
+      fastest-levenshtein: 1.0.16
+      hookable: 6.1.1
+      html-minifier-next: 6.2.7(@swc/core@1.15.24)
+      jiti: 2.7.0
+      magic-string: 0.30.21
+      mime: 4.1.0
+      mlly: 1.8.2
+      oxc-parser: 0.133.0
+      oxc-resolver: 11.20.0
+      package-manager-detector: 1.6.0
+      rollup: 4.62.2
+      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
+      rs-module-lexer: 2.8.0
+      tinyexec: 1.2.4
+      workerpool: 10.0.2
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.4
+      '@babel/core': 8.0.1
+      '@swc/core': 1.15.24
+      cssnano: 8.0.2(postcss@8.5.23)
+      esbuild: 0.28.1
+      lightningcss: 1.32.0
+      postcss: 8.5.23
+      postcss-value-parser: 4.2.0
+      rolldown: 1.1.4
+      typedoc: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
+      typescript: 6.0.3
+    transitivePeerDependencies:
+      - '@bomb.sh/tab'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
+      - '@sveltejs/kit'
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - '@visulima/boxen'
+      - '@visulima/css-style-inject'
+      - '@visulima/find-cache-dir'
+      - '@visulima/redact'
+      - elysia
+      - express
+      - fastify
+      - github-slugger
+      - hono
+      - ini
+      - json5
+      - jsonc-parser
+      - next
+      - picomatch
+      - rotating-file-stream
+      - smol-toml
+      - vue-tsc
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.89(18bd16408c3e4e82a794d66b1def4be0)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 1.5.0
+      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
+      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.17(cac@6.7.14)(citty@0.2.2)(commander@15.0.0))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@packages+filesystem+find-cache-dir)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
+      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
+      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
+      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
+      browserslist: 4.28.2
+      cjs-module-lexer: 2.2.0
+      clean-css: 5.3.3
+      defu: 6.1.7
+      estree-walker: 3.0.3
+      fastest-levenshtein: 1.0.16
+      hookable: 6.1.1
+      html-minifier-next: 6.2.7(@swc/core@1.15.24)
+      jiti: 2.7.0
+      magic-string: 0.30.21
+      mime: 4.1.0
+      mlly: 1.8.2
+      oxc-parser: 0.133.0
+      oxc-resolver: 11.20.0
+      package-manager-detector: 1.6.0
+      rollup: 4.62.2
+      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
+      rs-module-lexer: 2.8.0
+      tinyexec: 1.2.4
+      workerpool: 10.0.2
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.4
+      '@babel/core': 8.0.1
+      '@swc/core': 1.15.24
+      cssnano: 8.0.2(postcss@8.5.23)
+      esbuild: 0.28.1
+      lightningcss: 1.32.0
+      postcss: 8.5.23
+      postcss-value-parser: 4.2.0
+      rolldown: 1.1.4
+      typedoc: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
+      typescript: 6.0.3
+    transitivePeerDependencies:
+      - '@bomb.sh/tab'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
+      - '@sveltejs/kit'
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - '@visulima/boxen'
+      - '@visulima/css-style-inject'
+      - '@visulima/find-cache-dir'
+      - '@visulima/redact'
+      - elysia
+      - express
+      - fastify
+      - github-slugger
+      - hono
+      - ini
+      - json5
+      - jsonc-parser
+      - next
+      - picomatch
+      - rotating-file-stream
+      - smol-toml
+      - vue-tsc
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.89(2210e1833635e70152132686fcc3cfc4)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 1.5.0
+      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
+      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0-alpha.9)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
+      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
+      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
+      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
+      browserslist: 4.28.2
+      cjs-module-lexer: 2.2.0
+      clean-css: 5.3.3
+      defu: 6.1.7
+      estree-walker: 3.0.3
+      fastest-levenshtein: 1.0.16
+      hookable: 6.1.1
+      html-minifier-next: 6.2.7(@swc/core@1.15.24)
+      jiti: 2.7.0
+      magic-string: 0.30.21
+      mime: 4.1.0
+      mlly: 1.8.2
+      oxc-parser: 0.133.0
+      oxc-resolver: 11.20.0
+      package-manager-detector: 1.6.0
+      rollup: 4.62.2
+      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
+      rs-module-lexer: 2.8.0
+      tinyexec: 1.2.4
+      workerpool: 10.0.2
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.4
+      '@babel/core': 8.0.1
+      '@swc/core': 1.15.24
+      cssnano: 8.0.2(postcss@8.5.23)
+      esbuild: 0.28.1
+      lightningcss: 1.32.0
+      postcss: 8.5.23
+      postcss-value-parser: 4.2.0
+      rolldown: 1.1.4
+      typedoc: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
+      typescript: 6.0.3
+    transitivePeerDependencies:
+      - '@bomb.sh/tab'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
+      - '@sveltejs/kit'
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - '@visulima/boxen'
+      - '@visulima/css-style-inject'
+      - '@visulima/find-cache-dir'
+      - '@visulima/redact'
+      - elysia
+      - express
+      - fastify
+      - github-slugger
+      - hono
+      - ini
+      - json5
+      - jsonc-parser
+      - next
+      - picomatch
+      - rotating-file-stream
+      - smol-toml
+      - vue-tsc
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.89(31d024fbb1649e540020662c62a59914)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.5.0
@@ -43950,7 +44241,7 @@ snapshots:
       '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
       '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
       '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
       browserslist: 4.28.2
@@ -43977,10 +44268,10 @@ snapshots:
       '@arethetypeswrong/core': 0.18.4
       '@babel/core': 7.29.7
       '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       esbuild: 0.28.1
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       rolldown: 1.1.4
       typedoc: 0.28.19(typescript@6.0.3)
@@ -44015,305 +44306,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.89(35c4c104bb186c4cc01fa774ad9c455e)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 1.5.0
-      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
-      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0-alpha.9)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
-      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
-      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
-      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
-      browserslist: 4.28.2
-      cjs-module-lexer: 2.2.0
-      clean-css: 5.3.3
-      defu: 6.1.7
-      estree-walker: 3.0.3
-      fastest-levenshtein: 1.0.16
-      hookable: 6.1.1
-      html-minifier-next: 6.2.7(@swc/core@1.15.24)
-      jiti: 2.7.0
-      magic-string: 0.30.21
-      mime: 4.1.0
-      mlly: 1.8.2
-      oxc-parser: 0.133.0
-      oxc-resolver: 11.20.0
-      package-manager-detector: 1.6.0
-      rollup: 4.62.2
-      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
-      rs-module-lexer: 2.8.0
-      tinyexec: 1.2.4
-      workerpool: 10.0.2
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.4
-      '@babel/core': 8.0.1
-      '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
-      esbuild: 0.28.1
-      lightningcss: 1.32.0
-      postcss: 8.5.22
-      postcss-value-parser: 4.2.0
-      rolldown: 1.1.4
-      typedoc: 0.28.19(typescript@6.0.3)
-      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@bomb.sh/tab'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@opentelemetry/api'
-      - '@sveltejs/kit'
-      - '@ts-macro/tsc'
-      - '@typescript/native-preview'
-      - '@visulima/boxen'
-      - '@visulima/css-style-inject'
-      - '@visulima/find-cache-dir'
-      - '@visulima/redact'
-      - elysia
-      - express
-      - fastify
-      - github-slugger
-      - hono
-      - ini
-      - json5
-      - jsonc-parser
-      - next
-      - picomatch
-      - rotating-file-stream
-      - smol-toml
-      - vue-tsc
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.89(612c72115f60b04373025d4461363f66)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 1.5.0
-      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
-      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0-alpha.9)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
-      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
-      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
-      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
-      browserslist: 4.28.2
-      cjs-module-lexer: 2.2.0
-      clean-css: 5.3.3
-      defu: 6.1.7
-      estree-walker: 3.0.3
-      fastest-levenshtein: 1.0.16
-      hookable: 6.1.1
-      html-minifier-next: 6.2.7(@swc/core@1.15.24)
-      jiti: 2.7.0
-      magic-string: 0.30.21
-      mime: 4.1.0
-      mlly: 1.8.2
-      oxc-parser: 0.133.0
-      oxc-resolver: 11.20.0
-      package-manager-detector: 1.6.0
-      rollup: 4.62.2
-      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
-      rs-module-lexer: 2.8.0
-      tinyexec: 1.2.4
-      workerpool: 10.0.2
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.4
-      '@babel/core': 8.0.1
-      '@swc/core': 1.15.24
-      '@tailwindcss/node': 4.3.2
-      '@tailwindcss/oxide': 4.3.2
-      cssnano: 8.0.2(postcss@8.5.22)
-      esbuild: 0.28.1
-      lightningcss: 1.32.0
-      postcss: 8.5.22
-      postcss-value-parser: 4.2.0
-      rolldown: 1.1.4
-      typedoc: 0.28.19(typescript@6.0.3)
-      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@bomb.sh/tab'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@opentelemetry/api'
-      - '@sveltejs/kit'
-      - '@ts-macro/tsc'
-      - '@typescript/native-preview'
-      - '@visulima/boxen'
-      - '@visulima/css-style-inject'
-      - '@visulima/find-cache-dir'
-      - '@visulima/redact'
-      - elysia
-      - express
-      - fastify
-      - github-slugger
-      - hono
-      - ini
-      - json5
-      - jsonc-parser
-      - next
-      - picomatch
-      - rotating-file-stream
-      - smol-toml
-      - vue-tsc
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.89(7e6a832c8ef183faa047d3278f5c3bd9)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 1.5.0
-      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
-      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.17(cac@6.7.14)(citty@0.2.2)(commander@15.0.0))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@packages+filesystem+find-cache-dir)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
-      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
-      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
-      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
-      browserslist: 4.28.2
-      cjs-module-lexer: 2.2.0
-      clean-css: 5.3.3
-      defu: 6.1.7
-      estree-walker: 3.0.3
-      fastest-levenshtein: 1.0.16
-      hookable: 6.1.1
-      html-minifier-next: 6.2.7(@swc/core@1.15.24)
-      jiti: 2.7.0
-      magic-string: 0.30.21
-      mime: 4.1.0
-      mlly: 1.8.2
-      oxc-parser: 0.133.0
-      oxc-resolver: 11.20.0
-      package-manager-detector: 1.6.0
-      rollup: 4.62.2
-      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
-      rs-module-lexer: 2.8.0
-      tinyexec: 1.2.4
-      workerpool: 10.0.2
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.4
-      '@babel/core': 8.0.1
-      '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
-      esbuild: 0.28.1
-      lightningcss: 1.32.0
-      postcss: 8.5.22
-      postcss-value-parser: 4.2.0
-      rolldown: 1.1.4
-      typedoc: 0.28.19(typescript@6.0.3)
-      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@bomb.sh/tab'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@opentelemetry/api'
-      - '@sveltejs/kit'
-      - '@ts-macro/tsc'
-      - '@typescript/native-preview'
-      - '@visulima/boxen'
-      - '@visulima/css-style-inject'
-      - '@visulima/find-cache-dir'
-      - '@visulima/redact'
-      - elysia
-      - express
-      - fastify
-      - github-slugger
-      - hono
-      - ini
-      - json5
-      - jsonc-parser
-      - next
-      - picomatch
-      - rotating-file-stream
-      - smol-toml
-      - vue-tsc
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.89(88ca90f9d677374b2a1cc2f9966014fb)':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@clack/prompts': 1.5.0
-      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
-      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/find-cache-dir@packages+filesystem+find-cache-dir)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
-      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
-      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
-      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
-      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
-      browserslist: 4.28.2
-      cjs-module-lexer: 2.2.0
-      clean-css: 5.3.3
-      defu: 6.1.7
-      estree-walker: 3.0.3
-      fastest-levenshtein: 1.0.16
-      hookable: 6.1.1
-      html-minifier-next: 6.2.7(@swc/core@1.15.24)
-      jiti: 2.7.0
-      magic-string: 0.30.21
-      mime: 4.1.0
-      mlly: 1.8.2
-      oxc-parser: 0.133.0
-      oxc-resolver: 11.20.0
-      package-manager-detector: 1.6.0
-      rollup: 4.62.2
-      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
-      rs-module-lexer: 2.8.0
-      tinyexec: 1.2.4
-      workerpool: 10.0.2
-    optionalDependencies:
-      '@arethetypeswrong/core': 0.18.4
-      '@babel/core': 8.0.1
-      '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
-      esbuild: 0.28.1
-      lightningcss: 1.32.0
-      postcss: 8.5.22
-      postcss-value-parser: 4.2.0
-      rolldown: 1.1.4
-      typedoc: 0.28.19(typescript@6.0.3)
-      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
-      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@bomb.sh/tab'
-      - '@csstools/css-parser-algorithms'
-      - '@csstools/css-tokenizer'
-      - '@csstools/postcss-slow-plugins'
-      - '@opentelemetry/api'
-      - '@sveltejs/kit'
-      - '@ts-macro/tsc'
-      - '@typescript/native-preview'
-      - '@visulima/boxen'
-      - '@visulima/css-style-inject'
-      - '@visulima/find-cache-dir'
-      - '@visulima/redact'
-      - elysia
-      - express
-      - fastify
-      - github-slugger
-      - hono
-      - ini
-      - json5
-      - jsonc-parser
-      - next
-      - picomatch
-      - rotating-file-stream
-      - smol-toml
-      - vue-tsc
-      - yaml
-
-  '@visulima/packem@2.0.0-alpha.89(a599289487fc3a11cd395138c8c58264)':
+  '@visulima/packem@2.0.0-alpha.89(3a26b4924721e46307276c305f957ba1)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.5.0
@@ -44322,7 +44315,7 @@ snapshots:
       '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
       '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
       '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
       browserslist: 4.28.2
@@ -44349,10 +44342,10 @@ snapshots:
       '@arethetypeswrong/core': 0.18.4
       '@babel/core': 8.0.1
       '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       esbuild: 0.28.1
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       rolldown: 1.1.4
       typedoc: 0.28.19(typescript@6.0.3)
@@ -44387,7 +44380,81 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.89(e20ed82aa44bf1a61461a78f7dd386e9)':
+  '@visulima/packem@2.0.0-alpha.89(3d98dc2503c33a0f54b2021028f16d81)':
+    dependencies:
+      '@antfu/install-pkg': 1.1.0
+      '@clack/prompts': 1.5.0
+      '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
+      '@visulima/cerebro': 3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0-alpha.9)(@visulima/pail@4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)
+      '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
+      '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@7.1.9(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
+      '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
+      browserslist: 4.28.2
+      cjs-module-lexer: 2.2.0
+      clean-css: 5.3.3
+      defu: 6.1.7
+      estree-walker: 3.0.3
+      fastest-levenshtein: 1.0.16
+      hookable: 6.1.1
+      html-minifier-next: 6.2.7(@swc/core@1.15.24)
+      jiti: 2.7.0
+      magic-string: 0.30.21
+      mime: 4.1.0
+      mlly: 1.8.2
+      oxc-parser: 0.133.0
+      oxc-resolver: 11.20.0
+      package-manager-detector: 1.6.0
+      rollup: 4.62.2
+      rollup-plugin-license: 3.7.1(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))(rollup@4.62.2)
+      rs-module-lexer: 2.8.0
+      tinyexec: 1.2.4
+      workerpool: 10.0.2
+    optionalDependencies:
+      '@arethetypeswrong/core': 0.18.4
+      '@babel/core': 8.0.1
+      '@swc/core': 1.15.24
+      cssnano: 7.1.9(postcss@8.5.23)
+      esbuild: 0.28.1
+      lightningcss: 1.32.0
+      postcss: 8.5.23
+      postcss-value-parser: 4.2.0
+      rolldown: 1.1.4
+      typedoc: 0.28.19(typescript@6.0.3)
+      typedoc-plugin-markdown: 4.12.0(typedoc@0.28.19(typescript@6.0.3))
+      typedoc-plugin-rename-defaults: 0.7.3(typedoc@0.28.19(typescript@6.0.3))
+      typescript: 6.0.3
+    transitivePeerDependencies:
+      - '@bomb.sh/tab'
+      - '@csstools/css-parser-algorithms'
+      - '@csstools/css-tokenizer'
+      - '@csstools/postcss-slow-plugins'
+      - '@opentelemetry/api'
+      - '@sveltejs/kit'
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - '@visulima/boxen'
+      - '@visulima/css-style-inject'
+      - '@visulima/find-cache-dir'
+      - '@visulima/redact'
+      - elysia
+      - express
+      - fastify
+      - github-slugger
+      - hono
+      - ini
+      - json5
+      - jsonc-parser
+      - next
+      - picomatch
+      - rotating-file-stream
+      - smol-toml
+      - vue-tsc
+      - yaml
+
+  '@visulima/packem@2.0.0-alpha.89(642e88c132ee5307aa7f8e5f7b24786d)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.5.0
@@ -44396,7 +44463,7 @@ snapshots:
       '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
       '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
       '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
       browserslist: 4.28.2
@@ -44425,10 +44492,10 @@ snapshots:
       '@swc/core': 1.15.24
       '@tailwindcss/node': 4.3.2
       '@tailwindcss/oxide': 4.3.2
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       esbuild: 0.28.1
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       rolldown: 1.1.4
       typedoc: 0.28.19(typescript@6.0.3)
@@ -44463,7 +44530,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  '@visulima/packem@2.0.0-alpha.89(f824766d12a4115c4cc08d5d92a9cec0)':
+  '@visulima/packem@2.0.0-alpha.89(bc92cc58d62e5fa29cc4d34f0a072193)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.5.0
@@ -44472,7 +44539,7 @@ snapshots:
       '@visulima/packem-rollup': 1.0.0-alpha.73(@swc/core@1.15.24)(@ts-macro/tsc@0.3.7(rollup@4.62.2))(esbuild@0.28.1)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))(yaml@2.9.0)
       '@visulima/packem-share': 1.0.0-alpha.50(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/pail': 4.0.0-alpha.16(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.69.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(@visulima/redact@packages+data-manipulation+redact)(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.9.0)(hono@4.12.27)(next@16.2.11(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@26.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9)
-      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@7.1.9(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
+      '@visulima/rollup-plugin-css': 1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/rollup-plugin-dts': 1.0.0-alpha.34(@ts-macro/tsc@0.3.7(rollup@4.62.2))(ini@7.0.0)(json5@2.2.3)(rolldown@1.1.4)(rollup@4.62.2)(smol-toml@1.7.0)(typescript@6.0.3)(yaml@2.9.0)
       '@visulima/tsconfig': 3.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(smol-toml@1.7.0)(yaml@2.9.0)
       browserslist: 4.28.2
@@ -44499,10 +44566,12 @@ snapshots:
       '@arethetypeswrong/core': 0.18.4
       '@babel/core': 8.0.1
       '@swc/core': 1.15.24
-      cssnano: 7.1.9(postcss@8.5.22)
+      '@tailwindcss/node': 4.3.2
+      '@tailwindcss/oxide': 4.3.2
+      cssnano: 8.0.2(postcss@8.5.23)
       esbuild: 0.28.1
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       rolldown: 1.1.4
       typedoc: 0.28.19(typescript@6.0.3)
@@ -44587,11 +44656,11 @@ snapshots:
 
   '@visulima/path@3.0.0-alpha.10': {}
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@8.0.2(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)':
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      '@csstools/postcss-slow-plugins': 3.0.0(postcss@8.5.22)
+      '@csstools/postcss-slow-plugins': 3.0.0(postcss@8.5.23)
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@visulima/css-style-inject': 1.0.0-alpha.18
       '@visulima/fs': 5.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
@@ -44606,9 +44675,9 @@ snapshots:
     optionalDependencies:
       '@tailwindcss/node': 4.3.2
       '@tailwindcss/oxide': 4.3.2
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
     transitivePeerDependencies:
       - ini
@@ -44617,11 +44686,11 @@ snapshots:
       - smol-toml
       - yaml
 
-  '@visulima/rollup-plugin-css@1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.22))(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@7.1.9(postcss@8.5.22))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.22)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)':
+  '@visulima/rollup-plugin-css@1.0.0-alpha.53(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@visulima/css-style-inject@1.0.0-alpha.18)(cssnano@7.1.9(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.32.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)':
     dependencies:
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      '@csstools/postcss-slow-plugins': 3.0.0(postcss@8.5.22)
+      '@csstools/postcss-slow-plugins': 3.0.0(postcss@8.5.23)
       '@rollup/pluginutils': 5.4.0(rollup@4.62.2)
       '@visulima/css-style-inject': 1.0.0-alpha.18
       '@visulima/fs': 5.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
@@ -44634,9 +44703,9 @@ snapshots:
       rollup: 4.62.2
       source-map-js: 1.2.1
     optionalDependencies:
-      cssnano: 7.1.9(postcss@8.5.22)
+      cssnano: 7.1.9(postcss@8.5.23)
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
     transitivePeerDependencies:
       - ini
@@ -45019,7 +45088,7 @@ snapshots:
       '@vue/shared': 3.5.39
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.22
+      postcss: 8.5.23
       source-map-js: 1.2.1
 
   '@vue/compiler-ssr@3.5.39':
@@ -45744,22 +45813,22 @@ snapshots:
 
   auto-bind@5.0.1: {}
 
-  autoprefixer@10.5.0(postcss@8.5.22):
+  autoprefixer@10.5.0(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-lite: 1.0.30001800
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  autoprefixer@10.5.2(postcss@8.5.22):
+  autoprefixer@10.5.2(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-lite: 1.0.30001800
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
   available-typed-arrays@1.0.7:
@@ -47038,9 +47107,9 @@ snapshots:
     dependencies:
       type-fest: 1.4.0
 
-  css-declaration-sorter@7.4.0(postcss@8.5.22):
+  css-declaration-sorter@7.4.0(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
   css-select@5.2.2:
     dependencies:
@@ -47074,100 +47143,100 @@ snapshots:
 
   cssfilter@0.0.10: {}
 
-  cssnano-preset-default@7.0.17(postcss@8.5.22):
+  cssnano-preset-default@7.0.17(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      css-declaration-sorter: 7.4.0(postcss@8.5.22)
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
-      postcss-calc: 10.1.1(postcss@8.5.22)
-      postcss-colormin: 7.0.10(postcss@8.5.22)
-      postcss-convert-values: 7.0.12(postcss@8.5.22)
-      postcss-discard-comments: 7.0.8(postcss@8.5.22)
-      postcss-discard-duplicates: 7.0.4(postcss@8.5.22)
-      postcss-discard-empty: 7.0.3(postcss@8.5.22)
-      postcss-discard-overridden: 7.0.3(postcss@8.5.22)
-      postcss-merge-longhand: 7.0.7(postcss@8.5.22)
-      postcss-merge-rules: 7.0.11(postcss@8.5.22)
-      postcss-minify-font-values: 7.0.3(postcss@8.5.22)
-      postcss-minify-gradients: 7.0.5(postcss@8.5.22)
-      postcss-minify-params: 7.0.9(postcss@8.5.22)
-      postcss-minify-selectors: 7.1.2(postcss@8.5.22)
-      postcss-normalize-charset: 7.0.3(postcss@8.5.22)
-      postcss-normalize-display-values: 7.0.3(postcss@8.5.22)
-      postcss-normalize-positions: 7.0.4(postcss@8.5.22)
-      postcss-normalize-repeat-style: 7.0.4(postcss@8.5.22)
-      postcss-normalize-string: 7.0.3(postcss@8.5.22)
-      postcss-normalize-timing-functions: 7.0.3(postcss@8.5.22)
-      postcss-normalize-unicode: 7.0.9(postcss@8.5.22)
-      postcss-normalize-url: 7.0.3(postcss@8.5.22)
-      postcss-normalize-whitespace: 7.0.3(postcss@8.5.22)
-      postcss-ordered-values: 7.0.4(postcss@8.5.22)
-      postcss-reduce-initial: 7.0.9(postcss@8.5.22)
-      postcss-reduce-transforms: 7.0.3(postcss@8.5.22)
-      postcss-svgo: 7.1.3(postcss@8.5.22)
-      postcss-unique-selectors: 7.0.7(postcss@8.5.22)
+      css-declaration-sorter: 7.4.0(postcss@8.5.23)
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
+      postcss-calc: 10.1.1(postcss@8.5.23)
+      postcss-colormin: 7.0.10(postcss@8.5.23)
+      postcss-convert-values: 7.0.12(postcss@8.5.23)
+      postcss-discard-comments: 7.0.8(postcss@8.5.23)
+      postcss-discard-duplicates: 7.0.4(postcss@8.5.23)
+      postcss-discard-empty: 7.0.3(postcss@8.5.23)
+      postcss-discard-overridden: 7.0.3(postcss@8.5.23)
+      postcss-merge-longhand: 7.0.7(postcss@8.5.23)
+      postcss-merge-rules: 7.0.11(postcss@8.5.23)
+      postcss-minify-font-values: 7.0.3(postcss@8.5.23)
+      postcss-minify-gradients: 7.0.5(postcss@8.5.23)
+      postcss-minify-params: 7.0.9(postcss@8.5.23)
+      postcss-minify-selectors: 7.1.2(postcss@8.5.23)
+      postcss-normalize-charset: 7.0.3(postcss@8.5.23)
+      postcss-normalize-display-values: 7.0.3(postcss@8.5.23)
+      postcss-normalize-positions: 7.0.4(postcss@8.5.23)
+      postcss-normalize-repeat-style: 7.0.4(postcss@8.5.23)
+      postcss-normalize-string: 7.0.3(postcss@8.5.23)
+      postcss-normalize-timing-functions: 7.0.3(postcss@8.5.23)
+      postcss-normalize-unicode: 7.0.9(postcss@8.5.23)
+      postcss-normalize-url: 7.0.3(postcss@8.5.23)
+      postcss-normalize-whitespace: 7.0.3(postcss@8.5.23)
+      postcss-ordered-values: 7.0.4(postcss@8.5.23)
+      postcss-reduce-initial: 7.0.9(postcss@8.5.23)
+      postcss-reduce-transforms: 7.0.3(postcss@8.5.23)
+      postcss-svgo: 7.1.3(postcss@8.5.23)
+      postcss-unique-selectors: 7.0.7(postcss@8.5.23)
 
-  cssnano-preset-default@8.0.2(postcss@8.5.22):
+  cssnano-preset-default@8.0.2(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      cssnano-utils: 6.0.1(postcss@8.5.22)
-      postcss: 8.5.22
-      postcss-calc: 10.1.1(postcss@8.5.22)
-      postcss-colormin: 8.0.1(postcss@8.5.22)
-      postcss-convert-values: 8.0.1(postcss@8.5.22)
-      postcss-discard-comments: 8.0.1(postcss@8.5.22)
-      postcss-discard-duplicates: 8.0.1(postcss@8.5.22)
-      postcss-discard-empty: 8.0.1(postcss@8.5.22)
-      postcss-discard-overridden: 8.0.1(postcss@8.5.22)
-      postcss-merge-longhand: 8.0.1(postcss@8.5.22)
-      postcss-merge-rules: 8.0.1(postcss@8.5.22)
-      postcss-minify-font-values: 8.0.1(postcss@8.5.22)
-      postcss-minify-gradients: 8.0.1(postcss@8.5.22)
-      postcss-minify-params: 8.0.1(postcss@8.5.22)
-      postcss-minify-selectors: 8.0.2(postcss@8.5.22)
-      postcss-normalize-charset: 8.0.1(postcss@8.5.22)
-      postcss-normalize-display-values: 8.0.1(postcss@8.5.22)
-      postcss-normalize-positions: 8.0.1(postcss@8.5.22)
-      postcss-normalize-repeat-style: 8.0.1(postcss@8.5.22)
-      postcss-normalize-string: 8.0.1(postcss@8.5.22)
-      postcss-normalize-timing-functions: 8.0.1(postcss@8.5.22)
-      postcss-normalize-unicode: 8.0.1(postcss@8.5.22)
-      postcss-normalize-url: 8.0.1(postcss@8.5.22)
-      postcss-normalize-whitespace: 8.0.1(postcss@8.5.22)
-      postcss-ordered-values: 8.0.1(postcss@8.5.22)
-      postcss-reduce-initial: 8.0.1(postcss@8.5.22)
-      postcss-reduce-transforms: 8.0.1(postcss@8.5.22)
-      postcss-svgo: 8.0.1(postcss@8.5.22)
-      postcss-unique-selectors: 8.0.1(postcss@8.5.22)
+      cssnano-utils: 6.0.1(postcss@8.5.23)
+      postcss: 8.5.23
+      postcss-calc: 10.1.1(postcss@8.5.23)
+      postcss-colormin: 8.0.1(postcss@8.5.23)
+      postcss-convert-values: 8.0.1(postcss@8.5.23)
+      postcss-discard-comments: 8.0.1(postcss@8.5.23)
+      postcss-discard-duplicates: 8.0.1(postcss@8.5.23)
+      postcss-discard-empty: 8.0.1(postcss@8.5.23)
+      postcss-discard-overridden: 8.0.1(postcss@8.5.23)
+      postcss-merge-longhand: 8.0.1(postcss@8.5.23)
+      postcss-merge-rules: 8.0.1(postcss@8.5.23)
+      postcss-minify-font-values: 8.0.1(postcss@8.5.23)
+      postcss-minify-gradients: 8.0.1(postcss@8.5.23)
+      postcss-minify-params: 8.0.1(postcss@8.5.23)
+      postcss-minify-selectors: 8.0.2(postcss@8.5.23)
+      postcss-normalize-charset: 8.0.1(postcss@8.5.23)
+      postcss-normalize-display-values: 8.0.1(postcss@8.5.23)
+      postcss-normalize-positions: 8.0.1(postcss@8.5.23)
+      postcss-normalize-repeat-style: 8.0.1(postcss@8.5.23)
+      postcss-normalize-string: 8.0.1(postcss@8.5.23)
+      postcss-normalize-timing-functions: 8.0.1(postcss@8.5.23)
+      postcss-normalize-unicode: 8.0.1(postcss@8.5.23)
+      postcss-normalize-url: 8.0.1(postcss@8.5.23)
+      postcss-normalize-whitespace: 8.0.1(postcss@8.5.23)
+      postcss-ordered-values: 8.0.1(postcss@8.5.23)
+      postcss-reduce-initial: 8.0.1(postcss@8.5.23)
+      postcss-reduce-transforms: 8.0.1(postcss@8.5.23)
+      postcss-svgo: 8.0.1(postcss@8.5.23)
+      postcss-unique-selectors: 8.0.1(postcss@8.5.23)
 
-  cssnano-preset-lite@4.0.4(postcss@8.5.22):
+  cssnano-preset-lite@4.0.4(postcss@8.5.23):
     dependencies:
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
-      postcss-discard-comments: 7.0.8(postcss@8.5.22)
-      postcss-discard-empty: 7.0.3(postcss@8.5.22)
-      postcss-normalize-whitespace: 7.0.3(postcss@8.5.22)
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
+      postcss-discard-comments: 7.0.8(postcss@8.5.23)
+      postcss-discard-empty: 7.0.3(postcss@8.5.23)
+      postcss-normalize-whitespace: 7.0.3(postcss@8.5.23)
 
-  cssnano-utils@5.0.3(postcss@8.5.22):
+  cssnano-utils@5.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  cssnano-utils@6.0.1(postcss@8.5.22):
+  cssnano-utils@6.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  cssnano@7.1.9(postcss@8.5.22):
+  cssnano@7.1.9(postcss@8.5.23):
     dependencies:
-      cssnano-preset-default: 7.0.17(postcss@8.5.22)
+      cssnano-preset-default: 7.0.17(postcss@8.5.23)
       lilconfig: 3.1.3
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  cssnano@8.0.2(postcss@8.5.22):
+  cssnano@8.0.2(postcss@8.5.23):
     dependencies:
-      cssnano-preset-default: 8.0.2(postcss@8.5.22)
+      cssnano-preset-default: 8.0.2(postcss@8.5.23)
       lilconfig: 3.1.3
-      postcss: 8.5.22
+      postcss: 8.5.23
 
   csso@5.0.5:
     dependencies:
@@ -47440,11 +47509,11 @@ snapshots:
     dependencies:
       node-source-walk: 7.0.1
 
-  detective-postcss@7.0.1(postcss@8.5.22):
+  detective-postcss@7.0.1(postcss@8.5.23):
     dependencies:
       is-url: 1.2.4
-      postcss: 8.5.22
-      postcss-values-parser: 6.0.2(postcss@8.5.22)
+      postcss: 8.5.23
+      postcss-values-parser: 6.0.2(postcss@8.5.23)
 
   detective-sass@6.0.1:
     dependencies:
@@ -47504,6 +47573,8 @@ snapshots:
   diffable-html@4.1.0:
     dependencies:
       htmlparser2: 3.10.1
+
+  dijkstrajs@1.0.3: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -48085,12 +48156,12 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.6.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.6.0(jiti@2.7.0))
@@ -48733,9 +48804,9 @@ snapshots:
       esutils: 2.0.3
       globals: 16.5.0
       known-css-properties: 0.37.0
-      postcss: 8.5.22
-      postcss-load-config: 3.1.4(postcss@8.5.22)(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3))
-      postcss-safe-parser: 7.0.1(postcss@8.5.22)
+      postcss: 8.5.23
+      postcss-load-config: 3.1.4(postcss@8.5.23)(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3))
+      postcss-safe-parser: 7.0.1(postcss@8.5.23)
       semver: 7.8.5
       svelte-eslint-parser: 1.8.0(svelte@5.56.4(@typescript-eslint/types@8.62.1))
     optionalDependencies:
@@ -49327,7 +49398,7 @@ snapshots:
 
   fast-xml-builder@1.2.0:
     dependencies:
-      path-expression-matcher: 1.6.2
+      path-expression-matcher: 1.5.0
       xml-naming: 0.1.0
 
   fast-xml-parser@5.10.1:
@@ -50762,15 +50833,15 @@ snapshots:
 
   htmlfy@0.8.1: {}
 
-  htmlnano@3.3.2(cssnano@7.1.9(postcss@8.5.22))(postcss@8.5.22)(svgo@4.0.2)(terser@5.48.0)(typescript@6.0.3):
+  htmlnano@3.3.2(cssnano@7.1.9(postcss@8.5.23))(postcss@8.5.23)(svgo@4.0.2)(terser@5.48.0)(typescript@6.0.3):
     dependencies:
       '@types/relateurl': 0.2.33
       commander: 14.0.3
       cosmiconfig: 9.0.2(typescript@6.0.3)
       posthtml: 0.16.7
     optionalDependencies:
-      cssnano: 7.1.9(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano: 7.1.9(postcss@8.5.23)
+      postcss: 8.5.23
       svgo: 4.0.2
       terser: 5.48.0
     transitivePeerDependencies:
@@ -52188,7 +52259,7 @@ snapshots:
       '@unocss/transformer-compile-class': 66.7.0
       '@unocss/transformer-variant-group': 66.7.0
       '@vitejs/plugin-react': 6.0.1(@rolldown/plugin-babel@0.2.3(@babel/core@8.0.1)(@babel/runtime@7.29.7)(rolldown@1.1.4)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      autoprefixer: 10.5.0(postcss@8.5.22)
+      autoprefixer: 10.5.0(postcss@8.5.23)
       bwip-js: 4.11.1
       caniemail: 2.0.2(@vue/compiler-sfc@3.5.39)(prettier@3.9.4)(svelte@5.56.4(@typescript-eslint/types@8.62.1))
       canispam: 1.0.0
@@ -52211,8 +52282,8 @@ snapshots:
       micromatch: 4.0.8
       mime-types: 3.0.2
       mustache: 4.2.0
-      postcss: 8.5.22
-      postcss-var-replace: 1.0.0(postcss@8.5.22)
+      postcss: 8.5.23
+      postcss-var-replace: 1.0.0(postcss@8.5.23)
       pretty-bytes: 6.1.1
       qrcode-generator: 2.0.4
       react: 19.2.6
@@ -52279,9 +52350,9 @@ snapshots:
       cheerio: 1.2.0
       commander: 14.0.3
       entities: 8.0.0
-      postcss: 8.5.22
-      postcss-nesting: 14.0.0(postcss@8.5.22)
-      postcss-safe-parser: 7.0.1(postcss@8.5.22)
+      postcss: 8.5.23
+      postcss-nesting: 14.0.0(postcss@8.5.23)
+      postcss-safe-parser: 7.0.1(postcss@8.5.23)
       postcss-selector-parser: 7.1.4
       web-resource-inliner: 8.0.0
 
@@ -54086,31 +54157,31 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.6.1(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)(webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)):
+  minimizer-webpack-plugin@5.6.1(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)(webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.48.0
-      webpack: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)
+      webpack: 5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)
     optionalDependencies:
       '@swc/core': 1.15.24
-      cssnano: 8.0.2(postcss@8.5.22)
+      cssnano: 8.0.2(postcss@8.5.23)
       esbuild: 0.28.1
       lightningcss: 1.32.0
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  minimizer-webpack-plugin@5.6.1(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)):
+  minimizer-webpack-plugin@5.6.1(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.48.0
-      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)
+      webpack: 5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)
     optionalDependencies:
       '@swc/core': 1.15.24
       esbuild: 0.28.1
-      postcss: 8.5.22
+      postcss: 8.5.23
     optional: true
 
   minimizer-webpack-plugin@5.6.1(@swc/core@1.15.24)(esbuild@0.28.1)(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)):
@@ -54258,16 +54329,16 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
       cheerio: 1.0.0
-      cssnano: 7.1.9(postcss@8.5.22)
-      cssnano-preset-lite: 4.0.4(postcss@8.5.22)
+      cssnano: 7.1.9(postcss@8.5.23)
+      cssnano-preset-lite: 4.0.4(postcss@8.5.23)
       detect-node: 2.1.0
-      htmlnano: 3.3.2(cssnano@7.1.9(postcss@8.5.22))(postcss@8.5.22)(svgo@4.0.2)(terser@5.48.0)(typescript@6.0.3)
+      htmlnano: 3.3.2(cssnano@7.1.9(postcss@8.5.23))(postcss@8.5.23)(svgo@4.0.2)(terser@5.48.0)(typescript@6.0.3)
       js-beautify: 1.15.4
       juice: 11.1.1
       lodash: 4.18.1
       mjml-parser-xml: 5.4.0
       mjml-validator: 5.4.0
-      postcss: 8.5.22
+      postcss: 8.5.23
     transitivePeerDependencies:
       - purgecss
       - relateurl
@@ -54879,7 +54950,7 @@ snapshots:
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.41
       caniuse-lite: 1.0.30001800
-      postcss: 8.5.22
+      postcss: 8.5.23
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
       styled-jsx: 5.1.6(@babel/core@7.29.7)(react@19.2.6)
@@ -54906,7 +54977,7 @@ snapshots:
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.41
       caniuse-lite: 1.0.30001800
-      postcss: 8.5.22
+      postcss: 8.5.23
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
       styled-jsx: 5.1.6(@babel/core@8.0.1)(react@19.2.6)
@@ -56264,6 +56335,8 @@ snapshots:
 
   path-exists@5.0.0: {}
 
+  path-expression-matcher@1.5.0: {}
+
   path-expression-matcher@1.6.2: {}
 
   path-is-absolute@1.0.1: {}
@@ -56470,6 +56543,8 @@ snapshots:
 
   pluralize@8.0.0: {}
 
+  pngjs@5.0.0: {}
+
   pngjs@7.0.0: {}
 
   pnpm-workspace-yaml@1.6.0:
@@ -56484,302 +56559,302 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
-  postcss-calc@10.1.1(postcss@8.5.22):
+  postcss-calc@10.1.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
       postcss-value-parser: 4.2.0
 
-  postcss-colormin@7.0.10(postcss@8.5.22):
+  postcss-colormin@7.0.10(postcss@8.5.23):
     dependencies:
       '@colordx/core': 5.4.3
       browserslist: 4.28.4
       caniuse-api: 3.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-colormin@8.0.1(postcss@8.5.22):
+  postcss-colormin@8.0.1(postcss@8.5.23):
     dependencies:
       '@colordx/core': 5.4.3
       browserslist: 4.28.4
       caniuse-api: 4.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-convert-values@7.0.12(postcss@8.5.22):
+  postcss-convert-values@7.0.12(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-convert-values@8.0.1(postcss@8.5.22):
+  postcss-convert-values@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-discard-comments@7.0.8(postcss@8.5.22):
+  postcss-discard-comments@7.0.8(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-discard-comments@8.0.1(postcss@8.5.22):
+  postcss-discard-comments@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-discard-duplicates@7.0.4(postcss@8.5.22):
+  postcss-discard-duplicates@7.0.4(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-discard-duplicates@8.0.1(postcss@8.5.22):
+  postcss-discard-duplicates@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-discard-empty@7.0.3(postcss@8.5.22):
+  postcss-discard-empty@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-discard-empty@8.0.1(postcss@8.5.22):
+  postcss-discard-empty@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-discard-overridden@7.0.3(postcss@8.5.22):
+  postcss-discard-overridden@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-discard-overridden@8.0.1(postcss@8.5.22):
+  postcss-discard-overridden@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-load-config@3.1.4(postcss@8.5.22)(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3)):
+  postcss-load-config@3.1.4(postcss@8.5.23)(ts-node@10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3)):
     dependencies:
       lilconfig: 2.1.0
       yaml: 2.9.0
     optionalDependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       ts-node: 10.9.2(@swc/core@1.15.24)(@types/node@26.1.0)(typescript@6.0.3)
 
-  postcss-merge-longhand@7.0.7(postcss@8.5.22):
+  postcss-merge-longhand@7.0.7(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
-      stylehacks: 7.0.11(postcss@8.5.22)
+      stylehacks: 7.0.11(postcss@8.5.23)
 
-  postcss-merge-longhand@8.0.1(postcss@8.5.22):
+  postcss-merge-longhand@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
-      stylehacks: 8.0.1(postcss@8.5.22)
+      stylehacks: 8.0.1(postcss@8.5.23)
 
-  postcss-merge-rules@7.0.11(postcss@8.5.22):
+  postcss-merge-rules@7.0.11(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 3.0.0
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-merge-rules@8.0.1(postcss@8.5.22):
+  postcss-merge-rules@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 4.0.0
-      cssnano-utils: 6.0.1(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 6.0.1(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-minify-font-values@7.0.3(postcss@8.5.22):
+  postcss-minify-font-values@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-minify-font-values@8.0.1(postcss@8.5.22):
+  postcss-minify-font-values@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-minify-gradients@7.0.5(postcss@8.5.22):
-    dependencies:
-      '@colordx/core': 5.4.3
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
-      postcss-value-parser: 4.2.0
-
-  postcss-minify-gradients@8.0.1(postcss@8.5.22):
+  postcss-minify-gradients@7.0.5(postcss@8.5.23):
     dependencies:
       '@colordx/core': 5.4.3
-      cssnano-utils: 6.0.1(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-minify-params@7.0.9(postcss@8.5.22):
+  postcss-minify-gradients@8.0.1(postcss@8.5.23):
+    dependencies:
+      '@colordx/core': 5.4.3
+      cssnano-utils: 6.0.1(postcss@8.5.23)
+      postcss: 8.5.23
+      postcss-value-parser: 4.2.0
+
+  postcss-minify-params@7.0.9(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-minify-params@8.0.1(postcss@8.5.22):
+  postcss-minify-params@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      cssnano-utils: 6.0.1(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 6.0.1(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-minify-selectors@7.1.2(postcss@8.5.22):
+  postcss-minify-selectors@7.1.2(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 3.0.0
       cssesc: 3.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-minify-selectors@8.0.2(postcss@8.5.22):
+  postcss-minify-selectors@8.0.2(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 4.0.0
       cssesc: 3.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-nesting@14.0.0(postcss@8.5.22):
+  postcss-nesting@14.0.0(postcss@8.5.23):
     dependencies:
       '@csstools/selector-resolve-nested': 4.0.0(postcss-selector-parser@7.1.4)
       '@csstools/selector-specificity': 6.0.0(postcss-selector-parser@7.1.4)
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-normalize-charset@7.0.3(postcss@8.5.22):
+  postcss-normalize-charset@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-normalize-charset@8.0.1(postcss@8.5.22):
+  postcss-normalize-charset@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-normalize-display-values@7.0.3(postcss@8.5.22):
+  postcss-normalize-display-values@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-display-values@8.0.1(postcss@8.5.22):
+  postcss-normalize-display-values@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-positions@7.0.4(postcss@8.5.22):
+  postcss-normalize-positions@7.0.4(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-positions@8.0.1(postcss@8.5.22):
+  postcss-normalize-positions@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-repeat-style@7.0.4(postcss@8.5.22):
+  postcss-normalize-repeat-style@7.0.4(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-repeat-style@8.0.1(postcss@8.5.22):
+  postcss-normalize-repeat-style@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-string@7.0.3(postcss@8.5.22):
+  postcss-normalize-string@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-string@8.0.1(postcss@8.5.22):
+  postcss-normalize-string@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-timing-functions@7.0.3(postcss@8.5.22):
+  postcss-normalize-timing-functions@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-timing-functions@8.0.1(postcss@8.5.22):
+  postcss-normalize-timing-functions@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-unicode@7.0.9(postcss@8.5.22):
+  postcss-normalize-unicode@7.0.9(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-unicode@8.0.1(postcss@8.5.22):
+  postcss-normalize-unicode@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-url@7.0.3(postcss@8.5.22):
+  postcss-normalize-url@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-url@8.0.1(postcss@8.5.22):
+  postcss-normalize-url@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-whitespace@7.0.3(postcss@8.5.22):
+  postcss-normalize-whitespace@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-normalize-whitespace@8.0.1(postcss@8.5.22):
+  postcss-normalize-whitespace@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-ordered-values@7.0.4(postcss@8.5.22):
+  postcss-ordered-values@7.0.4(postcss@8.5.23):
     dependencies:
-      cssnano-utils: 5.0.3(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 5.0.3(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-ordered-values@8.0.1(postcss@8.5.22):
+  postcss-ordered-values@8.0.1(postcss@8.5.23):
     dependencies:
-      cssnano-utils: 6.0.1(postcss@8.5.22)
-      postcss: 8.5.22
+      cssnano-utils: 6.0.1(postcss@8.5.23)
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-reduce-initial@7.0.9(postcss@8.5.22):
+  postcss-reduce-initial@7.0.9(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 3.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-reduce-initial@8.0.1(postcss@8.5.22):
+  postcss-reduce-initial@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
       caniuse-api: 4.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-reduce-transforms@7.0.3(postcss@8.5.22):
+  postcss-reduce-transforms@7.0.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-reduce-transforms@8.0.1(postcss@8.5.22):
+  postcss-reduce-transforms@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
 
-  postcss-safe-parser@7.0.1(postcss@8.5.22):
+  postcss-safe-parser@7.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss-scss@4.0.9(postcss@8.5.22):
+  postcss-scss@4.0.9(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
 
   postcss-selector-parser@6.0.10:
     dependencies:
@@ -56791,44 +56866,44 @@ snapshots:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-svgo@7.1.3(postcss@8.5.22):
+  postcss-svgo@7.1.3(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       svgo: 4.0.2
 
-  postcss-svgo@8.0.1(postcss@8.5.22):
+  postcss-svgo@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-value-parser: 4.2.0
       svgo: 4.0.2
 
-  postcss-unique-selectors@7.0.7(postcss@8.5.22):
+  postcss-unique-selectors@7.0.7(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  postcss-unique-selectors@8.0.1(postcss@8.5.22):
+  postcss-unique-selectors@8.0.1(postcss@8.5.23):
     dependencies:
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
   postcss-value-parser@4.2.0: {}
 
-  postcss-values-parser@6.0.2(postcss@8.5.22):
+  postcss-values-parser@6.0.2(postcss@8.5.23):
     dependencies:
       color-name: 1.1.4
       is-url-superb: 4.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
       quote-unquote: 1.0.0
 
-  postcss-var-replace@1.0.0(postcss@8.5.22):
+  postcss-var-replace@1.0.0(postcss@8.5.23):
     dependencies:
       balanced-match: 2.0.0
       escape-string-regexp: 4.0.0
-      postcss: 8.5.22
+      postcss: 8.5.23
 
-  postcss@8.5.22:
+  postcss@8.5.23:
     dependencies:
       nanoid: 3.3.16
       picocolors: 1.1.1
@@ -56879,7 +56954,7 @@ snapshots:
       detective-amd: 6.0.1
       detective-cjs: 6.1.0
       detective-es6: 5.0.1
-      detective-postcss: 7.0.1(postcss@8.5.22)
+      detective-postcss: 7.0.1(postcss@8.5.23)
       detective-sass: 6.0.1
       detective-scss: 5.0.1
       detective-stylus: 5.0.1
@@ -56887,7 +56962,7 @@ snapshots:
       detective-vue2: 2.2.0(typescript@5.9.3)
       module-definition: 6.0.1
       node-source-walk: 7.0.1
-      postcss: 8.5.22
+      postcss: 8.5.23
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -57138,6 +57213,12 @@ snapshots:
       hookified: 2.2.0
 
   qrcode-generator@2.0.4: {}
+
+  qrcode@1.5.4:
+    dependencies:
+      dijkstrajs: 1.0.3
+      pngjs: 5.0.0
+      yargs: 15.4.1
 
   qs@6.15.2:
     dependencies:
@@ -58337,7 +58418,7 @@ snapshots:
       is-plain-object: 5.0.0
       launder: 1.7.1
       parse-srcset: 1.0.2
-      postcss: 8.5.22
+      postcss: 8.5.23
 
   sax@1.6.0: {}
 
@@ -59058,8 +59139,8 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.6.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
       eslint-plugin-promise: 6.6.0(eslint@8.57.1)
@@ -59346,16 +59427,16 @@ snapshots:
     optionalDependencies:
       '@babel/core': 8.0.1
 
-  stylehacks@7.0.11(postcss@8.5.22):
+  stylehacks@7.0.11(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
-  stylehacks@8.0.1(postcss@8.5.22):
+  stylehacks@8.0.1(postcss@8.5.23):
     dependencies:
       browserslist: 4.28.4
-      postcss: 8.5.22
+      postcss: 8.5.23
       postcss-selector-parser: 7.1.4
 
   suffix-thumb@5.0.2: {}
@@ -59438,19 +59519,19 @@ snapshots:
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
-      postcss: 8.5.22
-      postcss-scss: 4.0.9(postcss@8.5.22)
+      postcss: 8.5.23
+      postcss-scss: 4.0.9(postcss@8.5.23)
       postcss-selector-parser: 7.1.4
       semver: 7.8.5
     optionalDependencies:
       svelte: 5.56.4(@typescript-eslint/types@8.62.1)
 
-  svelte-preprocess@6.0.5(@babel/core@8.0.1)(postcss@8.5.22)(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3):
+  svelte-preprocess@6.0.5(@babel/core@8.0.1)(postcss@8.5.23)(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3):
     dependencies:
       svelte: 5.56.4(@typescript-eslint/types@8.62.1)
     optionalDependencies:
       '@babel/core': 8.0.1
-      postcss: 8.5.22
+      postcss: 8.5.23
       typescript: 6.0.3
 
   svelte@5.56.4(@typescript-eslint/types@8.62.1):
@@ -59579,7 +59660,7 @@ snapshots:
       - bare-buffer
       - react-native-b4a
 
-  tar@7.5.21:
+  tar@7.5.22:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0
@@ -61226,7 +61307,7 @@ snapshots:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349))
       picomatch: 4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349)
-      postcss: 8.5.22
+      postcss: 8.5.23
       rollup: 4.62.2
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
     optionalDependencies:
@@ -61241,7 +61322,7 @@ snapshots:
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.5(patch_hash=ea8902f116e4acedcaf4a1cb84df7bf7c67c1c0f5f6b2dddd39096145d546349)
-      postcss: 8.5.22
+      postcss: 8.5.23
       rolldown: 1.1.4
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
     optionalDependencies:
@@ -61500,7 +61581,7 @@ snapshots:
 
   webpack-virtual-modules@0.6.2: {}
 
-  webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22):
+  webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23):
     dependencies:
       '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
@@ -61518,7 +61599,7 @@ snapshots:
       graceful-fs: 4.2.11
       loader-runner: 4.3.2
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22)(webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.22))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.22))
+      minimizer-webpack-plugin: 5.6.1(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23)(webpack@5.108.3(@swc/core@1.15.24)(cssnano@8.0.2(postcss@8.5.23))(esbuild@0.28.1)(lightningcss@1.32.0)(postcss@8.5.23))
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
@@ -61577,7 +61658,7 @@ snapshots:
       - uglify-js
     optional: true
 
-  webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22):
+  webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23):
     dependencies:
       '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
@@ -61595,7 +61676,7 @@ snapshots:
       graceful-fs: 4.2.11
       loader-runner: 4.3.2
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22)(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.22))
+      minimizer-webpack-plugin: 5.6.1(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23)(webpack@5.108.3(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.23))
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3

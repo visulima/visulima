@@ -182,6 +182,7 @@ Packages are grouped into eight categories. Jump to the section you need:
 | [@visulima/spinner](packages/terminal/spinner/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fspinner?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fspinner) | Minimal terminal spinners |
 | [@visulima/tabular](packages/terminal/tabular/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftabular?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftabular) | Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes. |
 | [@visulima/tui](packages/terminal/tui/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftui?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftui) | React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API |
+| [@visulima/tui-kit](packages/terminal/tui-kit/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftui-kit?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftui-kit) | Component library for @visulima/tui — installable as a package, or copy-pasteable via the shadcn CLI registry |
 
 ### Tooling
 

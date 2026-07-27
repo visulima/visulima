@@ -1,6 +1,6 @@
 import { Box } from "@visulima/tui/components/box";
-import { Spinner } from "@visulima/tui/components/spinner";
 import { Text } from "@visulima/tui/components/text";
+import { Spinner } from "@visulima/tui-kit/spinner";
 import React from "react";
 
 import { CROSS, DASH, TICK, WARNING } from "../symbols";

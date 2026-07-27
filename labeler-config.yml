@@ -196,6 +196,9 @@
 "package: tui":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/tui/**/*"
+"package: tui-kit":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui-kit/**/*"
 "package: tui/darwin-arm64":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/tui/npm/darwin-arm64/**/*"
