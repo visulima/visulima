@@ -22,10 +22,10 @@ import type { AffectedCommandOptions } from "./index";
  * @param argv Full process argv.
  * @returns The user's tokens for this invocation.
  */
-export const forwardedArgv = (argv: readonly string[]): string[] => {
+export const forwardedArgv = (argv: ReadonlyArray<string>): string[] => {
     const commandIndex = argv.indexOf("affected", 2);
 
-    return commandIndex === -1 ? [] : [...argv.slice(commandIndex + 1)];
+    return commandIndex === -1 ? [] : argv.slice(commandIndex + 1);
 };
 
 const execute = async ({ argument, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {

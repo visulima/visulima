@@ -6,7 +6,7 @@ import { join } from "@visulima/path";
  *
  * Deliberately narrow. `.vis/` itself is **source-bearing and tracked** —
  * it holds `templates/` and `hooks/` (both documented as "commit these"),
- * plus `release/<slug>.md` and `release/staged.json`, which the release
+ * plus `release/&lt;slug>.md` and `release/staged.json`, which the release
  * workflow requires to be tracked. Ignoring the whole directory silently
  * drops a contributor's release note and hides vendored templates and
  * git hooks from git.
@@ -27,7 +27,7 @@ export interface EnsureGitignoreResult {
 }
 
 /** Does an existing line already cover `entry`, exactly or via a broader rule? */
-const alreadyCovered = (lines: readonly string[], entry: string): boolean => {
+const alreadyCovered = (lines: ReadonlyArray<string>, entry: string): boolean => {
     const withoutTrailingSlash = entry.replace(/\/$/, "");
 
     return lines.some((line) => {
@@ -44,7 +44,7 @@ const alreadyCovered = (lines: readonly string[], entry: string): boolean => {
         // A broader `.vis` rule the user wrote deliberately (`.vis`,
         // `.vis/`, `.vis/*`, `**/.vis/**`). Respect it and add nothing —
         // they may be pairing it with `!` negations we must not disturb.
-        return /^\*{0,2}\/?\.vis(\/(\*{1,2})?)?$/.test(trimmed);
+        return /^\*{0,2}\/?\.vis(?:\/\*{0,2})?$/.test(trimmed);
     });
 };
 

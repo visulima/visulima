@@ -320,7 +320,7 @@ const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: 
             );
         }
 
-        const { target } = entry as { target: unknown };
+        const { target } = entry;
 
         if (typeof target !== "string") {
             throw new VisUserError(
