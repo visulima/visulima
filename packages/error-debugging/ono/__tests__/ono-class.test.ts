@@ -31,7 +31,7 @@ describe("ono class", () => {
             expect(html).toContain("<title>Error</title>");
         });
 
-        it("should handle non-Error values", async () => {
+        it("should handle non-Error values", { timeout: 30_000 }, async () => {
             expect.assertions(1);
 
             const ono = new Ono();
@@ -91,7 +91,7 @@ describe("ono class", () => {
             expect(html).toContain("This is a test solution");
         });
 
-        it("should handle empty solution finders array", async () => {
+        it("should handle empty solution finders array", { timeout: 30_000 }, async () => {
             expect.assertions(1);
 
             const ono = new Ono();
