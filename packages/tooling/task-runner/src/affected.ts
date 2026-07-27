@@ -28,6 +28,18 @@ const validateGitRef = (ref: string): void => {
  * Options for determining affected projects.
  */
 interface AffectedOptions {
+    /**
+     * Extra changed-file paths to fold into the git diff before mapping
+     * files to projects — workspace-relative, same shape as `git diff
+     * --name-only` output.
+     *
+     * Callers use this to account for changes git's ref-to-ref diff cannot
+     * see, most importantly the uncommitted working tree (`git status
+     * --porcelain`). Merged and deduped with the diff result, so a path
+     * appearing in both is counted once.
+     */
+    additionalChangedFiles?: string[];
+
     /** The base ref to compare against (default: "main") */
     base?: string;
 
@@ -272,10 +284,23 @@ const getChangedFiles = async (workspaceRoot: string, base: string, head: string
  * This is the same strategy used by `nx affected` and `turbo run --filter=[base...]`.
  */
 const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedResult> => {
-    const { base = "main", downstream = "deep", head = "HEAD", projectGraph, projects, upstream = "none", workspaceRoot } = options;
+    const {
+        additionalChangedFiles,
+        base = "main",
+        downstream = "deep",
+        head = "HEAD",
+        projectGraph,
+        projects,
+        upstream = "none",
+        workspaceRoot,
+    } = options;
 
-    // Get changed files from git
-    const changedFiles = await getChangedFiles(workspaceRoot, base, head);
+    // Get changed files from git, then fold in any caller-supplied paths
+    // (e.g. the uncommitted working tree) that the ref-to-ref diff cannot
+    // see. Deduped so a path present in both is only mapped once.
+    const diffedFiles = await getChangedFiles(workspaceRoot, base, head);
+    const changedFiles
+        = additionalChangedFiles && additionalChangedFiles.length > 0 ? [...new Set([...diffedFiles, ...additionalChangedFiles])] : diffedFiles;
 
     // Map changed files to projects
     const changedProjects = new Set<string>();
