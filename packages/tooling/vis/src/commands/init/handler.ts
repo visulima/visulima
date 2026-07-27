@@ -6,6 +6,7 @@ import { isAccessibleSync, writeFileSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
 import { DEFAULT_MIN_RELEASE_AGE_MINUTES, findVisConfigFile } from "../../config/config";
+import { ensureVisGitignore } from "../../io/gitignore";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
 import type { PackageManagerName } from "../../security/security";
@@ -359,6 +360,15 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
         await runInteractiveInit(cwd, pm, configPath);
     } else {
         runStaticInit(cwd, pm, options, configPath);
+    }
+
+    // vis writes run state (last-summary.json, last-failures/) into the
+    // otherwise source-bearing `.vis/`; make sure those never get committed.
+    // `.vis/templates` and `.vis/hooks` are tracked on purpose and stay so.
+    const gitignore = ensureVisGitignore(cwd);
+
+    if (gitignore.added.length > 0) {
+        pail.success(`Added to .gitignore: ${gitignore.added.join(", ")}`);
     }
 };
 

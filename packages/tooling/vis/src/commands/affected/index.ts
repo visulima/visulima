@@ -1,5 +1,7 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 const affected: Command = {
     argument: {
         description: "The target to run (e.g., build, test, lint)",
@@ -28,6 +30,15 @@ const affected: Command = {
             name: "head",
             type: String,
         },
+        ...negatable({
+            // No `defaultValue` — `undefined` means "auto": include the
+            // working tree for local runs, ignore it in CI where the
+            // checkout is the whole truth.
+            description:
+                "Include uncommitted working-tree changes (tracked edits and untracked files) in the changed-file set. Defaults to on for local runs and off in CI; use --no-uncommitted to force off.",
+            name: "uncommitted",
+            type: Boolean,
+        }),
         {
             defaultValue: "deep",
             description: "Downstream scope: \"none\", \"direct\", or \"deep\" — controls how far to include dependents of changed projects",
@@ -46,12 +57,12 @@ const affected: Command = {
             name: "parallel",
             type: Number,
         },
-        {
+        ...negatable({
             defaultValue: true,
             description: "Enable caching (use --no-cache to disable)",
             name: "cache",
             type: Boolean,
-        },
+        }),
         {
             defaultValue: false,
             description: "Show what would run without executing",
@@ -73,6 +84,13 @@ const affected: Command = {
         {
             description: "Filter affected projects by a query (e.g. 'language=typescript && tag=lib')",
             name: "query",
+            type: String,
+        },
+        {
+            description:
+                "Only run affected projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\"; combines with --query as AND.",
+            multiple: true,
+            name: "tag",
             type: String,
         },
         {
@@ -105,5 +123,7 @@ export type AffectedCommandOptions = CreateOptions<{
     reverse: boolean | undefined;
     "runner-tags": string | undefined;
     "sparse-checkout": boolean | undefined;
+    tag: string[] | undefined;
+    uncommitted: boolean | undefined;
     upstream: string | undefined;
 }>;

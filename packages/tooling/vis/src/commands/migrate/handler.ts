@@ -1,5 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import { applyGitignoreMigration } from "../../io/gitignore";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import type { OutputFormat, SourceTool } from "./equivalence";
@@ -156,6 +157,7 @@ const migrateTurborepoExecuteImpl = async ({ logger, options, visConfig, workspa
 
     logger.info("── Migrating turborepo ──");
     migrateTurborepo(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    applyGitignoreMigration(ctx.root, { dryRun: ctx.dryRun }, logger);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -203,6 +205,7 @@ const migrateMoonExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
 
     logger.info("── Migrating moon ──");
     migrateMoon(ctx.root, { copyTemplates: Boolean(options.copyTemplates), dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
+    applyGitignoreMigration(ctx.root, { dryRun: ctx.dryRun }, logger);
     logger.info("");
 
     printSummary(ctx.report, logger);

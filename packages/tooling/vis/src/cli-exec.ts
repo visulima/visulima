@@ -15,6 +15,7 @@ import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
 import execCommand from "./commands/exec";
+import { isUserError } from "./errors/vis-user-error";
 import getPackageVersion from "./util/package-version";
 
 export const runExecCli = async (): Promise<void> => {
@@ -27,6 +28,7 @@ export const runExecCli = async (): Promise<void> => {
 
     cli.addPlugin(
         errorHandlerPlugin({
+            concise: isUserError,
             detailed: isDebug,
             exitOnError: false,
         }),

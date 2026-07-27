@@ -4,6 +4,7 @@ import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
 import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
+import { isUserError } from "./errors/vis-user-error";
 import getPackageVersion from "./util/package-version";
 
 // `visx` / `vx` is the npx-style entry point for vis: `visx <pkg> [args]`
@@ -48,6 +49,7 @@ const isDebug = process.argv.includes("--debug") || Boolean(process.env["DEBUG"]
 
 cli.addPlugin(
     errorHandlerPlugin({
+        concise: isUserError,
         detailed: isDebug,
         exitOnError: false,
     }),

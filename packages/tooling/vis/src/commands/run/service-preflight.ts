@@ -632,6 +632,24 @@ interface ResolveServicesPolicyInput {
  * Throws on an unknown CLI value — picking silently is exactly the kind
  * of "what is this thing actually doing?" surprise we want to avoid.
  */
+
+/**
+ * Where the effective services policy came from: an explicit `--services`
+ * flag, `vis.config.ts → run.services`, or the TTY-aware fallback.
+ *
+ * The distinction only matters when the decision is `"off"`. "You asked
+ * for off" needs no explanation; "off because this isn't a TTY" is a
+ * dead end unless we name the flag that overrides it — which is exactly
+ * how a declarative `dependsOn` on a service ends up looking broken.
+ */
+export const describeServicesPolicySource = (input: Pick<ResolveServicesPolicyInput, "cli" | "config">): "cli" | "config" | "default" => {
+    if (input.cli !== undefined) {
+        return "cli";
+    }
+
+    return input.config === undefined ? "default" : "config";
+};
+
 export const resolveServicesPolicy = (input: ResolveServicesPolicyInput): "ephemeral" | "off" | "registry" => {
     const { cli, config, isCi, isPersistentTarget, isTty, target } = input;
 

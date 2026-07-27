@@ -170,7 +170,17 @@ export interface ProjectJson {
     implicitDependencies?: string[];
     /** Primary language — informational and query-able. */
     language?: string;
-    /** Project layer, used for constraint inheritance and query filtering. */
+
+    /**
+     * Architectural layer this project sits in. Purely declarative — set
+     * it here in `project.json` and nothing infers it, which is why the
+     * `Layer` column in `vis list` reads `—` until you do.
+     *
+     * Once set it becomes queryable (`--query "layer=library"`) and feeds
+     * `constraints`, where it is the natural way to express rules like
+     * "nothing in `library` may depend on an `application`".
+     * @example "library"
+     */
     layer?: "application" | "automation" | "configuration" | "library" | "scaffolding" | "tool";
 
     /**

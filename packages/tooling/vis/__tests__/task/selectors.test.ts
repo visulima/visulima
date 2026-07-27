@@ -2,7 +2,7 @@ import type { WorkspaceConfiguration } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
 import type { VisProjectConfiguration } from "../../src/config/workspace";
-import { filterProjectsByQuery, parseQuery, parseTargetSelector, resolveSelector } from "../../src/task/selectors";
+import { filterProjectsByQuery, filterProjectsByTags, parseQuery, parseTargetSelector, resolveSelector } from "../../src/task/selectors";
 
 const makeWorkspace = (projects: Record<string, Partial<VisProjectConfiguration>>): WorkspaceConfiguration => {
     const full: Record<string, VisProjectConfiguration> = {};
@@ -195,5 +195,52 @@ describe(resolveSelector, () => {
         expect.assertions(1);
 
         await expect(resolveSelector("", workspace, "/repo", workspaceRoot)).rejects.toThrow(/invalid target selector/i);
+    });
+});
+
+describe(filterProjectsByTags, () => {
+    const tagged = makeWorkspace({
+        api: { tags: ["type:package", "backend"] },
+        docs: {},
+        web: { tags: ["type:app", "frontend"] },
+    });
+
+    const all = ["api", "docs", "web"];
+
+    it("should return every project when no tags are given", () => {
+        expect.assertions(2);
+
+        expect(filterProjectsByTags(all, tagged, undefined)).toStrictEqual(all);
+        expect(filterProjectsByTags(all, tagged, [])).toStrictEqual(all);
+    });
+
+    it("should keep only projects carrying the tag", () => {
+        expect.assertions(1);
+
+        expect(filterProjectsByTags(all, tagged, ["type:package"])).toStrictEqual(["api"]);
+    });
+
+    it("should treat multiple tags as a union", () => {
+        expect.assertions(1);
+
+        expect(filterProjectsByTags(all, tagged, ["type:package", "type:app"])).toStrictEqual(["api", "web"]);
+    });
+
+    it("should accept comma-separated tags in a single flag", () => {
+        expect.assertions(1);
+
+        expect(filterProjectsByTags(all, tagged, ["type:package,frontend"])).toStrictEqual(["api", "web"]);
+    });
+
+    it("should drop projects that declare no tags", () => {
+        expect.assertions(1);
+
+        expect(filterProjectsByTags(all, tagged, ["backend"])).toStrictEqual(["api"]);
+    });
+
+    it("should match tags exactly rather than by prefix", () => {
+        expect.assertions(1);
+
+        expect(filterProjectsByTags(all, tagged, ["type"])).toStrictEqual([]);
     });
 });

@@ -34,6 +34,14 @@ Companion APIs on `Cli` (also new in v5 alpha):
 
 Plugins implement the `Plugin` interface (`src/types/plugin.ts`) and are registered via `cli.addPlugin(plugin)` / `cli.use(plugin)`. The PluginManager (`src/plugin-manager.ts`) coordinates `beforeRun`, `afterRun`, `onError`, and command-mutation hooks. Built-in plugins live in `src/plugins/` (error-handler, runtime-version-check, update-notifier).
 
+`errorHandlerPlugin` takes an optional `concise: (error) => boolean`. Errors it matches log as their message alone, with no stack — for _expected_ failures (bad flag, missing file, non-zero task exit) the frames only point at CLI internals. `detailed` overrides it so a debug flag still yields full stacks, and `formatter` wins over both.
+
+### `--no-x` negation requires declaring `no-x`
+
+Negation is derived from the **negated** option, not the positive one: `addNegatableOptions` / `mapNegatableOptions` (`src/util/command-processing/option-processor.ts`) scan for names starting with `no-`. Declaring only `{ name: "cache", type: Boolean }` and documenting "use `--no-cache`" therefore yields a flag that parses without complaint and changes nothing — a silent no-op, not an error.
+
+Downstream CLIs must declare both halves. `@visulima/vis` wraps this in a `negatable()` helper (`src/util/negatable-option.ts`); mirror that pattern rather than hand-writing the pair. If this is ever made automatic here, watch the passthrough commands (`exec`, `dlx`, `x`), which forward unrecognised `--no-*` to a child process.
+
 ## Related
 
 - Foundation for `@visulima/vis` (the meta-CLI). See `packages/tooling/vis/` — its command handlers are the canonical reference for the toolbox injection pattern.

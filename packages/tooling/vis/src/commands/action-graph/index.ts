@@ -17,6 +17,7 @@ const actionGraph: Command = {
         ["vis action-graph :test", "Moon-style selector"],
         ["vis action-graph build --json", "Emit a JSON description of the plan"],
         ["vis action-graph lint --query \"tag=frontend\"", "Filter projects by query"],
+        ["vis action-graph build --projects=@org/web", "Plan only the named projects (same flag as `vis run`)"],
     ],
     group: "Workspace",
     loader: () => import("./handler"),
@@ -29,8 +30,20 @@ const actionGraph: Command = {
             type: Boolean,
         },
         {
+            alias: "p",
+            description: "Comma-separated list of projects to plan (same semantics as `vis run --projects`)",
+            name: "projects",
+            type: String,
+        },
+        {
             description: "Filter matched projects by a query",
             name: "query",
+            type: String,
+        },
+        {
+            description: "Only plan projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
+            multiple: true,
+            name: "tag",
             type: String,
         },
     ],
@@ -40,5 +53,7 @@ export default actionGraph;
 
 export type ActionGraphOptions = CreateOptions<{
     json: boolean | undefined;
+    projects: string | undefined;
     query: string | undefined;
+    tag: string[] | undefined;
 }>;

@@ -1,6 +1,8 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 import { lazyNamed } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 /**
  * `vis docker` — Docker integration subcommands.
  *
@@ -32,12 +34,12 @@ const dockerScaffold: Command = {
         { description: "Project name(s) to focus on — comma-separated for multiple", name: "focus", type: String },
         { description: "Output directory for the scaffold (default: .vis/docker)", name: "out", type: String },
         { defaultValue: false, description: "Also copy focus project source trees to <out>/sources", name: "include-sources", type: Boolean },
-        {
+        ...negatable({
             defaultValue: true,
             description: "Rewrite the workspace lockfile to drop unfocused projects (use --no-prune-lockfile to copy verbatim)",
             name: "prune-lockfile",
             type: Boolean,
-        },
+        }),
     ],
 };
 
