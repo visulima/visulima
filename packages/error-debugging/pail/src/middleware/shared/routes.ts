@@ -59,7 +59,7 @@ const patternToRegex = (pattern: string): RegExp => {
                     // Escape regex metacharacters so literal path segments containing
                     // `+`, `(`, `|`, `$`, ... match literally instead of being interpreted
                     // as regex syntax (or throwing `SyntaxError` from `new RegExp`).
-                    regex += (char as string).replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+                    regex += char.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
                     index += 1;
                 }
             }

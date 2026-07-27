@@ -134,7 +134,7 @@ describe("pailBrowserImpl", () => {
 
         logger.wrapConsole();
 
-        expect(typeof (console as unknown as Record<string, unknown>).success).toBe("function");
+        expect((console as unknown as Record<string, unknown>).success).toBeTypeOf("function");
 
         logger.restoreConsole();
 
