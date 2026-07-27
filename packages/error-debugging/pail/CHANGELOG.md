@@ -1,3 +1,5 @@
+## @visulima/pail [4.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Fpail%404.0.1...%40visulima%2Fpail%404.0.2) (2026-07-27)
+
 ## @visulima/pail [4.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fpail%404.0.0...%40visulima%2Fpail%404.0.1) (2026-07-26)
 
 
