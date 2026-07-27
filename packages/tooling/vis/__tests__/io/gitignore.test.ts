@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { ensureVisGitignore, VIS_IGNORE_ENTRY } from "../../src/io/gitignore";
+import { applyGitignoreMigration, ensureVisGitignore, VIS_IGNORE_ENTRIES } from "../../src/io/gitignore";
 
 describe(ensureVisGitignore, () => {
     let directory: string;
@@ -19,62 +19,74 @@ describe(ensureVisGitignore, () => {
 
     const gitignore = (): string => readFileSync(join(directory, ".gitignore"), "utf8");
 
-    it("should append the entry to an existing file", () => {
+    it("should append only vis's ephemeral run-state entries", () => {
         expect.assertions(3);
 
         writeFileSync(join(directory, ".gitignore"), "node_modules\ndist\n");
 
         const result = ensureVisGitignore(directory);
 
-        expect(result.added).toStrictEqual([VIS_IGNORE_ENTRY]);
+        expect(result.added).toStrictEqual([...VIS_IGNORE_ENTRIES]);
         expect(gitignore()).toMatch(/^node_modules\ndist\n/);
-        expect(gitignore()).toContain(VIS_IGNORE_ENTRY);
+        expect(gitignore()).toContain(".vis/last-summary.json");
     });
 
-    it("should be idempotent when the entry is already present", () => {
+    it("should never ignore the .vis directory wholesale", () => {
         expect.assertions(2);
 
-        writeFileSync(join(directory, ".gitignore"), `node_modules\n${VIS_IGNORE_ENTRY}\n`);
+        // `.vis/` holds tracked source: templates/, hooks/, and the release
+        // notes the documented workflow requires to be committed.
+        writeFileSync(join(directory, ".gitignore"), "node_modules\n");
+
+        ensureVisGitignore(directory);
+
+        expect(gitignore()).not.toMatch(/^\.vis\/?$/m);
+        expect(gitignore()).not.toMatch(/^\.vis\/\*$/m);
+    });
+
+    it("should be idempotent once the entries are present", () => {
+        expect.assertions(2);
+
+        writeFileSync(join(directory, ".gitignore"), `node_modules\n${VIS_IGNORE_ENTRIES.join("\n")}\n`);
 
         const result = ensureVisGitignore(directory);
 
         expect(result.changed).toBe(false);
-        expect(gitignore()).toBe(`node_modules\n${VIS_IGNORE_ENTRY}\n`);
+        expect(gitignore()).toBe(`node_modules\n${VIS_IGNORE_ENTRIES.join("\n")}\n`);
     });
 
-    it("should replace narrow .vis entries that leave the cache directory uncovered", () => {
-        expect.assertions(3);
+    it("should never delete an existing entry", () => {
+        expect.assertions(2);
 
-        // The exact shape that let `.vis/cache` get staged: the two small
-        // files ignored, the megabyte-scale directory beside them not.
-        writeFileSync(join(directory, ".gitignore"), "node_modules\n.vis/last-summary.json\n.vis/last-failures\n");
+        // A user pairing `.vis/*` with negations is expressing intent that
+        // collapsing to `.vis/` would silently destroy — git cannot
+        // re-include a path whose parent directory is excluded.
+        writeFileSync(join(directory, ".gitignore"), "node_modules\n.vis/*\n!.vis/templates\n!.vis/hooks\n");
 
         const result = ensureVisGitignore(directory);
 
-        expect(result.removed).toStrictEqual([".vis/last-summary.json", ".vis/last-failures"]);
-        expect(gitignore()).toContain(VIS_IGNORE_ENTRY);
-        expect(gitignore()).not.toContain("last-summary");
+        expect(gitignore()).toContain("!.vis/templates");
+        // `.vis/*` already covers the run state, so nothing is added either.
+        expect(result.changed).toBe(false);
     });
 
-    it("should drop entries owned by the migrated-from tool", () => {
-        expect.assertions(2);
-
-        writeFileSync(join(directory, ".gitignore"), "node_modules\n.nx\n.nx/cache\n");
-
-        const result = ensureVisGitignore(directory, { dropEntries: [".nx", ".nx/cache"] });
-
-        expect(result.removed).toStrictEqual([".nx", ".nx/cache"]);
-        expect(gitignore()).not.toContain(".nx");
-    });
-
-    it("should leave a user's own broader pattern alone", () => {
+    it("should respect a broader .vis rule the user already wrote", () => {
         expect.assertions(1);
 
-        writeFileSync(join(directory, ".gitignore"), "**/.vis/**\n");
+        writeFileSync(join(directory, ".gitignore"), ".vis/\n");
+
+        expect(ensureVisGitignore(directory).changed).toBe(false);
+    });
+
+    it("should preserve CRLF line endings", () => {
+        expect.assertions(2);
+
+        writeFileSync(join(directory, ".gitignore"), "node_modules\r\ndist\r\n");
 
         ensureVisGitignore(directory);
 
-        expect(gitignore()).toContain("**/.vis/**");
+        expect(gitignore()).toContain(".vis/last-summary.json\r\n");
+        expect(gitignore()).not.toMatch(/[^\r]\n/);
     });
 
     it("should create the file when asked to", () => {
@@ -82,7 +94,7 @@ describe(ensureVisGitignore, () => {
 
         ensureVisGitignore(directory, { create: true });
 
-        expect(gitignore()).toContain(VIS_IGNORE_ENTRY);
+        expect(gitignore()).toContain(".vis/last-summary.json");
     });
 
     it("should not create a file when create is false", () => {
@@ -94,13 +106,68 @@ describe(ensureVisGitignore, () => {
         expect(() => gitignore()).toThrow(/ENOENT/);
     });
 
-    it("should not leave a run of blank lines before the appended entry", () => {
+    it("should not leave a run of blank lines before the appended entries", () => {
         expect.assertions(1);
 
         writeFileSync(join(directory, ".gitignore"), "dist\n\n\n\n");
 
         ensureVisGitignore(directory);
 
-        expect(gitignore()).toBe(`dist\n\n# vis task runner cache and run state\n${VIS_IGNORE_ENTRY}\n`);
+        // Exactly one blank separating the original content from the block,
+        // and no run of consecutive blanks anywhere.
+        expect(gitignore()).not.toMatch(/\n\n\n/);
+    });
+});
+
+describe(applyGitignoreMigration, () => {
+    let directory: string;
+
+    beforeEach(() => {
+        directory = mkdtempSync(join(tmpdir(), "vis-gitignore-mig-"));
+    });
+
+    afterEach(() => {
+        rmSync(directory, { force: true, recursive: true });
+    });
+
+    it("should leave the migrated-from tool's entries in place", () => {
+        expect.assertions(2);
+
+        // nx keeps running — and writing to `.nx` — until the user removes
+        // nx.json, which the migrator deliberately does not do by default.
+        writeFileSync(join(directory, ".gitignore"), "node_modules\n.nx\n.turbo\n");
+
+        applyGitignoreMigration(directory, {}, { info: () => {} });
+
+        const content = readFileSync(join(directory, ".gitignore"), "utf8");
+
+        expect(content).toContain(".nx");
+        expect(content).toContain(".turbo");
+    });
+
+    it("should stay silent on an already-correct repo in dry-run", () => {
+        expect.assertions(1);
+
+        writeFileSync(join(directory, ".gitignore"), `node_modules\n${VIS_IGNORE_ENTRIES.join("\n")}\n`);
+
+        const messages: string[] = [];
+
+        applyGitignoreMigration(directory, { dryRun: true }, { info: (message) => messages.push(message) });
+
+        // An unconditional "would add" makes --dry-run useless as an audit.
+        expect(messages).toStrictEqual([]);
+    });
+
+    it("should report what it would add in dry-run without writing", () => {
+        expect.assertions(2);
+
+        writeFileSync(join(directory, ".gitignore"), "node_modules\n");
+
+        const messages: string[] = [];
+
+        applyGitignoreMigration(directory, { dryRun: true }, { info: (message) => messages.push(message) });
+
+        expect(messages.join("\n")).toContain(".vis/last-summary.json");
+        expect(readFileSync(join(directory, ".gitignore"), "utf8")).toBe("node_modules\n");
     });
 });

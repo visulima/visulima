@@ -123,6 +123,23 @@ describe(selectAffectedProjects, () => {
         expect(result.uncommittedFileCount).toBe(1);
     });
 
+    it("should drop uncommitted paths outside every project", async () => {
+        expect.assertions(2);
+
+        getAffectedProjectsMock.mockResolvedValueOnce(emptyResult);
+
+        // `git status` reports untracked scratch too. Any path mapping to no
+        // project makes getAffectedProjects mark EVERY project affected, so
+        // `--affected` would silently become "build everything".
+        const result = await selectAffectedProjects({ base: "HEAD~1", head: "HEAD" }, workspace, {
+            readWorkingTreeChanges: () => ["plans/", "notes.md", ".vis/last-summary.json", "packages/web/src/a.ts"],
+            runningInCi: false,
+        });
+
+        expect(getAffectedProjectsMock).toHaveBeenCalledWith(expect.objectContaining({ additionalChangedFiles: ["packages/web/src/a.ts"] }));
+        expect(result.notes.join("\n")).toMatch(/ignoring 3 uncommitted path\(s\) outside any project/);
+    });
+
     it("should ignore the working tree in CI, where the checkout is the whole truth", async () => {
         expect.assertions(2);
 

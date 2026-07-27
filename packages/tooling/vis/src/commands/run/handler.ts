@@ -1327,22 +1327,25 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // rather than accepting a flag that changes nothing — silently ignoring
     // `--base` here is how a CI job ends up "passing" without running.
     if (!options.affected) {
+        // `--no-uncommitted` arrives here as `uncommitted: false`, so report
+        // the flag the user actually typed rather than its positive twin.
+        const uncommittedFlag = options.uncommitted === false ? "--no-uncommitted" : "--uncommitted";
         const affectedOnlyFlags = (
             [
-                ["base", options.base],
-                ["head", options.head],
-                ["downstream", options.downstream],
-                ["upstream", options.upstream],
-                ["uncommitted", options.uncommitted],
+                ["--base", options.base],
+                ["--head", options.head],
+                ["--downstream", options.downstream],
+                ["--upstream", options.upstream],
+                [uncommittedFlag, options.uncommitted],
             ] as [string, string | boolean | undefined][]
         )
             .filter(([, value]) => value !== undefined)
-            .map(([flag]) => `--${flag}`);
+            .map(([flag]) => flag);
 
         if (affectedOnlyFlags.length > 0) {
             throw new VisUserError(
                 `${affectedOnlyFlags.join(", ")} ${affectedOnlyFlags.length === 1 ? "requires" : "require"} --affected.\n`
-                + `Did you mean: vis run ${rawSelector} --affected ${affectedOnlyFlags.map((flag) => (flag === "--uncommitted" ? flag : `${flag}=…`)).join(" ")}`
+                + `Did you mean: vis run ${rawSelector} --affected ${affectedOnlyFlags.map((flag) => (flag.includes("uncommitted") ? flag : `${flag}=…`)).join(" ")}`
                 + `\nOr use the dedicated command: vis affected ${rawSelector} …`,
             );
         }

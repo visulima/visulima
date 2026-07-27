@@ -168,11 +168,32 @@ export const selectAffectedProjects = async (
     if (includeUncommitted) {
         if (headIsWorkingTree) {
             const readWorkingTree = input.readWorkingTreeChanges ?? defaultReadWorkingTreeChanges;
+            const workingTreeFiles = readWorkingTree(workspaceRoot);
 
-            additionalChangedFiles = readWorkingTree(workspaceRoot);
+            // Keep only paths that land inside a known project.
+            //
+            // `getAffectedProjects` treats a changed file belonging to no
+            // project as a workspace-wide change and marks *every* project
+            // affected. That is the right call for a committed change to a
+            // root tsconfig, but not for the working tree: `git status`
+            // also reports untracked scratch — `notes.md`, `plans/`,
+            // `.env.local`, and (before `vis init` runs) `.vis/` itself.
+            // Any one of them would silently turn `--affected` into "build
+            // everything" while still printing an affected-projects list.
+            const projectRoots = Object.values(projects)
+                .map((project) => project.root?.replace(/\/$/, ""))
+                .filter((root): root is string => Boolean(root) && root !== ".");
+
+            additionalChangedFiles = workingTreeFiles.filter((file) => projectRoots.some((root) => file === root || file.startsWith(`${root}/`)));
+
+            const skipped = workingTreeFiles.length - additionalChangedFiles.length;
 
             if (additionalChangedFiles.length > 0) {
                 notes.push(`including ${additionalChangedFiles.length} uncommitted working-tree file(s)`);
+            }
+
+            if (skipped > 0) {
+                notes.push(`ignoring ${skipped} uncommitted path(s) outside any project (untracked scratch would otherwise mark every project affected)`);
             }
         } else {
             // An explicit --head names a commit, so "uncommitted relative to

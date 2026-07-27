@@ -1530,10 +1530,10 @@ export const migrateNx = (
         logger.info(`Translated nx's default base branch (${nxDefaultBase}) into vis.config.ts#defaultBase.`);
     }
 
-    // vis writes `.vis/cache` (megabytes, growing every run) alongside its
-    // run state. Nx's own `.nx` entry is dead the moment the migration
-    // lands, so swap one for the other in the same pass.
-    applyGitignoreMigration(workspaceRoot, { dropEntries: [".nx", ".nx/", ".nx/cache", ".nx/workspace-data"], dryRun: options.dryRun }, logger);
+    // Ignore vis's run state. `.nx` is deliberately left in place: nx
+    // keeps running (and writing to it) until the user removes nx.json,
+    // which the cleanup checklist below asks them to do.
+    applyGitignoreMigration(workspaceRoot, { dryRun: options.dryRun }, logger);
 
     const checklist = collectCleanupChecklist(workspaceRoot);
     const lines = formatChecklist(checklist, workspaceRoot, {});

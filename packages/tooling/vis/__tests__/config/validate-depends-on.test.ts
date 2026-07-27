@@ -21,6 +21,21 @@ describe(validateDependsOnEntries, () => {
         expect(() => { validateDependsOnEntries([{ projects: "api", target: "build" }], "web", "build"); }).not.toThrow();
     });
 
+    it("should accept colon-separated target names", () => {
+        expect.assertions(2);
+
+        // Target names come from package.json scripts verbatim, so
+        // `build:types` / `lint:eslint` are ordinary targets that resolve.
+        expect(() => { validateDependsOnEntries(["build:types", "^lint:eslint"], "web", "test"); }).not.toThrow();
+        expect(() => { validateDependsOnEntries([{ projects: "api", target: "build:native" }], "web", "build"); }).not.toThrow();
+    });
+
+    it("should accept a slash-bearing name that is not a file path", () => {
+        expect.assertions(1);
+
+        expect(() => { validateDependsOnEntries(["group/build"], "web", "build"); }).not.toThrow();
+    });
+
     it("should accept a target that does not exist yet", () => {
         expect.assertions(1);
 
@@ -56,13 +71,6 @@ describe(validateDependsOnEntries, () => {
         );
     });
 
-    it("should redirect a project:target string to the object form", () => {
-        expect.assertions(2);
-
-        expect(() => { validateDependsOnEntries(["api:build"], "web", "build"); }).toThrow(/looks like a task id/);
-        expect(() => { validateDependsOnEntries(["api:build"], "web", "build"); }).toThrow(/\{ target: "build", projects: "api" \}/);
-    });
-
     it("should reject an entry that names no target", () => {
         expect.assertions(2);
 
@@ -76,13 +84,6 @@ describe(validateDependsOnEntries, () => {
         // Object-form `target` reaches the same resolver as a bare string,
         // so it fails the same silent way and must be rejected the same way.
         expect(() => { validateDependsOnEntries([{ projects: "api", target: "{projectRoot}/x.ts" }], "web", "build"); }).toThrow(/file pattern/);
-    });
-
-    it("should reject a task id in the object form's target", () => {
-        expect.assertions(2);
-
-        expect(() => { validateDependsOnEntries([{ target: "api:build" }], "web", "build"); }).toThrow(/looks like a task id/);
-        expect(() => { validateDependsOnEntries([{ target: "api:build" }], "web", "build"); }).toThrow(/Split it across the two fields/);
     });
 
     it("should reject a non-string target", () => {

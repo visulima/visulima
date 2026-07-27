@@ -258,6 +258,13 @@ export const expandTaskGroups = (
  *
  * Targets that simply don't exist yet are *not* flagged here; those are
  * legal names, and the runner already warns when one has no command.
+ *
+ * Neither is a name containing `:`. Target names come from `package.json`
+ * scripts verbatim (see `createTargetsFromScripts`), so `build:types` and
+ * `lint:eslint` are ordinary targets that resolve correctly — rejecting
+ * them would make a `dependsOn` that works today a hard error, and since
+ * this runs at workspace discovery it would take down every command in
+ * the workspace, not just the one being run.
  * @param entries Post-group-expansion `dependsOn` entries.
  * @param projectName Owning project, for the diagnostic.
  * @param targetName Owning target, for the diagnostic.
@@ -270,42 +277,34 @@ const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: 
      * object's `target` reaches the same resolver as a bare string, so
      * `{ target: "{projectRoot}/x.ts" }` fails in exactly the same silent
      * way and has to be rejected in exactly the same place.
+     *
+     * Only patterns that can never be a target name are rejected. A bare
+     * `/` is not one of them on its own — the signal is a `{token}`, a
+     * glob character, or a path that ends in a file extension.
      * @param name The target name, with any `^` prefix already stripped.
      * @param entry The original entry, quoted back in the diagnostic.
-     * @param isObjectForm Tailors the `project:target` hint.
      */
-    const assertValidTargetName = (name: string, entry: unknown, isObjectForm: boolean): void => {
+    const assertValidTargetName = (name: string, entry: unknown): void => {
         if (name === "") {
             throw new VisUserError(`Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} names no target.`);
         }
 
-        // `{token}` / path / glob syntax — almost always an input pattern
-        // pasted into the wrong field.
-        if (/[*{}]/.test(name) || name.includes("/") || name.includes("\\")) {
+        const hasGlobOrToken = /[*{}]/.test(name);
+        const looksLikeFilePath = (name.includes("/") || name.includes("\\")) && /\.[a-z0-9]+$/i.test(name);
+
+        // `{token}` / glob / `some/path.ts` — almost always an input
+        // pattern pasted into the wrong field.
+        if (hasGlobOrToken || looksLikeFilePath) {
             throw new VisUserError(
                 `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} is a file pattern, not a target name.\n`
                 + "`dependsOn` takes target names (\"build\", \"^build\"); file patterns belong in `inputs`, where they are tracked for caching.",
-            );
-        }
-
-        // `project:target` is moon/nx muscle memory. It parses as a target
-        // name containing a colon, matches nothing, and vanishes.
-        if (name.includes(":")) {
-            const [project, ...rest] = name.split(":");
-            const bare = rest.join(":");
-
-            throw new VisUserError(
-                `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} looks like a task id, but ${isObjectForm ? "`target` names a single target" : "string entries name a target on this project"}.\n`
-                + (isObjectForm
-                    ? `Split it across the two fields: { target: "${bare}", projects: "${String(project)}" }.`
-                    : `Use the object form instead: { target: "${bare}", projects: "${String(project)}" }.`),
             );
         }
     };
 
     for (const entry of entries) {
         if (typeof entry === "string") {
-            assertValidTargetName(entry.startsWith("^") ? entry.slice(1) : entry, entry, false);
+            assertValidTargetName(entry.startsWith("^") ? entry.slice(1) : entry, entry);
 
             continue;
         }
@@ -329,7 +328,7 @@ const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: 
             );
         }
 
-        assertValidTargetName(target, entry, true);
+        assertValidTargetName(target, entry);
     }
 };
 
