@@ -57,7 +57,8 @@
         "dist",
         "README.md",
         "CHANGELOG.md",
-        "LICENSE.md"
+        "LICENSE.md",
+        "MIGRATION-GUIDE.md"
     ],
     "os": [
         "darwin",
