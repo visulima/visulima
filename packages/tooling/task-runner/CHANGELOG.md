@@ -1,3 +1,5 @@
+## @visulima/task-runner [1.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Ftask-runner%401.0.1...%40visulima%2Ftask-runner%401.0.2) (2026-07-27)
+
 ## @visulima/task-runner [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Ftask-runner%401.0.0...%40visulima%2Ftask-runner%401.0.1) (2026-07-17)
 
 
