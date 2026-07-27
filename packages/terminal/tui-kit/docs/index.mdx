@@ -1,0 +1,46 @@
+---
+title: tui-kit
+description: "The component library for @visulima/tui — 100+ TUI components, installable as a package or copy-pasteable through a shadcn-style registry."
+---
+
+# @visulima/tui-kit
+
+`@visulima/tui-kit` is the component library for [`@visulima/tui`](/docs/packages/tui). It packages the inputs, charts, tables, overlays, lists, and feedback components you build real terminal UIs from — over 100 in total — on top of tui's Ink-compatible renderer.
+
+It ships in **two forms**, and you can mix them per project:
+
+## Install it
+
+The familiar path — add the package and import from per-component subpaths:
+
+```sh
+pnpm add @visulima/tui-kit
+```
+
+```tsx
+import { Spinner } from "@visulima/tui-kit/spinner";
+import { DataGrid } from "@visulima/tui-kit/data-grid";
+```
+
+Every component is its own subpath (`@visulima/tui-kit/<name>`), so you only pay for what you import, and heavy optional peers (shiki, cfonts, marked, …) load lazily.
+
+## Copy it in (shadcn registry)
+
+Or vendor a component's source straight into your project with the [shadcn](https://ui.shadcn.com/docs/cli) CLI — no runtime dependency on the library, and the code is yours to edit:
+
+```sh
+npx shadcn@latest add https://visulima.com/r/spinner.json
+```
+
+The CLI writes the component to `@/components/ui/*` (shared helpers land in `@/lib/*`) and automatically pulls in any components it depends on. Browse the full registry index at [`https://visulima.com/r/registry.json`](https://visulima.com/r/registry.json).
+
+## Relationship to `@visulima/tui`
+
+`@visulima/tui` stays lean: the renderer, the hooks, and the handful of layout/text **primitives** (`Box`, `Text`, `Newline`, `Spacer`, `Static`, `Transform`, …) that every component is built on. `tui-kit` depends on `@visulima/tui` and composes those primitives into higher-level components.
+
+Coming from an older `@visulima/tui` that bundled everything? See the [migration guide](/docs/packages/tui/migration).
+
+## Explore
+
+- [Components](/docs/packages/tui-kit/components) — the full catalog, from `Accordion` to `Tooltip`.
+- [Scrolling](/docs/packages/tui-kit/scroll) — `ScrollView`, `ScrollBar`, `ScrollList`, and the linked-scroll hook.

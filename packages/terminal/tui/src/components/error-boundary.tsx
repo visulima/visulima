@@ -39,3 +39,5 @@ export default class ErrorBoundary extends PureComponent<Props, State> {
         return this.props.children;
     }
 }
+
+export type { Props as ErrorBoundaryProps };

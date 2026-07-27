@@ -37,7 +37,25 @@ export default defineConfig({
                 ],
             },
             hoisted: {
-                exclude: ["@visulima/interactive-manager", "@visulima/is-ansi-color-supported"],
+                // Small, zero-native, permissively-licensed utilities kept in
+                // devDependencies and inlined into dist so consumers don't install
+                // them. Excluded here so packem doesn't flag them as "used but not
+                // a direct dependency". convert-to-spaces rides in via code-excerpt.
+                exclude: [
+                    "@visulima/ansi",
+                    "@visulima/error",
+                    "@visulima/interactive-manager",
+                    "@visulima/is-ansi-color-supported",
+                    "@visulima/string",
+                    "cli-boxes",
+                    "code-excerpt",
+                    "convert-to-spaces",
+                    "is-in-ci",
+                    "patch-console",
+                    "signal-exit",
+                    "terminal-size",
+                    "tseep",
+                ],
             },
         },
     },

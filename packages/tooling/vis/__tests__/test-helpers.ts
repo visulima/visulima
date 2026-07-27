@@ -1,9 +1,8 @@
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
-import { removeSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 
 /**
@@ -111,10 +110,15 @@ export const createTemporaryDirectory = (prefix = "vis-test-"): string => mkdtem
 /**
  * Removes a directory created by {@link createTemporaryDirectory}.
  * Safe to call even if the directory no longer exists.
+ *
+ * Retries the way {@link removeTemporaryDirectoryWithRetry} does: a test that
+ * spawned a child still has the directory held open for a moment after the
+ * child exits, and Windows reports that as EBUSY on `rmdir`. Without the retry
+ * the cleanup throws and fails an otherwise-passing test.
  * @param path Absolute path to the directory.
  */
 export const cleanupTemporaryDirectory = (path: string): void => {
-    removeSync(path);
+    rmSync(path, { force: true, maxRetries: 5, recursive: true, retryDelay: 100 });
 };
 
 /**

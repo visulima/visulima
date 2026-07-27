@@ -1,12 +1,12 @@
 /* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- false positive on useSyncExternalStore subscriptions and derived render-time values; the hook contract requires passing subscribe/getSnapshot by reference */
 import type { Task } from "@visulima/task-runner";
 import { Box } from "@visulima/tui/components/box";
-import { Dialog } from "@visulima/tui/components/dialog";
-import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
 import { Text } from "@visulima/tui/components/text";
 import { useApp } from "@visulima/tui/hooks/use-app";
 import { useInput } from "@visulima/tui/hooks/use-input";
 import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
+import { Dialog } from "@visulima/tui-kit/dialog";
+import type { ScrollViewRef } from "@visulima/tui-kit/scroll-view";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { renderFailureOutput } from "../failure-render";

@@ -1,32 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, import/no-named-as-default, no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, no-console */
 import "./devtools-window-polyfill";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import devtools from "react-devtools-core";
-import WebSocket from "ws";
 
 const isDevToolsReachable = async (): Promise<boolean> =>
     new Promise((resolve) => {
+        // Native WebSocket (global since Node 22); no `ws` dependency needed.
         const socket = new WebSocket("ws://localhost:8097");
 
         const timeout = setTimeout(() => {
-            socket.terminate();
+            socket.close();
             resolve(false);
         }, 2000);
 
         // Don't let the timeout keep the process alive on its own
         timeout.unref();
 
-        socket.on("open", () => {
+        socket.addEventListener("open", () => {
             clearTimeout(timeout);
-            socket.terminate();
+            socket.close();
             resolve(true);
         });
 
-        socket.on("error", () => {
+        // Do NOT call close() on an errored socket: on Node 22's bundled undici
+        // that triggers a recursive error. Just resolve — the socket is dead.
+        socket.addEventListener("error", () => {
             clearTimeout(timeout);
-            socket.terminate();
             resolve(false);
         });
     });

@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing */
-// Ignoring missing types error to avoid adding another dependency for this hack to work
-import ws from "ws";
-
 const customGlobal = globalThis as any;
 
-// These things must exist before importing `react-devtools-core`
+// These things must exist before importing `react-devtools-core`.
+// `WebSocket` is already a global on our Node floor (>=22), so no polyfill is
+// needed — `react-devtools-core` picks up the native implementation.
 // Using ||= intentionally to set falsy values, not just null/undefined
-
-customGlobal.WebSocket ||= ws;
 
 customGlobal.window ||= globalThis;
 

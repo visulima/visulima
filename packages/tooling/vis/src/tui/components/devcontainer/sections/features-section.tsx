@@ -1,6 +1,6 @@
 import { Box } from "@visulima/tui/components/box";
-import { ScrollBar } from "@visulima/tui/components/scroll-bar";
 import { Text } from "@visulima/tui/components/text";
+import { ScrollBar } from "@visulima/tui-kit/scroll-bar";
 import React, { useMemo } from "react";
 
 import { filterFeatures } from "../catalogs/filters";

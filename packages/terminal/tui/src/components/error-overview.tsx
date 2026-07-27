@@ -154,3 +154,5 @@ export default function ErrorOverview({ error }: Props): ReactElement {
         </Box>
     );
 }
+
+export type { Props as ErrorOverviewProps };

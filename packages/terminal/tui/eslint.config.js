@@ -73,6 +73,15 @@ export default createConfig(
             "react/jsx-props-no-spreading": "off",
             // Named exports are preferred over default exports in this codebase
             "import/prefer-default-export": "off",
+            // Several small, zero-native deps (cli-boxes, is-in-ci, signal-exit,
+            // patch-console, terminal-size, code-excerpt, tseep, @visulima/ansi,
+            // @visulima/error, @visulima/string) are intentionally kept in
+            // devDependencies and inlined into dist by packem to shrink the
+            // consumer install. packem's own dependency validation is the real
+            // guard against shipping an undeclared runtime dep, so this rule —
+            // which can't tell an inlined devDep from a stray one — only produces
+            // false positives here.
+            "import/no-extraneous-dependencies": "off",
             // Node.js EventEmitter is the appropriate choice for terminal I/O, not web EventTarget
             "unicorn/prefer-event-target": "off",
             // TUI rendering mutates output/node objects by design (canvas cells, layout nodes)

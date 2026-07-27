@@ -1,0 +1,13 @@
+{
+    "name": "tui-kit",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/tui-kit/src",
+    "projectType": "library",
+    "tags": [
+        "type:package",
+        "category:cli-terminal"
+    ],
+    "implicitDependencies": [
+        "tui"
+    ]
+}

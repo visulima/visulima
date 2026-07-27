@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, sonarjs/no-nested-functions */
+/* eslint-disable react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-data-to-parent -- App is the root component; its effects legitimately drive imperative terminal I/O (raw mode, bracketed paste, input-control registration) and cannot be lifted to a parent. */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
@@ -9,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createInputParser } from "../ink/input-parser";
 import type { CursorPosition } from "../ink/log-update";
 import AnimationContext from "./animation-context";
+import type { Props as AppContextProps } from "./app-context";
 import AppContext from "./app-context";
 import CursorContext from "./cursor-context";
 import ErrorBoundary from "./error-boundary";
@@ -38,6 +40,13 @@ type Props = {
     readonly exitOnCtrlC: boolean;
     readonly interactive: boolean;
     readonly onExit: (errorOrResult?: unknown) => void;
+
+    /**
+     * Registers the App's input pause/resume callbacks with the Ink instance so
+     * `suspendTerminal()` can hand raw mode + bracketed paste to a child process.
+     */
+    readonly onRegisterInputControl: (pauseInput: () => void, resumeInput: () => void) => void;
+    readonly onSuspendTerminal: AppContextProps["suspendTerminal"];
     readonly onWaitUntilRenderFlush: () => Promise<void>;
     readonly renderThrottleMs: number;
     readonly setCursorPosition: (position: CursorPosition | undefined) => void;
@@ -61,6 +70,8 @@ const App = ({
     exitOnCtrlC,
     interactive,
     onExit,
+    onRegisterInputControl,
+    onSuspendTerminal,
     onWaitUntilRenderFlush,
     renderThrottleMs,
     setCursorPosition,
@@ -427,6 +438,52 @@ const App = ({
         [stdout],
     );
 
+    // Remembers which input modes were active so resumeInput can reinstate exactly
+    // what was on — the ownership counts are left untouched so components still
+    // "own" raw mode / bracketed paste across the suspension.
+    const suspendedInputStateRef = useRef({ bracketedPaste: false, rawMode: false });
+
+    const pauseInput = useCallback((): void => {
+        const wasRawMode = isRawModeSupported && (rawModeEnabledCount.current > 0 || pendingDisableRawModeRef.current);
+        const wasBracketedPaste = bracketedPasteModeEnabledCount.current > 0;
+
+        suspendedInputStateRef.current = { bracketedPaste: wasBracketedPaste, rawMode: wasRawMode };
+
+        if (wasBracketedPaste && stdout.isTTY) {
+            stdout.write(disableBracketedPaste);
+        }
+
+        if (wasRawMode) {
+            // Hand raw mode + input listeners back to the terminal without resetting
+            // the counts. Cancel any queued deferred disable so it can't fire mid-suspension.
+            pendingDisableRawModeRef.current = false;
+            clearInputState();
+            stdin.setRawMode(false);
+            stdin.unref();
+        }
+    }, [isRawModeSupported, stdout, stdin, clearInputState]);
+
+    const resumeInput = useCallback((): void => {
+        const { bracketedPaste, rawMode } = suspendedInputStateRef.current;
+
+        if (rawMode) {
+            stdin.ref();
+            stdin.setRawMode(true);
+            stdin.setEncoding("utf8");
+            attachReadableListener();
+        }
+
+        if (bracketedPaste && stdout.isTTY) {
+            stdout.write(enableBracketedPaste);
+        }
+    }, [stdin, stdout, attachReadableListener]);
+
+    // Register on every commit so a child component that calls suspendTerminal()
+    // reaches the current pause/resume closures.
+    useEffect(() => {
+        onRegisterInputControl(pauseInput, resumeInput);
+    }, [onRegisterInputControl, pauseInput, resumeInput]);
+
     // Focus navigation helpers
     const findNextFocusable = useCallback((currentFocusables: Focusable[], currentActiveFocusId: string | undefined): string | undefined => {
         const activeIndex = currentFocusables.findIndex((focusable) => focusable.id === currentActiveFocusId);
@@ -633,9 +690,10 @@ const App = ({
     const appContextValue = useMemo(() => {
         return {
             exit: handleExit,
+            suspendTerminal: onSuspendTerminal,
             waitUntilRenderFlush: onWaitUntilRenderFlush,
         };
-    }, [handleExit, onWaitUntilRenderFlush]);
+    }, [handleExit, onSuspendTerminal, onWaitUntilRenderFlush]);
 
     const stdinContextValue = useMemo(() => {
         return {
