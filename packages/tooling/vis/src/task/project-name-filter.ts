@@ -24,6 +24,12 @@ export const filterProjectsByNames = (projectNames: string[], requested: string,
             .filter(Boolean),
     );
 
+    // `--projects=` / `--projects=,,`. Suggesting a nearest match would be
+    // nonsense here, so say what is actually wrong.
+    if (wanted.size === 0) {
+        throw new VisUserError(`--projects was given no project names. Pass a comma-separated list, or omit the flag to include every project.`);
+    }
+
     const filtered = projectNames.filter((name) => wanted.has(name));
 
     if (filtered.length > 0) {

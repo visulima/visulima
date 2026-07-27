@@ -97,3 +97,50 @@ export const ensureVisGitignore = (workspaceRoot: string, options: { create?: bo
 
     return { added, changed: true, removed };
 };
+
+/** Minimal logger shape shared by the migrate command family. */
+interface GitignoreMigrationLogger {
+    info: (message: string) => void;
+}
+
+/**
+ * Point `.gitignore` at vis's working directory and retire the entries the
+ * migrated-from tool owned, reporting what changed.
+ *
+ * `.vis/cache` reaches megabytes within a handful of runs, so a migration
+ * that doesn't ignore it hands the user a repo primed to commit a cache.
+ *
+ * Lives here rather than in each migrator so turborepo, moon and nx report
+ * through one implementation — they previously carried near-identical
+ * copies that were free to drift.
+ * @param workspaceRoot Directory holding `.gitignore`.
+ * @param options Migration switches.
+ * @param options.dryRun Describe the change instead of writing it.
+ * @param options.dropEntries Exact lines the migrated-from tool owned (e.g. `.turbo`).
+ * @param logger Sink for the added/removed lines.
+ */
+export const applyGitignoreMigration = (
+    workspaceRoot: string,
+    options: { dropEntries?: ReadonlyArray<string>; dryRun?: boolean },
+    logger: GitignoreMigrationLogger,
+): void => {
+    const { dropEntries = [], dryRun = false } = options;
+
+    if (dryRun) {
+        logger.info(`Would add \`${VIS_IGNORE_ENTRY}\` to .gitignore (and drop entries owned by the migrated-from tool).`);
+
+        return;
+    }
+
+    // `create: false` — a migration adopts the repo's existing `.gitignore`
+    // but does not invent one; that is `vis init`'s job.
+    const result = ensureVisGitignore(workspaceRoot, { create: false, dropEntries });
+
+    if (result.added.length > 0) {
+        logger.info(`Added \`${VIS_IGNORE_ENTRY}\` to .gitignore.`);
+    }
+
+    if (result.removed.length > 0) {
+        logger.info(`Removed dead entr(y/ies) from .gitignore: ${result.removed.join(", ")}.`);
+    }
+};

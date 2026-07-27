@@ -38,6 +38,14 @@ describe(filterProjectsByNames, () => {
         expect(() => filterProjectsByNames(known, "totally-unrelated-name", known)).toThrow(/Run `vis list`/);
     });
 
+    it("should reject an explicitly empty --projects rather than disabling the filter", () => {
+        expect.assertions(2);
+
+        // `--projects=` must not silently widen the run to every project.
+        expect(() => filterProjectsByNames(known, "", known)).toThrow(VisUserError);
+        expect(() => filterProjectsByNames(known, " , , ", known)).toThrow(/given no project names/);
+    });
+
     it("should report the original request in the message", () => {
         expect.assertions(1);
 

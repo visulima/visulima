@@ -366,8 +366,15 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
     // after creating a config is making sure it never gets committed.
     const gitignore = ensureVisGitignore(cwd);
 
-    if (gitignore.changed) {
+    // Report what actually happened: `changed` is also true when the only
+    // edit was dropping a redundant legacy entry, in which case nothing
+    // was added.
+    if (gitignore.added.length > 0) {
         pail.success(`Added ${VIS_IGNORE_ENTRY} to .gitignore`);
+    }
+
+    if (gitignore.removed.length > 0) {
+        pail.success(`Removed redundant .gitignore entr(y/ies): ${gitignore.removed.join(", ")}`);
     }
 };
 

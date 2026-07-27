@@ -87,7 +87,11 @@ const execute = async ({ argument, logger, options, process: proc, visConfig, wo
 
     // Mirrors `vis run --projects`: the plan is only useful if it describes
     // the same task set the run would execute.
-    if (options.projects) {
+    //
+    // Tested against `undefined` rather than truthiness so `--projects=`
+    // still reaches the filter and errors, instead of silently planning the
+    // whole workspace — the exact silent-no-op this PR is about.
+    if (options.projects !== undefined) {
         projectNames = filterProjectsByNames(projectNames, String(options.projects), Object.keys(workspace.projects));
     }
 

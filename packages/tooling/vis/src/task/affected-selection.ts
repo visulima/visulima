@@ -4,6 +4,7 @@ import type { AffectedResult, AffectedScope, ProjectConfiguration, ProjectGraph 
 import { getAffectedProjects } from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
+import { VisUserError } from "../errors/vis-user-error";
 import { resolveAffectedShas } from "../runtime/affected-shas";
 
 const VALID_SCOPES = new Set<string>(["deep", "direct", "none"]);
@@ -128,11 +129,11 @@ export const selectAffectedProjects = async (
     const upstreamValue = options.upstream ?? "none";
 
     if (!VALID_SCOPES.has(downstreamValue)) {
-        throw new Error(`Invalid --downstream value: "${downstreamValue}". Must be "none", "direct", or "deep".`);
+        throw new VisUserError(`Invalid --downstream value: "${downstreamValue}". Must be "none", "direct", or "deep".`);
     }
 
     if (!VALID_SCOPES.has(upstreamValue)) {
-        throw new Error(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
+        throw new VisUserError(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
     }
 
     const { projectGraph, projects, workspaceRoot } = workspace;
@@ -144,8 +145,11 @@ export const selectAffectedProjects = async (
     if (!base || !head) {
         const resolved = resolveAffectedShas({ defaultBase: input.defaultBase, workspaceRoot });
 
-        base = base ?? resolved.base;
-        head = head ?? resolved.head;
+        // `||`, not `??` — the guard above treats an empty string as "not
+        // supplied", so `--base=` must fall back too. With `??` it would
+        // survive as "" and reach git as an empty ref.
+        base = base || resolved.base;
+        head = head || resolved.head;
 
         notes.push(`Resolved affected refs from ${resolved.provider} (${resolved.notes.join("; ")})`);
     }

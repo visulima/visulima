@@ -265,21 +265,16 @@ export const expandTaskGroups = (
 const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: string, targetName: string): void => {
     const where = `${projectName}:${targetName}`;
 
-    for (const entry of entries) {
-        if (typeof entry !== "string") {
-            // Object form is validated structurally by the schema.
-            if (entry && typeof entry === "object" && !("target" in entry)) {
-                throw new VisUserError(
-                    `Invalid dependsOn entry on ${where}: object entries must declare a \`target\` (got ${JSON.stringify(entry)}).\n`
-                    + "Valid forms: \"target\", \"^target\", { target, projects }, { target, dependencies: true }, { group }.",
-                );
-            }
-
-            continue;
-        }
-
-        const name = entry.startsWith("^") ? entry.slice(1) : entry;
-
+    /**
+     * Check one resolved target name. Applied to both entry forms: an
+     * object's `target` reaches the same resolver as a bare string, so
+     * `{ target: "{projectRoot}/x.ts" }` fails in exactly the same silent
+     * way and has to be rejected in exactly the same place.
+     * @param name The target name, with any `^` prefix already stripped.
+     * @param entry The original entry, quoted back in the diagnostic.
+     * @param isObjectForm Tailors the `project:target` hint.
+     */
+    const assertValidTargetName = (name: string, entry: unknown, isObjectForm: boolean): void => {
         if (name === "") {
             throw new VisUserError(`Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} names no target.`);
         }
@@ -297,12 +292,44 @@ const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: 
         // name containing a colon, matches nothing, and vanishes.
         if (name.includes(":")) {
             const [project, ...rest] = name.split(":");
+            const bare = rest.join(":");
 
             throw new VisUserError(
-                `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} looks like a task id, but string entries name a target on this project.\n`
-                + `Use the object form instead: { target: "${rest.join(":")}", projects: "${String(project)}" }.`,
+                `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} looks like a task id, but ${isObjectForm ? "`target` names a single target" : "string entries name a target on this project"}.\n`
+                + (isObjectForm
+                    ? `Split it across the two fields: { target: "${bare}", projects: "${String(project)}" }.`
+                    : `Use the object form instead: { target: "${bare}", projects: "${String(project)}" }.`),
             );
         }
+    };
+
+    for (const entry of entries) {
+        if (typeof entry === "string") {
+            assertValidTargetName(entry.startsWith("^") ? entry.slice(1) : entry, entry, false);
+
+            continue;
+        }
+
+        if (!entry || typeof entry !== "object") {
+            continue;
+        }
+
+        if (!("target" in entry)) {
+            throw new VisUserError(
+                `Invalid dependsOn entry on ${where}: object entries must declare a \`target\` (got ${JSON.stringify(entry)}).\n`
+                + "Valid forms: \"target\", \"^target\", { target, projects }, { target, dependencies: true }, { group }.",
+            );
+        }
+
+        const { target } = entry as { target: unknown };
+
+        if (typeof target !== "string") {
+            throw new VisUserError(
+                `Invalid dependsOn entry on ${where}: \`target\` must be a string (got ${JSON.stringify(target)}).`,
+            );
+        }
+
+        assertValidTargetName(target, entry, true);
     }
 };
 

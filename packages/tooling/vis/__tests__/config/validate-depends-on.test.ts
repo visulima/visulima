@@ -70,6 +70,27 @@ describe(validateDependsOnEntries, () => {
         expect(() => { validateDependsOnEntries(["^"], "web", "build"); }).toThrow(/names no target/);
     });
 
+    it("should reject a file pattern in the object form's target", () => {
+        expect.assertions(1);
+
+        // Object-form `target` reaches the same resolver as a bare string,
+        // so it fails the same silent way and must be rejected the same way.
+        expect(() => { validateDependsOnEntries([{ projects: "api", target: "{projectRoot}/x.ts" }], "web", "build"); }).toThrow(/file pattern/);
+    });
+
+    it("should reject a task id in the object form's target", () => {
+        expect.assertions(2);
+
+        expect(() => { validateDependsOnEntries([{ target: "api:build" }], "web", "build"); }).toThrow(/looks like a task id/);
+        expect(() => { validateDependsOnEntries([{ target: "api:build" }], "web", "build"); }).toThrow(/Split it across the two fields/);
+    });
+
+    it("should reject a non-string target", () => {
+        expect.assertions(1);
+
+        expect(() => { validateDependsOnEntries([{ target: 42 }], "web", "build"); }).toThrow(/must be a string/);
+    });
+
     it("should reject an object entry with no target key", () => {
         expect.assertions(1);
 

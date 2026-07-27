@@ -1,6 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { ensureVisGitignore } from "../../io/gitignore";
+import { applyGitignoreMigration } from "../../io/gitignore";
 import { detectPackageManager } from "../hook/migrate";
 import { migrateDeps } from "./deps";
 import type { OutputFormat, SourceTool } from "./equivalence";
@@ -35,7 +35,7 @@ import { migrateSherif } from "./sherif";
 import { printSummary } from "./summary";
 import { migrateSyncpack } from "./syncpack";
 import { migrateTurborepo } from "./turborepo";
-import type { MigrateLogger, MigrationReport } from "./types";
+import type { MigrationReport } from "./types";
 import { createMigrationReport } from "./types";
 import { verifyMigration } from "./verify";
 
@@ -98,34 +98,6 @@ const announceDryRun = (ctx: MigrationContext): void => {
     }
 };
 
-/**
- * Point `.gitignore` at vis's working directory and retire the entries
- * the migrated-from tool left behind.
- *
- * `.vis/cache` is megabytes within a handful of runs, so a migration
- * that doesn't ignore it hands the user a repo primed to commit a cache.
- * @param ctx Migration context; supplies the workspace root and dry-run flag.
- * @param logger Sink for the added/removed lines this writes.
- * @param deadEntries Exact lines the migrated-from tool owned (e.g. `.turbo`).
- */
-const applyGitignoreMigration = (ctx: MigrationContext, logger: MigrateLogger, deadEntries: ReadonlyArray<string>): void => {
-    if (ctx.dryRun) {
-        logger.info("Would add `.vis/` to .gitignore (and drop entries owned by the migrated-from tool).");
-
-        return;
-    }
-
-    const result = ensureVisGitignore(ctx.root, { create: false, dropEntries: deadEntries });
-
-    if (result.added.length > 0) {
-        logger.info("Added `.vis/` to .gitignore.");
-    }
-
-    if (result.removed.length > 0) {
-        logger.info(`Removed dead entr(y/ies) from .gitignore: ${result.removed.join(", ")}.`);
-    }
-};
-
 const migrateDepsExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateDepsOptions>): Promise<void> => {
     if (!(await maybeConfirm("deps", options, logger))) {
         return;
@@ -185,7 +157,7 @@ const migrateTurborepoExecuteImpl = async ({ logger, options, visConfig, workspa
 
     logger.info("── Migrating turborepo ──");
     migrateTurborepo(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
-    applyGitignoreMigration(ctx, logger, [".turbo", ".turbo/"]);
+    applyGitignoreMigration(ctx.root, { dropEntries: [".turbo", ".turbo/"], dryRun: ctx.dryRun }, logger);
     logger.info("");
 
     printSummary(ctx.report, logger);
@@ -233,7 +205,7 @@ const migrateMoonExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
 
     logger.info("── Migrating moon ──");
     migrateMoon(ctx.root, { copyTemplates: Boolean(options.copyTemplates), dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
-    applyGitignoreMigration(ctx, logger, [".moon/cache", ".moon/docker"]);
+    applyGitignoreMigration(ctx.root, { dropEntries: [".moon/cache", ".moon/docker"], dryRun: ctx.dryRun }, logger);
     logger.info("");
 
     printSummary(ctx.report, logger);

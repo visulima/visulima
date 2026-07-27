@@ -1,6 +1,7 @@
 import type { ProjectConfiguration, ProjectGraph } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
+import { VisUserError } from "../../src/errors/vis-user-error";
 import { parsePorcelainStatus, selectAffectedProjects } from "../../src/task/affected-selection";
 
 const { getAffectedProjectsMock } = vi.hoisted(() => {
@@ -72,6 +73,27 @@ describe(selectAffectedProjects, () => {
         expect.assertions(1);
 
         await expect(selectAffectedProjects({ upstream: "sideways" }, workspace)).rejects.toThrow(/Invalid --upstream value/);
+    });
+
+    it("should fall back when base or head is an explicitly empty string", async () => {
+        expect.assertions(2);
+
+        getAffectedProjectsMock.mockResolvedValueOnce(emptyResult);
+
+        // `--base=` reaches the resolver as "", which `??` would preserve and
+        // hand to git as an empty ref.
+        const result = await selectAffectedProjects({ base: "", head: "", uncommitted: false }, workspace);
+
+        const call = getAffectedProjectsMock.mock.calls.at(-1)?.[0];
+
+        expect(call.base).not.toBe("");
+        expect(result.notes.join("\n")).toMatch(/Resolved affected refs/);
+    });
+
+    it("should reject an invalid scope as a user error, not a crash", async () => {
+        expect.assertions(1);
+
+        await expect(selectAffectedProjects({ downstream: "sideways" }, workspace)).rejects.toThrow(VisUserError);
     });
 
     it("should pass an explicit base and head straight through without resolving", async () => {

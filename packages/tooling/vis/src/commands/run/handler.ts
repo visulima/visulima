@@ -1365,7 +1365,9 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // resolver strips overrides so deps start with a clean slate.
     const forwardedArgs: string[] = argument.slice(1).map(String);
 
-    if (options.projects) {
+    // `!== undefined`, not truthiness: `--projects=` must reach the filter
+    // and error rather than silently running the whole workspace.
+    if (options.projects !== undefined) {
         projectNames = filterProjectsByNames(projectNames, String(options.projects), Object.keys(workspace.projects));
     }
 

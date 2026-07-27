@@ -137,7 +137,13 @@ export const runCli = async (): Promise<void> => {
                 workspaceRoot,
             });
         } catch (error) {
-            process.stderr.write(`${(error as Error).message}\n`);
+            // This path never reaches errorHandlerPlugin, so it has to honour
+            // `--debug` itself — otherwise the one command that most needs a
+            // stack (an interactive migration that blew up mid-rewrite) is
+            // also the one command that can never print one.
+            const rendered = isDebug ? ((error as Error).stack ?? (error as Error).message) : (error as Error).message;
+
+            process.stderr.write(`${rendered}\n`);
             process.exitCode = 1;
         }
 
