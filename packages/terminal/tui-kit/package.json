@@ -1,6 +1,6 @@
 {
     "name": "@visulima/tui-kit",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Component library for @visulima/tui — installable as a package, or copy-pasteable via the shadcn CLI registry",
     "keywords": [
         "cli",
@@ -513,7 +513,7 @@
     },
     "dependencies": {
         "@visulima/ansi": "4.0.0",
-        "@visulima/colorize": "2.0.0",
+        "@visulima/colorize": "2.0.1",
         "@visulima/spinner": "1.0.0",
         "type-fest": "catalog:prod"
     },
@@ -525,7 +525,7 @@
         "@types/qrcode": "^1.5.5",
         "@types/react": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/tui": "workspace:*",
+        "@visulima/tui": "2.0.0",
         "@vitest/coverage-v8": "catalog:test",
         "delay": "catalog:dev",
         "esbuild": "catalog:build",
@@ -541,7 +541,7 @@
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
         "@visulima/tabular": "4.0.0",
-        "@visulima/tui": "workspace:*",
+        "@visulima/tui": "2.0.0",
         "cfonts": "catalog:prod",
         "diff": "catalog:prod",
         "marked": "catalog:dev",
