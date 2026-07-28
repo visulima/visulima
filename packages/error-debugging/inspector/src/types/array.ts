@@ -3,6 +3,7 @@ import type { Indent, InspectType, InternalInspect, Options } from "../types";
 import { indentedJoin } from "../utils/indent";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
+import { safeReadProperty } from "../utils/safe-read-property";
 
 const multiLineValues = (values: unknown[]): boolean => {
     for (const value of values) {
@@ -56,7 +57,7 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
 
     if (nonIndexProperties.length > 0) {
         propertyContents = inspectList(
-            nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
+            nonIndexProperties.map((key) => [key, safeReadProperty(array, key)]),
             array,
             options,
             inspect,

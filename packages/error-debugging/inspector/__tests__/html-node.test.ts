@@ -132,7 +132,7 @@ describe("html inspectNode", () => {
 
         const element = new MockElement("div");
 
-        expect(inspectNode(element as unknown as Node, internalInspect, createOptions())).toBe("<div></div>");
+        expect(inspectNode(element as unknown as Node, element, createOptions(), internalInspect)).toBe("<div></div>");
     });
 
     it("inspects text nodes (nodeType 3) via the value inspector", () => {
@@ -140,7 +140,7 @@ describe("html inspectNode", () => {
 
         const textNode = { data: "hello", nodeType: 3 };
 
-        expect(inspectNode(textNode as unknown as Node, internalInspect, createOptions())).toBe("'hello'");
+        expect(inspectNode(textNode as unknown as Node, textNode, createOptions(), internalInspect)).toBe("'hello'");
     });
 
     it("falls back to the value inspector for other node types", () => {
@@ -148,7 +148,7 @@ describe("html inspectNode", () => {
 
         const commentNode = { nodeType: 8 };
 
-        expect(inspectNode(commentNode as unknown as Node, internalInspect, createOptions())).toBe("{ nodeType: 8 }");
+        expect(inspectNode(commentNode as unknown as Node, commentNode, createOptions(), internalInspect)).toBe("{ nodeType: 8 }");
     });
 });
 
@@ -159,5 +159,16 @@ describe("html inspectNodeCollection", () => {
         const collection = [new MockElement("h1"), new MockElement("p")];
 
         expect(inspectNodeCollection(collection as unknown as ArrayLike<Node>, createOptions(), internalInspect, undefined)).toBe("<h1></h1>\n<p></p>");
+    });
+
+    it("renders a collection containing text and comment nodes without throwing", () => {
+        expect.assertions(2);
+
+        const collection = [new MockElement("h1"), { data: "hello", nodeType: 3 }, { nodeType: 8 }];
+
+        expect(() => inspectNodeCollection(collection as unknown as ArrayLike<Node>, createOptions(), internalInspect, undefined)).not.toThrow();
+        expect(inspectNodeCollection(collection as unknown as ArrayLike<Node>, createOptions(), internalInspect, undefined)).toBe(
+            "<h1></h1>\n'hello'\n{ nodeType: 8 }",
+        );
     });
 });
