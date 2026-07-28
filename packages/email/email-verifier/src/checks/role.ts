@@ -123,21 +123,8 @@ const ROLE_ACCOUNT_PREFIXES: ReadonlySet<string> = new Set([
  */
 const PART_SPLIT_REGEX = /[.\-_+]/;
 
-const isRolePrefix = (localPart: string, prefixes: ReadonlySet<string>, customPrefixes?: Iterable<string>): boolean => {
-    if (prefixes.has(localPart)) {
-        return true;
-    }
-
-    if (customPrefixes) {
-        for (const prefix of customPrefixes) {
-            if (prefix.toLowerCase() === localPart) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-};
+const isRolePrefix = (localPart: string, prefixes: ReadonlySet<string>, customPrefixes?: ReadonlySet<string>): boolean =>
+    prefixes.has(localPart) || (customPrefixes?.has(localPart) ?? false);
 
 /**
  * Determines whether an email address is a role-based account.
@@ -165,8 +152,13 @@ const isRoleAccount = (email: string, customPrefixes?: Iterable<string>): boolea
 
     const { localPart } = parts;
     const beforeTag = localPart.split("+")[0] as string;
+    // Materialize the caller's iterable once — a single-pass iterable (generator,
+    // Map.keys()) would otherwise be exhausted by the first isRolePrefix call and
+    // silently ignored by the beforeTag and per-token checks below. Lowercasing
+    // here also turns each membership test into an O(1) Set lookup.
+    const customSet = customPrefixes ? new Set([...customPrefixes].map((prefix) => prefix.toLowerCase())) : undefined;
 
-    if (isRolePrefix(localPart, ROLE_ACCOUNT_PREFIXES, customPrefixes) || isRolePrefix(beforeTag, ROLE_ACCOUNT_PREFIXES, customPrefixes)) {
+    if (isRolePrefix(localPart, ROLE_ACCOUNT_PREFIXES, customSet) || isRolePrefix(beforeTag, ROLE_ACCOUNT_PREFIXES, customSet)) {
         return true;
     }
 
@@ -176,7 +168,7 @@ const isRoleAccount = (email: string, customPrefixes?: Iterable<string>): boolea
     // is a role word (e.g. `sales.john`, `sales-team`), matching the documented
     // behaviour. A purely personal local part like `john.doe` has no role token
     // and so is not flagged.
-    return tokens.length > 1 && tokens.some((token) => isRolePrefix(token, ROLE_ACCOUNT_PREFIXES, customPrefixes));
+    return tokens.length > 1 && tokens.some((token) => isRolePrefix(token, ROLE_ACCOUNT_PREFIXES, customSet));
 };
 
 /**

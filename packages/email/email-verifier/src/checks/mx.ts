@@ -23,6 +23,12 @@ type MxResolution = "address" | "mx" | "none";
  * Result of an MX/domain check.
  */
 interface MxCheckResult {
+    /**
+     * True when the lookup was inconclusive because of a transient DNS failure
+     * (timeout, SERVFAIL, refused, …) rather than a definitive "no records"
+     * answer. Such a result is neither cached nor treated as undeliverable.
+     */
+    deferred?: boolean;
     /** True when the domain itself resolves but publishes no MX records. */
     domainResolves: boolean;
     error?: string;
@@ -45,6 +51,25 @@ interface MxCheckOptions {
     fallbackToAddress?: boolean;
     ttl?: number;
 }
+
+// DNS error codes that represent a transient failure rather than a definitive
+// "this domain publishes no records" answer. A blip in any of these must not
+// mark an otherwise-good domain as permanently undeliverable — the lookup is
+// surfaced as inconclusive and left uncached so a later attempt can succeed.
+const TRANSIENT_DNS_ERROR_CODES: ReadonlySet<string> = new Set([
+    "EAI_AGAIN",
+    "ECONNREFUSED",
+    "EREFUSED",
+    "ESERVFAIL",
+    "ETIMEDOUT",
+    "ETIMEOUT",
+]);
+
+const isTransientDnsError = (error: unknown): boolean => {
+    const { code } = (error ?? {}) as NodeJS.ErrnoException;
+
+    return code !== undefined && TRANSIENT_DNS_ERROR_CODES.has(code);
+};
 
 const hasAddressRecord = async (domain: string): Promise<boolean> => {
     try {
@@ -122,6 +147,10 @@ const resolveDomain = async (domain: string, fallbackToAddress: boolean): Promis
         }
 
         return {
+            // A transient failure (timeout, SERVFAIL, refused) is inconclusive,
+            // not a verdict that the domain has no records — flag it so callers
+            // treat it as unknown and never cache it.
+            deferred: isTransientDnsError(error),
             domainResolves: false,
             error: error instanceof Error ? error.message : String(error),
             resolvedVia: "none",
@@ -149,6 +178,13 @@ const resolveDomain = async (domain: string, fallbackToAddress: boolean): Promis
  * }
  * ```
  */
+// In-flight lookups keyed by cache key. Concurrent callers for the same domain
+// (the bulk list-verification case, typically driven by Promise.all) share the
+// first caller's promise instead of each issuing their own DNS query. Cleared in
+// `finally` before the result is written, so it only coalesces truly concurrent
+// work and never serves a stale answer.
+const inflight = new Map<string, Promise<MxCheckResult>>();
+
 const checkMxRecords = async (domain: string, options: MxCheckOptions = {}): Promise<MxCheckResult> => {
     const { fallbackToAddress = true } = options;
     const ttl = options.ttl ?? 3_600_000;
@@ -165,13 +201,31 @@ const checkMxRecords = async (domain: string, options: MxCheckOptions = {}): Pro
         }
     }
 
-    const result = await resolveDomain(domain, fallbackToAddress);
+    const existing = inflight.get(cacheKey);
 
-    if (options.cache) {
-        await options.cache.set(cacheKey, result, ttl);
+    if (existing) {
+        return existing;
     }
 
-    return result;
+    const pending = (async (): Promise<MxCheckResult> => {
+        const result = await resolveDomain(domain, fallbackToAddress);
+
+        // Never cache an inconclusive (transient-failure) result — caching it for
+        // the full TTL would pin a wrong "undeliverable" answer on a good domain.
+        if (options.cache && !result.deferred) {
+            await options.cache.set(cacheKey, result, ttl);
+        }
+
+        return result;
+    })();
+
+    inflight.set(cacheKey, pending);
+
+    try {
+        return await pending;
+    } finally {
+        inflight.delete(cacheKey);
+    }
 };
 
 export type { Cache, InMemoryCache } from "../internal/cache";
