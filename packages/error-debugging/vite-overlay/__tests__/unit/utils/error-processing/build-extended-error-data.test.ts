@@ -305,6 +305,36 @@ src/components/Test.vue
         });
     });
 
+    describe("source frame fallback", () => {
+        it("recognizes a local .ts source frame when the primary frame is an http/compiled path", async () => {
+            expect.assertions(1);
+
+            const previous = vi.mocked(parseStacktrace).getMockImplementation();
+
+            vi.mocked(parseStacktrace).mockImplementation(
+                () =>
+                    [
+                        { column: 1, file: "http://localhost:5173/src/App.tsx", function: "compiled", line: 5 },
+                        { column: 3, file: "/mock/project/root/src/helper.ts", function: "helper", line: 12 },
+                    ] as any,
+            );
+
+            try {
+                const error = new Error("boom");
+
+                error.stack
+                    = "Error: boom\n    at compiled (http://localhost:5173/src/App.tsx:5:1)\n    at helper (/mock/project/root/src/helper.ts:12:3)";
+
+                const result = await buildExtendedErrorData(error, mockServer, 0, undefined);
+
+                // The .ts source frame (not just .tsx) must be picked up as the source file path.
+                expect(result.originalFilePath).toContain("helper.ts");
+            } finally {
+                vi.mocked(parseStacktrace).mockImplementation(previous as any);
+            }
+        });
+    });
+
     describe("code frame generation", () => {
         it("should generate code frames when source is available", async () => {
             expect.assertions(3);
