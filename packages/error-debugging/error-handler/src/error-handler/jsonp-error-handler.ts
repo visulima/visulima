@@ -1,9 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getReasonPhrase } from "http-status-codes";
-
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 import setErrorHeaders from "./utils/set-error-headers";
 
 const defaultCallbackParameter = "callback";
@@ -21,7 +20,7 @@ const jsonpErrorHandler
             setErrorHeaders(response, error);
 
             const { statusCode } = response;
-            const reasonPhrase = getReasonPhrase(statusCode);
+            const reasonPhrase = safeReasonPhrase(statusCode);
 
             const url = new URL(request.url ?? "http://localhost", "http://localhost");
             const callbackParameterName = options.callbackParamName ?? defaultCallbackParameter;

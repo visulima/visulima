@@ -105,6 +105,18 @@ describe(registerListProjects, () => {
         expect(result.projects[0]!.name).toBe("@scope/alpha");
     });
 
+    it("should reject a flag-shaped query value before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListProjects({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ query: "--json" }));
+
+        expect(error.error).toContain(`Invalid --query value`);
+    });
+
     it("should surface CLI failures as errorResponse", async () => {
         expect.assertions(1);
 
@@ -648,6 +660,18 @@ describe(registerAudit, () => {
         expect(result.flags).toContain("--show-accepted");
     });
 
+    it("should reject a flag-shaped ecosystem value before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAudit({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ ecosystem: "--offline" }));
+
+        expect(error.error).toContain(`Invalid --ecosystem value`);
+    });
+
     it("should surface CLI failures via errorResponse", async () => {
         expect.assertions(1);
 
@@ -691,6 +715,18 @@ describe(registerAdvisoryStatus, () => {
         const result = parseOk(await calls[0]!.handler({ db: customDb })) as { dbPath: string };
 
         expect(result.dbPath).toBe(customDb);
+    });
+
+    it("should reject a flag-shaped db value before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerAdvisoryStatus({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ db: "--format" }));
+
+        expect(error.error).toContain(`Invalid --db value`);
     });
 
     it("should surface CLI failures via errorResponse", async () => {
@@ -820,6 +856,21 @@ describe(registerLint, () => {
         expect(error.error).toContain("Invalid file path");
     });
 
+    it("should reject a flag-shaped since value (e.g. --fix) before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        // `--since` is a fixed literal but its value is LLM-supplied; a flag-shaped
+        // value would be re-parsed by the CLI as a real `--fix`, turning this
+        // readOnlyHint:true tool into a write.
+        const error = parseError(await calls[0]!.handler({ since: "--fix" }));
+
+        expect(error.error).toContain(`Invalid --since value`);
+    });
+
     it("should surface CLI spawn failures via errorResponse", async () => {
         expect.assertions(1);
 
@@ -895,6 +946,18 @@ describe(registerFmt, () => {
         const error = parseError(await calls[0]!.handler({ files: ["src/a.ts", "--write"] }));
 
         expect(error.error).toContain("Invalid file path");
+    });
+
+    it("should reject a flag-shaped since value (e.g. --write) before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ since: "--write" }));
+
+        expect(error.error).toContain(`Invalid --since value`);
     });
 
     it("should append positional files after a `--` separator", async () => {
@@ -997,6 +1060,36 @@ describe(registerListRuns, () => {
         const result = parseOk(await calls[0]!.handler({ limit: 2 })) as { count: number };
 
         expect(result.count).toBe(2);
+    });
+
+    it("should return the newest `limit` runs by mtime, in order", async () => {
+        expect.assertions(3);
+
+        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+
+        // Write five runs and give each a distinct mtime so the newest-first cut
+        // is deterministic; the tool must select the two newest by mtime alone
+        // (without reading the three older summaries).
+        const base = Date.now() / 1000;
+
+        for (let index = 0; index < 5; index += 1) {
+            const file = join(runsDir, `run-${String(index)}.json`);
+
+            writeFileSync(file, JSON.stringify({ runId: `run-${String(index)}`, tasks: [] }));
+            utimesSync(file, base + index, base + index);
+        }
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({ limit: 2 })) as { count: number; runs: { runId: string }[] };
+
+        expect(result.count).toBe(2);
+        expect(result.runs[0]!.runId).toBe("run-4");
+        expect(result.runs[1]!.runId).toBe("run-3");
     });
 
     it("should skip malformed run files instead of failing the listing", async () => {

@@ -219,6 +219,44 @@ describe(retry, () => {
             expect(function_).toHaveBeenCalledTimes(1);
         });
 
+        it("treats a caller shouldRetry returning false as authoritative even for heuristically-retryable errors", async () => {
+            expect.assertions(2);
+
+            // ECONNRESET is retryable per isRetryableError; an explicit `false` must
+            // still suppress the retry (previously the OR with the heuristics won).
+            const error = new Error("connection reset") as Error & { code?: string };
+
+            error.code = "ECONNRESET";
+
+            const function_ = vi.fn().mockRejectedValue(error);
+
+            const resultPromise = retry(function_, { maxRetries: 3, shouldRetry: () => false });
+
+            await expect(resultPromise).rejects.toBe(error);
+            expect(function_).toHaveBeenCalledTimes(1);
+        });
+
+        it("defers to the built-in heuristics when shouldRetry returns undefined", async () => {
+            expect.assertions(2);
+
+            const error = new Error("connection reset") as Error & { code?: string };
+
+            error.code = "ECONNRESET";
+
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("ok");
+
+            const resultPromise = retry(function_, {
+                initialDelay: 100,
+                maxRetries: 1,
+                shouldRetry: () => undefined,
+            });
+
+            await vi.runAllTimersAsync();
+
+            await expect(resultPromise).resolves.toBe("ok");
+            expect(function_).toHaveBeenCalledTimes(2);
+        });
+
         it("should use custom shouldRetry function", async () => {
             expect.assertions(2);
 
