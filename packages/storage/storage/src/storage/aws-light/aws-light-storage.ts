@@ -93,7 +93,9 @@ class AwsLightStorage extends S3BaseStorage {
                         return true;
                     }
 
-                    return errorWithStatus.retryable ?? false;
+                    // Defer to the retry engine's built-in heuristics unless the SDK
+                    // explicitly flagged the error retryable.
+                    return errorWithStatus.retryable === true ? true : undefined;
                 },
             },
         });

@@ -13,6 +13,16 @@ const collect = (stream: Readable): Promise<Buffer> =>
         stream.on("error", reject);
     });
 
+const makeSequentialBuffer = (length: number): Buffer => {
+    const buffer = Buffer.alloc(length);
+
+    for (let index = 0; index < length; index += 1) {
+        buffer[index] = index % 256;
+    }
+
+    return buffer;
+};
+
 describe("stream-utils", () => {
     describe(createRangeLimitedStream, () => {
         it("returns only the requested byte range", async () => {
@@ -20,8 +30,6 @@ describe("stream-utils", () => {
 
             const source = Readable.from([Buffer.from("Hello, World!")]);
             const limited = createRangeLimitedStream(source, 7, 11);
-
-            source.pipe(limited);
 
             const buffer = await collect(limited);
 
@@ -33,8 +41,6 @@ describe("stream-utils", () => {
 
             const source = Readable.from([Buffer.from("abc"), Buffer.from("def")]);
             const limited = createRangeLimitedStream(source, 0, 5);
-
-            source.pipe(limited);
 
             const buffer = await collect(limited);
 
@@ -48,11 +54,36 @@ describe("stream-utils", () => {
             const source = Readable.from([Buffer.from("abc"), Buffer.from("def")]);
             const limited = createRangeLimitedStream(source, 3, 5);
 
-            source.pipe(limited);
-
             const buffer = await collect(limited);
 
             expect(buffer.toString()).toBe("def");
+        });
+
+        it("wires the source into the returned stream without an external pipe", async () => {
+            expect.assertions(1);
+
+            // Regression: createRangeLimitedStream must connect the source itself.
+            // Previously it returned an unfed PassThrough, so 206 responses hung
+            // with an empty body.
+            const source = Readable.from([Buffer.from("abcdefghij")]);
+            const limited = createRangeLimitedStream(source, 2, 5);
+
+            const buffer = await collect(limited);
+
+            expect(buffer.toString()).toBe("cdef");
+        });
+
+        it("propagates source errors to the returned stream", async () => {
+            expect.assertions(1);
+
+            const source = new Readable({
+                read() {
+                    this.destroy(new Error("source boom"));
+                },
+            });
+            const limited = createRangeLimitedStream(source, 0, 4);
+
+            await expect(collect(limited)).rejects.toThrow("source boom");
         });
     });
 
@@ -113,6 +144,54 @@ describe("stream-utils", () => {
             });
 
             expect(sentError?.message).toBe("boom");
+        });
+
+        it("delivers the exact requested byte slice end-to-end through a range-limited stream", async () => {
+            expect.assertions(1);
+
+            const full = makeSequentialBuffer(1000);
+            const limited = createRangeLimitedStream(Readable.from(full), 100, 299);
+            const destination = new PassThrough();
+            const sendError = async () => undefined;
+
+            pipeWithBackpressure(limited, destination as unknown as never, sendError);
+
+            const buffer = await collect(destination);
+
+            expect(buffer).toStrictEqual(full.subarray(100, 300));
+        });
+
+        it("destroys the response instead of re-sending headers when the source errors after headers are flushed", async () => {
+            expect.assertions(2);
+
+            const source = new PassThrough();
+            const destination = new PassThrough() as PassThrough & { headersSent?: boolean };
+            let sendErrorCalled = false;
+            const sendError = async () => {
+                sendErrorCalled = true;
+            };
+
+            pipeWithBackpressure(source, destination as unknown as never, sendError);
+
+            // Simulate the first body byte having been flushed (headers committed).
+            source.write("data");
+
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+
+            destination.headersSent = true;
+
+            const destroyed = new Promise<Error>((resolve) => {
+                destination.on("error", resolve);
+            });
+
+            source.emit("error", new Error("mid-stream"));
+
+            const error = await destroyed;
+
+            expect(error.message).toBe("mid-stream");
+            expect(sendErrorCalled).toBe(false);
         });
     });
 });

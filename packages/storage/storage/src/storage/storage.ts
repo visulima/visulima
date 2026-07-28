@@ -268,6 +268,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     protected concurrency?: number;
 
+    /**
+     * Handle for the {@link startAutoPurge} interval, retained so it can be
+     * cleared via {@link stopAutoPurge}/{@link close}.
+     */
+    protected autoPurgeTimer?: ReturnType<typeof setInterval>;
+
     protected constructor(config: BaseStorageOptions<TFile>) {
         const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
 
@@ -1064,9 +1070,35 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             throw new Error("“purgeInterval” must be less than 2147483647 ms");
         }
 
-        setInterval(() => {
+        this.autoPurgeTimer = setInterval(() => {
             this.purge().catch((error) => this.logger?.error(error));
         }, purgeInterval);
+
+        // Don't let the purge timer keep an otherwise-idle process (or a
+        // short-lived/serverless invocation) alive.
+        this.autoPurgeTimer.unref?.();
+    }
+
+    /**
+     * Stops the auto-purge interval started by {@link startAutoPurge}, if any.
+     * Safe to call multiple times. Call this to release a storage instance that
+     * was constructed with `expiration.purgeInterval` so it can be garbage
+     * collected and the event loop can drain.
+     */
+    public stopAutoPurge(): void {
+        if (this.autoPurgeTimer) {
+            clearInterval(this.autoPurgeTimer);
+            this.autoPurgeTimer = undefined;
+        }
+    }
+
+    /**
+     * Releases resources held by this storage instance (currently the auto-purge
+     * timer). Provided so callers and the `Files` facade can tear a storage down
+     * deterministically.
+     */
+    public async close(): Promise<void> {
+        this.stopAutoPurge();
     }
 
     protected updateTimestamps(file: TFile): TFile {
@@ -1160,7 +1192,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         // timeout). Layered over (not replacing) any user shouldRetry.
         const userShouldRetry = retryConfig.shouldRetry;
 
-        retryConfig.shouldRetry = (error: unknown): boolean => {
+        retryConfig.shouldRetry = (error: unknown): boolean | undefined => {
             if (callerSignal?.aborted) {
                 return false;
             }
@@ -1169,7 +1201,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 return false;
             }
 
-            return userShouldRetry ? userShouldRetry(error) : false;
+            // Defer (undefined) when no user predicate is set so the retry engine's
+            // built-in heuristics still apply; an aborted call already returned false
+            // above, so it can never be resurrected by those heuristics.
+            return userShouldRetry ? userShouldRetry(error) : undefined;
         };
 
         const toAbortError = (cause: unknown): Error => {
