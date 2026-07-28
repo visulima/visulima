@@ -81,4 +81,25 @@ describe("cursorPaginator", () => {
         expect(CursorPaginator.fromArray(10, []).isEmpty).toBe(true);
         expect(CursorPaginator.fromArray(10, [1]).isEmpty).toBe(false);
     });
+
+    it("should accept rows via the public constructor and compute isEmpty", () => {
+        expect.assertions(4);
+
+        const paginator = new CursorPaginator(3, { hasMore: true }, [{ id: 1 }, { id: 2 }]);
+
+        expect(paginator).toHaveLength(2);
+        expect(paginator.isEmpty).toBe(false);
+        expect(paginator.getNextCursor()).toBe("2");
+        expect(new CursorPaginator(3).isEmpty).toBe(true);
+    });
+
+    it("should append array query string values as repeated keys", () => {
+        expect.assertions(1);
+
+        const paginator = CursorPaginator.fromArray(2, [{ id: 5 }, { id: 6 }], { currentCursor: "4", hasMore: true })
+            .baseUrl("/api/items")
+            .queryString({ tag: ["a", "b"] });
+
+        expect(paginator.getMeta().nextPageUrl).toBe("/api/items?tag=a&tag=b&cursor=6");
+    });
 });
