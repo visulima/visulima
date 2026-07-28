@@ -11,7 +11,7 @@ import type { FileAccess } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "./file-access-tracker";
 import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
-import { uniqueId } from "./utils";
+import { isInsideWorkspace, uniqueId } from "./utils";
 
 /**
  * Result of a tracked task execution.
@@ -288,7 +288,7 @@ export class TrackedTaskExecutor {
                     seen.add(entry.path);
 
                     // Only include workspace files
-                    if (entry.path.startsWith(this.#workspaceRoot)) {
+                    if (isInsideWorkspace(this.#workspaceRoot, entry.path)) {
                         accesses.push({
                             path: entry.path,
                             type: entry.type as FileAccess["type"],

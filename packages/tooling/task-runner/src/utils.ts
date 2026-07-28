@@ -3,7 +3,7 @@ import { readdir, readFile, realpath, stat } from "node:fs/promises";
 
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
-import { join } from "@visulima/path";
+import { join, relative } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
 
@@ -192,6 +192,24 @@ const readPackageDeps = async (
 };
 
 /**
+ * Reports whether `absolutePath` lives strictly inside `workspaceRoot`.
+ *
+ * A bare `absolutePath.startsWith(workspaceRoot)` is wrong: a workspace
+ * root of `/repo` also prefix-matches sibling trees like `/repo-cache`
+ * or `/repo.worktrees`, leaking their files into auto-fingerprints and
+ * `{ auto: true }` output capture. Comparing via `relative()` — the
+ * same shape `output-resolver.ts` and `cache.ts` already use — closes
+ * that gap: a `..` prefix (or an absolute result, e.g. a different
+ * Windows drive) means the path escaped the root. The root itself
+ * (`rel === ""`) is not "inside" either.
+ */
+const isInsideWorkspace = (workspaceRoot: string, absolutePath: string): boolean => {
+    const rel = relative(workspaceRoot, absolutePath);
+
+    return rel.length > 0 && !rel.startsWith("..");
+};
+
+/**
  * Generates a unique ID for temporary files/directories using
  * `crypto.randomUUID()`. Used for staging-path names that briefly
  * coexist on disk during atomic writes — collisions would clobber a
@@ -202,4 +220,4 @@ const readPackageDeps = async (
  */
 const uniqueId = (): string => randomUUID();
 
-export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };
+export { collectFiles, createFailureResult, hashFile, hashStrings, isInsideWorkspace, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };
