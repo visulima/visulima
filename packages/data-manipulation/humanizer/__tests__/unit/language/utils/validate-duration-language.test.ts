@@ -61,12 +61,31 @@ describe(validateDurationLanguage, () => {
             ms: "millisecond",
             s: "second",
             w: "week",
+        };
+
+        expect(() => {
+            // @ts-expect-error - testing invalid input (missing required `y`)
+            validateDurationLanguage(language);
+        }).toThrow(new TypeError("Missing required property: y"));
+    });
+
+    it("should not throw when the optional future and past properties are omitted", () => {
+        expect.assertions(1);
+
+        const language = {
+            d: "day",
+            h: "hour",
+            m: "minute",
+            mo: "month",
+            ms: "millisecond",
+            s: "second",
+            w: "week",
             y: "year",
         };
 
         expect(() => {
             validateDurationLanguage(language);
-        }).toThrow(TypeError);
+        }).not.toThrow();
     });
 
     it("should throw a TypeError when future or past properties are not strings", () => {

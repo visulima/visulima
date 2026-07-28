@@ -19,16 +19,24 @@ interface InternalOptions {
 }
 
 const toFixed = (number_: number, fixed: number): number => {
-    // eslint-disable-next-line no-param-reassign
-    fixed = fixed || -1;
-
-    const matches = new RegExp(String.raw`^-?\d+(?:\.\d{0,${String(fixed)}})?`).exec(number_.toString());
-
-    if (matches === null) {
-        return number_; // can be undefined when num is Number.POSITIVE_INFINITY
+    // Non-finite values (Infinity/NaN) and exact integers have no decimal part to
+    // truncate and must pass through unchanged (so callers can still render
+    // "Infinity years" and large integer counts keep every digit).
+    if (!Number.isFinite(number_) || fixed < 0 || Number.isInteger(number_)) {
+        return number_;
     }
 
-    return Number.parseFloat(matches[0]);
+    // Arithmetic truncation instead of matching `Number.toString()` with a regex:
+    // for |n| < 1e-6 or >= 1e21 the string is exponential (e.g. "1e-10"), which
+    // the old regex truncated to the mantissa digit ("1"), corrupting the value
+    // by orders of magnitude. Counts below the printable precision collapse to 0.
+    // `toPrecision(15)` strips binary-fp noise from the scaled product so an
+    // already-truncated value such as 8.12 (stored as 8.11999…) is not
+    // re-truncated down to 8.11.
+    const factor = 10 ** fixed;
+    const scaled = Number((number_ * factor).toPrecision(15));
+
+    return Math.trunc(scaled) / factor;
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
