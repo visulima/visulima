@@ -40,9 +40,10 @@ import zh from "./words/zh";
  * - Multi-word phrases are supported (e.g., "white trash")
  * - Leet-speak variants are included where applicable
  *
- * The object is **frozen** (`Object.freeze`): mutating it (e.g. `BANNED_WORDS.en.push(...)`)
- * has no effect because the checker builds its lookup tables from a snapshot. To match against
- * a custom dictionary or allowlist, use the `createChecker` factory instead.
+ * The object is **deeply frozen** (`Object.freeze` on the container and on every language array):
+ * replacing a property (`BANNED_WORDS.en = [...]`) or mutating a list (`BANNED_WORDS.en.push(...)`)
+ * throws in strict mode (and is a silent no-op otherwise). To match against a custom dictionary or
+ * allowlist, use the `createChecker` factory instead.
  * @example
  * ```typescript
  * import { BANNED_WORDS } from "@visulima/content-safety";
@@ -55,41 +56,41 @@ import zh from "./words/zh";
 // eslint-disable-next-line import/prefer-default-export
 export const BANNED_WORDS: Readonly<Record<string, ReadonlyArray<string>>> = Object.freeze({
     /** Arabic banned words */
-    ar,
+    ar: Object.freeze(ar),
     /** Azerbaijani banned words */
-    az,
+    az: Object.freeze(az),
     /** German banned words */
-    de,
+    de: Object.freeze(de),
     /** English banned words */
-    en,
+    en: Object.freeze(en),
     /** Spanish banned words */
-    es,
+    es: Object.freeze(es),
     /** Persian/Farsi banned words */
-    fa,
+    fa: Object.freeze(fa),
     /** French banned words */
-    fr,
+    fr: Object.freeze(fr),
     /** Irish banned words */
-    ga,
+    ga: Object.freeze(ga),
     /** Hindi banned words */
-    hi,
+    hi: Object.freeze(hi),
     /** Italian banned words */
-    it,
+    it: Object.freeze(it),
     /** Japanese banned words */
-    ja,
+    ja: Object.freeze(ja),
     /** Korean banned words */
-    ko,
+    ko: Object.freeze(ko),
     /** Dutch banned words */
-    nl,
+    nl: Object.freeze(nl),
     /** Polish banned words */
-    pl,
+    pl: Object.freeze(pl),
     /** Portuguese banned words */
-    pt,
+    pt: Object.freeze(pt),
     /** Russian banned words */
-    ru,
+    ru: Object.freeze(ru),
     /** Swedish banned words */
-    sv,
+    sv: Object.freeze(sv),
     /** Turkish banned words */
-    tr,
+    tr: Object.freeze(tr),
     /** Chinese banned words */
-    zh,
+    zh: Object.freeze(zh),
 });
