@@ -13,7 +13,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { deleteScreenshotFile, isPathInsideBase, readAnnotations, resolvePaths, SCREENSHOTS_DIR, withLock, writeAnnotations } from "../store/annotation-store";
+import {
+    appendThreadMessage,
+    deleteScreenshotFile,
+    isPathInsideBase,
+    readAnnotations,
+    resolvePaths,
+    SCREENSHOTS_DIR,
+    withLock,
+    writeAnnotations,
+} from "../store/annotation-store";
 
 // ─── MCP Server ──────────────────────────────────────────────────────────────
 
@@ -170,7 +179,7 @@ export const startMcpServer = async (): Promise<void> => {
                         },
                     ],
                 };
-            }),
+            }, root),
     );
 
     // ── Tool: add_thread_message ──
@@ -196,16 +205,14 @@ export const startMcpServer = async (): Promise<void> => {
 
                 const annotation = annotations[index]!;
 
-                if (!annotation.thread) {
-                    annotation.thread = [];
+                try {
+                    appendThreadMessage(annotation, { content: message, role: "agent" });
+                } catch (error) {
+                    return {
+                        content: [{ text: JSON.stringify({ error: (error as Error).message }), type: "text" as const }],
+                        isError: true,
+                    };
                 }
-
-                annotation.thread.push({
-                    content: message,
-                    id: crypto.randomUUID(),
-                    role: "agent",
-                    timestamp: new Date().toISOString(),
-                });
 
                 annotation.updatedAt = new Date().toISOString();
                 annotations[index] = annotation;
@@ -219,7 +226,7 @@ export const startMcpServer = async (): Promise<void> => {
                         },
                     ],
                 };
-            }),
+            }, root),
     );
 
     // ── Tool: acknowledge_annotation ──
@@ -257,7 +264,7 @@ export const startMcpServer = async (): Promise<void> => {
                         },
                     ],
                 };
-            }),
+            }, root),
     );
 
     // ── Tool: watch_annotations ──

@@ -14,7 +14,7 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
     let bytesSent = 0;
     const contentLength = end - start + 1;
 
-    return new PassThrough({
+    const passThrough = new PassThrough({
         // Use appropriate high water mark for better backpressure handling
         highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
         transform(chunk: Buffer, _, callback) {
@@ -67,6 +67,18 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
             callback();
         },
     });
+
+    // Feed the source into the range-limiting transform. Without this wiring the
+    // returned PassThrough is never written to and every 206 response hangs with
+    // an empty body. `pipe` handles writable-side backpressure; forward source
+    // errors explicitly since `pipe` does not propagate them.
+    sourceStream.pipe(passThrough);
+
+    sourceStream.on("error", (error) => {
+        passThrough.destroy(error);
+    });
+
+    return passThrough;
 };
 
 /**
@@ -106,8 +118,27 @@ export const pipeWithBackpressure = <TResponse extends ServerResponse>(
     });
 
     source.on("error", async (error) => {
-        if (!isDestroyed) {
+        if (isDestroyed) {
+            return;
+        }
+
+        // Once any body byte has been flushed the status line and headers are
+        // already committed; calling sendError would set headers again and throw
+        // ERR_HTTP_HEADERS_SENT inside this async listener (an unhandled rejection
+        // that can crash the process). In that case abort the response instead.
+        if (destination.headersSent || destination.writableEnded) {
+            cleanup();
+            destination.destroy(error);
+
+            return;
+        }
+
+        try {
             await sendError(destination, error);
+        } catch {
+            // sendError may still race a flush; never let it escape this listener.
+            destination.destroy(error);
+        } finally {
             cleanup();
         }
     });

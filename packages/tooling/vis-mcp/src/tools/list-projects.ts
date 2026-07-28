@@ -4,6 +4,7 @@ import * as z from "zod";
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okResponse } from "../response";
+import { isSafeOptionValue } from "../validation";
 
 export const registerListProjects = ({ server }: ToolDeps, context: ToolContext): void => {
     server.registerTool(
@@ -21,6 +22,10 @@ export const registerListProjects = ({ server }: ToolDeps, context: ToolContext)
                 const args = ["list", "--json"];
 
                 if (query) {
+                    if (!isSafeOptionValue(query)) {
+                        return errorResponse(new Error(`Invalid --query value "${query}". A leading "-" would be parsed as a CLI flag.`));
+                    }
+
                     args.push("--query", query);
                 }
 

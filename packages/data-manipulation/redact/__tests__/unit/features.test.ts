@@ -178,6 +178,71 @@ describe("url query redaction with wildcard and pattern rules", () => {
         expect(result).toContain("password=");
         expect(result).not.toContain("hunter2");
     });
+
+    it("still applies pattern rules to text surrounding a URL", () => {
+        expect.assertions(1);
+
+        // The mere presence of "https://" must not route the whole string away from the
+        // string anonymizer: a credit card sitting next to a URL is still redacted.
+        const result = redact("see https://a.com and card 4111-1111-1111-1111", [
+            { deep: true, key: "creditcard", pattern: String.raw`\b\d(?:[ -]?\d){12,18}\b` },
+        ]);
+
+        expect(result).toBe("see https://a.com and card <CREDITCARD>");
+    });
+});
+
+describe("case-insensitive dotted-path rules", () => {
+    it("matches a dotted-path rule against mixed-case keys", () => {
+        expect.assertions(1);
+
+        const result = redact({ User: { Pass: "hunter2" } }, ["user.pass"]);
+
+        expect(result).toStrictEqual({ User: { Pass: "<USER.PASS>" } });
+    });
+});
+
+describe("array index rules preserve later element paths", () => {
+    it("keeps the parent dot-path for elements after a matched index", () => {
+        expect.assertions(1);
+
+        const result = redact({ list: ["a", "b", "c"] }, [0, { deep: true, key: "list.2" }]);
+
+        expect(result).toStrictEqual({ list: ["<REDACTED>", "b", "<LIST.2>"] });
+    });
+
+    it("passes the full dot-path to a censor for elements after a matched index", () => {
+        expect.assertions(1);
+
+        const seen: (string | undefined)[] = [];
+
+        redact({ list: ["a", "b"] }, [
+            0,
+            {
+                deep: true,
+                key: "list.1",
+                replacement: (value, path) => {
+                    seen.push(path);
+
+                    return value;
+                },
+            },
+        ]);
+
+        expect(seen).toStrictEqual(["list.1"]);
+    });
+});
+
+describe("Map rule precedence", () => {
+    it("lets a later, more specific rule override an earlier one for Map entries", () => {
+        expect.assertions(1);
+
+        const input = new Map<string, string>([["pass", "secret"]]);
+
+        const result = redact(input, ["pass", { key: "pass", replacement: "X" }]);
+
+        expect([...result]).toStrictEqual([["pass", "X"]]);
+    });
 });
 
 describe("single-traversal behaviour", () => {

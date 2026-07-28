@@ -2,6 +2,7 @@ import { TRUNCATOR } from "../constants";
 import type { InspectType, InternalInspect, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
+import { safeReadProperty } from "../utils/safe-read-property";
 import truncate from "../utils/truncate";
 
 type TypedArray = Float32Array | Float64Array | Int8Array | Int16Array | Int32Array | Uint8Array | Uint8ClampedArray | Uint16Array | Uint32Array;
@@ -59,7 +60,7 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
 
     if (nonIndexProperties.length > 0) {
         propertyContents = inspectList(
-            nonIndexProperties.map((key) => [key, array[key as keyof typeof array]]),
+            nonIndexProperties.map((key) => [key, safeReadProperty(array, key)]),
             array,
             options,
             inspect,

@@ -141,7 +141,9 @@ interface MxProviderInfo {
 ```
 
 The raw curated dataset is also exported as `MX_PROVIDERS` (with the `patterns`
-each provider matches) for advanced use.
+each provider matches) for advanced use. It is deep-frozen and immutable: the
+matcher builds its lookup index once at load time, so pushing or editing entries
+has no effect. Copy the array if you need a customizable variant.
 
 ### A note on classification
 
