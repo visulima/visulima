@@ -14,6 +14,8 @@ export interface QueueWorkerOptions {
     maxAttempts?: number;
     /** Called when a job is dropped after exhausting attempts. */
     onDrop?: (job: QueueJob, receipts: Receipt[]) => void;
+    /** Called when the queue or a delivery throws; the loop keeps polling. */
+    onError?: (error: unknown, job?: QueueJob) => void;
     /** Poll interval in ms when the queue is empty (default 1000). */
     pollInterval?: number;
 }
@@ -49,16 +51,26 @@ export const createQueueWorker = (queue: NotificationQueue, notification: Notifi
             return false;
         }
 
-        const receipts = await notification.send(job.message);
-        const failed = receipts.some((receipt) => !receipt.successful);
+        try {
+            const receipts = await notification.send(job.message);
+            const failed = receipts.some((receipt) => !receipt.successful);
 
-        if (!failed) {
-            await queue.ack(job.id);
-        } else if (job.attempts >= maxAttempts) {
-            await queue.ack(job.id);
-            options.onDrop?.(job, receipts);
-        } else {
-            await queue.retry(job.id, backoff(job.attempts));
+            if (!failed) {
+                await queue.ack(job.id);
+            } else if (job.attempts >= maxAttempts) {
+                await queue.ack(job.id);
+                options.onDrop?.(job, receipts);
+            } else {
+                await queue.retry(job.id, backoff(job.attempts));
+            }
+        } catch (error) {
+            options.onError?.(error, job);
+
+            try {
+                await queue.retry(job.id, backoff(job.attempts));
+            } catch (retryError) {
+                options.onError?.(retryError, job);
+            }
         }
 
         return true;
@@ -66,8 +78,14 @@ export const createQueueWorker = (queue: NotificationQueue, notification: Notifi
 
     const loop = async (): Promise<void> => {
         while (running) {
-            // eslint-disable-next-line no-await-in-loop
-            const processed = await processOne();
+            let processed = false;
+
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                processed = await processOne();
+            } catch (error) {
+                options.onError?.(error);
+            }
 
             if (!processed) {
                 // eslint-disable-next-line no-await-in-loop

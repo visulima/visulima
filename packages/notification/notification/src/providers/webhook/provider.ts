@@ -35,7 +35,7 @@ export const webhookProvider = (config: WebhookConfig = {}): Provider<WebhookCon
             const url = payload.url ?? config.url;
 
             if (!url) {
-                throw new RequiredOptionError("webhook", "url");
+                return { error: new RequiredOptionError("webhook", "url"), success: false };
             }
 
             const result = await requestWithRetry(
