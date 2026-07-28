@@ -87,6 +87,7 @@ describe("useMultipartUpload", () => {
 
         const adapter = createMultipartAdapter({
             endpoint: "/api/upload",
+            uploadTimeoutMs: 300_000,
         });
 
         const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");

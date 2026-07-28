@@ -155,6 +155,35 @@ describe(createMultipartAdapter, () => {
         }).not.toThrow();
     });
 
+    it("should reject the upload promise promptly when the in-flight upload is aborted", async () => {
+        expect.assertions(1);
+
+        class NeverCompleteMockXHR extends MockXMLHttpRequest {
+            public override send = vi.fn();
+        }
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = NeverCompleteMockXHR as unknown as typeof XMLHttpRequest;
+
+        const adapter = createMultipartAdapter({
+            endpoint: "/api/upload",
+        });
+
+        const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
+        const uploadPromise = adapter.upload(file);
+
+        // Let the XHR register (send is dispatched after the header-resolver microtask).
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 10);
+        });
+
+        adapter.abort();
+
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
+    });
+
     it("should clear uploads", () => {
         expect.assertions(1);
 
