@@ -214,31 +214,44 @@ const parseEml = (eml: string): EmailOptions => {
     const contentType = map.get("content-type");
     const boundary = getBoundary(contentType);
 
-    if (boundary && contentType?.toLowerCase().includes("multipart")) {
-        const segments = body.split(`--${boundary}`);
-
-        for (const segment of segments) {
+    // Walks a multipart body, recursing into nested multiparts (e.g. the
+    // multipart/alternative wrapping text+html inside a multipart/mixed) and
+    // mapping inline text/plain and text/html leaves back onto the result.
+    const walkMultipart = (partBody: string, partBoundary: string): void => {
+        for (const segment of partBody.split(`--${partBoundary}`)) {
             const trimmed = segment.replace(LEADING_NEWLINE_REGEX, "");
 
             // Skip the preamble/epilogue and the closing "--" delimiter.
             const isDelimiterOrEmpty = !trimmed || trimmed.startsWith("--");
 
-            if (!isDelimiterOrEmpty) {
-                const { body: partBody, headers: partHeaders } = splitHeadersAndBody(trimmed);
-                const partContentType = partHeaders.map.get("content-type") ?? "";
-                const partEncoding = partHeaders.map.get("content-transfer-encoding");
-                const disposition = partHeaders.map.get("content-disposition") ?? "";
+            if (isDelimiterOrEmpty) {
+                continue;
+            }
 
-                // Skip attachment parts; only inline text/html is mapped back.
-                if (!disposition.toLowerCase().includes("attachment")) {
-                    if (partContentType.toLowerCase().includes("text/plain")) {
-                        result.text = decodeBody(partBody.replace(TRAILING_NEWLINES_REGEX, ""), partEncoding);
-                    } else if (partContentType.toLowerCase().includes("text/html")) {
-                        result.html = decodeBody(partBody.replace(TRAILING_NEWLINES_REGEX, ""), partEncoding);
-                    }
-                }
+            const { body: segmentBody, headers: segmentHeaders } = splitHeadersAndBody(trimmed);
+            const segmentContentType = segmentHeaders.map.get("content-type") ?? "";
+            const segmentEncoding = segmentHeaders.map.get("content-transfer-encoding");
+            const disposition = segmentHeaders.map.get("content-disposition") ?? "";
+
+            // Skip attachment parts; only inline text/html is mapped back.
+            if (disposition.toLowerCase().includes("attachment")) {
+                continue;
+            }
+
+            const nestedBoundary = getBoundary(segmentContentType);
+
+            if (nestedBoundary && segmentContentType.toLowerCase().includes("multipart")) {
+                walkMultipart(segmentBody, nestedBoundary);
+            } else if (segmentContentType.toLowerCase().includes("text/plain")) {
+                result.text = decodeBody(segmentBody.replace(TRAILING_NEWLINES_REGEX, ""), segmentEncoding);
+            } else if (segmentContentType.toLowerCase().includes("text/html")) {
+                result.html = decodeBody(segmentBody.replace(TRAILING_NEWLINES_REGEX, ""), segmentEncoding);
             }
         }
+    };
+
+    if (boundary && contentType?.toLowerCase().includes("multipart")) {
+        walkMultipart(body, boundary);
     } else {
         const encoding = map.get("content-transfer-encoding");
         const decoded = decodeBody(body.replace(TRAILING_NEWLINE_REGEX, ""), encoding);

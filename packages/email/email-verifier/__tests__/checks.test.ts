@@ -84,6 +84,18 @@ describe(isRoleAccount, () => {
         expect(isRoleAccount("press@example.com")).toBe(true);
         expect(isRoleAccount("custompref@example.com", ["custompref"])).toBe(true);
     });
+
+    it("honors a single-pass iterable (generator) of custom prefixes across every sub-check", () => {
+        expect.assertions(1);
+
+        // A generator is exhausted after one iteration; the token-level check must
+        // still see the custom prefix, which requires the iterable be materialized once.
+        const generator = (function* customPrefixes() {
+            yield "vip";
+        })();
+
+        expect(isRoleAccount("vip.john@example.com", generator)).toBe(true);
+    });
 });
 
 describe(isNoReply, () => {
