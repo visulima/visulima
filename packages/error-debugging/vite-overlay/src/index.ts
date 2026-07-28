@@ -368,8 +368,14 @@ const setupWebSocketInterception = (
 ): void => {
     const originalSend = server.ws.send.bind(server.ws);
 
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any, sonarjs/cognitive-complexity
-    server.ws.send = async (data: any, client?: any): Promise<void> => {
+    // Enhancing error payloads is async (shiki highlighting, fs reads, transformRequest), but Vite's
+    // send is synchronous. Serialize every send through this queue so an awaited error payload cannot
+    // be overtaken by a later "update"/"full-reload" message that would clear the overlay before the
+    // enhanced error reaches the client.
+    let sendQueue: Promise<void> = Promise.resolve();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, sonarjs/cognitive-complexity
+    const sendEnhanced = async (data: any, client?: any): Promise<void> => {
         try {
             if (data && typeof data === "object" && data.type === "error" && data.err) {
                 const { err } = data;
@@ -452,11 +458,21 @@ const setupWebSocketInterception = (
             logError(server, "[visulima:vite-overlay:server] ws.send intercept failed", error);
 
             if (client && typeof client.send === "function") {
-                client.send(data, client);
+                client.send(data);
             } else {
                 originalSend(data, client);
             }
         }
+    };
+
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+    server.ws.send = (data: any, client?: any): Promise<void> => {
+        const result = sendQueue.then(() => sendEnhanced(data, client));
+
+        // Keep the queue chained even when a send rejects, so ordering is preserved for later messages.
+        sendQueue = result.catch(() => {});
+
+        return result;
     };
 };
 
