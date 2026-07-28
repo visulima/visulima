@@ -1,5 +1,6 @@
 import countriesData from "./data/countries";
 import { iso6393To6391 } from "./data/iso-639-mapping";
+import { getDisplayNames } from "./display-names";
 import type { Country } from "./types";
 
 const DIGITS_ONLY_REGEX = /^\d+$/;
@@ -265,9 +266,10 @@ export const getName = (countryCode: string | number, locale = "en"): string | u
         return undefined;
     }
 
-    if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+    const displayNames = getDisplayNames("region", locale);
+
+    if (displayNames) {
         try {
-            const displayNames = new Intl.DisplayNames([locale], { type: "region" });
             const localized = displayNames.of(country.alpha2);
 
             // Intl returns the input code unchanged when it cannot resolve a name.
@@ -275,7 +277,7 @@ export const getName = (countryCode: string | number, locale = "en"): string | u
                 return localized;
             }
         } catch {
-            // Invalid locale or unsupported environment — fall through to English.
+            // Unresolvable region code — fall through to English.
         }
     }
 

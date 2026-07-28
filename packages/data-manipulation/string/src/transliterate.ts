@@ -246,8 +246,13 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     }
 
     if (replaceAfterOption.length > 0) {
-        // finalIgnoreRanges is used here. It's correctly based on `input` after potential `replaceBefore`.
-        input = replaceString(input, replaceAfterOption, finalIgnoreRanges);
+        // The charmap loop (and optional trim) rebuilt `input` with potentially
+        // length-changing mappings, so finalIgnoreRanges no longer point at the
+        // ignored substrings. Recompute the ranges against the transliterated
+        // string before applying replaceAfter.
+        const replaceAfterIgnoreRanges = opt.ignore.length > 0 ? findStringOccurrences(input, opt.ignore) : [];
+
+        input = replaceString(input, replaceAfterOption, replaceAfterIgnoreRanges);
     }
 
     return input;

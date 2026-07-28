@@ -54,6 +54,9 @@ class InteractiveStreamHook {
     /** The hook's own write override, captured so we can detect external re-patching. */
     #patched: NodeJS.WriteStream["write"] | undefined;
 
+    /** Invoked on a TTY right before an early history flush so the owner can clear the region. */
+    #onEarlyFlush: (() => void) | undefined;
+
     readonly #maxHistory: number;
 
     readonly #method: NodeJS.WriteStream["write"];
@@ -97,19 +100,23 @@ class InteractiveStreamHook {
             const callback = arguments_.at(-1);
 
             this.#history.push(
-                // prettier-ignore
-                this.#decoder.write(
-                    typeof data === "string"
-                        // eslint-disable-next-line sonarjs/no-nested-conditional
-                        ? Buffer.from(data, typeof arguments_[0] === "string" ? (arguments_[0] as BufferEncoding) : undefined)
-                        : Buffer.from(data),
-                ),
+                // String writes are already decoded text; pushing them verbatim preserves
+                // their original encoding. Only Uint8Array chunks go through the shared UTF-8
+                // decoder, which correctly reassembles multibyte sequences split across writes.
+                typeof data === "string" ? data : this.#decoder.write(Buffer.from(data)),
             );
 
             // Keep the history buffer bounded: when it grows past the configured
             // threshold flush the oldest half straight to the stream (above the
             // interactive region) so a long-running, chatty session does not leak memory.
             if (this.#history.length > this.#maxHistory) {
+                // On a TTY the flushed entries are written at the cursor, which sits below a
+                // rendered frame. Let the owner erase that region first so history lands above
+                // it and the next redraw repaints cleanly instead of tearing.
+                if (this.isTTY && this.#onEarlyFlush !== undefined) {
+                    this.#onEarlyFlush();
+                }
+
                 this.#flushHistory(this.#history.length - Math.floor(this.#maxHistory / 2));
             }
 
@@ -186,6 +193,21 @@ class InteractiveStreamHook {
         if (this.isTTY) {
             this.write(cursorShow);
         }
+    }
+
+    /**
+     * Registers a callback invoked immediately before the bounded-history early flush
+     * writes buffered entries to the stream.
+     *
+     * The early flush fires from inside an active hook, so on a TTY the cursor is parked
+     * below whatever interactive frame is currently rendered. The owner (InteractiveManager)
+     * uses this to erase that frame and reset its line bookkeeping so the flushed history is
+     * pushed into the scrollback above the region instead of tearing through it. Only invoked
+     * on a TTY; non-TTY flushes are plain sequential appends with no region to coordinate.
+     * @param callback Handler to run before an early flush, or `undefined` to clear it.
+     */
+    public onEarlyFlush(callback: (() => void) | undefined): void {
+        this.#onEarlyFlush = callback;
     }
 
     /**
