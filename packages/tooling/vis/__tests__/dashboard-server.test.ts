@@ -4,7 +4,7 @@ import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { RunningDashboard } from "../src/dashboard/server";
-import { startDashboardServer } from "../src/dashboard/server";
+import { createDashboardApp, startDashboardServer } from "../src/dashboard/server";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "./test-helpers";
 
 const writeRun = (dir: string, id: string, body: unknown): void => {
@@ -190,6 +190,40 @@ describe("dashboard server", () => {
 
         expect(body.workspaceRoot).toBe(tmpDir);
         expect(body.node).toBe(process.version);
+    });
+
+    it("rejects requests whose Host header is a non-local domain (DNS-rebinding guard)", async () => {
+        expect.assertions(5);
+
+        const app = createDashboardApp(
+            {
+                cacheDirectory: join(tmpDir, ".task-runner-cache"),
+                host: "127.0.0.1",
+                port: 0,
+                workspaceRoot: tmpDir,
+            },
+            () => () => {},
+        );
+
+        const evil = await app.request("/api/environment", { headers: { host: "evil.example.com" } });
+
+        expect(evil.status).toBe(403);
+
+        const rebind = await app.request("/api/environment", { headers: { host: "attacker.test:8080" } });
+
+        expect(rebind.status).toBe(403);
+
+        const missing = await app.request("/api/environment");
+
+        expect(missing.status).toBe(403);
+
+        const loopback = await app.request("/api/environment", { headers: { host: "127.0.0.1:1234" } });
+
+        expect(loopback.status).toBe(200);
+
+        const localhost = await app.request("/api/environment", { headers: { host: "localhost:1234" } });
+
+        expect(localhost.status).toBe(200);
     });
 
     it("serves the SSE endpoint with the correct content-type", async () => {
