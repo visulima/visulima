@@ -90,6 +90,45 @@ describe("context page", () => {
             expect(page?.code.html).toContain("plain text body");
         });
 
+        it("should still mask key=value pairs in an opaque text body", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "text/plain",
+                },
+                method: "POST",
+                text: () => Promise.resolve("user=alice password=hunter2"),
+                url: "http://example.com/api",
+            } as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("user=alice");
+            expect(page?.code.html).not.toContain("hunter2");
+        });
+
+        it("should still mask after a long run of key characters with no separator", async () => {
+            expect.assertions(2);
+
+            // The key pattern is pinned to the start of each run (lookbehind) to keep
+            // js/polynomial-redos at bay; this guards that the pinning did not stop
+            // pairs following such a run from being masked.
+            const mockRequest = {
+                headers: {
+                    "content-type": "text/plain",
+                },
+                method: "POST",
+                text: () => Promise.resolve(`${"!".repeat(2000)} password=hunter2`),
+                url: "http://example.com/api",
+            } as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).not.toContain("hunter2");
+            expect(page?.code.html).toContain("[masked]");
+        });
+
         it("should filter headers based on allowlist", async () => {
             expect.assertions(4);
 
