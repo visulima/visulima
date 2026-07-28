@@ -10,7 +10,7 @@ import { join, resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "./native-binding";
 import { withEnhancedPath } from "./path-utils";
-import { uniqueId } from "./utils";
+import { isInsideWorkspace, uniqueId } from "./utils";
 
 /**
  * Lazily checks whether strace is available on the current system.
@@ -702,7 +702,7 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !absolute.startsWith(this.#workspaceRoot)) {
+                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
                     continue;
                 }
 
@@ -810,7 +810,7 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !absolute.startsWith(this.#workspaceRoot)) {
+                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
                     continue;
                 }
 
@@ -1079,7 +1079,7 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !path.startsWith(this.#workspaceRoot)) {
+            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
                 return undefined;
             }
 
@@ -1103,7 +1103,7 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !path.startsWith(this.#workspaceRoot)) {
+            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
                 return undefined;
             }
 

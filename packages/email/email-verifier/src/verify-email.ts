@@ -94,7 +94,11 @@ const verifyEmail = async (email: string, options: VerifyEmailOptions = {}): Pro
     const parts = splitAddress(email);
     const normalized = parts?.address ?? (typeof email === "string" ? email.trim().toLowerCase() : "");
 
-    const syntaxValid = validateSyntax(email);
+    // Validate the normalized (trimmed, lowercased) address rather than the raw
+    // input, so a padded-but-valid address like " user@gmail.com " is not rejected
+    // by the whitespace-sensitive syntax regex while every other check runs on the
+    // trimmed form.
+    const syntaxValid = validateSyntax(parts?.address ?? email);
 
     // Short-circuit on bad syntax — there is nothing to resolve.
     if (!syntaxValid || !parts) {
@@ -124,7 +128,7 @@ const verifyEmail = async (email: string, options: VerifyEmailOptions = {}): Pro
     if (!offline) {
         const mxResult = await checkMxRecords(parts.domain, { cache: options.cache });
 
-        domain = { records: mxResult.records ?? [], resolvedVia: mxResult.resolvedVia, valid: mxResult.valid };
+        domain = { deferred: mxResult.deferred, records: mxResult.records ?? [], resolvedVia: mxResult.resolvedVia, valid: mxResult.valid };
 
         const records = mxResult.records ?? [];
 
