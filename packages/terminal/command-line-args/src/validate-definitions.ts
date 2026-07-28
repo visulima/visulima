@@ -1,13 +1,9 @@
 import { InvalidDefinitionsError } from "./errors/index";
 import type { OptionDefinition, ParseOptions } from "./types";
 import debugLog from "./utils/debug";
+import { isBooleanType } from "./utils/type-checks";
 
 const DIGIT_PATTERN = /\d/;
-
-/**
- * Check if a type is boolean.
- */
-const isBooleanType = (type: unknown): boolean => type === Boolean || (typeof type === "function" && (type as { name: string }).name === "Boolean");
 
 /**
  * Check if a custom type function is valid by checking its shape only.

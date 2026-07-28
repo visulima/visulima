@@ -1,4 +1,5 @@
 import { InvalidValueError } from "../errors/index";
+import { isBooleanType, isNumberType, isStringType } from "./type-checks";
 
 /**
  * Type constructor function that converts a string to a typed value.
@@ -33,27 +34,6 @@ const toNumber = (value: unknown, strictTypes: boolean | undefined, optionName: 
 
     return result;
 };
-
-/**
- * Check if a type is boolean.
- * @param type The type to check
- * @returns True if the type is Boolean or BooleanConstructor
- */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name === "Boolean");
-
-/**
- * Check if a type is number.
- * @param type The type to check
- * @returns True if the type is Number or NumberConstructor
- */
-const isNumberType = (type: unknown): type is NumberConstructor => type === Number || (typeof type === "function" && type.name === "Number");
-
-/**
- * Check if a type is string.
- * @param type The type to check
- * @returns True if the type is String or StringConstructor
- */
-const isStringType = (type: unknown): type is StringConstructor => type === String || (typeof type === "function" && type.name === "String");
 
 /**
  * Convert a value to the specified type.

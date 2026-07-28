@@ -175,4 +175,16 @@ describe("case insensitive", () => {
             beta: "value",
         });
     });
+
+    it("short option inline value containing '=' is preserved", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ alias: "o", name: "output" }];
+        const argv = ["-O=a=b"];
+        const result = commandLineArgs(optionDefinitions, { argv, caseInsensitive: true });
+
+        expect(result).toStrictEqual({
+            output: "a=b",
+        });
+    });
 });

@@ -65,6 +65,15 @@ const isShortOptionGroup = (argument: string): boolean => {
         return false;
     }
 
+    // Digit-leading arguments (e.g. "-12", "-1.5") are negative numbers, not
+    // short-option groups. Mirror isShortOption's digit guard so they tokenize
+    // as positionals instead of being expanded into "-1", "-2", ...
+    const secondCharCode = argument.codePointAt(1);
+
+    if (secondCharCode !== undefined && secondCharCode >= 48 && secondCharCode <= 57) {
+        return false;
+    }
+
     return true;
 };
 

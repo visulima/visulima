@@ -58,4 +58,13 @@ describe("type number", () => {
 
         expect(() => commandLineArgs(optionDefinitions, { argv: ["--5"] })).toThrow(UnknownOptionError);
     });
+
+    it("multi-digit and decimal negative numbers are parsed as values", () => {
+        expect.assertions(2);
+
+        const optionDefinitions = [{ name: "num", type: Number }];
+
+        expect(commandLineArgs(optionDefinitions, { argv: ["--num", "-12"] })).toStrictEqual({ num: -12 });
+        expect(commandLineArgs(optionDefinitions, { argv: ["--num", "-1.5"] })).toStrictEqual({ num: -1.5 });
+    });
 });

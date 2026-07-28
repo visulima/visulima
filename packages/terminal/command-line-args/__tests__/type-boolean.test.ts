@@ -90,6 +90,17 @@ describe("type boolean", () => {
             });
         });
 
+        it("type-boolean: empty inline value in partial mode retains other unknown args and positionals", () => {
+            expect.assertions(1);
+
+            const optionDefinitions = [{ name: "one", type: Boolean }];
+
+            expect(commandLineArgs(optionDefinitions, { argv: ["--one=", "--two", "pos"], partial: true })).toStrictEqual({
+                _unknown: ["--one=", "--two", "pos"],
+                one: true,
+            });
+        });
+
         it("type-boolean: repeated non-multiple flag in partial mode collects into an array", () => {
             expect.assertions(1);
 
