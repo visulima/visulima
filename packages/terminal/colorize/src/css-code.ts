@@ -5,14 +5,14 @@ export const baseStyles: Required<Record<AnsiStyles, string>> = {
     bold: "font-weight: bold;",
     dim: "opacity: 0.5;",
     hidden: "visibility: hidden;",
-    inverse: "background-color: currentColor; color: background-color;",
+    inverse: "filter: invert(1);",
     italic: "font-style: italic;",
     overline: "text-decoration: overline;",
     reset: "color: inherit",
     strike: "text-decoration: line-through;",
     strikethrough: "text-decoration: line-through;",
     underline: "text-decoration: underline;",
-    visible: "opacity: 0;",
+    visible: "",
 };
 
 export const baseColors: Required<Record<AnsiColors, string>> = {

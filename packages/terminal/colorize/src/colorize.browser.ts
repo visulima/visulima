@@ -39,15 +39,20 @@ const createStyle = (
             cssObject[key] ??= propertiesCssObject[key] as string;
         }
 
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        cssStack = `${JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";")};`;
+        cssStack = Object.entries(cssObject)
+            .map(([key, value]) => `${key}:${value};`)
+            .join("");
     }
 
     const style = (
         input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
         ...values: string[]
     ): string[] => {
-        if (!input) {
+        // The declared type excludes null/undefined, but untyped JS callers still
+        // reach here; the explicit three-way check lets falsy-but-meaningful values
+        // (0, NaN, false) render while bailing only on null/undefined/empty string.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- guard defends against untyped callers the type system can't see
+        if (input === undefined || input === null || input === "") {
             return [];
         }
 
