@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { CheckerType, HealthCheck, HealthReport } from "../types";
+import respond from "./respond";
 
 // Inlined HTTP status codes to avoid pulling the `http-status-codes` runtime
 // dependency into every consumer for three constants.
@@ -54,24 +55,43 @@ const healthCheckHandler = (healthCheck: HealthCheck, options: HealthCheckHandle
     const { appName, appVersion, sendHeader = true, type } = resolved;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(_: Request, response: Response): Promise<void> => {
-        const { healthy, report } = await healthCheck.getReport(type);
+        const resolvedAppName = appName ?? process.env.APP_NAME ?? "unknown";
+        const resolvedAppVersion = appVersion ?? process.env.APP_VERSION ?? "unknown";
+        const timestamp = new Date().toISOString();
 
-        const payload: HealthCheckApiPayload = {
-            appName: appName ?? process.env.APP_NAME ?? "unknown",
-            appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
-            message: healthy ? "Health check successful" : "Health check failed",
-            reports: report,
-            status: healthy ? "ok" : "error",
-            timestamp: new Date().toISOString(),
-        };
+        let payload: HealthCheckApiPayload;
+        let statusCode: number;
 
-        response.statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
+        try {
+            const { healthy, report } = await healthCheck.getReport(type);
 
-        if (sendHeader) {
-            response.setHeader("Content-Type", "application/json");
+            payload = {
+                appName: resolvedAppName,
+                appVersion: resolvedAppVersion,
+                message: healthy ? "Health check successful" : "Health check failed",
+                reports: report,
+                status: healthy ? "ok" : "error",
+                timestamp,
+            };
+
+            statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(error);
+
+            payload = {
+                appName: resolvedAppName,
+                appVersion: resolvedAppVersion,
+                message: "Health check failed",
+                reports: {},
+                status: "error",
+                timestamp,
+            };
+
+            statusCode = HTTP_SERVICE_UNAVAILABLE;
         }
 
-        response.end(JSON.stringify(payload, null, 2));
+        respond(response, { body: JSON.stringify(payload, null, 2), sendHeader, statusCode });
     };
 };
 

@@ -97,6 +97,47 @@ describe("healthCheck features", () => {
         });
     });
 
+    describe("malformed checker result", () => {
+        it("synthesizes a fatal unhealthy entry when a checker returns a result without health", async () => {
+            expect.assertions(4);
+
+            const healthCheck = new HealthCheck();
+
+            // JS consumers with no type checking can trivially return this.
+            healthCheck.addChecker("broken", async () => ({}) as never);
+
+            const { healthy, report } = await healthCheck.getReport();
+
+            expect(healthy).toBe(false);
+            expect(report.broken.health.healthy).toBe(false);
+            expect(report.broken.meta).toStrictEqual({ fatal: true });
+            expect(report.broken.displayName).toBe("broken");
+        });
+    });
+
+    describe("concurrent report de-duplication", () => {
+        it("runs each checker once across concurrent getReport calls", async () => {
+            expect.assertions(3);
+
+            const healthCheck = new HealthCheck();
+            const spy = vi.fn(async () => {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 20);
+                });
+
+                return { displayName: "db", health: { healthy: true, timestamp: dateString } };
+            });
+
+            healthCheck.addChecker("db", spy);
+
+            const [first, second] = await Promise.all([healthCheck.getReport(), healthCheck.getReport()]);
+
+            expect(spy).toHaveBeenCalledTimes(1);
+            expect(first.healthy).toBe(true);
+            expect(second.healthy).toBe(true);
+        });
+    });
+
     describe("report caching", () => {
         it("does not re-run checkers within the cache window", async () => {
             expect.assertions(2);
@@ -196,6 +237,26 @@ describe("healthCheck features", () => {
             });
 
             await healthCheck.shutdown();
+
+            expect(order).toStrictEqual([1, 2]);
+        });
+
+        it("runs every hook even when an earlier hook throws, then surfaces the error", async () => {
+            expect.assertions(2);
+
+            const healthCheck = new HealthCheck();
+            const order: number[] = [];
+
+            healthCheck.onShutdown(() => {
+                order.push(1);
+
+                throw new Error("boom");
+            });
+            healthCheck.onShutdown(() => {
+                order.push(2);
+            });
+
+            await expect(healthCheck.shutdown()).rejects.toThrow(AggregateError);
 
             expect(order).toStrictEqual([1, 2]);
         });
