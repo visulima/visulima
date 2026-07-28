@@ -104,6 +104,29 @@ describe("interactiveManager overflow (height <= actualLength)", () => {
         expect(manager.lastLength).toBe(3);
     });
 
+    it("resets outside on resume so a later frame is not sliced by a stale overflow count", () => {
+        expect.assertions(3);
+
+        const { manager } = createManager();
+
+        manager.hook();
+        // Overflow the 3-row terminal: outside becomes 7.
+        manager.update("stdout", makeRows(10));
+
+        expect(manager.outside).toBe(7);
+
+        manager.suspend("stdout");
+        manager.resume("stdout");
+
+        // resume() must forget the pre-suspend overflow; a stale outside would slice leading
+        // lines off the next frame instead of rendering it in full.
+        expect(manager.outside).toBe(0);
+
+        manager.update("stdout", makeRows(2));
+
+        expect(manager.outside).toBe(0);
+    });
+
     it("clamps position to the last row when `from` exceeds the terminal height", () => {
         expect.assertions(1);
 
