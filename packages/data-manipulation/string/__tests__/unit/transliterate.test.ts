@@ -67,6 +67,17 @@ describe("transliterate function", () => {
         expect(transliterate("strasse", { replaceAfter: [[/ss/g, "ß"]] })).toBe("straße");
     });
 
+    it("should honor ignore ranges in replaceAfter after a length-changing charmap mapping", () => {
+        expect.assertions(2);
+
+        // æ maps to "ae" (length-changing), shifting "x" from index 1 to index 2.
+        // The ignore ranges for replaceAfter must be recomputed against the
+        // transliterated string, otherwise the ignored "x" is wrongly replaced.
+        expect(transliterate("æx", { ignore: ["x"], replaceAfter: [["x", "y"]] })).toBe("aex");
+        // Without ignore, the same replaceAfter does rewrite "x" -> "y".
+        expect(transliterate("æx", { replaceAfter: [["x", "y"]] })).toBe("aey");
+    });
+
     it("should handle combined options", () => {
         expect.assertions(1);
 

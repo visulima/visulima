@@ -67,6 +67,24 @@ describe("solution/rule-based-finder", () => {
         expect(result?.body).toContain("Accessing property of undefined");
     });
 
+    it("should detect ECONNREFUSED network error", async () => {
+        expect.assertions(1);
+
+        const error = new Error("connect ECONNREFUSED 127.0.0.1:5432");
+        const result = await ruleBasedFinder.handle(error, { file: "db.ts", line: 2 });
+
+        expect(result?.body).toContain("Network/DNS connection issue");
+    });
+
+    it("should not trigger the network rule on unrelated messages containing 'dns'", async () => {
+        expect.assertions(1);
+
+        const error = new Error("dnsmasq failed to start");
+        const result = await ruleBasedFinder.handle(error, { file: "svc.ts", line: 2 });
+
+        expect(result).toBeUndefined();
+    });
+
     it("should return undefined when no rule matches", async () => {
         expect.assertions(1);
 

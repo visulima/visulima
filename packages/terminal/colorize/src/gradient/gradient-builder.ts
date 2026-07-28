@@ -6,6 +6,9 @@ import { interpolateHsv, interpolateRgb } from "./util/interpolate";
 
 type StopValue = ColorValueHex | CssColorName | RGB | StopInput | [number, number, number];
 
+// Matches a bare 3/6-digit hex string written without the leading "#".
+const BARE_HEX_REGEX = /^[a-f\d]{3}$|^[a-f\d]{6}$/i;
+
 /** Resolve a stop's color (tuple, hex/name string, or RGB object) to an `[r, g, b]` tuple. */
 const resolveStopColor = (color: StopInput["color"]): [number, number, number] | undefined => {
     if (Array.isArray(color)) {
@@ -13,7 +16,15 @@ const resolveStopColor = (color: StopInput["color"]): [number, number, number] |
     }
 
     if (typeof color === "string") {
-        return color.includes("#") ? convertHexToRgb(color) : colorNames[color as CssColorName];
+        if (color.includes("#")) {
+            return convertHexToRgb(color);
+        }
+
+        if (Object.hasOwn(colorNames, color)) {
+            return colorNames[color as CssColorName];
+        }
+
+        return BARE_HEX_REGEX.test(color) ? convertHexToRgb(color) : undefined;
     }
 
     if (color && "r" in color && "g" in color && "b" in color) {
@@ -37,8 +48,19 @@ const buildPositionedStop = (
         throw new Error("Cannot define two consecutive position-only stops");
     }
 
+    let color: [number, number, number] | undefined;
+
+    if (hasColor) {
+        color = resolveStopColor(stopInput.color);
+
+        if (color === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- surfacing the offending value in the error message
+            throw new Error(`Invalid color stop "${String(stopInput.color)}"`);
+        }
+    }
+
     const stop: StopOutput & { colorLess: boolean } = {
-        color: hasColor ? resolveStopColor(stopInput.color) : undefined,
+        color,
         colorLess: !hasColor,
         position: stopInput.position,
     };
@@ -58,16 +80,11 @@ const buildPositionedStop = (
 const buildAutoStop = (stop: StopValue, index: number, length: number): StopOutput => {
     const position = index / (length - 1);
 
-    // Arrays and color strings always yield a stop — an unrecognized color name
-    // resolves to `undefined` here without throwing (preserving the original).
-    if (Array.isArray(stop) || typeof stop === "string") {
-        return { color: resolveStopColor(stop), position };
-    }
-
     const color = resolveStopColor(stop as StopInput["color"]);
 
     if (color === undefined) {
-        throw new Error("Invalid color stop");
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- surfacing the offending value in the error message
+        throw new Error(`Invalid color stop "${String(stop)}"`);
     }
 
     return { color, position };

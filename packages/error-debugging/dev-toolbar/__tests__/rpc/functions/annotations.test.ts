@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vites
 import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "../../../src/rpc/functions/annotations";
 import {
     MAX_ANNOTATIONS,
+    MAX_SCREENSHOT_BYTES,
     MAX_TEXT_FIELD_LENGTH,
     MAX_THREAD_MESSAGES,
     readAnnotations,
@@ -301,6 +302,22 @@ describe("rpc/functions/annotations", () => {
             expect.assertions(1);
 
             await expect(saveScreenshot(server, "", "data:image/png;base64,abc")).rejects.toThrow("Invalid annotation ID");
+        });
+
+        it("sECURITY: rejects a screenshot larger than MAX_SCREENSHOT_BYTES", async () => {
+            expect.assertions(2);
+
+            // A base64 payload decoding to just over the cap.
+            const oversized = Buffer.alloc(MAX_SCREENSHOT_BYTES + 1).toString("base64");
+            const dataUrl = `data:image/png;base64,${oversized}`;
+
+            await expect(saveScreenshot(server, "big-id", dataUrl)).rejects.toThrow(/maximum size/);
+
+            // Nothing was written to disk.
+            const { screenshotsDir } = resolvePaths(tmpDir);
+            const entries = await fs.readdir(screenshotsDir).catch(() => [] as string[]);
+
+            expect(entries).toEqual([]);
         });
     });
 

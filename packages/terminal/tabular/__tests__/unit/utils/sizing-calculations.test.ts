@@ -372,7 +372,8 @@ describe("grid Sizing Calculations", () => {
             expect.assertions(1);
 
             // A 3-row spanning cell with 5 lines of content. Initial heights are [1,1,1] (=3 lines),
-            // so a deficit must be distributed across the non-fixed span rows.
+            // so a deficit must be distributed across the non-fixed span rows. With borders disabled
+            // no internal border line carries a content line, so the full 5 lines must be allocated.
             const span: GridItem = { content: "L1\nL2\nL3\nL4\nL5", rowSpan: 3 };
             const grid: (GridItem | undefined)[][] = [[span], [undefined], [undefined]];
 
@@ -396,7 +397,7 @@ describe("grid Sizing Calculations", () => {
                     alignCellContent,
                     findFirstOccurrenceRow,
                 ),
-            ).toStrictEqual([4, 1, 1]);
+            ).toStrictEqual([5, 1, 1]);
         });
     });
 
