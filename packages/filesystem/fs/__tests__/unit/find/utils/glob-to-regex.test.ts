@@ -273,4 +273,38 @@ describe(globToRegExp, () => {
         expect(regex.test("test-abc.yaml")).toBe(true);
         expect(regex.test("test-abc.yml")).toBe(true);
     });
+
+    it("treats a comma outside braces as a literal, not an alternation", () => {
+        expect.assertions(4);
+
+        const regex = globToRegExp("a,b.txt");
+
+        expect(regex.test("a,b.txt")).toBe(true);
+        // Anchoring must bind to the whole pattern, not just the first alternative.
+        expect(regex.test("a")).toBe(false);
+        expect(regex.test("axxx")).toBe(false);
+        expect(regex.test("b.txt")).toBe(false);
+    });
+
+    it("only turns commas inside a brace group into alternations", () => {
+        expect.assertions(4);
+
+        const regex = globToRegExp("{a,b}c,d.txt");
+
+        expect(regex.test("ac,d.txt")).toBe(true);
+        expect(regex.test("bc,d.txt")).toBe(true);
+        expect(regex.test("ac")).toBe(false);
+        expect(regex.test("d.txt")).toBe(false);
+    });
+
+    it("matches an unmatched brace literally instead of throwing", () => {
+        expect.assertions(3);
+
+        expect(() => globToRegExp("a{b.txt")).not.toThrow();
+
+        const regex = globToRegExp("a{b.txt");
+
+        expect(regex.test("a{b.txt")).toBe(true);
+        expect(regex.test("ab.txt")).toBe(false);
+    });
 });

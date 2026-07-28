@@ -168,6 +168,20 @@ describe(walkSync, () => {
             expect(paths).toContain(resolve(temporaryDirectoryPath, "real-dir/inside.txt"));
         });
 
+        it("should report the resolved target's type on a followed file symlink", () => {
+            expect.assertions(3);
+
+            writeFileSync(resolve(temporaryDirectoryPath, "real-file.txt"), "hello");
+            symlinkSync(resolve(temporaryDirectoryPath, "real-file.txt"), resolve(temporaryDirectoryPath, "link-to-file.txt"));
+
+            const entries = getEntries(temporaryDirectoryPath, { followSymlinks: true });
+            const resolved = entries.filter((entry) => entry.path === resolve(temporaryDirectoryPath, "real-file.txt"));
+
+            expect(resolved).toHaveLength(2);
+            expect(resolved.every((entry) => entry.isFile())).toBe(true);
+            expect(resolved.some((entry) => entry.isSymbolicLink())).toBe(false);
+        });
+
         it("should mark entries with isSymbolicLink for un-followed symlinks", () => {
             expect.hasAssertions();
 
