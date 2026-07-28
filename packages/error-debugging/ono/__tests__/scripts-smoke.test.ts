@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 
 import template from "../src/error-inspector";
 
-const SCRIPT_TAG_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/g;
+// Case-insensitive so an upper/mixed-case `<SCRIPT>` in the template is still
+// extracted rather than silently skipped by this smoke check.
+const SCRIPT_TAG_RE = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 
 const extractScripts = (html: string): string[] => {
     const scripts: string[] = [];
