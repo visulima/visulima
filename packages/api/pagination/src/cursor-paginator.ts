@@ -1,3 +1,4 @@
+import { buildUrl, serializeQuery } from "./build-query";
 import type { CursorPaginationMeta, CursorPaginationResult, CursorPaginator as ICursorPaginator, CursorPaginatorOptions } from "./types";
 
 const defaultGetCursor = (row: unknown): string => {
@@ -30,19 +31,7 @@ class CursorPaginator<T = unknown> extends Array<T> implements ICursorPaginator<
      * @param options Current cursor, `hasMore` flag and `getCursor` resolver.
      */
     public static fromArray<Result = unknown>(perPage: number, rows: Result[], options: CursorPaginatorOptions<Result> = {}): CursorPaginator<Result> {
-        const paginator = new CursorPaginator<Result>(perPage, options);
-        const { length } = rows;
-
-        paginator.length = length;
-
-        // eslint-disable-next-line no-plusplus
-        for (let index = 0; index < length; index++) {
-            paginator[index] = rows[index] as Result;
-        }
-
-        (paginator as { isEmpty: boolean }).isEmpty = length === 0;
-
-        return paginator;
+        return new CursorPaginator<Result>(perPage, options, rows);
     }
 
     public readonly isEmpty: boolean;
@@ -61,15 +50,32 @@ class CursorPaginator<T = unknown> extends Array<T> implements ICursorPaginator<
 
     private readonly hasMore: boolean;
 
-    public constructor(perPage: number, options: CursorPaginatorOptions<T> = {}) {
+    /**
+     * @param perPage Rows requested per page (clamped to be at least 1).
+     * @param options Current cursor, `hasMore` flag and `getCursor` resolver.
+     * @param rows The pre-fetched rows for the current page. They are NOT sliced. Defaults to an empty array.
+     */
+    public constructor(perPage: number, options: CursorPaginatorOptions<T> = {}, rows: T[] = []) {
         super();
+
+        // Avoid spreading `rows` (`super(...rows)` / `this.push(...rows)`): both
+        // throw `RangeError: Maximum call stack size exceeded` for large datasets
+        // (~100k rows on V8). Index-write instead — backed by a single store.
+        const { length } = rows;
+
+        this.length = length;
+
+        // eslint-disable-next-line no-plusplus
+        for (let index = 0; index < length; index++) {
+            this[index] = rows[index] as T;
+        }
 
         this.perPage = Number.isFinite(perPage) && perPage > 0 ? Math.trunc(perPage) : 1;
         // eslint-disable-next-line unicorn/no-null
         this.currentCursor = options.currentCursor ?? null;
         this.getCursor = options.getCursor ?? defaultGetCursor;
         this.hasMore = options.hasMore ?? false;
-        this.isEmpty = true;
+        this.isEmpty = length === 0;
     }
 
     /**
@@ -94,16 +100,7 @@ class CursorPaginator<T = unknown> extends Array<T> implements ICursorPaginator<
     public queryString(values: Record<string, unknown>): this {
         this.qs = values;
 
-        const searchParameters = new URLSearchParams();
-
-        for (const [key, value] of Object.entries(this.qs)) {
-            if (value !== undefined && value !== null) {
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                searchParameters.append(key, String(value));
-            }
-        }
-
-        this.baseQuery = searchParameters.toString();
+        this.baseQuery = serializeQuery(this.qs);
 
         return this;
     }
@@ -144,7 +141,7 @@ class CursorPaginator<T = unknown> extends Array<T> implements ICursorPaginator<
 
         const cursorParameter = `cursor=${encodeURIComponent(cursor)}`;
 
-        return this.baseQuery === "" ? `${this.url}?${cursorParameter}` : `${this.url}?${this.baseQuery}&${cursorParameter}`;
+        return buildUrl(this.url, this.baseQuery, cursorParameter);
     }
 
     /**
