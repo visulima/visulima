@@ -44,6 +44,15 @@ describe("currencies", () => {
         expect(currency?.code).toBe("USD");
     });
 
+    it("should resolve a shared numeric code to the active currency", () => {
+        expect.assertions(3);
+        // 532 is shared by ANG (demonetised 2025) and its successor XCG; the
+        // active currency must win regardless of dataset ordering.
+        expect(getByNumber("532")?.code).toBe("XCG");
+        expect(getByNumber(532)?.code).toBe("XCG");
+        expect(getByCode("ANG")?.number).toBe("532");
+    });
+
     it("should fall back to the code when the symbol is unknown", () => {
         expect.assertions(1);
         expect(getSymbol("zzz")).toBe("ZZZ");

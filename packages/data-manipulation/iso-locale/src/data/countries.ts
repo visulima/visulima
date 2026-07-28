@@ -19,6 +19,7 @@ const countriesData = [
         ioc: "AND",
         languages: ["cat"],
         name: "Andorra",
+        numeric: "020",
         status: "assigned",
     },
     {
@@ -30,6 +31,7 @@ const countriesData = [
         ioc: "UAE",
         languages: ["ara"],
         name: "United Arab Emirates",
+        numeric: "784",
         status: "assigned",
     },
     {
@@ -41,6 +43,7 @@ const countriesData = [
         ioc: "AFG",
         languages: ["pus"],
         name: "Afghanistan",
+        numeric: "004",
         status: "assigned",
     },
     {
@@ -52,6 +55,7 @@ const countriesData = [
         ioc: "ANT",
         languages: ["eng"],
         name: "Antigua And Barbuda",
+        numeric: "028",
         status: "assigned",
     },
     {
@@ -63,6 +67,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Anguilla",
+        numeric: "660",
         status: "assigned",
     },
     {
@@ -84,6 +89,7 @@ const countriesData = [
         ioc: "ALB",
         languages: ["sqi"],
         name: "Albania",
+        numeric: "008",
         status: "assigned",
     },
     {
@@ -95,6 +101,7 @@ const countriesData = [
         ioc: "ARM",
         languages: ["hye", "rus"],
         name: "Armenia",
+        numeric: "051",
         status: "assigned",
     },
     {
@@ -116,6 +123,7 @@ const countriesData = [
         ioc: "ANG",
         languages: ["por"],
         name: "Angola",
+        numeric: "024",
         status: "assigned",
     },
     {
@@ -127,6 +135,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Antarctica",
+        numeric: "010",
         status: "assigned",
     },
     {
@@ -138,6 +147,7 @@ const countriesData = [
         ioc: "ARG",
         languages: ["spa"],
         name: "Argentina",
+        numeric: "032",
         status: "assigned",
     },
     {
@@ -149,6 +159,7 @@ const countriesData = [
         ioc: "ASA",
         languages: ["eng", "smo"],
         name: "American Samoa",
+        numeric: "016",
         status: "assigned",
     },
     {
@@ -160,6 +171,7 @@ const countriesData = [
         ioc: "AUT",
         languages: ["deu"],
         name: "Austria",
+        numeric: "040",
         status: "assigned",
     },
     {
@@ -171,6 +183,7 @@ const countriesData = [
         ioc: "AUS",
         languages: ["eng"],
         name: "Australia",
+        numeric: "036",
         status: "assigned",
     },
     {
@@ -182,6 +195,7 @@ const countriesData = [
         ioc: "ARU",
         languages: ["nld"],
         name: "Aruba",
+        numeric: "533",
         status: "assigned",
     },
     {
@@ -193,6 +207,7 @@ const countriesData = [
         ioc: "",
         languages: ["swe"],
         name: "Åland Islands",
+        numeric: "248",
         status: "assigned",
     },
     {
@@ -204,6 +219,7 @@ const countriesData = [
         ioc: "AZE",
         languages: ["aze"],
         name: "Azerbaijan",
+        numeric: "031",
         status: "assigned",
     },
     {
@@ -215,6 +231,7 @@ const countriesData = [
         ioc: "BIH",
         languages: ["bos", "cre", "srp"],
         name: "Bosnia & Herzegovina",
+        numeric: "070",
         status: "assigned",
     },
     {
@@ -226,6 +243,7 @@ const countriesData = [
         ioc: "BAR",
         languages: ["eng"],
         name: "Barbados",
+        numeric: "052",
         status: "assigned",
     },
     {
@@ -237,6 +255,7 @@ const countriesData = [
         ioc: "BAN",
         languages: ["ben"],
         name: "Bangladesh",
+        numeric: "050",
         status: "assigned",
     },
     {
@@ -248,6 +267,7 @@ const countriesData = [
         ioc: "BEL",
         languages: ["nld", "fra", "deu"],
         name: "Belgium",
+        numeric: "056",
         status: "assigned",
     },
     {
@@ -259,6 +279,7 @@ const countriesData = [
         ioc: "BUR",
         languages: ["fra"],
         name: "Burkina Faso",
+        numeric: "854",
         status: "assigned",
     },
     {
@@ -270,6 +291,7 @@ const countriesData = [
         ioc: "BUL",
         languages: ["bul"],
         name: "Bulgaria",
+        numeric: "100",
         status: "assigned",
     },
     {
@@ -281,6 +303,7 @@ const countriesData = [
         ioc: "BRN",
         languages: ["ara"],
         name: "Bahrain",
+        numeric: "048",
         status: "assigned",
     },
     {
@@ -292,6 +315,7 @@ const countriesData = [
         ioc: "BDI",
         languages: ["fra"],
         name: "Burundi",
+        numeric: "108",
         status: "assigned",
     },
     {
@@ -303,6 +327,7 @@ const countriesData = [
         ioc: "BEN",
         languages: ["fra"],
         name: "Benin",
+        numeric: "204",
         status: "assigned",
     },
     {
@@ -314,6 +339,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Saint Barthélemy",
+        numeric: "652",
         status: "assigned",
     },
     {
@@ -325,6 +351,7 @@ const countriesData = [
         ioc: "BER",
         languages: ["eng"],
         name: "Bermuda",
+        numeric: "060",
         status: "assigned",
     },
     {
@@ -336,6 +363,7 @@ const countriesData = [
         ioc: "BRU",
         languages: ["msa", "eng"],
         name: "Brunei Darussalam",
+        numeric: "096",
         status: "assigned",
     },
     {
@@ -347,6 +375,7 @@ const countriesData = [
         ioc: "BOL",
         languages: ["spa", "aym", "que"],
         name: "Bolivia, Plurinational State Of",
+        numeric: "068",
         status: "assigned",
     },
     {
@@ -358,6 +387,7 @@ const countriesData = [
         ioc: "",
         languages: ["nld"],
         name: "Bonaire, Sint Eustatius And Saba",
+        numeric: "535",
         status: "assigned",
     },
     {
@@ -379,6 +409,7 @@ const countriesData = [
         ioc: "BRA",
         languages: ["por"],
         name: "Brazil",
+        numeric: "076",
         status: "assigned",
     },
     {
@@ -390,6 +421,7 @@ const countriesData = [
         ioc: "BAH",
         languages: ["eng"],
         name: "Bahamas",
+        numeric: "044",
         status: "assigned",
     },
     {
@@ -401,6 +433,7 @@ const countriesData = [
         ioc: "BHU",
         languages: ["dzo"],
         name: "Bhutan",
+        numeric: "064",
         status: "assigned",
     },
     {
@@ -422,6 +455,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Bouvet Island",
+        numeric: "074",
         status: "assigned",
     },
     {
@@ -433,6 +467,7 @@ const countriesData = [
         ioc: "BOT",
         languages: ["eng", "tsn"],
         name: "Botswana",
+        numeric: "072",
         status: "assigned",
     },
     {
@@ -444,6 +479,7 @@ const countriesData = [
         ioc: "BLR",
         languages: ["bel", "rus"],
         name: "Belarus",
+        numeric: "112",
         status: "assigned",
     },
     {
@@ -465,6 +501,7 @@ const countriesData = [
         ioc: "BIZ",
         languages: ["eng"],
         name: "Belize",
+        numeric: "084",
         status: "assigned",
     },
     {
@@ -476,6 +513,7 @@ const countriesData = [
         ioc: "CAN",
         languages: ["eng", "fra"],
         name: "Canada",
+        numeric: "124",
         status: "assigned",
     },
     {
@@ -487,6 +525,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Cocos (Keeling) Islands",
+        numeric: "166",
         status: "assigned",
     },
     {
@@ -498,6 +537,7 @@ const countriesData = [
         ioc: "COD",
         languages: ["fra", "lin", "kon", "swa"],
         name: "Democratic Republic Of Congo",
+        numeric: "180",
         status: "assigned",
     },
     {
@@ -509,6 +549,7 @@ const countriesData = [
         ioc: "CAF",
         languages: ["fra", "sag"],
         name: "Central African Republic",
+        numeric: "140",
         status: "assigned",
     },
     {
@@ -520,6 +561,7 @@ const countriesData = [
         ioc: "CGO",
         languages: ["fra", "lin"],
         name: "Republic Of Congo",
+        numeric: "178",
         status: "assigned",
     },
     {
@@ -531,6 +573,7 @@ const countriesData = [
         ioc: "SUI",
         languages: ["deu", "fra", "ita", "roh"],
         name: "Switzerland",
+        numeric: "756",
         status: "assigned",
     },
     {
@@ -542,6 +585,7 @@ const countriesData = [
         ioc: "CIV",
         languages: ["fra"],
         name: "Côte d'Ivoire",
+        numeric: "384",
         status: "assigned",
     },
     {
@@ -553,6 +597,7 @@ const countriesData = [
         ioc: "COK",
         languages: ["eng", "mri"],
         name: "Cook Islands",
+        numeric: "184",
         status: "assigned",
     },
     {
@@ -564,6 +609,7 @@ const countriesData = [
         ioc: "CHI",
         languages: ["spa"],
         name: "Chile",
+        numeric: "152",
         status: "assigned",
     },
     {
@@ -575,6 +621,7 @@ const countriesData = [
         ioc: "CMR",
         languages: ["eng", "fra"],
         name: "Cameroon",
+        numeric: "120",
         status: "assigned",
     },
     {
@@ -586,6 +633,7 @@ const countriesData = [
         ioc: "CHN",
         languages: ["zho"],
         name: "China",
+        numeric: "156",
         status: "assigned",
     },
     {
@@ -597,6 +645,7 @@ const countriesData = [
         ioc: "COL",
         languages: ["spa"],
         name: "Colombia",
+        numeric: "170",
         status: "assigned",
     },
     {
@@ -619,6 +668,7 @@ const countriesData = [
         ioc: "CRC",
         languages: ["spa"],
         name: "Costa Rica",
+        numeric: "188",
         status: "assigned",
     },
     {
@@ -660,6 +710,7 @@ const countriesData = [
         ioc: "CUB",
         languages: ["spa"],
         name: "Cuba",
+        numeric: "192",
         status: "assigned",
     },
     {
@@ -671,6 +722,7 @@ const countriesData = [
         ioc: "CPV",
         languages: ["por"],
         name: "Cabo Verde",
+        numeric: "132",
         status: "assigned",
     },
     {
@@ -682,6 +734,7 @@ const countriesData = [
         ioc: "",
         languages: ["nld"],
         name: "Curacao",
+        numeric: "531",
         status: "assigned",
     },
     {
@@ -693,6 +746,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Christmas Island",
+        numeric: "162",
         status: "assigned",
     },
     {
@@ -704,6 +758,7 @@ const countriesData = [
         ioc: "CYP",
         languages: ["ell", "tur"],
         name: "Cyprus",
+        numeric: "196",
         status: "assigned",
     },
     {
@@ -715,6 +770,7 @@ const countriesData = [
         ioc: "CZE",
         languages: ["ces"],
         name: "Czech Republic",
+        numeric: "203",
         status: "assigned",
     },
     {
@@ -736,6 +792,7 @@ const countriesData = [
         ioc: "GER",
         languages: ["deu"],
         name: "Germany",
+        numeric: "276",
         status: "assigned",
     },
     {
@@ -758,6 +815,7 @@ const countriesData = [
         ioc: "DJI",
         languages: ["ara", "fra"],
         name: "Djibouti",
+        numeric: "262",
         status: "assigned",
     },
     {
@@ -769,6 +827,7 @@ const countriesData = [
         ioc: "DEN",
         languages: ["dan"],
         name: "Denmark",
+        numeric: "208",
         status: "assigned",
     },
     {
@@ -780,6 +839,7 @@ const countriesData = [
         ioc: "DMA",
         languages: ["eng"],
         name: "Dominica",
+        numeric: "212",
         status: "assigned",
     },
     {
@@ -791,6 +851,7 @@ const countriesData = [
         ioc: "DOM",
         languages: ["spa"],
         name: "Dominican Republic",
+        numeric: "214",
         status: "assigned",
     },
     {
@@ -812,6 +873,7 @@ const countriesData = [
         ioc: "ALG",
         languages: ["ara"],
         name: "Algeria",
+        numeric: "012",
         status: "assigned",
     },
     {
@@ -834,6 +896,7 @@ const countriesData = [
         ioc: "ECU",
         languages: ["spa", "que"],
         name: "Ecuador",
+        numeric: "218",
         status: "assigned",
     },
     {
@@ -845,6 +908,7 @@ const countriesData = [
         ioc: "EST",
         languages: ["est"],
         name: "Estonia",
+        numeric: "233",
         status: "assigned",
     },
     {
@@ -856,6 +920,7 @@ const countriesData = [
         ioc: "EGY",
         languages: ["ara"],
         name: "Egypt",
+        numeric: "818",
         status: "assigned",
     },
     {
@@ -867,6 +932,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Western Sahara",
+        numeric: "732",
         status: "assigned",
     },
     {
@@ -878,6 +944,7 @@ const countriesData = [
         ioc: "ERI",
         languages: ["eng", "ara", "tir"],
         name: "Eritrea",
+        numeric: "232",
         status: "assigned",
     },
     {
@@ -889,6 +956,7 @@ const countriesData = [
         ioc: "ESP",
         languages: ["spa", "cat", "glg", "eus"],
         name: "Spain",
+        numeric: "724",
         status: "assigned",
     },
     {
@@ -900,6 +968,7 @@ const countriesData = [
         ioc: "ETH",
         languages: ["amh"],
         name: "Ethiopia",
+        numeric: "231",
         status: "assigned",
     },
     {
@@ -922,6 +991,7 @@ const countriesData = [
         ioc: "FIN",
         languages: ["fin", "swe"],
         name: "Finland",
+        numeric: "246",
         status: "assigned",
     },
     {
@@ -933,6 +1003,7 @@ const countriesData = [
         ioc: "FIJ",
         languages: ["eng", "fij"],
         name: "Fiji",
+        numeric: "242",
         status: "assigned",
     },
     {
@@ -944,6 +1015,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Falkland Islands",
+        numeric: "238",
         status: "assigned",
     },
     {
@@ -955,6 +1027,7 @@ const countriesData = [
         ioc: "FSM",
         languages: ["eng"],
         name: "Micronesia, Federated States Of",
+        numeric: "583",
         status: "assigned",
     },
     {
@@ -966,6 +1039,7 @@ const countriesData = [
         ioc: "FAI",
         languages: ["fao", "dan"],
         name: "Faroe Islands",
+        numeric: "234",
         status: "assigned",
     },
     {
@@ -987,6 +1061,7 @@ const countriesData = [
         ioc: "FRA",
         languages: ["fra"],
         name: "France",
+        numeric: "250",
         status: "assigned",
     },
     {
@@ -1009,6 +1084,7 @@ const countriesData = [
         ioc: "GAB",
         languages: ["fra"],
         name: "Gabon",
+        numeric: "266",
         status: "assigned",
     },
     {
@@ -1020,6 +1096,7 @@ const countriesData = [
         ioc: "GBR",
         languages: ["eng", "cor", "gle", "gla", "cym"],
         name: "United Kingdom",
+        numeric: "826",
         status: "assigned",
     },
     {
@@ -1031,6 +1108,7 @@ const countriesData = [
         ioc: "GRN",
         languages: ["eng"],
         name: "Grenada",
+        numeric: "308",
         status: "assigned",
     },
     {
@@ -1042,6 +1120,7 @@ const countriesData = [
         ioc: "GEO",
         languages: ["kat"],
         name: "Georgia",
+        numeric: "268",
         status: "assigned",
     },
     {
@@ -1063,6 +1142,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "French Guiana",
+        numeric: "254",
         status: "assigned",
     },
     {
@@ -1074,6 +1154,7 @@ const countriesData = [
         ioc: "GCI",
         languages: ["fra"],
         name: "Guernsey",
+        numeric: "831",
         status: "assigned",
     },
     {
@@ -1085,6 +1166,7 @@ const countriesData = [
         ioc: "GHA",
         languages: ["eng"],
         name: "Ghana",
+        numeric: "288",
         status: "assigned",
     },
     {
@@ -1096,6 +1178,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Gibraltar",
+        numeric: "292",
         status: "assigned",
     },
     {
@@ -1107,6 +1190,7 @@ const countriesData = [
         ioc: "",
         languages: ["kal"],
         name: "Greenland",
+        numeric: "304",
         status: "assigned",
     },
     {
@@ -1118,6 +1202,7 @@ const countriesData = [
         ioc: "GAM",
         languages: ["eng"],
         name: "Gambia",
+        numeric: "270",
         status: "assigned",
     },
     {
@@ -1129,6 +1214,7 @@ const countriesData = [
         ioc: "GUI",
         languages: ["fra"],
         name: "Guinea",
+        numeric: "324",
         status: "assigned",
     },
     {
@@ -1140,6 +1226,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Guadeloupe",
+        numeric: "312",
         status: "assigned",
     },
     {
@@ -1151,6 +1238,7 @@ const countriesData = [
         ioc: "GEQ",
         languages: ["spa", "fra", "por"],
         name: "Equatorial Guinea",
+        numeric: "226",
         status: "assigned",
     },
     {
@@ -1162,6 +1250,7 @@ const countriesData = [
         ioc: "GRE",
         languages: ["ell"],
         name: "Greece",
+        numeric: "300",
         status: "assigned",
     },
     {
@@ -1173,6 +1262,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "South Georgia And The South Sandwich Islands",
+        numeric: "239",
         status: "assigned",
     },
     {
@@ -1184,6 +1274,7 @@ const countriesData = [
         ioc: "GUA",
         languages: ["spa"],
         name: "Guatemala",
+        numeric: "320",
         status: "assigned",
     },
     {
@@ -1195,6 +1286,7 @@ const countriesData = [
         ioc: "GUM",
         languages: ["eng"],
         name: "Guam",
+        numeric: "316",
         status: "assigned",
     },
     {
@@ -1206,6 +1298,7 @@ const countriesData = [
         ioc: "GBS",
         languages: ["por"],
         name: "Guinea-bissau",
+        numeric: "624",
         status: "assigned",
     },
     {
@@ -1217,6 +1310,7 @@ const countriesData = [
         ioc: "GUY",
         languages: ["eng"],
         name: "Guyana",
+        numeric: "328",
         status: "assigned",
     },
     {
@@ -1228,6 +1322,7 @@ const countriesData = [
         ioc: "HKG",
         languages: ["zho", "eng"],
         name: "Hong Kong",
+        numeric: "344",
         status: "assigned",
     },
     {
@@ -1239,6 +1334,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Heard Island And McDonald Islands",
+        numeric: "334",
         status: "assigned",
     },
     {
@@ -1250,6 +1346,7 @@ const countriesData = [
         ioc: "HON",
         languages: ["spa"],
         name: "Honduras",
+        numeric: "340",
         status: "assigned",
     },
     {
@@ -1261,6 +1358,7 @@ const countriesData = [
         ioc: "CRO",
         languages: ["hrv"],
         name: "Croatia",
+        numeric: "191",
         status: "assigned",
     },
     {
@@ -1272,6 +1370,7 @@ const countriesData = [
         ioc: "HAI",
         languages: ["fra", "hat"],
         name: "Haiti",
+        numeric: "332",
         status: "assigned",
     },
     {
@@ -1283,6 +1382,7 @@ const countriesData = [
         ioc: "HUN",
         languages: ["hun"],
         name: "Hungary",
+        numeric: "348",
         status: "assigned",
     },
     {
@@ -1315,6 +1415,7 @@ const countriesData = [
         ioc: "INA",
         languages: ["ind"],
         name: "Indonesia",
+        numeric: "360",
         status: "assigned",
     },
     {
@@ -1326,6 +1427,7 @@ const countriesData = [
         ioc: "IRL",
         languages: ["eng", "gle"],
         name: "Ireland",
+        numeric: "372",
         status: "assigned",
     },
     {
@@ -1337,6 +1439,7 @@ const countriesData = [
         ioc: "ISR",
         languages: ["heb", "ara", "eng"],
         name: "Israel",
+        numeric: "376",
         status: "assigned",
     },
     {
@@ -1348,6 +1451,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng", "glv"],
         name: "Isle Of Man",
+        numeric: "833",
         status: "assigned",
     },
     {
@@ -1359,6 +1463,7 @@ const countriesData = [
         ioc: "IND",
         languages: ["eng", "hin"],
         name: "India",
+        numeric: "356",
         status: "assigned",
     },
     {
@@ -1370,6 +1475,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "British Indian Ocean Territory",
+        numeric: "086",
         status: "assigned",
     },
     {
@@ -1381,6 +1487,7 @@ const countriesData = [
         ioc: "IRQ",
         languages: ["ara", "kur"],
         name: "Iraq",
+        numeric: "368",
         status: "assigned",
     },
     {
@@ -1392,6 +1499,7 @@ const countriesData = [
         ioc: "IRI",
         languages: ["fas"],
         name: "Iran, Islamic Republic Of",
+        numeric: "364",
         status: "assigned",
     },
     {
@@ -1403,6 +1511,7 @@ const countriesData = [
         ioc: "ISL",
         languages: ["isl"],
         name: "Iceland",
+        numeric: "352",
         status: "assigned",
     },
     {
@@ -1414,6 +1523,7 @@ const countriesData = [
         ioc: "ITA",
         languages: ["ita"],
         name: "Italy",
+        numeric: "380",
         status: "assigned",
     },
     {
@@ -1425,6 +1535,7 @@ const countriesData = [
         ioc: "JCI",
         languages: ["eng", "fra"],
         name: "Jersey",
+        numeric: "832",
         status: "assigned",
     },
     {
@@ -1436,6 +1547,7 @@ const countriesData = [
         ioc: "JAM",
         languages: ["eng"],
         name: "Jamaica",
+        numeric: "388",
         status: "assigned",
     },
     {
@@ -1447,6 +1559,7 @@ const countriesData = [
         ioc: "JOR",
         languages: ["ara"],
         name: "Jordan",
+        numeric: "400",
         status: "assigned",
     },
     {
@@ -1458,6 +1571,7 @@ const countriesData = [
         ioc: "JPN",
         languages: ["jpn"],
         name: "Japan",
+        numeric: "392",
         status: "assigned",
     },
     {
@@ -1479,6 +1593,7 @@ const countriesData = [
         ioc: "KEN",
         languages: ["eng", "swa"],
         name: "Kenya",
+        numeric: "404",
         status: "assigned",
     },
     {
@@ -1490,6 +1605,7 @@ const countriesData = [
         ioc: "KGZ",
         languages: ["rus"],
         name: "Kyrgyzstan",
+        numeric: "417",
         status: "assigned",
     },
     {
@@ -1501,6 +1617,7 @@ const countriesData = [
         ioc: "CAM",
         languages: ["khm"],
         name: "Cambodia",
+        numeric: "116",
         status: "assigned",
     },
     {
@@ -1512,6 +1629,7 @@ const countriesData = [
         ioc: "KIR",
         languages: ["eng"],
         name: "Kiribati",
+        numeric: "296",
         status: "assigned",
     },
     {
@@ -1523,6 +1641,7 @@ const countriesData = [
         ioc: "COM",
         languages: ["ara", "fra"],
         name: "Comoros",
+        numeric: "174",
         status: "assigned",
     },
     {
@@ -1534,6 +1653,7 @@ const countriesData = [
         ioc: "SKN",
         languages: ["eng"],
         name: "Saint Kitts And Nevis",
+        numeric: "659",
         status: "assigned",
     },
     {
@@ -1545,6 +1665,7 @@ const countriesData = [
         ioc: "PRK",
         languages: ["kor"],
         name: "Korea, Democratic People's Republic Of",
+        numeric: "408",
         status: "assigned",
     },
     {
@@ -1556,6 +1677,7 @@ const countriesData = [
         ioc: "KOR",
         languages: ["kor"],
         name: "Korea, Republic Of",
+        numeric: "410",
         status: "assigned",
     },
     {
@@ -1567,6 +1689,7 @@ const countriesData = [
         ioc: "KUW",
         languages: ["ara"],
         name: "Kuwait",
+        numeric: "414",
         status: "assigned",
     },
     {
@@ -1578,6 +1701,7 @@ const countriesData = [
         ioc: "CAY",
         languages: ["eng"],
         name: "Cayman Islands",
+        numeric: "136",
         status: "assigned",
     },
     {
@@ -1589,6 +1713,7 @@ const countriesData = [
         ioc: "KAZ",
         languages: ["kaz", "rus"],
         name: "Kazakhstan",
+        numeric: "398",
         status: "assigned",
     },
     {
@@ -1600,6 +1725,7 @@ const countriesData = [
         ioc: "LAO",
         languages: ["lao"],
         name: "Lao People's Democratic Republic",
+        numeric: "418",
         status: "assigned",
     },
     {
@@ -1611,6 +1737,7 @@ const countriesData = [
         ioc: "LIB",
         languages: ["ara", "hye"],
         name: "Lebanon",
+        numeric: "422",
         status: "assigned",
     },
     {
@@ -1622,6 +1749,7 @@ const countriesData = [
         ioc: "LCA",
         languages: ["eng"],
         name: "Saint Lucia",
+        numeric: "662",
         status: "assigned",
     },
     {
@@ -1633,6 +1761,7 @@ const countriesData = [
         ioc: "LIE",
         languages: ["deu"],
         name: "Liechtenstein",
+        numeric: "438",
         status: "assigned",
     },
     {
@@ -1644,6 +1773,7 @@ const countriesData = [
         ioc: "SRI",
         languages: ["sin", "tam"],
         name: "Sri Lanka",
+        numeric: "144",
         status: "assigned",
     },
     {
@@ -1655,6 +1785,7 @@ const countriesData = [
         ioc: "LBR",
         languages: ["eng"],
         name: "Liberia",
+        numeric: "430",
         status: "assigned",
     },
     {
@@ -1666,6 +1797,7 @@ const countriesData = [
         ioc: "LES",
         languages: ["eng", "sot"],
         name: "Lesotho",
+        numeric: "426",
         status: "assigned",
     },
     {
@@ -1677,6 +1809,7 @@ const countriesData = [
         ioc: "LTU",
         languages: ["lit"],
         name: "Lithuania",
+        numeric: "440",
         status: "assigned",
     },
     {
@@ -1688,6 +1821,7 @@ const countriesData = [
         ioc: "LUX",
         languages: ["fra", "deu", "ltz"],
         name: "Luxembourg",
+        numeric: "442",
         status: "assigned",
     },
     {
@@ -1699,6 +1833,7 @@ const countriesData = [
         ioc: "LAT",
         languages: ["lav"],
         name: "Latvia",
+        numeric: "428",
         status: "assigned",
     },
     {
@@ -1710,6 +1845,7 @@ const countriesData = [
         ioc: "LBA",
         languages: ["ara"],
         name: "Libya",
+        numeric: "434",
         status: "assigned",
     },
     {
@@ -1721,6 +1857,7 @@ const countriesData = [
         ioc: "MAR",
         languages: ["ara"],
         name: "Morocco",
+        numeric: "504",
         status: "assigned",
     },
     {
@@ -1732,6 +1869,7 @@ const countriesData = [
         ioc: "MON",
         languages: ["fra"],
         name: "Monaco",
+        numeric: "492",
         status: "assigned",
     },
     {
@@ -1743,6 +1881,7 @@ const countriesData = [
         ioc: "MDA",
         languages: ["ron"],
         name: "Moldova",
+        numeric: "498",
         status: "assigned",
     },
     {
@@ -1754,6 +1893,7 @@ const countriesData = [
         ioc: "MNE",
         languages: ["mot"],
         name: "Montenegro",
+        numeric: "499",
         status: "assigned",
     },
     {
@@ -1765,6 +1905,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Saint Martin",
+        numeric: "663",
         status: "assigned",
     },
     {
@@ -1776,6 +1917,7 @@ const countriesData = [
         ioc: "MAD",
         languages: ["fra", "mlg"],
         name: "Madagascar",
+        numeric: "450",
         status: "assigned",
     },
     {
@@ -1787,6 +1929,7 @@ const countriesData = [
         ioc: "MHL",
         languages: ["eng", "mah"],
         name: "Marshall Islands",
+        numeric: "584",
         status: "assigned",
     },
     {
@@ -1808,6 +1951,7 @@ const countriesData = [
         ioc: "MKD",
         languages: ["mkd"],
         name: "North Macedonia",
+        numeric: "807",
         status: "assigned",
     },
     {
@@ -1819,6 +1963,7 @@ const countriesData = [
         ioc: "MLI",
         languages: ["fra"],
         name: "Mali",
+        numeric: "466",
         status: "assigned",
     },
     {
@@ -1830,6 +1975,7 @@ const countriesData = [
         ioc: "MYA",
         languages: ["mya"],
         name: "Myanmar",
+        numeric: "104",
         status: "assigned",
     },
     {
@@ -1841,6 +1987,7 @@ const countriesData = [
         ioc: "MGL",
         languages: ["mon"],
         name: "Mongolia",
+        numeric: "496",
         status: "assigned",
     },
     {
@@ -1852,6 +1999,7 @@ const countriesData = [
         ioc: "MAC",
         languages: ["zho", "por"],
         name: "Macao",
+        numeric: "446",
         status: "assigned",
     },
     {
@@ -1863,6 +2011,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Northern Mariana Islands",
+        numeric: "580",
         status: "assigned",
     },
     {
@@ -1874,6 +2023,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Martinique",
+        numeric: "474",
         status: "assigned",
     },
     {
@@ -1885,6 +2035,7 @@ const countriesData = [
         ioc: "MTN",
         languages: ["ara", "fra"],
         name: "Mauritania",
+        numeric: "478",
         status: "assigned",
     },
     {
@@ -1896,6 +2047,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Montserrat",
+        numeric: "500",
         status: "assigned",
     },
     {
@@ -1907,6 +2059,7 @@ const countriesData = [
         ioc: "MLT",
         languages: ["mlt", "eng"],
         name: "Malta",
+        numeric: "470",
         status: "assigned",
     },
     {
@@ -1918,6 +2071,7 @@ const countriesData = [
         ioc: "MRI",
         languages: ["eng", "fra"],
         name: "Mauritius",
+        numeric: "480",
         status: "assigned",
     },
     {
@@ -1929,6 +2083,7 @@ const countriesData = [
         ioc: "MDV",
         languages: ["div"],
         name: "Maldives",
+        numeric: "462",
         status: "assigned",
     },
     {
@@ -1940,6 +2095,7 @@ const countriesData = [
         ioc: "MAW",
         languages: ["eng", "nya"],
         name: "Malawi",
+        numeric: "454",
         status: "assigned",
     },
     {
@@ -1951,6 +2107,7 @@ const countriesData = [
         ioc: "MEX",
         languages: ["spa"],
         name: "Mexico",
+        numeric: "484",
         status: "assigned",
     },
     {
@@ -1962,6 +2119,7 @@ const countriesData = [
         ioc: "MAS",
         languages: ["msa", "eng"],
         name: "Malaysia",
+        numeric: "458",
         status: "assigned",
     },
     {
@@ -1973,6 +2131,7 @@ const countriesData = [
         ioc: "MOZ",
         languages: ["por"],
         name: "Mozambique",
+        numeric: "508",
         status: "assigned",
     },
     {
@@ -1984,6 +2143,7 @@ const countriesData = [
         ioc: "NAM",
         languages: ["eng"],
         name: "Namibia",
+        numeric: "516",
         status: "assigned",
     },
     {
@@ -1995,6 +2155,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "New Caledonia",
+        numeric: "540",
         status: "assigned",
     },
     {
@@ -2006,6 +2167,7 @@ const countriesData = [
         ioc: "NIG",
         languages: ["fra"],
         name: "Niger",
+        numeric: "562",
         status: "assigned",
     },
     {
@@ -2017,6 +2179,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Norfolk Island",
+        numeric: "574",
         status: "assigned",
     },
     {
@@ -2028,6 +2191,7 @@ const countriesData = [
         ioc: "NGR",
         languages: ["eng"],
         name: "Nigeria",
+        numeric: "566",
         status: "assigned",
     },
     {
@@ -2049,6 +2213,7 @@ const countriesData = [
         ioc: "NCA",
         languages: ["spa"],
         name: "Nicaragua",
+        numeric: "558",
         status: "assigned",
     },
     {
@@ -2060,6 +2225,7 @@ const countriesData = [
         ioc: "NED",
         languages: ["nld"],
         name: "Netherlands",
+        numeric: "528",
         status: "assigned",
     },
     {
@@ -2071,6 +2237,7 @@ const countriesData = [
         ioc: "NOR",
         languages: ["nor"],
         name: "Norway",
+        numeric: "578",
         status: "assigned",
     },
     {
@@ -2082,6 +2249,7 @@ const countriesData = [
         ioc: "NEP",
         languages: ["nep"],
         name: "Nepal",
+        numeric: "524",
         status: "assigned",
     },
     {
@@ -2103,6 +2271,7 @@ const countriesData = [
         ioc: "NRU",
         languages: ["eng", "nau"],
         name: "Nauru",
+        numeric: "520",
         status: "assigned",
     },
     {
@@ -2124,6 +2293,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Niue",
+        numeric: "570",
         status: "assigned",
     },
     {
@@ -2135,6 +2305,7 @@ const countriesData = [
         ioc: "NZL",
         languages: ["eng", "mri"],
         name: "New Zealand",
+        numeric: "554",
         status: "assigned",
     },
     {
@@ -2146,6 +2317,7 @@ const countriesData = [
         ioc: "OMA",
         languages: ["ara"],
         name: "Oman",
+        numeric: "512",
         status: "assigned",
     },
     {
@@ -2157,6 +2329,7 @@ const countriesData = [
         ioc: "PAN",
         languages: ["spa"],
         name: "Panama",
+        numeric: "591",
         status: "assigned",
     },
     {
@@ -2178,6 +2351,7 @@ const countriesData = [
         ioc: "PER",
         languages: ["spa", "aym", "que"],
         name: "Peru",
+        numeric: "604",
         status: "assigned",
     },
     {
@@ -2189,6 +2363,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "French Polynesia",
+        numeric: "258",
         status: "assigned",
     },
     {
@@ -2200,6 +2375,7 @@ const countriesData = [
         ioc: "PNG",
         languages: ["eng"],
         name: "Papua New Guinea",
+        numeric: "598",
         status: "assigned",
     },
     {
@@ -2211,6 +2387,7 @@ const countriesData = [
         ioc: "PHI",
         languages: ["eng"],
         name: "Philippines",
+        numeric: "608",
         status: "assigned",
     },
     {
@@ -2222,6 +2399,7 @@ const countriesData = [
         ioc: "PAK",
         languages: ["urd", "eng"],
         name: "Pakistan",
+        numeric: "586",
         status: "assigned",
     },
     {
@@ -2233,6 +2411,7 @@ const countriesData = [
         ioc: "POL",
         languages: ["pol"],
         name: "Poland",
+        numeric: "616",
         status: "assigned",
     },
     {
@@ -2244,6 +2423,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Saint Pierre And Miquelon",
+        numeric: "666",
         status: "assigned",
     },
     {
@@ -2255,6 +2435,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Pitcairn",
+        numeric: "612",
         status: "assigned",
     },
     {
@@ -2266,6 +2447,7 @@ const countriesData = [
         ioc: "PUR",
         languages: ["spa", "eng"],
         name: "Puerto Rico",
+        numeric: "630",
         status: "assigned",
     },
     {
@@ -2277,6 +2459,7 @@ const countriesData = [
         ioc: "PLE",
         languages: ["ara"],
         name: "Palestinian Territory, Occupied",
+        numeric: "275",
         status: "assigned",
     },
     {
@@ -2288,6 +2471,7 @@ const countriesData = [
         ioc: "POR",
         languages: ["por"],
         name: "Portugal",
+        numeric: "620",
         status: "assigned",
     },
     {
@@ -2309,6 +2493,7 @@ const countriesData = [
         ioc: "PLW",
         languages: ["eng"],
         name: "Palau",
+        numeric: "585",
         status: "assigned",
     },
     {
@@ -2320,6 +2505,7 @@ const countriesData = [
         ioc: "PAR",
         languages: ["spa"],
         name: "Paraguay",
+        numeric: "600",
         status: "assigned",
     },
     {
@@ -2341,6 +2527,7 @@ const countriesData = [
         ioc: "QAT",
         languages: ["ara"],
         name: "Qatar",
+        numeric: "634",
         status: "assigned",
     },
     {
@@ -2352,6 +2539,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Reunion",
+        numeric: "638",
         status: "assigned",
     },
     {
@@ -2373,6 +2561,7 @@ const countriesData = [
         ioc: "ROU",
         languages: ["ron"],
         name: "Romania",
+        numeric: "642",
         status: "assigned",
     },
     {
@@ -2384,6 +2573,7 @@ const countriesData = [
         ioc: "SRB",
         languages: ["srp"],
         name: "Serbia",
+        numeric: "688",
         status: "assigned",
     },
     {
@@ -2395,6 +2585,7 @@ const countriesData = [
         ioc: "RUS",
         languages: ["rus"],
         name: "Russia",
+        numeric: "643",
         status: "assigned",
     },
     {
@@ -2406,6 +2597,7 @@ const countriesData = [
         ioc: "RWA",
         languages: ["eng", "fra", "kin"],
         name: "Rwanda",
+        numeric: "646",
         status: "assigned",
     },
     {
@@ -2417,6 +2609,7 @@ const countriesData = [
         ioc: "KSA",
         languages: ["ara"],
         name: "Saudi Arabia",
+        numeric: "682",
         status: "assigned",
     },
     {
@@ -2428,6 +2621,7 @@ const countriesData = [
         ioc: "SOL",
         languages: ["eng"],
         name: "Solomon Islands",
+        numeric: "090",
         status: "assigned",
     },
     {
@@ -2439,6 +2633,7 @@ const countriesData = [
         ioc: "SEY",
         languages: ["eng", "fra"],
         name: "Seychelles",
+        numeric: "690",
         status: "assigned",
     },
     {
@@ -2450,6 +2645,7 @@ const countriesData = [
         ioc: "SUD",
         languages: ["ara", "eng"],
         name: "Sudan",
+        numeric: "729",
         status: "assigned",
     },
     {
@@ -2461,6 +2657,7 @@ const countriesData = [
         ioc: "SWE",
         languages: ["swe"],
         name: "Sweden",
+        numeric: "752",
         status: "assigned",
     },
     {
@@ -2472,6 +2669,7 @@ const countriesData = [
         ioc: "SGP",
         languages: ["eng", "zho", "msa", "tam"],
         name: "Singapore",
+        numeric: "702",
         status: "assigned",
     },
     {
@@ -2483,6 +2681,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Saint Helena, Ascension And Tristan Da Cunha",
+        numeric: "654",
         status: "assigned",
     },
     {
@@ -2494,6 +2693,7 @@ const countriesData = [
         ioc: "SLO",
         languages: ["slv"],
         name: "Slovenia",
+        numeric: "705",
         status: "assigned",
     },
     {
@@ -2505,6 +2705,7 @@ const countriesData = [
         ioc: "",
         languages: [],
         name: "Svalbard And Jan Mayen",
+        numeric: "744",
         status: "assigned",
     },
     {
@@ -2516,6 +2717,7 @@ const countriesData = [
         ioc: "SVK",
         languages: ["slk"],
         name: "Slovakia",
+        numeric: "703",
         status: "assigned",
     },
     {
@@ -2537,6 +2739,7 @@ const countriesData = [
         ioc: "SLE",
         languages: ["eng"],
         name: "Sierra Leone",
+        numeric: "694",
         status: "assigned",
     },
     {
@@ -2548,6 +2751,7 @@ const countriesData = [
         ioc: "SMR",
         languages: ["ita"],
         name: "San Marino",
+        numeric: "674",
         status: "assigned",
     },
     {
@@ -2559,6 +2763,7 @@ const countriesData = [
         ioc: "SEN",
         languages: ["fra"],
         name: "Senegal",
+        numeric: "686",
         status: "assigned",
     },
     {
@@ -2570,6 +2775,7 @@ const countriesData = [
         ioc: "SOM",
         languages: ["som"],
         name: "Somalia",
+        numeric: "706",
         status: "assigned",
     },
     {
@@ -2581,6 +2787,7 @@ const countriesData = [
         ioc: "SUR",
         languages: ["nld"],
         name: "Suriname",
+        numeric: "740",
         status: "assigned",
     },
     {
@@ -2592,6 +2799,7 @@ const countriesData = [
         ioc: "SSD",
         languages: ["eng"],
         name: "South Sudan",
+        numeric: "728",
         status: "assigned",
     },
     {
@@ -2603,6 +2811,7 @@ const countriesData = [
         ioc: "STP",
         languages: ["por"],
         name: "Sao Tome and Principe",
+        numeric: "678",
         status: "assigned",
     },
     {
@@ -2625,6 +2834,7 @@ const countriesData = [
         ioc: "ESA",
         languages: ["spa"],
         name: "El Salvador",
+        numeric: "222",
         status: "assigned",
     },
     {
@@ -2636,6 +2846,7 @@ const countriesData = [
         ioc: "",
         languages: ["nld"],
         name: "Sint Maarten",
+        numeric: "534",
         status: "assigned",
     },
     {
@@ -2647,6 +2858,7 @@ const countriesData = [
         ioc: "SYR",
         languages: ["ara"],
         name: "Syrian Arab Republic",
+        numeric: "760",
         status: "assigned",
     },
     {
@@ -2658,6 +2870,7 @@ const countriesData = [
         ioc: "SWZ",
         languages: ["eng", "ssw"],
         name: "Eswatini",
+        numeric: "748",
         status: "assigned",
     },
     {
@@ -2680,6 +2893,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Turks And Caicos Islands",
+        numeric: "796",
         status: "assigned",
     },
     {
@@ -2691,6 +2905,7 @@ const countriesData = [
         ioc: "CHA",
         languages: ["ara", "fra"],
         name: "Chad",
+        numeric: "148",
         status: "assigned",
     },
     {
@@ -2702,6 +2917,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "French Southern Territories",
+        numeric: "260",
         status: "assigned",
     },
     {
@@ -2713,6 +2929,7 @@ const countriesData = [
         ioc: "TOG",
         languages: ["fra"],
         name: "Togo",
+        numeric: "768",
         status: "assigned",
     },
     {
@@ -2724,6 +2941,7 @@ const countriesData = [
         ioc: "THA",
         languages: ["tha"],
         name: "Thailand",
+        numeric: "764",
         status: "assigned",
     },
     {
@@ -2735,6 +2953,7 @@ const countriesData = [
         ioc: "TJK",
         languages: ["tgk", "rus"],
         name: "Tajikistan",
+        numeric: "762",
         status: "assigned",
     },
     {
@@ -2746,6 +2965,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "Tokelau",
+        numeric: "772",
         status: "assigned",
     },
     {
@@ -2757,6 +2977,7 @@ const countriesData = [
         ioc: "TLS",
         languages: ["por"],
         name: "Timor-Leste, Democratic Republic of",
+        numeric: "626",
         status: "assigned",
     },
     {
@@ -2768,6 +2989,7 @@ const countriesData = [
         ioc: "TKM",
         languages: ["tuk", "rus"],
         name: "Turkmenistan",
+        numeric: "795",
         status: "assigned",
     },
     {
@@ -2779,6 +3001,7 @@ const countriesData = [
         ioc: "TUN",
         languages: ["ara"],
         name: "Tunisia",
+        numeric: "788",
         status: "assigned",
     },
     {
@@ -2790,6 +3013,7 @@ const countriesData = [
         ioc: "TGA",
         languages: ["eng"],
         name: "Tonga",
+        numeric: "776",
         status: "assigned",
     },
     {
@@ -2811,6 +3035,7 @@ const countriesData = [
         ioc: "TUR",
         languages: ["tur"],
         name: "Turkey",
+        numeric: "792",
         status: "assigned",
     },
     {
@@ -2822,6 +3047,7 @@ const countriesData = [
         ioc: "TTO",
         languages: ["eng"],
         name: "Trinidad And Tobago",
+        numeric: "780",
         status: "assigned",
     },
     {
@@ -2833,6 +3059,7 @@ const countriesData = [
         ioc: "TUV",
         languages: ["eng"],
         name: "Tuvalu",
+        numeric: "798",
         status: "assigned",
     },
     {
@@ -2844,6 +3071,7 @@ const countriesData = [
         ioc: "TPE",
         languages: ["zho"],
         name: "Taiwan",
+        numeric: "158",
         status: "assigned",
     },
     {
@@ -2855,6 +3083,7 @@ const countriesData = [
         ioc: "TAN",
         languages: ["swa", "eng"],
         name: "Tanzania, United Republic Of",
+        numeric: "834",
         status: "assigned",
     },
     {
@@ -2866,6 +3095,7 @@ const countriesData = [
         ioc: "UKR",
         languages: ["ukr", "rus"],
         name: "Ukraine",
+        numeric: "804",
         status: "assigned",
     },
     {
@@ -2877,6 +3107,7 @@ const countriesData = [
         ioc: "UGA",
         languages: ["eng", "swa"],
         name: "Uganda",
+        numeric: "800",
         status: "assigned",
     },
     {
@@ -2888,6 +3119,7 @@ const countriesData = [
         ioc: "",
         languages: ["eng"],
         name: "United States Minor Outlying Islands",
+        numeric: "581",
         status: "assigned",
     },
     {
@@ -2899,6 +3131,7 @@ const countriesData = [
         ioc: "USA",
         languages: ["eng"],
         name: "United States",
+        numeric: "840",
         status: "assigned",
     },
     {
@@ -2910,6 +3143,7 @@ const countriesData = [
         ioc: "URU",
         languages: ["spa"],
         name: "Uruguay",
+        numeric: "858",
         status: "assigned",
     },
     {
@@ -2921,6 +3155,7 @@ const countriesData = [
         ioc: "UZB",
         languages: ["uzb", "rus"],
         name: "Uzbekistan",
+        numeric: "860",
         status: "assigned",
     },
     {
@@ -2932,6 +3167,7 @@ const countriesData = [
         ioc: "",
         languages: ["ita"],
         name: "Vatican City State",
+        numeric: "336",
         status: "assigned",
     },
     {
@@ -2943,6 +3179,7 @@ const countriesData = [
         ioc: "VIN",
         languages: ["eng"],
         name: "Saint Vincent And The Grenadines",
+        numeric: "670",
         status: "assigned",
     },
     {
@@ -2964,6 +3201,7 @@ const countriesData = [
         ioc: "VEN",
         languages: ["spa"],
         name: "Venezuela, Bolivarian Republic Of",
+        numeric: "862",
         status: "assigned",
     },
     {
@@ -2975,6 +3213,7 @@ const countriesData = [
         ioc: "IVB",
         languages: ["eng"],
         name: "Virgin Islands (British)",
+        numeric: "092",
         status: "assigned",
     },
     {
@@ -2986,6 +3225,7 @@ const countriesData = [
         ioc: "ISV",
         languages: ["eng"],
         name: "Virgin Islands (US)",
+        numeric: "850",
         status: "assigned",
     },
     {
@@ -2997,6 +3237,7 @@ const countriesData = [
         ioc: "VIE",
         languages: ["vie"],
         name: "VietNam",
+        numeric: "704",
         status: "assigned",
     },
     {
@@ -3008,6 +3249,7 @@ const countriesData = [
         ioc: "VAN",
         languages: ["bis", "eng", "fra"],
         name: "Vanuatu",
+        numeric: "548",
         status: "assigned",
     },
     {
@@ -3019,6 +3261,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Wallis And Futuna",
+        numeric: "876",
         status: "assigned",
     },
     {
@@ -3040,6 +3283,7 @@ const countriesData = [
         ioc: "SAM",
         languages: ["eng", "smo"],
         name: "Samoa",
+        numeric: "882",
         status: "assigned",
     },
     {
@@ -3072,6 +3316,7 @@ const countriesData = [
         ioc: "YEM",
         languages: ["ara"],
         name: "Yemen",
+        numeric: "887",
         status: "assigned",
     },
     {
@@ -3083,6 +3328,7 @@ const countriesData = [
         ioc: "",
         languages: ["fra"],
         name: "Mayotte",
+        numeric: "175",
         status: "assigned",
     },
     {
@@ -3104,6 +3350,7 @@ const countriesData = [
         ioc: "RSA",
         languages: ["afr", "eng", "nbl", "som", "tso", "ven", "xho", "zul"],
         name: "South Africa",
+        numeric: "710",
         status: "assigned",
     },
     {
@@ -3115,6 +3362,7 @@ const countriesData = [
         ioc: "ZAM",
         languages: ["eng"],
         name: "Zambia",
+        numeric: "894",
         status: "assigned",
     },
     {
@@ -3136,6 +3384,7 @@ const countriesData = [
         ioc: "ZIM",
         languages: ["eng", "sna", "nde"],
         name: "Zimbabwe",
+        numeric: "716",
         status: "assigned",
     },
 ] as const;

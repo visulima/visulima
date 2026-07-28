@@ -1,12 +1,16 @@
 import { getByAlpha2, getLanguages } from "./countries";
 import { getByCountry, getCountriesByCurrency } from "./currencies";
 import { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping";
+import { getDisplayNames } from "./display-names";
 
 const ALPHA2_REGEX = /^[A-Z]{2}$/;
 const LANG_REGEX = /^[a-z]{2,3}$/;
 const SCRIPT_REGEX = /^[A-Z]{4}$/i;
 const UN_M49_REGEX = /^\d{3}$/;
 const VARIANT_REGEX = /^(?:[\da-z]{5,8}|\d[\da-z]{3})$/i;
+const SINGLETON_REGEX = /^[\da-z]$/i;
+const EXTENSION_SUBTAG_REGEX = /^[\da-z]{1,8}$/i;
+const EXTLANG_REGEX = /^[a-z]{3}$/i;
 
 /**
  * Get currency code from locale or country code.
@@ -14,28 +18,18 @@ const VARIANT_REGEX = /^(?:[\da-z]{5,8}|\d[\da-z]{3})$/i;
  * @param locale Locale string or country code
  * @returns ISO 4217 currency code or undefined
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- locale-format branching (BCP 47 / underscore / bare) is inherent and clearer inline than split helpers
 export const getCurrency = (locale: string): string | undefined => {
     // Extract country code from locale
     let countryCode: string | undefined;
 
-    // Handle BCP 47 format: en-US, pt-BR, etc.
-    if (locale.includes("-")) {
-        const parts = locale.split("-");
+    // Normalize BCP 47 (en-US) and underscore (en_US, en_US_POSIX) formats to a
+    // single separator so one extraction loop covers both (and mixed) inputs.
+    const normalized = locale.replaceAll("_", "-");
+
+    if (normalized.includes("-")) {
+        const parts = normalized.split("-");
 
         // Find the country part (usually 2-letter after language)
-        for (let i = 1; i < parts.length; i += 1) {
-            const part = parts[i]?.toUpperCase();
-
-            if (part?.length === 2 && ALPHA2_REGEX.test(part)) {
-                countryCode = part;
-                break;
-            }
-        }
-    } else if (locale.includes("_")) {
-        // Handle underscore format: en_US, en_US_POSIX, etc.
-        const parts = locale.split("_");
-
         for (let i = 1; i < parts.length; i += 1) {
             const part = parts[i]?.toUpperCase();
 
@@ -84,9 +78,10 @@ export const getLanguageName = (languageCode: string, locale = "en"): string | u
         iso6391 = iso6393To6391(normalized) ?? normalized;
     }
 
-    if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+    const displayNames = getDisplayNames("language", locale);
+
+    if (displayNames) {
         try {
-            const displayNames = new Intl.DisplayNames([locale], { type: "language" });
             const localized = displayNames.of(iso6391);
 
             // Intl returns the input code unchanged when it cannot resolve a name.
@@ -94,7 +89,7 @@ export const getLanguageName = (languageCode: string, locale = "en"): string | u
                 return localized;
             }
         } catch {
-            // Invalid locale or unsupported environment.
+            // Unresolvable language code.
         }
     }
 
@@ -233,27 +228,62 @@ export const isValidBCP47Tag = (tag: string): boolean => {
 
     // Reject tags containing unrecognized/garbage subtags. parseBCP47Tag is
     // intentionally lenient (it silently drops anything it can't classify), so
-    // strictness is enforced here by re-scanning every non-language subtag and
-    // requiring each to be a known shape: 4-letter script, 2-letter alpha region,
-    // 3-digit UN M.49 region, or a registered variant subtag.
+    // strictness is enforced here by re-scanning every non-language subtag per the
+    // RFC 5646 grammar: 4-letter script, 2-letter alpha / 3-digit UN M.49 region,
+    // 3-letter extlang, registered variant, or a singleton that opens an extension
+    // (or private-use) sequence of 1-8 char alphanumeric subtags. Empty subtags
+    // (double or trailing hyphens) are invalid.
     const subtags = tag.split("-");
+
+    // Whether the scan is currently consuming an extension / private-use sequence
+    // introduced by a singleton subtag, and whether that sequence has at least one
+    // following subtag (a dangling singleton is invalid).
+    let inExtension = false;
+    let extensionHasContent = false;
 
     for (let i = 1; i < subtags.length; i += 1) {
         const part = subtags[i];
 
         if (!part) {
-            // Empty subtag (e.g. from a double hyphen) — skip, parseBCP47Tag allows it.
+            return false;
+        }
+
+        // A singleton (single alphanumeric) opens an extension, or private-use for "x".
+        if (part.length === 1 && SINGLETON_REGEX.test(part)) {
+            if (inExtension && !extensionHasContent) {
+                return false;
+            }
+
+            inExtension = true;
+            extensionHasContent = false;
+
+            continue;
+        }
+
+        if (inExtension) {
+            if (!EXTENSION_SUBTAG_REGEX.test(part)) {
+                return false;
+            }
+
+            extensionHasContent = true;
+
             continue;
         }
 
         const isScript = part.length === 4 && SCRIPT_REGEX.test(part);
         const isAlpha2Region = part.length === 2 && ALPHA2_REGEX.test(part.toUpperCase());
         const isM49Region = part.length === 3 && UN_M49_REGEX.test(part);
+        const isExtlang = part.length === 3 && EXTLANG_REGEX.test(part);
         const isVariant = VARIANT_REGEX.test(part);
 
-        if (!isScript && !isAlpha2Region && !isM49Region && !isVariant) {
+        if (!isScript && !isAlpha2Region && !isM49Region && !isExtlang && !isVariant) {
             return false;
         }
+    }
+
+    // A trailing singleton with no following subtag is invalid.
+    if (inExtension && !extensionHasContent) {
+        return false;
     }
 
     return true;

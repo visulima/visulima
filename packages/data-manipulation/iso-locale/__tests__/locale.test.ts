@@ -19,6 +19,12 @@ describe("locale", () => {
         expect(getCurrency("de_DE")).toBe("EUR");
     });
 
+    it("should get currency from mixed-separator and multi-part locales", () => {
+        expect.hasAssertions();
+        expect(getCurrency("en_US_POSIX")).toBe("USD");
+        expect(getCurrency("en_US-POSIX")).toBe("USD");
+    });
+
     it("should get currency from country code", () => {
         expect.hasAssertions();
         expect(getCurrency("US")).toBe("USD");
@@ -235,6 +241,27 @@ describe("locale", () => {
             expect(isValidBCP47Tag("")).toBe(false);
             expect(isValidBCP47Tag("x")).toBe(false);
             expect(isValidBCP47Tag("invalid")).toBe(false);
+        });
+
+        it("should reject tags with empty subtags", () => {
+            expect.assertions(3);
+            expect(isValidBCP47Tag("en-")).toBe(false);
+            expect(isValidBCP47Tag("en--US")).toBe(false);
+            expect(isValidBCP47Tag("en-US-")).toBe(false);
+        });
+
+        it("should accept private-use, extension, and extlang subtags", () => {
+            expect.assertions(4);
+            expect(isValidBCP47Tag("de-DE-x-goethe")).toBe(true);
+            expect(isValidBCP47Tag("en-u-ca-buddhist")).toBe(true);
+            expect(isValidBCP47Tag("zh-yue-HK")).toBe(true);
+            expect(isValidBCP47Tag("x-private")).toBe(false);
+        });
+
+        it("should reject tags with a dangling singleton", () => {
+            expect.assertions(2);
+            expect(isValidBCP47Tag("en-u")).toBe(false);
+            expect(isValidBCP47Tag("de-DE-x")).toBe(false);
         });
     });
 
