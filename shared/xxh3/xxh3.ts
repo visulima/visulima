@@ -39,8 +39,6 @@ const KKEY = Buffer.from(
     "hex",
 );
 
-const getView = (buf: Buffer, offset = 0): Buffer => Buffer.from(buf.buffer, buf.byteOffset + offset, buf.length - offset);
-
 // Allocation-free 64-bit byte swap (pure BigInt shift/mask), mirroring bswap32.
 const bswap64 = (a: bigint): bigint => {
     let v = a & MASK_64;
@@ -210,21 +208,23 @@ const hashLong128b = (data: Buffer, secret: Buffer): bigint => {
     return (high64 << 64n) | low64;
 };
 
-const mix16B = (data: Buffer, key: Buffer, seed: bigint): bigint =>
+// `dataOffset` / `keyOffset` are byte offsets into the shared buffers, threaded
+// through to avoid allocating per-call Buffer views on the mid-size hot path.
+const mix16B = (data: Buffer, dataOffset: number, key: Buffer, keyOffset: number, seed: bigint): bigint =>
     mul128Fold64(
-        (data.readBigUInt64LE(0) ^ (key.readBigUInt64LE(0) + seed)) & MASK_64,
-        (data.readBigUInt64LE(8) ^ (key.readBigUInt64LE(8) - seed)) & MASK_64,
+        (data.readBigUInt64LE(dataOffset) ^ (key.readBigUInt64LE(keyOffset) + seed)) & MASK_64,
+        (data.readBigUInt64LE(dataOffset + 8) ^ (key.readBigUInt64LE(keyOffset + 8) - seed)) & MASK_64,
     );
 
-const mix32B = (acc: bigint, data1: Buffer, data2: Buffer, key: Buffer, seed: bigint): bigint => {
+const mix32B = (acc: bigint, data: Buffer, dataOffset1: number, dataOffset2: number, key: Buffer, keyOffset: number, seed: bigint): bigint => {
     let accl = acc & MASK_64;
     let acch = (acc >> 64n) & MASK_64;
 
-    accl += mix16B(data1, key, seed);
-    accl ^= data2.readBigUInt64LE(0) + data2.readBigUInt64LE(8);
+    accl += mix16B(data, dataOffset1, key, keyOffset, seed);
+    accl ^= data.readBigUInt64LE(dataOffset2) + data.readBigUInt64LE(dataOffset2 + 8);
     accl &= MASK_64;
-    acch += mix16B(data2, getView(key, 16), seed);
-    acch ^= data1.readBigUInt64LE(0) + data1.readBigUInt64LE(8);
+    acch += mix16B(data, dataOffset2, key, keyOffset + 16, seed);
+    acch ^= data.readBigUInt64LE(dataOffset1) + data.readBigUInt64LE(dataOffset1 + 8);
     acch &= MASK_64;
 
     return (acch << 64n) | accl;
@@ -251,6 +251,9 @@ const len1to3_128b = (data: Buffer, key32: Buffer, seed: bigint): bigint => {
 
 const len4to8_128b = (data: Buffer, key32: Buffer, seed: bigint): bigint => {
     const len = data.byteLength;
+
+    seed = (seed ^ (bswap32(seed & MASK_32) << 32n)) & MASK_64;
+
     const l1 = data.readUInt32LE(0);
     const l2 = data.readUInt32LE(len - 4);
     const l64 = BigInt(l1) | (BigInt(l2) << 32n);
@@ -267,8 +270,8 @@ const len4to8_128b = (data: Buffer, key32: Buffer, seed: bigint): bigint => {
 
 const len9to16_128b = (data: Buffer, key64: Buffer, seed: bigint): bigint => {
     const len = data.byteLength;
-    const bitflipl = ((key64.readBigUInt64LE(32) ^ key64.readBigUInt64LE(40)) + seed) & MASK_64;
-    const bitfliph = ((key64.readBigUInt64LE(48) ^ key64.readBigUInt64LE(56)) - seed) & MASK_64;
+    const bitflipl = ((key64.readBigUInt64LE(32) ^ key64.readBigUInt64LE(40)) - seed) & MASK_64;
+    const bitfliph = ((key64.readBigUInt64LE(48) ^ key64.readBigUInt64LE(56)) + seed) & MASK_64;
     const ll1 = data.readBigUInt64LE();
     let ll2 = data.readBigUInt64LE(len - 8);
     let m128 = (ll1 ^ ll2 ^ bitflipl) * PRIME64_1;
@@ -314,7 +317,7 @@ const len17to128_128b = (data: Buffer, secret: Buffer, seed: bigint): bigint => 
     while (i >= 0n) {
         const ni = Number(i);
 
-        acc = mix32B(acc, getView(data, 16 * ni), getView(data, data.byteLength - 16 * (ni + 1)), getView(secret, 32 * ni), seed);
+        acc = mix32B(acc, data, 16 * ni, data.byteLength - 16 * (ni + 1), secret, 32 * ni, seed);
         i--;
     }
 
@@ -336,16 +339,16 @@ const len129to240_128b = (data: Buffer, secret: Buffer, seed: bigint): bigint =>
     let acc = (BigInt(data.byteLength) * PRIME64_1) & MASK_64;
 
     for (let i = 32; i < 160; i += 32) {
-        acc = mix32B(acc, getView(data, i - 32), getView(data, i - 16), getView(secret, i - 32), seed);
+        acc = mix32B(acc, data, i - 32, i - 16, secret, i - 32, seed);
     }
 
     acc = avalanche(acc & MASK_64) | (avalanche(acc >> 64n) << 64n);
 
     for (let i = 160; i <= data.byteLength; i += 32) {
-        acc = mix32B(acc, getView(data, i - 32), getView(data, i - 16), getView(secret, 3 + i - 160), seed);
+        acc = mix32B(acc, data, i - 32, i - 16, secret, 3 + i - 160, seed);
     }
 
-    acc = mix32B(acc, getView(data, data.byteLength - 16), getView(data, data.byteLength - 32), getView(secret, 136 - 17 - 16), inv64(seed));
+    acc = mix32B(acc, data, data.byteLength - 16, data.byteLength - 32, secret, 136 - 17 - 16, inv64(seed));
 
     let h128l = (acc + (acc >> 64n)) & MASK_64;
 
@@ -414,7 +417,7 @@ const bigintToHex = (value: bigint): string => {
  *   seeded output cannot be cross-checked against it.
  */
 const xxh3Hash = (data: string | Buffer, seed = 0n): string =>
-    bigintToHex(xxh3_128(typeof data === "string" ? Buffer.from(data) : data, seed));
+    bigintToHex(xxh3_128(typeof data === "string" ? Buffer.from(data) : data, BigInt.asUintN(64, seed)));
 
 /**
  * Incremental xxh3-128 hasher that accumulates data and produces a final hash.
@@ -436,9 +439,13 @@ class Xxh3Hasher {
         this.#seed = seed;
     }
 
-    /** Appends data to the buffer. Strings are UTF-8 encoded. Chainable. */
+    /**
+     * Appends data to the buffer. Strings are UTF-8 encoded. Buffer inputs are
+     * copied, so mutating the caller's Buffer after `update()` does not change
+     * the digest. Chainable.
+     */
     public update(data: string | Buffer): this {
-        this.#chunks.push(typeof data === "string" ? Buffer.from(data) : data);
+        this.#chunks.push(typeof data === "string" ? Buffer.from(data) : Buffer.from(data));
 
         return this;
     }
