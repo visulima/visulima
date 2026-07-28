@@ -253,13 +253,12 @@ const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
     const position = balloonConfig?.position || "bottom-right";
     const customStyle = generateStyles(balloonConfig?.style);
     const positionStyle = position ? getPositionStyles(position) : getPositionStyles("bottom-right");
-    const iconHtml = balloonConfig?.icon ? `<img src="${balloonConfig.icon}" alt="" class="size-4" />` : "";
 
     return `<div id="__v_o__balloon_group" class="fixed z-2147483646 inline-flex" data-balloon-position="${position}" style="${customStyle} ${positionStyle}">
     <!-- Toggle button: count + label -->
     <button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay"
             class="flex items-center gap-1.5 px-3 py-2 text-white cursor-pointer hover:opacity-90 active:opacity-80 transition-opacity duration-150" style="background: var(--ono-v-red-orange);">
-        ${iconHtml ? `<img src="${iconHtml}" alt="" class="size-3.5 opacity-90 shrink-0" />` : ""}
+        ${balloonConfig?.icon ? `<img src="${balloonConfig.icon}" alt="" class="size-3.5 opacity-90 shrink-0" />` : ""}
         <span id="__v_o__balloon_count" style="--num: 0"></span>
         <span id="__v_o__balloon_text" class="v-o-label text-xs leading-none" style="color: rgba(255,255,255,0.7)">ERRORS</span>
     </button>

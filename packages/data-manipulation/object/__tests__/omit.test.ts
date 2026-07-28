@@ -203,6 +203,30 @@ describe(omit, () => {
         expect(result[symbol]).toBe("kept");
     });
 
+    it("should keep non-plain values by reference (shared Date)", () => {
+        expect.assertions(1);
+
+        const date = new Date();
+        const input = { drop: 1, when: date };
+        const result = omit(input, ["drop"]);
+
+        expect(result.when).toBe(date);
+    });
+
+    it("should not traverse into class instances (omit path is a no-op)", () => {
+        expect.assertions(2);
+
+        class Session {
+            public token = "secret";
+        }
+
+        const input = { id: 1, session: new Session() };
+        const result = omit(input, ["session.token"]);
+
+        expect(result.session).toBe(input.session);
+        expect((result.session as Session).token).toBe("secret");
+    });
+
     it("should not pollute Object.prototype when omitting near a __proto__ key", () => {
         expect.assertions(2);
 

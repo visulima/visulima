@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { createHash, createHmac, createSign } from "node:crypto";
+import { createHmac } from "node:crypto";
 import type { Socket } from "node:net";
 import { createConnection } from "node:net";
 import { connect } from "node:tls";
@@ -13,6 +13,7 @@ import isPortAvailable from "../../utils/is-port-available";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { signMessageWithDkim } from "./dkim";
 import type { SmtpConfig, SmtpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "smtp";
@@ -69,6 +70,23 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
         resolve: (socket: Socket) => void;
         timeout?: NodeJS.Timeout;
     }[] = [];
+    // Number of live connections (in-flight + idle in the pool). Bounds concurrency
+    // against maxConnections; the idle pool length alone does not.
+    let activeConnections = 0;
+
+    // Refcount the live-connection counter in exactly two places: one increment
+    // when a connection is accepted (220 greeting), one decrement per socket
+    // teardown. The clamp keeps the count from underflowing if a teardown path
+    // is ever reached twice.
+    const acquireConnectionSlot = (): void => {
+        activeConnections += 1;
+    };
+
+    const releaseConnectionSlot = (): void => {
+        if (activeConnections > 0) {
+            activeConnections -= 1;
+        }
+    };
 
     /**
      * Sanitizes a header value to prevent injection attacks.
@@ -193,9 +211,17 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             if (socket && !socket.destroyed) {
                 return socket;
             }
+
+            // Popped a dead socket; it no longer counts as a live connection.
+            if (socket) {
+                releaseConnectionSlot();
+            }
         }
 
-        if (options.pool && connectionPool.length + 1 >= options.maxConnections) {
+        // Bound concurrency by the number of live connections, not the idle pool
+        // length — otherwise the cap never limits in-flight sockets and, with
+        // maxConnections: 1 and an empty pool, the first request queues forever.
+        if (options.pool && activeConnections >= options.maxConnections) {
             return new Promise<Socket>((resolve, reject) => {
                 const queueItem: {
                     reject: (error: Error) => void;
@@ -269,6 +295,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                         const code = greeting.slice(0, 3);
 
                         if (code === "220") {
+                            acquireConnectionSlot();
                             resolve(socket);
                         } else {
                             socket.destroy();
@@ -366,6 +393,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 // Ignore destroy errors
             }
 
+            releaseConnectionSlot();
+
             return;
         }
 
@@ -390,19 +419,30 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
      * @param release Whether to release the connection back to the pool instead of closing it.
      * @returns A promise that resolves when the connection is closed or released.
      */
-    const closeConnection = async (socket: Socket, release = false): Promise<void> =>
-        new Promise<void>((resolve) => {
-            try {
-                if (release) {
-                    // Reset the connection state by sending RSET command
-                    socket.write("RSET\r\n");
-
-                    // Release the connection back to the pool
-                    releaseConnection(socket);
-                    resolve();
-
-                    return;
+    const closeConnection = async (socket: Socket, release = false): Promise<void> => {
+        if (release) {
+            if (!socket.destroyed) {
+                try {
+                    // Await the RSET reply before returning the socket to the pool. Leaving
+                    // it unread desyncs the protocol — the next reuse would resolve its EHLO
+                    // against this stale 250, shifting every subsequent command/response.
+                    await sendSmtpCommand(socket, "RSET", "250");
+                } catch {
+                    // The connection is unusable if RSET fails; drop it from the pool.
+                    socket.destroy();
                 }
+            }
+
+            // releaseConnection re-pools a healthy socket or discards (and uncounts) a
+            // destroyed one.
+            releaseConnection(socket);
+
+            return;
+        }
+
+        await new Promise<void>((resolve) => {
+            try {
+                releaseConnectionSlot();
 
                 // Send QUIT command
                 socket.write("QUIT\r\n");
@@ -416,6 +456,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 resolve();
             }
         });
+    };
 
     /**
      * Performs SMTP authentication using the configured credentials.
@@ -578,61 +619,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             return message;
         }
 
-        const { domainName, keySelector, privateKey } = options.dkim;
-
         try {
-            // Parse the message to separate headers and body
-            const [headersPart, bodyPart] = message.split("\r\n\r\n");
-
-            if (!headersPart || !bodyPart) {
-                return message;
-            }
-
-            const headers = headersPart.split("\r\n");
-
-            // DKIM canonicalization (relaxed/relaxed, basic)
-            const canonicalize = (string_: string) => string_.replaceAll("\r\n", "\n").replaceAll(/\s+/g, " ").trim();
-            const canonicalizedBody = canonicalize(bodyPart);
-            const bodyHash = createHash("sha256").update(canonicalizedBody).digest("base64");
-
-            // Find which headers to sign (from, to, subject, date)
-            const headerNames = ["from", "to", "subject", "date"];
-            const headersToSign = headers.filter((h) => headerNames.some((n) => h.toLowerCase().startsWith(`${n}:`)));
-            const dkimHeaderList = headersToSign
-                .map((h) => {
-                    const parts = h.split(":");
-
-                    return parts[0]?.toLowerCase() ?? "";
-                })
-                .filter(Boolean)
-                .join(":");
-
-            // Build DKIM header (without signature)
-            const now = Math.floor(Date.now() / 1000);
-            const dkimFields = {
-                a: "rsa-sha256",
-                bh: bodyHash,
-                c: "relaxed/relaxed",
-                d: domainName,
-                h: dkimHeaderList,
-                s: keySelector,
-                t: now.toString(),
-                v: "1",
-            };
-            const dkimHeader = `DKIM-Signature: ${Object.entries(dkimFields)
-                .map(([k, v]) => `${k}=${v}`)
-                .join("; ")}; b=`;
-
-            // Canonicalize headers for signing
-            const headersForSign = [...headersToSign, dkimHeader].map((header) => canonicalize(header)).join("\r\n");
-            const signer = createSign("RSA-SHA256");
-
-            signer.update(headersForSign);
-            const signature = signer.sign(privateKey, "base64");
-            const finalDkimHeader = `${dkimHeader}${signature}`;
-
-            // DKIM-Signature en başa eklenmeli
-            return `${finalDkimHeader}\r\n${headers.join("\r\n")}\r\n\r\n${bodyPart}`;
+            return signMessageWithDkim(message, options.dkim);
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error(`[${PROVIDER_NAME}] DKIM signing error:`, error);
@@ -1045,7 +1033,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 }
 
                 // Create connection and try to authenticate
-                const socket = await createSmtpConnection();
+                let socket = await createSmtpConnection();
 
                 try {
                     // EHLO handshake
@@ -1064,8 +1052,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                                 // Upgrade connection to TLS
                                 const tlsSocket = await upgradeToTLS(socket);
 
-                                // Replace socket with secure version
-                                Object.assign(socket, tlsSocket);
+                                // Replace socket reference with secure version
+                                socket = tlsSocket;
 
                                 // Re-issue EHLO command over secured connection
                                 await sendSmtpCommand(socket, `EHLO ${options.host}`, "250");
@@ -1073,6 +1061,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                         } catch {
                             // STARTTLS not supported or failed, continue with plain connection
                             if (options.rejectUnauthorized) {
+                                await closeConnection(socket);
+
                                 return false;
                             }
                         }

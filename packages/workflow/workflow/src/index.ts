@@ -1,5 +1,5 @@
 export { default as defineWorkflow } from "./define-workflow";
-export { DuplicateStepIdError, RunNotFoundError, serializeError, default as WorkflowError } from "./errors";
+export { DuplicateStepIdError, LeaseHeldError, RunNotFoundError, serializeError, default as WorkflowError } from "./errors";
 export { default as generateRunId } from "./id";
 export type { RunInfo, RunResult, RuntimeOptions, WorkflowRuntime } from "./runtime";
 export { default as createRuntime } from "./runtime";
