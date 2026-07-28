@@ -11,13 +11,21 @@ const isBrowser
 const OSTYPE_REGEX = /^(?:msys|cygwin)$/;
 
 /**
+ * Reference to the `process` global that is safe to read in runtimes without one
+ * (web workers, edge runtimes, browser ESM without shims), where dereferencing
+ * `process` at module evaluation would otherwise throw a `ReferenceError`.
+ */
+const nodeProcess = typeof process === "undefined" ? undefined : process;
+
+/**
  * Indicates whether the code is running inside Apple's Terminal.app.
  * This is true if not in a browser and the `TERM_PROGRAM` environment variable is "Apple_Terminal".
  */
-export const isTerminalApp: boolean = !isBrowser && process.env.TERM_PROGRAM === "Apple_Terminal";
+export const isTerminalApp: boolean = !isBrowser && nodeProcess?.env.TERM_PROGRAM === "Apple_Terminal";
 
 /**
  * Indicates whether the current platform is Windows.
  * This is true if not in a browser and `process.platform` is "win32".
  */
-export const isWindows: boolean = !isBrowser && (process.platform === "win32" || OSTYPE_REGEX.test(process.env.OSTYPE as string));
+export const isWindows: boolean
+    = !isBrowser && (nodeProcess?.platform === "win32" || (nodeProcess?.env.OSTYPE !== undefined && OSTYPE_REGEX.test(nodeProcess.env.OSTYPE)));

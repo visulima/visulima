@@ -49,11 +49,11 @@ describe(xtermWindowOp, () => {
         expect(xtermWindowOp(-1)).toBe("");
     });
 
-    it("should allow specific float primary parameters", () => {
+    it("should translate the float sentinels to their spec-correct two-parameter forms", () => {
         expect.assertions(3);
-        expect(xtermWindowOp(XTermWindowOp.MAXIMIZE_WINDOW_VERTICALLY)).toBe(`${CSI}10.1t`);
-        expect(xtermWindowOp(XTermWindowOp.MAXIMIZE_WINDOW_HORIZONTALLY)).toBe(`${CSI}10.2t`);
-        expect(xtermWindowOp(XTermWindowOp.UNDO_FULL_SCREEN_MODE)).toBe(`${CSI}10.3t`);
+        expect(xtermWindowOp(XTermWindowOp.MAXIMIZE_WINDOW_VERTICALLY)).toBe(`${CSI}9;2t`);
+        expect(xtermWindowOp(XTermWindowOp.MAXIMIZE_WINDOW_HORIZONTALLY)).toBe(`${CSI}9;3t`);
+        expect(xtermWindowOp(XTermWindowOp.UNDO_FULL_SCREEN_MODE)).toBe(`${CSI}10;0t`);
     });
 
     it("should handle a single parameter correctly", () => {

@@ -163,20 +163,26 @@ export const isModePermanentlyReset = (m: ModeSetting): boolean => m === ModeSet
 /**
  * Represents a standard ANSI terminal mode (e.g., IRM, KAM). These modes are controlled by
  * sequences like `CSI Pn h` (Set) and `CSI Pn l` (Reset), without a `?` prefix.
- * This is a type alias for the base {@link Mode} interface, specialized for ANSI modes.
+ * Discriminates on {@link Mode.isDecMode} being `false`, so the compiler rejects passing a
+ * {@link DecMode} where an ANSI mode is required.
  * @see {@link Mode}
  * @see {@link createAnsiMode} to create instances.
  */
-export type AnsiMode = Mode;
+export interface AnsiMode extends Mode {
+    readonly isDecMode: false;
+}
 
 /**
  * Represents a private DEC terminal mode (e.g., DECTCEM, DECAWM). These modes are controlled by
  * sequences like `CSI ? Pn h` (Set) and `CSI ? Pn l` (Reset), identified by the `?` prefix.
- * This is a type alias for the base {@link Mode} interface, specialized for DEC modes.
+ * Discriminates on {@link Mode.isDecMode} being `true`, so the compiler rejects passing an
+ * {@link AnsiMode} where a DEC mode is required.
  * @see {@link Mode}
  * @see {@link createDecMode} to create instances.
  */
-export type DecMode = Mode;
+export interface DecMode extends Mode {
+    readonly isDecMode: true;
+}
 
 /**
  * Interface representing a terminal mode, characterized by its numeric code
@@ -505,10 +511,10 @@ export const RequestLineFeedNewLineMode: string = `${CSI}20$p`;
  * - Reset: ANSI sequences (e.g., `CSI A` for Up Arrow) (default).
  * @see {@link https://vt100.net/docs/vt510-rm/DECCKM.html}
  */
-export const CursorKeysMode: AnsiMode = createDecMode(1);
+export const CursorKeysMode: DecMode = createDecMode(1);
 
 /** Alias for {@link CursorKeysMode}. */
-export const DECCKM: AnsiMode = CursorKeysMode;
+export const DECCKM: DecMode = CursorKeysMode;
 
 /** Sequence to set Cursor Keys Mode: `CSI ? 1 h` */
 export const SetCursorKeysMode: string = `${CSI}?1h`;
@@ -526,10 +532,10 @@ export const RequestCursorKeysMode: string = `${CSI}?1$p`;
  * - Reset: Relative to home position (default).
  * @see {@link https://vt100.net/docs/vt510-rm/DECOM.html}
  */
-export const OriginMode: AnsiMode = createDecMode(6);
+export const OriginMode: DecMode = createDecMode(6);
 
 /** Alias for {@link OriginMode}. */
-export const DECOM: AnsiMode = OriginMode;
+export const DECOM: DecMode = OriginMode;
 
 /** Sequence to set Origin Mode: `CSI ? 6 h` */
 export const SetOriginMode: string = `${CSI}?6h`;
@@ -547,10 +553,10 @@ export const RequestOriginMode: string = `${CSI}?6$p`;
  * - Reset: Auto-wrap disabled (characters overwrite at right margin).
  * @see {@link https://vt100.net/docs/vt510-rm/DECAWM.html}
  */
-export const AutoWrapMode: AnsiMode = createDecMode(7);
+export const AutoWrapMode: DecMode = createDecMode(7);
 
 /** Alias for {@link AutoWrapMode}. */
-export const DECAWM: AnsiMode = AutoWrapMode;
+export const DECAWM: DecMode = AutoWrapMode;
 
 /** Sequence to set Auto Wrap Mode: `CSI ? 7 h` */
 export const SetAutoWrapMode: string = `${CSI}?7h`;
@@ -567,7 +573,7 @@ export const RequestAutoWrapMode: string = `${CSI}?7$p`;
  * Format: `CSI M Cb Cx Cy` (Cb=button-1, Cx=X, Cy=Y).
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const X10MouseMode: AnsiMode = createDecMode(9);
+export const X10MouseMode: DecMode = createDecMode(9);
 
 /** Sequence to set X10 Mouse Mode: `CSI ? 9 h` */
 export const SetX10MouseMode: string = `${CSI}?9h`;
@@ -585,10 +591,10 @@ export const RequestX10MouseMode: string = `${CSI}?9$p`;
  * - Reset: Cursor invisible.
  * @see {@link https://vt100.net/docs/vt510-rm/DECTCEM.html}
  */
-export const TextCursorEnableMode: AnsiMode = createDecMode(25);
+export const TextCursorEnableMode: DecMode = createDecMode(25);
 
 /** Alias for {@link TextCursorEnableMode}. */
-export const DECTCEM: AnsiMode = TextCursorEnableMode;
+export const DECTCEM: DecMode = TextCursorEnableMode;
 
 /** Sequence to set Text Cursor Enable Mode (show cursor): `CSI ? 25 h` */
 export const SetTextCursorEnableMode: string = `${CSI}?25h`;
@@ -610,10 +616,10 @@ export const HideCursor: string = ResetTextCursorEnableMode;
  * Determines if keypad sends application or numeric sequences.
  * @see {@link https://vt100.net/docs/vt510-rm/DECNKM.html}
  */
-export const NumericKeypadMode: AnsiMode = createDecMode(66);
+export const NumericKeypadMode: DecMode = createDecMode(66);
 
 /** Alias for {@link NumericKeypadMode}. */
-export const DECNKM: AnsiMode = NumericKeypadMode;
+export const DECNKM: DecMode = NumericKeypadMode;
 
 /** Sequence to set Numeric Keypad Mode: `CSI ? 66 h` */
 export const SetNumericKeypadMode: string = `${CSI}?66h`;
@@ -631,10 +637,10 @@ export const RequestNumericKeypadMode: string = `${CSI}?66$p`;
  * - Reset: Sends backspace character (default).
  * @see {@link https://vt100.net/docs/vt510-rm/DECBKM.html}
  */
-export const BackarrowKeyMode: AnsiMode = createDecMode(67);
+export const BackarrowKeyMode: DecMode = createDecMode(67);
 
 /** Alias for {@link BackarrowKeyMode}. */
-export const DECBKM: AnsiMode = BackarrowKeyMode;
+export const DECBKM: DecMode = BackarrowKeyMode;
 
 /** Sequence to set Backarrow Key Mode: `CSI ? 67 h` */
 export const SetBackarrowKeyMode: string = `${CSI}?67h`;
@@ -650,10 +656,10 @@ export const RequestBackarrowKeyMode: string = `${CSI}?67$p`;
  * Controls whether left and right margins can be set with DECSLRM.
  * @see {@link https://vt100.net/docs/vt510-rm/DECLRMM.html}
  */
-export const LeftRightMarginMode: AnsiMode = createDecMode(69);
+export const LeftRightMarginMode: DecMode = createDecMode(69);
 
 /** Alias for {@link LeftRightMarginMode}. */
-export const DECLRMM: AnsiMode = LeftRightMarginMode;
+export const DECLRMM: DecMode = LeftRightMarginMode;
 
 /** Sequence to set Left/Right Margin Mode: `CSI ? 69 h` */
 export const SetLeftRightMarginMode: string = `${CSI}?69h`;
@@ -670,7 +676,7 @@ export const RequestLeftRightMarginMode: string = `${CSI}?69$p`;
  * Uses X10-like encoding with extensions.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const NormalMouseMode: AnsiMode = createDecMode(1000);
+export const NormalMouseMode: DecMode = createDecMode(1000);
 
 /** Sequence to set Normal Mouse Mode: `CSI ? 1000 h` */
 export const SetNormalMouseMode: string = `${CSI}?1000h`;
@@ -686,7 +692,7 @@ export const RequestNormalMouseMode: string = `${CSI}?1000$p`;
  * Reports button presses, releases, and highlighted cells.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const HighlightMouseMode: AnsiMode = createDecMode(1001);
+export const HighlightMouseMode: DecMode = createDecMode(1001);
 
 /** Sequence to set Highlight Mouse Tracking: `CSI ? 1001 h` */
 export const SetHighlightMouseMode: string = `${CSI}?1001h`;
@@ -702,7 +708,7 @@ export const RequestHighlightMouseMode: string = `${CSI}?1001$p`;
  * Reports button-down events and mouse motion while a button is pressed.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const ButtonEventMouseMode: AnsiMode = createDecMode(1002);
+export const ButtonEventMouseMode: DecMode = createDecMode(1002);
 
 /** Sequence to set Button Event Mouse Tracking: `CSI ? 1002 h` */
 export const SetButtonEventMouseMode: string = `${CSI}?1002h`;
@@ -718,7 +724,7 @@ export const RequestButtonEventMouseMode: string = `${CSI}?1002$p`;
  * Reports all mouse movements, regardless of button state (includes hover).
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const AnyEventMouseMode: AnsiMode = createDecMode(1003);
+export const AnyEventMouseMode: DecMode = createDecMode(1003);
 
 /** Sequence to set Any Event Mouse Tracking: `CSI ? 1003 h` */
 export const SetAnyEventMouseMode: string = `${CSI}?1003h`;
@@ -734,7 +740,7 @@ export const RequestAnyEventMouseMode: string = `${CSI}?1003$p`;
  * Reports terminal focus (FocusIn `CSI I`) and blur (FocusOut `CSI O`) events.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Focus-Tracking}
  */
-export const FocusEventMode: AnsiMode = createDecMode(1004);
+export const FocusEventMode: DecMode = createDecMode(1004);
 
 /** Sequence to set Focus Event Mode: `CSI ? 1004 h` */
 export const SetFocusEventMode: string = `${CSI}?1004h`;
@@ -750,7 +756,7 @@ export const RequestFocusEventMode: string = `${CSI}?1004$p`;
  * Mouse coordinates are UTF-8 encoded if they exceed 95.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const Utf8ExtMouseMode: AnsiMode = createDecMode(1005);
+export const Utf8ExtMouseMode: DecMode = createDecMode(1005);
 
 /** Sequence to set UTF-8 Extended Mouse Mode: `CSI ? 1005 h` */
 export const SetUtf8ExtMouseMode: string = `${CSI}?1005h`;
@@ -767,7 +773,7 @@ export const RequestUtf8ExtMouseMode: string = `${CSI}?1005$p`;
  * Robust and recommended for modern applications.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const SgrExtMouseMode: AnsiMode = createDecMode(1006);
+export const SgrExtMouseMode: DecMode = createDecMode(1006);
 
 /** Sequence to set SGR Extended Mouse Mode: `CSI ? 1006 h` */
 export const SetSgrExtMouseMode: string = `${CSI}?1006h`;
@@ -783,7 +789,7 @@ export const RequestSgrExtMouseMode: string = `${CSI}?1006$p`;
  * Uses an alternate encoding for mouse tracking.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const UrxvtExtMouseMode: AnsiMode = createDecMode(1015);
+export const UrxvtExtMouseMode: DecMode = createDecMode(1015);
 
 /** Sequence to set URXVT Extended Mouse Mode: `CSI ? 1015 h` */
 export const SetUrxvtExtMouseMode: string = `${CSI}?1015h`;
@@ -799,7 +805,7 @@ export const RequestUrxvtExtMouseMode: string = `${CSI}?1015$p`;
  * Similar to SGR Extended Mode, but reports pixel coordinates.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const SgrPixelExtMouseMode: AnsiMode = createDecMode(1016);
+export const SgrPixelExtMouseMode: DecMode = createDecMode(1016);
 
 /** Sequence to set SGR Pixel Extended Mouse Mode: `CSI ? 1016 h` */
 export const SetSgrPixelExtMouseMode: string = `${CSI}?1016h`;
@@ -816,21 +822,21 @@ export const RequestSgrPixelExtMouseMode: string = `${CSI}?1016$p`;
  * Robust and recommended for modern applications.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const SGRMouseMode: AnsiMode = SgrExtMouseMode;
+export const SGRMouseMode: DecMode = SgrExtMouseMode;
 
 /**
  * DEC Private Mode 1004: Send Focus Events Mode (alias for FocusEventMode).
  * Reports terminal focus (FocusIn `CSI I`) and blur (FocusOut `CSI O`) events.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Focus-Tracking}
  */
-export const SendFocusEventsMode: AnsiMode = FocusEventMode;
+export const SendFocusEventsMode: DecMode = FocusEventMode;
 
 /**
  * DEC Private Mode 1035: Disable Modifiers Mode.
  * Disables modifier key reporting in mouse events.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Mouse-Tracking}
  */
-export const DisableModifiersMode: AnsiMode = createDecMode(1035);
+export const DisableModifiersMode: DecMode = createDecMode(1035);
 
 /** Sequence to set Disable Modifiers Mode: `CSI ? 1035 h` */
 export const SetDisableModifiersMode: string = `${CSI}?1035h`;
@@ -846,7 +852,7 @@ export const RequestDisableModifiersMode: string = `${CSI}?1035$p`;
  * Switches to alternate screen buffer and clears it.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
-export const AltScreenMode: AnsiMode = createDecMode(1047);
+export const AltScreenMode: DecMode = createDecMode(1047);
 
 /** Sequence to set Alternate Screen Mode: `CSI ? 1047 h` */
 export const SetAltScreenMode: string = `${CSI}?1047h`;
@@ -862,7 +868,7 @@ export const RequestAltScreenMode: string = `${CSI}?1047$p`;
  * Saves current cursor position (like DECSC).
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
-export const SaveCursorMode: AnsiMode = createDecMode(1048);
+export const SaveCursorMode: DecMode = createDecMode(1048);
 
 /** Sequence to set Save Cursor Mode: `CSI ? 1048 h` */
 export const SetSaveCursorMode: string = `${CSI}?1048h`;
@@ -879,7 +885,7 @@ export const RequestSaveCursorMode: string = `${CSI}?1048$p`;
  * Widely used by full-screen applications.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-The-Alternate-Screen-Buffer}
  */
-export const AltScreenSaveCursorMode: AnsiMode = createDecMode(1049);
+export const AltScreenSaveCursorMode: DecMode = createDecMode(1049);
 
 /** Sequence to set Alternate Screen Save Cursor Mode: `CSI ? 1049 h` */
 export const SetAltScreenSaveCursorMode: string = `${CSI}?1049h`;
@@ -897,7 +903,7 @@ export const RequestAltScreenSaveCursorMode: string = `${CSI}?1049$p`;
  * @see {@link https://cirw.in/blog/bracketed-paste}
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h2-Bracketed-Paste-Mode}
  */
-export const BracketedPasteMode: AnsiMode = createDecMode(2004);
+export const BracketedPasteMode: DecMode = createDecMode(2004);
 
 /** Sequence to set Bracketed Paste Mode: `CSI ? 2004 h` */
 export const SetBracketedPasteMode: string = `${CSI}?2004h`;
@@ -914,7 +920,7 @@ export const RequestBracketedPasteMode: string = `${CSI}?2004$p`;
  * when rapid updates occur. The exact mechanism can vary (e.g., batching updates, waiting for vsync).
  * @see {@link https://gist.github.com/christianparpart/d8a62cc1ab659194337d73e399004036}
  */
-export const SynchronizedOutputMode: AnsiMode = createDecMode(2026);
+export const SynchronizedOutputMode: DecMode = createDecMode(2026);
 
 /** Sequence to set Synchronized Output Mode: `CSI ? 2026 h` */
 export const SetSynchronizedOutputMode: string = `${CSI}?2026h`;
@@ -931,7 +937,7 @@ export const RequestSynchronizedOutputMode: string = `${CSI}?2026$p`;
  * the width of glyphs for each terminal cell.
  * @see {@link https://github.com/contour-terminal/terminal-unicode-core}
  */
-export const UnicodeCoreMode: AnsiMode = createDecMode(2027);
+export const UnicodeCoreMode: DecMode = createDecMode(2027);
 
 /** Sequence to set Unicode Core Mode: `CSI ? 2027 h` */
 export const SetUnicodeCoreMode: string = `${CSI}?2027h`;
@@ -949,7 +955,7 @@ export const RequestUnicodeCoreMode: string = `${CSI}?2027$p`;
  * @deprecated Use {@link UnicodeCoreMode} instead.
  * @see {@link https://github.com/contour-terminal/terminal-unicode-core}
  */
-export const GraphemeClusteringMode: AnsiMode = UnicodeCoreMode;
+export const GraphemeClusteringMode: DecMode = UnicodeCoreMode;
 
 /** @deprecated Use {@link SetUnicodeCoreMode} instead. */
 export const SetGraphemeClusteringMode: string = SetUnicodeCoreMode;
@@ -965,7 +971,7 @@ export const RequestGraphemeClusteringMode: string = RequestUnicodeCoreMode;
  * Relevant for Windows conPTY, influencing how keyboard input is processed and translated.
  * @see {@link https://github.com/microsoft/terminal/blob/main/doc/specs/%234999%20-%20Improved%20keyboard%20handling%20in%20Conpty.md}
  */
-export const Win32InputMode: AnsiMode = createDecMode(9001);
+export const Win32InputMode: DecMode = createDecMode(9001);
 
 /** Sequence to set Win32 Input Mode: `CSI ? 9001 h` */
 export const SetWin32InputMode: string = `${CSI}?9001h`;
@@ -985,7 +991,7 @@ export const RequestWin32InputMode: string = `${CSI}?9001$p`;
  * The color preference can also be requested via `CSI ? 996 n`.
  * @see {@link https://contour-terminal.org/vt-extensions/color-palette-update-notifications/}
  */
-export const LightDarkMode: AnsiMode = createDecMode(2031);
+export const LightDarkMode: DecMode = createDecMode(2031);
 
 /** Sequence to set Light/Dark Mode: `CSI ? 2031 h` */
 export const SetLightDarkMode: string = `${CSI}?2031h`;
@@ -1003,7 +1009,7 @@ export const RequestLightDarkMode: string = `${CSI}?2031$p`;
  * The terminal sends: `CSI 48 ; cellsHeight ; cellsWidth ; pixelHeight ; pixelWidth t`
  * @see {@link https://gist.github.com/rockorager/e695fb2924d36b2bcf1fff4a3704bd83}
  */
-export const InBandResizeMode: AnsiMode = createDecMode(2048);
+export const InBandResizeMode: DecMode = createDecMode(2048);
 
 /** Sequence to set In-Band Resize Mode: `CSI ? 2048 h` */
 export const SetInBandResizeMode: string = `${CSI}?2048h`;

@@ -1,39 +1,5 @@
 import { BEL, OSC, ST } from "./constants";
-
-/**
- * Encodes a string to Base64 in a runtime-agnostic way (Node 24+, browsers,
- * Deno). Prefers `Uint8Array.prototype.toBase64`, then `btoa`, then Node's
- * `Buffer`, so the clipboard helpers stay usable in browser/xterm.js bundles.
- * @param value The UTF-8 string to encode.
- * @returns The Base64 representation of `value`.
- */
-const encodeBase64 = (value: string): string => {
-    const bytes = new TextEncoder().encode(value);
-
-    const maybeToBase64 = (bytes as unknown as { toBase64?: () => string }).toBase64;
-
-    if (typeof maybeToBase64 === "function") {
-        return maybeToBase64.call(bytes);
-    }
-
-    if (typeof btoa === "function") {
-        let binary = "";
-
-        for (const byte of bytes) {
-            binary += String.fromCodePoint(byte);
-        }
-
-        return btoa(binary);
-    }
-
-    const nodeBuffer = (globalThis as { Buffer?: { from: (input: Uint8Array) => { toString: (encoding: string) => string } } }).Buffer;
-
-    if (nodeBuffer === undefined) {
-        throw new Error("No Base64 encoder available: Uint8Array.prototype.toBase64, btoa and Buffer are all missing.");
-    }
-
-    return nodeBuffer.from(bytes).toString("base64");
-};
+import { encodeBase64String } from "./utils/base64";
 
 /**
  * Selection targets for OSC 52 clipboard operations.
@@ -75,7 +41,7 @@ export type ClipboardSelection = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" |
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html}
  */
 export const setClipboard = (data: string, selection: ClipboardSelection = "c", terminator: string = BEL): string =>
-    `${OSC}52;${selection};${encodeBase64(data)}${terminator}`;
+    `${OSC}52;${selection};${encodeBase64String(data)}${terminator}`;
 
 /**
  * Requests the current contents of the terminal's clipboard via OSC 52.

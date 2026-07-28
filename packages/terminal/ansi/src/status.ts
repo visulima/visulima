@@ -13,11 +13,21 @@ class DecStatusReportImpl implements StatusReport {
     public constructor(public readonly reportCode: number) {}
 }
 
-/** Represents an ANSI terminal status report type. */
-export type AnsiStatusReport = StatusReport;
+/**
+ * Represents an ANSI terminal status report type.
+ * Discriminates on {@link StatusReport.isDecReport} being `false`.
+ */
+export interface AnsiStatusReport extends StatusReport {
+    readonly isDecReport: false;
+}
 
-/** Represents a DEC terminal status report type. */
-export type DecStatusReport = StatusReport;
+/**
+ * Represents a DEC terminal status report type.
+ * Discriminates on {@link StatusReport.isDecReport} being `true`.
+ */
+export interface DecStatusReport extends StatusReport {
+    readonly isDecReport: true;
+}
 
 /**
  * Interface for terminal status reports.
@@ -65,13 +75,12 @@ export const createDecStatusReport = (code: number): DecStatusReport => new DecS
  * Standard DSR: `CSI Ps n` (where `Ps` are numeric parameters separated by semicolons).
  * DEC-specific DSR: `CSI ? Ps n` (where `Ps` are numeric parameters separated by semicolons).
  *
- * If any of the provided {@link StatusReport} objects are DEC-specific (i.e., `isDecReport` is true),
- * the entire sequence will be prefixed with `?`, indicating a DEC private DSR query.
- * Mixing standard and DEC-specific report types in a single request is handled by this logic,
- * but typically, a DSR query is either entirely standard or entirely DEC-specific.
+ * Standard (ANSI) and DEC-specific reports are grouped separately: the ANSI codes are emitted as
+ * `CSI a;b n` and the DEC codes as a distinct `CSI ? c;d n` sequence. When both kinds are requested
+ * the two sequences are concatenated, so a DEC code is never mislabeled as an ANSI code (or vice versa).
  * @param reports One or more {@link StatusReport} objects indicating the statuses to request.
  * If no reports are provided, an empty string is returned.
- * @returns The DSR sequence string (e.g., `"\x1b[5n"`, `"\x1b[?1;2n"`).
+ * @returns The DSR sequence string (e.g., `"\x1b[5n"`, `"\x1b[?25n"`, `"\x1b[5n\x1b[?25n"`).
  * @see https://vt100.net/docs/vt510-rm/DSR.html
  * @example
  * ```typescript
@@ -90,16 +99,20 @@ export const deviceStatusReport = (...reports: StatusReport[]): string => {
         return "";
     }
 
-    const hasDecReport = reports.some((report) => report.isDecReport);
-    const reportCodes = reports.map((report) => report.reportCode.toString());
+    const ansiCodes = reports.filter((report) => !report.isDecReport).map((report) => report.reportCode.toString());
+    const decCodes = reports.filter((report) => report.isDecReport).map((report) => report.reportCode.toString());
 
-    let seq = CSI;
+    let seq = "";
 
-    if (hasDecReport) {
-        seq += "?";
+    if (ansiCodes.length > 0) {
+        seq += `${CSI}${ansiCodes.join(SEP)}n`;
     }
 
-    return `${seq}${reportCodes.join(SEP)}n`;
+    if (decCodes.length > 0) {
+        seq += `${CSI}?${decCodes.join(SEP)}n`;
+    }
+
+    return seq;
 };
 
 /**
@@ -393,33 +406,6 @@ export const DA3: string = requestTertiaryDeviceAttributes;
  */
 export const reportTertiaryDeviceAttributes = (unitID: string): string => `${DCS}!|${unitID}${ST}`;
 
-// For user convenience, re-exporting some constants if they are direct requests
-// This part is more about aligning with other direct constants if they differ from the `request*` functions.
-// However, our `request*` functions are already constants.
-
-// For requests like `CSI > 0 q` (RequestNameVersion / XTVERSION)
-// it's a direct constant, already defined above.
-
-// For `CSI c` (RequestPrimaryDeviceAttributes)
-// `requestPrimaryDeviceAttributes` is already `CSIc`.
-
-// For `CSI > c` (RequestSecondaryDeviceAttributes)
-// `requestSecondaryDeviceAttributes` is already `CSI>c`.
-
-// For `CSI = c` (RequestTertiaryDeviceAttributes)
-// `requestTertiaryDeviceAttributes` is already `CSI=c`.
-
-// Some terminals also have functions like PrimaryDeviceAttributes(attrs ...int) string
-// which can *generate* a request with parameters (e.g., CSI 0 c or CSI ? Ps ; ... c).
-// Our current `requestPrimaryDeviceAttributes` is just `CSI c`.
-// To fully match, we might need functions that can take a `0` or other params if the request form varies.
-
-// Let's ensure the `sendDeviceAttributes` `CSI ? Ps ; ... c` is covered by `reportPrimaryDeviceAttributes`. It is.
-// The request `CSI c` or `CSI 0 c`.
-// We have `requestPrimaryDeviceAttributes = CSI c`.
-// To add `CSI 0 c`, we can make a new constant or a function.
-// Let's add specific request constants if they are different forms.
-
 /**
  * ANSI escape sequence to request Primary Device Attributes (DA1) with explicit parameter 0.
  * Sequence: `CSI 0 c`.
@@ -461,7 +447,6 @@ export const requestSecondaryDeviceAttributesParam0: string = `${CSI}>0c`;
  */
 export const requestTertiaryDeviceAttributesParam0: string = `${CSI}=0c`;
 
-// Restore the original content for DSRs that were deleted
 // Other common DSR codes (often as requests)
 // These are typically single parameter DSRs
 

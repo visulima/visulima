@@ -58,19 +58,19 @@ export enum XTermWindowOp {
     MAXIMIZE_WINDOW = 10,
 
     /**
-     * Maximize window vertically.
+     * Maximize window vertically. Emitted by {@link xtermWindowOp} as `CSI 9 ; 2 t`.
      */
     MAXIMIZE_WINDOW_VERTICALLY = 10.1,
 
     /**
-     * Maximize window horizontally.
+     * Maximize window horizontally. Emitted by {@link xtermWindowOp} as `CSI 9 ; 3 t`.
      */
     MAXIMIZE_WINDOW_HORIZONTALLY = 10.2,
 
     /**
-     * Undo full-screen mode.
+     * Undo full-screen mode. Emitted by {@link xtermWindowOp} as `CSI 10 ; 0 t`.
      */
-    UNDO_FULL_SCREEN_MODE = 10.3, // Note: XTerm docs list 10 ; 0, 10 ; 1, 10 ; 2, this is simplified.
+    UNDO_FULL_SCREEN_MODE = 10.3, // Sentinel: xterm encodes this as the two-parameter form 10 ; 0.
 
     /**
      * Report window state.
@@ -150,15 +150,25 @@ export enum XTermWindowOp {
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h4-Functions-using-CSI-_-ordered-by-the-final-character-lparen-s-rparen:CSI-Ps;Ps;Ps-t.1EB0}
  */
 export const xtermWindowOp: (p: number, ...ps: number[]) => string = (p: number, ...ps: number[]): string => {
-    const allowedFloats = [XTermWindowOp.MAXIMIZE_WINDOW_VERTICALLY, XTermWindowOp.MAXIMIZE_WINDOW_HORIZONTALLY, XTermWindowOp.UNDO_FULL_SCREEN_MODE];
+    // The float sentinels are not valid CSI parameters (a `.` cannot appear in a
+    // CSI parameter). They are shorthands for the two-parameter xterm forms, so
+    // translate them to their spec-correct `CSI Ps ; Ps t` encodings.
+    const floatSequences: Record<number, [number, number]> = {
+        [XTermWindowOp.MAXIMIZE_WINDOW_HORIZONTALLY]: [9, 3],
+        [XTermWindowOp.MAXIMIZE_WINDOW_VERTICALLY]: [9, 2],
+        [XTermWindowOp.UNDO_FULL_SCREEN_MODE]: [10, 0],
+    };
 
-    if (allowedFloats.includes(p)) {
-        // Allow specific float values
-    } else if (p <= 0) {
-        // Disallow zero or negative integers that are not allowed floats
+    const mapped = floatSequences[p];
+
+    if (mapped) {
+        return `${CSI}${mapped.join(";")}t`;
+    }
+
+    if (p <= 0) {
+        // Disallow zero or negative integers.
         return "";
     }
-    // For positive integers or allowed floats, proceed
 
     const parameters: (number | string)[] = [p];
 
