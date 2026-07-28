@@ -88,10 +88,16 @@ describe("status Reports", () => {
             expect(deviceStatusReport(decReport15, decReport25)).toBe(`${CSI}?15${SEP}25n`);
         });
 
-        it("should prefix with ? if any report is DEC (mixed reports)", () => {
+        it("should emit ANSI and DEC codes as separate sequences (mixed reports)", () => {
             expect.assertions(2);
-            expect(deviceStatusReport(ansiReport5, decReport15)).toBe(`${CSI}?5${SEP}15n`);
-            expect(deviceStatusReport(decReport15, ansiReport5)).toBe(`${CSI}?15${SEP}5n`);
+            // ANSI code 5 must stay in a standard `CSI 5 n` sequence, DEC code 15 in its own `CSI ? 15 n`.
+            expect(deviceStatusReport(ansiReport5, decReport15)).toBe(`${CSI}5n${CSI}?15n`);
+            expect(deviceStatusReport(decReport15, ansiReport5)).toBe(`${CSI}5n${CSI}?15n`);
+        });
+
+        it("should group multiple ANSI and multiple DEC codes into two sequences", () => {
+            expect.assertions(1);
+            expect(deviceStatusReport(ansiReport5, decReport15, ansiReport6, decReport25)).toBe(`${CSI}5${SEP}6n${CSI}?15${SEP}25n`);
         });
 
         it("should return empty string if no reports are provided", () => {
