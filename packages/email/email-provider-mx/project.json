@@ -3,5 +3,5 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/email/email-provider-mx/src",
     "projectType": "library",
-    "tags": ["email-provider-mx", "type:package", "category:internationalization"]
+    "tags": ["email-provider-mx", "type:package", "category:communication"]
 }

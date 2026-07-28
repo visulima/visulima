@@ -33,6 +33,26 @@ describe("util/env-processor", () => {
         expect(result).toStrictEqual({});
     });
 
+    it("reads from the provided env override instead of the live process env", () => {
+        expect.assertions(1);
+
+        // Live host env has one value; the explicit override must win.
+        process.env.API_KEY = "host-value";
+
+        const envDefinitions: EnvDefinition[] = [
+            {
+                name: "API_KEY",
+                type: String,
+            },
+        ];
+
+        const result = processEnvVariables(envDefinitions, { API_KEY: "override-value" });
+
+        expect(result).toStrictEqual({
+            apiKey: "override-value",
+        });
+    });
+
     it("should process string environment variables without type", () => {
         expect.assertions(1);
 
