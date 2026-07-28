@@ -76,7 +76,6 @@ const piiRules: Rules = [
         pattern: String.raw`\b((http|https):\/\/)?[-a-zA-Z0-9@:%_\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)`,
     },
     { deep: true, key: "phonenumber", pattern: String.raw`\b\(?[2-9][0-8][0-9]\)?[-. ]?[2-9][0-9]{2}[-. ]?[0-9]{4}\b` },
-    { deep: true, key: "id", pattern: String.raw`\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b` },
     { deep: true, key: "us_social_security", pattern: String.raw`\b\d{3}-\d{2}-\d{4}\b` },
     {
         deep: true,

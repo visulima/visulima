@@ -172,7 +172,7 @@ describe(truncate, () => {
                     ellipsis: "...",
                     width: { fullWidth: 2 },
                 }),
-            ).toEqualAnsi("\u001B[31m你好\u001B[39m wo...");
+            ).toEqualAnsi("\u001B[31m你好\u001B[39m ...");
         });
 
         it("should handle special width characters", () => {
