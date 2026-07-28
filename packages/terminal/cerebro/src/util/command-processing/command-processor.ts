@@ -94,6 +94,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     parsedArgs: CommandLineOptions,
     booleanValues: Record<string, unknown>,
     extraOptions: Record<string, unknown>,
+    env?: Record<string, string | undefined>,
 ): IToolbox<TLogger> => {
     const toolbox = new EmptyToolbox(command.name, command as unknown as ICommand) as unknown as IToolbox<TLogger>;
 
@@ -122,7 +123,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
 
     toolbox.options = hasExtraOptions ? { ...mergedAll, ...extraOptions } : mergedAll;
 
-    toolbox.env = processEnvVariables(command.env);
+    toolbox.env = processEnvVariables(command.env, env);
 
     return toolbox;
 };
