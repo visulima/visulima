@@ -47,4 +47,13 @@ describe("is-color-supported.edge-light", () => {
 
         expect(isStdoutColorSupported()).toBe(0);
     });
+
+    it("should not throw when no process global exists", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", undefined);
+        vi.stubGlobal("navigator", undefined);
+
+        expect(isStdoutColorSupported()).toBe(0);
+    });
 });
