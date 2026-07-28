@@ -274,6 +274,17 @@ describe(html, () => {
             expect(isRawHtml(undefined)).toBe(false);
             expect(isRawHtml({ value: "x" })).toBe(false);
         });
+
+        it("should not treat a forged `__isRawHtml` object as trusted raw HTML", () => {
+            expect.assertions(2);
+
+            // An attacker-shaped object (e.g. from a parsed JSON request body) cannot forge
+            // the module-private symbol brand, so it is escaped rather than inlined.
+            const forged = { __isRawHtml: true, value: "<script>alert('xss')</script>" };
+
+            expect(isRawHtml(forged)).toBe(false);
+            expect(html`<div>${forged}</div>`).toBe("<div>[object Object]</div>");
+        });
     });
 
     describe("function call with escape parameter", () => {
