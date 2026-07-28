@@ -5,6 +5,7 @@ import type { ProviderFactory } from "../../provider";
 import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
 import { requestWithRetry } from "../../utils/http";
+import { aggregateRecipientResults } from "../../utils/sms";
 
 interface FcmResponse {
     error?: { message?: string };
@@ -96,16 +97,7 @@ const fcmProvider: ProviderFactory<import("./types").FcmConfig, PushPayload> = d
                     results.push(await sendOne(token, payload, accessToken));
                 }
 
-                const sent = results.filter((r) => r.status === "sent");
-
-                if (sent.length === 0) {
-                    return { error: new NotificationError("fcm", results[0]?.error ?? "All tokens failed"), success: false };
-                }
-
-                return {
-                    data: { channel: "push", messageId: sent[0]?.messageId ?? "", provider: "fcm", recipients: results, sent: true, timestamp: new Date() },
-                    success: true,
-                };
+                return aggregateRecipientResults("push", "fcm", results);
             },
         };
     },

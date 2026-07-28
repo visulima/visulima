@@ -115,6 +115,11 @@ const deriveState = (input: ScoreInput): StateVerdict => {
     }
 
     if (input.domain.resolvedVia !== "unchecked" && !input.domain.valid) {
+        // A transient DNS failure is inconclusive, not a do-not-send verdict.
+        if (input.domain.deferred) {
+            return { reason: "dns_error", state: "unknown" };
+        }
+
         return { reason: input.domain.resolvedVia === "none" ? "no_mx_records" : "invalid_domain", state: "undeliverable" };
     }
 

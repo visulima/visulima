@@ -12,11 +12,10 @@ const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay" | "onRetry
     maxRetries: 3,
     onRetry: undefined,
     retryableStatusCodes: [408, 429, 500, 502, 503, 504],
-    // Default to `false` so the retry decision falls through to `isRetryableError`, which knows
-    // about the network/AWS/Azure patterns. The previous `() => true` short-circuited that and
-    // forced retries on every error — including 4xx client failures (auth, 404, validation)
-    // where retrying just wastes attempts and amplifies the failure.
-    shouldRetry: () => false,
+    // Default to `undefined` so the retry decision defers to `isRetryableError`, which knows
+    // about the network/AWS/Azure patterns. A caller-supplied `shouldRetry` returning `false`
+    // is authoritative and suppresses those heuristics; only the built-in default defers.
+    shouldRetry: () => undefined,
 };
 
 /**
@@ -95,11 +94,15 @@ export interface RetryConfig {
     retryableStatusCodes?: number[];
 
     /**
-     * Custom function to determine if an error should be retried
+     * Custom function to determine if an error should be retried.
+     *
+     * Tri-state: return `true` to force a retry, `false` to authoritatively
+     * suppress it (the built-in {@link isRetryableError} heuristics are *not*
+     * consulted), or `undefined` to defer the decision to those heuristics.
      * @param error The error that occurred
-     * @returns true if the error should be retried, false otherwise
+     * @returns `true`/`false` to decide, or `undefined` to defer to the built-in heuristics
      */
-    shouldRetry?: (error: unknown) => boolean;
+    shouldRetry?: (error: unknown) => boolean | undefined;
 }
 
 /**
@@ -210,8 +213,10 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
                 break;
             }
 
-            // Check if error is retryable
-            const isRetryable = shouldRetry(error) || isRetryableError(error, retryableStatusCodes);
+            // Check if error is retryable. A `shouldRetry` that returns a boolean is
+            // authoritative; only `undefined` defers to the built-in heuristics.
+            const decision = shouldRetry(error);
+            const isRetryable = decision ?? isRetryableError(error, retryableStatusCodes);
 
             if (!isRetryable) {
                 throw error;
