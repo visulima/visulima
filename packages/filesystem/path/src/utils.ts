@@ -118,7 +118,10 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
-    for (const [to, alias] of Object.entries(aliases).toReversed()) {
+    // Match the most specific alias VALUE first, independent of the order the
+    // keys were declared in the aliases object (normalizeAliases only sorts by
+    // key specificity, which says nothing about the target-path length).
+    for (const [to, alias] of Object.entries(aliases).toSorted(([, a], [, b]) => b.length - a.length)) {
         if (!path.startsWith(alias)) {
             continue;
         }
