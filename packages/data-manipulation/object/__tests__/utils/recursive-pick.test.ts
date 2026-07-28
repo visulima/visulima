@@ -11,12 +11,12 @@ describe("recursive-pick", () => {
         expect(recursivePick(42 as unknown as AnyRecord, [["a"]])).toBe(42);
     });
 
-    it("keeps every property recursively when no picked keys are provided", () => {
+    it("picks nothing when no picked keys are provided", () => {
         expect.assertions(1);
 
         const input: AnyRecord = { nested: { keep: 1 }, top: 2 };
 
-        expect(recursivePick(input, [])).toStrictEqual({ nested: { keep: 1 }, top: 2 });
+        expect(recursivePick(input, [])).toStrictEqual({});
     });
 
     it("traverses arrays and keeps only matching indexed paths", () => {

@@ -242,4 +242,43 @@ describe(pick, () => {
         expect(result).toStrictEqual({ nested: { keep: 1 } });
         expect(result.nested).not.toBe(input.nested);
     });
+
+    it("should drop a picked path that is deeper than the actual data", () => {
+        expect.assertions(1);
+
+        const input: Record<string, unknown> = { a: { b: 1 } };
+        const result = pick(input, ["a.b.c"]);
+
+        expect(result).toStrictEqual({});
+    });
+
+    it("should drop primitive array elements under a wildcard leaf path", () => {
+        expect.assertions(1);
+
+        const input: Record<string, unknown> = { users: ["raw", { name: "a", password: "p" }] };
+        const result = pick(input, ["users.*.name"]);
+
+        expect(result).toStrictEqual({ users: [{ name: "a" }] });
+    });
+
+    it("should preserve symbol-keyed properties inside a fully picked branch", () => {
+        expect.assertions(2);
+
+        const symbol = Symbol("meta");
+        const input = { nested: { keep: 1, [symbol]: 2 }, other: true };
+        const result = pick(input, ["nested"]);
+
+        expect(result).toStrictEqual({ nested: { keep: 1, [symbol]: 2 } });
+        expect((result.nested as Record<PropertyKey, unknown>)[symbol]).toBe(2);
+    });
+
+    it("should keep non-plain values by reference when picked", () => {
+        expect.assertions(1);
+
+        const date = new Date();
+        const input = { other: 1, when: date };
+        const result = pick(input, ["when"]);
+
+        expect(result.when).toBe(date);
+    });
 });

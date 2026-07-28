@@ -5,50 +5,27 @@
  *
  * Copyright (c) 2018 Luca Ban - Mesqueeb
  */
+import copySymbols from "./copy-symbols";
 import isPlainObject from "./is-plain-object";
-import { segmentsAreEqual } from "./paths-are-equal";
+import narrow from "./narrow";
 import safeAssign from "./safe-assign";
 
 /**
- * Determine whether the current path is on the way to (or at) any picked key.
- *
- * A node passes when, comparing up to the shorter of the two depths, the
- * concrete path and a picked path agree (allowing `*` wildcards). This keeps a
- * branch alive while descending toward a deeper picked key.
- * @param path The segment path leading to the current node.
- * @param pickedKeys The picked paths, pre-split into segment arrays.
- * @returns `true` if the node should be kept/traversed.
+ * Sentinel returned when a branch contributes nothing to the picked result, so
+ * the parent can drop the key entirely instead of keeping an empty shell.
  */
-const pathPasses = (path: ReadonlyArray<string>, pickedKeys: ReadonlyArray<string[]>): boolean =>
-    pickedKeys.some((pickedKey) => {
-        const depth = Math.min(path.length, pickedKey.length);
-
-        return segmentsAreEqual(path.slice(0, depth), pickedKey.slice(0, depth));
-    });
+const NOTHING = Symbol("nothing");
 
 /**
- * Recursively copy `value`, keeping only the branches that lead to one of the
- * pre-split `pickedKeys`. Plain objects and arrays are both traversed.
- * @param value The value currently being copied.
- * @param pickedKeys The picked paths, pre-split into segment arrays.
- * @param currentPath The segment path leading to `value`.
- * @returns A new value containing only the picked branches.
+ * Deep-copy a fully picked branch. Plain objects and arrays are cloned;
+ * primitives and non-plain values are returned as-is, matching the copy
+ * behaviour used elsewhere. Enumerable symbol keys are preserved.
+ * @param value The value to copy.
+ * @returns A structural copy of `value`.
  */
-const walk = (value: unknown, pickedKeys: ReadonlyArray<string[]>, currentPath: ReadonlyArray<string>): unknown => {
+const deepCopy = (value: unknown): unknown => {
     if (Array.isArray(value)) {
-        const result: unknown[] = [];
-
-        for (const [index, element] of value.entries()) {
-            const path = [...currentPath, String(index)];
-
-            if (pickedKeys.length > 0 && !pathPasses(path, pickedKeys)) {
-                continue;
-            }
-
-            result.push(walk(element, pickedKeys, path));
-        }
-
-        return result;
+        return value.map((element) => deepCopy(element));
     }
 
     if (!isPlainObject(value)) {
@@ -58,16 +35,97 @@ const walk = (value: unknown, pickedKeys: ReadonlyArray<string[]>, currentPath: 
     const carry: Record<string, unknown> = {};
 
     for (const [key, child] of Object.entries(value)) {
-        const path = [...currentPath, key];
+        safeAssign(carry, key, deepCopy(child));
+    }
 
-        if (pickedKeys.length > 0 && !pathPasses(path, pickedKeys)) {
+    copySymbols(value, carry);
+
+    return carry;
+};
+
+/**
+ * Pick the still-relevant branches from an array, preserving order while
+ * dropping elements that match nothing.
+ * @param value The array currently being copied.
+ * @param tails The pick-path tails still relevant at this node.
+ * @returns A new array with only the picked elements, or `NOTHING`.
+ */
+const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
+    const result: unknown[] = [];
+
+    for (const [index, element] of value.entries()) {
+        const childTails = narrow(tails, String(index));
+
+        if (childTails.length === 0) {
             continue;
         }
 
-        safeAssign(carry, key, walk(child, pickedKeys, path));
+        // `walk` is a module-level sibling; the mutual reference resolves at
+        // call time, so there is no temporal-dead-zone hazard here.
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        const child = walk(element, childTails);
+
+        if (child !== NOTHING) {
+            result.push(child);
+        }
     }
 
-    return carry;
+    return result.length > 0 ? result : NOTHING;
+};
+
+/**
+ * Pick the still-relevant branches from a plain object.
+ * @param value The object currently being copied.
+ * @param tails The pick-path tails still relevant at this node.
+ * @returns A new object with only the picked properties, or `NOTHING`.
+ */
+const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
+    const carry: Record<string, unknown> = {};
+    let kept = false;
+
+    for (const [key, child] of Object.entries(value)) {
+        const childTails = narrow(tails, key);
+
+        if (childTails.length === 0) {
+            continue;
+        }
+
+        // `walk` is a module-level sibling; the mutual reference resolves at
+        // call time, so there is no temporal-dead-zone hazard here.
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        const result = walk(child, childTails);
+
+        if (result !== NOTHING) {
+            safeAssign(carry, key, result);
+            kept = true;
+        }
+    }
+
+    return kept ? carry : NOTHING;
+};
+
+/**
+ * Recursively copy `value`, keeping only the branches that lead to one of the
+ * remaining pick-path `tails`. Plain objects and arrays are both traversed.
+ * A tail reaching length zero marks the whole branch as picked.
+ * @param value The value currently being copied.
+ * @param tails The pick-path tails still relevant at this node.
+ * @returns A new value with only the picked branches, or `NOTHING`.
+ */
+const walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
+    if (tails.some((tail) => tail.length === 0)) {
+        return deepCopy(value);
+    }
+
+    if (Array.isArray(value)) {
+        return walkArray(value, tails);
+    }
+
+    if (!isPlainObject(value)) {
+        return NOTHING;
+    }
+
+    return walkObject(value, tails);
 };
 
 /**
@@ -76,6 +134,16 @@ const walk = (value: unknown, pickedKeys: ReadonlyArray<string[]>, currentPath: 
  * @param pickedKeys The picked paths, already split into segment arrays.
  * @returns A new object/array with only the picked props.
  */
-const recursivePick = <T extends { [key in string]: unknown }>(object: T, pickedKeys: ReadonlyArray<string[]>): T => walk(object, pickedKeys, []) as T;
+const recursivePick = <T extends { [key in string]: unknown }>(object: T, pickedKeys: ReadonlyArray<string[]>): T => {
+    const result = walk(object, pickedKeys);
+
+    if (result !== NOTHING) {
+        return result as T;
+    }
+
+    // A non-traversable root (a primitive or non-plain value) is returned
+    // unchanged; a plain object/array root that matched nothing yields `{}`.
+    return (isPlainObject(object) || Array.isArray(object) ? {} : object) as T;
+};
 
 export default recursivePick;
