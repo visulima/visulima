@@ -252,6 +252,16 @@ describe("progressBar (extra coverage)", () => {
 
             expect(bar.render()).toContain("build");
         });
+
+        it("should merge the start() payload even without a manager", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({ format: "{task} {value}", total: 100 });
+
+            bar.start(100, 0, { task: "build" });
+
+            expect(bar.render()).toContain("build");
+        });
     });
 
     describe("peak marker", () => {
@@ -360,6 +370,25 @@ describe("progressBar (extra coverage)", () => {
             });
 
             expect(bar.render()).toBe("[dddb......]");
+        });
+
+        it("should render the peak marker in gradient mode", () => {
+            expect.assertions(1);
+
+            // peak=80 with width=10 places the marker at column 8; gradient mode must
+            // honour peak/peakChar just like the non-gradient branch.
+            const bar = new ProgressBar({
+                barCompleteChar: ["a", "b", "c", "d"],
+                barIncompleteChar: ".",
+                current: 10,
+                format: "[{bar}]",
+                peak: 80,
+                peakChar: "P",
+                total: 100,
+                width: 10,
+            });
+
+            expect(bar.render()).toBe("[d.......P.]");
         });
     });
 
