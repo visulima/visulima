@@ -471,6 +471,76 @@ describe("postProcess — validation host allowlist + cancellation", () => {
     });
 });
 
+describe("postProcess — redact interactions", () => {
+    afterEach(() => {
+        resetPipelineWarningsForTests();
+    });
+
+    it("skips validation and warns once when redact=true (masked secrets can't be validated)", async () => {
+        expect.assertions(3);
+
+        resetPipelineWarningsForTests();
+
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+        // Validator URL points at an unreachable host — had validation run it
+        // would resolve to "error". The redact guard skips it, leaving
+        // `validation` untouched, and no garbage request is fired.
+        const meta = new Map<string, RuleMeta>([
+            ["rule.http", { validation: { content: { request: { response_matcher: [{ status: [200], type: "StatusMatch" }], url: "http://127.0.0.1:9/never" } }, type: "Http" } }],
+        ]);
+        const findings = [sampleFinding({ ruleId: "rule.http", secret: "abc***xyz" })];
+
+        const out = await postProcess(findings, preparedScan(meta), { config: { validate: true }, redact: true });
+
+        expect(out[0]?.validation).toBeUndefined();
+        expect(consoleError).toHaveBeenCalledTimes(1);
+
+        // Second call in the same process must not duplicate the warning.
+        await postProcess(findings, preparedScan(meta), { config: { validate: true }, redact: true });
+
+        expect(consoleError).toHaveBeenCalledTimes(1);
+
+        consoleError.mockRestore();
+    });
+
+    it("does not drop a masked (short) secret via the content-shape heuristics when redact=true", async () => {
+        expect.assertions(2);
+
+        // "******" is what the native layer masks a ≤6-char secret to. Without
+        // the redact gate `notAlphanumericString` would discard it outright.
+        const masked = sampleFinding({ ruleId: "short-secret", secret: "******" });
+
+        const redacted = await postProcess([masked], preparedScan(), { redact: true });
+
+        expect(redacted.map((f) => f.ruleId)).toStrictEqual(["short-secret"]);
+
+        // Sanity: without redact the same finding is dropped by the heuristic.
+        const notRedacted = await postProcess([masked], preparedScan(), undefined);
+
+        expect(notRedacted).toHaveLength(0);
+    });
+
+    it("does not drop a masked match via the checksum filter when redact=true", async () => {
+        expect.assertions(1);
+
+        const meta: RuleMeta = {
+            checksum: {
+                actual: { requires_capture: "checksum", template: "{{ CHECKSUM | downcase }}" },
+                expected: "{{ BODY | crc32_hex }}",
+            },
+            pattern: "(?xi)\n\\b\n(\n  zpka_(?P<body>[a-z0-9]{32})_(?P<checksum>[0-9a-f]{8})\n)\n",
+        };
+        // A masked match can't satisfy the checksum; under redact the filter is
+        // skipped so the finding survives instead of being silently dropped.
+        const findings = [sampleFinding({ match: "zpk***c55", ruleId: "kingfisher.zuplo.1", secret: "zpk***c55" })];
+
+        const out = await postProcess(findings, preparedScan(new Map([["kingfisher.zuplo.1", meta]])), { redact: true });
+
+        expect(out).toHaveLength(1);
+    });
+});
+
 describe("postProcess — inline baseline suppression", () => {
     it("suppresses via an inline Finding[] baseline (no file IO)", async () => {
         expect.assertions(1);

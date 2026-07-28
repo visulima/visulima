@@ -638,7 +638,16 @@ class InProcessTaskHasher implements TaskHasher {
         const absoluteNegations = negationPatterns.map((p) => resolve(this.#workspaceRoot, p));
         const result: Record<string, string> = {};
 
+        // The native walk only received the non-glob base directory, so it
+        // returns EVERY file under it. When the pattern carries glob magic
+        // (e.g. `src/**/*.ts`), the suffix must still be honoured JS-side —
+        // otherwise the glob is a no-op and unrelated files (README, dist
+        // `.d.ts`, snapshots) leak into the input set, busting the cache and
+        // pulling a build task's own outputs back into its tracked inputs.
+        const absolutePattern = firstGlobIndex === -1 ? undefined : resolve(this.#workspaceRoot, resolvedPattern);
+
         const isExcluded = (filePath: string): boolean => absoluteNegations.some((neg) => matchesGlob(filePath, neg));
+        const isIncluded = (filePath: string): boolean => absolutePattern === undefined || matchesGlob(filePath, absolutePattern);
 
         try {
             const fileHashes = this.#native.hashFilesInDirectory(absoluteBase, this.#workspaceRoot);
@@ -654,7 +663,7 @@ class InProcessTaskHasher implements TaskHasher {
             for (const { hash, path } of fileHashes) {
                 const absPath = resolve(this.#workspaceRoot, path);
 
-                if (isExcluded(absPath)) {
+                if (isExcluded(absPath) || !isIncluded(absPath)) {
                     continue;
                 }
 
