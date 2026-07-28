@@ -1,6 +1,6 @@
 import { durationLanguage, englishUnitMap } from "./language/en";
 import validateDurationLanguage from "./language/util/validate-duration-language";
-import type { DurationUnitMeasures, ParseDurationOptions } from "./types";
+import type { DurationLanguage, DurationUnitMeasures, ParseDurationOptions } from "./types";
 
 // Standard unit measures used for default unit lookups
 const STANDARD_UNIT_MEASURES: DurationUnitMeasures = {
@@ -17,6 +17,34 @@ const STANDARD_UNIT_MEASURES: DurationUnitMeasures = {
 const ESCAPE_REGEX = /[-/\\^$*+?.()|[\]{}]/g;
 
 const UNIT_REGEX_CACHE = new WeakMap<DurationUnitMeasures | Record<string, string>, RegExp>();
+
+// The two separator-normalization regexes depend only on the language's
+// decimal/group/placeholder separators, so we compile them once per language
+// object (mirrors UNIT_REGEX_CACHE and VALIDATED_LANGUAGES).
+const SEPARATOR_REGEX_CACHE = new WeakMap<DurationLanguage, { decimalRewrite: RegExp | undefined; groupStrip: RegExp }>();
+
+const getSeparatorRegexes = (language: DurationLanguage): { decimalRewrite: RegExp | undefined; groupStrip: RegExp } => {
+    let regexes = SEPARATOR_REGEX_CACHE.get(language);
+
+    if (regexes === undefined) {
+        const decimalSeparator = language.decimal ?? ".";
+        const groupSeparator = language.groupSeparator ?? ",";
+        const placeholderSeparator = language.placeholderSeparator ?? "_";
+
+        const escapedDecimal = decimalSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+        const escapedGroup = groupSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+        const escapedPlaceholder = placeholderSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+
+        regexes = {
+            decimalRewrite: decimalSeparator === "." ? undefined : new RegExp(String.raw`(\d)${escapedDecimal}(\d)`, "g"),
+            groupStrip: new RegExp(String.raw`(\d)[${escapedPlaceholder}${escapedGroup}](\d)`, "g"),
+        };
+
+        SEPARATOR_REGEX_CACHE.set(language, regexes);
+    }
+
+    return regexes;
+};
 // Full ISO 8601 duration: optional date part (Y/M/W/D) and optional time part
 // (H/M/S with fractional seconds). Either part may be empty but at least one
 // component must be present (validated after matching). The week form (P2W) is
@@ -56,28 +84,23 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     validateDurationLanguage(language);
 
-    // Get language-specific separators for number cleaning
-    const decimalSeparator = language.decimal ?? ".";
-    const groupSeparator = language.groupSeparator ?? ",";
-    const placeholderSeparator = language.placeholderSeparator ?? "_";
-
-    // Escape separators for use in regex
-    const escapedDecimal = decimalSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
-    const escapedGroup = groupSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
-    const escapedPlaceholder = placeholderSeparator.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+    const { decimalRewrite, groupStrip } = getSeparatorRegexes(language);
 
     const currentUnitMap = language.unitMap ?? englishUnitMap; // Fallback needed if englishUnitMap is not guaranteed
 
-    let processedValue = value.replaceAll(new RegExp(String.raw`(\d)[${escapedPlaceholder}${escapedGroup}](\d)`, "g"), "$1$2");
+    let processedValue = value.replaceAll(groupStrip, "$1$2");
 
-    if (decimalSeparator !== ".") {
+    if (decimalRewrite !== undefined) {
         // Replace EVERY decimal separator that sits between two digits — using a
         // plain string pattern with `.replace` would only convert the first
         // occurrence, silently mis-parsing inputs like "1,5 h 2,5 min".
-        processedValue = processedValue.replaceAll(new RegExp(String.raw`(\d)${escapedDecimal}(\d)`, "g"), "$1.$2");
+        processedValue = processedValue.replaceAll(decimalRewrite, "$1.$2");
     }
 
-    if (NUMERIC_STRING_REGEX.test(value)) {
+    // Test the separator-normalized value, not the raw input, so localized bare
+    // numbers ("1,5" with a comma decimal, "1,000"/"1_000" with grouping) reach
+    // the numeric fast path instead of falling through and returning undefined.
+    if (NUMERIC_STRING_REGEX.test(processedValue.trim())) {
         const numberOnly = Number.parseFloat(processedValue.trim());
 
         if (!Number.isNaN(numberOnly)) {
