@@ -1,7 +1,7 @@
 import type { HttpError } from "http-errors";
 import httpErrors from "http-errors";
 import { createMocks } from "node-mocks-http";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import fetchHandler from "../../src/handler/http/fetch-handler";
 import httpHandler from "../../src/handler/http/node-handler";
@@ -160,7 +160,7 @@ describe("httpHandler handler", () => {
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
-        expect(String(res.getHeader("content-type"))).toBe("application/json; charset=utf-8");
+        expect(String(res.getHeader("content-type"))).toBe("application/vnd.api+json; charset=utf-8");
 
         // eslint-disable-next-line no-underscore-dangle
         const data = JSON.parse(res._getData());
@@ -220,6 +220,33 @@ describe("httpHandler handler", () => {
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getData()).toContain("<!DOCTYPE html>");
+    });
+
+    it("still writes the negotiated response when the onError callback throws", async () => {
+        expect.assertions(2);
+
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        try {
+            const error = new httpErrors.BadRequest();
+
+            const handler = httpHandler(error, {
+                onError: () => {
+                    throw new Error("log transport is down");
+                },
+            });
+
+            const { req, res } = createMocks({ method: "GET" });
+
+            await handler(req, res);
+
+            // eslint-disable-next-line no-underscore-dangle
+            expect(res._getStatusCode()).toBe(400);
+            // eslint-disable-next-line no-underscore-dangle
+            expect(res._getData()).toContain("<!DOCTYPE html>");
+        } finally {
+            consoleSpy.mockRestore();
+        }
     });
 
     describe(fetchHandler, () => {
@@ -335,7 +362,7 @@ describe("httpHandler handler", () => {
             const response = await handler(request);
 
             expect(response.status).toBe(400);
-            expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8");
+            expect(response.headers.get("content-type")).toBe("application/vnd.api+json; charset=utf-8");
 
             const data = await response.json();
 
@@ -389,6 +416,58 @@ describe("httpHandler handler", () => {
 
             expect(captured).toBe(error);
             expect(response.status).toBe(400);
+        });
+
+        it("still produces the negotiated response when the onError callback throws", async () => {
+            expect.assertions(2);
+
+            const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+            try {
+                const error = new httpErrors.BadRequest();
+
+                const handler = fetchHandler(error, {
+                    onError: () => {
+                        throw new Error("log transport is down");
+                    },
+                });
+
+                const response = await handler(new Request("http://localhost/test"));
+
+                expect(response.status).toBe(400);
+
+                const body = await response.text();
+
+                expect(body).toContain("<!DOCTYPE html>");
+            } finally {
+                consoleSpy.mockRestore();
+            }
+        });
+
+        it("fails closed (no trace) when the runtime environment cannot be determined", async () => {
+            expect.assertions(2);
+
+            // Simulate an edge/worker runtime where NODE_ENV cannot be read.
+            vi.stubGlobal("process", { env: undefined });
+
+            try {
+                const error = new Error("Secret stack");
+                // No explicit showTrace and no resolvable env -> traces must not
+                // leak by default.
+                const handler = fetchHandler(error);
+
+                const request = new Request("http://localhost/test", {
+                    headers: { accept: "application/problem+json" },
+                });
+
+                const response = await handler(request);
+                const data = await response.json();
+
+                expect(data.detail).toBe("Secret stack");
+                expect(Object.hasOwn(data, "trace")).toBe(false);
+            } finally {
+                vi.unstubAllGlobals();
+            }
         });
     });
 });

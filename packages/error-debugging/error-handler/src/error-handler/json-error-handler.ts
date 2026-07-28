@@ -1,9 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getReasonPhrase } from "http-status-codes";
-
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 import sendJson from "./utils/send-json";
 import setErrorHeaders from "./utils/set-error-headers";
 
@@ -29,7 +28,7 @@ export const jsonErrorHandler
             setErrorHeaders(response, error);
 
             const { statusCode } = response;
-            const reasonPhrase = getReasonPhrase(statusCode) || "An error occurred";
+            const reasonPhrase = safeReasonPhrase(statusCode);
 
             if (options.formatter) {
                 const body = await options.formatter({ error, reasonPhrase, request, response, statusCode });
