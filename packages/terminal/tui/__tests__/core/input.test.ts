@@ -228,6 +228,52 @@ describe("core/input InputParser", () => {
             expect(onPaste.mock.calls[0]?.[0]).toBe("part one part two end");
         });
 
+        it("abandons the paste and flushes as data when the end marker never arrives", () => {
+            expect.assertions(4);
+
+            const onPaste = vi.fn();
+            const onData = vi.fn();
+
+            parser.on("paste", onPaste);
+            parser.on("data", onData);
+
+            // Start a paste, then stream past the 1 MiB cap without ever sending
+            // PASTE_END, as a malformed or hostile terminal would.
+            stdin.emit("data", `${ESC}[200~`);
+
+            const chunk = "x".repeat(256 * 1024);
+
+            for (let index = 0; index < 5; index += 1) {
+                stdin.emit("data", chunk);
+            }
+
+            expect(onPaste).not.toHaveBeenCalled();
+            expect(onData).toHaveBeenCalledTimes(1);
+            // Nothing is dropped: everything buffered comes back on the data channel.
+            expect(onData.mock.calls[0]?.[0]).toHaveLength(5 * chunk.length);
+
+            // Paste state was reset, so a subsequent well-formed paste still works.
+            stdin.emit("data", `${ESC}[200~after${ESC}[201~`);
+
+            expect(onPaste.mock.calls[0]?.[0]).toBe("after");
+        });
+
+        it("keeps buffering a large paste that stays under the cap", () => {
+            expect.assertions(2);
+
+            const onPaste = vi.fn();
+
+            parser.on("paste", onPaste);
+
+            const body = "y".repeat(512 * 1024);
+
+            stdin.emit("data", `${ESC}[200~${body}`);
+            stdin.emit("data", `${ESC}[201~`);
+
+            expect(onPaste).toHaveBeenCalledTimes(1);
+            expect(onPaste.mock.calls[0]?.[0]).toBe(body);
+        });
+
         it("falls back to the data channel when no paste listener is registered", () => {
             expect.assertions(1);
 

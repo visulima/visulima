@@ -13,6 +13,12 @@ export interface MouseEvent {
 const PASTE_START = "\u001B[200~";
 const PASTE_END = "\u001B[201~";
 
+// Upper bound on buffered paste text while waiting for PASTE_END. A terminal that
+// never sends the end marker — malformed, misbehaving, or fed crafted input — would
+// otherwise grow this buffer without limit. On overflow the buffered text is flushed
+// as ordinary input and paste mode is abandoned, so no keystrokes are lost.
+const MAX_PASTE_BUFFER_LENGTH = 1024 * 1024;
+
 export class InputParser extends EventEmitter {
     private _boundHandleData: ((data: string) => void) | null = null;
 
@@ -84,8 +90,20 @@ export class InputParser extends EventEmitter {
             const endIndex = chunk.indexOf(PASTE_END);
 
             if (endIndex === -1) {
-                // No end marker yet — keep buffering.
-                this._pasteBuffer += chunk;
+                // No end marker yet — keep buffering, but never without bound.
+                const buffered = this._pasteBuffer + chunk;
+
+                if (buffered.length > MAX_PASTE_BUFFER_LENGTH) {
+                    // Give up on this paste and hand the text back as ordinary input
+                    // rather than holding it hostage until an end marker that may
+                    // never arrive.
+                    this._pasteBuffer = null;
+                    this.emit("data", buffered);
+
+                    return;
+                }
+
+                this._pasteBuffer = buffered;
 
                 return;
             }
