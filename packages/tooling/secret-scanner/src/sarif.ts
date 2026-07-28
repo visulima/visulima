@@ -5,6 +5,7 @@
 // projection — feed the output straight to GitHub code-scanning upload, or any
 // SARIF-aware viewer.
 
+import { fingerprint, legacyFingerprint } from "./fingerprint";
 import type { Finding } from "./types";
 
 /** A SARIF 2.1.0 log object (the subset this serializer emits). */
@@ -105,6 +106,10 @@ export const toSarif = (findings: ReadonlyArray<Finding>, options: ToSarifOption
                 },
             ],
             message: { text: finding.description || `Potential secret detected by rule "${finding.ruleId}".` },
+            partialFingerprints: {
+                legacyFingerprint: legacyFingerprint(finding),
+                secretFingerprint: fingerprint(finding),
+            },
             properties: {
                 confidence: finding.confidence,
                 ...(finding.source === undefined ? {} : { source: finding.source }),
