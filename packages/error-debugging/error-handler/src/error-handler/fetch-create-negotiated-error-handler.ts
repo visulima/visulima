@@ -5,46 +5,8 @@ import { jsonpErrorHandler } from "./jsonp-error-handler";
 import problemErrorHandler from "./problem-error-handler";
 import { textErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, FetchErrorHandlers } from "./types";
-
-type HeaderValue = string | number | string[];
-
-// Mock ServerResponse for fetch handler
-class MockServerResponse {
-    public statusCode: number = 200;
-
-    public headers: Record<string, HeaderValue> = {};
-
-    public responseBody: string = "";
-
-    public setHeader(name: string, value: HeaderValue): void {
-        this.headers[name.toLowerCase()] = value;
-    }
-
-    public getHeader(name: string): HeaderValue | undefined {
-        return this.headers[name.toLowerCase()];
-    }
-
-    public getHeaders(): Record<string, HeaderValue> {
-        return { ...this.headers };
-    }
-
-    public writeHead(statusCode: number): void {
-        this.statusCode = statusCode;
-    }
-
-    public write(chunk: string | Buffer): void {
-        this.responseBody += chunk.toString();
-    }
-
-    public end(data?: string | Buffer): void {
-        if (data) {
-            this.responseBody += data.toString();
-        }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    public flushHeaders(): void {}
-}
+import MockServerResponse from "./utils/mock-server-response";
+import withExpose from "./utils/with-expose";
 
 // Server preference order (same as the @tinyhttp/accepts node path). Each entry
 // maps the chosen response type to the set of acceptable media types.
@@ -178,7 +140,7 @@ const adaptErrorHandlerToFetch
                 headers[key] = Array.isArray(value) ? value.join(", ") : String(value);
             }
 
-            return new Response(mockResponse.responseBody, {
+            return new Response(mockResponse.body, {
                 headers,
                 status: mockResponse.statusCode,
             });
@@ -210,36 +172,6 @@ const loadFetchXmlHandler = async (): Promise<FetchErrorHandler> => {
     fetchXmlHandlerPromise ??= import("./xml-error-handler").then((module) => adaptErrorHandlerToFetch(module.xmlErrorHandler()));
 
     return fetchXmlHandlerPromise;
-};
-
-/**
- * Apply the `expose` flag without permanently mutating the caller's error
- * object; the original state is restored once the handler resolves. See the
- * node twin in `create-negotiated-error-handler.ts` for the rationale.
- */
-const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<Response>): Promise<Response> => {
-    const hadOwnExpose = Object.hasOwn(error, "expose");
-    const previousExpose = (error as Error & { expose?: boolean }).expose;
-
-    if (!showTrace) {
-        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
-        (error as Error & { expose: boolean }).expose = false;
-    } else if (!("expose" in error)) {
-        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
-        (error as Error & { expose: boolean }).expose = true;
-    }
-
-    try {
-        return await run();
-    } finally {
-        if (hadOwnExpose) {
-            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
-            (error as Error & { expose?: boolean }).expose = previousExpose;
-        } else {
-            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
-            delete (error as Error & { expose?: boolean }).expose;
-        }
-    }
 };
 
 const createFetchNegotiatedErrorHandler
