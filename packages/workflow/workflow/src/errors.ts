@@ -31,6 +31,19 @@ export class RunNotFoundError extends WorkflowError {
 }
 
 /**
+ * Thrown by `signal` when the run's cross-process lease is held by another
+ * instance, so the event could not be delivered. Unlike a dropped `resume`
+ * (retried by the next sweep), a dropped signal has no automatic retry, so the
+ * caller is told to retry rather than handed a stale, misleading result.
+ */
+export class LeaseHeldError extends WorkflowError {
+    public constructor(runId: string) {
+        super("lease-held", `Run "${runId}" is leased by another instance; the event was not delivered. Retry shortly.`);
+        this.name = "LeaseHeldError";
+    }
+}
+
+/**
  * Internal control-flow signal thrown to unwind the workflow body when it hits
  * an unsatisfied `sleep`/`waitForEvent`. Never surfaced to user code.
  * @internal
