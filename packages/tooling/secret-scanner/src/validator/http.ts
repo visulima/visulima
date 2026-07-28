@@ -326,9 +326,7 @@ export const runHttpValidation = async ({
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        controller.abort("timeout");
-    }, DEFAULT_TIMEOUT_MS);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const onAbort = () => {
         controller.abort(signal?.reason);
@@ -339,21 +337,35 @@ export const runHttpValidation = async ({
     }
 
     const host = perHostLimiter?.hostFromUrl(url) ?? "";
-    const doFetch = async (): Promise<Response> =>
-        await fetch(url, {
+    const doFetch = async (): Promise<Response> => {
+        // Arm the timeout only once the per-host slot is acquired, so it
+        // measures request time — not time spent queued behind capacity or a
+        // `Retry-After` pause. Arming it before `perHostLimiter.run` acquires a
+        // slot would fire the timer against still-queued validations, aborting
+        // the controller before the fetch ever starts and turning live secrets
+        // into spurious `"error"` verdicts.
+        timeoutId = setTimeout(() => {
+            controller.abort("timeout");
+        }, DEFAULT_TIMEOUT_MS);
+
+        return await fetch(url, {
             body,
             headers,
             method: (request.method ?? "GET").toUpperCase(),
             redirect: "manual",
             signal: controller.signal,
         });
+    };
 
     // Cleanup is deferred until *after* the body read so the abort timer stays
     // armed through `response.text()`. A slow-loris server that resolves the
     // fetch but then trickles the body would otherwise stall the worker
     // indefinitely (the timer used to be cleared the moment the fetch settled).
     const cleanup = (): void => {
-        clearTimeout(timeoutId);
+        if (timeoutId !== undefined) {
+            clearTimeout(timeoutId);
+        }
+
         signal?.removeEventListener("abort", onAbort);
     };
 

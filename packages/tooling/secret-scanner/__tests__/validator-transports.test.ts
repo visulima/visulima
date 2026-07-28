@@ -143,6 +143,125 @@ describe("runTransport — implemented transports", () => {
     });
 });
 
+describe("runTransport — allowedHosts gate (untrusted-config defense)", () => {
+    afterEach(() => {
+        resetWarningsForTests();
+    });
+
+    it("skips a MongoDB connection whose host is not in the allowlist (no dial)", async () => {
+        expect.assertions(1);
+
+        // `host.invalid` would resolve to 'error' (a real connect attempt) if the
+        // gate failed open. 'skipped' proves no connection was opened.
+        const status = await runTransport("MongoDB", {
+            ...emptyContext,
+            allowedHosts: new Set(["db.allowed:27017"]),
+            secret: "mongodb://user:pass@host.invalid:27017/db",
+        });
+
+        expect(status).toBe("skipped");
+    });
+
+    it("allows a MongoDB connection whose host:port is in the allowlist", async () => {
+        expect.assertions(1);
+
+        // Host is allowlisted, so the gate lets it through — the unreachable host
+        // then fails DNS and the validator returns 'error' (proving it dialed).
+        const status = await runTransport("MongoDB", {
+            ...emptyContext,
+            allowedHosts: new Set(["host.invalid:27017"]),
+            secret: "mongodb://user:pass@host.invalid:27017/db",
+        });
+
+        expect(status).toBe("error");
+    });
+
+    it("gates the JDBC-dispatched host against the allowlist", async () => {
+        expect.assertions(2);
+
+        const skipped = await runTransport("Jdbc", {
+            ...emptyContext,
+            allowedHosts: new Set(["mysql.allowed:3306"]),
+            secret: "jdbc:mysql://host.invalid:3306/db",
+        });
+
+        expect(skipped).toBe("skipped");
+
+        const dialed = await runTransport("Jdbc", {
+            ...emptyContext,
+            allowedHosts: new Set(["host.invalid:3306"]),
+            secret: "jdbc:mysql://host.invalid:3306/db",
+        });
+
+        expect(dialed).toBe("error");
+    });
+
+    it("gates the fixed AWS STS endpoint against the allowlist without calling out", async () => {
+        expect.assertions(1);
+
+        // AKID present so the validator would otherwise reach STS; the allowlist
+        // excludes the STS host, so it never fires.
+        const status = await runTransport("AWS", {
+            ...emptyContext,
+            allowedHosts: new Set(["db.allowed:5432"]),
+            extras: { AKID: "AKIAIOSFODNN7EXAMPLE" },
+            secret: "wJalrXUtnFEMI",
+        });
+
+        expect(status).toBe("skipped");
+    });
+
+    it("skips when the allowlist is set but the URI can't be parsed to a host (fail closed)", async () => {
+        expect.assertions(1);
+
+        const status = await runTransport("MongoDB", {
+            ...emptyContext,
+            allowedHosts: new Set(["host.invalid:27017"]),
+            // Multi-host replica-set URI: `URL` can't parse it, so the host is
+            // unresolvable and the gate fails closed.
+            secret: "mongodb://user:pass@h1.invalid:27017,h2.invalid:27017/db",
+        });
+
+        expect(status).toBe("skipped");
+    });
+
+    it("does not gate the offline JWT transport (opens no connection)", async () => {
+        expect.assertions(1);
+
+        const status = await runTransport("JWT", {
+            ...emptyContext,
+            // Empty allowlist would block every host — but JWT is offline and
+            // declares no host, so it still runs.
+            allowedHosts: new Set<string>(),
+            secret: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4In0.sig",
+        });
+
+        expect(status).toBe("verified");
+    });
+});
+
+describe("runTransport — abort signal", () => {
+    afterEach(() => {
+        resetWarningsForTests();
+    });
+
+    it("returns 'error' without dialing when the signal is already aborted", async () => {
+        expect.assertions(1);
+
+        const controller = new AbortController();
+
+        controller.abort();
+
+        const status = await runTransport("MongoDB", {
+            ...emptyContext,
+            secret: "mongodb://user:pass@host.invalid:27017/db",
+            signal: controller.signal,
+        });
+
+        expect(status).toBe("error");
+    });
+});
+
 describe(reportValidators, () => {
     it("counts rules per transport type and sorts by descending count", () => {
         expect.assertions(3);
