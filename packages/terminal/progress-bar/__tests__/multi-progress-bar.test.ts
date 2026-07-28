@@ -382,6 +382,63 @@ describe("multiProgressBar", () => {
 
             expect(last?.rows[0]).toMatch(RECT_GRADIENT_RE);
         });
+
+        it("should render a dense (non-empty) char for columns filled by every bar", () => {
+            expect.assertions(2);
+
+            // Four fully-complete bars cover every column; the composite must not collapse
+            // onto the empty/incomplete character (which would make a full column look empty).
+            const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, stub.manager);
+
+            for (let index = 0; index < 4; index += 1) {
+                multi.create(100, 100, undefined, { width: 3 });
+            }
+
+            multi.stop();
+
+            const last = stub.state.updates.at(-1);
+
+            // shades_classic incomplete char is "░"; the fully-stacked column picks the densest "█".
+            expect(last?.rows[0]).not.toContain("░");
+            expect(last?.rows[0]).toBe("[███]");
+        });
+
+        it("should keep the configured width when composite is combined with barGlue", () => {
+            expect.assertions(1);
+
+            // barGlue must not double the measured composite width: 3 cells joined by "-".
+            const multi = new MultiProgressBar({ barGlue: "-", composite: true, format: "[{bar}]" }, stub.manager);
+
+            multi.create(100, 100, undefined, { width: 3 });
+            multi.create(100, 100, undefined, { width: 3 });
+
+            multi.stop();
+
+            const last = stub.state.updates.at(-1);
+
+            expect(last?.rows[0]).toBe("[█-█-█]");
+        });
+
+        it("should not corrupt the line when composite is combined with an ANSI formatBar", () => {
+            expect.assertions(2);
+
+            // An ANSI formatBar embeds "[" bytes; the composite renderer must measure and
+            // inject against a clean line so BAR_REGEX never matches inside an escape sequence.
+            const multi = new MultiProgressBar(
+                { composite: true, format: "[{bar}]", formatBar: (bar) => `[31m${bar}[39m` },
+                stub.manager,
+            );
+
+            multi.create(100, 100, undefined, { width: 3 });
+            multi.create(100, 100, undefined, { width: 3 });
+
+            multi.stop();
+
+            const last = stub.state.updates.at(-1);
+
+            expect(last?.rows[0]).not.toContain("39m");
+            expect(last?.rows[0]).toBe("[███]");
+        });
     });
 
     describe("setBarColor", () => {
@@ -392,7 +449,7 @@ describe("multiProgressBar", () => {
             const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, manager);
             const colorize = (text: string): string => `<RED>${text}</RED>`;
 
-            const bar = multi.create(100) as never as MultiBarInstance;
+            const bar = multi.create(100);
 
             multi.setBarColor(bar, colorize);
             bar.update(50);
@@ -411,7 +468,7 @@ describe("multiProgressBar", () => {
             const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" }, manager);
             const colorize = (text: string): string => `<RED>${text}</RED>`;
 
-            const bar = multi.create(100) as never as MultiBarInstance;
+            const bar = multi.create(100);
 
             multi.setBarColor(bar, colorize);
             multi.setBarColor(bar, undefined);
@@ -432,7 +489,7 @@ describe("multiProgressBar", () => {
             const colorize = (text: string): string => `<C>${text}</C>`;
 
             multi.create(100);
-            const second = multi.create(100) as never as MultiBarInstance;
+            const second = multi.create(100);
 
             // Coloring the second bar makes setBarColor iterate past the first non-match.
             multi.setBarColor(second, colorize);
@@ -630,6 +687,45 @@ describe("multiProgressBar", () => {
             multi.stop();
 
             expect(state.updates.at(-1)?.rows[0]).toBe("42");
+        });
+
+        it("should honour a per-bar fps override independent of the multi-level fps", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            // The multi-level throttle is disabled (fps 0); only the per-bar fps should gate.
+            const multi = new MultiProgressBar({ format: "{value}", fps: 0 }, manager);
+            const bar = multi.create(100, 0, undefined, { fps: 10 });
+
+            state.updates.length = 0;
+
+            vi.setSystemTime(200);
+            bar.update(1);
+            bar.update(2);
+            bar.update(3);
+
+            // Without the per-bar throttle all three would render (multi fps 0); the per-bar
+            // fps of 10 coalesces the trailing two into the first frame.
+            expect(state.updates).toHaveLength(1);
+        });
+    });
+
+    describe("start / stop", () => {
+        it("should re-render immediately when start() changes total and value", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}/{total}" }, manager);
+            const bar = multi.create(100);
+
+            state.updates.length = 0;
+
+            bar.start(200, 50);
+
+            expect(state.updates.at(-1)?.rows[0]).toContain("50/200");
         });
     });
 
