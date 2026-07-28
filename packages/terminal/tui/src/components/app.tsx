@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, sonarjs/no-nested-functions */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider */
 /* eslint-disable react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-data-to-parent -- App is the root component; its effects legitimately drive imperative terminal I/O (raw mode, bracketed paste, input-control registration) and cannot be lifted to a parent. */
 import { EventEmitter } from "node:events";
 import process from "node:process";
@@ -83,15 +83,15 @@ const App = ({
 }: Props): React.ReactNode => {
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
-    // Focusables array is managed internally via setFocusables callback pattern
-
+    // The state value is intentionally discarded: `focusablesRef` below is the
+    // source of truth, and this setter exists only to schedule a re-render.
     const [, setFocusables] = useState<Focusable[]>([]);
     // Track focusables count for tab navigation check (avoids stale closure)
     const focusablesCountRef = useRef(0);
-    // Mirror of the focusables array for reads outside a setState updater. Computing
-    // the next active id here (instead of nesting setActiveFocusId inside the
-    // setFocusables updater) keeps the state updaters pure — React may double-invoke
-    // or discard updaters in StrictMode/concurrent mode.
+    // Authoritative focusables list. Every mutation computes the next array in the
+    // action, assigns both refs, then hands the concrete array to setFocusables —
+    // never inside an updater callback, which React may double-invoke or discard
+    // in StrictMode/concurrent mode.
     const focusablesRef = useRef<Focusable[]>([]);
     const animationSubscribersRef = useRef(new Map<(currentTime: number) => void, AnimationSubscriber>());
     const animationTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -580,20 +580,18 @@ const App = ({
     }, []);
 
     const addFocusable = useCallback((id: string, { autoFocus }: { autoFocus: boolean }): void => {
-        setFocusables((currentFocusables) => {
-            const next = [
-                ...currentFocusables,
-                {
-                    id,
-                    isActive: true,
-                },
-            ];
+        const next = [
+            ...focusablesRef.current,
+            {
+                id,
+                isActive: true,
+            },
+        ];
 
-            focusablesCountRef.current = next.length;
-            focusablesRef.current = next;
+        focusablesCountRef.current = next.length;
+        focusablesRef.current = next;
 
-            return next;
-        });
+        setFocusables(next);
 
         if (autoFocus) {
             setActiveFocusId((currentActiveFocusId) => {
@@ -615,33 +613,29 @@ const App = ({
             return currentActiveFocusId;
         });
 
-        setFocusables((currentFocusables) => {
-            const filtered = currentFocusables.filter((focusable) => focusable.id !== id);
+        const filtered = focusablesRef.current.filter((focusable) => focusable.id !== id);
 
-            focusablesCountRef.current = filtered.length;
-            focusablesRef.current = filtered;
+        focusablesCountRef.current = filtered.length;
+        focusablesRef.current = filtered;
 
-            return filtered;
-        });
+        setFocusables(filtered);
     }, []);
 
     const activateFocusable = useCallback((id: string): void => {
-        setFocusables((currentFocusables) => {
-            const next = currentFocusables.map((focusable) => {
-                if (focusable.id !== id) {
-                    return focusable;
-                }
+        const next = focusablesRef.current.map((focusable) => {
+            if (focusable.id !== id) {
+                return focusable;
+            }
 
-                return {
-                    id,
-                    isActive: true,
-                };
-            });
-
-            focusablesRef.current = next;
-
-            return next;
+            return {
+                id,
+                isActive: true,
+            };
         });
+
+        focusablesRef.current = next;
+
+        setFocusables(next);
     }, []);
 
     const deactivateFocusable = useCallback((id: string): void => {
@@ -653,22 +647,20 @@ const App = ({
             return currentActiveFocusId;
         });
 
-        setFocusables((currentFocusables) => {
-            const next = currentFocusables.map((focusable) => {
-                if (focusable.id !== id) {
-                    return focusable;
-                }
+        const next = focusablesRef.current.map((focusable) => {
+            if (focusable.id !== id) {
+                return focusable;
+            }
 
-                return {
-                    id,
-                    isActive: false,
-                };
-            });
-
-            focusablesRef.current = next;
-
-            return next;
+            return {
+                id,
+                isActive: false,
+            };
         });
+
+        focusablesRef.current = next;
+
+        setFocusables(next);
     }, []);
 
     // Handle cursor visibility, raw mode, and bracketed paste mode cleanup on unmount
