@@ -44,7 +44,23 @@ const hasBuffer = (): boolean => typeof Buffer === "function";
 const textEncoder = new TextEncoder();
 const utf8Decoder = new TextDecoder("utf-8");
 
-const HEX_CHARS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+// Precomputed 256-entry table mapping a byte value -> its two-char lowercase
+// hex pair, so the portable encoder is a single lookup per byte.
+const HEX_ENCODE_TABLE = Array.from({ length: 256 }, (_, byte) => byte.toString(16).padStart(2, "0"));
+
+// Matches a (possibly empty) run of hex digits, either case.
+const HEX_RE = /^[0-9a-f]*$/i;
+
+// ASCII whitespace stripped before base64 validation (matches the WHATWG
+// forgiving-base64 algorithm and Node's lenient Buffer decoder).
+const BASE64_WHITESPACE_RE = /[\t\n\f\r ]/g;
+
+// Standard (RFC 4648) base64 alphabet followed by up to two `=` padding
+// characters. Rejects any non-alphabet character and stray `=` in the middle;
+// the "lone trailing character" case (a group of a single base64 digit, which
+// encodes no bytes) and mispadded input (a `=` in a string whose length is not a
+// multiple of 4) are caught by the length checks at decode time.
+const BASE64_RE = /^[a-z0-9+/]*={0,2}$/i;
 
 // Lookup table mapping a hex char code -> nibble value (or -1 if invalid).
 const buildHexDecodeTable = (): Int8Array => {
@@ -97,11 +113,23 @@ const isUint8Array = (x: unknown): x is Uint8Array => {
         return true;
     }
 
-    // Cross-realm fallback: an object whose toStringTag is "Uint8Array" is a
-    // Uint8Array from another realm (this also covers Buffer, which subclasses
-    // Uint8Array in the same realm and is therefore already caught above).
-    return typeof x === "object" && x !== null && Object.prototype.toString.call(x) === "[object Uint8Array]";
+    // Cross-realm fallback: a genuine typed array whose toStringTag is
+    // "Uint8Array" is a Uint8Array from another realm (this also covers Buffer,
+    // which subclasses Uint8Array in the same realm and is therefore already
+    // caught above). `ArrayBuffer.isView` cannot be spoofed via a forged
+    // `Symbol.toStringTag` and works cross-realm, unlike a bare toStringTag check.
+    return ArrayBuffer.isView(x) && Object.prototype.toString.call(x) === "[object Uint8Array]";
 };
+
+/**
+ * Checks if a value is an `ArrayBuffer`, including instances originating from
+ * another realm (vm context, worker, iframe) where a plain `instanceof` would
+ * return `false`.
+ * @param x The value to check.
+ * @returns True if x is an ArrayBuffer, false otherwise.
+ */
+const isArrayBuffer = (x: unknown): x is ArrayBuffer =>
+    x instanceof ArrayBuffer || (typeof x === "object" && x !== null && Object.prototype.toString.call(x) === "[object ArrayBuffer]");
 
 /**
  * Converts a latin1 string, array of strings, or template literal to a Uint8Array.
@@ -195,12 +223,15 @@ const uint8ArrayToAscii = (data: ArrayBuffer | Uint8Array): string => {
  * @returns The hex-encoded string (length is `2 * data.length`).
  */
 const uint8ArrayToHex = (data: Uint8Array): string => {
+    if (hasBuffer()) {
+        return Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString("hex");
+    }
+
     let result = "";
 
     for (const byte of data) {
-        // Indices are always 0–15, so the lookups are guaranteed to be defined.
-        // eslint-disable-next-line no-bitwise
-        result += (HEX_CHARS[byte >> 4] as string) + (HEX_CHARS[byte & 0x0f] as string);
+        // Byte values are always 0–255, so the lookup is guaranteed to be defined.
+        result += HEX_ENCODE_TABLE[byte] as string;
     }
 
     return result;
@@ -215,6 +246,23 @@ const uint8ArrayToHex = (data: Uint8Array): string => {
 const hexToUint8Array = (hex: string): Uint8Array => {
     if (hex.length % 2 !== 0) {
         throw new TypeError(`Invalid hex string: expected an even length, received ${String(hex.length)}`);
+    }
+
+    // Fast path in Node: native regex validation (Node's hex decoder is lenient
+    // and truncates at the first invalid pair, so keep the strict TypeError
+    // contract) plus the native Buffer hex decoder. `new Uint8Array(buffer)`
+    // copies into a fresh, plain (non-pooled) Uint8Array that owns its memory.
+    if (hasBuffer()) {
+        if (!HEX_RE.test(hex)) {
+            for (let index = 0; index < hex.length; index += 1) {
+                // eslint-disable-next-line unicorn/prefer-code-point
+                if ((HEX_DECODE_TABLE[hex.charCodeAt(index)] ?? -1) === -1) {
+                    throw new TypeError(`Invalid hex string: non-hex character at index ${String(index)}`);
+                }
+            }
+        }
+
+        return new Uint8Array(Buffer.from(hex, "hex"));
     }
 
     const result = new Uint8Array(hex.length / 2);
@@ -257,17 +305,32 @@ const uint8ArrayToBase64 = (data: Uint8Array): string => {
 };
 
 /**
- * Decodes a standard (RFC 4648) base64 string into a `Uint8Array`.
+ * Decodes a standard (RFC 4648) base64 string into a `Uint8Array`. ASCII
+ * whitespace is ignored; any other non-alphabet character or invalid padding is
+ * rejected consistently across runtimes (Node's `Buffer` decoder is otherwise
+ * lenient and would silently drop them).
  * @param base64 The base64 string to decode.
  * @returns The decoded bytes.
+ * @throws {TypeError} If the string is not valid base64.
  */
 const base64ToUint8Array = (base64: string): Uint8Array => {
-    if (hasBuffer()) {
-        // Copy into a plain Uint8Array that owns its (non-pooled) memory.
-        return new Uint8Array(Buffer.from(base64, "base64"));
+    const normalized = base64.replaceAll(BASE64_WHITESPACE_RE, "");
+
+    // A `length % 4 === 1` remainder is the only invalid partial group for
+    // unpadded input: a single leftover base64 digit encodes no bytes. Padded
+    // input (`=`) must always be a whole number of 4-char groups, so any padded
+    // string whose length is not a multiple of 4 is malformed (e.g. `aG=`, `a==`,
+    // `==`, `aGkvA=`). Reject both alongside any non-alphabet character.
+    if (!BASE64_RE.test(normalized) || normalized.length % 4 === 1 || (normalized.includes("=") && normalized.length % 4 !== 0)) {
+        throw new TypeError("Invalid base64 string: contains a non-alphabet character or invalid padding");
     }
 
-    const binary = atob(base64);
+    if (hasBuffer()) {
+        // Copy into a plain Uint8Array that owns its (non-pooled) memory.
+        return new Uint8Array(Buffer.from(normalized, "base64"));
+    }
+
+    const binary = atob(normalized);
     const result = new Uint8Array(binary.length);
 
     for (let index = 0; index < binary.length; index += 1) {
@@ -296,6 +359,29 @@ const maybeCopyView = (view: Uint8Array, copy: boolean): Uint8Array => {
 };
 
 /**
+ * Converts an array of numbers to a `Uint8Array`, validating while filling.
+ *
+ * Single pass: validate each entry as it is written, instead of an O(n)
+ * `.every()` pre-pass followed by `new Uint8Array(data)` iterating again.
+ * @param data The array to convert.
+ * @returns The resulting Uint8Array.
+ * @throws {Uint8ArrayIncompatibleError} If any entry is not a number.
+ */
+const numberArrayToUint8Array = (data: unknown[]): Uint8Array => {
+    const result = new Uint8Array(data.length);
+
+    for (const [index, item] of data.entries()) {
+        if (typeof item !== "number") {
+            throw new Uint8ArrayIncompatibleError("Array containing non-number values");
+        }
+
+        result[index] = item;
+    }
+
+    return result;
+};
+
+/**
  * Attempts to convert various data types to a `Uint8Array`.
  *
  * Supports `Uint8Array` (returned as-is, or copied with `{ copy: true }`),
@@ -313,30 +399,30 @@ const toUint8Array = (data: unknown, options: ToUint8ArrayOptions = {}): Uint8Ar
         return maybeCopyView(bufferToUint8Array(data), copy);
     }
 
-    if (data instanceof Uint8Array) {
-        return maybeCopyView(data, copy);
+    if (isUint8Array(data)) {
+        // Same-realm fast path preserves the input's identity (and honours copy).
+        if (data instanceof Uint8Array) {
+            return maybeCopyView(data, copy);
+        }
+
+        // Cross-realm typed array (vm context, worker, iframe): rebuild a
+        // same-realm view over the shared bytes, copying when requested.
+        // `data` is narrowed to `never` here because TypeScript cannot model a
+        // Uint8Array that is not `instanceof Uint8Array` (a different realm).
+        const crossRealm = data as Uint8Array;
+        const view = new Uint8Array(crossRealm.buffer, crossRealm.byteOffset, crossRealm.byteLength);
+
+        return maybeCopyView(view, copy);
     }
 
-    if (data instanceof ArrayBuffer) {
+    if (isArrayBuffer(data)) {
         // ArrayBuffer#slice clones the backing buffer (this is not Array#slice).
         // eslint-disable-next-line unicorn/prefer-spread
         return new Uint8Array(copy ? data.slice(0) : data);
     }
 
     if (Array.isArray(data)) {
-        // Single pass: validate while filling, instead of an O(n) `.every()`
-        // pre-pass followed by `new Uint8Array(data)` iterating again.
-        const result = new Uint8Array(data.length);
-
-        for (const [index, item] of data.entries()) {
-            if (typeof item !== "number") {
-                throw new Uint8ArrayIncompatibleError("Array containing non-number values");
-            }
-
-            result[index] = item;
-        }
-
-        return result;
+        return numberArrayToUint8Array(data);
     }
 
     if (typeof data === "string") {

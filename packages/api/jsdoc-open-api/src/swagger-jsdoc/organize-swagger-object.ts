@@ -36,10 +36,21 @@ const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: R
     ];
 
     if (commonProperties.includes(property)) {
-        Object.keys(annotation[property]).forEach((definition) => {
+        const source = annotation[property];
+
+        // A bodyless YAML section (e.g. `components:`) parses to null; skip it so
+        // Object.keys does not throw.
+        if (source !== null && source !== undefined) {
+            // The version template only seeds a subset of the common properties, so
+            // lazily initialize the target for the rest (e.g. `consumes` in v2).
             // eslint-disable-next-line no-param-reassign
-            swaggerObject[property][definition] = mergeDeep(swaggerObject[property][definition], annotation[property][definition]);
-        });
+            swaggerObject[property] ??= {};
+
+            Object.keys(source).forEach((definition) => {
+                // eslint-disable-next-line no-param-reassign
+                swaggerObject[property][definition] = mergeDeep(swaggerObject[property][definition], source[definition]);
+            });
+        }
     } else if (property === "tags") {
         const { tags } = annotation;
 
