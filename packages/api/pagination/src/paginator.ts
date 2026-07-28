@@ -1,3 +1,4 @@
+import { buildUrl, serializeQuery } from "./build-query";
 import type { NamingStrategy, PaginationMeta, PaginationResult, Paginator as IPaginator, WindowedUrl, WindowOptions } from "./types";
 
 type UrlsForRange = { isActive: boolean; page: number; url: string }[];
@@ -213,7 +214,7 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
     public getUrl(page: number): string {
         const pageParameter = `page=${encodeURIComponent(String(Math.max(page, 1)))}`;
 
-        return this.baseQuery === "" ? `${this.url}?${pageParameter}` : `${this.url}?${this.baseQuery}&${pageParameter}`;
+        return buildUrl(this.url, this.baseQuery, pageParameter);
     }
 
     /**
@@ -249,8 +250,12 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
             });
         }
 
-        const windowStart = Math.max(this.currentPage - eachSide, 1);
-        const windowEnd = Math.min(this.currentPage + eachSide, lastPage);
+        // Clamp to `lastPage` so an out-of-range `currentPage` (e.g. a stale
+        // `?page=50` when only 10 pages exist) still yields a coherent window
+        // centered on the last page instead of a dangling ellipsis.
+        const effectivePage = Math.min(this.currentPage, lastPage);
+        const windowStart = Math.max(effectivePage - eachSide, 1);
+        const windowEnd = Math.min(effectivePage + eachSide, lastPage);
         const result: WindowedUrl[] = [];
 
         // eslint-disable-next-line unicorn/no-null
@@ -287,16 +292,7 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
     public queryString(values: Record<string, unknown>): this {
         this.qs = values;
 
-        const searchParameters = new URLSearchParams();
-
-        for (const [key, value] of Object.entries(this.qs)) {
-            if (value !== undefined && value !== null) {
-                // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                searchParameters.append(key, String(value));
-            }
-        }
-
-        this.baseQuery = searchParameters.toString();
+        this.baseQuery = serializeQuery(this.qs);
 
         return this;
     }

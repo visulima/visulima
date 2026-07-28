@@ -5,6 +5,8 @@ import { patchOverlay } from "../../../src/overlay/patch-overlay";
 const BALLOON_GROUP_REGEX = /id=["\\]__v_o__balloon_group["\\]/;
 const BALLOON_POSITION_REGEX = /data-balloon-position=.*top-left/;
 const CUSTOM_ICON_SRC_REGEX = /src=.*\/custom-icon\.svg/;
+// The icon URL must be interpolated as the `src`, never a whole `<img>` tag nested inside `src`.
+const NESTED_ICON_SRC_REGEX = /src=\\?["']<img/;
 const ANY_CHAR_REGEX = /./;
 
 // Mock the dependencies
@@ -52,6 +54,23 @@ class ErrorOverlay {
 
         expect(result).not.toBe(inputCode); // Should be modified
         expect(result).toContain("__v_o__overlay");
+    });
+
+    it("escapes quotes in the stack-frame renderer to prevent attribute breakout (XSS regression)", () => {
+        expect.assertions(2);
+
+        const inputCode = `
+class ErrorOverlay {
+    constructor() {}
+}
+`;
+
+        const result = patchOverlay(inputCode, true);
+
+        // The runtime stack-frame escape() must encode both quote characters, not just angle brackets,
+        // so a file segment containing a quote cannot break out of the data-file attribute.
+        expect(result).toContain("&quot;");
+        expect(result).toContain("&#39;");
     });
 
     it("does not inject Google Fonts <link> tags (offline / no-phone-home regression)", () => {
@@ -143,7 +162,7 @@ var ErrorOverlay = class {
         });
 
         it("should include balloon config when provided", () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             const inputCode = `class ErrorOverlay {}`;
             const balloonConfig = {
@@ -162,6 +181,8 @@ var ErrorOverlay = class {
             expect(result).toMatch(BALLOON_POSITION_REGEX);
             // Check that the icon is included
             expect(result).toMatch(CUSTOM_ICON_SRC_REGEX);
+            // The icon URL must not be double-wrapped into a nested <img> src.
+            expect(result).not.toMatch(NESTED_ICON_SRC_REGEX);
         });
 
         it("should exclude balloon when enabled is false", () => {
@@ -179,7 +200,7 @@ var ErrorOverlay = class {
         });
 
         it("should include custom icon when provided", () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             const inputCode = `class ErrorOverlay {}`;
             const balloonConfig = {
@@ -191,6 +212,8 @@ var ErrorOverlay = class {
             expect(result).toContain("__v_o__balloon");
             // Check for icon src (quotes may be escaped in JSON-stringified HTML)
             expect(result).toMatch(CUSTOM_ICON_SRC_REGEX);
+            // The icon URL must not be double-wrapped into a nested <img> src.
+            expect(result).not.toMatch(NESTED_ICON_SRC_REGEX);
         });
 
         it("should include custom styles when provided", () => {

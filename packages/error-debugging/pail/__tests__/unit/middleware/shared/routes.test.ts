@@ -43,6 +43,22 @@ describe("routes", () => {
             expect(matchesPattern("/faviconXico", "/favicon.ico")).toBe(false);
         });
 
+        it("should treat regex metacharacters as literals", () => {
+            expect.assertions(7);
+
+            // `+` would otherwise be a quantifier
+            expect(matchesPattern("/api/c++/build", "/api/c++/**")).toBe(true);
+            expect(matchesPattern("/api/c/build", "/api/c++/**")).toBe(false);
+            // `(`/`)` are a live group and would throw without escaping
+            expect(() => matchesPattern("/api/(v1)/users", "/api/(v1)/**")).not.toThrow();
+            expect(matchesPattern("/api/(v1)/users", "/api/(v1)/**")).toBe(true);
+            // `|` would otherwise alternate
+            expect(matchesPattern("/a|b", "/a|b")).toBe(true);
+            expect(matchesPattern("/a", "/a|b")).toBe(false);
+            // `$` would otherwise anchor
+            expect(matchesPattern("/price$", "/price$")).toBe(true);
+        });
+
         it("should handle ** with trailing slash", () => {
             expect.assertions(2);
 

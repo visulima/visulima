@@ -4,16 +4,10 @@ import type { ArgumentToken } from "./tokenizer";
 import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./types";
 import convertValue from "./utils/convert-value";
 import debugLog from "./utils/debug";
+import { isBooleanType, isNumberType } from "./utils/type-checks";
 
 const CAMEL_CASE_PATTERN = /-([a-z])/g;
 const NUMERIC_PATTERN = /^\d+$/;
-
-/**
- * Check if a type is Boolean.
- * @param type The type to check
- * @returns True if the type is Boolean or BooleanConstructor
- */
-const isBooleanType = (type: unknown): type is BooleanConstructor => type === Boolean || (typeof type === "function" && type.name === "Boolean");
 
 /**
  * Check if a key is special (starts with underscore).
@@ -169,7 +163,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     const hasGroups = definitions.some((d) => d.group);
     // Precompute the first Number-typed definition once instead of re-scanning
     // `definitions` for every numeric token encountered in the loop below.
-    const numberTypedDefinition = definitions.find((d) => d.type === Number);
+    const numberTypedDefinition = definitions.find((d) => isNumberType(d.type));
 
     // Single optimized pass through tokens
     // eslint-disable-next-line no-plusplus
@@ -279,6 +273,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     }
                 } else if (definition?.type && isBooleanType(definition.type)) {
                     createOrAppendArray(values, optionName, !negated, isMultiple);
+                } else if ((isMultiple || isLazyMultiple) && values[optionName] !== undefined) {
+                    // A repeated multiple/lazyMultiple option with no following value must not
+                    // discard values already collected; append a null placeholder instead.
+                    // eslint-disable-next-line unicorn/no-null
+                    createOrAppendArray(values, optionName, null, true);
                 } else {
                     // eslint-disable-next-line unicorn/no-null
                     values[optionName] = isMultiple ? [] : null;
@@ -291,11 +290,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     switch (value) {
                         case "": {
                             if (options.partial) {
-                                values._unknown ??= [];
-
                                 const rawUnknown = `${token.rawName ?? `--${token.name}`}${token.value ? `=${token.value}` : ""}`;
 
-                                (values._unknown as string[]).push(rawUnknown);
                                 unknownTokenIndexEntries.push({ index: token.index, value: rawUnknown });
                                 value = true;
                             } else {
@@ -433,10 +429,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     if (options.partial && !options.stopAtFirstUnknown) {
         const allUnknownItems: { index: number; value: string }[] = [...unknownArgs];
 
-        if (values._unknown) {
-            for (const entry of unknownTokenIndexEntries) {
-                allUnknownItems.push({ index: entry.index, value: entry.value });
-            }
+        for (const entry of unknownTokenIndexEntries) {
+            allUnknownItems.push({ index: entry.index, value: entry.value });
         }
 
         for (const token of tokens) {
@@ -471,8 +465,6 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
             output._unknown = argv.slice(argvIndex);
         }
-    } else if (unknownArgs.length > 0 && !options.partial) {
-        output._unknown = unknownArgs.map((item) => item.value);
     }
 
     // Process collected values

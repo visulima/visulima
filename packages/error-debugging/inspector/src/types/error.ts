@@ -1,6 +1,7 @@
 import type { InspectType, InternalInspect, Options } from "../types";
 import inspectList from "../utils/inspect-list";
 import inspectProperty from "../utils/inspect-property";
+import { safeReadProperty } from "../utils/safe-read-property";
 import truncate from "../utils/truncate";
 
 const errorKeys = new Set(["column", "columnNumber", "description", "fileName", "line", "lineNumber", "message", "name", "number", "stack"]);
@@ -26,7 +27,7 @@ const inspectObject: InspectType<Error> = (error: Error, options: Options, inspe
     options.truncate -= message.length + 5;
 
     const propertyContents = inspectList(
-        properties.map((key) => [key, error[key as keyof typeof error]]),
+        properties.map((key) => [key, safeReadProperty(error, key)]),
         error,
         options,
         inspect,

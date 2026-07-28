@@ -513,6 +513,23 @@ describe("node.JS", () => {
         expect(received).toBe(3);
     });
 
+    it(`should clamp a negative FORCE_COLOR value to 0`, () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { FORCE_COLOR: "-1" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(0);
+    });
+
     it(`should enable colors via FORCE_COLOR=true, but honor 256`, () => {
         expect.assertions(2);
 
@@ -883,6 +900,38 @@ describe("deno", () => {
         expect(received).toBe(2);
     });
 
+    it(`should support env TERM on Deno 2 where a Node-compat process global coexists`, () => {
+        expect.assertions(1);
+
+        // Deno 2 exposes a Node-compatibility `process` global alongside `Deno`; its `env`
+        // has no `toObject`, so reading env must go through `Deno.env.toObject()`.
+        vi.stubGlobal("process", {
+            argv: [],
+            env: {},
+            platform: "linux",
+        });
+        vi.stubGlobal("Deno", {
+            args: [],
+            build: {
+                os: "linux",
+            },
+            env: {
+                toObject: () => {
+                    return { TERM: "xterm-256color" };
+                },
+            },
+            stdout: {
+                isTerminal: () => true,
+            },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(2);
+    });
+
     it(`should support stderr`, () => {
         expect.assertions(1);
 
@@ -916,7 +965,7 @@ describe("deno", () => {
         vi.stubGlobal("Deno", {
             args: [],
             build: {
-                os: "win32",
+                os: "windows",
             },
             env: {
                 toObject: () => {
@@ -939,7 +988,7 @@ describe("deno", () => {
         vi.stubGlobal("Deno", {
             args: [],
             build: {
-                os: "win32",
+                os: "windows",
             },
             env: {
                 toObject: () => {
@@ -1480,6 +1529,23 @@ describe("fORCE_COLOR vs NO_COLOR precedence", () => {
         vi.unstubAllGlobals();
 
         expect(received).toBe(0);
+    });
+
+    it("should let an explicit numeric FORCE_COLOR win over the --no-color CLI flag", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: ["--no-color"],
+            env: { FORCE_COLOR: "1", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
     });
 });
 

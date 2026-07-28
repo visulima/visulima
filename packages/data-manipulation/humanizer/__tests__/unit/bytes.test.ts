@@ -299,6 +299,17 @@ describe(formatBytes, () => {
         expect(formatBytes(1000, { bits: true, long: true })).toBe("8 Kilobits");
     });
 
+    it("should honor a byte-unit pin in bits mode by mapping it to the bit level (regression)", () => {
+        expect.assertions(3);
+
+        // The `unit` option is typed as a byte short ("MB"), which never matched
+        // the bit reference table, so bits+unit silently fell back to the
+        // auto-computed level. It now pins the equivalent bit unit level.
+        expect(formatBytes(1_000_000, { base: 10, bits: true, decimals: 1, unit: "MB" })).toBe("8.0 Mbit");
+        expect(formatBytes(1_000_000, { base: 10, bits: true, decimals: 3, unit: "KB" })).toBe("8,000.000 kbit");
+        expect(formatBytes(1_000_000, { base: 10, bits: true, long: true, unit: "GB" })).toBe("0 Gigabits");
+    });
+
     it("should prefix positive values with a sign when signed is true", () => {
         expect.assertions(3);
 
@@ -363,6 +374,22 @@ describe(parseBytes, () => {
         expect.assertions(1);
 
         expect(parseBytes("50.000,5 KB", { locale: "de" })).toBe(50_000.5 * 1024);
+    });
+
+    it("should parse locales whose group separator is a space or apostrophe (regression)", () => {
+        expect.assertions(3);
+
+        // fr-FR/sv-SE group with a no-break space and de-CH with an apostrophe;
+        // the entry regex used to admit only "." and "," between digit groups, so
+        // these inputs never matched and parseBytes returned NaN. Build the inputs
+        // from the locale formatter so the exact grouping code point is exercised.
+        const frInput = `${new Intl.NumberFormat("fr-FR").format(1234.5)} Mo`;
+        const svInput = `${new Intl.NumberFormat("sv-SE").format(1234)} KB`;
+        const chInput = `${new Intl.NumberFormat("de-CH").format(1234)} KB`;
+
+        expect(parseBytes(frInput, { locale: "fr-FR", units: "metric_octet" })).toBe(1234.5 * 1024 ** 2);
+        expect(parseBytes(svInput, { locale: "sv-SE" })).toBe(1234 * 1024);
+        expect(parseBytes(chInput, { locale: "de-CH" })).toBe(1234 * 1024);
     });
 
     it("should throw an error with an empty string", () => {
