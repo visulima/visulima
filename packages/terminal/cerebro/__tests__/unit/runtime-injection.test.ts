@@ -124,6 +124,34 @@ describe("runtime injection", () => {
         });
     });
 
+    describe("toolbox.env", () => {
+        it("reads command env definitions from the CliOptions.env override, not the host env", async () => {
+            expect.assertions(1);
+
+            // Prove the override wins even when the host env has a different value.
+            process.env.API_KEY = "host-value";
+
+            let captured: unknown;
+            const cli = new Cli("test", { argv: ["go"], env: { API_KEY: "override-value" } });
+
+            cli.addCommand({
+                env: [{ name: "API_KEY", type: String }],
+                execute: ({ env }: Toolbox) => {
+                    captured = env.apiKey;
+                },
+                name: "go",
+            });
+
+            try {
+                await cli.run({ shouldExitProcess: false });
+            } finally {
+                delete process.env.API_KEY;
+            }
+
+            expect(captured).toBe("override-value");
+        });
+    });
+
     describe("toolbox.fs", () => {
         it("uses injected fs adapter when provided", async () => {
             expect.assertions(2);

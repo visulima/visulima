@@ -311,15 +311,14 @@ export class Cli<T extends Console = Console> implements ICli<T> {
     }
 
     /**
-     * Reads the current verbosity level for this instance. Prefers the
-     * per-instance field; falls back to the instance env (covers callers that
-     * set `CEREBRO_OUTPUT_LEVEL` directly).
+     * Reads the current verbosity level for this instance. The per-instance
+     * field is authoritative so two `Cli` instances (e.g. an original and its
+     * `clone`) sharing the live process env never stomp each other's verbosity.
+     * An externally pre-set `CEREBRO_OUTPUT_LEVEL` is folded into the field once
+     * at construction.
      */
     #getVerbosityLevel(): number {
-        const fromEnv = this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL;
-        const parsed = fromEnv === undefined ? Number.NaN : Number(fromEnv);
-
-        return Number.isNaN(parsed) ? this.#verbosityLevel : parsed;
+        return this.#verbosityLevel;
     }
 
     /**
@@ -419,7 +418,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
-        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions);
+        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions, this.#getInstanceEnv());
 
         toolbox.runtime = this;
         toolbox.argv = this.#getArgv();
@@ -475,6 +474,65 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         }
 
         return { arguments_, booleanValues, commandArgs, parsedArgs, toolbox };
+    }
+
+    /**
+     * Runs the shared command-execution lifecycle for both run() and
+     * runCommand(): lazy plugin initialization, the execute/beforeCommand
+     * hooks, help/version global-option dispatch, the command itself, the
+     * afterCommand hook, and error-handler dispatch. Returns the command
+     * result; callers layer their own exit/dispose semantics on top.
+     */
+    async #runLifecycle(command: ICommand<OptionDefinition<unknown>, T>, toolbox: IToolbox<T>, commandArgs: CommandLineOptions): Promise<unknown> {
+        const pluginManager = this.getPluginManager();
+
+        try {
+            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+                await pluginManager.init({
+                    cli: this,
+                    cwd: this.#cwd,
+                    logger: this.#logger,
+                });
+
+                this.#pluginsInitialized = true;
+            }
+
+            await pluginManager.executeLifecycle("execute", toolbox);
+
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
+
+            let result: unknown;
+
+            const globalOptions = commandArgs.global as Record<string, unknown> | undefined;
+
+            if (globalOptions?.help) {
+                const helpCommand = this.#commands.get("help");
+
+                if (!helpCommand) {
+                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(helpCommand, toolbox, commandArgs);
+            } else if (globalOptions?.version ?? globalOptions?.V) {
+                const versionCommand = this.#commands.get("version");
+
+                if (!versionCommand) {
+                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(versionCommand, toolbox, commandArgs);
+            } else {
+                result = await executeCommand(command, toolbox, commandArgs);
+            }
+
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+
+            return result;
+        } catch (error) {
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+
+            throw error;
+        }
     }
 
     /**
@@ -588,10 +646,15 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         this.#maxArguments = options.maxArguments;
         this.#strictOptions = options.strictOptions ?? false;
 
-        // Seed the per-instance verbosity (and mirror into the instance env) now
-        // that the env override is known. Re-derived from argv flags lazily in
-        // #setVerbosityLevel once argv is parsed.
-        this.#updateVerbosityLevel(VERBOSITY_NORMAL);
+        // Seed the per-instance verbosity from an externally pre-set
+        // CEREBRO_OUTPUT_LEVEL (read once), otherwise default to normal. We do
+        // NOT mirror this back into the (potentially shared) process env here —
+        // that would stomp other instances. The env is only mirrored once the
+        // level is derived from argv in #setVerbosityLevel.
+        const presetLevel = this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL;
+        const parsedPreset = presetLevel === undefined ? Number.NaN : Number(presetLevel);
+
+        this.#verbosityLevel = Number.isNaN(parsedPreset) ? VERBOSITY_NORMAL : parsedPreset;
 
         this.#commands = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
         this.#commandPaths = new Map<string, string[]>();
@@ -1154,52 +1217,22 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             throw error;
         }
 
-        const pluginManager = this.getPluginManager();
-
         try {
-            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
-                await pluginManager.init({
-                    cli: this,
-                    cwd: this.#cwd,
-                    logger: this.#logger,
-                });
-
-                this.#pluginsInitialized = true;
-            }
-
-            await pluginManager.executeLifecycle("execute", toolbox);
-
-            await pluginManager.executeLifecycle("beforeCommand", toolbox);
-
-            let result: unknown;
-
-            const globalOptions = commandArgs.global as Record<string, unknown> | undefined;
-
-            if (globalOptions?.help) {
-                const helpCommand = this.#commands.get("help");
-
-                if (!helpCommand) {
-                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
-                }
-
-                result = await executeCommand(helpCommand, toolbox, commandArgs);
-            } else if (globalOptions?.version ?? globalOptions?.V) {
-                const versionCommand = this.#commands.get("version");
-
-                if (!versionCommand) {
-                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
-                }
-
-                result = await executeCommand(versionCommand, toolbox, commandArgs);
-            } else {
-                result = await executeCommand(command, toolbox, commandArgs);
-            }
-
-            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+            await this.#runLifecycle(command, toolbox, commandArgs);
 
             return shouldExitProcess ? exitProcess(0) : undefined;
         } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+            // Mirror the parse-error path (see above): when we own process
+            // termination, render the error through the logger and exit(1)
+            // here instead of rethrowing. Rethrowing would surface as a raw
+            // ERR_UNHANDLED_REJECTION because the `finally` below disposes the
+            // registered uncaughtException/unhandledRejection handlers before
+            // the error could ever reach them.
+            if (shouldExitProcess) {
+                this.#logger.error(error);
+
+                return exitProcess(1);
+            }
 
             throw error;
         } finally {
@@ -1264,55 +1297,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, extraOptions, pathKey || commandName);
 
-        const pluginManager = this.getPluginManager();
-
-        try {
-            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
-                await pluginManager.init({
-                    cli: this,
-                    cwd: this.#cwd,
-                    logger: this.#logger,
-                });
-
-                this.#pluginsInitialized = true;
-            }
-
-            await pluginManager.executeLifecycle("execute", toolbox);
-
-            await pluginManager.executeLifecycle("beforeCommand", toolbox);
-
-            let result: unknown;
-
-            const runGlobalOptions = commandArgs.global as Record<string, unknown> | undefined;
-
-            if (runGlobalOptions?.help) {
-                const helpCommand = this.#commands.get("help");
-
-                if (!helpCommand) {
-                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
-                }
-
-                result = await executeCommand(helpCommand, toolbox, commandArgs);
-            } else if (runGlobalOptions?.version ?? runGlobalOptions?.V) {
-                const versionCommand = this.#commands.get("version");
-
-                if (!versionCommand) {
-                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
-                }
-
-                result = await executeCommand(versionCommand, toolbox, commandArgs);
-            } else {
-                result = await executeCommand(command, toolbox, commandArgs);
-            }
-
-            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
-
-            return result;
-        } catch (error) {
-            await pluginManager.executeErrorHandlers(error as Error, toolbox);
-
-            throw error;
-        }
+        return this.#runLifecycle(command, toolbox, commandArgs);
     }
 
     /**

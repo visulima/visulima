@@ -72,15 +72,19 @@ const toCamelCase = (name: string): string =>
  * Processes environment variables from a command definition.
  * Transforms string values to their specified types and applies default values.
  * @param envDefinitions Array of environment variable definitions
+ * @param env Environment source to read from (defaults to the live process env).
+ * Honors `CliOptions.env` when the instance override is threaded through.
  * @returns Object with camelCase keys and transformed values
  */
-const processEnvVariables = (envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition)[] | undefined): Record<string, unknown> => {
+const processEnvVariables = (
+    envDefinitions: (EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition)[] | undefined,
+    env: Record<string, string | undefined> = getEnv(),
+): Record<string, unknown> => {
     if (!envDefinitions || envDefinitions.length === 0) {
         return {};
     }
 
     const result: Record<string, unknown> = {};
-    const env = getEnv();
 
     for (const envDefinition of envDefinitions) {
         // Access env via runtime abstraction to ensure cross-runtime compatibility

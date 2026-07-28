@@ -331,28 +331,12 @@ describe("runtime-process (Deno simulation)", () => {
 });
 
 describe("runtime-process (Bun simulation)", () => {
-    let bunProcessOn: ReturnType<typeof vi.fn>;
-    let bunProcessRemoveListener: ReturnType<typeof vi.fn>;
-
     beforeEach(() => {
-        bunProcessOn = vi.fn();
-        bunProcessRemoveListener = vi.fn();
-
+        // Real Bun exposes a Node-compatible global `process` and only a `Bun`
+        // marker carrying `Bun.version` (there is no `Bun.process`). Model that
+        // shape so the tests exercise the real runtime contract.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         (globalThis as any).Bun = {
-            platform: "darwin",
-            process: {
-                arch: "arm64",
-                argv: ["bun", "script.js", "arg1"],
-                cwd: () => "/bun/cwd",
-                env: { BUN_KEY: "value" },
-                execArgv: ["--smol"],
-                execPath: "/usr/local/bin/bun",
-                exit: vi.fn(),
-                on: bunProcessOn,
-                removeListener: bunProcessRemoveListener,
-                versions: { bun: "1.0.0", node: "20.0.0" },
-            },
             version: "1.0.0",
         };
     });
@@ -360,117 +344,91 @@ describe("runtime-process (Bun simulation)", () => {
     afterEach(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         delete (globalThis as any).Bun;
+        vi.restoreAllMocks();
     });
 
-    it("getArgv returns Bun.process.argv", () => {
+    it("getArgv falls through to the Node-compatible process.argv", () => {
         expect.assertions(1);
 
-        expect(getArgv()).toStrictEqual(["bun", "script.js", "arg1"]);
+        expect(getArgv()).toStrictEqual(process.argv);
     });
 
-    it("getCwd returns Bun.process.cwd()", () => {
+    it("getCwd falls through to the Node-compatible process.cwd()", () => {
         expect.assertions(1);
 
-        expect(getCwd()).toBe("/bun/cwd");
+        expect(getCwd()).toBe(process.cwd());
     });
 
-    it("getEnv returns Bun.process.env", () => {
+    it("getEnv falls through to the Node-compatible process.env", () => {
         expect.assertions(1);
 
-        expect(getEnv()).toStrictEqual({ BUN_KEY: "value" });
+        expect(getEnv()).toBe(process.env);
     });
 
-    it("getExecArgv returns Bun.process.execArgv", () => {
+    it("getExecArgv falls through to the Node-compatible process.execArgv", () => {
         expect.assertions(1);
 
-        expect(getExecArgv()).toStrictEqual(["--smol"]);
+        expect(getExecArgv()).toStrictEqual(process.execArgv);
     });
 
-    it("getExecPath returns Bun.process.execPath", () => {
+    it("getExecPath falls through to the Node-compatible process.execPath", () => {
         expect.assertions(1);
 
-        expect(getExecPath()).toBe("/usr/local/bin/bun");
+        expect(getExecPath()).toBe(process.execPath);
     });
 
-    it("getPlatform returns Bun.platform", () => {
+    it("getPlatform falls through to the Node-compatible process.platform", () => {
         expect.assertions(1);
 
-        expect(getPlatform()).toBe("darwin");
+        expect(getPlatform()).toBe(process.platform);
     });
 
-    it("getPlatform returns 'unknown' when Bun.platform is missing", () => {
+    it("getArch falls through to the Node-compatible process.arch", () => {
         expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        delete (globalThis as any).Bun.platform;
-
-        expect(getPlatform()).toBe("unknown");
+        expect(getArch()).toBe(process.arch);
     });
 
-    it("getArch returns Bun.process.arch", () => {
+    it("getVersions augments process.versions with Bun.version", () => {
         expect.assertions(1);
 
-        expect(getArch()).toBe("arm64");
+        expect(getVersions()).toStrictEqual({ ...process.versions, bun: "1.0.0" });
     });
 
-    it("getVersions returns Bun.process.versions + bun version", () => {
-        expect.assertions(1);
-
-        expect(getVersions()).toStrictEqual({ bun: "1.0.0", node: "20.0.0" });
-    });
-
-    it("getVersions still spreads bun.process.versions when Bun.version missing", () => {
+    it("getVersions returns process.versions unchanged when Bun.version is missing", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         delete (globalThis as any).Bun.version;
-        // The implementation also spreads `bun.process.versions` which already has a `bun` key.
-        // Drop that too so we observe the omission branch cleanly.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        delete (globalThis as any).Bun.process.versions.bun;
 
-        expect(getVersions()).toStrictEqual({ node: "20.0.0" });
+        expect(getVersions()).toStrictEqual({ ...process.versions });
     });
 
-    it("exitProcess calls Bun.process.exit", () => {
-        expect.assertions(2);
+    it("exitProcess calls the Node-compatible process.exit", () => {
+        expect.assertions(1);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        const exitMock = (globalThis as any).Bun.process.exit;
+        const spy = vi.spyOn(process, "exit").mockImplementation(((code?: number) => code as unknown as never) as never);
 
-        expect(() => exitProcess(3)).toThrow("Bun exit failed");
-        expect(exitMock).toHaveBeenCalledWith(3);
+        exitProcess(3);
+
+        expect(spy).toHaveBeenCalledWith(3);
     });
 
-    it("onProcessEvent registers via Bun.process.on and returns cleanup", () => {
+    it("onProcessEvent registers via the Node-compatible process.on and returns cleanup", () => {
         expect.assertions(2);
+
+        const onSpy = vi.spyOn(process, "on").mockImplementation((() => process) as never);
+        const removeSpy = vi.spyOn(process, "removeListener").mockImplementation((() => process) as never);
 
         const handler = vi.fn();
         const cleanup = onProcessEvent("uncaughtException", handler);
 
-        expect(bunProcessOn).toHaveBeenCalledWith("uncaughtException", handler);
+        expect(onSpy).toHaveBeenCalledWith("uncaughtException", handler);
 
         cleanup();
 
-        expect(bunProcessRemoveListener).toHaveBeenCalledWith("uncaughtException", handler);
+        expect(removeSpy).toHaveBeenCalledWith("uncaughtException", handler);
 
         expectTypeOf(cleanup).toBeFunction();
-    });
-
-    it("onProcessEvent returns no-op cleanup when Bun.process.on is missing", () => {
-        expect.assertions(1);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        delete (globalThis as any).Bun.process.on;
-
-        const cleanup = onProcessEvent("uncaughtException", () => {});
-
-        expectTypeOf(cleanup).toBeFunction();
-
-        const run = (): void => {
-            cleanup();
-        };
-
-        expect(run).not.toThrow();
     });
 });

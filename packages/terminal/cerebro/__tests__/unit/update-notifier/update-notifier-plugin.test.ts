@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import { VERBOSITY_DEBUG } from "../../../src/constants";
 import type { Toolbox } from "../../../src/types/toolbox";
 
 const { ciInfoMock, getEnvMock, hasNewVersionMock } = vi.hoisted(() => {
@@ -287,7 +288,21 @@ describe(updateNotifierPlugin, () => {
         );
     });
 
-    it("enables debug flag when CEREBRO_OUTPUT_LEVEL is 256", async () => {
+    it("enables debug flag when CEREBRO_OUTPUT_LEVEL is VERBOSITY_DEBUG (128)", async () => {
+        expect.assertions(1);
+
+        getEnvMock.mockReturnValue({ CEREBRO_OUTPUT_LEVEL: String(VERBOSITY_DEBUG) });
+        hasNewVersionMock.mockResolvedValue(undefined);
+
+        const plugin = updateNotifierPlugin({ alwaysRun: true });
+        const toolbox = makeToolbox();
+
+        await runBefore(plugin, toolbox);
+
+        expect(hasNewVersionMock).toHaveBeenCalledWith(expect.objectContaining({ debug: true }));
+    });
+
+    it("does not enable debug flag for the unreachable 256 level", async () => {
         expect.assertions(1);
 
         getEnvMock.mockReturnValue({ CEREBRO_OUTPUT_LEVEL: "256" });
@@ -298,7 +313,7 @@ describe(updateNotifierPlugin, () => {
 
         await runBefore(plugin, toolbox);
 
-        expect(hasNewVersionMock).toHaveBeenCalledWith(expect.objectContaining({ debug: true }));
+        expect(hasNewVersionMock).toHaveBeenCalledWith(expect.objectContaining({ debug: false }));
     });
 
     it("user-supplied options override defaults", async () => {
