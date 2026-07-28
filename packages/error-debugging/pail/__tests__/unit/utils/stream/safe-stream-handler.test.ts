@@ -138,15 +138,29 @@ describe(SafeStreamHandler, () => {
         expect(stream.end).toHaveBeenCalledWith("done");
     });
 
-    it("should rethrow stream errors", () => {
-        expect.assertions(1);
+    it("should report stream errors non-fatally instead of rethrowing", () => {
+        expect.assertions(3);
 
+        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
         const stream = createStream();
         const handler = new SafeStreamHandler(stream, "test");
         const error = new Error("stream failed");
 
-        handler.write("hello");
+        expect(() => stream.emit("error", error)).not.toThrow();
+        expect(handler.isReady).toBe(false);
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("test"), error);
+    });
 
-        expect(() => stream.emit("error", error)).toThrow(error);
+    it("should route stream errors to a provided onError callback", () => {
+        expect.assertions(3);
+
+        const onError = vi.fn();
+        const stream = createStream();
+        const handler = new SafeStreamHandler(stream, "test", onError);
+        const error = new Error("stream failed");
+
+        expect(() => stream.emit("error", error)).not.toThrow();
+        expect(handler.isReady).toBe(false);
+        expect(onError).toHaveBeenCalledWith(error, "test");
     });
 });

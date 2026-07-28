@@ -195,6 +195,50 @@ describe(sendWithRetry, () => {
         expect(onError).not.toHaveBeenCalled();
     });
 
+    it("should not retry non-retryable 4xx responses even when maxRetries is high", async () => {
+        expect.assertions(3);
+
+        const onError = vi.fn();
+        const mockResponse = new Response("Not Found", { status: 404 });
+
+        mockFetch.mockResolvedValue(mockResponse);
+
+        const promise = sendWithRetry(
+            "https://api.example.com/logs",
+            "POST",
+            { "Content-Type": "application/json" },
+            "{\"test\": \"data\"}",
+            3,
+            1000,
+            true,
+            undefined,
+            onError,
+        );
+
+        promise.catch(() => {
+            // Ignore errors
+        });
+
+        await vi.runAllTimersAsync();
+
+        await expect(promise).rejects.toThrow("HTTP 404");
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it("should still retry 5xx responses up to maxRetries", async () => {
+        expect.assertions(1);
+
+        mockFetch.mockResolvedValueOnce(new Response("Server Error", { status: 500 })).mockResolvedValueOnce(new Response("Success", { status: 200 }));
+
+        const promise = sendWithRetry("https://api.example.com/logs", "POST", { "Content-Type": "application/json" }, "{\"test\": \"data\"}", 3, 1000, true);
+
+        await vi.runAllTimersAsync();
+        await promise;
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
     it("should call onDebugRequestResponse callback when provided", async () => {
         expect.assertions(1);
 

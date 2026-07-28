@@ -164,9 +164,7 @@ describe(TimerManager, () => {
             expect(call[3].message).toBe("Timer run for: 1.50 s");
         });
 
-        it("should warn when restarting a label that was ended but not cleared from seqTimers", () => {
-            // Original behavior: timeEnd only removes from timersMap, not seqTimers.
-            // Calling time() on the same label again therefore still triggers the duplicate warning.
+        it("should allow restarting a label after it was ended", () => {
             expect.assertions(2);
 
             manager.time("reuse");
@@ -175,7 +173,22 @@ describe(TimerManager, () => {
             manager.time("reuse");
 
             expect(emit).toHaveBeenCalledTimes(1);
-            expect(emit).toHaveBeenCalledWith("warn", false, false, { message: "Timer 'reuse' already exists", prefix: "reuse" });
+            expect(emit).toHaveBeenCalledWith("start", false, false, { message: START_MESSAGE, prefix: "reuse" });
+        });
+
+        it("should resolve a label-less timeEnd to the most-recent still-running timer", () => {
+            expect.assertions(2);
+
+            manager.time("a");
+            manager.time("b");
+            manager.timeEnd(); // ends "b"
+            emit.mockClear();
+            manager.timeEnd(); // should end "a", not report "b" as not found
+
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { prefix: string }];
+
+            expect(call[0]).toBe("stop");
+            expect(call[3].prefix).toBe("a");
         });
     });
 });
