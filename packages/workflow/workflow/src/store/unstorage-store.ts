@@ -65,20 +65,23 @@ class UnstorageStore implements WorkflowStore {
     }
 
     public async save(run: StoredRun): Promise<void> {
-        // Update the wake index BEFORE the run, so a crash between the two writes at worst
-        // yields a spurious wake (harmless — resume re-validates and no-ops) rather than a
-        // lost wake-up (a sleep that never fires).
         const index = await this.#readIndex();
 
+        // Order the two writes so a crash between them never loses a wake-up:
+        //   - adding a wake: index BEFORE the run, so at worst a spurious wake (harmless — resume
+        //     re-validates and no-ops) rather than a lost wake-up (a sleep that never fires);
+        //   - removing a wake: run BEFORE the index, so a still-suspended run is never left absent
+        //     from the index (which would also be a lost wake-up).
         if ((run.status === "suspended" || run.status === "waiting") && run.wakeAt !== undefined) {
             index[run.runId] = run.wakeAt;
+            await this.#storage.setItem(DUE_INDEX_KEY, index);
+            await this.#storage.setItem(RUN_PREFIX + run.runId, run);
         } else {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removing a run from the wake index by its dynamic id
             delete index[run.runId];
+            await this.#storage.setItem(RUN_PREFIX + run.runId, run);
+            await this.#storage.setItem(DUE_INDEX_KEY, index);
         }
-
-        await this.#storage.setItem(DUE_INDEX_KEY, index);
-        await this.#storage.setItem(RUN_PREFIX + run.runId, run);
     }
 
     public async load(runId: string): Promise<StoredRun | undefined> {
