@@ -41,6 +41,40 @@ describe("cli-error-builder", () => {
             expect(solutionBox).toContain("Try turning it off and on again.");
         });
 
+        it("applies custom code-frame colors passed via color.codeFrame", async () => {
+            const identity = (value: string) => value;
+            const title = vi.fn((value: string) => `<<${value}>>`);
+            const error = new Error("boom");
+
+            const { errorAnsi } = await buildOutput(error, {
+                color: { codeFrame: { fileLine: identity, hint: identity, method: identity, title } },
+            });
+
+            expect(title).toHaveBeenCalled();
+            expect(errorAnsi).toContain("<<");
+        });
+
+        it("runs higher-priority solution finders first", async () => {
+            const lowPriorityFinder: SolutionFinder = {
+                handle: async () => ({ body: "low priority body", header: "Low priority" }),
+                name: "low-priority-finder",
+                priority: 50,
+            };
+            const highPriorityFinder: SolutionFinder = {
+                handle: async () => ({ body: "high priority body", header: "High priority" }),
+                name: "high-priority-finder",
+                priority: 100,
+            };
+
+            const { solutionBox } = await buildOutput(new Error("boom"), {
+                solutionFinders: [lowPriorityFinder, highPriorityFinder],
+            });
+
+            expect(solutionBox).toBeDefined();
+            expect(solutionBox).toContain("High priority");
+            expect(solutionBox).not.toContain("Low priority");
+        });
+
         it("logs solution-finder progress through the injected logger when debug is true", async () => {
             const logger = { error: vi.fn(), log: vi.fn() };
             const error = new Error("boom");
