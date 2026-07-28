@@ -328,8 +328,10 @@ describe(redact, () => {
             it("filters out url params in query strings while maintaining non-sensitive data", () => {
                 expect.assertions(1);
 
+                // The URL host is now masked too: non-parameter segments are run through the
+                // string anonymizer, so the `url` rule matches `https://login.example.com`.
                 // eslint-disable-next-line no-secrets/no-secrets
-                expect(output.body.notes).toBe("Use https://login.example.com?username=<USERNAME>&password=<PASSWORD>/?authentic=true to login.");
+                expect(output.body.notes).toBe("Use <URL>?username=<USERNAME>&password=<PASSWORD>/?authentic=true to login.");
             });
         });
 
