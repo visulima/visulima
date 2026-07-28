@@ -1,11 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getReasonPhrase } from "http-status-codes";
-
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
 import type { HtmlErrorInspectorOptions } from "./utils/render-html-error-inspector";
 import renderHtmlErrorInspector from "./utils/render-html-error-inspector";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 
 // Inline styles for the development inspector (stack/code-frame/solution).
 // Kept self-contained so the existing CSP-nonce flow still covers it.
@@ -38,26 +37,12 @@ export const htmlErrorHandler
 
             response.setHeader("content-type", "text/html; charset=utf-8");
 
-            const title = getReasonPhrase(response.statusCode) || "Error";
+            const title = safeReasonPhrase(response.statusCode, "Error");
             const nonceAttribute = options.cspNonce ? ` nonce="${options.cspNonce}"` : "";
 
-            // The negotiator sets `expose` when stack traces are allowed
-            // (development / `showTrace: true`). When set, render the full
-            // youch/whoops-style inspector — error message, code frame for the
-            // offending source line, parsed stack trace, and a possible
-            // solution hint. All dynamic content is HTML-escaped. When `expose`
-            // is not set (production), nothing beyond the status card is
-            // emitted so no stack/source is leaked.
-            const { expose } = error as Error & { expose?: boolean };
-            const detailsHtml = expose
-                ? await renderHtmlErrorInspector(error, {
-                    allowRemoteSources: options.allowRemoteSources,
-                    linesAbove: options.linesAbove,
-                    linesBelow: options.linesBelow,
-                    solutionFinders: options.solutionFinders,
-                })
-                : "";
-
+            // Evaluate the errorPage override before rendering the expensive
+            // inspector so its file I/O, stack parsing, and solution finders are
+            // never run when the override discards their output.
             if (options.errorPage) {
                 const override
                     = typeof options.errorPage === "function"
@@ -76,6 +61,23 @@ export const htmlErrorHandler
                     return;
                 }
             }
+
+            // The negotiator sets `expose` when stack traces are allowed
+            // (development / `showTrace: true`). When set, render the full
+            // youch/whoops-style inspector — error message, code frame for the
+            // offending source line, parsed stack trace, and a possible
+            // solution hint. All dynamic content is HTML-escaped. When `expose`
+            // is not set (production), nothing beyond the status card is
+            // emitted so no stack/source is leaked.
+            const { expose } = error as Error & { expose?: boolean };
+            const detailsHtml = expose
+                ? await renderHtmlErrorInspector(error, {
+                    allowRemoteSources: options.allowRemoteSources,
+                    linesAbove: options.linesAbove,
+                    linesBelow: options.linesBelow,
+                    solutionFinders: options.solutionFinders,
+                })
+                : "";
 
             response.end(String.raw`<!DOCTYPE html>
 <html lang="en">

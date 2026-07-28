@@ -88,6 +88,47 @@ describe("html-error-handler", () => {
         expect(html).toContain("Try turning it off and on again.");
     });
 
+    it("returns the errorPage override without rendering the inspector when expose is set", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        const error = new Error("boom in development") as Error & { expose: boolean };
+
+        error.expose = true;
+
+        await htmlErrorHandler({
+            errorPage: () => "OVERRIDE PAGE",
+        })(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const html = res._getData() as string;
+
+        expect(html).toBe("OVERRIDE PAGE");
+        // The expensive inspector must not be rendered when the override wins.
+        expect(html).not.toContain("vis-inspector");
+    });
+
+    it("falls back to the default inspector page when the errorPage override returns empty", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        const error = new Error("boom in development") as Error & { expose: boolean };
+
+        error.expose = true;
+
+        await htmlErrorHandler({
+            errorPage: () => "",
+        })(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const html = res._getData() as string;
+
+        expect(html).toContain("<!DOCTYPE html>");
+        expect(html).toContain("vis-inspector");
+    });
+
     it("hTML-escapes the message and stack to prevent markup injection", async () => {
         expect.assertions(2);
 

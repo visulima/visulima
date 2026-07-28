@@ -87,7 +87,18 @@ describe("pgBossQueue", () => {
         const job = await queue.reserve();
 
         expect(fetch).toHaveBeenCalledWith("notify", { batchSize: 1, includeMetadata: true });
-        expect(job).toStrictEqual({ attempts: 2, id: "pg-2", message, scheduledAt: 0 });
+        expect(job).toStrictEqual({ attempts: 3, id: "pg-2", message, scheduledAt: 0 });
+    });
+
+    it("reserve reports attempts=1 on the first delivery", async () => {
+        expect.assertions(1);
+
+        const fetch = vi.fn().mockResolvedValue([{ data: message, id: "pg-first" }]);
+        const queue = new PgBossQueue({ fetch } as never, { queueName: "notify" });
+
+        const job = await queue.reserve();
+
+        expect(job?.attempts).toBe(1);
     });
 
     it("ack completes the job", async () => {
@@ -146,7 +157,7 @@ describe("sqsQueue", () => {
         const job = await queue.reserve();
 
         expect(receiveMessage).toHaveBeenCalledTimes(1);
-        expect(job).toStrictEqual({ attempts: 0, id: "rh-1", message, scheduledAt: 0 });
+        expect(job).toStrictEqual({ attempts: 1, id: "rh-1", message, scheduledAt: 0 });
     });
 
     it("ack deletes the message by receipt handle", async () => {

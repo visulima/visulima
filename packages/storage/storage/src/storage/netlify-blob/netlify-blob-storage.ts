@@ -89,7 +89,12 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                 // HTTP errors
                 const errorWithStatus = error as { status?: number };
 
-                return Boolean(errorWithStatus.status && [408, 429, 500, 502, 503, 504].includes(errorWithStatus.status));
+                if (errorWithStatus.status && [408, 429, 500, 502, 503, 504].includes(errorWithStatus.status)) {
+                    return true;
+                }
+
+                // Defer to the retry engine's built-in heuristics for anything else.
+                return undefined;
             },
             ...config.retryConfig,
         };

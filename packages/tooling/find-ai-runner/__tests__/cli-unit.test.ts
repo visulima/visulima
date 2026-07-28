@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AiProviderInfo, AiRunResult } from "../src/index";
 
-const detectAllProviders = vi.fn<() => AiProviderInfo[]>();
+const detectAllProvidersAsync = vi.fn<() => Promise<AiProviderInfo[]>>();
 const detectProvider = vi.fn<(name: string) => AiProviderInfo>();
 const runProvider = vi.fn<() => Promise<AiRunResult>>();
 const buildCliArgs = vi.fn<() => string[]>();
@@ -13,7 +13,7 @@ vi.mock(import("../src/index"), async (importOriginal) => {
     return {
         ...actual,
         buildCliArgs: (...arguments_: Parameters<typeof actual.buildCliArgs>) => buildCliArgs(...arguments_),
-        detectAllProviders: () => detectAllProviders(),
+        detectAllProvidersAsync: () => detectAllProvidersAsync(),
         detectProvider: (...arguments_: Parameters<typeof actual.detectProvider>) => detectProvider(...arguments_),
         runProvider: (...arguments_: Parameters<typeof actual.runProvider>) => runProvider(...arguments_),
     };
@@ -52,7 +52,7 @@ describe("cLI module", () => {
         vi.clearAllMocks();
         logSpy = vi.spyOn(console, "log").mockImplementation(noop);
         errorSpy = vi.spyOn(console, "error").mockImplementation(noop);
-        detectAllProviders.mockReturnValue([]);
+        detectAllProvidersAsync.mockResolvedValue([]);
         detectProvider.mockReturnValue(makeInfo());
         buildCliArgs.mockReturnValue([]);
         runProvider.mockResolvedValue({ provider: "claude", stderr: "", stdout: "" });
@@ -88,7 +88,7 @@ describe("cLI module", () => {
             await runCli(["--version"]);
 
             expect(logOutput()).toMatch(VERSION_PATTERN);
-            expect(detectAllProviders).not.toHaveBeenCalled();
+            expect(detectAllProvidersAsync).not.toHaveBeenCalled();
         });
     });
 
@@ -96,7 +96,7 @@ describe("cLI module", () => {
         it("should report when no providers are detected", async () => {
             expect.assertions(1);
 
-            detectAllProviders.mockReturnValue([makeInfo({ available: false })]);
+            detectAllProvidersAsync.mockResolvedValue([makeInfo({ available: false })]);
 
             await runCli(["list"]);
 
@@ -106,7 +106,7 @@ describe("cLI module", () => {
         it("should print available and unavailable providers with version and path", async () => {
             expect.assertions(2);
 
-            detectAllProviders.mockReturnValue([
+            detectAllProvidersAsync.mockResolvedValue([
                 makeInfo({ available: true, name: "claude", path: "/bin/claude", version: "1.2.3" }),
                 makeInfo({ available: false, name: "gemini" }),
             ]);
@@ -124,7 +124,7 @@ describe("cLI module", () => {
 
             const providers = [makeInfo({ available: true, name: "claude" })];
 
-            detectAllProviders.mockReturnValue(providers);
+            detectAllProvidersAsync.mockResolvedValue(providers);
 
             await runCli(["list", "--json"]);
 
