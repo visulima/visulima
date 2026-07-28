@@ -226,6 +226,30 @@ describe("organize", () => {
         });
     });
 
+    it("should not throw when a common property has a null body", () => {
+        expect.assertions(1);
+
+        // A bodyless YAML section such as `components:` parses to null.
+        const target: Record<string, any> = { components: {} };
+        const annotation = { components: null };
+
+        organizeSwaggerObject(target, annotation, "components");
+
+        expect(target.components).toStrictEqual({});
+    });
+
+    it("should lazily initialize a common property the template never seeded", () => {
+        expect.assertions(1);
+
+        // v2 specs never seed `consumes`, so the target has no such key.
+        const target: Record<string, any> = { paths: {} };
+        const annotation = { consumes: { "application/json": {} } };
+
+        organizeSwaggerObject(target, annotation, "consumes");
+
+        expect(target.consumes).toStrictEqual({ "application/json": {} });
+    });
+
     it("should ignore properties that match none of the handled cases", () => {
         expect.assertions(1);
 

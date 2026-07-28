@@ -501,4 +501,37 @@ const ignored = true;
 
         expect(result).toHaveLength(1);
     });
+
+    it("does not throw when a common section has an empty (null) body", () => {
+        expect.assertions(2);
+
+        // A bodyless `components:` (e.g. while drafting) parses to null.
+        const fileContents = `
+/**
+ * @openapi
+ * components:
+ */
+`;
+
+        expect(() => commentsToOpenApi(fileContents)).not.toThrow();
+
+        const [result] = commentsToOpenApi(fileContents);
+
+        expect(result?.spec).not.toHaveProperty("components");
+    });
+
+    it("does not throw on a top-level section missing from the version template", () => {
+        expect.assertions(1);
+
+        // v2 never seeds `consumes`, so the target has no such key to merge into.
+        const fileContents = `
+/**
+ * @swagger
+ * consumes:
+ *   - application/json
+ */
+`;
+
+        expect(() => commentsToOpenApi(fileContents)).not.toThrow();
+    });
 });

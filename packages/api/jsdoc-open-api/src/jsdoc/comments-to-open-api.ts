@@ -153,12 +153,17 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
             }
 
             case "bodyExample": {
-                const [contentType, example] = parsedResponse.name.split(".");
+                // Media types can contain dots (e.g. application/vnd.api+json), so the
+                // example name is the trailing segment and everything before it is the
+                // content type.
+                const bodyExampleSegments = parsedResponse.name.split(".");
+                const example = bodyExampleSegments.at(-1);
+                const contentType = bodyExampleSegments.slice(0, -1).join(".");
 
                 return {
                     requestBody: {
                         content: {
-                            [contentType as string]: {
+                            [contentType]: {
                                 examples: {
                                     [example as string]: {
                                         $ref: `#/components/examples/${parsedResponse.rawType}`,
@@ -246,13 +251,17 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
             }
 
             case "responseContent": {
-                const [status, contentType] = parsedResponse.name.split(".");
+                // Split off the status positionally; the remaining segments form the
+                // content type, which may itself contain dots (e.g. application/vnd.api+json).
+                const responseContentSegments = parsedResponse.name.split(".");
+                const status = responseContentSegments[0];
+                const contentType = responseContentSegments.slice(1).join(".");
 
                 return {
                     responses: {
                         [status as string]: {
                             content: {
-                                [contentType as string]: {
+                                [contentType]: {
                                     schema: parsedResponse.schema,
                                 },
                             },
@@ -262,13 +271,18 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
             }
 
             case "responseExample": {
-                const [status, contentType, example] = parsedResponse.name.split(".");
+                // Status is the first segment and the example name the last; the content
+                // type is everything in between, so vendor media types with dots survive.
+                const responseExampleSegments = parsedResponse.name.split(".");
+                const status = responseExampleSegments[0];
+                const example = responseExampleSegments.at(-1);
+                const contentType = responseExampleSegments.slice(1, -1).join(".");
 
                 return {
                     responses: {
                         [status as string]: {
                             content: {
-                                [contentType as string]: {
+                                [contentType]: {
                                     examples: {
                                         [example as string]: {
                                             $ref: `#/components/examples/${parsedResponse.rawType}`,
