@@ -19,6 +19,7 @@ type FlexibleCSSProperties = {
 // so memoize the camelCase -> kebab-case conversion in a module-level cache to avoid
 // repeating the regex work and per-call closure allocation on hot paths.
 const kebabCache = new Map<string, string>();
+const KEBAB_CACHE_LIMIT = 1000;
 
 /**
  * Converts a camelCase CSS property name to kebab-case, preserving custom properties
@@ -27,23 +28,26 @@ const kebabCache = new Map<string, string>();
  * @returns The kebab-cased property name.
  */
 const toKebab = (key: string): string => {
+    // Custom properties are identity-mapped; skip the cache entirely so dynamic
+    // custom-property names (e.g. `--color-${id}`) cannot grow it unbounded.
+    if (key.startsWith("--")) {
+        return key;
+    }
+
     const cached = kebabCache.get(key);
 
     if (cached !== undefined) {
         return cached;
     }
 
-    let result: string;
+    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+    const result = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
 
-    if (key.startsWith("--")) {
-        result = key;
-    } else {
-        const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
-
-        result = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+    // Bound the cache so an adversarial or dynamic stream of distinct property
+    // names cannot grow it without limit for the process lifetime.
+    if (kebabCache.size < KEBAB_CACHE_LIMIT) {
+        kebabCache.set(key, result);
     }
-
-    kebabCache.set(key, result);
 
     return result;
 };
@@ -71,50 +75,85 @@ const CSS_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f", "\v"]);
  * Collapses runs of whitespace into a single space while preserving the contents of
  * single- and double-quoted CSS strings (e.g. `content: "a   b"`), so the one-line
  * minifier does not mangle quoted values. Escaped quotes (`\"`, `\'`) inside strings
- * are respected.
+ * are respected, and quotes inside comments do not open string mode.
+ *
+ * Implemented as a straightforward mode-dispatch loop over the input: `quote` (inside a
+ * quoted string), `inComment` (inside a `/* ... *\/` block), or the default mode. A single
+ * cognitive-complexity suppression covers the whole loop because splitting the three tightly
+ * coupled modes into separate functions obscures the shared index/whitespace bookkeeping
+ * without making the logic clearer.
  * @param input The CSS string to minify.
  * @returns The minified one-line CSS string.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- the three minifier modes share index and whitespace-run bookkeeping; keeping them in one loop is clearer than fragmenting the state.
 const collapseWhitespaceOutsideStrings = (input: string): string => {
-    let result = "";
     let quote: "\"" | "'" | undefined;
+    let inComment = false;
     let inWhitespaceRun = false;
+    let result = "";
 
     for (let index = 0; index < input.length; index += 1) {
         const char = input[index] as string;
 
-        // Inside a quoted CSS string: emit characters verbatim, honoring backslash escapes,
-        // until the matching closing quote is reached.
         if (quote !== undefined) {
-            result += char;
-
+            // Inside a quoted string: emit verbatim, honoring backslash escapes, until the
+            // matching closing quote is reached.
             if (char === "\\" && index + 1 < input.length) {
+                result += char + (input[index + 1] as string);
                 index += 1;
-                result += input[index] as string;
-            } else if (char === quote) {
-                quote = undefined;
+            } else {
+                if (char === quote) {
+                    quote = undefined;
+                }
+
+                result += char;
             }
 
             continue;
         }
 
-        if (char === "\"" || char === "'") {
+        if (inComment) {
+            // Inside a comment: collapse whitespace as normal but never treat a quote as a
+            // string opener, so apostrophes in prose comments do not flip string mode.
+            if (char === "*" && input[index + 1] === "/") {
+                result += "*/";
+                index += 1;
+                inComment = false;
+                inWhitespaceRun = false;
+            } else if (CSS_WHITESPACE.has(char)) {
+                if (!inWhitespaceRun) {
+                    result += " ";
+                }
+
+                inWhitespaceRun = true;
+            } else {
+                result += char;
+                inWhitespaceRun = false;
+            }
+
+            continue;
+        }
+
+        // Default mode (outside string/comment).
+        if (char === "/" && input[index + 1] === "*") {
+            result += "/*";
+            index += 1;
+            inComment = true;
+            inWhitespaceRun = false;
+        } else if (char === "\"" || char === "'") {
             quote = char;
+            result += char;
             inWhitespaceRun = false;
         } else if (CSS_WHITESPACE.has(char)) {
-            if (inWhitespaceRun) {
-                continue;
+            if (!inWhitespaceRun) {
+                result += " ";
             }
 
             inWhitespaceRun = true;
-            result += " ";
-
-            continue;
         } else {
+            result += char;
             inWhitespaceRun = false;
         }
-
-        result += char;
     }
 
     return result.trim();
