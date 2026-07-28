@@ -184,7 +184,9 @@ export const ignoreOutput = (path: string): void => {
  *
  * Resolved to absolute form against the current working directory.
  *
- * No-op when not running inside a runner.
+ * No-op when not running inside a runner. Requires a runner newer than
+ * protocol `"1"`; the current runner ({@link SUPPORTED_PROTOCOL_VERSION})
+ * skips this op silently, so it does not yet affect the cache.
  */
 export const trackInput = (path: string): void => {
     emit({ op: "trackInput", path: resolve(path) });
@@ -197,7 +199,9 @@ export const trackInput = (path: string): void => {
  *
  * Resolved to absolute form against the current working directory.
  *
- * No-op when not running inside a runner.
+ * No-op when not running inside a runner. Requires a runner newer than
+ * protocol `"1"`; the current runner ({@link SUPPORTED_PROTOCOL_VERSION})
+ * skips this op silently, so it does not yet affect the cache.
  */
 export const trackOutput = (path: string): void => {
     emit({ op: "trackOutput", path: resolve(path) });
@@ -211,7 +215,10 @@ export const trackOutput = (path: string): void => {
  * for a `key` invalidates the cache entry; this is the precise
  * alternative to a blunt {@link disableCache}.
  *
- * No-op when not running inside a runner.
+ * No-op when not running inside a runner. Requires a runner newer than
+ * protocol `"1"`; the current runner ({@link SUPPORTED_PROTOCOL_VERSION})
+ * skips this op silently, so it does not yet affect the cache — reach for
+ * {@link disableCache} if you need a guaranteed effect today.
  */
 export const trackValue = (key: string, value: string): void => {
     emit({ key, op: "trackValue", value });

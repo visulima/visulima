@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -223,6 +223,49 @@ describe("task-runner-client", () => {
             expect(readLines()).toHaveLength(2);
 
             delete process.env["CI"];
+        });
+
+        describe("failed write is swallowed and retried", () => {
+            it("never throws when the hints file can't be written and writes nothing", () => {
+                expect.assertions(2);
+
+                const nestedFile = join(directory, "missing", "hints.ndjson");
+
+                process.env[HINTS_ENV] = nestedFile;
+
+                // The parent directory doesn't exist, so appendFileSync throws
+                // internally — the call must swallow it and leave no file.
+                expect(() => getEnv("TRC_RETRY")).not.toThrow();
+                expect(existsSync(nestedFile)).toBe(false);
+            });
+
+            it("retries the same hint on a later call after a transient failure", () => {
+                expect.assertions(2);
+
+                const nestedDirectory = join(directory, "missing");
+                const nestedFile = join(nestedDirectory, "hints.ndjson");
+
+                process.env[HINTS_ENV] = nestedFile;
+
+                // First attempt fails (parent dir absent) and must NOT mark the
+                // payload as emitted, so a retry can still land it.
+                getEnv("TRC_RETRY");
+
+                mkdirSync(nestedDirectory);
+
+                getEnv("TRC_RETRY");
+
+                const lines = readFileSync(nestedFile, "utf8")
+                    .split("\n")
+                    .filter(Boolean)
+                    .map((line) => JSON.parse(line) as Record<string, unknown>);
+
+                expect(lines).toStrictEqual([{ name: "TRC_RETRY", op: "trackEnv" }]);
+
+                // The retry wrote exactly once — the failed attempt was not
+                // double-counted after the directory appeared.
+                expect(lines).toHaveLength(1);
+            });
         });
 
         describe("env glob matching", () => {

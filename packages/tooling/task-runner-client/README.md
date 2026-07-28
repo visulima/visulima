@@ -45,6 +45,8 @@ ignoreOutput(".my-tool-tmp");
 
 // Positive hints: tell the runner about inputs/outputs the tracer can't see
 // (e.g. a file read by an untracked grandchild process).
+// NOTE: trackInput/trackOutput/trackValue require a runner newer than
+// protocol `1`; the current runner skips them silently (see "Protocol note").
 trackInput("vendor/generated.lock");
 trackOutput("dist/sourcemap.json");
 
@@ -78,9 +80,9 @@ if (isManaged()) {
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `ignoreInput(path)`              | Drop reads under `path` from this run's inferred cache inputs.                                                                |
 | `ignoreOutput(path)`             | Drop writes under `path` from this run's inferred cache outputs.                                                              |
-| `trackInput(path)`               | Add `path` as a cache input even if the tracer didn't observe the read.                                                       |
-| `trackOutput(path)`              | Add `path` as a cache output even if the tracer didn't observe the write.                                                     |
-| `trackValue(key, value)`         | Add an arbitrary `key`/`value` pair to the cache key — for non-file, non-env determinism inputs.                              |
+| `trackInput(path)`               | Add `path` as a cache input even if the tracer didn't observe the read. Requires a runner newer than protocol `1` (see below). |
+| `trackOutput(path)`              | Add `path` as a cache output even if the tracer didn't observe the write. Requires a runner newer than protocol `1` (see below). |
+| `trackValue(key, value)`         | Add an arbitrary `key`/`value` pair to the cache key — for non-file, non-env determinism inputs. Requires a runner newer than protocol `1` (see below). |
 | `disableCache(reason?)`          | Mark this run non-deterministic — the runner won't cache it. Optional `reason` surfaces in the run summary.                   |
 | `getEnv(name, { tracked? })`     | Return `process.env[name]`; with `tracked` (default `true`) register `name` as a cache dependency.                            |
 | `getEnvs(pattern, { tracked? })` | Return every env matching the `*`-glob `pattern`; with `tracked` (default `true`) register the pattern as a cache dependency. |
@@ -90,6 +92,8 @@ if (isManaged()) {
 Also exported: `HINTS_ENV` / `PROTOCOL_ENV` (the wire-contract env-var names), `SUPPORTED_PROTOCOL_VERSION`, and the `TrackOptions` type.
 
 Relative paths are resolved to absolute form against the **current** working directory at the moment of the call — so a tool that calls `process.chdir()` before hinting still gets the root it means. `getEnv`/`getEnvs` always return values; only the dependency registration is gated on running inside a runner. Pass `{ tracked: false }` to read without registering a dependency.
+
+> **Protocol note:** `trackInput`, `trackOutput`, and `trackValue` emit ops that the current runner (wire protocol `1`) does not yet understand — it skips unknown ops silently, so these three are recorded but do **not** affect the cache until a newer runner ships. They stay safe to call today (a no-op, never an error); `ignoreInput`/`ignoreOutput`/`disableCache`/`getEnv`/`getEnvs` are honored by the protocol-`1` runner. Compare `getProtocolVersion()` against `SUPPORTED_PROTOCOL_VERSION` to branch on the runner's capabilities.
 
 This mirrors the API of [`@voidzero-dev/vite-task-client`](https://github.com/voidzero-dev/vite-task/tree/main/packages/vite-task-client), so tools written against that client work under `@visulima/task-runner` unchanged.
 
