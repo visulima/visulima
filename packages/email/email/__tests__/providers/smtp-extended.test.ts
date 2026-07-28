@@ -712,6 +712,28 @@ describe("smtp provider (extended)", () => {
             errorSpy.mockRestore();
         });
 
+        it("preserves the full multipart body and closing boundary when DKIM-signing", async () => {
+            expect.assertions(5);
+
+            const provider = smtpProvider(plainConfig({ dkim: { domainName: "example.com", keySelector: "default", privateKey: dkimPrivateKey } }));
+            const result = await provider.sendEmail({ ...baseEmail, html: "<h1>HTML body</h1>", text: "Plain text body" });
+
+            expect(result.success).toBe(true);
+
+            const message = lastMessage();
+
+            expect(message).toContain("DKIM-Signature:");
+            // The body must survive signing — the old split() truncated everything
+            // after the first blank line (the first MIME part's headers).
+            expect(message).toContain("Plain text body");
+            expect(message).toContain("<h1>HTML body</h1>");
+
+            // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
+            const boundary = message.match(/multipart\/mixed; boundary="([^"]+)"/)?.[1] ?? "";
+
+            expect(message).toContain(`--${boundary}--`);
+        });
+
         it("returns a failure when MAIL FROM is rejected", async () => {
             expect.assertions(2);
 
@@ -992,6 +1014,19 @@ describe("smtp provider (extended)", () => {
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
         });
 
+        it("authenticates over the upgraded socket after STARTTLS when validating", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: ["STARTTLS", "AUTH LOGIN"] });
+
+            const provider = smtpProvider(plainConfig({ password: "secret", user: "smtp-user" }));
+
+            // Authentication must run against the TLS-upgraded socket, not the
+            // pre-upgrade plaintext one.
+            await expect(provider.validateCredentials?.()).resolves.toBe(true);
+            expect(tlsConnectArgs.some((args) => args.socket !== undefined)).toBe(true);
+        });
+
         it("returns false when STARTTLS fails and rejectUnauthorized is true", async () => {
             expect.assertions(1);
 
@@ -1026,6 +1061,40 @@ describe("smtp provider (extended)", () => {
             expect(netConnectCount).toBe(2);
 
             await expect(provider.shutdown?.()).resolves.toBeUndefined();
+        });
+
+        it("sends the RSET reply drain before reusing a pooled connection", async () => {
+            expect.assertions(3);
+
+            const provider = smtpProvider(plainConfig({ pool: true }));
+
+            const first = await provider.sendEmail(baseEmail);
+            const second = await provider.sendEmail(baseEmail);
+
+            expect(first.success).toBe(true);
+            expect(second.success).toBe(true);
+            // The pooled socket is RSET (and its reply awaited) between the two sends.
+            expect(allWrites().some((write) => write.startsWith("RSET"))).toBe(true);
+
+            await provider.shutdown?.();
+        });
+
+        it("does not deadlock when maxConnections is 1", async () => {
+            expect.assertions(3);
+
+            // The old gate compared the idle-pool length, so an empty pool with
+            // maxConnections: 1 queued the very first request until it timed out.
+            const provider = smtpProvider(plainConfig({ maxConnections: 1, pool: true }));
+
+            const first = await provider.sendEmail(baseEmail);
+            const second = await provider.sendEmail(baseEmail);
+
+            expect(first.success).toBe(true);
+            expect(second.success).toBe(true);
+            // The second send reuses the single pooled connection rather than opening a new one.
+            expect(netConnectCount).toBe(2);
+
+            await provider.shutdown?.();
         });
     });
 

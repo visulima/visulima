@@ -756,4 +756,92 @@ describe(buildMimeMessage, () => {
             expect(message).toContain("=?UTF-8?B?");
         });
     });
+
+    describe("multipart/alternative structure (RFC 2046)", () => {
+        it("should nest text and html in a multipart/alternative part (text first)", async () => {
+            expect.assertions(4);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                html: "<h1>HTML body</h1>",
+                subject: "x",
+                text: "Plain body",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("multipart/alternative");
+            expect(message).toContain("Plain body");
+            expect(message).toContain("<h1>HTML body</h1>");
+            // The plain-text (least-faithful) rendition must precede the HTML one.
+            expect(message.indexOf("text/plain")).toBeLessThan(message.indexOf("text/html"));
+        });
+
+        it("should wrap the alternative body inside multipart/mixed when attachments exist", async () => {
+            expect.assertions(3);
+
+            const message = await buildMimeMessage({
+                attachments: [
+                    {
+                        content: Buffer.from("file"),
+                        contentType: "text/plain",
+                        filename: "note.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                html: "<h1>HTML body</h1>",
+                subject: "x",
+                text: "Plain body",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("multipart/mixed");
+            expect(message).toContain("multipart/alternative");
+            // The alternative container is nested inside the mixed container.
+            expect(message.indexOf("multipart/mixed")).toBeLessThan(message.indexOf("multipart/alternative"));
+        });
+
+        it("should not emit a multipart/alternative for a single body", async () => {
+            expect.assertions(2);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                subject: "x",
+                text: "Plain body only",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).not.toContain("multipart/alternative");
+            expect(message).toContain("Plain body only");
+        });
+    });
+
+    describe("ascii body encoding", () => {
+        it("should label a pure-ASCII text body as 7bit, not quoted-printable", async () => {
+            expect.assertions(2);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                subject: "x",
+                text: "A plain ASCII sentence with punctuation: 1 + 1 = 2.",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("Content-Transfer-Encoding: 7bit");
+            expect(message).not.toContain("Content-Transfer-Encoding: quoted-printable");
+        });
+
+        it("should quoted-printable encode a UTF-8 text body", async () => {
+            expect.assertions(2);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                subject: "x",
+                text: "Grüße",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("Content-Transfer-Encoding: quoted-printable");
+            expect(message).toContain("Gr=C3=BC=C3=9Fe");
+        });
+    });
 });

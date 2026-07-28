@@ -9,7 +9,7 @@ const okResult = {
     success: true as const,
 };
 
-const createProvider = (features: FeatureFlags): Provider => {
+const createProvider = (features: FeatureFlags, name = "test"): Provider => {
     return {
         features,
 
@@ -18,7 +18,7 @@ const createProvider = (features: FeatureFlags): Provider => {
         async isAvailable(): Promise<boolean> {
             return true;
         },
-        name: "test",
+        name,
         sendEmail: vi.fn(() => okResult),
     };
 };
@@ -80,5 +80,37 @@ describe("mail capability guard", () => {
 
         expect(result.success).toBe(true);
         expect(provider.sendEmail).toHaveBeenCalledTimes(1);
+    });
+
+    it("checks the mounted stream provider's capabilities, not the default provider's", async () => {
+        expect.assertions(3);
+
+        // Default provider cannot tag; the mounted one can. A tagged message routed
+        // to the mounted stream must be allowed and dispatched to the mounted provider.
+        const base = createProvider({ tagging: false }, "default");
+        const broadcast = createProvider({ tagging: true }, "broadcast");
+        const mail = createMail(base).mount("broadcast", broadcast);
+
+        const result = await mail.send({ ...taggedMessage, stream: "broadcast" });
+
+        expect(result.success).toBe(true);
+        expect(broadcast.sendEmail).toHaveBeenCalledTimes(1);
+        expect(base.sendEmail).not.toHaveBeenCalled();
+    });
+
+    it("rejects a message routed to a mounted provider that lacks the capability", async () => {
+        expect.assertions(3);
+
+        // Default provider supports tagging; the mounted one does not. The guard must
+        // reject based on the mounted provider that actually handles the message.
+        const base = createProvider({ tagging: true }, "default");
+        const broadcast = createProvider({ tagging: false }, "broadcast");
+        const mail = createMail(base).mount("broadcast", broadcast);
+
+        const result = await mail.send({ ...taggedMessage, stream: "broadcast" });
+
+        expect(result.success).toBe(false);
+        expect((result.error as Error).message).toContain("tags");
+        expect(broadcast.sendEmail).not.toHaveBeenCalled();
     });
 });
