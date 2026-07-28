@@ -162,7 +162,7 @@ const rules: Rule[] = [
         test: (error): RuleMatch | undefined => {
             const { message } = error;
 
-            if (has(message, "enotfound", "getaddrinfo enotfound", "dns", "fetch failed", "ecconnrefused", "econnrefused")) {
+            if (has(message, "enotfound", "getaddrinfo", "dns lookup", "fetch failed", "econnrefused")) {
                 return {
                     md: [
                         "The host may be unreachable or misconfigured.",
