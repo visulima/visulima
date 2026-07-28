@@ -168,6 +168,40 @@ describe("fastify plugin", () => {
         expect(consoleSpy).not.toHaveBeenCalled();
     });
 
+    it("should strip the query string from the logged path", async () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const fastify = createMockFastify();
+        const request = createMockRequest({ url: "/api/users?token=secret" });
+        const reply = createMockReply();
+
+        pailPlugin(fastify as any, { pail });
+
+        await fastify.trigger("onRequest", request, reply, () => {});
+
+        const data = (request.log as { getData: () => unknown }).getData() as Record<string, unknown>;
+
+        expect(data.path).toBe("/api/users");
+    });
+
+    it("should exclude routes even when a query string is present", async () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const consoleSpy = vi.spyOn(console, "log");
+        const fastify = createMockFastify();
+        const request = createMockRequest({ url: "/health?probe=1" });
+        const reply = createMockReply();
+
+        pailPlugin(fastify as any, { exclude: ["/health"], pail });
+
+        await fastify.trigger("onRequest", request, reply, () => {});
+        await fastify.trigger("onResponse", request, reply);
+
+        expect(consoleSpy).not.toHaveBeenCalled();
+    });
+
     it("should make logger available via useLogger in async context", async () => {
         expect.assertions(1);
 

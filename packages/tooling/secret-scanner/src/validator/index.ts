@@ -113,8 +113,10 @@ export async function validateFinding(
 
     if (typeof type === "string" && lookupTransport(type)) {
         return runTransport(type, {
+            allowedHosts,
             extras: extraVariables,
             secret,
+            signal,
             validation,
         });
     }
