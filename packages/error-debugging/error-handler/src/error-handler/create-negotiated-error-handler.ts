@@ -7,6 +7,7 @@ import { jsonpErrorHandler } from "./jsonp-error-handler";
 import problemErrorHandler from "./problem-error-handler";
 import { textErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "./types";
+import withExpose from "./utils/with-expose";
 
 // These formatters take no options, so their handler factories are pure and can
 // be instantiated once at module load rather than on every request.
@@ -32,38 +33,6 @@ const loadXmlHandler = async (): Promise<ErrorHandler> => {
     xmlHandlerPromise ??= import("./xml-error-handler").then((module) => module.xmlErrorHandler());
 
     return xmlHandlerPromise;
-};
-
-/**
- * Apply the `expose` flag (which controls whether stack traces leak into the
- * response body) without permanently mutating the caller's error object. The
- * original `expose` state is captured and restored once the handler resolves,
- * so the flag cannot leak into later logging or a second handler invocation
- * configured with different `showTrace` settings.
- */
-const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<void> | void): Promise<void> => {
-    const hadOwnExpose = Object.hasOwn(error, "expose");
-    const previousExpose = (error as Error & { expose?: boolean }).expose;
-
-    if (!showTrace) {
-        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
-        (error as Error & { expose: boolean }).expose = false;
-    } else if (!("expose" in error)) {
-        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
-        (error as Error & { expose: boolean }).expose = true;
-    }
-
-    try {
-        await run();
-    } finally {
-        if (hadOwnExpose) {
-            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
-            (error as Error & { expose?: boolean }).expose = previousExpose;
-        } else {
-            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
-            delete (error as Error & { expose?: boolean }).expose;
-        }
-    }
 };
 
 const createNegotiatedErrorHandler
