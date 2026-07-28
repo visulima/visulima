@@ -62,16 +62,12 @@ describe("isColorSupported", () => {
         expect(isStdoutColorSupported()).toBe(0);
     });
 
-    /**
-     * @vitest-environment jsdom
-     */
     it("should return 1 when navigator.userAgent contains \"Chrome\" or \"Chromium\"", () => {
         expect.assertions(1);
 
         const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36";
 
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        Object.defineProperty(globalThis.navigator, "userAgent", { value: userAgent });
+        vi.stubGlobal("navigator", { userAgent });
 
         const result = isStdoutColorSupported();
 
