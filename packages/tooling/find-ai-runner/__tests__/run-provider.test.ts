@@ -135,6 +135,55 @@ describe(runProvider, () => {
         expect(child.killed).toBe("SIGTERM");
     });
 
+    it("should escalate to SIGKILL when the child ignores SIGTERM after a timeout", async () => {
+        expect.assertions(2);
+
+        const promise = runProvider(availableProvider, "hello", { timeoutMs: 1000 });
+
+        vi.advanceTimersByTime(1000);
+
+        await expect(promise).rejects.toThrow("timed out");
+
+        // The child ignores SIGTERM (never emits close); the 5s escalation must force-kill it.
+        vi.advanceTimersByTime(5000);
+
+        expect(child.killed).toBe("SIGKILL");
+    });
+
+    it("should decode multi-byte characters split across stdout chunks without corruption", async () => {
+        expect.assertions(2);
+
+        const promise = runProvider(availableProvider, "hello");
+
+        // "é" is 0xC3 0xA9; "文" is 0xE6 0x96 0x87. Split each sequence across chunk boundaries.
+        child.stdout.emit("data", Buffer.from([0xc3]));
+        child.stdout.emit("data", Buffer.from([0xa9]));
+        child.stdout.emit("data", Buffer.from([0xe6, 0x96]));
+        child.stdout.emit("data", Buffer.from([0x87]));
+        child.emit("close", 0);
+
+        const result = await promise;
+
+        expect(result.stdout).toBe("é文");
+        expect(result.stdout).not.toContain("�");
+    });
+
+    it("should stream decoded chunks to onStdout without partial-sequence replacement characters", async () => {
+        expect.assertions(1);
+
+        const chunks: string[] = [];
+        const promise = runProvider(availableProvider, "hello", { onStdout: (chunk) => chunks.push(chunk) });
+
+        child.stdout.emit("data", Buffer.from([0xc3]));
+        child.stdout.emit("data", Buffer.from([0xa9]));
+        child.emit("close", 0);
+
+        await promise;
+
+        // The lone lead byte yields no callback; the completed code point streams once, intact.
+        expect(chunks.join("")).toBe("é");
+    });
+
     it("should ignore a close event that arrives after a timeout", async () => {
         expect.assertions(1);
 

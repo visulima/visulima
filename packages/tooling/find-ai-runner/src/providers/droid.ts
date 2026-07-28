@@ -1,10 +1,10 @@
 import type { AiProviderConfig } from "../types";
 
-// droid "prompt" [--skip-permissions-unsafe] -o text [-m model]
+// droid [--skip-permissions-unsafe] -o text [-m model] -- "prompt"
 const droid: AiProviderConfig = {
     alternateCommands: [],
     buildArgs: (prompt, { dangerous, model }) => {
-        const args = [prompt];
+        const args: string[] = [];
 
         if (dangerous) {
             args.push("--skip-permissions-unsafe");
@@ -15,6 +15,9 @@ const droid: AiProviderConfig = {
         if (model) {
             args.push("-m", model);
         }
+
+        // Flags precede the prompt and `--` ends option parsing, so a dash-prefixed prompt is never misread as a flag.
+        args.push("--", prompt);
 
         return args;
     },

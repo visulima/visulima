@@ -2,7 +2,7 @@
 import { parseArgs } from "node:util";
 
 import { PROVIDER_NAMES } from "./constants";
-import { buildCliArgs, detectAiSessionAsync, detectAllProviders, detectProvider, runProvider } from "./index";
+import { buildCliArgs, detectAiSessionAsync, detectAllProvidersAsync, detectProvider, runProvider } from "./index";
 import type { AiProviderName } from "./types";
 
 interface CliValues {
@@ -131,8 +131,10 @@ const validateProvider = (name: string | undefined, usage: string): AiProviderNa
     return name;
 };
 
-const handleList = (cliValues: CliValues): void => {
-    const all = detectAllProviders();
+const handleList = async (cliValues: CliValues): Promise<void> => {
+    // Detect every provider concurrently instead of paying sum-of-all-providers latency;
+    // versions are still probed so the human-readable output keeps its `(vX.Y.Z)` column.
+    const all = await detectAllProvidersAsync({ probeVersions: true });
 
     if (cliValues.json) {
         console.log(JSON.stringify(all, undefined, 2));
@@ -306,7 +308,7 @@ const main = async (): Promise<void> => {
         }
 
         case "list": {
-            handleList(values);
+            await handleList(values);
             break;
         }
 

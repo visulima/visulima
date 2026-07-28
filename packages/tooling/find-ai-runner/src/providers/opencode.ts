@@ -4,11 +4,14 @@ import type { AiProviderConfig } from "../types";
 const opencode: AiProviderConfig = {
     alternateCommands: [],
     buildArgs: (prompt, { model }) => {
-        const args = ["run", prompt];
+        const args = ["run"];
 
         if (model) {
             args.push("-m", model);
         }
+
+        // `--` ends option parsing so a dash-prefixed prompt is never misread as a flag.
+        args.push("--", prompt);
 
         return args;
     },

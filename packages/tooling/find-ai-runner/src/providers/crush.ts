@@ -14,7 +14,8 @@ const crush: AiProviderConfig = {
             args.push("-m", model);
         }
 
-        args.push(prompt);
+        // `--` ends option parsing so a dash-prefixed prompt is never misread as a flag.
+        args.push("--", prompt);
 
         return args;
     },

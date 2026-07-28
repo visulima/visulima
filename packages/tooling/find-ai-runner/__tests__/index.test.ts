@@ -534,12 +534,14 @@ describe(buildCliArgs, () => {
     });
 
     it("should build opencode args with run subcommand", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const args = buildCliArgs("opencode", "analyze this");
 
         expect(args[0]).toBe("run");
-        expect(args[1]).toBe("analyze this");
+        // The prompt is passed after the `--` end-of-options separator.
+        expect(args.at(-2)).toBe("--");
+        expect(args.at(-1)).toBe("analyze this");
     });
 
     it("should build opencode args with custom model", () => {
@@ -572,11 +574,13 @@ describe(buildCliArgs, () => {
     });
 
     it("should build droid args with positional prompt and no bypass flag by default", () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const args = buildCliArgs("droid", "analyze this");
 
-        expect(args[0]).toBe("analyze this");
+        // Flags precede the prompt, which is passed after the `--` end-of-options separator.
+        expect(args.at(-2)).toBe("--");
+        expect(args.at(-1)).toBe("analyze this");
         expect(args).not.toContain("--skip-permissions-unsafe");
         expect(args).toContain("-o");
         expect(args).toContain("text");
@@ -681,6 +685,23 @@ describe(buildCliArgs, () => {
         expect(args).toContain("-m");
         expect(args).toContain("anthropic/claude-sonnet-4");
     });
+
+    it.each(["codex", "crush", "cursor", "opencode", "droid"] as const)(
+        "should place a dash-prefixed prompt after a `--` separator for %s so it cannot be parsed as a flag",
+        (provider) => {
+            expect.assertions(3);
+
+            const dangerousPrompt = "--dangerously-bypass-approvals-and-sandbox";
+            const args = buildCliArgs(provider, dangerousPrompt);
+
+            const separatorIndex = args.indexOf("--");
+
+            // The prompt is the final token and it follows the `--` end-of-options marker.
+            expect(separatorIndex).toBeGreaterThanOrEqual(0);
+            expect(args.at(-1)).toBe(dangerousPrompt);
+            expect(args.indexOf(dangerousPrompt)).toBeGreaterThan(separatorIndex);
+        },
+    );
 });
 
 // --- runProvider ---
