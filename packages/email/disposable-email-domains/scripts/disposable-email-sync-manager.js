@@ -107,12 +107,65 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Builds the final, published domain array by applying the same
+     * allowlist/whitelist/blacklist filtering the generated `domains.json` uses.
+     *
+     * This is the authoritative post-filter view of the list, so both the emitted
+     * file and the sync statistics are computed from it.
+     * @returns {Array<string>} Sorted array of the domains that will be published.
+     */
+    buildFinalDomainsList() {
+        // Load common email providers as whitelist
+        let whitelist = new Set();
+
+        try {
+            const commonProviders = require("email-providers/common.json");
+
+            if (Array.isArray(commonProviders)) {
+                whitelist = new Set(commonProviders.map((domain) => domain.toLowerCase().trim()));
+            }
+        } catch {
+            // If email-providers is not available, continue without whitelist
+        }
+
+        // Generate simple array of domain strings, excluding whitelisted domains
+        // BUT always include blacklist domains even if they're in the whitelist
+        return [...this.domains.entries()]
+            .filter(([domain, entry]) => {
+                const normalizedDomain = domain.toLowerCase().trim();
+
+                // The curated allowlist beats every source: it exists precisely to undo
+                // false positives that upstream lists (or a stale blacklist entry) introduce.
+                if (this.allowlist.has(normalizedDomain)) {
+                    return false;
+                }
+
+                const isBlacklistDomain = entry.sources.has("blacklist.json");
+
+                // Always include blacklist domains, even if they're whitelisted
+                if (isBlacklistDomain) {
+                    return true;
+                }
+
+                // For non-blacklist domains, exclude if whitelisted
+                return !whitelist.has(normalizedDomain);
+            })
+            .map(([domain]) => domain)
+            .toSorted();
+    }
+
+    /**
      * Calculates final statistics after processing.
+     *
+     * Domain counts are derived from the post-filter list (the same set written to
+     * `domains.json`), so `newDomains`/`removedDomains`/`totalDomains` line up with
+     * `previousDomains`, which is loaded from the already-filtered published file.
      * @param {object} stats Statistics object to update.
      * @param {number} startTime Start time timestamp.
+     * @param {Array<string>} finalDomains The published, post-filter domain array.
      */
-    calculateFinalStats(stats, startTime) {
-        const currentDomains = new Set(this.domains.keys());
+    calculateFinalStats(stats, startTime, finalDomains) {
+        const currentDomains = new Set(finalDomains);
         const duplicates = [...this.domains.values()].reduce((sum, entry) => sum + (entry.sources.size - 1), 0);
         const newDomains = [...currentDomains].filter((domain) => !this.previousDomains.has(domain)).length;
         const removedDomains = [...this.previousDomains].filter((domain) => !currentDomains.has(domain)).length;
@@ -125,8 +178,8 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             newDomains,
             processingTime,
             removedDomains,
-            totalDomains: this.domains.size,
-            uniqueDomains: this.domains.size,
+            totalDomains: currentDomains.size,
+            uniqueDomains: currentDomains.size,
         });
     }
 
@@ -411,61 +464,25 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
     /**
      * Generates the main domains list file (JSON format only)
+     * @param {Array<string>} [finalDomains] Precomputed final domain array; recomputed when omitted.
      */
-    async generateDomainsList() {
-        // Load common email providers as whitelist
-        let whitelist = new Set();
-
-        try {
-            const commonProviders = require("email-providers/common.json");
-
-            if (Array.isArray(commonProviders)) {
-                whitelist = new Set(commonProviders.map((domain) => domain.toLowerCase().trim()));
-            }
-        } catch {
-            // If email-providers is not available, continue without whitelist
-        }
-
-        // Generate simple array of domain strings, excluding whitelisted domains
-        // BUT always include blacklist domains even if they're in the whitelist
-        const domainsArray = [...this.domains.entries()]
-            .filter(([domain, entry]) => {
-                const normalizedDomain = domain.toLowerCase().trim();
-
-                // The curated allowlist beats every source: it exists precisely to undo
-                // false positives that upstream lists (or a stale blacklist entry) introduce.
-                if (this.allowlist.has(normalizedDomain)) {
-                    return false;
-                }
-
-                const isBlacklistDomain = entry.sources.has("blacklist.json");
-
-                // Always include blacklist domains, even if they're whitelisted
-                if (isBlacklistDomain) {
-                    return true;
-                }
-
-                // For non-blacklist domains, exclude if whitelisted
-                return !whitelist.has(normalizedDomain);
-            })
-            .map(([domain]) => domain)
-            .toSorted();
-
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
+    async generateDomainsList(finalDomains = this.buildFinalDomainsList()) {
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(finalDomains), "utf8");
 
         // Emit a type declaration so the `./domains` subpath export carries types
         // (`import domains from "@visulima/disposable-email-domains/domains" with { type: "json" }`).
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport = domains;\n", "utf8");
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
     }
 
     /**
      * Generates all output files and statistics.
+     * @param {Array<string>} [finalDomains] Precomputed final domain array; recomputed when omitted.
      */
-    async generateOutputs() {
+    async generateOutputs(finalDomains = this.buildFinalDomainsList()) {
         await fs.mkdir(this.syncOptions.outputPath, { recursive: true });
 
         // Generate main domains list
-        await this.generateDomainsList();
+        await this.generateDomainsList(finalDomains);
     }
 
     /**
@@ -715,14 +732,17 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
                 }
             }
 
+            // Apply the allowlist/whitelist filter once so stats and the emitted file agree.
+            const finalDomains = this.buildFinalDomainsList();
+
             // Calculate final statistics
-            this.calculateFinalStats(stats, startTime);
+            this.calculateFinalStats(stats, startTime, finalDomains);
 
             // Generate outputs
-            await this.generateOutputs();
+            await this.generateOutputs(finalDomains);
 
             return {
-                domains: new Set(this.domains.keys()),
+                domains: new Set(finalDomains),
                 errors,
                 stats,
             };
