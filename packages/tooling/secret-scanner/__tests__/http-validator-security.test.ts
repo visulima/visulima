@@ -118,6 +118,54 @@ describe("perHostLimiter — Retry-After ceiling", () => {
     });
 });
 
+describe("runHttpValidation — timeout measures request time, not queue time", () => {
+    it("still completes a validation that waited out a Retry-After pause longer than the request timeout", async () => {
+        expect.assertions(2);
+
+        let requestCount = 0;
+        const server = createServer((_request: IncomingMessage, response: ServerResponse) => {
+            requestCount += 1;
+            response.writeHead(200);
+            response.end("ok");
+        });
+
+        await new Promise<void>((resolve) => {
+            server.listen(0, "127.0.0.1", () => {
+                resolve();
+            });
+        });
+
+        const { port } = server.address() as AddressInfo;
+        const url = `http://127.0.0.1:${String(port)}/ok`;
+        const limiter = new PerHostLimiter();
+
+        // Pause the host past the 5s request timeout. With the timer armed at
+        // call time (the old behaviour) the controller aborts before the slot is
+        // ever acquired and the eventual fetch rejects → "error". Arming inside
+        // doFetch keeps the pause out of the timeout window, so the request
+        // fires and verifies.
+        limiter.notifyRetryAfter(limiter.hostFromUrl(url), Date.now() + 5200);
+
+        try {
+            const status = await runHttpValidation({
+                extraVariables: {},
+                perHostLimiter: limiter,
+                secret: "x",
+                validation: statusMatcher(url),
+            });
+
+            expect(status).toBe("verified");
+            expect(requestCount).toBe(1);
+        } finally {
+            await new Promise<void>((resolve) => {
+                server.close(() => {
+                    resolve();
+                });
+            });
+        }
+    }, 20_000);
+});
+
 describe("runHttpValidation — slow body read stays bounded by the abort timer", () => {
     let server: Server;
     let url: string;

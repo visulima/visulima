@@ -1,4 +1,11 @@
 /**
+ * Error thrown for HTTP responses that must not be retried (client errors that
+ * are not `429`). Carrying a distinct type lets `sendWithRetry` fail fast instead
+ * of running the generic retry loop.
+ */
+class NonRetryableHttpError extends Error {}
+
+/**
  * Minimal Response interface for fetch-like responses.
  */
 interface FetchResponse {
@@ -8,6 +15,14 @@ interface FetchResponse {
     statusText: string;
     text: () => Promise<string>;
 }
+
+/**
+ * Callback invoked with the paired request/response for debugging purposes.
+ */
+type DebugRequestResponseCallback = (requestResponse: {
+    req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
+    res: { body: string; headers: Record<string, string>; status: number; statusText: string };
+}) => void;
 
 /**
  * Calculates exponential backoff delay.
@@ -101,10 +116,7 @@ const processResponse = async (
     method: string,
     headers: Record<string, string>,
     body: string | Uint8Array,
-    onDebugRequestResponse?: (requestResponse: {
-        req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
-        res: { body: string; headers: Record<string, string>; status: number; statusText: string };
-    }) => void,
+    onDebugRequestResponse?: DebugRequestResponseCallback,
     onError?: (error: Error) => void,
 ): Promise<boolean> => {
     const responseHeaders: Record<string, string> = {};
@@ -141,7 +153,7 @@ const processResponse = async (
 
     // Non-retryable client errors
     if (response.status < 500 && response.status !== 429) {
-        const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
+        const error = new NonRetryableHttpError(`HTTP ${String(response.status)}: ${response.statusText}`);
 
         if (onError) {
             onError(error);
@@ -249,6 +261,71 @@ const handleRetryError = async (
 };
 
 /**
+ * Stable per-request configuration shared across every retry attempt. Built once by
+ * {@link sendWithRetry} and threaded through {@link performRequestAttempt} so the
+ * per-attempt signature stays small.
+ */
+interface RetryRequestContext {
+    body: string | Uint8Array;
+    headers: Record<string, string>;
+    maxRetries: number;
+    method: string;
+    onDebugRequestResponse?: DebugRequestResponseCallback;
+    onError?: (error: Error) => void;
+    respectRateLimit: boolean;
+    retryDelay: number;
+    url: string;
+}
+
+/**
+ * Outcome of a single request attempt: either the request is complete (`{ done: true }`)
+ * and the retry loop should stop, or a retry is warranted after `retryInMs` milliseconds.
+ */
+type AttemptResult = { done: true } | { retryInMs: number };
+
+/**
+ * Performs a single request attempt.
+ * @param context Stable per-request configuration shared across attempts.
+ * @param attempt Current attempt number (0-based).
+ */
+const performRequestAttempt = async (context: RetryRequestContext, attempt: number): Promise<AttemptResult> => {
+    const { body, headers, maxRetries, method, onDebugRequestResponse, onError, respectRateLimit, retryDelay, url } = context;
+
+    const requestBody = prepareRequestBody(body);
+
+    const response = await fetch(url, {
+        body: requestBody,
+        headers,
+        method,
+    });
+
+    const shouldRetry = await processResponse(response, url, method, headers, body, onDebugRequestResponse, onError);
+
+    if (!shouldRetry) {
+        return { done: true };
+    }
+
+    const retryDelayValue = calculateRetryDelay(response, respectRateLimit, retryDelay, attempt, maxRetries);
+
+    if (retryDelayValue !== undefined) {
+        return { retryInMs: retryDelayValue };
+    }
+
+    // Max retries reached or non-retryable error
+    if (!response.ok) {
+        const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
+
+        if (onError) {
+            onError(error);
+        }
+
+        throw error;
+    }
+
+    return { done: true };
+};
+
+/**
  * Sends an HTTP request with retry logic and rate limiting support.
  * @param url The URL to send the request to
  * @param method The HTTP method to use
@@ -268,63 +345,50 @@ const sendWithRetry = async (
     maxRetries: number,
     retryDelay: number,
     respectRateLimit: boolean,
-    onDebugRequestResponse?: (requestResponse: {
-        req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
-        res: { body: string; headers: Record<string, string>; status: number; statusText: string };
-    }) => void,
+    onDebugRequestResponse?: DebugRequestResponseCallback,
     onError?: (error: Error) => void,
 ): Promise<void> => {
+    const context: RetryRequestContext = {
+        body,
+        headers,
+        maxRetries,
+        method,
+        onDebugRequestResponse,
+        onError,
+        respectRateLimit,
+        retryDelay,
+        url,
+    };
+
     let attempt = 0;
 
     while (attempt <= maxRetries) {
         try {
-            const requestBody = prepareRequestBody(body);
-
             // eslint-disable-next-line no-await-in-loop
-            const response = await fetch(url, {
-                body: requestBody,
-                headers,
-                method,
-            });
+            const result = await performRequestAttempt(context, attempt);
 
-            // eslint-disable-next-line no-await-in-loop
-            const shouldRetry = await processResponse(response, url, method, headers, body, onDebugRequestResponse, onError);
-
-            if (!shouldRetry) {
+            if ("retryInMs" in result) {
+                // eslint-disable-next-line no-await-in-loop
+                await sleep(result.retryInMs);
+                attempt += 1;
+            } else {
                 return;
             }
-
-            const retryDelayValue = calculateRetryDelay(response, respectRateLimit, retryDelay, attempt, maxRetries);
-
-            if (retryDelayValue !== undefined) {
-                // eslint-disable-next-line no-await-in-loop
-                await sleep(retryDelayValue);
-                attempt += 1;
-                continue;
-            }
-
-            // Max retries reached or non-retryable error
-            if (!response.ok) {
-                const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
-
-                if (onError) {
-                    onError(error);
-                }
-
+        } catch (error) {
+            // Non-retryable client errors (4xx except 429) already reported via onError
+            // inside processResponse; fail fast instead of running the retry loop.
+            if (error instanceof NonRetryableHttpError) {
                 throw error;
             }
 
-            return;
-        } catch (error) {
             // eslint-disable-next-line no-await-in-loop
             const shouldRetry = await handleRetryError(error, attempt, maxRetries, retryDelay, onError);
 
-            if (shouldRetry) {
-                attempt += 1;
-                continue;
+            if (!shouldRetry) {
+                throw error;
             }
 
-            throw error;
+            attempt += 1;
         }
     }
 };

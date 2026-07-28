@@ -45,7 +45,7 @@ describe("bad input", () => {
             commandLineArgs(optionDefinitions, { argv });
         }).toThrow(UnknownOptionError);
         expect(commandLineArgs(optionDefinitions, { argv, partial: true })).toStrictEqual({
-            _unknown: ["--five="],
+            _unknown: ["", "--five="],
             five: true,
             four: "",
             one: "",
