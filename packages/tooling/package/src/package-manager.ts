@@ -6,7 +6,9 @@ import { NotFoundError } from "@visulima/fs/error";
 import { parseJson } from "@visulima/fs/utils";
 import { dirname, join } from "@visulima/path";
 
-const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lock", "bun.lockb"];
+import { LOCKFILE_CANDIDATES } from "./utils/lockfile-candidates";
+
+const lockFileNames = [...LOCKFILE_CANDIDATES];
 
 const KNOWN_PACKAGE_MANAGERS = new Set<PackageManager>(["bun", "npm", "pnpm", "yarn"]);
 

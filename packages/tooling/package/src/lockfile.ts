@@ -32,6 +32,8 @@ import { readFile } from "node:fs/promises";
 
 import { findUp, findUpSync } from "@visulima/fs";
 
+import { LOCKFILE_CANDIDATES as SHARED_LOCKFILE_CANDIDATES } from "./utils/lockfile-candidates";
+
 /**
  * Lockfiles the parser recognises. Both the modern text `bun.lock` and the
  * legacy binary `bun.lockb` map to the `bun` type, but only `bun.lock`
@@ -768,17 +770,18 @@ export const parseBunLockFile = (content: string): LockFileEntry[] => {
 
 /**
  * Maps a lockfile path (or filename) to its {@link LockFileType}.
- * Returns `undefined` for unsupported shapes (`npm-shrinkwrap.json`, etc.).
+ * Returns `undefined` for unsupported shapes.
  *
- * Both the modern text `bun.lock` and the legacy binary `bun.lockb` resolve
- * to the `bun` type; only `bun.lock` content is parseable downstream.
+ * `npm-shrinkwrap.json` shares `package-lock.json`'s JSON shape and resolves to
+ * the `npm` type. Both the modern text `bun.lock` and the legacy binary `bun.lockb`
+ * resolve to the `bun` type; only `bun.lock` content is parseable downstream.
  */
 const inferLockFileType = (path: string): LockFileType | undefined => {
     if (path.endsWith("pnpm-lock.yaml")) {
         return "pnpm";
     }
 
-    if (path.endsWith("package-lock.json")) {
+    if (path.endsWith("package-lock.json") || path.endsWith("npm-shrinkwrap.json")) {
         return "npm";
     }
 
@@ -823,11 +826,7 @@ export const parseLockFileContent = (content: string, type: LockFileType): LockF
     }
 };
 
-// `bun.lock` (modern text) is listed before `bun.lockb` (legacy binary) so a
-// project that has migrated and still carries the stale binary lockfile picks
-// the parseable one. `findUp` returns the first candidate it finds per
-// directory, scanning this list in order.
-const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock", "bun.lockb"];
+const LOCKFILE_CANDIDATES = [...SHARED_LOCKFILE_CANDIDATES];
 
 /**
  * Walks up from `cwd`, locates the nearest supported lockfile, reads
@@ -845,7 +844,7 @@ export const parseLockFile = async (cwd?: URL | string): Promise<LockFileParseRe
     });
 
     if (!path) {
-        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, yarn.lock, bun.lock)");
+        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, npm-shrinkwrap.json, yarn.lock, bun.lock)");
     }
 
     const type = inferLockFileType(path);
@@ -872,7 +871,7 @@ export const parseLockFileSync = (cwd?: URL | string): LockFileParseResult => {
     });
 
     if (!path) {
-        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, yarn.lock, bun.lock)");
+        throw new Error("Could not find a supported lock file (pnpm-lock.yaml, package-lock.json, npm-shrinkwrap.json, yarn.lock, bun.lock)");
     }
 
     const type = inferLockFileType(path);

@@ -72,12 +72,14 @@ const confirm = async (options: ConfirmOptions): Promise<boolean> => {
             resolve(defaultValue);
         });
 
-        // Handle Ctrl+C gracefully
+        // Handle Ctrl+C gracefully. Ctrl+C conventionally aborts, so it must never be
+        // treated as accepting the default answer (which could trigger installation when
+        // `default: true`); always resolve to `false` so no action is taken.
         rl.on("SIGINT", () => {
             rl.close();
             // eslint-disable-next-line no-console
-            console.log(`\n${styleText(["gray"], "→")} ${formatAnswer(defaultValue)}`);
-            resolve(defaultValue);
+            console.log(`\n${styleText(["gray"], "→")} ${formatAnswer(false)}`);
+            resolve(false);
         });
     });
 };

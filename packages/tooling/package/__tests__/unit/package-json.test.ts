@@ -25,6 +25,7 @@ import type { EnsurePackagesOptions, NormalizedPackageJson } from "../../src/typ
 const NO_DESCRIPTION_REGEX = /No description/;
 const REPOSITORY_FIELD_REGEX = /repository field/;
 const UNRELATED_REGEX = /unrelated.*/;
+const MATCH_ALL_REGEX = /./;
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
 
@@ -971,6 +972,24 @@ packages:
 
             expect(result).toBe(false);
         });
+
+        it("should match dependency names that contain dots", () => {
+            expect.assertions(2);
+
+            const packageJson = {
+                dependencies: {
+                    "socket.io": "^4.0.0",
+                },
+                devDependencies: {
+                    "lodash.merge": "^4.6.2",
+                },
+                name: "test-package",
+                version: "1.0.0",
+            };
+
+            expect(hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["socket.io"])).toBe(true);
+            expect(hasPackageJsonAnyDependency(packageJson as unknown as NormalizedPackageJson, ["lodash.merge"])).toBe(true);
+        });
     });
 
     describe(ensurePackages, () => {
@@ -1073,6 +1092,32 @@ packages:
                     message: (packages) => `Custom Packages are required for this config: ${packages.join(", ")}. Do you want to install them?`,
                 },
             });
+
+            expect(mockConfirm).not.toHaveBeenCalled();
+            expect(mockInstallPackage).not.toHaveBeenCalled();
+        });
+
+        it("should not install a dotted-name package that is already declared", async () => {
+            expect.assertions(2);
+
+            mockConfirm.mockResolvedValue(true);
+
+            vi.stubGlobal("process", {
+                ...process,
+                argv: [],
+                env: { CI: false },
+                stdout: { isTTY: true },
+                versions: { ...process.versions },
+            });
+
+            const packageJson = {
+                dependencies: {
+                    "socket.io": "^4.0.0",
+                },
+                devDependencies: {},
+            } as unknown as NormalizedPackageJson;
+
+            await ensurePackages(packageJson, ["socket.io"]);
 
             expect(mockConfirm).not.toHaveBeenCalled();
             expect(mockInstallPackage).not.toHaveBeenCalled();
@@ -1854,6 +1899,27 @@ version: 2.0.0`;
                 const result2 = await parsePackageJson(packagePath, { cache });
 
                 expect(result2.name).toBe("test-package"); // Should be cached value, not modified value
+            });
+
+            it("should not serve a cached strict result to a read with different ignoreWarnings", async () => {
+                expect.assertions(2);
+
+                const packagePath = join(distribution, "package.json");
+
+                writeJsonSync(packagePath, { name: "test-package", version: "1.0.0" });
+
+                const cache = new Map<string, NormalizedPackageJson>();
+
+                // First strict read ignores every warning -> succeeds and is cached.
+                const result = await parsePackageJson(packagePath, { cache, ignoreWarnings: [MATCH_ALL_REGEX], strict: true });
+
+                expect(result.name).toBe("test-package");
+
+                // Second strict read uses a non-matching pattern; the earlier success must not be
+                // reused for it — the validation error has to surface.
+                await expect(parsePackageJson(packagePath, { cache, ignoreWarnings: ["Different warning"], strict: true })).rejects.toThrow(
+                    "The following warnings were encountered while normalizing package data:",
+                );
             });
 
             it("should cache parsed results synchronously for file paths", () => {

@@ -205,6 +205,47 @@ describe("package-manager", () => {
             });
         });
 
+        it("should prefer pnpm over a stale yarn.lock in a mixed-lockfile directory", async () => {
+            expect.assertions(1);
+
+            temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+            writeFileSync(join(temporaryDirectory, "yarn.lock"), "");
+            writeFileSync(join(temporaryDirectory, "pnpm-lock.yaml"), "lockfileVersion: '9.0'\n");
+
+            let result = function_(temporaryDirectory);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
+                packageManager: "pnpm",
+                path: temporaryDirectory,
+            });
+        });
+
+        it("should detect npm via npm-shrinkwrap.json", async () => {
+            expect.assertions(1);
+
+            temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+            writeFileSync(join(temporaryDirectory, "npm-shrinkwrap.json"), JSON.stringify({ lockfileVersion: 3 }));
+
+            let result = function_(temporaryDirectory);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
+                packageManager: "npm",
+                path: temporaryDirectory,
+            });
+        });
+
         it("should throw when package.json declares an unknown packageManager", async () => {
             expect.assertions(1);
 

@@ -159,6 +159,36 @@ describe("monorepo", () => {
                 await expect(run(temporaryDirectory)).rejects.toThrow(NO_MONOREPO_ROOT_REGEX);
             });
 
+            it("should throw when 'workspaces' only appears as a substring, not a real field", async () => {
+                expect.assertions(1);
+
+                temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+                writeFileSync(join(temporaryDirectory, "yarn.lock"), "");
+                writeFileSync(
+                    join(temporaryDirectory, "package.json"),
+                    JSON.stringify({
+                        dependencies: { "eslint-plugin-workspaces": "^1.0.0" },
+                        keywords: ["workspaces"],
+                        name: "single",
+                        version: "1.0.0",
+                    }),
+                );
+
+                await expect(run(temporaryDirectory)).rejects.toThrow(NO_MONOREPO_ROOT_REGEX);
+            });
+
+            it("should fall through when lerna.json is null instead of crashing", async () => {
+                expect.assertions(1);
+
+                temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+                // eslint-disable-next-line unicorn/no-null
+                writeFileSync(join(temporaryDirectory, "lerna.json"), JSON.stringify(null));
+
+                await expect(run(temporaryDirectory)).rejects.toThrow(NO_MONOREPO_ROOT_REGEX);
+            });
+
             it("should throw for a pnpm project without a pnpm-workspace.yaml", async () => {
                 expect.assertions(1);
 
