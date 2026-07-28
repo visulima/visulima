@@ -38,7 +38,7 @@ describe("domains.json loading", () => {
     });
 
     it("falls back to an empty list when domains.json is not an array", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         vi.resetModules();
         vi.doMock(import("node:fs"), async (importOriginal) => {
@@ -50,10 +50,12 @@ describe("domains.json loading", () => {
             };
         });
 
-        const { isFreeEmail } = await import("../src/index");
+        const { isFreeEmail, isListLoaded } = await import("../src/index");
 
         expect(isFreeEmail("user@gmail.com")).toBe(false);
         expect(isFreeEmail("user@custom.com", new Set(["custom.com"]))).toBe(true);
+        // A corrupt (non-array) file is a degraded state, observable via isListLoaded().
+        expect(isListLoaded()).toBe(false);
     });
 
     it("uses the parsed array when domains.json is valid", async () => {

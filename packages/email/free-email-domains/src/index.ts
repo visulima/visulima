@@ -62,7 +62,11 @@ const readDomainsFile = (): string[] | undefined => {
         const domainsContent = readFileSync(domainsPath, "utf8");
         const parsed: unknown = JSON.parse(domainsContent);
 
-        return Array.isArray(parsed) ? (parsed as string[]) : [];
+        if (!Array.isArray(parsed)) {
+            throw new TypeError("dist/domains.json did not parse to an array");
+        }
+
+        return parsed as string[];
     } catch (error) {
         // Surface the failure once so a broken install (missing/corrupted dist/domains.json)
         // is detectable, but stay resilient by returning undefined (caller decides the fallback).
