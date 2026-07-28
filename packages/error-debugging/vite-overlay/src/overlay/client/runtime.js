@@ -705,7 +705,9 @@ class ErrorOverlay extends HTMLElement {
                         String(s || "")
                             .replaceAll("&", "&amp;")
                             .replaceAll("<", "&lt;")
-                            .replaceAll(">", "&gt;");
+                            .replaceAll(">", "&gt;")
+                            .replaceAll("\"", "&quot;")
+                            .replaceAll("'", "&#39;");
 
                     const normalizePath = (path) => {
                         if (RE_HTTP_LINK.test(path)) {

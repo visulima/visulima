@@ -453,6 +453,31 @@ describe("errorOverlayPlugin ws.send interception", () => {
         expect(sent[0]).toEqual({ foo: "bar", type: "update" });
     });
 
+    it("preserves send ordering when an error payload is enhanced asynchronously", async () => {
+        expect.assertions(2);
+
+        const plugin = getPlugin();
+        const { sent, server } = createMockServer();
+
+        (plugin.configureServer as any)(server);
+
+        const errorPayload: any = {
+            err: { message: "boom", stack: "Error: boom\n    at /tmp/project-root/src/App.ts:3:1" },
+            type: "error",
+        };
+        const updatePayload = { type: "update", updates: [] };
+
+        // Fire the async (slow) error send first, then the synchronous update, without awaiting between.
+        const errorSend = server.ws.send(errorPayload);
+        const updateSend = server.ws.send(updatePayload);
+
+        await Promise.all([errorSend, updateSend]);
+
+        // The enhanced error must still reach the client before the later update.
+        expect(sent[0]?.type).toBe("error");
+        expect(sent[1]).toEqual({ type: "update", updates: [] });
+    });
+
     it("deduplicates identical errors within the TTL window", async () => {
         expect.assertions(1);
 
