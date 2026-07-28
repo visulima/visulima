@@ -111,11 +111,14 @@ describe(webhookProvider, () => {
         expect((result.error as Error).message).toContain("500");
     });
 
-    it("throws RequiredOptionError when no url is configured", async () => {
-        expect.assertions(1);
+    it("returns a RequiredOptionError failure when no url is configured", async () => {
+        expect.assertions(2);
 
         const provider = webhookProvider();
 
-        await expect(provider.send({ body: {} })).rejects.toBeInstanceOf(RequiredOptionError);
+        const result = await provider.send({ body: {} });
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBeInstanceOf(RequiredOptionError);
     });
 });

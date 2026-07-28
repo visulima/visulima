@@ -30,6 +30,15 @@ const getCleanClone = (input: unknown): any => {
 
     const Constructor = input.constructor;
 
+    // Null-prototype objects (`Object.create(null)`) have `undefined` as their
+    // constructor, and a plain object can carry an own `constructor` property whose
+    // value is any primitive. Both cases must not reach `isNativeConstructor` (which
+    // stringifies the constructor) — reproduce the prototype instead.
+    if (typeof Constructor !== "function") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return Object.create(Object.getPrototypeOf(input));
+    }
+
     if (Constructor === Object) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return input === Object.prototype ? {} : Object.create(Object.getPrototypeOf(input));
