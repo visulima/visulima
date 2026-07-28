@@ -1,4 +1,4 @@
-import { blue, green, red, yellow } from "@visulima/colorize";
+import { bgRed, blue, green, red, yellow } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { boxen } from "../../src";
@@ -36,6 +36,21 @@ describe("border option", () => {
         });
 
         expect(box).toMatchSnapshot();
+    });
+
+    it("keeps the left margin outside the colorized border on every row", () => {
+        expect.assertions(1);
+
+        const box = boxen("foo", {
+            borderColor: (border: string) => bgRed(border),
+            margin: { left: 2 },
+        });
+
+        // The two margin spaces must precede the colorized border on every row —
+        // corner rows included — so the background color never bleeds into the margin.
+        const everyRowHasPlainMargin = box.split("\n").every((line) => line.startsWith("  "));
+
+        expect(everyRowHasPlainMargin).toBe(true);
     });
 
     it("throws on unexpected borderColor", () => {

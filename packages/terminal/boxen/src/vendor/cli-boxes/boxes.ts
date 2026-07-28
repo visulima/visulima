@@ -49,6 +49,16 @@ export default {
         topLeft: "╒",
         topRight: "╕",
     },
+    none: {
+        bottom: "",
+        bottomLeft: "",
+        bottomRight: "",
+        left: "",
+        right: "",
+        top: "",
+        topLeft: "",
+        topRight: "",
+    },
     round: {
         bottom: "─",
         bottomLeft: "╰",
