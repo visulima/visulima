@@ -29,7 +29,7 @@ const inspectMap: InspectType<Map<unknown, unknown>> = (
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 7;
 
-    let returnValue = inspectList([...map.entries()], map, options, inspect, inspectMapEntry, indent ? INDENT_SEPARATOR : ", ");
+    let returnValue = inspectList([...map.entries()], map, options, inspect, inspectMapEntry, indent ? INDENT_SEPARATOR : ", ", options.maxArrayLength);
 
     if (indent) {
         returnValue = indentedJoin(returnValue, indent);
