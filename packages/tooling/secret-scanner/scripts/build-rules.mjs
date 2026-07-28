@@ -18,6 +18,22 @@ const readText = (path) => readFileSync(path, "utf8");
 const readToml = (path) => parseTOML(readText(path));
 const readJson = (path) => JSON.parse(readText(path));
 
+// Canonicalise the allowlist form of a config onto the plural `allowlists` array.
+// Gitleaks configs may carry either a singular `[allowlist]` table or a plural
+// `[[allowlists]]` array; folding both here keeps every downstream consumer from
+// having to special-case the singular form.
+const collectAllowlists = (source) => {
+    if (Array.isArray(source?.allowlists)) {
+        return source.allowlists;
+    }
+
+    if (source?.allowlist) {
+        return [source.allowlist];
+    }
+
+    return [];
+};
+
 // Merge `overlay` into `base`. Rules with matching `id` in the overlay replace the
 // bundled definition; allowlists are appended (gitleaks supports multiple [[allowlists]]).
 // Kept tiny on purpose — the runtime merger in `src/config-loader.ts` does the same
@@ -31,17 +47,6 @@ const mergeOverlay = (base, overlay) => {
     const overlayRules = Array.isArray(overlay.rules) ? overlay.rules : [];
     const overlayIds = new Set(overlayRules.map((r) => r?.id).filter((id) => typeof id === "string"));
 
-    const collectAllowlists = (source) => {
-        if (Array.isArray(source.allowlists)) {
-            return source.allowlists;
-        }
-
-        if (source.allowlist) {
-            return [source.allowlist];
-        }
-
-        return [];
-    };
     const baseAllowlists = collectAllowlists(base);
     const overlayAllowlists = collectAllowlists(overlay);
 
@@ -489,7 +494,7 @@ if (kingfisherCore) {
 //    happens at scan time via span+priority, not here.
 if (kingfisherCore) {
     const ruleset = {
-        allowlists: gitleaksCore.allowlists,
+        allowlists: collectAllowlists(gitleaksCore),
         extend: gitleaksCore.extend,
         provenance: {
             sources: [gitleaksCore.provenance, kingfisherCore.provenance].filter(Boolean),

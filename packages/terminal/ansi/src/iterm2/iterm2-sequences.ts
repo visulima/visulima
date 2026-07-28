@@ -1,7 +1,6 @@
 /* eslint-disable no-secrets/no-secrets */
 /* eslint-disable max-classes-per-file */
-import { Buffer } from "node:buffer";
-
+import { encodeBase64Bytes } from "../utils/base64";
 import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
 
 /**
@@ -115,7 +114,7 @@ export class ITerm2File implements IITerm2Payload {
                 throw new Error("File size exceeds maximum limit of 10MB");
             }
 
-            this.fileProps.content = Buffer.from(fileData).toString("base64");
+            this.fileProps.content = encodeBase64Bytes(fileData);
 
             this.fileProps.size ??= fileData.byteLength;
 

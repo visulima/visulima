@@ -97,6 +97,83 @@ registry=https://custom.registry.com
 
         expect(config.authTokens.get("npm.myorg.com")).toBe("abc=def==");
     });
+
+    it("should expand ${ENV_VAR} references in auth tokens", () => {
+        expect.assertions(1);
+
+        const original = process.env.VIS_TEST_NPM_TOKEN;
+
+        process.env.VIS_TEST_NPM_TOKEN = "resolved-secret";
+
+        try {
+            const config = parseNpmrc("//npm.myorg.com/:_authToken=${VIS_TEST_NPM_TOKEN}");
+
+            expect(config.authTokens.get("npm.myorg.com")).toBe("resolved-secret");
+        } finally {
+            if (original === undefined) {
+                delete process.env.VIS_TEST_NPM_TOKEN;
+            } else {
+                process.env.VIS_TEST_NPM_TOKEN = original;
+            }
+        }
+    });
+
+    it("should drop auth tokens whose ${ENV_VAR} reference is unset", () => {
+        expect.assertions(2);
+
+        const original = process.env.VIS_TEST_MISSING_TOKEN;
+
+        delete process.env.VIS_TEST_MISSING_TOKEN;
+
+        try {
+            const config = parseNpmrc("//npm.myorg.com/:_authToken=${VIS_TEST_MISSING_TOKEN}");
+
+            expect(config.authTokens.has("npm.myorg.com")).toBe(false);
+            expect(config.authTokens.size).toBe(0);
+        } finally {
+            if (original !== undefined) {
+                process.env.VIS_TEST_MISSING_TOKEN = original;
+            }
+        }
+    });
+
+    it("should use the ${VAR:-default} fallback when the variable is unset", () => {
+        expect.assertions(1);
+
+        const original = process.env.VIS_TEST_UNSET_TOKEN;
+
+        delete process.env.VIS_TEST_UNSET_TOKEN;
+
+        try {
+            const config = parseNpmrc("//npm.myorg.com/:_authToken=${VIS_TEST_UNSET_TOKEN:-fallback-token}");
+
+            expect(config.authTokens.get("npm.myorg.com")).toBe("fallback-token");
+        } finally {
+            if (original !== undefined) {
+                process.env.VIS_TEST_UNSET_TOKEN = original;
+            }
+        }
+    });
+
+    it("should expand ${ENV_VAR} references in registry URLs", () => {
+        expect.assertions(1);
+
+        const original = process.env.VIS_TEST_REGISTRY_HOST;
+
+        process.env.VIS_TEST_REGISTRY_HOST = "npm.myorg.com";
+
+        try {
+            const config = parseNpmrc("@myorg:registry=https://${VIS_TEST_REGISTRY_HOST}/");
+
+            expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com/");
+        } finally {
+            if (original === undefined) {
+                delete process.env.VIS_TEST_REGISTRY_HOST;
+            } else {
+                process.env.VIS_TEST_REGISTRY_HOST = original;
+            }
+        }
+    });
 });
 
 describe(getRegistryForPackage, () => {

@@ -149,7 +149,7 @@ describe(confirm, () => {
         expect(transformer).toHaveBeenCalledWith(true);
     });
 
-    it("should resolve to the default value when SIGINT is received", async () => {
+    it("should resolve to false when SIGINT is received (default: false)", async () => {
         expect.assertions(2);
 
         const promise = confirm({ message: "Proceed?" });
@@ -158,6 +158,19 @@ describe(confirm, () => {
 
         state.sigintListener?.();
 
+        await expect(promise).resolves.toBe(false);
+    });
+
+    it("should resolve to false when SIGINT is received even with default: true", async () => {
+        expect.assertions(2);
+
+        const promise = confirm({ default: true, message: "Proceed?" });
+
+        expect(state.sigintListener).toBeTypeOf("function");
+
+        state.sigintListener?.();
+
+        // Ctrl+C aborts; it must never be treated as accepting the (installing) default.
         await expect(promise).resolves.toBe(false);
     });
 });
