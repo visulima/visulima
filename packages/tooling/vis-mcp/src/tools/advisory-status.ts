@@ -4,6 +4,7 @@ import * as z from "zod";
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okStructuredResponse } from "../response";
+import { isSafeOptionValue } from "../validation";
 
 const ecosystemSummarySchema = z.object({
     advisoryCount: z.number(),
@@ -49,6 +50,10 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
                 const args = ["advisories", "status", "--format", "json"];
 
                 if (input.db !== undefined) {
+                    if (!isSafeOptionValue(input.db)) {
+                        return errorResponse(new Error(`Invalid --db value "${input.db}". A leading "-" would be parsed as a CLI flag.`));
+                    }
+
                     args.push("--db", input.db);
                 }
 

@@ -75,17 +75,41 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
             }
 
             try {
-                const entries = await Promise.all(
-                    files.map(async (file): Promise<RunListEntry | undefined> => {
-                        const path = join(runsDirectory, file);
-
+                // Phase 1: stat every candidate (cheap — no file contents read),
+                // sort newest-first by mtime, and keep only the requested window.
+                // The result is capped at `limit`, so there's no point reading &
+                // parsing summaries that can never make the cut.
+                const stated = await Promise.all(
+                    files.map(async (file): Promise<{ file: string; modifiedMs: number } | undefined> => {
                         try {
-                            const [stats, raw] = await Promise.all([stat(path), readFile(path, "utf8")]);
+                            const stats = await stat(join(runsDirectory, file));
+
+                            return { file, modifiedMs: stats.mtimeMs };
+                        } catch {
+                            // Skip files that vanished / can't be stat'd rather than
+                            // failing the whole listing.
+                            return undefined;
+                        }
+                    }),
+                );
+
+                const newest = stated
+                    .filter((entry): entry is { file: string; modifiedMs: number } => entry !== undefined)
+                    // Newest first by file mtime — robust even when summaries omit
+                    // `startedAt`.
+                    .toSorted((a, b) => b.modifiedMs - a.modifiedMs)
+                    .slice(0, limit ?? 20);
+
+                // Phase 2: read + parse only the selected summaries.
+                const entries = await Promise.all(
+                    newest.map(async ({ file, modifiedMs }): Promise<RunListEntry | undefined> => {
+                        try {
+                            const raw = await readFile(join(runsDirectory, file), "utf8");
                             const summary = JSON.parse(raw) as RunSummaryShape;
 
                             return {
                                 failedTasks: summary.tasks?.filter((task) => task.status === "failure" || task.status === "failed").length,
-                                modifiedMs: stats.mtimeMs,
+                                modifiedMs,
                                 runId: summary.runId ?? file.replace(JSON_SUFFIX_PATTERN, ""),
                                 startedAt: summary.startedAt,
                                 status: deriveStatus(summary),
@@ -101,10 +125,6 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
 
                 const runs = entries
                     .filter((entry): entry is RunListEntry => entry !== undefined)
-                    // Newest first by file mtime — robust even when summaries omit
-                    // `startedAt`.
-                    .toSorted((a, b) => b.modifiedMs - a.modifiedMs)
-                    .slice(0, limit ?? 20)
                     .map((entry): Omit<RunListEntry, "modifiedMs"> => {
                         const { failedTasks, runId, startedAt, status, taskCount } = entry;
 

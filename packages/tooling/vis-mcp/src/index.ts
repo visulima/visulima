@@ -17,4 +17,4 @@ export { registerListProjects } from "./tools/list-projects";
 export { registerListRuns } from "./tools/list-runs";
 export { registerListTargets } from "./tools/list-targets";
 export { registerListTemplates } from "./tools/list-templates";
-export { isSafePositional, isValidRunId, isValidTaskId } from "./validation";
+export { isSafeOptionValue, isSafePositional, isValidRunId, isValidTaskId } from "./validation";
