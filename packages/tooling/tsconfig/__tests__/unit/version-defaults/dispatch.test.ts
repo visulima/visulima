@@ -62,6 +62,39 @@ describe(applyVersionDefaults, () => {
         expect(compilerOptions.strict).toBe(true);
     });
 
+    it.each([
+        ["6.0.0", "nodenext", { module: "nodenext", moduleResolution: "nodenext", target: "esnext" }],
+        ["6.0.0", "node16", { module: "node16", moduleResolution: "node16", target: "es2022" }],
+        ["7.0.0", "nodenext", { module: "nodenext", moduleResolution: "nodenext", target: "esnext" }],
+        ["7.0.0", "node16", { module: "node16", moduleResolution: "node16", target: "es2022" }],
+    ])("derives moduleResolution/target from a user-set node-style module at TS %s (module: %s)", (version, module, expected) => {
+        expect.assertions(3);
+
+        const compilerOptions: TsConfigJson.CompilerOptions = { module: module as TsConfigJson.CompilerOptions.Module };
+
+        applyVersionDefaults(compilerOptions, version);
+
+        // Node-style modules pin moduleResolution/target to what tsc derives —
+        // never the es2025 + bundler combo tsc rejects (TS5095).
+        expect(compilerOptions.module).toBe(expected.module);
+        expect(compilerOptions.moduleResolution).toBe(expected.moduleResolution);
+        expect(compilerOptions.target).toBe(expected.target);
+    });
+
+    it.each([["6.0.0"], ["7.0.0"]])("derives module/target from a user-set node-style moduleResolution at TS %s", (version) => {
+        expect.assertions(3);
+
+        const compilerOptions: TsConfigJson.CompilerOptions = { moduleResolution: "nodenext" };
+
+        applyVersionDefaults(compilerOptions, version);
+
+        // The mirror case: a user-set nodenext resolution implies module=nodenext
+        // (not the default es2022/esnext) and target=esnext.
+        expect(compilerOptions.moduleResolution).toBe("nodenext");
+        expect(compilerOptions.module).toBe("nodenext");
+        expect(compilerOptions.target).toBe("esnext");
+    });
+
     it("no-ops on unparseable version strings", () => {
         expect.assertions(1);
 

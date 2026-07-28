@@ -6,6 +6,8 @@
  */
 import type { TsConfigJson } from "type-fest";
 
+import { applyModuleAndTargetDefaults } from "./shared";
+
 /**
  * TypeScript 7.0 default-flips.
  *
@@ -19,20 +21,11 @@ import type { TsConfigJson } from "type-fest";
  */
 // eslint-disable-next-line import/prefer-default-export
 export const applyV7Defaults = (compilerOptions: TsConfigJson.CompilerOptions, userSet: ReadonlySet<string>): void => {
-    // module: v7 defaults to `esnext` unconditionally. In v6 this was *derived*
-    // as `es2022` from the default `target: es2025`; v7 pins it to `esnext`.
-    if (!userSet.has("module")) {
-        // eslint-disable-next-line no-param-reassign
-        compilerOptions.module = "esnext";
-    }
-
-    // moduleResolution: `esnext` is a non-Node module, so v7 still derives
-    // `bundler`. Restated here so applying v7 in isolation stays consistent
-    // with the module override above.
-    if (!userSet.has("moduleResolution")) {
-        // eslint-disable-next-line no-param-reassign
-        compilerOptions.moduleResolution = "bundler";
-    }
+    // module: v7 defaults to `esnext` (v6 derived `es2022`); moduleResolution
+    // stays `bundler` for the non-Node default. A user-set Node-style module (or
+    // moduleResolution) still pins both, matching what `tsc` derives. `target`
+    // is left to the cumulative v6 pass, so it is not defaulted here again.
+    applyModuleAndTargetDefaults(compilerOptions, userSet, { module: "esnext" });
 
     // stableTypeOrdering: new in v7, defaults to true and cannot be disabled.
     // type-fest does not model this option yet; cast through a local shape.
