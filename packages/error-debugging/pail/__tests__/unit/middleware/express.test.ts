@@ -171,6 +171,41 @@ describe("express middleware", () => {
         expect(data.path).toBe("/from-url");
     });
 
+    it("should strip the query string from the logged path", () => {
+        expect.assertions(1);
+
+        const pail = createMockPail();
+        const middleware = pailMiddleware({ pail });
+        const request = createMockRequest({ originalUrl: "/api/users?token=secret&q=abc", path: "/api/users" });
+        const response = createMockResponse();
+
+        middleware(request, response, () => {});
+
+        const data = (request.log as { getData: () => unknown }).getData() as Record<string, unknown>;
+
+        expect(data.path).toBe("/api/users");
+    });
+
+    it("should exclude routes even when a query string is present", () => {
+        expect.assertions(2);
+
+        const pail = createMockPail();
+        const consoleSpy = vi.spyOn(console, "log");
+        const middleware = pailMiddleware({ exclude: ["/health"], pail });
+        const request = createMockRequest({ originalUrl: "/health?probe=1", path: "/health" });
+        const response = createMockResponse();
+        let nextCalled = false;
+
+        middleware(request, response, () => {
+            nextCalled = true;
+        });
+
+        response.trigger("finish");
+
+        expect(nextCalled).toBe(true);
+        expect(consoleSpy).not.toHaveBeenCalled();
+    });
+
     it("should fall back to '/' when neither originalUrl nor url is set", () => {
         expect.assertions(1);
 
