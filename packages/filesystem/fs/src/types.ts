@@ -294,7 +294,9 @@ export type WriteFileOptions = {
     encoding?: BufferEncoding | null;
 
     /**
-     * The flag used to write the file. Default: `w`
+     * The flag used to write the file. Append flags (containing `a`) concatenate
+     * the new contents onto the existing file; exclusive flags (containing `x`)
+     * throw an `AlreadyExistsError` when the file already exists. Default: `w`
      */
     flag?: string;
 

@@ -1,3 +1,4 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
@@ -443,6 +444,42 @@ describe.each([
         }
 
         expect(foundPath).toStrictEqual(absolute.packageJson);
+    });
+
+    it("should find a match located exactly in the stopAt directory", async () => {
+        expect.assertions(1);
+
+        const target = join(tempDir, testName.packageJson);
+
+        writeFileSync(target, "{}");
+
+        let foundPath = function_(testName.packageJson, { cwd: tempDir, stopAt: tempDir });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(target);
+    });
+
+    it("should find a match located in the stopAt ancestor directory", async () => {
+        expect.assertions(1);
+
+        const target = join(tempDir, testName.packageJson);
+        const nested = join(tempDir, "a", "b");
+
+        writeFileSync(target, "{}");
+        mkdirSync(nested, { recursive: true });
+
+        let foundPath = function_(testName.packageJson, { cwd: nested, stopAt: tempDir });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "findUp") {
+            foundPath = await foundPath;
+        }
+
+        expect(foundPath).toStrictEqual(target);
     });
 
     it("should should stop early if FIND_UP_STOP in matcher is return", async () => {

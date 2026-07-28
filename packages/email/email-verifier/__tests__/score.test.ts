@@ -45,6 +45,16 @@ describe("scoreReport state derivation", () => {
         expect(result.reason).toBe("no_mx_records");
     });
 
+    it("treats a transient DNS failure as unknown, not undeliverable", () => {
+        expect.assertions(3);
+
+        const result = scoreReport(baseInput({ domain: { deferred: true, records: [], resolvedVia: "none", valid: false }, smtp: undefined }));
+
+        expect(result.state).toBe("unknown");
+        expect(result.reason).toBe("dns_error");
+        expect(result.score).toBeGreaterThan(0);
+    });
+
     it("returns deliverable for an accepted mailbox", () => {
         expect.assertions(3);
 

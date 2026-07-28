@@ -76,6 +76,19 @@ describe("verifyEmail (online)", () => {
         });
     });
 
+    it("normalizes surrounding whitespace and still runs the network checks", async () => {
+        expect.assertions(4);
+
+        const report = await verifyEmail("  john.doe@gmail.com  ");
+
+        // A padded-but-valid address must not be rejected as bad syntax, and the
+        // normalized address must drive every downstream check.
+        expect(report.syntaxValid).toBe(true);
+        expect(report.email).toBe("john.doe@gmail.com");
+        expect(report.smtp?.valid).toBe(true);
+        expect(report.state).not.toBe("undeliverable");
+    });
+
     it("skips the SMTP probe when checkSmtp is false but still classifies the provider", async () => {
         expect.assertions(4);
 
