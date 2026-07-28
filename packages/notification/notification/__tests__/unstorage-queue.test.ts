@@ -41,6 +41,30 @@ describe("unstorageQueue", () => {
         await expect(queue.reserve()).resolves.toBeUndefined();
     });
 
+    it("does not lose jobs enqueued concurrently", async () => {
+        expect.assertions(1);
+
+        await Promise.all([
+            queue.enqueue({ sms: { text: "1", to: "+1" } }),
+            queue.enqueue({ sms: { text: "2", to: "+2" } }),
+            queue.enqueue({ sms: { text: "3", to: "+3" } }),
+        ]);
+
+        await expect(queue.size()).resolves.toBe(3);
+    });
+
+    it("marks a reserved job so a second reserve skips it", async () => {
+        expect.assertions(2);
+
+        await queue.enqueue(message);
+
+        const first = await queue.reserve();
+
+        expect(first?.message).toStrictEqual(message);
+
+        await expect(queue.reserve()).resolves.toBeUndefined();
+    });
+
     it("increments attempts on each reserve", async () => {
         expect.assertions(2);
 

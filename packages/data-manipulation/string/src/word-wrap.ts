@@ -119,7 +119,11 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     let index = 0;
 
     while (index < string.length) {
-        const char = string[index] as string;
+        // Read a full code point (not a lone UTF-16 unit) so astral characters
+        // such as emoji are never split across a wrap boundary into surrogates.
+        const codePoint = string.codePointAt(index) as number;
+        const char = String.fromCodePoint(codePoint);
+        const charLength = char.length;
 
         // Handle escape sequences
         if (ESCAPES.has(char)) {
@@ -157,7 +161,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         // Skip zero-width characters
         if (charWidth === 0) {
             currentLine += char;
-            index += 1;
+            index += charLength;
 
             continue;
         }
@@ -190,7 +194,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         currentWidth += charWidth;
 
         // If we've reached exactly the width limit, wrap
-        if (currentWidth === width && index < string.length - 1) {
+        if (currentWidth === width && index + charLength < string.length) {
             rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
 
             // Start a new line with active ANSI codes
@@ -198,8 +202,8 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             currentWidth = getStringWidth(currentLine); // Recalculate width of ANSI codes
 
             // Handle spaces after a wrap at exact width
-            if (index + 1 < string.length && string[index + 1] === " " && trim) {
-                index += 1;
+            if (index + charLength < string.length && string[index + charLength] === " " && trim) {
+                index += charLength;
 
                 while (index < string.length && string[index] === " ") {
                     index += 1;
@@ -209,7 +213,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             }
         }
 
-        index += 1;
+        index += charLength;
     }
 
     // Add the final line if not empty
