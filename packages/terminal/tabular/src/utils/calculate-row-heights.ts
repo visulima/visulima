@@ -44,6 +44,13 @@ const calculateRowHeights = (
         return [];
     }
 
+    // Width of a single internal vertical join a spanning cell renders over
+    // (0 when borders are hidden or the style has a 0-width vertical join).
+    const internalJoinWidth = options.showBorders ? options.border?.bodyJoin.width ?? 0 : 0;
+    // Whether a horizontal border line is actually emitted between rows. When it
+    // is not, row-spanning cells cannot rely on a border line carrying content.
+    const hasMiddleBorderLine = options.showBorders && (options.border?.joinBody.width ?? 0) > 0;
+
     // Determine the maximum row index occupied by any cell.
     let maxRowIndex = gridLayout.length - 1;
 
@@ -80,7 +87,7 @@ const calculateRowHeights = (
             // Process only if it's the start of a SINGLE-ROW cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) === 1) {
                 const colSpan = cell.colSpan ?? 1;
-                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan);
+                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan, internalJoinWidth);
                 const processedLines = alignCellContent(cell, currentCellTotalWidth);
                 const requiredTotalHeight = processedLines.length;
 
@@ -126,9 +133,13 @@ const calculateRowHeights = (
             // Process only if it's the START of a SPANNING cell
             if (cell && findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) === rowIndex && (cell.rowSpan ?? 1) > 1) {
                 const colSpan = cell.colSpan ?? 1;
-                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan);
+                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, colIndex, colSpan, internalJoinWidth);
                 const processedLines = alignCellContent(cell, currentCellTotalWidth);
-                const requiredTotalHeight = processedLines.length - 1;
+                // A spanning cell absorbs one content line into each rendered internal
+                // horizontal border. When no middle border line is emitted (e.g. NO_BORDER
+                // or a 0-width joinBody), no line is absorbed, so the full content height
+                // must be allocated to the row segments.
+                const requiredTotalHeight = hasMiddleBorderLine ? processedLines.length - 1 : processedLines.length;
 
                 const verticalPosition = determineCellVerticalPosition(gridLayout, rowIndex, colIndex, cell);
                 // Use verticalPosition determined start/end rows
