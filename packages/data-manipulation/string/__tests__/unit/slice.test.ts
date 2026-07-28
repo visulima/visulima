@@ -229,14 +229,14 @@ describe(slice, () => {
         // Incomplete sequence - should preserve it
         expect(slice("\u001B[test", 0, 4)).toEqualAnsi("\u001B[test");
 
-        // Invalid characters in sequence - should preserve the sequence
-        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("\u001B[abc31mtest\u001B[39m");
+        // Invalid characters in sequence - the malformed introducer is not a real ANSI code, so its bytes are visible text and the first 4 columns are kept.
+        expect(slice("\u001B[abc31mtest\u001B[39m", 0, 4)).toEqualAnsi("\u001B[abc");
 
         // Missing terminator - should preserve the sequence
         expect(slice("\u001B[31test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31test\u001B[39m");
 
         // Multiple invalid sequences - should preserve all sequences
-        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31m\u001B[test\u001B[39m");
+        expect(slice("\u001B[31m\u001B[test\u001B[39m", 0, 4)).toEqualAnsi("\u001B[31m\u001B[tes\u001B[39m");
     });
 
     it("should handle multiple consecutive ANSI codes correctly", () => {
@@ -613,9 +613,20 @@ describe(slice, () => {
 
                 const mixedColoredText = `${red("English")}${green("日本語")}${yellow("한국어")}${blue("العربية")}`;
 
-                expect(slice(mixedColoredText, 0, 10)).toEqualAnsi(red("English") + green("日本語"));
+                // Full-width characters count as 2 columns, consistent with the
+                // unstyled slice above: English (7) + 日 (2) fills the 0..10 range.
+                expect(slice(mixedColoredText, 0, 10)).toEqualAnsi(red("English") + green("日"));
 
-                expect(slice(mixedColoredText, 7, 15)).toEqualAnsi(green("日本語") + yellow("한국어") + blue("ال"));
+                expect(slice(mixedColoredText, 7, 15)).toEqualAnsi(green("日本語") + yellow("한"));
+            });
+
+            it("should measure styled full-width characters with the same width as unstyled slice", () => {
+                expect.assertions(2);
+
+                // Styled and unstyled slices must use the same width accounting: a
+                // 4-column budget over three full-width chars keeps exactly two.
+                expect(slice("古池や", 0, 4)).toEqualAnsi("古池");
+                expect(slice(red("古池や"), 0, 4)).toEqualAnsi(red("古池"));
             });
         });
 

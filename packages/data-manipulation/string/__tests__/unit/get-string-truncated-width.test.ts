@@ -34,6 +34,21 @@ describe("charWidthCache config isolation", () => {
     }, 20_000);
 });
 
+describe("division-by-zero guard for zero per-character widths", () => {
+    it("returns a valid non-negative index when a control character follows text past the ellipsis limit", () => {
+        expect.assertions(3);
+
+        // controlWidth defaults to 0. Once width already exceeds truncationLimit,
+        // the control branch used to divide (truncationLimit - width) by 0, yielding
+        // index = -Infinity and corrupting truncation output.
+        const result = getStringTruncatedWidth("abcdefghijk", { ellipsis: "...", limit: 10 });
+
+        expect(result.truncated).toBe(true);
+        expect(result.index).toBe(7);
+        expect(getTruncated("abcdefghijk", { ellipsis: "...", limit: 10 })).toBe("abcdefg...");
+    });
+});
+
 describe(getStringTruncatedWidth, () => {
     describe("calculating the raw result", () => {
         it("supports strings that do not need to be truncated", () => {

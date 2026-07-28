@@ -24,6 +24,19 @@ describe(camelCase, () => {
             expect(customCache.size()).toBe(1);
         });
 
+        it("should not return a stale cached result when emoji/ansi options differ", () => {
+            expect.assertions(3);
+
+            // The cache key must include stripEmoji/stripAnsi/handleEmoji/handleAnsi,
+            // otherwise a second call with different flags reuses the first result.
+            const customCache = new LRUCache<string, string>(50);
+            const input = "Foo🚀Bar";
+
+            expect(camelCase(input, { cache: true, cacheStore: customCache, stripEmoji: false })).toBe("foo🚀bar");
+            expect(camelCase(input, { cache: true, cacheStore: customCache, stripEmoji: true })).toBe("fooBar");
+            expect(camelCase(input, { cache: true, cacheStore: customCache, handleEmoji: true })).toBe("foo🚀Bar");
+        });
+
         it("should not use cache when disabled", () => {
             expect.assertions(4);
 
