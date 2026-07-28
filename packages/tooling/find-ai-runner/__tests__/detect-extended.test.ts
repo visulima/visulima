@@ -121,7 +121,7 @@ describe("buildCliArgs with empty model overrides", () => {
 
         const args = buildCliArgs("opencode", "do it", { model: "" });
 
-        expect(args).toStrictEqual(["run", "do it"]);
+        expect(args).toStrictEqual(["run", "--", "do it"]);
         expect(args).not.toContain("-m");
     });
 
