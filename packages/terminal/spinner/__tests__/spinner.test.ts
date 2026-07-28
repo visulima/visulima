@@ -256,6 +256,24 @@ describe("spinner", () => {
     });
 
     describe("elapsedTime", () => {
+        it("should return 0 before the spinner is started", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner();
+
+            expect(spinner.elapsedTime).toBe(0);
+        });
+
+        it("should return 0 for a verbose:false spinner that never sets a start time", () => {
+            expect.assertions(1);
+
+            const spinner = new Spinner({ verbose: false });
+
+            spinner.start("Loading...");
+
+            expect(spinner.elapsedTime).toBe(0);
+        });
+
         it("should track elapsed time", () => {
             expect.assertions(1);
 
