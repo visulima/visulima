@@ -5,6 +5,13 @@ on:
         - cron: "37 14 * * 6"
     push:
         branches: ["main"]
+
+# Only the newest main scan is meaningful — it is what gets published — so a
+# burst of merges should collapse to one run instead of queueing one per commit.
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
 permissions: {}
 jobs:
     scorecards:
