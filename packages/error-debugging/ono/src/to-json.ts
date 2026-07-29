@@ -1,11 +1,9 @@
 import type { Trace } from "@visulima/error";
 import { parseStacktrace } from "@visulima/error";
 import { getErrorCauses } from "@visulima/error/error";
-import type { Solution, SolutionError, SolutionFinder } from "@visulima/error/solution";
-import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
+import type { SolutionFinder } from "@visulima/error/solution";
 
-import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
-import getFileSource from "../../../../shared/utils/get-file-source";
+import findSolution from "./utils/find-solution";
 import runtime from "./utils/runtimes";
 
 /** A single parsed stack frame in the structured error payload. */
@@ -56,36 +54,6 @@ const toFrame = (trace: Trace): OnoJsonFrame => {
         raw: trace.raw,
         type: trace.type,
     };
-};
-
-const findSolution = async (error: Error | SolutionError, solutionFinders: SolutionFinder[]): Promise<Solution | undefined> => {
-    const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder, errorHintFinder];
-    const firstTrace: Trace | undefined = parseStacktrace(error, { frameLimit: 1 })[0];
-
-    for (const handler of allFinders.toSorted((a, b) => b.priority - a.priority)) {
-        if (typeof handler.handle !== "function") {
-            continue;
-        }
-
-        try {
-            // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
-            const hint = await handler.handle(error, {
-                file: firstTrace?.file ?? "",
-                language: findLanguageBasedOnExtension(firstTrace?.file ?? ""),
-                line: firstTrace?.line ?? 0,
-                // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
-                snippet: firstTrace?.file ? await getFileSource(firstTrace.file) : "",
-            });
-
-            if (hint) {
-                return hint;
-            }
-        } catch {
-            continue;
-        }
-    }
-
-    return undefined;
 };
 
 /**

@@ -29,51 +29,6 @@ const DOM_READY_SCRIPT = `
     }
 `;
 
-const KEYBOARD_SHORTCUTS_SCRIPT = `
-    subscribeToDOMContentLoaded(() => {
-        // Global keyboard shortcut for ? and Shift+/ to open shortcuts
-        if (!window.__onoShortcutKeyBound) {
-            window.__onoShortcutKeyBound = true;
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-                    e.preventDefault();
-
-                    // Find all shortcuts buttons
-                    const shortcutsButtons = document.querySelectorAll('button[aria-label="Open keyboard shortcuts"]');
-
-                    if (shortcutsButtons.length > 0) {
-                        // Find the first visible button in the viewport
-                        let visibleButton = null;
-
-                        for (const button of shortcutsButtons) {
-                            const rect = button.getBoundingClientRect();
-                            const isVisible = rect.top >= 0 && rect.left >= 0 &&
-                                            rect.bottom <= window.innerHeight &&
-                                            rect.right <= window.innerWidth;
-
-                            if (isVisible) {
-                                visibleButton = button;
-                                break;
-                            }
-                        }
-
-                        // If no visible button found, use the first one
-                        if (!visibleButton) {
-                            visibleButton = shortcutsButtons[0];
-                        }
-
-                        // Trigger the button
-                        if (visibleButton) {
-                            visibleButton.click();
-                        }
-                    }
-                }
-            });
-        }
-    });
-`;
-
 // Generate script tag with optional nonce
 const createScriptTag = (content: string, nonce?: string): string => {
     const nonceAttribute = nonce ? ` nonce="${escapeHtml(nonce)}"` : "";
@@ -135,7 +90,6 @@ const layout = ({
             .filter(Boolean)
             .map((script) => createScriptTag(script, safeCspNonce))
             .join("\n")}
-        ${createScriptTag(KEYBOARD_SHORTCUTS_SCRIPT.trim(), safeCspNonce)}
     </head>
     <body>
         <div id="visulima-ono-container" class="bg-[var(--ono-bg)] text-[var(--ono-text)]">

@@ -4,7 +4,7 @@ import copyButton from "../src/error-inspector/components/copy-button";
 import copyDropdown from "../src/error-inspector/components/copy-dropdown";
 import { headerTabs } from "../src/error-inspector/components/header-tabs";
 import rawStackTrace from "../src/error-inspector/components/raw-stack-trace";
-import shortcutsButton from "../src/error-inspector/components/shortcuts-button";
+import shortcutsButton, { shortcutsModalHtml } from "../src/error-inspector/components/shortcuts-button";
 import tooltip from "../src/error-inspector/components/tooltip";
 
 describe("components", () => {
@@ -174,14 +174,16 @@ describe("components", () => {
 
     describe(shortcutsButton, () => {
         it("should generate shortcuts button HTML", () => {
-            expect.assertions(5);
+            expect.assertions(6);
 
             const { html, script } = shortcutsButton();
 
             expect(html).toContain("type=\"button\"");
             expect(html).toContain("aria-label=\"Open keyboard shortcuts\"");
             expect(html).toContain("data-ono-action=\"open-shortcuts-modal\"");
-            expect(html).toContain("role=\"dialog\"");
+            // The dialog markup lives in the shared modal, not the button, so a single id renders per page.
+            expect(html).not.toContain("role=\"dialog\"");
+            expect(shortcutsModalHtml).toContain("role=\"dialog\"");
             expect(script).toContain("bindShortcutsModal");
         });
     });

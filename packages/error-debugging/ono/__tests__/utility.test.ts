@@ -185,6 +185,25 @@ describe("utilities", () => {
 
                 expect(result3).toBe("#");
             });
+
+            it("should escape quotes so an allowed URL cannot break out of the surrounding attribute", () => {
+                expect.assertions(4);
+
+                // A relative URL that passes the "/" prefix check but embeds a double quote to break out of
+                // href="…" and inject an event handler.
+                const breakoutUrl = "/x\" autofocus onfocus=\"alert(1)";
+                const result = sanitizeUrlAttribute(breakoutUrl);
+
+                expect(result).not.toContain("\"");
+                expect(result).toContain("&quot;");
+
+                // Single quotes are escaped too, for single-quoted attribute contexts.
+                const singleQuoteUrl = "/x' autofocus onfocus='alert(1)";
+                const singleQuoteResult = sanitizeUrlAttribute(singleQuoteUrl);
+
+                expect(singleQuoteResult).not.toContain("'");
+                expect(singleQuoteResult).toContain("&#39;");
+            });
         });
 
         describe("toString object handling", () => {

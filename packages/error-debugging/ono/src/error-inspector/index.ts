@@ -4,6 +4,7 @@ import type { SolutionError, SolutionFinder } from "@visulima/error/solution";
 import headerBar from "./components/header-bar";
 import type { HeaderTab } from "./components/header-tabs";
 import { headerTabs } from "./components/header-tabs";
+import { shortcutsModalHtml } from "./components/shortcuts-button";
 import inlineCss from "./index.css";
 import layout from "./layout";
 import createStackPage from "./page/stack";
@@ -196,66 +197,6 @@ ready(function() {
 });
 `;
 
-const shortcutsModalScript = `
-// Shortcuts modal functionality
-
-// Make modal functions globally available immediately
-let originalBodyOverflow = '';
-
-window.showShortcutsModal = function() {
-  const modal = document.getElementById('ono-shortcuts-modal');
-  if (modal) {
-    // Prevent body scrolling
-    if (!originalBodyOverflow) {
-      originalBodyOverflow = document.body.style.overflow || '';
-    }
-    document.body.style.overflow = 'hidden';
-
-    removeClass(modal, 'hidden');
-    addClass(modal, 'flex');
-    modal.focus();
-  }
-};
-
-window.hideShortcutsModal = function() {
-  const modal = document.getElementById('ono-shortcuts-modal');
-  if (modal) {
-    addClass(modal, 'hidden');
-    removeClass(modal, 'flex');
-
-    // Restore body scrolling
-    document.body.style.overflow = originalBodyOverflow;
-    originalBodyOverflow = '';
-  }
-};
-
-// Handle keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-  if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-    e.preventDefault();
-    window.showShortcutsModal();
-  }
-  if (e.key === 'Escape') {
-    const modal = document.getElementById('ono-shortcuts-modal');
-    if (modal && !hasClass(modal, 'hidden')) {
-      window.hideShortcutsModal();
-    }
-  }
-});
-
-// Close modal when clicking outside
-document.addEventListener('click', function(e) {
-  const modal = document.getElementById('ono-shortcuts-modal');
-  if (modal && e.target === modal && !hasClass(modal, 'hidden')) {
-    window.hideShortcutsModal();
-  }
-});
-
-ready(function() {
-  // Shortcuts modal initialization complete
-});
-`;
-
 // eslint-disable-next-line no-secrets/no-secrets -- inlined client script, not a secret
 const copyButtonScript = `
 // Handle copy buttons — reuses the global copyToClipboard/showCopySuccess defined in copyDropdownScript
@@ -323,6 +264,10 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         );
     });
 
+    // Render the keyboard-shortcuts dialog exactly once so the document holds a single `id="ono-shortcuts-modal"`
+    // (the header bar and sticky header only emit the button that opens it).
+    htmlParts.push(shortcutsModalHtml);
+
     return layout({
         content: htmlParts.join("").trim(),
         cspNonce: options.cspNonce,
@@ -332,7 +277,6 @@ const template = async (error: ErrorType, solutionFinders: SolutionFinder[] = []
         scripts: [
             domUtilitiesScript,
             copyDropdownScript,
-            shortcutsModalScript,
             copyButtonScript,
             headerTabsResult.script,
             headerBarResult.script,
