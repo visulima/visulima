@@ -1536,7 +1536,12 @@ export default class Ink {
             // backbufferOutput sits above the live output for this frame only;
             // it is deliberately excluded from this.fullStaticOutput so it is
             // not replayed (and duplicated) on subsequent clear/redraw cycles.
-            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + backbufferOutput + output);
+            // Write `outputToRender`, not `output`: log.sync() below derives its
+            // line count from `outputToRender`, so emitting the un-terminated
+            // `output` here would leave the log believing the live region is one
+            // row taller than it is, and the next clear() would erase the bottom
+            // line of the static block above it. See vadimdemedes/ink#974.
+            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + backbufferOutput + outputToRender);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;
