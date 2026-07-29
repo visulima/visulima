@@ -6,6 +6,13 @@ on:
         branches: ["main", "alpha", "next", "beta"]
     schedule:
         - cron: "0 0 * * 1"
+
+# Supersede stale pull-request scans, but let push and scheduled scans run to
+# completion: their SARIF upload is what feeds the security alerts.
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: "${{ github.event_name == 'pull_request' }}"
+
 permissions: {}
 jobs:
     codeql:

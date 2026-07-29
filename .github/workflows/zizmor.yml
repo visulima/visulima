@@ -4,6 +4,13 @@ on:
         branches: ["main", "alpha", "next", "beta"]
     pull_request:
         branches: ["main", "alpha", "next", "beta"]
+
+# Supersede stale pull-request scans, but let push scans run to completion:
+# their SARIF upload is what feeds the security alerts.
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: "${{ github.event_name == 'pull_request' }}"
+
 permissions: {}
 jobs:
     zizmor:
