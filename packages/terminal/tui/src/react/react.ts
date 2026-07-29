@@ -7,7 +7,7 @@ import { createInlineLoop, InputParser, terminalSize, TuiApp } from "../core/ind
 import { FocusProvider, useFocusManager } from "./focus";
 import { TuiContext, useInput } from "./hooks";
 import { LayoutNode } from "./layout";
-import { setOnAfterCommit, TuiReconciler } from "./reconciler";
+import { registerAfterCommit, TuiReconciler, unregisterAfterCommit } from "./reconciler";
 import { renderTreeToBuffer } from "./renderer";
 
 // ─── Internal element creators ──────────────────────────────────────────────
@@ -124,7 +124,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     // firing reliably for timer-driven updates (setTimeout, setInterval, streaming).
     let pendingCommit = false;
 
-    setOnAfterCommit(() => {
+    registerAfterCommit(rootNode, () => {
         pendingCommit = true;
     });
 
@@ -147,6 +147,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
 
     const cleanup = () => {
         clearInterval(renderLoop);
+        unregisterAfterCommit(rootNode);
         // Unmount the React tree so effects/subscriptions are cleaned up,
         // then free the root Yoga node to avoid native memory leaks.
         TuiReconciler.updateContainer(null as any, container, null, () => {});
@@ -271,29 +272,32 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
 
     let pendingCommit = false;
 
-    setOnAfterCommit(() => {
+    registerAfterCommit(rootNode, () => {
         pendingCommit = true;
     });
-
-    const loop = createInlineLoop(
-        (buf, w, h) => {
-            rootNode.calculateLayout(w, h);
-            renderTreeToBuffer(rootNode, buf, w, h);
-            pendingCommit = false;
-        },
-        { ...options, fps: options?.maxFps ?? options?.fps ?? 60, rows },
-    );
-
-    // Ctrl+C → clean exit
-    input.on("exit", () => loop.stop());
 
     let resolveExit!: () => void;
     const exitPromise = new Promise<void>((r) => {
         resolveExit = r;
     });
 
-    // Flush buffered stdout/stderr after the inline region is gone
-    process.on("exit", () => {
+    // Teardown: unmount the React tree, free native memory, detach input, and
+    // resolve waitUntilExit — WITHOUT killing the host process. Runs exactly
+    // once, whether triggered by unmount(), app.quit(), or Ctrl+C.
+    let cleanedUp = false;
+    const cleanup = () => {
+        if (cleanedUp) {
+            return;
+        }
+
+        cleanedUp = true;
+
+        unregisterAfterCommit(rootNode);
+        TuiReconciler.updateContainer(null as any, container, null, () => {});
+        rootNode.destroy();
+        input.stop();
+
+        // Flush buffered stdout/stderr after the inline region is gone.
         if (stdoutLines.length > 0) {
             process.stdout.write(stdoutLines.join(""));
         }
@@ -303,7 +307,21 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
         }
 
         resolveExit();
-    });
+    };
+
+    const loop = createInlineLoop(
+        (buf, w, h) => {
+            rootNode.calculateLayout(w, h);
+            renderTreeToBuffer(rootNode, buf, w, h);
+            pendingCommit = false;
+        },
+        // onStop runs after the loop restores the terminal — hand control back
+        // to us so we can tear down React state instead of exiting the process.
+        { ...options, fps: options?.maxFps ?? options?.fps ?? 60, onStop: cleanup, rows },
+    );
+
+    // Ctrl+C → stop the loop, which triggers onStop (cleanup) — no process exit
+    input.on("exit", () => loop.stop());
 
     loop.start();
     // Start InputParser AFTER loop.start() so the loop's CPR handler
