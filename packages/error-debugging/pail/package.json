@@ -57,12 +57,6 @@
     ],
     "homepage": "https://visulima.com/packages/pail/",
     "bugs": "https://github.com/visulima/visulima/issues",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de",
-        "url": "https://danielbannert.com"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -78,27 +72,24 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md",
-        "MIGRATION-GUIDE.md"
-    ],
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
-    "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de",
+        "url": "https://danielbannert.com"
+    },
     "sideEffects": false,
+    "type": "module",
     "exports": {
         ".": {
+            "browser": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
+            },
             "import": {
                 "types": "./dist/index.server.d.ts",
                 "default": "./dist/index.server.js"
-            },
-            "browser": "./dist/index.browser.js"
+            }
         },
         "./browser": {
             "types": "./dist/index.browser.d.ts",
@@ -153,11 +144,14 @@
             }
         },
         "./reporter/json": {
+            "browser": {
+                "types": "./dist/reporter/json/index.browser.d.ts",
+                "default": "./dist/reporter/json/index.browser.js"
+            },
             "import": {
                 "types": "./dist/reporter/json/index.d.ts",
                 "default": "./dist/reporter/json/index.js"
-            },
-            "browser": "./dist/reporter/json/index.browser.js"
+            }
         },
         "./server/reporter/pretty": {
             "import": {
@@ -172,11 +166,14 @@
             }
         },
         "./reporter/pretty": {
+            "browser": {
+                "types": "./dist/reporter/pretty/index.browser.d.ts",
+                "default": "./dist/reporter/pretty/index.browser.js"
+            },
             "import": {
                 "types": "./dist/reporter/pretty/index.d.ts",
                 "default": "./dist/reporter/pretty/index.js"
-            },
-            "browser": "./dist/reporter/pretty/index.browser.js"
+            }
         },
         "./reporter/simple": {
             "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
@@ -187,15 +184,19 @@
             "default": "./dist/reporter/http/abstract-http-reporter.js"
         },
         "./reporter/http": {
-            "import": {
-                "types": "./dist/reporter/http/http-reporter.d.ts",
-                "default": "./dist/reporter/http/http-reporter.js"
-            },
             "edge-light": {
                 "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
                 "default": "./dist/reporter/http/http-reporter.edge-light.js"
             },
+            "workerd": {
+                "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
+                "default": "./dist/reporter/http/http-reporter.edge-light.js"
+            },
             "browser": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            },
+            "import": {
                 "types": "./dist/reporter/http/http-reporter.d.ts",
                 "default": "./dist/reporter/http/http-reporter.js"
             }
@@ -234,10 +235,13 @@
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md",
+        "MIGRATION-GUIDE.md"
+    ],
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -256,7 +260,8 @@
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
     "dependencies": {
         "@visulima/colorize": "2.0.1",
@@ -268,6 +273,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@cloudflare/vitest-pool-workers": "catalog:test",
         "@opentelemetry/api": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
@@ -339,5 +345,14 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }
