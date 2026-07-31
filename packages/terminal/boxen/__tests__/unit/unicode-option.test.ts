@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../../src";
 
-vi.mock(import("terminal-size"), () => {
+vi.mock(import("../../src/vendor/terminal-size"), () => {
     return {
         default: () => {
             return {

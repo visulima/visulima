@@ -1,15 +1,15 @@
 import { bgRed, red } from "@visulima/colorize";
 import { getStringWidth } from "@visulima/string";
-import terminalSize from "terminal-size";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { BorderStyleName } from "../../src";
 import { boxen, boxes, clearTerminalSizeCache } from "../../src";
+import terminalSize from "../../src/vendor/terminal-size";
 
 const TUPLE_ERROR = /must return a \[width, height\] tuple/;
 const NUMBER_ERROR = /both width and height must be numbers/;
 
-vi.mock(import("terminal-size"), () => {
+vi.mock(import("../../src/vendor/terminal-size"), () => {
     return {
         default: vi.fn<() => { columns: number; rows: number }>(() => {
             return {
