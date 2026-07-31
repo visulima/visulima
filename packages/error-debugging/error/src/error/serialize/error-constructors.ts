@@ -1,6 +1,18 @@
-// Default error constructors that are commonly used
+// Type for error constructors (flexible to handle different signatures)
 
-const defaultErrorConstructors = new Map<string, new (...arguments_: any[]) => Error>([
+type ErrorConstructor = new (...arguments_: any[]) => Error;
+
+// Default error constructors that are commonly used.
+//
+// `AggregateError` has a different constructor signature and is not guaranteed to exist, so it is
+// registered conditionally — but from inside the initialiser rather than a follow-up `.set()` call.
+// A top-level `.set()` is a module side effect, which contradicts this package's
+// `"sideEffects": false` and keeps the whole registry alive in consumer bundles that only pull, say,
+// `serializeError` out of the `./error` barrel. A single `new Map(...)` initialiser is pure, so it
+// is dropped when nothing uses it. The annotation is spelled out because the spread stops the
+// bundler from inferring it.
+// eslint-disable-next-line jsdoc/no-bad-blocks -- `/* @__PURE__ */` is a bundler annotation, not JSDoc
+const defaultErrorConstructors = /* @__PURE__ */ new Map<string, ErrorConstructor>([
     ["Error", Error],
     ["EvalError", EvalError],
     ["RangeError", RangeError],
@@ -8,16 +20,8 @@ const defaultErrorConstructors = new Map<string, new (...arguments_: any[]) => E
     ["SyntaxError", SyntaxError],
     ["TypeError", TypeError],
     ["URIError", URIError],
+    ...typeof AggregateError === "undefined" ? [] : [["AggregateError", AggregateError as ErrorConstructor] as [string, ErrorConstructor]],
 ]);
-
-// Handle AggregateError separately since it has a different constructor signature
-if (typeof AggregateError !== "undefined") {
-    defaultErrorConstructors.set("AggregateError", AggregateError as new (...arguments_: any[]) => Error);
-}
-
-// Type for error constructors (flexible to handle different signatures)
-
-type ErrorConstructor = new (...arguments_: any[]) => Error;
 
 /**
  * Add a known error constructor to the registry.

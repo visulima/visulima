@@ -35,6 +35,26 @@ const getPrefix = (prefix: string, indentation: number | "\t", deep: number): st
  */
 const normalizePathSeparators = (filePath: string): string => filePath.replaceAll("\\", "/");
 
+/**
+ * Convert a `file:` URL from a stack frame to a path, falling back to the URL itself when it is not
+ * a convertible file URL.
+ *
+ * `fileURLToPath` rejects `file:` URLs that name a remote host (`file://example.com/a.js`) and other
+ * malformed forms. A stack is just a string and can carry anything — including frames from a
+ * deserialized or otherwise untrusted error — so a rejected URL must not abort rendering.
+ */
+const toDisplayPath = (path: string): string => {
+    if (!path.startsWith("file:")) {
+        return path;
+    }
+
+    try {
+        return fileURLToPath(path);
+    } catch {
+        return path;
+    }
+};
+
 const getRelativePath = (filePath: string, cwdPath: string) => {
     /**
      * Node.js error stack is all messed up. Some lines have file info
@@ -42,7 +62,7 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
      */
     const path = filePath.replace("async file:", "file:");
 
-    return normalizePathSeparators(relative(cwdPath, path.startsWith("file:") ? fileURLToPath(path) : path));
+    return normalizePathSeparators(relative(cwdPath, toDisplayPath(path)));
 };
 
 /**
@@ -156,6 +176,28 @@ const isReadableSourcePath = (filePath: string, options: Options): boolean => {
     return resolved === root || resolved.startsWith(root + sep);
 };
 
+/**
+ * Read a stack-frame's source file, or return `undefined` when it cannot be read.
+ *
+ * Reading is best-effort enrichment: a code frame is nice to have, never required. `existsSync` is
+ * not a sufficient guard — the path may exist but not be readable as a file (a directory, a device
+ * node, a permissions failure), and on runtimes with a virtual or absent filesystem (Cloudflare
+ * Workers / workerd, and other edge runtimes) reads fail by design. Any such failure must degrade to
+ * "no code frame" rather than propagate out of `renderError` and replace the error the caller was
+ * trying to render in the first place.
+ */
+const readSourceFile = (filePath: string): string | undefined => {
+    try {
+        if (!existsSync(filePath)) {
+            return undefined;
+        }
+
+        return readFileSync(filePath, "utf8");
+    } catch {
+        return undefined;
+    }
+};
+
 const getCode = (resolved: ResolvedFrame, options: Options, deep: number): string | undefined => {
     const { color, indentation, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth } = options;
     const { source: resolvedSource, trace: frame } = resolved;
@@ -175,11 +217,13 @@ const getCode = (resolved: ResolvedFrame, options: Options, deep: number): strin
             return undefined;
         }
 
-        if (!existsSync(filePath)) {
+        const source = readSourceFile(filePath);
+
+        if (source === undefined) {
             return undefined;
         }
 
-        fileContent = readFileSync(filePath, "utf8");
+        fileContent = source;
     } else {
         // The resolver supplied the original source directly (e.g. inlined sourcesContent).
         fileContent = resolvedSource;
