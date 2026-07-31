@@ -1,6 +1,5 @@
 import type { VisulimaError } from "@visulima/error/error";
 import type { Solution, SolutionError, SolutionFinder } from "@visulima/error/solution";
-import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -9,6 +8,8 @@ import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 import { parse } from "marked";
 
 import findSolution from "../../../utils/find-solution";
+import { purify } from "../../utils/dompurify";
+import { escapeHtml } from "../../utils/sanitize";
 
 const solutions = async (
     error: Error | SolutionError | VisulimaError,
@@ -40,12 +41,12 @@ const solutions = async (
 
                 const parsedHeader = await parse(hint.header);
 
-                return dompurifySanitize(parsedHeader);
+                return purify(parsedHeader) ?? escapeHtml(parsedHeader);
             })()}
             ${await (async () => {
                 const parsedBody = await parse(hint.body);
 
-                return dompurifySanitize(parsedBody);
+                return purify(parsedBody) ?? escapeHtml(parsedBody);
             })()}
         </div>
     </div>
