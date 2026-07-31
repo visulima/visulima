@@ -10,6 +10,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 - **Sub-exports**: `./language/*` maps to `src/language/<code>.ts` — one duration-language file per locale (60+ languages: `en`, `de`, `fr`, `ja`, `zh_CN`, `zh_TW`, `sr_Latn`, `uz_CYR`, etc.). To add a locale, add a `src/language/<code>.ts` file following the existing schema; no central registry needs updating.
 - `src/language/util/create-duration-language.ts` and `validate-duration-language.ts` are the helpers used when constructing/checking new language packs — prefer them when authoring locales.
-- Byte parsing distinguishes SI vs IEC units; the regex prefixes (`KIBI`, `MIBI`, `GIBI`, etc.) in `src/bytes.ts` are load-bearing — don't rename without updating tests.
+- Byte parsing distinguishes SI vs IEC units. `parseBytes` resolves a suffix against the `units` table first and against the other tables in `BYTE_SIZES` afterwards, so IEC input parses under every `units` setting. A matched IEC suffix scales by 1024 regardless of `base`; SI suffixes follow `base`. Don't reintroduce a spelling normalization (`KiB` → `KB`) ahead of the lookup — that is what used to make `units: "iec"` return `NaN` for IEC input.
+- `parseDuration`'s piece grammar accepts the `", "` delimiter `duration()` emits by default. The comma is only tolerated _between_ matched pieces, after `decimalRewrite`/`groupStrip` have normalized in-number separators, so it can never be mistaken for a decimal or grouping mark.
 - `@types/ms` and `ms` are devDependencies used as parity benchmarks for `parseDuration`, not runtime deps.
 - `project.json` declares an implicit Nx dependency on `filesystem/path` — Nx graph behaviour, not a runtime import.

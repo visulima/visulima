@@ -78,12 +78,26 @@ console.log(formatBytes(1_500_000, { bits: true, base: 10, decimals: 1 })); // "
 
 // Always show the sign for deltas/diff UIs (zero is never signed)
 console.log(formatBytes(1_200_000, { signed: true, base: 10, decimals: 1 })); // "+1.2 MB"
+
+// IEC suffixes parse under any `units` table and always scale by 1024
+console.log(parseBytes("1KiB")); // 1024
+console.log(parseBytes("1KiB", { units: "iec" })); // 1024
+console.log(parseBytes("1KiB", { base: 10 })); // 1024
 ```
 
 > **Why does `KB` mean `1024`?** The default `base` is `2` (binary), so the SI
 > short units (`KB`, `MB`, …) are scaled by 1024 rather than 1000 — i.e.
 > `parseBytes("1 KB")` returns `1024`. Pass `base: 10` for strict SI (1000), or
 > use the IEC units (`units: "iec"`, e.g. `KiB`) for unambiguous binary prefixes.
+>
+> **How `parseBytes` resolves a suffix.** The `units` table is consulted first
+> and the remaining tables afterwards, so an explicitly spelled suffix parses
+> whatever `units` is set to: `parseBytes("1KiB", { units: "iec" })`,
+> `parseBytes("1KiB")` and `parseBytes("1KB", { units: "iec" })` all return
+> `1024`. An IEC prefix (`KiB`, `Kibibytes`, `Kio`, …) is a power of 1024 by
+> definition, so it pins the multiplier and ignores `base`; only the ambiguous SI
+> prefixes follow `base`. A bare prefix with no byte/octet indicator (`"1K"`) is
+> not a unit in any table and returns `NaN`.
 >
 > Note on the `parseBytes` error contract: it **throws** a `TypeError` for
 > non-string input or strings longer than 100 characters, but **returns `NaN`**
@@ -693,8 +707,13 @@ console.log(duration(97320000));
 // => "1 day, 3 hours, 2 minutes"
 
 // --- Parsing ---
+// `parseDuration` round-trips `duration`'s own output on default settings: the
+// pieces may be separated by the default ", " delimiter or by plain whitespace.
 console.log(parseDuration("1 day, 3 hours, 2 minutes"));
 // => 97320000
+
+console.log(parseDuration(duration(97320000)) === 97320000);
+// => true
 
 console.log(parseDuration("2h 30 min"));
 // => 9000000
@@ -706,7 +725,9 @@ console.log(parseDuration("1.5 years"));
 // => 47335428000
 
 // Parsing with different languages (requires language object with unitMap)
-console.log(parseDuration("2 jours et 5 heures", { language: fr }));
+// Note: conjunctions ("et", "and", …) are not part of the grammar; separate the
+// pieces with the delimiter or whitespace.
+console.log(parseDuration("2 jours, 5 heures", { language: fr }));
 // => 190800000
 
 // Parsing colon format (H:MM:SS or MM:SS)

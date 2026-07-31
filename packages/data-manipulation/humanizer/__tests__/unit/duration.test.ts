@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import duration from "../../src/duration";
 import { durationLanguage as deDurationLanguage } from "../../src/language/de";
+import { durationLanguage as frDurationLanguage } from "../../src/language/fr";
 import { durationLanguage as srLatnDurationLanguage } from "../../src/language/sr_Latn";
 import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
 import parseDuration from "../../src/parse-duration";
@@ -637,5 +638,67 @@ describe(parseDuration, () => {
         expect(parseDuration("1Hr", { language: mixedCaseLanguage })).toBeUndefined();
         // A lower-case key still resolves normally.
         expect(parseDuration("5min", { language: mixedCaseLanguage })).toBe(5 * 60_000);
+    });
+
+    it("should accept the \", \" delimiter that duration() emits by default", () => {
+        expect.assertions(4);
+
+        expect(parseDuration("6 minutes, 3 seconds")).toBe(363_000);
+        expect(parseDuration("1 day, 1 hour, 1 minute, 1.001 seconds")).toBe(90_061_001);
+        // The plain-space delimiter keeps working.
+        expect(parseDuration("6 minutes 3 seconds")).toBe(363_000);
+        // Anything other than whitespace and the delimiter is still noise.
+        expect(parseDuration("6 minutes; 3 seconds")).toBeUndefined();
+    });
+
+    it("should not read a delimiter comma as a decimal or grouping separator", () => {
+        expect.assertions(4);
+
+        // en-US: "," is the group separator, so it must still group inside a number
+        // while separating pieces outside of one.
+        expect(parseDuration("1,000 seconds, 5 minutes")).toBe(1000 * 1000 + 5 * 60_000);
+        // de: "," is the decimal mark and "." the group mark; both stay intact
+        // across a delimiter.
+        expect(parseDuration("1,5 Stunden, 2,5 Minuten", { language: deDurationLanguage })).toBe(1.5 * 3_600_000 + 2.5 * 60_000);
+        expect(parseDuration("1.000,5 Sekunden, 1 Minute", { language: deDurationLanguage })).toBe(1000.5 * 1000 + 60_000);
+        // fr: "," is the decimal mark and the group mark is a space.
+        expect(parseDuration("1 000 secondes, 1,5 minutes", { language: frDurationLanguage })).toBe(1000 * 1000 + 1.5 * 60_000);
+    });
+
+    describe("round-trip with duration()", () => {
+        const roundTripValues = [
+            0,
+            1,
+            500,
+            999,
+            1000,
+            1500,
+            59_999,
+            60_000,
+            363_000,
+            3_600_000,
+            86_400_000,
+            604_800_000,
+            90_061_001,
+            31_556_952_000,
+            1_000_000_000_000,
+            Number.MAX_SAFE_INTEGER,
+        ];
+
+        const roundTripLanguages: [string, DurationLanguage | undefined][] = [
+            ["en-US", undefined],
+            ["de-DE", deDurationLanguage],
+            ["fr-FR", frDurationLanguage],
+        ];
+
+        it.each(roundTripLanguages)("should round-trip duration() output on default options in %s", (_locale, language) => {
+            expect.assertions(16);
+
+            for (const milliseconds of roundTripValues) {
+                const options = language === undefined ? undefined : { language };
+
+                expect(parseDuration(duration(milliseconds, options), options)).toBe(milliseconds);
+            }
+        });
     });
 });

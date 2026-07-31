@@ -59,6 +59,16 @@ const ISO_FORMAT = new RegExp(
     `^P${isoNumber("Y")}${isoNumber("M")}${isoNumber("W")}${isoNumber("D")}(?:T${isoNumber("H")}${isoNumber("M")}${isoNumber("S")})?$`,
     "i",
 );
+// Text allowed between two matched pieces. `duration()` joins its pieces with
+// ", " by default, so a single comma surrounded by whitespace is part of the
+// grammar rather than noise.
+//
+// A comma here can never be a decimal or grouping mark: the gap always begins
+// after a unit word and ends before the next number, and in-number separators
+// have already been rewritten by `decimalRewrite`/`groupStrip` (which only fire
+// between two digits) before this check runs. Anything else in the gap still
+// invalidates the whole input.
+const PIECE_DELIMITER_REGEX = /^(?:\s*,)?\s*$/;
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
 const SIGN_PREFIX_REGEX = /^[-+]/;
@@ -217,12 +227,14 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         }
 
         // Only a valid, contributing match updates the bookkeeping used for the
-        // noise checks. Any non-whitespace text between the previous valid match
-        // and this one (e.g. an unconverted decimal value such as "2,5" in
-        // another locale, or garbage between units) invalidates the whole input.
+        // noise checks. Text between the previous valid match and this one must
+        // be a piece delimiter (whitespace, optionally with the "," that
+        // `duration()` emits); anything else (an unconverted decimal value such
+        // as "2,5" in another locale, or garbage between units) invalidates the
+        // whole input.
         if (!unitsFound) {
             firstMatchIndex = match.index;
-        } else if (processedValue.slice(lastMatchEndIndex, match.index).trim().length > 0) {
+        } else if (!PIECE_DELIMITER_REGEX.test(processedValue.slice(lastMatchEndIndex, match.index))) {
             return undefined;
         }
 
