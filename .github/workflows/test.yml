@@ -533,6 +533,61 @@ jobs:
             - name: "Run ${{ matrix.browser }} browser tests"
               run: "pnpm run test:affected:browser:${{ matrix.browser }}"
 
+    # Runs the workerd (Cloudflare Workers) suites via
+    # @cloudflare/vitest-pool-workers. Several packages advertise an
+    # `edge-light` export condition or claim to be runtime-agnostic; this job is
+    # what actually proves it, by executing the specs inside a real workerd
+    # isolate rather than Node with a mocked global.
+    #
+    # None of the opted-in packages need a compiled native binding, so this job
+    # skips the "Wait for Build Native" gate the other test jobs need and runs
+    # in minutes. Linux-only: workerd is the same binary everywhere, so a host
+    # matrix would only re-test Cloudflare's runtime, not our code.
+    workerd-test:
+        name: "Workerd Test"
+        if: "needs.files-changed.outputs.packages == 'true'"
+        needs: "files-changed"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        env:
+            NODE: "22"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              with:
+                  fetch-depth: 0
+
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  cache-prefix: "workerd"
+                  skip-playwright: "true"
+                  # This job never publishes, so the provenance-only npm upgrade is unneeded.
+                  upgrade-npm-version: false
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages.
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            # The workerd specs import from `src/`, not `dist/`, but workspace
+            # dependencies still resolve through their published entry points.
+            - name: "Build"
+              run: "pnpm run build:affected:packages"
+
+            - name: "Run workerd tests"
+              run: "pnpm run test:affected:workerd"
+
     # Runs ONLY the @visulima/tsconfig package's test suite against every
     # TypeScript version it claims to support. The package emulates `tsc
     # --showConfig` and version-specific compiler-option defaults, so its parity
@@ -607,10 +662,10 @@ jobs:
     # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
-        needs: ["files-changed", "test", "browser-test", "tsconfig-ts-versions"]
+        needs: ["files-changed", "test", "browser-test", "workerd-test", "tsconfig-ts-versions"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
-        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.browser-test.result == 'success' || needs.browser-test.result == 'skipped') && (needs.tsconfig-ts-versions.result == 'success' || needs.tsconfig-ts-versions.result == 'skipped')"
+        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.browser-test.result == 'success' || needs.browser-test.result == 'skipped') && (needs.workerd-test.result == 'success' || needs.workerd-test.result == 'skipped') && (needs.tsconfig-ts-versions.result == 'success' || needs.tsconfig-ts-versions.result == 'skipped')"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 30
         steps:
