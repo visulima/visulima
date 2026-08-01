@@ -1,6 +1,7 @@
-import { inspect } from "node:util";
-
+import nodeBuiltin from "../util/node-builtin";
 import type { VisulimaError } from "./visulima-error";
+
+const nodeUtility = nodeBuiltin("node:util");
 
 /**
  * Will return an array of all causes in the error in the order they occurred.
@@ -16,7 +17,7 @@ const getErrorCauses = <E = Error | VisulimaError>(error: E): E[] => {
         // Check for circular reference
         if (seen.has(currentError)) {
             // eslint-disable-next-line no-console
-            console.error(`Circular reference detected in error causes: ${inspect(error)}`);
+            console.error(`Circular reference detected in error causes: ${nodeUtility().inspect(error)}`);
 
             break;
         }
