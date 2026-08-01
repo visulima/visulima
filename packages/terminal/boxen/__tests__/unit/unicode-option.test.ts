@@ -1,8 +1,8 @@
-import { green, red } from "@visulima/colorize";
 import { getStringWidth } from "@visulima/string";
 import { describe, expect, it, vi } from "vitest";
 
 import { boxen } from "../../src";
+import { green, red } from "../color";
 
 vi.mock(import("../../src/vendor/terminal-size"), () => {
     return {
@@ -54,8 +54,9 @@ describe("wide-character and ANSI content", () => {
 
         expectUniformWidth(box);
 
-        // The original styling codes survive untouched.
-        expect(box).toContain("[31m");
+        // The original styling codes survive untouched — opening sequence,
+        // payload and closing sequence, exactly as they went in.
+        expect(box).toContain(red("error"));
     });
 });
 
