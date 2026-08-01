@@ -157,11 +157,41 @@ const brandChecks: Record<string, BrandCheck | undefined> = Object.assign(Object
  * A tag with no registered check is reported as genuine, which covers three groups left
  * deliberately alone.
  *
- * `Promise`, `Generator` and `AsyncGenerator` have no side-effect-free probe: their only
- * slot-bearing operations (`then`, `next`, `return`) schedule a job, mark a rejection
- * handled, or advance the iterator, so probing would corrupt the very value the caller
- * asked us to print. Their renderers touch nothing on the value, so a forgery cannot make
- * them throw either.
+ * `Promise`, `Generator` and `AsyncGenerator` have no side-effect-free probe. Unlike every
+ * tag above, none of their prototypes carries a single accessor — `Promise.prototype` holds
+ * `constructor` / `then` / `catch` / `finally`, `%GeneratorPrototype%` and
+ * `%AsyncGeneratorPrototype%` hold `constructor` / `next` / `return` / `throw` — so the only
+ * slot-bearing operations available are ones that schedule a job, mark a pending rejection
+ * handled, or advance and close the iterator. Probing would corrupt the very value the
+ * caller asked us to print. Their renderers touch nothing on the value, so a forgery cannot
+ * make them throw either; it only mislabels, which is the trade taken here.
+ *
+ * The consequence is real and deliberate: `inspect({ [Symbol.toStringTag]: "Promise" })`
+ * renders `Promise{…}`. Two substitutes were weighed and both rejected, so that a later
+ * reader does not have to re-derive it:
+ *
+ * Prototype identity (`Object.getPrototypeOf(value) === Promise.prototype`, or `instanceof`)
+ * is not a brand check. It is forgeable — `Object.create(Promise.prototype)` and
+ * `Promise.prototype` itself both still report `[object Promise]` and would pass — and it is
+ * cross-realm broken: a genuine promise from another realm (iframe, `vm` context, worker)
+ * fails it, so real promises would start rendering as `{}`. It regresses the common case to
+ * half-fix an adversarial one.
+ *
+ * Rejecting an own `Symbol.toStringTag` (the shape `hasNoStringTag` uses) is cross-realm safe,
+ * but only catches the plain-object literal above. `Object.create(Promise.prototype)`,
+ * `Promise.prototype`, and a class exposing a `get [Symbol.toStringTag]()` on its prototype
+ * all forge the slug with no own tag and would sail past it.
+ *
+ * A runtime-sniffed `util.types.isPromise` is likewise out: this package takes no static
+ * `node:*` dependency, and an optional probe would make the same input render differently on
+ * Node than on workerd or in a browser.
+ *
+ * Note also that the runtime itself reports the forgery the same way — per spec
+ * `Object.prototype.toString.call({ [Symbol.toStringTag]: "Promise" })` *is* `"[object
+ * Promise]"`. The table exists to stop a renderer throwing on a value that lacks the slots it
+ * is about to read (`map.entries()`, `date.toJSON()`); for these three there is no such read,
+ * so there is nothing to protect. The limitation is documented for consumers under "Forged
+ * tags" in `README.md`.
  *
  * `NodeList` and `HTMLCollection` are host tags with no ES-level brand. `instanceof` is
  * the only candidate, and it is not a brand check, fails cross-realm, and would break the

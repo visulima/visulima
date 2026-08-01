@@ -29,7 +29,11 @@ Honors Node's `Symbol.for("nodejs.util.inspect.custom")` and falls back to `.ins
 
 One ESM build via packem (`./dist/index.js`), served to every runtime. The source is runtime-agnostic, so the `browser` export condition points at the same file as `default` rather than diverting to a second artefact, and no `workerd` / `edge-light` condition is needed. Keep it that way unless a genuinely divergent build appears — `__tests__/integration/package.test.ts` asserts every condition under `"."` resolves to the one file, and will fail if one is added without revisiting the condition order.
 
-Tests run on three runtimes: Node (`pnpm run test`), workerd via `@cloudflare/vitest-pool-workers` (`pnpm run test:workerd`, `__tests__/workerd/`), and Vitest browser-mode in Chromium/Firefox/WebKit (`pnpm run test:browser:*`). HTML inspection lives in `src/html.ts` and handles `HTMLElement` / `NodeList` / `HTMLCollection` only in browser contexts.
+Tests run on two runtimes: Node (`pnpm run test`) and workerd via `@cloudflare/vitest-pool-workers` (`pnpm run test:workerd`, `__tests__/workerd/`).
+
+HTML inspection lives in `src/html.ts` and dispatches only when `window` is present, so `__tests__/html.test.ts` opts into a DOM with a `// @vitest-environment happy-dom` docblock and runs inside the ordinary `test` target. It carries no skip guard on purpose — the previous `describe.skipIf(!("window" in globalThis))` meant the whole file silently skipped under the Node pool and went unexecuted for a long time.
+
+There used to be `test:browser:chrome` / `firefox` / `webkit` scripts driving Vitest browser-mode. They were removed because they never launched a browser: they passed `--browser.name/--browser.provider` without `browser.enabled`, which Vitest ignores, so all three ran the Node suite verbatim. Restoring them is not a config fix — Vitest 4 moved providers into separate packages (`provider: playwright()` from `@vitest/browser-playwright`), which this package does not depend on. Reinstating real browser coverage therefore means adding that dependency and a browser project config first.
 
 ## Related
 

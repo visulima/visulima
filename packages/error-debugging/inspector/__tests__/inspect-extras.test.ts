@@ -717,14 +717,48 @@ describe("forged string tags (security)", () => {
     });
 
     it("keeps rendering a tag that was already safe to forge", () => {
-        expect.assertions(2);
+        expect.assertions(6);
 
-        // `Promise` is deliberately left unchecked: every operation that would prove a
-        // `[[PromiseState]]` slot (`then`) is observable — it schedules a job and marks
-        // a rejection handled — and `inspectPromise` reads nothing off the value, so a
-        // forgery was never able to make it throw.
-        expect(() => inspect({ [Symbol.toStringTag]: "Promise" })).not.toThrow();
+        // `Promise`, `Generator` and `AsyncGenerator` are deliberately left unchecked:
+        // every operation that would prove their slots (`then`, `next`, `return`) is
+        // observable — it schedules a job, marks a rejection handled, or advances the
+        // iterator — and their inspectors read nothing off the value beyond a guarded
+        // tag read, so a forgery was never able to make them throw.
+        //
+        // This pins the documented limitation (README, "Forged tags"): the label is a
+        // lie, and that is the accepted cost. If a sound side-effect-free brand check
+        // ever lands, this expectation changes and the docs must change with it.
+        for (const tag of ["Promise", "Generator", "AsyncGenerator"]) {
+            expect(() => inspect({ [Symbol.toStringTag]: tag })).not.toThrow();
+        }
+
         expect(inspect({ [Symbol.toStringTag]: "Promise" })).toBe("Promise{…}");
+        expect(inspect({ [Symbol.toStringTag]: "Generator" })).toBe("Object [Generator] {}");
+        expect(inspect({ [Symbol.toStringTag]: "AsyncGenerator" })).toBe("Object [AsyncGenerator] {}");
+    });
+
+    it("still renders genuine promises and generators that a prototype heuristic would reject", () => {
+        expect.assertions(3);
+
+        // A `getPrototypeOf(value) === Promise.prototype` style check would fail all
+        // three of these — the first two are cross-realm-shaped (a subclass and an
+        // object whose own tag was redefined), and it is exactly why no such heuristic
+        // is used in `matchesBuiltInTag`. They must keep rendering as the real thing.
+        class MyPromise extends Promise<number> {}
+
+        expect(inspect(MyPromise.resolve(1))).toBe("Promise{…}");
+
+        const tagged = Promise.resolve(1);
+
+        // `Reflect` rather than `Object`, because `Object.defineProperty` hands the
+        // promise straight back and the bare expression statement then reads as a
+        // floating promise.
+        Reflect.defineProperty(tagged, Symbol.toStringTag, { configurable: true, value: "Promise" });
+
+        expect(inspect(tagged)).toBe("Promise{…}");
+
+        // eslint-disable-next-line func-names
+        expect(inspect((function* () {})())).toBe("Object [Generator] {}");
     });
 
     it("does not throw for a forged DOM collection whose members are hostile", () => {

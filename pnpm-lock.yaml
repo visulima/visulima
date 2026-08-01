@@ -4933,6 +4933,9 @@ importers:
       fallow:
         specifier: catalog:lint
         version: 2.104.0
+      happy-dom:
+        specifier: catalog:dev
+        version: 20.10.6
       playwright:
         specifier: catalog:test
         version: 1.61.1
