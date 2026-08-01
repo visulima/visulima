@@ -130,7 +130,13 @@ export default function* walkSync(directory: URL | string, options: WalkOptions 
 
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
-                    const realPath = realpathSync(path);
+                    // `normalize` because `realpathSync` is the one path here that does
+                    // not come from `@visulima/path`: on Windows it returns backslashes,
+                    // while every other yielded path is POSIX-normalised. Leaving it raw
+                    // emits the same file under two spellings, breaks the no-backslash
+                    // guarantee the entries carry, and stops `visited` from matching a
+                    // directory reached both directly and through a symlink.
+                    const realPath = normalize(realpathSync(path));
 
                     // Cycle detection: skip targets already visited so a symlink
                     // pointing at an ancestor directory cannot loop forever.

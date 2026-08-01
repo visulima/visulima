@@ -85,6 +85,38 @@ describe("censor / partial masking", () => {
         expect(seen).toStrictEqual([{ path: "card", value: "4111111111111111" }]);
     });
 
+    // A plain (non-wildcard) rule that resolves on a nested node is applied through the
+    // direct-path branch of `recursivelyFilterAttributes`. That branch used to hand the censor
+    // the bare rule key, so `{ user: { card } }` + a "card" rule reported "card" instead of
+    // "user.card" — while wildcard rules already reported the full walked path. The censor's
+    // documented `path` argument is the dot-path of the matched key, so these pin the joined
+    // path for every branch that can reach a censor.
+    it.each([
+        ["a top-level key", { card: "x" }, "card", "card"],
+        ["a nested key", { user: { card: "x" } }, "card", "user.card"],
+        ["a deeply nested key", { a: { b: { c: { card: "x" } } } }, "card", "a.b.c.card"],
+        ["a key inside an array element", { items: [{ card: "x" }] }, "card", "items.0.card"],
+        ["a wildcard rule", { user: { cardNumber: "x" } }, "card*", "user.cardnumber"],
+        ["a dotted rule on a nested node", { a: { user: { card: "x" } } }, "user.card", "a.user.card"],
+    ])("passes the full walked dot-path to a censor for %s", (_name, input, key, expectedPath) => {
+        expect.assertions(1);
+
+        const seen: (string | undefined)[] = [];
+
+        redact(input, [
+            {
+                key,
+                replacement: (_value, path) => {
+                    seen.push(path);
+
+                    return "<MASKED>";
+                },
+            },
+        ]);
+
+        expect(seen).toStrictEqual([expectedPath]);
+    });
+
     it("applies a censor function via a pattern rule on a string", () => {
         expect.assertions(1);
 
@@ -99,6 +131,59 @@ describe("censor / partial masking", () => {
         ]);
 
         expect(result).toBe("contact me at ***@example.com");
+    });
+
+    it("supports a non-string replacement value", () => {
+        expect.assertions(2);
+
+        expect(redact({ secret: "x" }, [{ key: "secret", replacement: 0 }]).secret).toBe(0);
+        expect(redact({ secret: "x" }, [{ key: "secret", replacement: false }]).secret).toBe(false);
+    });
+
+    it("falls back to the default placeholder for a nullish replacement", () => {
+        expect.assertions(2);
+
+        // `replacement` is resolved with `??`, so an explicit null/undefined is
+        // treated as "not supplied" and the `<KEY>` default is used.
+        expect(redact({ secret: "x" }, [{ key: "secret", replacement: null }]).secret).toBe("<SECRET>");
+        expect(redact({ secret: "x" }, [{ key: "secret", replacement: undefined }]).secret).toBe("<SECRET>");
+    });
+});
+
+describe("accessor properties", () => {
+    it("materialises an own enumerable getter as its value", () => {
+        expect.assertions(2);
+
+        const input = {
+            get password(): string {
+                return "computed";
+            },
+            user: "alice",
+        };
+
+        const result = redact(input, ["password"]);
+
+        expect(result.password).toBe("<PASSWORD>");
+        expect(result.user).toBe("alice");
+    });
+
+    it("does not read prototype getters", () => {
+        expect.assertions(1);
+
+        // Only own properties are walked, so a prototype accessor is never invoked
+        // and never lands on the copy — invoking it could have side effects.
+        class WithAccessor {
+            public user = "alice";
+
+            // eslint-disable-next-line class-methods-use-this
+            public get password(): string {
+                return "computed";
+            }
+        }
+
+        const result = redact(new WithAccessor(), ["password"]) as Record<string, unknown>;
+
+        expect(Object.hasOwn(result, "password")).toBe(false);
     });
 });
 
@@ -233,7 +318,7 @@ describe("array index rules preserve later element paths", () => {
     });
 });
 
-describe("Map rule precedence", () => {
+describe("map rule precedence", () => {
     it("lets a later, more specific rule override an earlier one for Map entries", () => {
         expect.assertions(1);
 
@@ -296,5 +381,52 @@ describe("themed rule subsets", () => {
         const result = redact("met on monday", [...credentialRules]);
 
         expect(result).toBe("met on monday");
+    });
+
+    it("redacts a credential key and leaves the rest alone with credentialRules", () => {
+        expect.assertions(2);
+
+        const result = redact({ note: "public", password: "hunter2" }, credentialRules);
+
+        expect(result.password).toBe("<PASSWORD>");
+        expect(result.note).toBe("public");
+    });
+
+    it("masks a bearer token inside a nested string with credentialRules", () => {
+        expect.assertions(1);
+
+        const result = redact({ header: "Authorization: Bearer abc.def.ghi" }, credentialRules);
+
+        expect(result.header).not.toContain("abc.def.ghi");
+    });
+
+    it("runs the aggregate standard rule set without throwing", () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line sonarjs/no-hardcoded-ip
+        const result = redact({ card: "4111111111111111", ip: "192.168.0.1", password: "p" }, standardRules);
+
+        expect(result.password).toBe("<PASSWORD>");
+        expect(result.ip).toBeTypeOf("string");
+    });
+});
+
+describe("top-level string inputs", () => {
+    it("redacts a JSON string and returns JSON", () => {
+        expect.assertions(1);
+
+        const result = redact(String.raw`{"password":"p","user":"alice"}`, ["password"]);
+
+        expect(JSON.parse(result)).toStrictEqual({ password: "<PASSWORD>", user: "alice" });
+    });
+
+    it("returns primitives that are not strings unchanged", () => {
+        expect.assertions(4);
+
+        expect(redact(42, ["password"])).toBe(42);
+        expect(redact(true, ["password"])).toBe(true);
+        expect(redact(null, ["password"])).toBeNull();
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        expect(redact(undefined, ["password"])).toBeUndefined();
     });
 });

@@ -146,6 +146,28 @@ const IS_RELATIVE_RE = /^(?:\.?\.[/\\]|\.\.\B)/;
 
 const MSYS_CYGWIN_RE = /^(?:msys|cygwin)$/;
 
+/** The part of the `process` global this module reads, with every member optional. */
+interface HostProcess {
+    env?: Record<string, string | undefined>;
+}
+
+/**
+ * The environment map of a `process` global, or an empty object when the runtime
+ * ships a `process` that has no `env` — workerd without `nodejs_compat`, and bundler
+ * shims that inject only `{ platform }`. Reading `process.env.X` straight off the
+ * global would throw a `TypeError` there.
+ *
+ * `@visulima/ansi` solves the same problem with a module-level constant, but that
+ * shape does not fit here: `isWindows()` is a function so that callers — and its
+ * tests, via `vi.stubGlobal("process", …)` — can swap the global and see the answer
+ * change, which a value captured at module evaluation could not do. Widening the
+ * parameter to {@link HostProcess} is what makes `?? {}` type-necessary, so no lint
+ * suppression is needed to express it.
+ * @param host The `process` global to read.
+ * @returns The environment map, never `undefined`.
+ */
+const environmentOf = (host: HostProcess): Record<string, string | undefined> => host.env ?? {};
+
 export const isRelative = (path: string): boolean => IS_RELATIVE_RE.test(path) || path === "..";
 
 /**
@@ -173,7 +195,7 @@ export const isWindows = (): boolean => {
         return true;
     }
 
-    const osType = globalThis.process.env.OSTYPE;
+    const osType = environmentOf(globalThis.process).OSTYPE;
 
     if (typeof osType !== "string") {
         return false;

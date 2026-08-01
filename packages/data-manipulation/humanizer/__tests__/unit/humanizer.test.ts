@@ -20,6 +20,17 @@ describe(humanizer, () => {
         expect(instance.parseDuration("2,5 Stunden")).toBe(2.5 * 3_600_000);
     });
 
+    it("should apply the configured conjunction to parseDuration()", () => {
+        expect.assertions(2);
+
+        const instance = humanizer({ conjunction: " und ", language: deDurationLanguage });
+
+        const formatted = instance.duration(260_040_000);
+
+        expect(formatted).toBe("3 Tage und 14 Minuten");
+        expect(instance.parseDuration(formatted)).toBe(260_040_000);
+    });
+
     it("should let per-call overrides win over instance defaults", () => {
         expect.assertions(1);
 

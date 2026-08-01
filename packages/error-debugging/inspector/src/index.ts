@@ -19,7 +19,9 @@ import inspectSet from "./types/set";
 import inspectString from "./types/string";
 import inspectSymbol from "./types/symbol";
 import inspectTypedArray from "./types/typed-array";
+import matchesBuiltInTag from "./utils/brand-check";
 import { getIndent } from "./utils/indent";
+import { safeGet, safeInstanceOf, safeIsArray } from "./utils/safe-reflect";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const constructorMap = new WeakMap<Function, Inspect>();
@@ -99,28 +101,44 @@ const nodeInspectCustomSymbol = Symbol.for("nodejs.util.inspect.custom");
  */
 const chaiInspectSymbol = Symbol.for("chai/inspect");
 
+// Every probe below reads a well-known key off an untrusted value. `safeGet` both
+// guards the read (a `Proxy` `get` trap may throw for any key) and replaces the old
+// `key in value && typeof value[key] === "function"` pair with a single operation —
+// the `in` check was redundant, since a missing key already fails the `typeof` test.
 const inspectCustom = (value: object, options: Options, type: string, depth: number): string => {
     // Honour loupe's `chai/inspect` contract first so values shared with the chai
     // ecosystem render identically. The handler receives only `options`.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    if (chaiInspectSymbol in value && typeof (value as any)[chaiInspectSymbol] === "function") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-        return (value as any)[chaiInspectSymbol](options);
+    const chaiInspector = safeGet(value, chaiInspectSymbol);
+
+    if (typeof chaiInspector === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return chaiInspector.call(value, options);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-    if (!("window" in globalThis) && typeof (value as any)[nodeInspectCustomSymbol] === "function") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-        return (value as any)[nodeInspectCustomSymbol](depth, options);
+    if (!("window" in globalThis)) {
+        const nodeInspector = safeGet(value, nodeInspectCustomSymbol);
+
+        if (typeof nodeInspector === "function") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return nodeInspector.call(value, depth, options);
+        }
     }
 
-    if ("inspect" in value && typeof value.inspect === "function") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
-        return value.inspect(depth, options);
+    const legacyInspector = safeGet(value, "inspect");
+
+    if (typeof legacyInspector === "function") {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return legacyInspector.call(value, depth, options);
     }
 
-    if ("constructor" in value && constructorMap.has(value.constructor)) {
-        return constructorMap.get(value.constructor)?.(value, options) ?? "unknown";
+    // `safeGet` returns `unknown` on purpose: `constructor` is an ordinary property on
+    // an untrusted value, so it can be anything at all. Narrow rather than assert — the
+    // `WeakMap` key type is the only thing the assertion was buying, and a non-callable
+    // `constructor` was never going to be in it.
+    const valueConstructor = safeGet(value, "constructor");
+
+    if (typeof valueConstructor === "function" && constructorMap.has(valueConstructor)) {
+        return constructorMap.get(valueConstructor)?.(value, options) ?? "unknown";
     }
 
     // `stringTagMap` is a null-prototype object, so an attacker-supplied tag (e.g.
@@ -155,7 +173,7 @@ const internalInspect = (value: unknown, options: Options, context: InspectConte
     }
 
     if (depth >= options.depth && options.depth > 0 && typeof value === "object" && value !== null) {
-        return Array.isArray(value) ? "[Array]" : "[Object]";
+        return safeIsArray(value) ? "[Array]" : "[Object]";
     }
 
     const indent = options.indent ? getIndent(options.indent, depth) : undefined;
@@ -163,11 +181,36 @@ const internalInspect = (value: unknown, options: Options, context: InspectConte
     let type = value === null ? "null" : typeof value;
 
     if (type === "object") {
-        type = Object.prototype.toString.call(value).slice(8, -1);
+        // Reads `Symbol.toStringTag` off the value, so this is the *first* thing a
+        // hostile value can hijack — long before any guarded property read. On failure
+        // the slug degrades to `"Object"`, which routes the value to `inspectObject`:
+        // the most conservative renderer, and the only one that reads nothing but own
+        // properties. Inlined rather than delegated so the successful path is exactly
+        // the expression it always was.
+        try {
+            type = Object.prototype.toString.call(value).slice(8, -1);
+        } catch {
+            type = "Object";
+        }
     }
 
     // If it is a base value that we already support, then use inspector
-    const baseInspector = baseTypesMap[type];
+    let baseInspector = baseTypesMap[type];
+
+    // For an object the slug above is not a fact about the value: `Symbol.toStringTag`
+    // overrides the built-in tag outright, so `{ [Symbol.toStringTag]: "Map" }` matches
+    // `inspectMap`, which then calls `map.entries()` and throws. Confirm the value owns
+    // the internal slots the tag claims before handing it over. A value that fails is
+    // treated as if it carried no built-in tag at all and takes the ordinary
+    // unknown-object route below — custom inspectors, then `registerStringTag`, then the
+    // renderers that read nothing but own properties.
+    //
+    // The check is reached only once a base inspector has matched, and is skipped
+    // entirely for primitives (whose `type` is their `typeof`, which nothing can forge),
+    // so plain objects and primitives pay nothing for it.
+    if (baseInspector !== undefined && typeof value === "object" && value !== null && !matchesBuiltInTag(value, type)) {
+        baseInspector = undefined;
+    }
 
     if (baseInspector !== undefined) {
         return baseInspector(value, options, inspect, indent);
@@ -186,8 +229,18 @@ const internalInspect = (value: unknown, options: Options, context: InspectConte
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const proto = value ? Object.getPrototypeOf(value) : false;
+    let proto: unknown = false;
+
+    if (value) {
+        try {
+            proto = Object.getPrototypeOf(value);
+        } catch {
+            // A throwing `getPrototypeOf` trap, or a revoked proxy. Assume the most
+            // conservative shape — a plain object — rather than `null`, which would
+            // add an `[Object: null prototype]` tag the value never earned.
+            proto = Object.prototype;
+        }
+    }
 
     // If it's a plain Object then use inspector
     if (proto === Object.prototype || proto === null) {
@@ -195,13 +248,20 @@ const internalInspect = (value: unknown, options: Options, context: InspectConte
     }
 
     // Specifically account for HTMLElements
-    if (value && typeof HTMLElement === "function" && value instanceof HTMLElement) {
-        return inspectHTMLElement(value, value, options, inspect);
+    if (value && typeof HTMLElement === "function" && safeInstanceOf(value, HTMLElement)) {
+        return inspectHTMLElement(value as Element, value, options, inspect);
     }
 
-    if ("constructor" in (value as object)) {
+    // A single guarded read replaces the former `"constructor" in value` +
+    // `value.constructor` pair. `undefined` now means "no usable constructor" —
+    // whether because the key is absent or because reading it threw — and such a
+    // value falls through to the plain-object renderer rather than being labelled
+    // `<Anonymous Class>` on the strength of a property nobody could read.
+    const valueConstructor = safeGet(value as object, "constructor");
+
+    if (valueConstructor !== undefined) {
         // If it is a class, inspect it like an object but add the constructor name
-        if ((value as object).constructor !== Object) {
+        if (valueConstructor !== Object) {
             return inspectClass(value as new (...arguments_: any[]) => unknown, options, inspect, indent);
         }
 

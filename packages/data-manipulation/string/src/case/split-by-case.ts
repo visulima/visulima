@@ -1,5 +1,3 @@
-import { stripVTControlCharacters } from "node:util";
-
 import {
     RE_ARABIC,
     RE_BENGALI,
@@ -36,6 +34,7 @@ import {
 import type { NodeLocale } from "../types";
 import getSeparatorsRegex from "../utils/get-separators-regex";
 import splitByEmoji from "../utils/split-by-emoji";
+import stripVTControlCharacters from "../utils/strip-vt-control-characters";
 import type { LocaleOptions, SplitByCase } from "./types";
 
 const RE_SLOVENIAN_SPECIAL = /[ČŠŽĐ]/i;

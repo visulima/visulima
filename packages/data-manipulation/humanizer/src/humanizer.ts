@@ -58,6 +58,12 @@ const humanizer = (options?: DurationOptions): Humanizer => {
                 merged.language = defaults.language;
             }
 
+            // Forwarded so an instance configured with a conjunction can parse
+            // its own formatted output back.
+            if (defaults.conjunction !== undefined) {
+                merged.conjunction = defaults.conjunction;
+            }
+
             return parseDuration(value, { ...merged, ...overrides });
         },
     };

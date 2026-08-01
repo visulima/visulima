@@ -146,6 +146,18 @@ describe(getStringWidth, () => {
             expect(getStringWidth("あ😀い")).toBe(6);
         });
 
+        it("should measure a rendered box line with emoji content at its full width", () => {
+            expect.assertions(3);
+
+            // A rendered box line is the downstream symptom of an unanchored emoji
+            // match: the border (U+2502, ambiguous width) sits directly before the
+            // padding run and the emoji, so a forward search would consume the border
+            // and every space in between, reporting a short — ragged — line.
+            expect(getStringWidth("│🌍 hello 🚀       │")).toBe(20);
+            expect(getStringWidth("│   🌍 hello 🚀    │")).toBe(20);
+            expect(getStringWidth("│       🌍 hello 🚀│")).toBe(20);
+        });
+
         it("should not treat visible text before a later ANSI sequence as ANSI", () => {
             expect.assertions(1);
 

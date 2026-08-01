@@ -8,11 +8,10 @@
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { alignText, getStringWidth, slice, wordWrap, WrapMode } from "@visulima/string";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import terminalSize from "terminal-size";
 
 import type { Alignment, BorderPosition, BorderStyle, BorderStyleName, DimensionOptions, Options, Spacer, VerticalAlignment } from "./types";
 import cliBoxes from "./vendor/cli-boxes/boxes";
+import terminalSize from "./vendor/terminal-size";
 import { widestLine } from "./widest-line";
 
 const NEWLINE = "\n";
@@ -23,6 +22,11 @@ const NONE = "none";
 // child process when stdout is not a TTY (CI, piped output), which is costly
 // to repeat on every `boxen()` call. The terminal dimensions effectively never
 // change within a single render pass, so cache the first lookup and reuse it.
+//
+// The probe itself lives in `./vendor/terminal-size` precisely so that importing
+// `@visulima/boxen` never pulls `node:child_process`/`node:fs`/`node:tty` into
+// the module graph; it resolves those builtins lazily, and only on the branch
+// that needs them.
 let probedTerminal: { columns: number; rows: number } | undefined;
 
 const probeTerminal = (): { columns: number; rows: number } => {

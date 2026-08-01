@@ -6,15 +6,6 @@ import type { FormatBytesOptions, ParseByteOptions } from "./types";
 // fr-FR/sv-SE emit). parseLocalizedNumber strips them back out per locale.
 // eslint-disable-next-line sonarjs/unused-named-groups -- named groups are used via match.groups
 const PARSE_BYTES_REGEX = /^(?<value>-?\d+(?:[\p{Zs}'’.,]\d+)*)\p{Zs}*(?<type>[a-z]+)?$/iu;
-const KIBI_REGEX = /^KIBI/;
-const MIBI_REGEX = /^MIBI/;
-const GIBI_REGEX = /^GIBI/;
-const TEBI_REGEX = /^TEBI/;
-const PEBI_REGEX = /^PEBI/;
-const EXBI_REGEX = /^EXBI/;
-const ZEBI_REGEX = /^ZEBI/;
-const YIBI_REGEX = /^YIBI/;
-const IB_SUFFIX_REGEX = /^(.)IB$/;
 
 const BYTE_SIZES = {
     iec: [
@@ -176,13 +167,25 @@ type ByteSize
         | (typeof BYTE_SIZES)["iec"][number]["short"]
         | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
         | (typeof BYTE_SIZES)["metric"][number]["short"];
-type LongByteSize
-    = | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["iec"][number]["long"]
-        | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["metric"][number]["long"];
+type UnitSystem = keyof typeof BYTE_SIZES;
 
-type Unit = ByteSize | LongByteSize;
+/**
+ * Lookup order for `parseBytes`. The caller's `units` table is always tried
+ * first; the remaining tables act as a fallback so a suffix that only exists in
+ * another table (e.g. the IEC "KiB" while `units` is the default "metric") is
+ * still recognized instead of collapsing to `NaN`.
+ */
+const UNIT_SYSTEMS: ReadonlyArray<UnitSystem> = ["metric", "iec", "metric_octet", "iec_octet"];
+
+/**
+ * IEC prefixes (Ki/Mi/Gi/…) are defined by IEC 80000-13 as powers of 1024. They
+ * carry their own scale, so a matched IEC suffix pins the multiplier instead of
+ * deferring to the `base` option — unlike the SI prefixes, which are ambiguous
+ * in the wild and therefore stay governed by `base`.
+ */
+const IEC_BASE = 1024;
+
+const isIecSystem = (system: UnitSystem): boolean => system === "iec" || system === "iec_octet";
 
 /**
  * SI bit-unit reference table, level → labels. `pretty-bytes`/`filesize` expose
@@ -321,7 +324,33 @@ const resolveRequestedUnitIndex = (
 };
 
 /**
+ * Resolve an upper-cased suffix ("KIB", "KILOBYTES", "KO", …) to its power level
+ * and the unit system it came from. The preferred system wins on a tie, so
+ * `units` still decides how an ambiguous suffix is read; every other system is
+ * consulted afterwards so an explicitly spelled suffix is never rejected merely
+ * because it belongs to a different table than the configured one.
+ * @param type The upper-cased suffix taken from the parsed input.
+ * @param preferred The unit system requested through the `units` option.
+ */
+const resolveUnitSystem = (type: string, preferred: UnitSystem): { level: number; system: UnitSystem } | undefined => {
+    for (const system of [preferred, ...UNIT_SYSTEMS.filter((candidate) => candidate !== preferred)]) {
+        const level = BYTE_SIZES[system].findIndex((unit) => unit.short.toUpperCase() === type || unit.long.toUpperCase() === type);
+
+        if (level !== -1) {
+            return { level, system };
+        }
+    }
+
+    return undefined;
+};
+
+/**
  * Parse the given bytesize string and return bytes.
+ *
+ * Suffixes are resolved against the `units` table first and against the other
+ * unit tables afterwards, so IEC input (`"1KiB"`) parses under every `units`
+ * setting. A matched IEC suffix always scales by 1024; SI suffixes scale by the
+ * `base` option (default `2`, i.e. `"1KB"` is 1024).
  * @param value The string to parse
  * @param options Options for the conversion from string to bytes
  * @throws Error if `value` is not a non-empty string or a number
@@ -352,26 +381,18 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
     }
 
     const localizedNumber = parseLocalizedNumber(groups.value, config.locale);
-    const type = (groups.type ?? "Bytes")
-        .toUpperCase()
-        .replace(KIBI_REGEX, "KILO")
-        .replace(MIBI_REGEX, "MEGA")
-        .replace(GIBI_REGEX, "GIGA")
-        .replace(TEBI_REGEX, "TERA")
-        .replace(PEBI_REGEX, "PETA")
-        .replace(EXBI_REGEX, "EXA")
-        .replace(ZEBI_REGEX, "ZETTA")
-        .replace(YIBI_REGEX, "YOTTA")
-        .replace(IB_SUFFIX_REGEX, "$1B") as Uppercase<Unit> | "B";
-    const level = BYTE_SIZES[config.units].findIndex((unit) => unit.short.toUpperCase() === type || unit.long.toUpperCase() === type);
+    const resolved = resolveUnitSystem((groups.type ?? "Bytes").toUpperCase(), config.units);
 
-    if (level === -1) {
+    if (resolved === undefined) {
         return Number.NaN;
     }
 
-    const base = fromBase(config.base);
+    // Called unconditionally so an unsupported `base` still throws, even when the
+    // matched IEC suffix goes on to override it.
+    const configuredBase = fromBase(config.base);
+    const base = isIecSystem(resolved.system) ? IEC_BASE : configuredBase;
 
-    return localizedNumber * base ** level;
+    return localizedNumber * base ** resolved.level;
 };
 
 /**

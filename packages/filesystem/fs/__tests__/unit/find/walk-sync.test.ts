@@ -168,6 +168,23 @@ describe(walkSync, () => {
             expect(paths).toContain(resolve(temporaryDirectoryPath, "real-dir/inside.txt"));
         });
 
+        it("should normalize paths of followed symlinks", () => {
+            expect.assertions(2);
+
+            // Regression: a followed symlink's path comes from `realpathSync`, the only
+            // path in `walkSync` not produced by `@visulima/path`. On Windows it returns
+            // backslashes, so the entry escaped the normalisation every other entry gets.
+            // Only reproduces on Windows — on POSIX `realpathSync` already returns
+            // forward slashes.
+            writeFileSync(resolve(temporaryDirectoryPath, "real-file.txt"), "hello");
+            symlinkSync(resolve(temporaryDirectoryPath, "real-file.txt"), resolve(temporaryDirectoryPath, "link-to-file.txt"));
+
+            const entries = getEntries(temporaryDirectoryPath, { followSymlinks: true });
+
+            expect(entries.length).toBeGreaterThan(0);
+            expect(entries.map(({ path }) => path).join("\n")).not.toContain("\\");
+        });
+
         it("should report the resolved target's type on a followed file symlink", () => {
             expect.assertions(3);
 

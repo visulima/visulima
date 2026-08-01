@@ -32,9 +32,30 @@ const EXTNAME_RE = /[^/](\.[^./]+)$/;
 const PATH_ROOT_RE = /^[/\\]|^[a-z]:[/\\]/i;
 const TRAILING_SLASH_RE = /\/$/;
 
-const cwd = () => {
+/**
+ * The working directory used to anchor relative {@link resolve} calls.
+ *
+ * Runtimes without a filesystem (workerd/Cloudflare Workers, browsers) either
+ * omit `process` entirely, expose a `process` shim with no `cwd`, or expose a
+ * `cwd` that throws or hands back a non-string. In every one of those cases the
+ * documented fallback is the POSIX root `"/"`, so `resolve()` still yields an
+ * absolute path instead of throwing or leaking `undefined` into the result.
+ *
+ * A `cwd()` that returns an empty string is deliberately *not* treated as a
+ * failure: it is an explicit "no anchor" answer and keeps `resolve(".", "./")`
+ * collapsing to `"."` rather than being rooted at `"/"`.
+ */
+const cwd = (): string => {
     if (typeof process !== "undefined" && typeof process.cwd === "function") {
-        return normalizeWindowsPath(process.cwd());
+        try {
+            const current = process.cwd();
+
+            if (typeof current === "string") {
+                return normalizeWindowsPath(current);
+            }
+        } catch {
+            // Sandboxed runtimes can expose `cwd` and still deny the call.
+        }
     }
 
     return "/";

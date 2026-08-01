@@ -27,10 +27,17 @@ const safeGetProperty = (object: unknown, property: string): unknown => {
     return undefined;
 };
 
+/**
+ * Look up a method on a request-like object and return it **bound to its owner**.
+ *
+ * Every caller invokes the result as a bare function, so an unbound method loses its receiver. Web
+ * platform classes (`Request`, `Headers`) brand-check `this`: on workerd that surfaces as
+ * `TypeError: Illegal invocation`, taking the whole request panel down for a native `Request`.
+ */
 const safeGetMethod = (object: unknown, property: string): ((...arguments_: unknown[]) => unknown) | undefined => {
     const method = safeGetProperty(object, property);
 
-    return typeof method === "function" ? (method as (...arguments_: unknown[]) => unknown) : undefined;
+    return typeof method === "function" ? (method as (...arguments_: unknown[]) => unknown).bind(object) : undefined;
 };
 
 const safeGetString = (object: unknown, property: string): string | undefined => {

@@ -741,6 +741,20 @@ export type FormateByteOptions<ByteSize> = FormatBytesOptions<ByteSize>;
  */
 export interface ParseDurationOptions {
     /**
+     * The conjunction `duration()` was formatted with (e.g. `" and "`, `" et "`).
+     *
+     * `duration()`'s conjunction is caller-supplied and arbitrary — it is not part
+     * of any language pack — so the parser can only accept it when the same string
+     * is passed back here. With it set, the text between two pieces may also be
+     * the conjunction, optionally preceded by the comma `serialComma: true` emits
+     * before the final piece (`"a, b, and c"`). Matched case-insensitively and
+     * independently of the whitespace around it. Nothing else is accepted.
+     *
+     * Defaults to none, matching `duration()`'s own default of `""`.
+     */
+    conjunction?: string;
+
+    /**
      * The default unit to use if the input string is just a number.
      * Uses standard unit keys (y, mo, w, d, h, m, s, ms).
      * Defaults to 'ms'.

@@ -1,3 +1,5 @@
+import { INSPECTION_THREW } from "../constants";
+
 const chaiInspectSymbol = Symbol.for("chai/inspect");
 
 /**
@@ -16,7 +18,15 @@ export const makeMarker = (text: string): { [chaiInspectSymbol]: () => string } 
  * mirroring `util.inspect`'s `[Getter]` / `&lt;Inspection threw>` behaviour.
  */
 export const safeReadProperty = (object: object, key: PropertyKey): unknown => {
-    const descriptor = Object.getOwnPropertyDescriptor(object, key);
+    let descriptor: PropertyDescriptor | undefined;
+
+    try {
+        descriptor = Object.getOwnPropertyDescriptor(object, key);
+    } catch {
+        // A proxy whose `getOwnPropertyDescriptor` trap throws. The shape of the
+        // property is unknowable, so fall through to the guarded direct read below.
+        descriptor = undefined;
+    }
 
     // Data property (or no descriptor): read directly, guarding against proxies
     // whose `get` trap throws.
@@ -24,7 +34,7 @@ export const safeReadProperty = (object: object, key: PropertyKey): unknown => {
         try {
             return object[key as keyof typeof object];
         } catch {
-            return makeMarker("[Inspection threw]");
+            return makeMarker(INSPECTION_THREW);
         }
     }
 
@@ -36,6 +46,6 @@ export const safeReadProperty = (object: object, key: PropertyKey): unknown => {
     try {
         return object[key as keyof typeof object];
     } catch {
-        return makeMarker("[Inspection threw]");
+        return makeMarker(INSPECTION_THREW);
     }
 };

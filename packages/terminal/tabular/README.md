@@ -1471,7 +1471,13 @@ optional rows: number;
 
 Defined in: [types.ts:171](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tabular/src/types.ts#L171)
 
-Number of rows in the grid (0 for auto)
+Number of rows in the grid (0 for auto).
+
+An explicit count creates that many rows, mirroring CSS Grid: too few items
+pad the grid out with empty rows rather than shrinking it, and items that no
+longer fit within the count are reported through `onWarn`. A grid with no
+items at all still renders as an empty string. With `0` the row count follows
+the items and trailing empty rows are trimmed.
 
 ##### showBorders?
 

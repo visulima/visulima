@@ -286,7 +286,15 @@ export interface GridOptions extends BaseRenderingOptions, Style {
     /** Fixed row heights */
     fixedRowHeights?: number[];
 
-    /** Number of rows in the grid (0 for auto) */
+    /**
+     * Number of rows in the grid (0 for auto).
+     *
+     * An explicit count creates that many rows, mirroring CSS Grid: too few items
+     * pad the grid out with empty rows rather than shrinking it, and items that no
+     * longer fit within the count are reported through `onWarn`. A grid with no
+     * items at all still renders as an empty string. With `0` the row count follows
+     * the items and trailing empty rows are trimmed.
+     */
     rows?: number;
 
     /** Whether to show borders (only relevant if border is defined) */

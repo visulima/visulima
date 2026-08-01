@@ -38,13 +38,13 @@ const collectAllowlists = (source) => {
 // bundled definition; allowlists are appended (gitleaks supports multiple [[allowlists]]).
 // Kept tiny on purpose — the runtime merger in `src/config-loader.ts` does the same
 // thing for user-supplied configs.
+// Canonicalisation runs even with no overlay. `patchUpstreamRegexes` below only
+// sees the plural `allowlists`, and upstream ships the singular `[allowlist]`
+// table — so early-returning `base` here left the regex fixes silently unapplied
+// whenever `data/gitleaks.patches.json` was absent, which is every clean checkout.
 const mergeOverlay = (base, overlay) => {
-    if (!overlay) {
-        return base;
-    }
-
     const baseRules = Array.isArray(base.rules) ? base.rules : [];
-    const overlayRules = Array.isArray(overlay.rules) ? overlay.rules : [];
+    const overlayRules = Array.isArray(overlay?.rules) ? overlay.rules : [];
     const overlayIds = new Set(overlayRules.map((r) => r?.id).filter((id) => typeof id === "string"));
 
     const baseAllowlists = collectAllowlists(base);

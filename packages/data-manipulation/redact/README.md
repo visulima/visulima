@@ -178,6 +178,11 @@ redact({ card: "4111111111111111" }, [{ key: "card", replacement: (value) => `**
 // => { card: "****1111" }
 ```
 
+`path` is the full, lowercased dot-path the value was found at — not the rule key. A `card` rule
+matching `{ user: { card } }` receives `"user.card"`, and array elements are included by index
+(`"items.0.card"`). It is `undefined` for matches with no key path, such as string-anonymizer and
+URL query-string matches.
+
 The same works for `pattern`-based string rules (the matched substring is passed as `value`).
 
 ### Removing keys

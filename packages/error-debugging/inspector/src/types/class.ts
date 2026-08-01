@@ -8,9 +8,15 @@ const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (
     inspect: InternalInspect,
     indent: Indent | undefined,
 ): string => {
-    let name = "";
+    let name: string;
 
-    name = name || (typeof value.constructor === "function" ? value.constructor.name : "");
+    try {
+        name = typeof value.constructor === "function" ? value.constructor.name : "";
+    } catch {
+        // A hostile `get` trap: the constructor (or its `name`) is unreadable, which
+        // is indistinguishable from an anonymous one for labelling purposes.
+        name = "";
+    }
 
     // Babel transforms anonymous classes to the name `_class`
     if (!name || name === "_class") {

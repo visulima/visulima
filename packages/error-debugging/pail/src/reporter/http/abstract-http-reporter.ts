@@ -1,5 +1,3 @@
-import { Buffer } from "node:buffer";
-
 import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels, StringifyAwareReporter } from "../../types";
@@ -9,16 +7,57 @@ import compressData from "./utils/compression";
 import LogSizeError from "./utils/log-size-error";
 import sendWithRetry from "./utils/retry";
 
-/** Reused across all reporter instances so measuring a payload never allocates a new encoder. */
-const sharedTextEncoder = typeof TextEncoder === "undefined" ? undefined : new TextEncoder();
+/**
+ * Counts the UTF-8 bytes of a string without `TextEncoder` or `Buffer`.
+ *
+ * Used only as a last resort on runtimes that expose neither. Unpaired surrogates
+ * are counted as the 3-byte replacement character, matching what `TextEncoder` emits.
+ * @param value The string to measure.
+ * @returns The UTF-8 byte length.
+ */
+const utf8ByteLength = (value: string): number => {
+    let bytes = 0;
 
-/** Measures the UTF-8 byte length of a payload without allocating a fresh encoder per call. */
-const byteLengthOf = (payload: string, edgeCompat: boolean): number => {
-    if (edgeCompat || sharedTextEncoder === undefined) {
-        return Buffer.byteLength(payload, "utf8");
+    // Iterating a string yields whole code points, so surrogate pairs are visited once.
+    for (const character of value) {
+        const code = character.codePointAt(0) as number;
+
+        if (code < 0x80) {
+            bytes += 1;
+        } else if (code < 0x8_00) {
+            bytes += 2;
+        } else if (code < 0x1_00_00) {
+            // Includes unpaired surrogates, which encode as the 3-byte replacement character.
+            bytes += 3;
+        } else {
+            bytes += 4;
+        }
     }
 
-    return sharedTextEncoder.encode(payload).length;
+    return bytes;
+};
+
+/** Reused across all reporter instances so measuring a payload never allocates a new encoder. */
+let sharedTextEncoder: TextEncoder | undefined;
+
+/**
+ * Measures the UTF-8 byte length of a payload.
+ *
+ * Prefers the Web-standard `TextEncoder`, which every supported runtime (Node, browsers,
+ * Cloudflare Workers, Vercel Edge) provides — deliberately *not* `Buffer`, which would tie
+ * the edge builds to `node:buffer`. The encoder is resolved on first use rather than at module
+ * load so the reporter can be imported before the runtime finishes installing its globals.
+ * @param payload The payload to measure.
+ * @returns The UTF-8 byte length of `payload`.
+ */
+const byteLengthOf = (payload: string): number => {
+    if (typeof TextEncoder === "function") {
+        sharedTextEncoder ??= new TextEncoder();
+
+        return sharedTextEncoder.encode(payload).length;
+    }
+
+    return utf8ByteLength(payload);
 };
 
 /**
@@ -77,8 +116,11 @@ export type AbstractHttpReporterOptions = AbstractJsonReporterOptions & {
     contentType?: string;
 
     /**
-     * Whether to enable Edge Runtime compatibility mode
-     * When enabled, TextEncoder and compression are disabled
+     * Whether to enable Edge Runtime compatibility mode.
+     *
+     * When enabled, gzip compression is skipped so the reporter never depends on a
+     * compression implementation the runtime may not provide. Payload size accounting
+     * always uses the Web-standard `TextEncoder` and is unaffected by this flag.
      * @default false
      */
     edgeCompat?: boolean;
@@ -378,7 +420,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             }
 
             // Check log entry size
-            const logEntrySize = byteLengthOf(payload, this.edgeCompat);
+            const logEntrySize = byteLengthOf(payload);
 
             if (logEntrySize > this.maxLogSize) {
                 const error = new LogSizeError(

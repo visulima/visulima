@@ -112,7 +112,12 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         this.stdout = stdout;
         this.stderr = stderr;
 
-        if (this.interactive) {
+        // Interactive rendering hooks straight into the stream's `write`, so it can only be
+        // set up when the runtime actually provides both streams. Edge runtimes (workerd and
+        // friends) expose `node:process` without `stdout`/`stderr`; there the logger stays
+        // non-interactive instead of throwing while constructing the hooks.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- streams are absent on runtimes without Node std streams
+        if (this.interactive && this.stdout && this.stderr) {
             this.interactiveManager = new InteractiveManager(new InteractiveStreamHook(this.stdout), new InteractiveStreamHook(this.stderr));
         }
 
@@ -312,8 +317,13 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
      * ```
      */
     public override clear(): void {
-        this.stdout.write(resetTerminal);
-        this.stderr.write(resetTerminal);
+        // Mirrors `wrapStd()`: a runtime without Node std streams (workerd and other edge
+        // runtimes) has nothing to reset, so the call degrades to a no-op instead of
+        // throwing on `undefined.write`.
+        /* eslint-disable @typescript-eslint/no-unnecessary-condition -- streams are absent on runtimes without Node std streams */
+        this.stdout?.write(resetTerminal);
+        this.stderr?.write(resetTerminal);
+        /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     }
 
     protected override extendReporter(reporter: Reporter<L>): Reporter<L> {

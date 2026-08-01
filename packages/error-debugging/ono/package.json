@@ -31,11 +31,6 @@
         "youch"
     ],
     "homepage": "https://visulima.com/packages/ono/",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
@@ -51,14 +46,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "type": "module",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": true,
+    "type": "module",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -74,10 +68,12 @@
         },
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -97,7 +93,8 @@
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
     "dependencies": {
         "@shikijs/langs": "catalog:prod",
@@ -111,6 +108,7 @@
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@cloudflare/vitest-pool-workers": "catalog:test",
         "@eslint/css": "catalog:lint",
         "@shikijs/themes": "catalog:dev",
         "@tailwindcss/forms": "catalog:frontend",
@@ -143,5 +141,9 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }

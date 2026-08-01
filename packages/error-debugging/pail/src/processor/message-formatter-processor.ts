@@ -5,6 +5,12 @@ import { build } from "@visulima/fmt";
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 /**
+ * What `@visulima/fmt` substitutes when its own serializer throws. Pre-quoted, so the result
+ * stays valid JSON in the `%j`/`%o`/`%O` slot it replaces.
+ */
+const CIRCULAR_PLACEHOLDER = "\"[Circular]\"";
+
+/**
  * Message Formatter Processor.
  *
  * A processor that formats log messages using the {@link https://visulima.com/packages/fmt/|@visulima/fmt} library.
@@ -67,13 +73,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
         if (this.#formatter === undefined) {
             this.#formatter = build({
                 formatters: this.#formatters,
-                stringify: (value: unknown) => {
-                    if (!this.#stringify) {
-                        return JSON.stringify(value);
-                    }
-
-                    return this.#stringify(value);
-                },
+                stringify: (value: unknown) => this.#serialize(value),
             });
         }
 
@@ -85,6 +85,38 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
         }
 
         return meta;
+    }
+
+    /**
+     * Serializes one `%j`/`%o`/`%O` argument.
+     *
+     * Supplying `stringify` to `build()` replaces `@visulima/fmt`'s own guarded serializer, so
+     * whatever is passed here has to be at least as defensive as the one it displaces: a logger
+     * must not take down the call site because a logged value was awkward.
+     *
+     * The two failure modes are reported differently on purpose. A bare `JSON.stringify` throwing
+     * is almost always a cycle, and fmt already renders that as `"[Circular]"` — matching it keeps
+     * pail's output identical whether fmt or this processor did the stringifying. A *supplied*
+     * serializer throwing is a defect in that serializer, so it is named rather than disguised as
+     * a cycle.
+     * @param value The argument to serialize.
+     * @returns The serialized value, or a quoted placeholder when serialization failed.
+     * @private
+     */
+    #serialize(value: unknown): string {
+        if (this.#stringify === undefined) {
+            try {
+                return JSON.stringify(value);
+            } catch {
+                return CIRCULAR_PLACEHOLDER;
+            }
+        }
+
+        try {
+            return this.#stringify(value);
+        } catch (error) {
+            return JSON.stringify(`[unserializable: ${error instanceof Error ? error.message : String(error)}]`);
+        }
     }
 
     /**

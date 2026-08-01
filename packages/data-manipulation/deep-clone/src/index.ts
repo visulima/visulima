@@ -10,6 +10,7 @@ import { copyObjectLoose, copyObjectStrict } from "./handler/copy-object";
 import { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";
 import { copySetLoose, copySetStrict } from "./handler/copy-set";
 import type { Handlers, Options, State } from "./types";
+import isSharedArrayBuffer from "./utils/is-shared-array-buffer";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>
@@ -161,7 +162,7 @@ const buildClone = (cloner: Handlers): InternalClone =>
         ) {
             const { buffer } = value;
 
-            if (buffer instanceof SharedArrayBuffer) {
+            if (isSharedArrayBuffer(buffer)) {
                 throw new TypeError("SharedArrayBuffer cannot be cloned");
             }
 
@@ -251,7 +252,7 @@ const buildClone = (cloner: Handlers): InternalClone =>
             }
         }
 
-        if (value instanceof SharedArrayBuffer) {
+        if (isSharedArrayBuffer(value)) {
             return cloner.SharedArrayBuffer(value, state);
         }
 

@@ -85,17 +85,17 @@ Type: `Partial<Options>`
 
 All options are optional; the documented defaults are used for any you omit.
 
-| Option             | Type                                          | Default              | Description                                                                                                                            |
-| ------------------ | --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `depth`            | `number`                                      | `5`                  | Maximum nesting depth before a value collapses to `[Object]` / `[Array]`. `<= 0` disables the limit.                                  |
-| `indent`           | `number \| "\t" \| undefined`                 | `undefined`          | Pretty-print indentation: `"\t"` for tabs, a positive integer for that many spaces, `undefined` for single-line output.               |
-| `truncate`         | `number`                                      | `Infinity`           | Maximum length (characters) of a rendered value before it is truncated with an ellipsis.                                              |
-| `maxArrayLength`   | `number`                                      | `Infinity`           | Maximum number of array / typed-array elements to render before the remainder is replaced with `… N more`.                            |
-| `quoteStyle`       | `"single" \| "double"`                        | `"single"`           | Quote character used for strings and complex object keys.                                                                             |
-| `numericSeparator` | `boolean`                                      | `true`               | Render large numbers / bigints with `_` digit-group separators (e.g. `1_000_000`).                                                    |
-| `showHidden`       | `boolean`                                      | `false`              | Also render non-enumerable own properties of plain objects.                                                                           |
-| `customInspect`    | `boolean`                                      | `true`               | Honour custom inspectors (see [Custom inspectors](#custom-inspectors)).                                                               |
-| `stylize`          | `(value: string, styleType: string) => string`| identity             | Colourize / decorate rendered fragments (e.g. wire up `@visulima/colorize`).                                                          |
+| Option             | Type                                           | Default     | Description                                                                                                             |
+| ------------------ | ---------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `depth`            | `number`                                       | `5`         | Maximum nesting depth before a value collapses to `[Object]` / `[Array]`. `<= 0` disables the limit.                    |
+| `indent`           | `number \| "\t" \| undefined`                  | `undefined` | Pretty-print indentation: `"\t"` for tabs, a positive integer for that many spaces, `undefined` for single-line output. |
+| `truncate`         | `number`                                       | `Infinity`  | Maximum length (characters) of a rendered value before it is truncated with an ellipsis.                                |
+| `maxArrayLength`   | `number`                                       | `Infinity`  | Maximum number of array / typed-array elements to render before the remainder is replaced with `… N more`.              |
+| `quoteStyle`       | `"single" \| "double"`                         | `"single"`  | Quote character used for strings and complex object keys.                                                               |
+| `numericSeparator` | `boolean`                                      | `true`      | Render large numbers / bigints with `_` digit-group separators (e.g. `1_000_000`).                                      |
+| `showHidden`       | `boolean`                                      | `false`     | Also render non-enumerable own properties of plain objects.                                                             |
+| `customInspect`    | `boolean`                                      | `true`      | Honour custom inspectors (see [Custom inspectors](#custom-inspectors)).                                                 |
+| `stylize`          | `(value: string, styleType: string) => string` | identity    | Colourize / decorate rendered fragments (e.g. wire up `@visulima/colorize`).                                            |
 
 ```typescript
 import { inspect } from "@visulima/inspector";
@@ -161,6 +161,34 @@ registerStringTag("Temperature", () => "registered-tag");
 inspect({ [Symbol.toStringTag]: "Temperature" }); // registered-tag
 ```
 
+### Forged tags
+
+`inspect` picks a renderer from the slug `Object.prototype.toString` returns, and per
+spec that slug is whatever `Symbol.toStringTag` says it is. Before a built-in renderer
+runs, the value is brand-checked against the internal slots the tag claims, using the
+built-in's own accessor (`Map.prototype.size`, `Date.prototype.valueOf`, …). Anything
+that only looks the part renders as a plain object instead.
+
+Three tags are exempt, because no brand check for them can be made side-effect free:
+
+- `Promise` — `then` is the only slot-bearing operation, and calling it schedules a job
+  and marks a pending rejection as handled.
+- `Generator` and `AsyncGenerator` — `next` / `return` / `throw` are the only slot-bearing
+  operations, and each one advances or closes the iterator.
+
+Probing would corrupt the value you asked to print, so a value that claims one of those
+tags is rendered as if it were genuine:
+
+```typescript
+inspect({ [Symbol.toStringTag]: "Promise" }); // Promise{…}
+```
+
+This is a labelling limitation only — those renderers read nothing off the value, so a
+forgery cannot make `inspect` throw, hang, or leak. Note that the platform reports the
+same thing: `Object.prototype.toString.call({ [Symbol.toStringTag]: "Promise" })` is
+already `"[object Promise]"`. If you need certainty about a value's type, brand-check it
+yourself before handing it to `inspect`.
+
 ## Related
 
 - [object-inspect](https://github.com/inspect-js/object-inspect) - string representations of objects in node and the browser
@@ -194,21 +222,12 @@ The visulima inspector is open-sourced software licensed under the [MIT][license
 <!-- badges -->
 
 [license-badge]: https://img.shields.io/npm/l/@visulima/inspector?style=for-the-badge
-
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
-
 [npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/inspector?style=for-the-badge
-
 [npm-downloads]: https://www.npmjs.com/package/@visulima/inspector
-
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
-
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
-
 [chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
-
 [chat]: https://discord.gg/TtFJY8xkFK
-
 [typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
-
 [typescript-url]: https://www.typescriptlang.org/

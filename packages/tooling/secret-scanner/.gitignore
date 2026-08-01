@@ -4,6 +4,10 @@ native/target/
 
 data/**
 !data/ruleset.json
+# Build input, not a build artifact: `build-rules.mjs` merges it over the fetched
+# upstream config. Ignoring it made every clean checkout build a different ruleset
+# than the committed one.
+!data/gitleaks.patches.json
 !data/LICENSE-GITLEAKS
 !data/LICENSE-KINGFISHER
 !data/NOTICE-KINGFISHER

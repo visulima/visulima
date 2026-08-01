@@ -59,6 +59,59 @@ const ISO_FORMAT = new RegExp(
     `^P${isoNumber("Y")}${isoNumber("M")}${isoNumber("W")}${isoNumber("D")}(?:T${isoNumber("H")}${isoNumber("M")}${isoNumber("S")})?$`,
     "i",
 );
+// Text allowed between two matched pieces. `duration()` joins its pieces with
+// ", " by default, so a single comma surrounded by whitespace is part of the
+// grammar rather than noise.
+//
+// A comma here can never be a decimal or grouping mark: the gap always begins
+// after a unit word and ends before the next number, and in-number separators
+// have already been rewritten by `decimalRewrite`/`groupStrip` (which only fire
+// between two digits) before this check runs. Anything else in the gap still
+// invalidates the whole input.
+const PIECE_DELIMITER_REGEX = /^(?:\s*,)?\s*$/;
+
+// `duration()`'s `conjunction` ("2 days and 5 hours") is caller-supplied and
+// arbitrary — no language pack carries a word for "and"/"et"/"und", `duration()`
+// only ever inserts the string the caller handed it — so the parser cannot know
+// it in advance. It is therefore accepted as a `parseDuration` option: pass the
+// same `conjunction` you formatted with and the output round-trips.
+//
+// Given one, the gap between two pieces may additionally be that conjunction,
+// optionally preceded by the comma `serialComma: true` prepends before the final
+// piece ("a, b, and c"). The conjunction is matched on its trimmed form with
+// `\s*` on either side, so " and ", "and " and "and" all describe the same gap.
+// Everything else in the gap still invalidates the input: passing a conjunction
+// widens the grammar by exactly one known word, never by "any word".
+const CONJUNCTION_DELIMITER_REGEX_CACHE = new Map<string, RegExp>();
+
+// The cache key is caller input, so it is bounded rather than unbounded; real
+// callers reuse one or two conjunctions and never come close to the limit.
+const CONJUNCTION_DELIMITER_REGEX_CACHE_LIMIT = 64;
+
+const getPieceDelimiterRegex = (conjunction: string | undefined): RegExp => {
+    const trimmedConjunction = conjunction === undefined ? "" : conjunction.trim();
+
+    if (trimmedConjunction.length === 0) {
+        return PIECE_DELIMITER_REGEX;
+    }
+
+    let regex = CONJUNCTION_DELIMITER_REGEX_CACHE.get(trimmedConjunction);
+
+    if (regex === undefined) {
+        if (CONJUNCTION_DELIMITER_REGEX_CACHE.size >= CONJUNCTION_DELIMITER_REGEX_CACHE_LIMIT) {
+            CONJUNCTION_DELIMITER_REGEX_CACHE.clear();
+        }
+
+        const escapedConjunction = trimmedConjunction.replaceAll(ESCAPE_REGEX, String.raw`\$&`);
+
+        regex = new RegExp(String.raw`^(?:\s*,)?\s*(?:${escapedConjunction}\s*)?$`, "i");
+
+        CONJUNCTION_DELIMITER_REGEX_CACHE.set(trimmedConjunction, regex);
+    }
+
+    return regex;
+};
+
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
 const SIGN_PREFIX_REGEX = /^[-+]/;
@@ -70,8 +123,12 @@ const SIGN_PREFIX_REGEX = /^[-+]/;
  * plain numbers (interpreted as `options.defaultUnit`, default `"ms"`), colon time
  * (`"hh:mm:ss"` / `"mm:ss"`), and ISO 8601 durations including the date part, week
  * form and fractional values (`"PT1H30M"`, `"P3DT4H"`, `"P1Y2M"`, `"P2W"`, `"PT1.5S"`).
+ *
+ * Pieces are separated by whitespace or the `", "` delimiter `duration()` emits by
+ * default. Conjunctions ("2 days and 5 hours") are only accepted when the same
+ * `conjunction` string is passed back via `options.conjunction`.
  * @param value The string to parse.
- * @param options Optional configuration including language and default unit.
+ * @param options Optional configuration including language, default unit and conjunction.
  * @returns The duration in milliseconds, or undefined if the string cannot be parsed.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -80,7 +137,7 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         return undefined;
     }
 
-    const { defaultUnit = "ms", language = durationLanguage } = options ?? {};
+    const { conjunction, defaultUnit = "ms", language = durationLanguage } = options ?? {};
 
     validateDurationLanguage(language);
 
@@ -182,6 +239,8 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         UNIT_REGEX_CACHE.set(currentUnitMap, durationRegex);
     }
 
+    const pieceDelimiterRegex = getPieceDelimiterRegex(conjunction);
+
     let totalMs = 0;
     let match;
     let unitsFound = false;
@@ -217,12 +276,14 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         }
 
         // Only a valid, contributing match updates the bookkeeping used for the
-        // noise checks. Any non-whitespace text between the previous valid match
-        // and this one (e.g. an unconverted decimal value such as "2,5" in
-        // another locale, or garbage between units) invalidates the whole input.
+        // noise checks. Text between the previous valid match and this one must
+        // be a piece delimiter (whitespace, optionally with the "," that
+        // `duration()` emits, plus `options.conjunction` when one was given);
+        // anything else (an unconverted decimal value such as "2,5" in another
+        // locale, or garbage between units) invalidates the whole input.
         if (!unitsFound) {
             firstMatchIndex = match.index;
-        } else if (processedValue.slice(lastMatchEndIndex, match.index).trim().length > 0) {
+        } else if (!pieceDelimiterRegex.test(processedValue.slice(lastMatchEndIndex, match.index))) {
             return undefined;
         }
 

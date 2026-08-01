@@ -1,6 +1,5 @@
-import { format, stripVTControlCharacters } from "node:util";
-
 import { getStringWidth } from "..";
+import stripVTControlCharacters from "../utils/strip-vt-control-characters";
 
 /**
  * Formats ANSI strings for test output.
@@ -52,30 +51,23 @@ export const expectAnsiStrings = (actual: string, expected: string): Expectation
             // If the visible content is the same but ANSI codes differ
             const strippedEqual = actualFormatted.stripped === expectedFormatted.stripped;
 
+            // Built by interpolation rather than `node:util`'s `format` so this
+            // helper stays importable on runtimes without a Node compatibility
+            // layer (workerd, browsers) — the placeholders were only ever `%s`
+            // and `%d` over strings and numbers.
             // prettier-ignore
-            return format(
-                "ANSI string comparison failed:\n\n"
+            return "ANSI string comparison failed:\n\n"
                 + "Actual:\n"
-                + "  - Visible content: %s\n"
-                + "  - With escape codes: %s\n"
-                + "  - JSON: %s\n"
-                + "  - Length: %d\n\n"
+                + `  - Visible content: ${actualFormatted.stripped}\n`
+                + `  - With escape codes: ${actualFormatted.visible}\n`
+                + `  - JSON: ${actualFormatted.json}\n`
+                + `  - Length: ${String(getStringWidth(actualFormatted.ansi))}\n\n`
                 + "Expected:\n"
-                + "  - Visible content: %s\n"
-                + "  - With escape codes: %s\n"
-                + "  - JSON: %s\n"
-                + "  - Length: %d\n\n"
-                + "%s\n",
-                actualFormatted.stripped,
-                actualFormatted.visible,
-                actualFormatted.json,
-                getStringWidth(actualFormatted.ansi),
-                expectedFormatted.stripped,
-                expectedFormatted.visible,
-                expectedFormatted.json,
-                getStringWidth(expectedFormatted.ansi),
-                strippedEqual ? "✓ Visible content is identical, but escape codes differ" : "✗ Visible content differs",
-            );
+                + `  - Visible content: ${expectedFormatted.stripped}\n`
+                + `  - With escape codes: ${expectedFormatted.visible}\n`
+                + `  - JSON: ${expectedFormatted.json}\n`
+                + `  - Length: ${String(getStringWidth(expectedFormatted.ansi))}\n\n`
+                + `${strippedEqual ? "✓ Visible content is identical, but escape codes differ" : "✗ Visible content differs"}\n`;
         },
         pass: actual === expected,
     };

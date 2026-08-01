@@ -1,15 +1,15 @@
-import { bgRed, red } from "@visulima/colorize";
 import { getStringWidth } from "@visulima/string";
-import terminalSize from "terminal-size";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { BorderStyleName } from "../../src";
 import { boxen, boxes, clearTerminalSizeCache } from "../../src";
+import terminalSize from "../../src/vendor/terminal-size";
+import { bgRed, openSequence, red } from "../color";
 
 const TUPLE_ERROR = /must return a \[width, height\] tuple/;
 const NUMBER_ERROR = /both width and height must be numbers/;
 
-vi.mock(import("terminal-size"), () => {
+vi.mock(import("../../src/vendor/terminal-size"), () => {
     return {
         default: vi.fn<() => { columns: number; rows: number }>(() => {
             return {
@@ -219,8 +219,9 @@ describe("backgroundColor", () => {
 
         const box = boxen("foo", { backgroundColor: (line) => bgRed(line) });
 
-        // bgRed opens with the background-red ANSI code.
-        expect(box).toContain("[41m");
+        // The whole interior line is handed to the callback, so its styled form
+        // appears verbatim in the box.
+        expect(box).toContain(bgRed("foo"));
         // Plain text is preserved alongside the styling.
         expect(box).toContain("foo");
     });
@@ -230,7 +231,7 @@ describe("backgroundColor", () => {
 
         const box = boxen("foo", { backgroundColor: (line) => bgRed(line) });
 
-        expect(box.split("\n")[0]).not.toContain("[41m");
+        expect(box.split("\n")[0]).not.toContain(openSequence(bgRed));
     });
 });
 
@@ -292,6 +293,8 @@ describe("regression: header/footer colors still apply", () => {
 
         const box = boxen("foo", { headerText: "hi", headerTextColor: (t) => red(t) });
 
-        expect(box).toContain("[31m");
+        // The header text is padded before it is colored, so assert on the
+        // opening sequence rather than on `red("hi")`.
+        expect(box).toContain(openSequence(red));
     });
 });

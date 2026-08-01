@@ -1,6 +1,5 @@
-import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
-
 import type { TemplateOptions } from "../types";
+import { purify } from "./dompurify";
 
 /**
  * Constants for URL validation and character escaping
@@ -44,17 +43,20 @@ const toString = (value: unknown): string => {
     return String(value).trim();
 };
 
-// Escapes HTML entities for safe use in HTML attributes
-const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => HTML_ENTITIES[char as keyof typeof HTML_ENTITIES]);
+/**
+ * Escapes HTML entities for safe use in HTML attributes.
+ *
+ * Also the sanitization fallback for runtimes where DOMPurify cannot load (no DOM — e.g. workerd).
+ * Escaping is strictly stronger than sanitizing: no markup survives it, so the output is safe even
+ * though formatting is lost.
+ */
+export const escapeHtml = (value: string): string => value.replaceAll(/[&<>"']/g, (char) => HTML_ENTITIES[char as keyof typeof HTML_ENTITIES]);
 
 // Sanitizes HTML content using DOMPurify to prevent XSS attacks
 export const sanitizeHtml = (value: unknown): string => {
-    try {
-        return dompurifySanitize(toString(value));
-    } catch {
-        // Fallback to basic escaping if DOMPurify fails
-        return escapeHtml(toString(value));
-    }
+    const stringValue = toString(value);
+
+    return purify(stringValue) ?? escapeHtml(stringValue);
 };
 
 // Sanitizes values for use in HTML attributes with additional HTML entity escaping
@@ -65,15 +67,15 @@ export const sanitizeAttribute = (value: unknown): string => {
         return "";
     }
 
-    try {
-        // DOMPurify sanitizes but we need to ensure quotes are escaped for attribute safety
-        const sanitized = dompurifySanitize(stringValue);
+    const sanitized = purify(stringValue);
 
-        return sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
-    } catch {
-        // Fallback to manual escaping if DOMPurify fails
+    if (sanitized === undefined) {
+        // Fallback to manual escaping when DOMPurify is unavailable in this runtime.
         return escapeHtml(stringValue);
     }
+
+    // DOMPurify sanitizes but we need to ensure quotes are escaped for attribute safety
+    return sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
 };
 
 // Validates and sanitizes URLs for safe use in HTML attributes
@@ -85,19 +87,17 @@ export const sanitizeUrlAttribute = (value: unknown): string => {
         return FALLBACK_URL;
     }
 
-    try {
-        const sanitized = dompurifySanitize(rawUrl);
-        const lowerUrl = sanitized.toLowerCase();
+    // Without DOMPurify, entity-escaping the URL is the safe equivalent: the allowlist below still
+    // decides whether the scheme may be emitted at all, so dropping to `#` would needlessly break
+    // legitimate links on DOM-less runtimes.
+    const sanitized = purify(rawUrl) ?? escapeHtml(rawUrl);
+    const lowerUrl = sanitized.toLowerCase();
 
-        // Check if URL starts with allowed prefixes
-        const isAllowed = ALLOWED_URL_PREFIXES.some((prefix) => lowerUrl.startsWith(prefix));
+    // Check if URL starts with allowed prefixes
+    const isAllowed = ALLOWED_URL_PREFIXES.some((prefix) => lowerUrl.startsWith(prefix));
 
-        // Escape quotes so a value like `/x" onfocus="…` cannot break out of the surrounding attribute
-        return isAllowed ? sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;") : FALLBACK_URL;
-    } catch {
-        // Return safe fallback if sanitization fails
-        return FALLBACK_URL;
-    }
+    // Escape quotes so a value like `/x" onfocus="…` cannot break out of the surrounding attribute
+    return isAllowed ? sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;") : FALLBACK_URL;
 };
 
 // Sanitizes HTML content while preserving code syntax highlighting classes
@@ -108,15 +108,14 @@ export const sanitizeCodeHtml = (value: unknown): string => {
         return "";
     }
 
-    try {
-        // Preserve styling/classes produced by syntax highlighters like Shiki
-        return dompurifySanitize(stringValue, {
+    // Preserve styling/classes produced by syntax highlighters like Shiki
+    return (
+        purify(stringValue, {
             ADD_ATTR: ["class", "style"],
-        });
-    } catch {
-        // Fallback to basic HTML sanitization if advanced options fail
-        return sanitizeHtml(stringValue);
-    }
+        })
+        // Fallback to basic HTML sanitization if advanced options fail or DOMPurify is unavailable.
+        ?? sanitizeHtml(stringValue)
+    );
 };
 
 // Validates and sanitizes Content Security Policy nonces

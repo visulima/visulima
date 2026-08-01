@@ -155,6 +155,25 @@ describe("disposableEmailSyncManager generated ./domains declaration", () => {
         expect(declaration).toContain("export default domains;");
         expect(declaration).not.toContain("export =");
     });
+
+    // The `./domains` subpath resolves to this wrapper, not to `domains.json`.
+    // Exporting the JSON directly made a plain `import domains from
+    // "@visulima/disposable-email-domains/domains"` throw
+    // ERR_IMPORT_ATTRIBUTE_MISSING, since Node requires `with { type: "json" }`
+    // on a JSON module, and made bundler resolution read it as `module.exports =`
+    // against the `export default` declaration above.
+    it("emits a wrapper carrying the json import attribute", async () => {
+        expect.assertions(3);
+
+        await manager.generateDomainsList([]);
+
+        const wrapper = await readFile(join(outputPath, "domains.js"), "utf8");
+
+        expect(wrapper).toContain("with { type: \"json\" }");
+        expect(wrapper).toContain("export default domains;");
+        // Re-exported, never inlined: the list is ~2.4 MB and ships once.
+        expect(wrapper).not.toContain("[");
+    });
 });
 
 describe("repositories.json config", () => {

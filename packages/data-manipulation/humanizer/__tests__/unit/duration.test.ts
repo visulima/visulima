@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import duration from "../../src/duration";
 import { durationLanguage as deDurationLanguage } from "../../src/language/de";
+import { durationLanguage as frDurationLanguage } from "../../src/language/fr";
 import { durationLanguage as srLatnDurationLanguage } from "../../src/language/sr_Latn";
 import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
 import parseDuration from "../../src/parse-duration";
-import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
+import type { DurationDigitReplacements, DurationLanguage, DurationOptions, DurationUnitName, ParseDurationOptions } from "../../src/types";
 
 describe(duration, () => {
     it("should throw a error on invalid input", () => {
@@ -637,5 +638,151 @@ describe(parseDuration, () => {
         expect(parseDuration("1Hr", { language: mixedCaseLanguage })).toBeUndefined();
         // A lower-case key still resolves normally.
         expect(parseDuration("5min", { language: mixedCaseLanguage })).toBe(5 * 60_000);
+    });
+
+    it("should accept the \", \" delimiter that duration() emits by default", () => {
+        expect.assertions(4);
+
+        expect(parseDuration("6 minutes, 3 seconds")).toBe(363_000);
+        expect(parseDuration("1 day, 1 hour, 1 minute, 1.001 seconds")).toBe(90_061_001);
+        // The plain-space delimiter keeps working.
+        expect(parseDuration("6 minutes 3 seconds")).toBe(363_000);
+        // Anything other than whitespace and the delimiter is still noise.
+        expect(parseDuration("6 minutes; 3 seconds")).toBeUndefined();
+    });
+
+    it("should not read a delimiter comma as a decimal or grouping separator", () => {
+        expect.assertions(4);
+
+        // en-US: "," is the group separator, so it must still group inside a number
+        // while separating pieces outside of one.
+        expect(parseDuration("1,000 seconds, 5 minutes")).toBe(1000 * 1000 + 5 * 60_000);
+        // de: "," is the decimal mark and "." the group mark; both stay intact
+        // across a delimiter.
+        expect(parseDuration("1,5 Stunden, 2,5 Minuten", { language: deDurationLanguage })).toBe(1.5 * 3_600_000 + 2.5 * 60_000);
+        expect(parseDuration("1.000,5 Sekunden, 1 Minute", { language: deDurationLanguage })).toBe(1000.5 * 1000 + 60_000);
+        // fr: "," is the decimal mark and the group mark is a space.
+        expect(parseDuration("1 000 secondes, 1,5 minutes", { language: frDurationLanguage })).toBe(1000 * 1000 + 1.5 * 60_000);
+    });
+
+    it("should accept a conjunction only when the same conjunction is passed back", () => {
+        expect.assertions(7);
+
+        // `duration()`'s conjunction is caller-supplied and lives in no language
+        // pack, so it is not part of the default grammar.
+        expect(parseDuration("3 days and 14 minutes")).toBeUndefined();
+        expect(parseDuration("3 days and 14 minutes", { conjunction: " and " })).toBe(260_040_000);
+        // `serialComma: true` (the `duration()` default) puts a comma in front of
+        // the conjunction; `serialComma: false` does not.
+        expect(parseDuration("3 hours, 1 minute, and 14 seconds", { conjunction: " and " })).toBe(10_874_000);
+        expect(parseDuration("3 hours, 1 minute and 14 seconds", { conjunction: " and " })).toBe(10_874_000);
+        // The whitespace padding of the option itself is not significant.
+        expect(parseDuration("3 days and 14 minutes", { conjunction: "and" })).toBe(260_040_000);
+        // A different conjunction is still noise.
+        expect(parseDuration("3 days and 14 minutes", { conjunction: " & " })).toBeUndefined();
+        expect(parseDuration("2 jours et 5 heures", { conjunction: " et ", language: frDurationLanguage })).toBe(190_800_000);
+    });
+
+    it("should keep rejecting malformed input when a conjunction is configured", () => {
+        expect.assertions(5);
+
+        const options: ParseDurationOptions = { conjunction: " and " };
+
+        expect(parseDuration("6 minutes; 3 seconds", options)).toBeUndefined();
+        expect(parseDuration("1h garbage 2m", options)).toBeUndefined();
+        // A bare unknown word does not become a delimiter just because a
+        // conjunction was configured.
+        expect(parseDuration("1h or 2m", options)).toBeUndefined();
+        // The conjunction is accepted once, and not alongside further noise.
+        expect(parseDuration("1h and and 2m", options)).toBeUndefined();
+        expect(parseDuration("1h, and, 2m", options)).toBeUndefined();
+    });
+
+    it("should not read a conjunction gap as a locale decimal or grouping mark", () => {
+        expect.assertions(5);
+
+        // en-US: "," groups inside a number and separates pieces outside of one,
+        // including right before the conjunction.
+        expect(parseDuration("1,000 seconds, and 5 minutes", { conjunction: " and " })).toBe(1000 * 1000 + 5 * 60_000);
+        // de: "," is the decimal mark and "." the group mark; both survive a
+        // ", und " gap.
+        expect(parseDuration("1,5 Stunden, 2,5 Minuten, und 1 Sekunde", { conjunction: " und ", language: deDurationLanguage })).toBe(
+            1.5 * 3_600_000 + 2.5 * 60_000 + 1000,
+        );
+        expect(parseDuration("1.000,5 Sekunden und 1 Minute", { conjunction: " und ", language: deDurationLanguage })).toBe(1000.5 * 1000 + 60_000);
+        // fr: "," is the decimal mark and the group mark is a space, so the
+        // spaces around " et " must not be mistaken for a grouping mark.
+        expect(parseDuration("1 000 secondes et 1,5 minutes", { conjunction: " et ", language: frDurationLanguage })).toBe(1000 * 1000 + 1.5 * 60_000);
+        expect(parseDuration("2 jours, 1 heure, et 1 000 secondes", { conjunction: " et ", language: frDurationLanguage })).toBe(
+            2 * 86_400_000 + 3_600_000 + 1000 * 1000,
+        );
+    });
+
+    describe("round-trip with duration()", () => {
+        const roundTripValues = [
+            0,
+            1,
+            500,
+            999,
+            1000,
+            1500,
+            59_999,
+            60_000,
+            363_000,
+            3_600_000,
+            86_400_000,
+            604_800_000,
+            90_061_001,
+            31_556_952_000,
+            1_000_000_000_000,
+            Number.MAX_SAFE_INTEGER,
+        ];
+
+        const roundTripLanguages: [string, DurationLanguage | undefined][] = [
+            ["en-US", undefined],
+            ["de-DE", deDurationLanguage],
+            ["fr-FR", frDurationLanguage],
+        ];
+
+        it.each(roundTripLanguages)("should round-trip duration() output on default options in %s", (_locale, language) => {
+            expect.assertions(16);
+
+            for (const milliseconds of roundTripValues) {
+                const options = language === undefined ? undefined : { language };
+
+                expect(parseDuration(duration(milliseconds, options), options)).toBe(milliseconds);
+            }
+        });
+
+        // Values chosen so `duration()` renders two, three and four pieces — the
+        // two-piece form joins with the bare conjunction, the longer ones use the
+        // delimiter for every gap but the last.
+        const conjunctionValues = [260_040_000, 10_874_000, 90_061_001];
+
+        const conjunctionWords: Record<string, string> = {
+            "de-DE": " und ",
+            "en-US": " and ",
+            "fr-FR": " et ",
+        };
+
+        it.each(roundTripLanguages)("should round-trip conjunction output with and without a serial comma in %s", (locale, language) => {
+            expect.assertions(6);
+
+            const conjunction = conjunctionWords[locale] as string;
+
+            for (const serialComma of [true, false]) {
+                for (const milliseconds of conjunctionValues) {
+                    const formatOptions: DurationOptions = { conjunction, serialComma };
+                    const parseOptions: ParseDurationOptions = { conjunction };
+
+                    if (language !== undefined) {
+                        formatOptions.language = language;
+                        parseOptions.language = language;
+                    }
+
+                    expect(parseDuration(duration(milliseconds, formatOptions), parseOptions)).toBe(milliseconds);
+                }
+            }
+        });
     });
 });

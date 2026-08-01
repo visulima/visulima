@@ -328,6 +328,69 @@ describe(formatBytes, () => {
         expect(formatBytes(0, { locale: "de-DE" })).toBe("0 Bytes");
     });
 
+    it("should walk the whole metric unit table at exact powers of 1024", () => {
+        expect.assertions(9);
+
+        const expected = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+        for (const [level, unit] of expected.entries()) {
+            expect(formatBytes(1024 ** level)).toBe(`1 ${unit}`);
+        }
+    });
+
+    it("should walk the whole IEC unit table at exact powers of 1024", () => {
+        expect.assertions(9);
+
+        const expected = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+
+        for (const [level, unit] of expected.entries()) {
+            expect(formatBytes(1024 ** level, { units: "iec" })).toBe(`1 ${unit}`);
+        }
+    });
+
+    it("should round to the requested number of decimals", () => {
+        expect.assertions(3);
+
+        expect(formatBytes(1536, { decimals: 2 })).toBe("1.50 KB");
+        expect(formatBytes(1536, { decimals: 1 })).toBe("1.5 KB");
+        // decimals: 0 rounds rather than truncates.
+        expect(formatBytes(1536, { decimals: 0 })).toBe("2 KB");
+    });
+
+    it("should format zero in bits mode with the bare bit unit", () => {
+        expect.assertions(1);
+
+        expect(formatBytes(0, { bits: true })).toBe("0 bit");
+    });
+
+    it("should group with the locale's own separator rather than a hard-coded one", () => {
+        expect.assertions(3);
+
+        // fr-FR groups with a narrow no-break space (U+202F) in modern CLDR and
+        // ar-EG uses Eastern Arabic digits. Assert against Intl's own output so
+        // these document the separator/digits the runtime actually emits instead
+        // of pinning a code point that a CLDR bump can move.
+        const frGrouped = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(1024);
+        const arOne = new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(1);
+
+        expect(formatBytes(1024 ** 2, { locale: "fr-FR", unit: "KB" })).toBe(`${frGrouped} KB`);
+        expect(frGrouped).not.toBe("1024");
+        expect(formatBytes(1024, { locale: "ar-EG" })).toBe(`${arOne} KB`);
+    });
+
+    it("should format with a Japanese locale", () => {
+        expect.assertions(1);
+
+        expect(formatBytes(1536, { decimals: 1, locale: "ja-JP" })).toBe("1.5 KB");
+    });
+
+    it("should honour passthrough Intl.NumberFormat options", () => {
+        expect.assertions(2);
+
+        expect(formatBytes(1536, { locale: "en-US", maximumFractionDigits: 3, minimumFractionDigits: 3 })).toBe("1.500 KB");
+        expect(formatBytes(1024 ** 2, { locale: "en-US", unit: "KB", useGrouping: false })).toBe("1024 KB");
+    });
+
     it("should return consistent results across repeated calls (cached formatters/separators)", () => {
         expect.assertions(1);
 
@@ -412,8 +475,119 @@ describe(parseBytes, () => {
     });
 
     it("should return NaN when the value cannot be matched by the parser", () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
         expect(parseBytes("abc")).toBeNaN();
+        // A well-formed number with an unknown unit, and a unit with no number.
+        expect(parseBytes("1 Parsecs")).toBeNaN();
+        expect(parseBytes("KB")).toBeNaN();
+    });
+
+    it("should parse every metric suffix at its own magnitude", () => {
+        expect.assertions(9);
+
+        const suffixes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+        for (const [level, suffix] of suffixes.entries()) {
+            expect(parseBytes(`1${suffix}`)).toBe(1024 ** level);
+        }
+    });
+
+    it("should be case-insensitive about the suffix", () => {
+        expect.assertions(3);
+
+        expect(parseBytes("1kb")).toBe(1024);
+        expect(parseBytes("1Kb")).toBe(1024);
+        expect(parseBytes("1 KB")).toBe(1024);
+    });
+
+    it("should parse negative values", () => {
+        expect.assertions(2);
+
+        expect(parseBytes("-1KB")).toBe(-1024);
+        expect(parseBytes("-100")).toBe(-100);
+    });
+
+    it("should round-trip formatBytes output for every metric unit", () => {
+        expect.assertions(5);
+
+        for (const bytes of [1024, 1024 ** 2, 5 * 1024 ** 3, 1024 ** 4]) {
+            expect(parseBytes(formatBytes(bytes))).toBe(bytes);
+        }
+
+        // A value that only survives the round trip once fraction digits are kept.
+        expect(parseBytes(formatBytes(1536, { decimals: 1 }))).toBe(1536);
+    });
+
+    it("should round-trip a German-formatted value", () => {
+        expect.assertions(1);
+
+        const formatted = formatBytes(1536, { decimals: 1, locale: "de-DE" });
+
+        expect(parseBytes(formatted, { locale: "de-DE" })).toBe(1536);
+    });
+
+    describe("iec units", () => {
+        it("should parse an IEC suffix against the iec table", () => {
+            expect.assertions(6);
+
+            expect(parseBytes("1KiB", { units: "iec" })).toBe(1024);
+            expect(parseBytes("1MiB", { units: "iec" })).toBe(1024 ** 2);
+            expect(parseBytes("1 Kibibytes", { units: "iec" })).toBe(1024);
+            expect(parseBytes("1B", { units: "iec" })).toBe(1);
+            expect(parseBytes("1Kio", { units: "iec_octet" })).toBe(1024);
+            expect(parseBytes("1 Kibioctets", { units: "iec_octet" })).toBe(1024);
+        });
+
+        it("should parse an IEC suffix against the default metric table", () => {
+            expect.assertions(3);
+
+            // A suffix the configured table does not know is resolved against the
+            // other tables, so an explicitly spelled unit is never rejected just
+            // because `units` points elsewhere.
+            expect(parseBytes("1KiB")).toBe(1024);
+            expect(parseBytes("1 Kibibytes")).toBe(1024);
+            expect(parseBytes("1Kio")).toBe(1024);
+        });
+
+        it("should parse an SI suffix against the iec table", () => {
+            expect.assertions(3);
+
+            // The SI suffix is not in the iec table, so it falls through to the
+            // metric table and is scaled by `base` (default 2 -> 1024).
+            expect(parseBytes("1KB", { units: "iec" })).toBe(1024);
+            expect(parseBytes("1 Kilobytes", { units: "iec" })).toBe(1024);
+            expect(parseBytes("1KB", { base: 10, units: "iec" })).toBe(1000);
+        });
+
+        it("should scale an IEC suffix by 1024 regardless of the base option", () => {
+            expect.assertions(3);
+
+            // IEC prefixes are defined as powers of 1024, so they pin the
+            // multiplier; only the ambiguous SI prefixes follow `base`.
+            expect(parseBytes("1KiB", { base: 10 })).toBe(1024);
+            expect(parseBytes("1MiB", { base: 10, units: "iec" })).toBe(1024 ** 2);
+            expect(parseBytes("1KB", { base: 10 })).toBe(1000);
+        });
+
+        it("should return NaN for a bare prefix with no byte or octet indicator", () => {
+            expect.assertions(3);
+
+            // "1K" is ambiguous by design (kilobyte? kibibyte? plain thousand?) and
+            // is not a unit in any table, so it stays unparseable.
+            expect(parseBytes("1K", { units: "iec" })).toBeNaN();
+            expect(parseBytes("1K")).toBeNaN();
+            expect(parseBytes("1Ki", { units: "iec" })).toBeNaN();
+        });
+
+        it("should round-trip formatBytes output for every iec unit", () => {
+            expect.assertions(9);
+
+            for (const level of [0, 1, 2, 3, 4, 5, 6, 7, 8]) {
+                const bytes = 1024 ** level;
+
+                expect(parseBytes(formatBytes(bytes, { units: "iec" }), { units: "iec" })).toBe(bytes);
+            }
+        });
     });
 });

@@ -78,12 +78,26 @@ console.log(formatBytes(1_500_000, { bits: true, base: 10, decimals: 1 })); // "
 
 // Always show the sign for deltas/diff UIs (zero is never signed)
 console.log(formatBytes(1_200_000, { signed: true, base: 10, decimals: 1 })); // "+1.2 MB"
+
+// IEC suffixes parse under any `units` table and always scale by 1024
+console.log(parseBytes("1KiB")); // 1024
+console.log(parseBytes("1KiB", { units: "iec" })); // 1024
+console.log(parseBytes("1KiB", { base: 10 })); // 1024
 ```
 
 > **Why does `KB` mean `1024`?** The default `base` is `2` (binary), so the SI
 > short units (`KB`, `MB`, …) are scaled by 1024 rather than 1000 — i.e.
 > `parseBytes("1 KB")` returns `1024`. Pass `base: 10` for strict SI (1000), or
 > use the IEC units (`units: "iec"`, e.g. `KiB`) for unambiguous binary prefixes.
+>
+> **How `parseBytes` resolves a suffix.** The `units` table is consulted first
+> and the remaining tables afterwards, so an explicitly spelled suffix parses
+> whatever `units` is set to: `parseBytes("1KiB", { units: "iec" })`,
+> `parseBytes("1KiB")` and `parseBytes("1KB", { units: "iec" })` all return
+> `1024`. An IEC prefix (`KiB`, `Kibibytes`, `Kio`, …) is a power of 1024 by
+> definition, so it pins the multiplier and ignores `base`; only the ambiguous SI
+> prefixes follow `base`. A bare prefix with no byte/octet indicator (`"1K"`) is
+> not a unit in any table and returns `NaN`.
 >
 > Note on the `parseBytes` error contract: it **throws** a `TypeError` for
 > non-string input or strings longer than 100 characters, but **returns `NaN`**
@@ -693,8 +707,13 @@ console.log(duration(97320000));
 // => "1 day, 3 hours, 2 minutes"
 
 // --- Parsing ---
+// `parseDuration` round-trips `duration`'s own output on default settings: the
+// pieces may be separated by the default ", " delimiter or by plain whitespace.
 console.log(parseDuration("1 day, 3 hours, 2 minutes"));
 // => 97320000
+
+console.log(parseDuration(duration(97320000)) === 97320000);
+// => true
 
 console.log(parseDuration("2h 30 min"));
 // => 9000000
@@ -706,8 +725,24 @@ console.log(parseDuration("1.5 years"));
 // => 47335428000
 
 // Parsing with different languages (requires language object with unitMap)
-console.log(parseDuration("2 jours et 5 heures", { language: fr }));
+console.log(parseDuration("2 jours, 5 heures", { language: fr }));
 // => 190800000
+
+// Conjunctions ("and", "et", …) are caller-supplied — `duration()` only ever
+// inserts the string you give it, no language pack carries one — so pass the
+// same `conjunction` back to parse that output. Without it, the word is noise.
+console.log(parseDuration("2 jours et 5 heures", { conjunction: " et ", language: fr }));
+// => 190800000
+
+console.log(parseDuration("2 jours et 5 heures", { language: fr }));
+// => undefined
+
+// `serialComma: true` (the default) adds a comma before the conjunction; both
+// forms parse with the same option.
+console.log(parseDuration("3 hours, 1 minute, and 14 seconds", { conjunction: " and " }));
+// => 10874000
+console.log(parseDuration("3 hours, 1 minute and 14 seconds", { conjunction: " and " }));
+// => 10874000
 
 // Parsing colon format (H:MM:SS or MM:SS)
 console.log(parseDuration("1:25:05"));
@@ -894,6 +929,8 @@ duration(22141000, { conjunction: " and ", serialComma: false });
 // => "6 hours, 9 minutes and 1 second"
 ```
 
+To parse that output back, pass the same string to [`parseDuration`'s `conjunction` option](#conjunction-1).
+
 ##### maxDecimalPoints
 
 Integer that defines the maximum number of decimal points to show, if relevant. If `undefined`, the count will be converted to a string using [`Number.prototype.toString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString).
@@ -1026,6 +1063,43 @@ parseDuration("1500", { defaultUnit: "s" });
 
 parseDuration("-10", { defaultUnit: "d" });
 // => -864000000 (interpreted as -10 days)
+```
+
+##### conjunction
+
+The conjunction the string was formatted with, so that [`duration`'s `conjunction` output](#conjunction) can be parsed back.
+
+`duration`'s conjunction is caller-supplied — it is not part of any language pack, `duration` only ever inserts the exact string you hand it — so `parseDuration` cannot know it in advance and will not guess. Pass the same string here and the text between two pieces may also be that conjunction, optionally preceded by the comma `serialComma: true` emits before the final piece. It is matched case-insensitively and independently of the whitespace around it, so `" and "`, `"and "` and `"and"` all describe the same gap. Everything else between two pieces is still rejected.
+
+Default: none (matching `duration`'s default of `""`).
+
+```ts
+parseDuration("6 hours and 9 minutes");
+// => undefined (the conjunction is not part of the default grammar)
+
+parseDuration("6 hours and 9 minutes", { conjunction: " and " });
+// => 22140000
+
+parseDuration("6 hours, 9 minutes, and 1 second", { conjunction: " and " });
+// => 22141000
+
+parseDuration("6 hours, 9 minutes and 1 second", { conjunction: " and " });
+// => 22141000
+
+// Still rejected — a conjunction option does not make any word a delimiter.
+parseDuration("6 hours or 9 minutes", { conjunction: " and " });
+// => undefined
+```
+
+`humanizer()` forwards its `conjunction` to `parseDuration`, so a preconfigured instance round-trips its own output:
+
+```ts
+import { humanizer } from "@visulima/humanizer";
+
+const h = humanizer({ conjunction: " and " });
+
+h.parseDuration(h.duration(22141000));
+// => 22141000
 ```
 
 ###### Supported languages

@@ -1,6 +1,5 @@
-import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
-
 import type { Theme } from "../types";
+import { purify } from "./utils/dompurify";
 import { sanitizeCspNonce } from "./utils/sanitize";
 
 // HTML escape function for text content
@@ -72,7 +71,10 @@ const layout = ({
 
     // Optimize stack processing - only indent if stack exists and contains newlines
     const rawStack = error.stack ?? error.toString();
-    const errorStack = dompurifySanitize(rawStack.includes("\n") ? rawStack.replaceAll("\n", "\n\t") : rawStack);
+    const indentedStack = rawStack.includes("\n") ? rawStack.replaceAll("\n", "\n\t") : rawStack;
+    // The stack is embedded in an HTML comment; entity-escaping is the fallback when DOMPurify is
+    // unavailable (DOM-less runtimes such as workerd) and also neutralises a `-->` in the stack.
+    const errorStack = purify(indentedStack) ?? escapeHtml(indentedStack);
 
     return `<!--
     ${errorStack}

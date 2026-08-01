@@ -307,6 +307,29 @@ parseDuration("3 Stunden", { language: de });
 // => 10800000
 ```
 
+#### conjunction
+
+- **Type:** `string`
+- **Default:** none (matching `duration`'s default of `""`)
+- **Description:** The conjunction the string was formatted with
+
+`duration`'s [`conjunction`](#conjunction) is caller-supplied — it is not part of any language pack, `duration` only ever inserts the exact string you hand it — so `parseDuration` cannot know it in advance and will not guess. Pass the same string here and the text between two pieces may also be that conjunction, optionally preceded by the comma `serialComma: true` emits before the final piece. It is matched case-insensitively and independently of the whitespace around it. Everything else between two pieces is still rejected.
+
+```typescript
+parseDuration("6 hours and 9 minutes");
+// => undefined
+
+parseDuration("6 hours and 9 minutes", { conjunction: " and " });
+// => 22140000
+
+parseDuration("6 hours, 9 minutes, and 1 second", { conjunction: " and " });
+// => 22141000
+
+// A conjunction option does not make any word a delimiter.
+parseDuration("6 hours or 9 minutes", { conjunction: " and " });
+// => undefined
+```
+
 ### Returns
 
 - **Type:** `number | undefined`
@@ -439,6 +462,13 @@ interface DurationOptions {
 
 ```typescript
 interface ParseDurationOptions {
+    /**
+     * The conjunction the string was formatted with, e.g. " and ".
+     * Required to parse `duration()` output that includes one, since the
+     * conjunction is caller-supplied and not part of any language pack.
+     */
+    conjunction?: string;
+
     /**
      * Default unit for numeric-only input
      * @default "ms"

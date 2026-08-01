@@ -1,7 +1,6 @@
-import { stripVTControlCharacters } from "node:util";
-
 import { stripEmoji } from "../constants";
 import LRUCache from "../utils/lru-cache";
+import stripVTControlCharacters from "../utils/strip-vt-control-characters";
 import type { CaseOptions, FlipCase } from "./types";
 import generateCacheKey from "./utils/generate-cache-key";
 
