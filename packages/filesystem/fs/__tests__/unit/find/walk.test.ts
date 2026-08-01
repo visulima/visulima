@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
@@ -12,7 +12,15 @@ const MATCH_X_RE = /x$/;
 const MATCH_Y_RE = /y$/;
 const MATCH_Z_RE = /z$/;
 
-const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk");
+// Canonicalised, because `followSymlinks` tests compare yielded paths against
+// paths built from this base. `walk` replaces a followed symlink's path with
+// `realpath()` output, and on Windows that canonicalises the spelling (drive
+// letter included) while a path derived from `import.meta.url` keeps whatever
+// spelling the module URL carried. Without this the same file is yielded under
+// two different strings and exact-path assertions miss one of them. On POSIX the
+// fixture path is already canonical, so this is a no-op. `walk-sync.test.ts`
+// gets the same guarantee for free via tempy, which canonicalises its temp dirs.
+const fixture = realpathSync(resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk"));
 
 const getEntries = async (root: string, options?: WalkOptions): Promise<WalkEntry[]> => {
     const entries: WalkEntry[] = [];
