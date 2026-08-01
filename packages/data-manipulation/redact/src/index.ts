@@ -115,7 +115,14 @@ const recursivelyFilterAttributes = (
         if (modifier.remove) {
             deleteProperty(copy, modifier.key);
         } else {
-            setProperty(copy, modifier.key, resolveReplacement(modifier, getProperty(copy, modifier.key), modifier.key));
+            // The censor receives the WALKED dot-path, not the bare rule key: a rule keyed
+            // "card" that resolves on the `user` node must report "user.card". `identifier`
+            // is the (already lowercased) path of this node and `modifier.key` is the
+            // lowercased key/dotted sub-path it resolved at, so joining them yields the same
+            // path shape the per-key and wildcard branches pass via `currentIdentifier`.
+            const modifierIdentifier = identifier ? `${identifier}.${modifier.key}` : modifier.key;
+
+            setProperty(copy, modifier.key, resolveReplacement(modifier, getProperty(copy, modifier.key), modifierIdentifier));
         }
     }
 };

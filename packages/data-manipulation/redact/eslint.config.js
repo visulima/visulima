@@ -11,6 +11,7 @@ export default createConfig(
             "__docs__",
             "__bench__",
             "vitest.config.ts",
+            "vitest.workerd.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
             "package.json",
