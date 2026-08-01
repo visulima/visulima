@@ -44,12 +44,10 @@
             "cache": true
         },
         "test": {
-            "dependsOn": ["build"],
             "inputs": ["testing", "^production", "{projectRoot}/vitest.config.ts", "{workspaceRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "dependsOn": ["build"],
             "inputs": ["testing", "^production", "{projectRoot}/vitest.config.ts", "{workspaceRoot}/tools/get-vitest-config.ts"],
             "outputs": ["{projectRoot}/coverage"],
             "cache": true
