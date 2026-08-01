@@ -165,6 +165,29 @@ export class Grid {
     }
 
     /**
+     * Determines how tall a column is for `autoFlow: "column"` when no explicit
+     * `rows` option was given.
+     *
+     * Column flow fills a column top-to-bottom before moving to the next one, so
+     * it needs a column height up front. Without an explicit `rows` option the
+     * height is derived from the cells the items occupy (`colSpan * rowSpan`
+     * each) spread over the available columns, which yields the transpose of
+     * what row flow produces for the same input.
+     * @param items The items that will be placed.
+     * @param columns The number of grid columns (already clamped to >= 1).
+     * @returns The number of rows a column spans, at least 1.
+     */
+    private static calculateImplicitRowCount(items: ReadonlyArray<InternalGridItem>, columns: number): number {
+        let occupiedCells = 0;
+
+        for (const item of items) {
+            occupiedCells += (item.colSpan ?? 1) * (item.rowSpan ?? 1);
+        }
+
+        return Math.max(1, Math.ceil(occupiedCells / columns));
+    }
+
+    /**
      * Creates a new Grid instance.
      * @param options Configuration options for the grid
      */
@@ -273,6 +296,9 @@ export class Grid {
 
     /**
      * Sets the number of rows in the grid.
+     *
+     * A positive count is honoured as the grid's row count: too few items pad the
+     * grid out with empty rows. Pass `0` to let the row count follow the items.
      * @param rows Number of rows
      * @returns The grid instance for method chaining
      */
@@ -364,6 +390,14 @@ export class Grid {
 
         const maxRows = this.#options.rows > 0 ? this.#options.rows : Number.POSITIVE_INFINITY; // Use explicit rows option if set
 
+        // Height of a single column for `autoFlow: "column"`. It must not be
+        // derived from `gridLayout.length`: the layout starts empty and only
+        // grows as items are placed, so its height right after the first
+        // placement is 1 and the cursor would wrap to the next column after
+        // every single item, collapsing column flow into a one-row row flow.
+        const columnFlowRows
+            = this.#options.rows > 0 ? this.#options.rows : Grid.calculateImplicitRowCount(this.#items, Math.max(1, this.#options.columns));
+
         for (let itemIndex = 0; itemIndex < this.#items.length; itemIndex += 1) {
             const item = this.#items[itemIndex] as InternalGridItem;
 
@@ -377,17 +411,12 @@ export class Grid {
                         currentRow += 1;
                     }
                 } else {
-                    // autoFlow === "column"
+                    // autoFlow === "column": move down the column, wrapping to the next one at its foot
                     currentRow += 1;
-                    // Wrap based on current grid height or maxRows
-                    const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
-                    if (currentRow >= effectiveMaxRows && effectiveMaxRows !== Number.POSITIVE_INFINITY) {
+                    if (currentRow >= columnFlowRows) {
                         currentRow = 0;
                         currentCol += 1;
-                    } else if (gridLayout.length === 0 && effectiveMaxRows === Number.POSITIVE_INFINITY) {
-                        // Special case for column flow in an initially empty grid with no row limit
-                        currentCol += 1; // Just advance column
                     }
                 }
 
@@ -404,10 +433,16 @@ export class Grid {
 
             // Safeguard against excessively long searches (e.g., impossible layouts)
             let attempts = 0;
-            // Estimate max attempts based on grid size and item spans
-            const maxAttempts = (gridLayout.length + itemRowSpan + 5) * this.#options.columns;
+            // Estimate max attempts based on grid size and item spans. Column flow searches
+            // the full column height, which can exceed the rows materialised so far.
+            const searchHeight = this.#options.autoFlow === "column" ? Math.max(gridLayout.length, columnFlowRows) : gridLayout.length;
+            const maxAttempts = (searchHeight + itemRowSpan + 5) * this.#options.columns;
 
-            while (!foundPosition && searchRow < maxRows && attempts < maxAttempts) {
+            // An item wider than the grid can never fit anywhere. Skipping the search keeps the
+            // row-flow scan from appending one throwaway row per attempt before giving up.
+            const canEverFit = itemColSpan <= this.#options.columns;
+
+            while (canEverFit && !foundPosition && searchRow < maxRows && attempts < maxAttempts) {
                 attempts += 1;
                 // Ensure the grid layout array is tall enough for the placement check
                 while (searchRow + itemRowSpan > gridLayout.length) {
@@ -437,11 +472,9 @@ export class Grid {
                         // Move cursor below the placed item in the same column
                         currentRow = searchRow + itemRowSpan;
                         currentCol = searchCol;
-                        // Wrap to the top of the next column if necessary
-                        // Compare against current grid height or specified maxRows
-                        const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
-                        if (currentRow >= effectiveMaxRows) {
+                        // Wrap to the top of the next column once the cursor passes the column's foot
+                        if (currentRow >= columnFlowRows) {
                             currentRow = 0;
                             currentCol += 1;
                         }
@@ -456,15 +489,11 @@ export class Grid {
                     }
                 } else {
                     // autoFlow === "column"
+                    // Walk down the column; the loop head grows the layout before the next check.
                     searchRow += 1;
-                    // Ensure grid is tall enough for the *next* check
-                    while (searchRow + itemRowSpan > gridLayout.length) {
-                        gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
-                    }
-                    // Wrap search cursor if it goes past the bottom
-                    const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
-                    if (searchRow >= effectiveMaxRows) {
+                    // Wrap search cursor if it goes past the bottom of the column
+                    if (searchRow >= columnFlowRows) {
                         searchRow = 0;
                         searchCol += 1;
 
@@ -494,23 +523,28 @@ export class Grid {
                     }
                 } else {
                     currentRow += 1;
-                    const effectiveMaxRows = gridLayout.length > 0 ? gridLayout.length : maxRows;
 
-                    if (currentRow >= effectiveMaxRows) {
+                    if (currentRow >= columnFlowRows) {
                         currentRow = 0;
                         currentCol += 1;
                     }
                 }
             }
-
-            // Add safeguard against potential infinite loops in the outer loop
-            if (attempts >= maxAttempts) {
-                break;
-            }
         }
 
-        // Trim any fully empty rows added during placement if rows option was dynamic
-        if (this.#options.rows === 0) {
+        if (this.#options.rows > 0) {
+            // An explicit `rows` is a request for that many rows, mirroring CSS Grid
+            // where an explicit track count materialises the tracks whether or not
+            // items fill them. Too few items therefore pad the grid out with empty
+            // rows rather than shrinking it. A grid holding no content at all is left
+            // alone so it keeps rendering as an empty string.
+            if (gridLayout.length > 0) {
+                while (gridLayout.length < this.#options.rows) {
+                    gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
+                }
+            }
+        } else {
+            // Trim any fully empty rows added during placement if rows option was dynamic
             while (gridLayout.length > 0 && gridLayout.at(-1)?.every((cell) => cell === undefined)) {
                 gridLayout.pop();
             }
