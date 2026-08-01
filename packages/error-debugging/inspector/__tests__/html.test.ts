@@ -1,78 +1,27 @@
-/* eslint-disable max-classes-per-file */
+// @vitest-environment happy-dom
+
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { inspect } from "../src";
 import h from "./utils/h";
 
-describe.skipIf(!("window" in globalThis))("hTMLElement", () => {
-    beforeEach(() => {
-        if (typeof HTMLElement !== "function") {
-            class MockText {
-                public wholeText: string;
-
-                public data: string;
-
-                public constructor(data: string) {
-                    this.wholeText = data;
-                    this.data = data;
-                }
-
-                // eslint-disable-next-line class-methods-use-this
-                public get nodeType() {
-                    return 3;
-                }
-
-                public get length() {
-                    return this.data.length;
-                }
-            }
-
-            class MockHTMLElement {
-                public tagName: string;
-
-                public attributes: Record<string, unknown>;
-
-                public children: unknown[];
-
-                public constructor(tagName: string) {
-                    this.tagName = tagName.toUpperCase();
-                    this.attributes = {};
-                    this.children = [];
-                }
-
-                // eslint-disable-next-line class-methods-use-this
-                public get nodeType() {
-                    return 1;
-                }
-
-                public appendChild(element: MockHTMLElement) {
-                    this.children.push(element);
-                }
-
-                public getAttribute(name: string) {
-                    return this.attributes[name];
-                }
-
-                public setAttribute(name: string, value: any) {
-                    this.attributes[name] = value;
-                }
-
-                public getAttributeNames(): string[] {
-                    return Object.keys(this.attributes);
-                }
-            }
-
-            if (!("document" in globalThis)) {
-                globalThis.document = {} as any;
-            }
-
-            globalThis.document.createElement = ((tagName: string) => new MockHTMLElement(tagName)) as typeof document.createElement;
-            globalThis.document.createTextNode = ((data: string) => new MockText(data)) as unknown as typeof document.createTextNode;
-            globalThis.HTMLElement = MockHTMLElement as unknown as typeof HTMLElement;
-            globalThis.Text = MockText as unknown as typeof Text;
-        }
-    });
-
+/**
+ * The DOM inspectors (`inspectHTMLElement` / `inspectNode` / `inspectNodeCollection`)
+ * only dispatch when `window` is present, so these specs need a DOM. They used to be
+ * wrapped in `describe.skipIf(!("window" in globalThis))` and paired with hand-rolled
+ * `MockHTMLElement` / `MockText` stand-ins — which meant they skipped silently under the
+ * Node pool and were never executed anywhere, so nobody noticed the mocks had gone stale
+ * (`h()` calls `append()`, which the mock element never implemented).
+ *
+ * The docblock above gives the file a real DOM instead, so it runs in the ordinary
+ * `test` target on every runner. There is deliberately no skip guard: if the environment
+ * ever stops being applied these fail loudly rather than disappearing again.
+ *
+ * `__tests__/html-node.test.ts` remains the complementary suite — it drives the same
+ * exports with hostile, DOM-shaped objects (throwing getters, forged tags) that a real
+ * DOM cannot produce.
+ */
+describe("hTMLElement", () => {
     it("returns `<div></div>` for an empty div", () => {
         expect.assertions(1);
 

@@ -342,3 +342,490 @@ describe("complex keys with double quote style", () => {
         expect(inspect({ "a\"b": 1 }, options)).toBe(String.raw`{ \"a\\"b\": 1 }`);
     });
 });
+
+describe("hostile proxies (security)", () => {
+    it("does not throw when the `get` trap throws for every key", () => {
+        expect.assertions(2);
+
+        // The dispatch slug (`Object.prototype.toString.call`) reads
+        // `Symbol.toStringTag` off the value, so this used to crash before any
+        // guarded read was reached. The own keys stay observable through the
+        // default `ownKeys` trap; only the values degrade.
+        const value = new Proxy(
+            { a: 1 },
+            {
+                get: () => {
+                    throw new Error("trap");
+                },
+            },
+        );
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ a: [Inspection threw] }");
+    });
+
+    it("renders every property when the `get` trap throws only for `Symbol.toStringTag`", () => {
+        expect.assertions(1);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                get: (target, key, receiver) => {
+                    if (key === Symbol.toStringTag) {
+                        throw new Error("trap");
+                    }
+
+                    return Reflect.get(target, key, receiver) as unknown;
+                },
+            },
+        );
+
+        expect(inspect(value)).toBe("{ a: 1 }");
+    });
+
+    it("renders every property when the `get` trap throws only for `constructor`", () => {
+        expect.assertions(1);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                get: (target, key, receiver) => {
+                    if (key === "constructor") {
+                        throw new Error("trap");
+                    }
+
+                    return Reflect.get(target, key, receiver) as unknown;
+                },
+            },
+        );
+
+        expect(inspect(value)).toBe("{ a: 1 }");
+    });
+
+    it("renders every property when the `get` trap throws only for the custom-inspect symbols", () => {
+        expect.assertions(3);
+
+        const hostileFor = (symbol: symbol | string) =>
+            new Proxy(
+                { a: 1 },
+                {
+                    get: (target, key, receiver) => {
+                        if (key === symbol) {
+                            throw new Error("trap");
+                        }
+
+                        return Reflect.get(target, key, receiver) as unknown;
+                    },
+                },
+            );
+
+        expect(inspect(hostileFor(Symbol.for("chai/inspect")))).toBe("{ a: 1 }");
+        expect(inspect(hostileFor(Symbol.for("nodejs.util.inspect.custom")))).toBe("{ a: 1 }");
+        expect(inspect(hostileFor("inspect"))).toBe("{ a: 1 }");
+    });
+
+    it("does not throw when the `has` trap throws", () => {
+        expect.assertions(2);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                has: () => {
+                    throw new Error("trap");
+                },
+            },
+        );
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ a: 1 }");
+    });
+
+    it("does not throw when the `getPrototypeOf` trap throws", () => {
+        expect.assertions(2);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                getPrototypeOf: () => {
+                    throw new Error("trap");
+                },
+            },
+        );
+
+        expect(() => inspect(value)).not.toThrow();
+        // An unreadable prototype must not be reported as a null prototype.
+        expect(inspect(value)).toBe("{ a: 1 }");
+    });
+
+    it("does not throw when the `getOwnPropertyDescriptor` trap throws", () => {
+        expect.assertions(2);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                getOwnPropertyDescriptor: () => {
+                    throw new Error("trap");
+                },
+            },
+        );
+
+        expect(() => inspect(value)).not.toThrow();
+        // Enumerability is unknowable, so the key is kept rather than dropped.
+        expect(inspect(value)).toBe("{ a: 1 }");
+    });
+
+    it("does not throw when the `ownKeys` trap throws", () => {
+        expect.assertions(2);
+
+        const value = new Proxy(
+            { a: 1 },
+            {
+                ownKeys: () => {
+                    throw new Error("trap");
+                },
+            },
+        );
+
+        expect(() => inspect(value)).not.toThrow();
+        // Not a single key is observable, so there is nothing honest left to print.
+        expect(inspect(value)).toBe("[Inspection threw]");
+    });
+
+    it("does not throw for a hostile proxy over an array", () => {
+        expect.assertions(2);
+
+        const value = new Proxy([1, 2], {
+            get: () => {
+                throw new Error("trap");
+            },
+        });
+
+        expect(() => inspect(value)).not.toThrow();
+        // `length` is unreadable, so the value drops to the object renderer, which
+        // reads own keys only.
+        expect(inspect(value)).toBe("{ '0': [Inspection threw], '1': [Inspection threw] }");
+    });
+
+    it("does not throw for a hostile proxy over a class instance", () => {
+        expect.assertions(2);
+
+        class Widget {
+            public size = 1;
+        }
+
+        const value = new Proxy(new Widget(), {
+            get: () => {
+                throw new Error("trap");
+            },
+        });
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ size: [Inspection threw] }");
+    });
+
+    it("keeps a hostile proxy from taking down its siblings", () => {
+        expect.assertions(1);
+
+        const value = {
+            after: 2,
+            bad: new Proxy(
+                { inner: 1 },
+                {
+                    get: () => {
+                        throw new Error("trap");
+                    },
+                },
+            ),
+            before: 1,
+        };
+
+        expect(inspect(value)).toBe("{ after: 2, bad: { inner: [Inspection threw] }, before: 1 }");
+    });
+});
+
+describe("revoked proxies (security)", () => {
+    it("does not throw for a revoked proxy over an object", () => {
+        expect.assertions(2);
+
+        const { proxy, revoke } = Proxy.revocable({ a: 1 }, {});
+
+        revoke();
+
+        // Every operation on a revoked proxy throws, including ones that look
+        // total — `Object.prototype.toString`, `Array.isArray`, `ownKeys`.
+        expect(() => inspect(proxy)).not.toThrow();
+        expect(inspect(proxy)).toBe("[Inspection threw]");
+    });
+
+    it("does not throw for a revoked proxy over an array", () => {
+        expect.assertions(2);
+
+        const { proxy, revoke } = Proxy.revocable([1, 2], {});
+
+        revoke();
+
+        expect(() => inspect(proxy)).not.toThrow();
+        expect(inspect(proxy)).toBe("[Inspection threw]");
+    });
+
+    it("does not throw for a revoked proxy over a function", () => {
+        expect.assertions(2);
+
+        const { proxy, revoke } = Proxy.revocable(() => 1, {});
+
+        revoke();
+
+        // `typeof` still reports "function", so this reaches the function
+        // inspector with nothing readable on it — not even `toString`.
+        expect(() => inspect(proxy)).not.toThrow();
+        expect(inspect(proxy)).toBe("[Inspection threw]");
+    });
+
+    it("does not throw for a revoked proxy sitting at the depth limit", () => {
+        expect.assertions(2);
+
+        const { proxy, revoke } = Proxy.revocable([1], {});
+
+        revoke();
+
+        // The depth cut-off calls `Array.isArray` to pick between `[Array]` and
+        // `[Object]`, which throws on a revoked proxy.
+        expect(() => inspect({ a: { b: { c: { d: { e: proxy } } } } })).not.toThrow();
+        expect(inspect({ a: { b: { c: { d: { e: proxy } } } } })).toBe("{ a: { b: { c: { d: { e: [Object] } } } } }");
+    });
+});
+
+describe("throwing Symbol.toStringTag getter", () => {
+    it("does not throw for a getter that throws on a plain object", () => {
+        expect.assertions(2);
+
+        const value = {
+            a: 1,
+            get [Symbol.toStringTag](): string {
+                throw new Error("boom");
+            },
+        };
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: [Inspection threw] }");
+    });
+});
+
+// Every built-in tag that carries a brand check. `Int32Array` is left out on purpose —
+// it is exercised by the `registerStringTag` case at the end of the block.
+const brandCheckedTags = [
+    "Arguments",
+    "Array",
+    "ArrayBuffer",
+    "BigInt",
+    "Boolean",
+    "DataView",
+    "Date",
+    "Error",
+    "Float32Array",
+    "Float64Array",
+    "Function",
+    "Int8Array",
+    "Int16Array",
+    "Map",
+    "Number",
+    "RegExp",
+    "Set",
+    "SharedArrayBuffer",
+    "String",
+    "Symbol",
+    "Uint8Array",
+    "Uint8ClampedArray",
+    "Uint16Array",
+    "Uint32Array",
+    "WeakMap",
+    "WeakSet",
+];
+
+describe("forged string tags (security)", () => {
+    it("does not dispatch a plain object into the Map inspector", () => {
+        expect.assertions(2);
+
+        // `Object.prototype.toString` returns whatever `Symbol.toStringTag` says, so
+        // this used to be routed straight into `inspectMap` and die on `map.entries()`.
+        const value = { a: 1, [Symbol.toStringTag]: "Map" };
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ a: 1, [Symbol(Symbol.toStringTag)]: 'Map' }");
+    });
+
+    it("does not dispatch a plain object into the Set, Date, RegExp, DataView or Error inspectors", () => {
+        expect.assertions(10);
+
+        // The other five tags whose renderers reached for a method or accessor that
+        // only exists on the genuine built-in.
+        for (const tag of ["Set", "Date", "RegExp", "DataView", "Error"]) {
+            const value = { a: 1, [Symbol.toStringTag]: tag };
+
+            expect(() => inspect(value)).not.toThrow();
+            expect(inspect(value)).toBe(`{ a: 1, [Symbol(Symbol.toStringTag)]: '${tag}' }`);
+        }
+    });
+
+    it("renders every brand-checked built-in tag as the plain object it is", () => {
+        expect.assertions(26);
+
+        // A forged tag buys nothing: the value is printed for what it is, with the tag
+        // itself visible as the own symbol property it is.
+        for (const tag of brandCheckedTags) {
+            expect(inspect({ a: 1, [Symbol.toStringTag]: tag })).toBe(`{ a: 1, [Symbol(Symbol.toStringTag)]: '${tag}' }`);
+        }
+    });
+
+    it("does not dispatch a value that inherits a built-in prototype without its internal slot", () => {
+        expect.assertions(5);
+
+        // Inheriting `Map.prototype` is enough to be tagged `Map`, but not enough to
+        // have a `[[MapData]]` slot — including for the prototype objects themselves.
+        expect(inspect(Object.create(Map.prototype) as object)).toBe("Map [Map] {}");
+        expect(inspect(Map.prototype)).toBe("{}");
+        expect(inspect(Set.prototype)).toBe("{}");
+        expect(inspect(ArrayBuffer.prototype)).toBe("{}");
+        expect(inspect(DataView.prototype)).toBe("{}");
+    });
+
+    it("does not dispatch a proxy wrapping a genuine built-in", () => {
+        expect.assertions(4);
+
+        // A proxy forwards the tag read to its target but has no internal slot of its
+        // own, so the built-in accessors reject it as an incompatible receiver.
+        expect(() => inspect(new Proxy(new Map([[1, 2]]), {}))).not.toThrow();
+        expect(inspect(new Proxy(new Map([[1, 2]]), {}))).toBe("Map [Map] {}");
+        expect(() => inspect(new Proxy(new Set([1]), {}))).not.toThrow();
+        expect(inspect(new Proxy(new Set([1]), {}))).toBe("Set [Set] {}");
+    });
+
+    it("leaves genuine built-ins on their own inspectors", () => {
+        expect.assertions(9);
+
+        class MyMap extends Map<string, number> {}
+
+        expect(inspect(new Map([["a", 1]]))).toBe("Map (1) { 'a' => 1 }");
+        expect(inspect(new MyMap([["a", 1]]))).toBe("Map (1) { 'a' => 1 }");
+        expect(inspect(new Set([1, 2]))).toBe("Set (2) { 1, 2 }");
+        expect(inspect(new WeakMap())).toBe("WeakMap{…}");
+        expect(inspect(new WeakSet())).toBe("WeakSet{…}");
+        expect(inspect(/ab+c/gi)).toBe("/ab+c/gi");
+        expect(inspect(new Date("2020-01-01T00:00:00.000Z"))).toBe("2020-01-01T00:00:00.000Z");
+        expect(inspect(new Int32Array([1, 2]))).toBe("Int32Array[ 1, 2 ]");
+        expect(inspect(new Error("boom"))).toBe("Error: boom");
+    });
+
+    it("keeps rendering a tag that was already safe to forge", () => {
+        expect.assertions(6);
+
+        // `Promise`, `Generator` and `AsyncGenerator` are deliberately left unchecked:
+        // every operation that would prove their slots (`then`, `next`, `return`) is
+        // observable — it schedules a job, marks a rejection handled, or advances the
+        // iterator — and their inspectors read nothing off the value beyond a guarded
+        // tag read, so a forgery was never able to make them throw.
+        //
+        // This pins the documented limitation (README, "Forged tags"): the label is a
+        // lie, and that is the accepted cost. If a sound side-effect-free brand check
+        // ever lands, this expectation changes and the docs must change with it.
+        for (const tag of ["Promise", "Generator", "AsyncGenerator"]) {
+            expect(() => inspect({ [Symbol.toStringTag]: tag })).not.toThrow();
+        }
+
+        expect(inspect({ [Symbol.toStringTag]: "Promise" })).toBe("Promise{…}");
+        expect(inspect({ [Symbol.toStringTag]: "Generator" })).toBe("Object [Generator] {}");
+        expect(inspect({ [Symbol.toStringTag]: "AsyncGenerator" })).toBe("Object [AsyncGenerator] {}");
+    });
+
+    it("still renders genuine promises and generators that a prototype heuristic would reject", () => {
+        expect.assertions(3);
+
+        // A `getPrototypeOf(value) === Promise.prototype` style check would fail all
+        // three of these — the first two are cross-realm-shaped (a subclass and an
+        // object whose own tag was redefined), and it is exactly why no such heuristic
+        // is used in `matchesBuiltInTag`. They must keep rendering as the real thing.
+        class MyPromise extends Promise<number> {}
+
+        expect(inspect(MyPromise.resolve(1))).toBe("Promise{…}");
+
+        const tagged = Promise.resolve(1);
+
+        // `Reflect` rather than `Object`, because `Object.defineProperty` hands the
+        // promise straight back and the bare expression statement then reads as a
+        // floating promise.
+        Reflect.defineProperty(tagged, Symbol.toStringTag, { configurable: true, value: "Promise" });
+
+        expect(inspect(tagged)).toBe("Promise{…}");
+
+        // eslint-disable-next-line func-names
+        expect(inspect((function* () {})())).toBe("Object [Generator] {}");
+    });
+
+    it("does not throw for a forged DOM collection whose members are hostile", () => {
+        expect.assertions(4);
+
+        // `NodeList` / `HTMLCollection` are host tags with no ES-level brand, so they
+        // stay dispatchable by tag alone; the per-node render is what is bounded.
+        for (const tag of ["NodeList", "HTMLCollection"]) {
+            const value = {
+                0: {
+                    get nodeType(): number {
+                        throw new Error("boom");
+                    },
+                },
+                length: 1,
+                [Symbol.toStringTag]: tag,
+            };
+
+            expect(() => inspect(value)).not.toThrow();
+            expect(inspect(value)).toBe("[Inspection threw]");
+        }
+    });
+
+    it("does not throw for a forged generator whose tag stops answering", () => {
+        expect.assertions(2);
+
+        // `Generator` is unchecked for the same reason as `Promise` (`next` would
+        // advance the iterator), so its inspector must survive a tag that answers the
+        // dispatch read and then throws on the read the inspector itself makes.
+        const makeValue = () => {
+            let reads = 0;
+
+            return new Proxy(
+                {},
+                {
+                    get: (target, key, receiver) => {
+                        if (key === Symbol.toStringTag) {
+                            reads += 1;
+
+                            if (reads > 1) {
+                                throw new Error("boom");
+                            }
+
+                            return "Generator";
+                        }
+
+                        return Reflect.get(target, key, receiver) as unknown;
+                    },
+                },
+            );
+        };
+
+        expect(() => inspect(makeValue())).not.toThrow();
+        expect(inspect(makeValue())).toBe("Object [Generator] {}");
+    });
+
+    it("does not brand-check consumer-registered string tags", () => {
+        expect.assertions(4);
+
+        // The extension point is untouched: `registerStringTag` writes to its own map,
+        // which the brand table is never consulted for — for a tag of the consumer's own
+        // invention, and for one that collides with a built-in name. Genuine built-ins
+        // keep winning, because `baseTypesMap` is still consulted first.
+        expect(registerStringTag("Duration", () => "registered-duration")).toBe(true);
+        expect(inspect({ [Symbol.toStringTag]: "Duration" })).toBe("registered-duration");
+
+        expect(registerStringTag("Int32Array", () => "registered-int32")).toBe(true);
+        expect(inspect({ [Symbol.toStringTag]: "Int32Array" })).toBe("registered-int32");
+    });
+});
