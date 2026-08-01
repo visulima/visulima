@@ -25,8 +25,44 @@ const storage = new AsyncLocalStorage<WideEvent>();
 const activeLoggers = new WeakSet<WideEvent>();
 
 /**
+ * `AsyncLocalStorage.enterWith()` is optional: `node:async_hooks` is available on
+ * workerd/Cloudflare Workers (and other edge runtimes) but `enterWith()` throws
+ * "not implemented" there. Elysia's `derive` hook cannot wrap the rest of the
+ * request in `storage.run()`, so the ambient accessor is simply unavailable on
+ * those runtimes.
+ *
+ * Holds the last rejection rather than latching a "not supported" flag. A runtime
+ * that refuses `enterWith()` refuses it every time, so retrying costs one throw per
+ * request there and nothing at all elsewhere — while a one-off failure can no longer
+ * disable the accessor for the rest of the process, and the diagnostic below quotes
+ * what actually went wrong instead of asserting a cause it never observed.
+ */
+let lastEnterWithFailure: string | undefined;
+
+/**
+ * Binds `logger` to the ambient async context when the runtime allows it.
+ * @param logger The request-scoped wide event to bind.
+ * @returns `true` when the binding took effect, `false` when the runtime rejected it.
+ */
+const enterAmbientContext = (logger: WideEvent): boolean => {
+    try {
+        storage.enterWith(logger);
+        lastEnterWithFailure = undefined;
+
+        return true;
+    } catch (error) {
+        lastEnterWithFailure = error instanceof Error ? error.message : String(error);
+
+        return false;
+    }
+};
+
+/**
  * Retrieve the request-scoped WideEvent logger from AsyncLocalStorage.
  * Must be called within a request handler where pail middleware is active.
+ *
+ * Not available on runtimes that reject `AsyncLocalStorage.enterWith()` (workerd and
+ * other edge runtimes); use the `log` property on the handler context instead.
  * @returns The request-scoped WideEvent logger
  * @throws Error if called outside of the middleware context
  */
@@ -34,6 +70,12 @@ const useLogger = (): WideEvent => {
     const logger = storage.getStore();
 
     if (!logger || !activeLoggers.has(logger)) {
+        if (lastEnterWithFailure !== undefined) {
+            throw new Error(
+                `[pail] useLogger() is unavailable here: AsyncLocalStorage.enterWith() was rejected by this runtime with "${lastEnterWithFailure}". Use the \`log\` property on the Elysia handler context instead.`,
+            );
+        }
+
         throw new Error("[pail] useLogger() called outside of Elysia pail plugin context.");
     }
 
@@ -97,7 +139,7 @@ export const pailPlugin = <T extends string = string>(app: PailElysiaInstance, o
 
                 if (!result.skipped) {
                     activeLoggers.add(result.logger);
-                    storage.enterWith(result.logger);
+                    enterAmbientContext(result.logger);
                 }
 
                 return { log: result.logger };
