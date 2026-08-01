@@ -222,6 +222,19 @@ describe(walk, () => {
         });
     });
 
+    it("should normalize paths of followed symlinks", async () => {
+        expect.assertions(2);
+
+        // Regression: a followed symlink's path comes from `realpath`, the only path
+        // in `walk` not produced by `@visulima/path`. On Windows it returns backslashes,
+        // so the entry escaped the normalisation every other entry gets. Only reproduces
+        // on Windows — on POSIX `realpath` already returns forward slashes.
+        const entries = await getEntries(resolve(fixture, "symlink"), { followSymlinks: true });
+
+        expect(entries.length).toBeGreaterThan(0);
+        expect(entries.map(({ path }) => path).join("\n")).not.toContain("\\");
+    });
+
     it("should handle symlinks with followSymlinks=true and includeSymlinks=false", async () => {
         expect.assertions(2);
 

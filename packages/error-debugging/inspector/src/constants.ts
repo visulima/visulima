@@ -1,6 +1,14 @@
 export const TRUNCATOR = "…";
 
 /**
+ * Rendered in place of anything the inspector was not allowed to read — a getter
+ * that threw, a `Proxy` trap that threw, a revoked `Proxy`. The inspector must
+ * never crash on the value it is asked to render (its primary consumer is a
+ * logger), so every unreadable slot degrades to this marker instead.
+ */
+export const INSPECTION_THREW = "[Inspection threw]";
+
+/**
  * Non-textual separator used between entries when output will later be re-indented
  * by `indentedJoin`. It occupies the same width (two characters) as the textual
  * `", "` separator, keeping `inspectList`'s truncation math identical, yet can never

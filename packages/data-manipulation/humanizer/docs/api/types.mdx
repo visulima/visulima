@@ -218,6 +218,13 @@ Options for parsing duration strings to milliseconds.
 ```typescript
 interface ParseDurationOptions {
     /**
+     * The conjunction the string was formatted with, e.g. " and ".
+     * Required to parse `duration()` output that includes one, since the
+     * conjunction is caller-supplied and not part of any language pack.
+     */
+    conjunction?: string;
+
+    /**
      * Default unit for numeric-only input
      * @default "ms"
      */

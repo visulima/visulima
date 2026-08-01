@@ -3,13 +3,13 @@
     "version": "0.0.0",
     "private": true,
     "license": "MIT",
+    "sideEffects": false,
+    "type": "module",
     "workspaces": [
         "packages/*/*",
         "apps/*",
         "shared/*"
     ],
-    "type": "module",
-    "sideEffects": false,
     "scripts": {
         "bench": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:bench --parallel",
         "bench:affected": "nx affected --target=test:bench --parallel --nxBail",
@@ -190,16 +190,11 @@
         "start:web": "pnpm run --filter \"www\" start",
         "test": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test --all --parallel",
         "test:affected": "nx affected --target=test --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
-        "test:affected:browser:chrome": "nx affected --target=test:browser:chrome --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
-        "test:affected:browser:firefox": "nx affected --target=test:browser:firefox --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
-        "test:affected:browser:webkit": "nx affected --target=test:browser:webkit --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
         "test:affected:coverage": "nx affected --target=test:coverage --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
+        "test:affected:workerd": "nx affected --target=test:workerd --parallel --exclude=*-bench,storybook,shared-utils,www --nxBail",
         "test:ansi": "pnpm --filter \"ansi\" run test",
         "test:api-platform": "pnpm --filter \"api-platform\" run test",
         "test:boxen": "pnpm --filter \"boxen\" run test",
-        "test:browser:chrome": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:browser:chrome --all --parallel",
-        "test:browser:firefox": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:browser:firefox --all --parallel",
-        "test:browser:webkit": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:browser:webkit --all --parallel",
         "test:bytes": "pnpm --filter \"bytes\" run test",
         "test:cerebro": "pnpm --filter \"cerebro\" run test",
         "test:colorize": "pnpm --filter \"colorize\" run test",
@@ -309,14 +304,19 @@
         "test:ui:web": "pnpm --filter \"www\" run test:ui",
         "test:vis-mcp": "pnpm --filter \"vis-mcp\" run test",
         "test:vite-overlay": "pnpm --filter \"vite-overlay\" run test",
-        "test:web": "pnpm --filter \"www\" run test"
+        "test:web": "pnpm --filter \"www\" run test",
+        "test:workerd": "nx graph --file=/tmp/discardgraph.json 2>/dev/null && nx run-many --target=test:workerd --parallel --projects=tag:type:package"
     },
+    "browserslist": [
+        "extends browserslist-config-anolilab"
+    ],
     "dependencies": {
         "@anolilab/commitlint-config": "catalog:prod",
         "@anolilab/lint-staged-config": "catalog:lint",
         "@anolilab/multi-semantic-release": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/textlint-config": "catalog:prod",
+        "@cloudflare/vitest-pool-workers": "catalog:test",
         "@commitlint/cli": "catalog:prod",
         "@commitlint/config-conventional": "catalog:prod",
         "@octokit/rest": "catalog:prod",
@@ -342,11 +342,8 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "browserslist": [
-        "extends browserslist-config-anolilab"
-    ],
+    "packageManager": "pnpm@11.1.3",
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "packageManager": "pnpm@11.1.3"
+    }
 }

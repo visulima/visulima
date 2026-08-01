@@ -39,6 +39,7 @@ export default createConfig(
             "package.json",
             "README.md",
             "CHANGELOG.md",
+            "MIGRATION-GUIDE.md",
             "prettier.config.js",
             "**/*.js",
             "**/*.d.ts",

@@ -1,10 +1,11 @@
 import type { State } from "../types";
+import isSharedArrayBuffer from "../utils/is-shared-array-buffer";
 import copyArrayBuffer from "./copy-array-buffer";
 
 const copyDataView = <Value extends DataView>(dataView: Value, state: State): Value => {
     const { buffer } = dataView;
 
-    if (buffer instanceof SharedArrayBuffer) {
+    if (isSharedArrayBuffer(buffer)) {
         throw new TypeError("SharedArrayBuffer cannot be cloned");
     }
 

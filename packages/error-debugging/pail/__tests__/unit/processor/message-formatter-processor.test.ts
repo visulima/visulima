@@ -248,4 +248,86 @@ describe("messageFormatterProcessor", () => {
 
         expect(processedMeta.message).toStrictEqual({ arr: ["a"], nested: { k: "v" }, nul: null, num: 5, str: "hello" });
     });
+
+    // Passing `stringify` to `build()` replaces the guarded serializer `@visulima/fmt` would
+    // otherwise use, so every way that callback can throw has to be handled here instead.
+    describe("serializer failures", () => {
+        const createMeta = (message: string, context: unknown[]): Meta<string> => {
+            return {
+                badge: undefined,
+                context,
+                date: new Date(),
+                error: undefined,
+                groups: [],
+                label: undefined,
+                message,
+                prefix: undefined,
+                repeated: undefined,
+                scope: undefined,
+                suffix: undefined,
+                traceError: undefined,
+                type: {
+                    level: "info",
+                    name: "test",
+                },
+            };
+        };
+
+        it("renders an indirect cycle as [Circular] instead of throwing", () => {
+            expect.assertions(1);
+
+            const processor = new MessageFormatterProcessor();
+
+            const a: Record<string, unknown> = {};
+            const b: Record<string, unknown> = {};
+            const c: Record<string, unknown> = {};
+
+            a.b = b;
+            b.c = c;
+            c.a = a;
+
+            expect(processor.process(createMeta("Hello %o", [a])).message).toBe("Hello \"[Circular]\"");
+        });
+
+        it("serializes a repeated but acyclic reference normally", () => {
+            expect.assertions(1);
+
+            const processor = new MessageFormatterProcessor();
+            const shared = { id: 1 };
+
+            // The same object twice is not a cycle: `JSON.stringify` handles it, so the value must
+            // survive intact rather than be written off as circular.
+            expect(processor.process(createMeta("Hello %j", [{ left: shared, right: shared }])).message).toBe(
+                "Hello {\"left\":{\"id\":1},\"right\":{\"id\":1}}",
+            );
+        });
+
+        it("reports a supplied stringify that throws without crashing the log call", () => {
+            expect.assertions(1);
+
+            const processor = new MessageFormatterProcessor();
+
+            processor.setStringify(() => {
+                throw new Error("serializer exploded");
+            });
+
+            // A defect in the consumer's serializer must stay visible in the output — it is not a
+            // cycle, so it must not be disguised as one.
+            expect(processor.process(createMeta("Hello %o", [{ prop: "value" }])).message).toBe("Hello \"[unserializable: serializer exploded]\"");
+        });
+
+        it("prefers a supplied stringify over the built-in circular guard", () => {
+            expect.assertions(1);
+
+            const processor = new MessageFormatterProcessor();
+
+            processor.setStringify((value: unknown) => `<${typeof value}>`);
+
+            const object: Record<string, unknown> = { prop: "value" };
+
+            object.circular = object;
+
+            expect(processor.process(createMeta("Hello %o", [object])).message).toBe("Hello <object>");
+        });
+    });
 });

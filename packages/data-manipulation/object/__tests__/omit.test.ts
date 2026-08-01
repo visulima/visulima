@@ -228,12 +228,67 @@ describe(omit, () => {
     });
 
     it("should not pollute Object.prototype when omitting near a __proto__ key", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const input = JSON.parse(`{ "__proto__": { "polluted": true }, "safe": 1 }`) as Record<string, unknown>;
         const result = omit(input, ["safe"]);
 
         expect(({} as Record<string, unknown>).polluted).toBeUndefined();
         expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+        // The own "__proto__" data property is carried over as an ordinary key.
+        expect(Object.hasOwn(result, "__proto__")).toBe(true);
+    });
+
+    it("should treat constructor as an ordinary own key", () => {
+        expect.assertions(1);
+
+        const input = { constructor: "c", prototype: "p", safe: 1 };
+
+        expect(omit(input, ["constructor"])).toStrictEqual({ prototype: "p", safe: 1 });
+    });
+
+    it("should drop a primitive array element addressed by index", () => {
+        expect.assertions(1);
+
+        const input = { list: [1, 2, 3] };
+
+        expect(omit(input, ["list.1" as never])).toStrictEqual({ list: [1, 3] });
+    });
+
+    it("should not mutate the input when omitting a nested key", () => {
+        expect.assertions(2);
+
+        const input = { nested: { secret: "x", visible: 1 } };
+        const result = omit(input, ["nested.secret"]);
+
+        expect(input.nested.secret).toBe("x");
+        expect(result).toStrictEqual({ nested: { visible: 1 } });
+    });
+
+    it("should keep a non-plain value by reference instead of descending into it", () => {
+        expect.assertions(2);
+
+        const map = new Map([["secret", "x"]]);
+        const input = { map, other: 1 };
+        const result = omit(input, ["map.secret" as never]) as { map: Map<string, string> };
+
+        expect(result.map).toBe(map);
+        expect(result.map.get("secret")).toBe("x");
+    });
+
+    it("should omit from a null-prototype object", () => {
+        expect.assertions(1);
+
+        const input = Object.assign(Object.create(null) as Record<string, unknown>, { a: 1, b: 2 });
+
+        expect(omit(input as never, ["b" as never])).toStrictEqual({ a: 1 });
+    });
+
+    it("should traverse a nested null-prototype object", () => {
+        expect.assertions(1);
+
+        const nested = Object.assign(Object.create(null) as Record<string, unknown>, { keep: 1, secret: 2 });
+
+        expect(omit({ nested } as never, ["nested.secret" as never])).toStrictEqual({ nested: { keep: 1 } });
     });
 });

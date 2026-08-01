@@ -180,6 +180,23 @@ pail.complete({
 
 ![usage](./__assets__/usage.png)
 
+### Which build `@visulima/pail` resolves to
+
+The `.` entry point picks a build from the export conditions your runtime or bundler sets:
+
+| Runtime                                     | Condition matched        | Build                   | Default reporter       |
+| ------------------------------------------- | ------------------------ | ----------------------- | ---------------------- |
+| Node.js, Bun, Deno (Node compat)            | `import`                 | `dist/index.server.js`  | Pretty (stdout/stderr) |
+| Browsers and bundlers targeting the browser | `browser`                | `dist/index.browser.js` | JSON (console)         |
+| Cloudflare Workers, Vercel Edge             | `workerd` / `edge-light` | `dist/index.browser.js` | JSON (console)         |
+
+The server build writes to `process.stdout` / `process.stderr` and measures the terminal, so it needs
+Node's core modules. Edge runtimes get the console-based build instead, which keeps `.` importable on
+Cloudflare Workers **without** the `nodejs_compat` flag and on Vercel Edge.
+
+Importing `@visulima/pail/server` always gives you the server build, on every runtime — use it only
+where Node core is available (on Cloudflare Workers that means enabling `nodejs_compat`).
+
 ### Custom Loggers
 
 To create a custom logger define an `options` object yielding a types field with the logger data and pass it as argument to the createPail function.

@@ -281,4 +281,35 @@ describe(pick, () => {
 
         expect(result.when).toBe(date);
     });
+
+    it("should not re-parent the result when picking a __proto__ key", () => {
+        expect.assertions(3);
+
+        // `JSON.parse` is the only way to get a real own "__proto__" data property.
+        // Picking it must copy it as an ordinary key, never as a prototype swap.
+        const input = JSON.parse(String.raw`{"__proto__": {"polluted": true}, "safe": 1}`) as Record<string, unknown>;
+        const result = pick(input as never, ["__proto__" as never]) as Record<string, unknown>;
+
+        expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+        expect(Object.hasOwn(result, "__proto__")).toBe(true);
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it("should treat constructor and prototype as ordinary own keys", () => {
+        expect.assertions(2);
+
+        const input = { constructor: "c", prototype: "p", safe: 1 };
+        const result = pick(input, ["constructor", "prototype"]) as Record<string, unknown>;
+
+        expect(result.constructor).toBe("c");
+        expect(result.prototype).toBe("p");
+    });
+
+    it("should pick from a null-prototype object", () => {
+        expect.assertions(1);
+
+        const input = Object.assign(Object.create(null) as Record<string, unknown>, { a: 1, b: 2 });
+
+        expect(pick(input as never, ["a" as never])).toStrictEqual({ a: 1 });
+    });
 });

@@ -469,8 +469,24 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     async generateDomainsList(finalDomains = this.buildFinalDomainsList()) {
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(finalDomains), "utf8");
 
-        // Emit a type declaration so the `./domains` subpath export carries types
-        // (`import domains from "@visulima/disposable-email-domains/domains" with { type: "json" }`).
+        // The `./domains` subpath resolves to this wrapper rather than the JSON
+        // itself. Pointing the export straight at `domains.json` made a plain
+        // `import domains from "@visulima/disposable-email-domains/domains"` fail
+        // at runtime with ERR_IMPORT_ATTRIBUTE_MISSING, because Node requires
+        // `with { type: "json" }` on a JSON module. It also made bundler
+        // resolution read the JSON as `module.exports =`, which contradicts the
+        // `export default` declaration below.
+        //
+        // The wrapper carries the attribute so callers do not have to, and gives
+        // the subpath a genuine ESM default export. It re-exports rather than
+        // inlining, so the ~2.4 MB list is still shipped exactly once.
+        await fs.writeFile(
+            join(this.syncOptions.outputPath, "domains.js"),
+            "import domains from \"./domains.json\" with { type: \"json\" };\n\nexport default domains;\n",
+            "utf8",
+        );
+
+        // Emit a type declaration so the `./domains` subpath export carries types.
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
     }
 

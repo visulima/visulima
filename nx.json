@@ -44,12 +44,17 @@
             "cache": true
         },
         "test": {
-            "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
+            "inputs": ["testing", "^production", "{projectRoot}/vitest.config.ts", "{workspaceRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
+            "inputs": ["testing", "^production", "{projectRoot}/vitest.config.ts", "{workspaceRoot}/tools/get-vitest-config.ts"],
             "outputs": ["{projectRoot}/coverage"],
+            "cache": true
+        },
+        "test:workerd": {
+            "dependsOn": ["^build"],
+            "inputs": ["testing", "^production", "{projectRoot}/vitest.workerd.config.ts", "{workspaceRoot}/tools/get-workerd-vitest-config.ts"],
             "cache": true
         },
         "test:bench": {
