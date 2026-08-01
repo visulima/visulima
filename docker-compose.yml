@@ -31,7 +31,7 @@ services:
             - "db"
 
     localstack:
-        image: "localstack/localstack:2026.6.1"
+        image: "localstack/localstack:2026.6.1@sha256:1861b2ba947d3ec0e678ef3420fa00a57bf57d5d4368dd6044b040e044a4ffb6"
         environment:
             - "AWS_DEFAULT_REGION=us-east-1"
             - "EDGE_PORT=4566"
@@ -44,7 +44,7 @@ services:
             - "/var/run/docker.sock:/var/run/docker.sock"
 
     gcs:
-        image: "fsouza/fake-gcs-server:1.54"
+        image: "fsouza/fake-gcs-server:1.54@sha256:3730da0e31f7e5186a90ec4899dc2c336104e7599df400411392ef17e684c31f"
         ports:
             - "4443:4443"
         command: ["-scheme", "http", "-port", "4443"]
@@ -52,7 +52,7 @@ services:
             - "./data/fake-gcs:/data"
 
     azure:
-        image: "mcr.microsoft.com/azure-storage/azurite:latest"
+        image: "mcr.microsoft.com/azure-storage/azurite:latest@sha256:37493d0f2e764467421ffe16eb3caa39277e5fa7f6adea18eb5bbfb3c5247f98"
         ports:
             - "10000:10000" # blob
             - "10001:10001" # queue
