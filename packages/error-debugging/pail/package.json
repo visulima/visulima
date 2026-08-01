@@ -82,6 +82,14 @@
     "type": "module",
     "exports": {
         ".": {
+            "edge-light": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
+            },
+            "workerd": {
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
+            },
             "browser": {
                 "types": "./dist/index.browser.d.ts",
                 "default": "./dist/index.browser.js"

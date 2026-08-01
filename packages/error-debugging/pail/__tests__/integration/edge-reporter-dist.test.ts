@@ -9,6 +9,12 @@ const distributionRoot = join(here, "..", "..", "dist");
 
 const EDGE_ENTRY = join(distributionRoot, "reporter/http/http-reporter.edge-light.js");
 
+/** The artefact the `edge-light` and `workerd` conditions on the `.` export resolve to. */
+const ROOT_EDGE_ENTRY = join(distributionRoot, "index.browser.js");
+
+/** The artefact the `import` (Node) condition on the `.` export resolves to. */
+const ROOT_NODE_ENTRY = join(distributionRoot, "index.server.js");
+
 /**
  * Control sample for the graph walk: a Node-only entry that is a bare re-export file, so the
  * `node:module` its bundle depends on can only be found by following the chunk it points at.
@@ -71,6 +77,52 @@ const bareStaticImportsInGraph = (entry: string): [string, string][] => {
 };
 
 /**
+ * Every built file reachable from `entry` through relative static imports, `entry` included.
+ * @param entry Absolute path of the built entry file.
+ * @returns The dist-relative path of each chunk in the graph.
+ */
+const filesInGraph = (entry: string): string[] => {
+    const seen = new Set<string>();
+    const queue = [entry];
+
+    while (queue.length > 0) {
+        const file = queue.pop() as string;
+
+        if (seen.has(file)) {
+            continue;
+        }
+
+        seen.add(file);
+
+        for (const specifier of staticSpecifiersIn(readFileSync(file, "utf8"))) {
+            if (specifier.startsWith(".")) {
+                queue.push(resolve(dirname(file), specifier));
+            }
+        }
+    }
+
+    return [...seen];
+};
+
+/**
+ * Module-scope reaches into Node core that survive bundling but are not `import` declarations:
+ * packem's `requireCJS` transform rewrites `import ... from "node:x"` into a `createRequire` /
+ * `process.getBuiltinModule` lookup, and a bare `process` fallback. All three throw on a runtime
+ * that ships no Node core, so an import-only check would miss them.
+ * @param entry Absolute path of the built entry file.
+ * @returns One `[file, marker]` pair per offending chunk.
+ */
+const nodeCoreReachesInGraph = (entry: string): [string, string][] => {
+    const markers = ["node:", "createRequire", "getBuiltinModule"];
+
+    return filesInGraph(entry).flatMap((file) => {
+        const source = readFileSync(file, "utf8");
+
+        return markers.filter((marker) => source.includes(marker)).map((marker): [string, string] => [file.replace(`${distributionRoot}/`, ""), marker]);
+    });
+};
+
+/**
  * The `edge-light` and `workerd` export conditions resolve to this built file, so it must load
  * on runtimes that ship no Node core. A static `node:*` import breaks that at *import* time —
  * and it does not have to come from our own source: the bundler emits a CJS-interop preamble
@@ -119,5 +171,62 @@ describe("built edge HTTP reporter", () => {
 
         expect(readFileSync(NODE_ENTRY_REACHING_NODE_MODULE, "utf8")).not.toContain("node:module");
         expect(specifiers).toContain("node:module");
+    });
+});
+
+/**
+ * The root (`.`) export is the entry every consumer reaches by importing the package name, so it
+ * is the one that decides whether `@visulima/pail` can be loaded at all on Cloudflare Workers
+ * without `nodejs_compat` or on Vercel Edge. Its `edge-light`/`workerd` conditions resolve to the
+ * browser build; that build has to stay free of *any* module-scope reach into Node core, not just
+ * of `import` declarations — packem rewrites `node:*` imports into `getBuiltinModule`/
+ * `createRequire` lookups, which fail exactly as hard at load time.
+ */
+describe("built edge root entry", () => {
+    it("is what the edge-light and workerd conditions on the `.` export point at", () => {
+        expect.assertions(3);
+
+        const manifest = JSON.parse(readFileSync(join(distributionRoot, "..", "package.json"), "utf8")) as {
+            exports: Record<string, Record<string, { default: string }>>;
+        };
+
+        const root = manifest.exports["."] as Record<string, { default: string }>;
+
+        expect(root["edge-light"]?.default).toBe("./dist/index.browser.js");
+        expect(root["workerd"]?.default).toBe("./dist/index.browser.js");
+        // Node must keep resolving the server build.
+        expect(root["import"]?.default).toBe("./dist/index.server.js");
+    });
+
+    it("exists so the assertions below are not vacuous", () => {
+        expect.assertions(2);
+
+        expect(existsSync(ROOT_EDGE_ENTRY), `${ROOT_EDGE_ENTRY} is missing — run \`pnpm run build\` first`).toBe(true);
+        expect(readFileSync(ROOT_EDGE_ENTRY, "utf8")).toContain("createPail");
+    });
+
+    it("declares no static node: import anywhere in its chunk graph", () => {
+        expect.assertions(1);
+
+        expect(bareStaticImportsInGraph(ROOT_EDGE_ENTRY).filter(([, specifier]) => specifier.startsWith("node:"))).toStrictEqual([]);
+    });
+
+    it("carries no module-scope reach into Node core anywhere in its chunk graph", () => {
+        expect.assertions(1);
+
+        expect(nodeCoreReachesInGraph(ROOT_EDGE_ENTRY)).toStrictEqual([]);
+    });
+
+    it("detects the Node core reaches in the sibling server root entry", () => {
+        expect.assertions(2);
+
+        // Control sample — proves the two checks above are not passing vacuously. The server root
+        // entry is the artefact the `import` condition resolves to, and it legitimately reaches
+        // Node core: `node:module` for the CJS interop preamble, plus `getBuiltinModule` calls
+        // that the bundled terminal-size makes at module scope.
+        const markers = nodeCoreReachesInGraph(ROOT_NODE_ENTRY).map(([, marker]) => marker);
+
+        expect(bareStaticImportsInGraph(ROOT_NODE_ENTRY).map(([, specifier]) => specifier)).toContain("node:module");
+        expect(markers).toContain("getBuiltinModule");
     });
 });
