@@ -44,7 +44,7 @@ const nodeBuiltin = <S extends keyof NodeBuiltins>(specifier: S): NodeBuiltinAcc
         if (module === undefined) {
             if (typeof process.getBuiltinModule !== "function") {
                 throw new TypeError(
-                    `[@visulima/error] Cannot load ${specifier}: this runtime implements no process.getBuiltinModule(). Requires Node >= 20.16 / >= 22.3, or another runtime providing process.getBuiltinModule().`,
+                    `[@visulima/error] Cannot load ${specifier}: this runtime implements no process.getBuiltinModule(). Requires Node ^22.14.0 || >=24.10.0, or another runtime providing process.getBuiltinModule().`,
                 );
             }
 
