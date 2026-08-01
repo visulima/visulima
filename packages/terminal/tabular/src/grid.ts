@@ -296,6 +296,9 @@ export class Grid {
 
     /**
      * Sets the number of rows in the grid.
+     *
+     * A positive count is honoured as the grid's row count: too few items pad the
+     * grid out with empty rows. Pass `0` to let the row count follow the items.
      * @param rows Number of rows
      * @returns The grid instance for method chaining
      */
@@ -529,8 +532,19 @@ export class Grid {
             }
         }
 
-        // Trim any fully empty rows added during placement if rows option was dynamic
-        if (this.#options.rows === 0) {
+        if (this.#options.rows > 0) {
+            // An explicit `rows` is a request for that many rows, mirroring CSS Grid
+            // where an explicit track count materialises the tracks whether or not
+            // items fill them. Too few items therefore pad the grid out with empty
+            // rows rather than shrinking it. A grid holding no content at all is left
+            // alone so it keeps rendering as an empty string.
+            if (gridLayout.length > 0) {
+                while (gridLayout.length < this.#options.rows) {
+                    gridLayout.push(Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined));
+                }
+            }
+        } else {
+            // Trim any fully empty rows added during placement if rows option was dynamic
             while (gridLayout.length > 0 && gridLayout.at(-1)?.every((cell) => cell === undefined)) {
                 gridLayout.pop();
             }
