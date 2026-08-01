@@ -98,6 +98,23 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
 /**
  * Regular expression for ANSI escape sequences
  * Used for parsing and handling ANSI color codes and formatting
+ *
+ * This is the package's own ANSI stripper, and the one nearly everything here
+ * uses: SGR/CSI sequences plus OSC 8 hyperlinks, with the parameter classes
+ * deliberately flattened so the scan stays linear (see the `RE_VALID_ANSI_PAIRS`
+ * and `RE_VALID_HYPERLINKS` notes below for the same hardening).
+ *
+ * It is **not** the only ANSI pattern in the package, and that is intentional.
+ * `src/utils/strip-vt-control-characters.ts` carries `RE_VT_CONTROL`, whose sole
+ * contract is byte-compatibility with `node:util.stripVTControlCharacters`. The
+ * two genuinely disagree — `ESC[s`, `ESC[u`, `ESC[~` and generic OSC are stripped
+ * by `RE_VT_CONTROL` and left alone here — so neither can be folded into the
+ * other without changing observable behaviour somewhere.
+ *
+ * Change this pattern for bugs in this package's own ANSI handling (width,
+ * slicing, wrapping, `stripAnsi`). Change `RE_VT_CONTROL` only to restore parity
+ * with `node:util`. That file also records the ReDoS measurements for its
+ * pattern, so the question does not need re-opening here.
  */
 // eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
 export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
