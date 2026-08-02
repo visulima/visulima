@@ -1,3 +1,14 @@
+## @visulima/tui [3.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%402.0.1...%40visulima%2Ftui%403.0.0) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.1.0
+* **@visulima/colorize:** upgraded to 2.1.0
+* **@visulima/error:** upgraded to 6.1.0
+* **@visulima/string:** upgraded to 3.1.0
+* **@visulima/boxen:** upgraded to 3.1.0
+
 ## @visulima/tui [2.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%402.0.0...%40visulima%2Ftui%402.0.1) (2026-07-27)
 
 ## @visulima/tui [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%401.0.8...%40visulima%2Ftui%402.0.0) (2026-07-27)
