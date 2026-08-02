@@ -1,3 +1,10 @@
+## @visulima/command-line-args [2.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fcommand-line-args%402.0.0...%40visulima%2Fcommand-line-args%402.0.1) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.0
+
 ## @visulima/command-line-args [2.0.0](https://github.com/visulima/visulima/compare/@visulima/command-line-args@1.0.4...@visulima/command-line-args@2.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
