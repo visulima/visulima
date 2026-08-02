@@ -1,13 +1,14 @@
-import { existsSync, readFileSync } from "node:fs";
-import { relative, resolve, sep } from "node:path";
-import { cwd } from "node:process";
-import { fileURLToPath } from "node:url";
-
 import type { CodeFrameOptions, ColorizeMethod } from "../../code-frame";
 import { codeFrame } from "../../code-frame";
 import type { Trace } from "../../stacktrace";
 import { parseStacktrace } from "../../stacktrace";
+import nodeBuiltin from "../../util/node-builtin";
 import type { VisulimaError } from "../visulima-error";
+
+const nodeFs = nodeBuiltin("node:fs");
+const nodePath = nodeBuiltin("node:path");
+const nodeProcess = nodeBuiltin("node:process");
+const nodeUrl = nodeBuiltin("node:url");
 
 /**
  * Error types that can be rendered.
@@ -49,7 +50,7 @@ const toDisplayPath = (path: string): string => {
     }
 
     try {
-        return fileURLToPath(path);
+        return nodeUrl().fileURLToPath(path);
     } catch {
         return path;
     }
@@ -62,7 +63,7 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
      */
     const path = filePath.replace("async file:", "file:");
 
-    return normalizePathSeparators(relative(cwdPath, toDisplayPath(path)));
+    return normalizePathSeparators(nodePath().relative(cwdPath, toDisplayPath(path)));
 };
 
 /**
@@ -170,10 +171,10 @@ const isReadableSourcePath = (filePath: string, options: Options): boolean => {
         return true;
     }
 
-    const root = resolve(options.cwd);
-    const resolved = resolve(root, filePath);
+    const root = nodePath().resolve(options.cwd);
+    const resolved = nodePath().resolve(root, filePath);
 
-    return resolved === root || resolved.startsWith(root + sep);
+    return resolved === root || resolved.startsWith(root + nodePath().sep);
 };
 
 /**
@@ -188,11 +189,11 @@ const isReadableSourcePath = (filePath: string, options: Options): boolean => {
  */
 const readSourceFile = (filePath: string): string | undefined => {
     try {
-        if (!existsSync(filePath)) {
+        if (!nodeFs().existsSync(filePath)) {
             return undefined;
         }
 
-        return readFileSync(filePath, "utf8");
+        return nodeFs().readFileSync(filePath, "utf8");
     } catch {
         return undefined;
     }
@@ -338,7 +339,7 @@ const getStacktrace = (stack: Trace[], options: Options): string =>
 const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
     const config = {
         allowAllFilePaths: false,
-        cwd: cwd(),
+        cwd: nodeProcess().cwd(),
         displayShortPath: false,
         filterStacktrace: undefined,
         framesMaxLimit: Number.POSITIVE_INFINITY,

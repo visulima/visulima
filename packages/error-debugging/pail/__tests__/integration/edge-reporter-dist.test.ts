@@ -21,7 +21,20 @@ const ROOT_NODE_ENTRY = join(distributionRoot, "index.server.js");
  */
 const NODE_ENTRY_REACHING_NODE_MODULE = join(distributionRoot, "reporter/json/index.js");
 
-const STATIC_SPECIFIER_REGEX = /^(?:import|export)\s[^;]*?\bfrom\s*["']([^"']+)["']|^import\s*["']([^"']+)["']/gmu;
+/**
+ * The specifier of an `import`/`export … from` declaration. Matched on `from` rather than on the
+ * statement start, because a production build ships each chunk on one line and drops the space
+ * after `import` — an anchor of `^import\s` silently collects nothing there, which would make
+ * every graph walk below pass vacuously.
+ */
+const FROM_SPECIFIER_REGEX = /\bfrom\s*["']([^"']+)["']/gu;
+
+/** A bare `import "…"`, which has no `from` to match on. */
+// eslint-disable-next-line sonarjs/slow-regex -- disjoint alternatives, so no super-linear backtracking
+const SIDE_EFFECT_IMPORT_REGEX = /(?:^|[;}])\s*import\s*["']([^"']+)["']/gmu;
+
+/** `await import("node:zlib")`, in either quote style a build might emit. */
+const DYNAMIC_ZLIB_IMPORT_REGEX = /\bimport\(\s*["']node:zlib["']\s*\)/u;
 
 /**
  * Every specifier reachable through *static* `import`/`export ... from` declarations.
@@ -30,19 +43,8 @@ const STATIC_SPECIFIER_REGEX = /^(?:import|export)\s[^;]*?\bfrom\s*["']([^"']+)[
  * @param source The bundled module source text.
  * @returns The specifier of each static declaration, verbatim.
  */
-const staticSpecifiersIn = (source: string): string[] => {
-    const specifiers: string[] = [];
-
-    for (const match of source.matchAll(STATIC_SPECIFIER_REGEX)) {
-        const specifier = match[1] ?? match[2];
-
-        if (specifier !== undefined) {
-            specifiers.push(specifier);
-        }
-    }
-
-    return specifiers;
-};
+const staticSpecifiersIn = (source: string): string[] =>
+    [...source.matchAll(FROM_SPECIFIER_REGEX), ...source.matchAll(SIDE_EFFECT_IMPORT_REGEX)].map((match) => match[1]);
 
 /**
  * Walks the built entry and every relative chunk it pulls in, so the guard keeps holding
@@ -136,7 +138,10 @@ describe("built edge HTTP reporter", () => {
         expect.assertions(2);
 
         expect(existsSync(EDGE_ENTRY), `${EDGE_ENTRY} is missing — run \`pnpm run build\` first`).toBe(true);
-        expect(readFileSync(EDGE_ENTRY, "utf8")).toContain("HttpReporterEdgeLight");
+        // `edgeCompat` rather than the class name: this entry's default export carries its name
+        // only in the source, and a production build mangles it away. Property names survive, and
+        // forcing `edgeCompat` on is what makes this reporter the edge one.
+        expect(readFileSync(EDGE_ENTRY, "utf8")).toContain("edgeCompat");
     });
 
     it("declares no static node: import anywhere in its chunk graph", () => {
@@ -157,7 +162,7 @@ describe("built edge HTTP reporter", () => {
     it("reaches node:zlib only through a dynamic import", () => {
         expect.assertions(1);
 
-        expect(readFileSync(EDGE_ENTRY, "utf8")).toContain("await import('node:zlib')");
+        expect(readFileSync(EDGE_ENTRY, "utf8")).toMatch(DYNAMIC_ZLIB_IMPORT_REGEX);
     });
 
     it("detects the interop preamble in a Node-only sibling entry", () => {
