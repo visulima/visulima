@@ -1,3 +1,12 @@
+## @visulima/secret-scanner [1.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fsecret-scanner%401.0.0...%40visulima%2Fsecret-scanner%401.1.0) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 3.0.1
+* **@visulima/fs:** upgraded to 5.1.0
+* **@visulima/path:** upgraded to 3.1.0
+
 ## @visulima/secret-scanner 1.0.0 (2026-07-03)
 
 ### Features
