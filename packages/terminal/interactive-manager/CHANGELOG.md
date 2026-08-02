@@ -1,3 +1,11 @@
+## @visulima/interactive-manager [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Finteractive-manager%401.0.0...%40visulima%2Finteractive-manager%401.0.1) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.1.0
+* **@visulima/string:** upgraded to 3.1.0
+
 ## @visulima/interactive-manager 1.0.0 (2026-07-03)
 
 ### Features
