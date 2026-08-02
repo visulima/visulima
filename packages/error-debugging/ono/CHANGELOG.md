@@ -1,3 +1,11 @@
+## @visulima/ono [2.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.0.11...%40visulima%2Fono%402.1.0) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.0
+* **@visulima/path:** upgraded to 3.1.0
+
 ## @visulima/ono [2.0.11](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.0.10...%40visulima%2Fono%402.0.11) (2026-07-27)
 
 ## @visulima/ono [2.0.10](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.0.9...%40visulima%2Fono%402.0.10) (2026-07-27)
