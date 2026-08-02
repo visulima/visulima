@@ -1,3 +1,10 @@
+## @visulima/ansi [4.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fansi%404.0.0...%40visulima%2Fansi%404.1.0) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.1.0
+
 ## @visulima/ansi [4.0.0](https://github.com/visulima/visulima/compare/@visulima/ansi@3.0.5...@visulima/ansi@4.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
