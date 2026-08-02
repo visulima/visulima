@@ -1,3 +1,5 @@
+## @visulima/deep-clone [4.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fdeep-clone%404.0.0...%40visulima%2Fdeep-clone%404.1.0) (2026-08-02)
+
 ## @visulima/deep-clone [4.0.0](https://github.com/visulima/visulima/compare/@visulima/deep-clone@3.0.5...@visulima/deep-clone@4.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
