@@ -1,3 +1,5 @@
+## @visulima/path [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fpath%403.0.0...%40visulima%2Fpath%403.1.0) (2026-08-02)
+
 ## @visulima/path [3.0.0](https://github.com/visulima/visulima/compare/@visulima/path@2.0.5...@visulima/path@3.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
