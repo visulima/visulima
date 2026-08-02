@@ -1,3 +1,5 @@
+## @visulima/error [6.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Ferror%406.0.0...%40visulima%2Ferror%406.1.0) (2026-08-02)
+
 ## @visulima/error [6.0.0](https://github.com/visulima/visulima/compare/@visulima/error@5.0.6...@visulima/error@6.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
