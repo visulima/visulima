@@ -1,14 +1,15 @@
-import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-
 import type { LanguageModel } from "ai";
 import { generateText } from "ai";
 
+import nodeBuiltin from "../../util/node-builtin";
 import type { Solution, SolutionFinder, SolutionFinderFile } from "../types";
 import aiPrompt from "./ai-prompt";
 import aiSolutionResponse from "./ai-solution-response";
+
+const nodeCrypto = nodeBuiltin("node:crypto");
+const nodeFs = nodeBuiltin("node:fs");
+const nodeOs = nodeBuiltin("node:os");
+const nodePath = nodeBuiltin("node:path");
 
 const DEFAULT_HEADER = "## Ai Generated Solution";
 
@@ -41,7 +42,7 @@ const generateCacheKey = (error: Error, file: SolutionFinderFile, temperature?: 
         temperature,
     };
 
-    return createHash("sha256").update(JSON.stringify(keyData)).digest("hex");
+    return nodeCrypto().createHash("sha256").update(JSON.stringify(keyData)).digest("hex");
 };
 
 // Get cache directory path.
@@ -56,9 +57,9 @@ const getCacheDirectory = (directory?: string): string => {
     }
 
     const xdgCacheHome = typeof process === "undefined" ? undefined : process.env.XDG_CACHE_HOME;
-    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : join(homedir(), ".cache");
+    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : nodePath().join(nodeOs().homedir(), ".cache");
 
-    return join(base, "visulima-error-cache");
+    return nodePath().join(base, "visulima-error-cache");
 };
 
 // Ensure cache directory exists (owner-only permissions to avoid cross-user cache poisoning).
@@ -72,10 +73,10 @@ const ensureCacheDirectory = (cacheDirectory: string): void => {
     let stats;
 
     try {
-        stats = lstatSync(cacheDirectory);
+        stats = nodeFs().lstatSync(cacheDirectory);
     } catch {
         // Does not exist yet — create it with owner-only permissions.
-        mkdirSync(cacheDirectory, { mode: 0o700, recursive: true });
+        nodeFs().mkdirSync(cacheDirectory, { mode: 0o700, recursive: true });
 
         return;
     }
@@ -86,16 +87,16 @@ const ensureCacheDirectory = (cacheDirectory: string): void => {
 };
 
 // Get cache file path
-const getCacheFilePath = (cacheDirectory: string, key: string): string => join(cacheDirectory, `${key}.json`);
+const getCacheFilePath = (cacheDirectory: string, key: string): string => nodePath().join(cacheDirectory, `${key}.json`);
 
 // Read from cache
 const readFromCache = (cacheFilePath: string, ttl: number): Solution | undefined => {
     try {
-        if (!existsSync(cacheFilePath)) {
+        if (!nodeFs().existsSync(cacheFilePath)) {
             return undefined;
         }
 
-        const cacheContent = readFileSync(cacheFilePath, "utf8");
+        const cacheContent = nodeFs().readFileSync(cacheFilePath, "utf8");
         const cacheEntry = JSON.parse(cacheContent) as CacheEntry;
 
         // Check if cache entry is still valid
@@ -121,7 +122,7 @@ const writeToCache = (cacheFilePath: string, solution: Solution, ttl: number): v
         };
 
         // eslint-disable-next-line unicorn/no-null
-        writeFileSync(cacheFilePath, JSON.stringify(cacheEntry, null, 2), "utf8");
+        nodeFs().writeFileSync(cacheFilePath, JSON.stringify(cacheEntry, null, 2), "utf8");
     } catch {
         // Silently fail if cache write fails
     }
