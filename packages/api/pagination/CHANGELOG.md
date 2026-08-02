@@ -1,3 +1,5 @@
+## @visulima/pagination [6.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fpagination%405.0.0...%40visulima%2Fpagination%406.0.0) (2026-08-02)
+
 ## @visulima/pagination [5.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@4.0.5...@visulima/pagination@5.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
