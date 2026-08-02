@@ -1,3 +1,10 @@
+## @visulima/spinner [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fspinner%401.0.0...%40visulima%2Fspinner%401.0.1) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/interactive-manager:** upgraded to 1.0.1
+
 ## @visulima/spinner 1.0.0 (2026-07-03)
 
 ### Features

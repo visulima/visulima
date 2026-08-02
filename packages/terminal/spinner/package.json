@@ -1,6 +1,6 @@
 {
     "name": "@visulima/spinner",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Minimal terminal spinners",
     "keywords": [
         "spinner",
@@ -67,7 +67,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/interactive-manager": "1.0.0"
+        "@visulima/interactive-manager": "1.0.1"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
