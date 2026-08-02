@@ -1,3 +1,12 @@
+## @visulima/boxen [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fboxen%403.0.0...%40visulima%2Fboxen%403.1.0) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.1.0
+* **@visulima/path:** upgraded to 3.1.0
+* **@visulima/string:** upgraded to 3.1.0
+
 ## @visulima/boxen [3.0.0](https://github.com/visulima/visulima/compare/@visulima/boxen@2.0.10...@visulima/boxen@3.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
