@@ -1,3 +1,5 @@
+## @visulima/bytes [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fbytes%403.0.0...%40visulima%2Fbytes%403.1.0) (2026-08-02)
+
 ## @visulima/bytes [3.0.0](https://github.com/visulima/visulima/compare/@visulima/bytes@2.0.5...@visulima/bytes@3.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
