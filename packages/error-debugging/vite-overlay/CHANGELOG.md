@@ -1,3 +1,11 @@
+## @visulima/vite-overlay [2.0.12](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.11...%40visulima%2Fvite-overlay%402.0.12) (2026-08-02)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.1.0
+* **@visulima/path:** upgraded to 3.1.0
+
 ## @visulima/vite-overlay [2.0.11](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.10...%40visulima%2Fvite-overlay%402.0.11) (2026-07-27)
 
 ## @visulima/vite-overlay [2.0.10](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.9...%40visulima%2Fvite-overlay%402.0.10) (2026-07-27)
