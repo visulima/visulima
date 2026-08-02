@@ -1,3 +1,5 @@
+## @visulima/fmt [2.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Ffmt%402.0.0...%40visulima%2Ffmt%402.1.0) (2026-08-02)
+
 ## @visulima/fmt [2.0.0](https://github.com/visulima/visulima/compare/@visulima/fmt@1.1.21...@visulima/fmt@2.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
