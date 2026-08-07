@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dump, load, loadAll } from "../src";
+import { dump, load, loadAll, parse, YAMLParseError } from "../src";
 
 /**
  * These exercise the `js-yaml`-compatible alias surface (`load`, `loadAll`,
@@ -29,6 +29,19 @@ describe("js-yaml compat › load", () => {
         });
 
         expect(documents).toStrictEqual([{ x: 1 }, { y: 2 }]);
+    });
+
+    it("defaults to js-yaml-style leniency, unlike the strict `parse`", () => {
+        expect.assertions(4);
+
+        // `--- a: b` (block mapping on the marker line) is malformed per spec but
+        // accepted by js-yaml; the alias mirrors js-yaml, `parse` stays strict.
+        expect(load("--- a: b")).toStrictEqual({ a: "b" });
+        expect(loadAll("--- a: b")).toStrictEqual([{ a: "b" }]);
+        expect(() => parse("--- a: b")).toThrow(YAMLParseError);
+
+        // An explicit `strict: true` still opts the alias into strictness.
+        expect(() => load("--- a: b", { strict: true })).toThrow(YAMLParseError);
     });
 });
 

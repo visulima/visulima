@@ -2,6 +2,12 @@ import { dump as dumpValue } from "./parser/dumper";
 import { loadAll as loadAllDocuments, loadOne } from "./parser/loader";
 import type { ParseOptions, StringifyOptions } from "./types";
 
+// The `js-yaml`-style aliases default to `strict: false` so they stay
+// byte-for-byte drop-in replacements for `js-yaml`, which is lenient about the
+// two corner cases strict mode rejects. The native `parse`/`parseAll` keep
+// strict on by default. An explicit `strict` in the caller's options wins.
+const LENIENT_DEFAULTS: ParseOptions = { strict: false };
+
 export type { Mark } from "./errors";
 export { YAMLError, YAMLParseError, YAMLStringifyError, YAMLWarning } from "./errors";
 export type { DuplicateKeyBehavior, ParseOptions, ScalarStyle, StringifyOptions } from "./types";
@@ -44,20 +50,24 @@ export const stringify = (value: unknown, options?: StringifyOptions): string =>
 
 /**
  * `js-yaml`-compatible alias of {@link parse}.
+ *
+ * Unlike {@link parse}, this defaults to `strict: false` to match `js-yaml`'s
+ * leniency. Pass `{ strict: true }` for full YAML 1.2 strictness.
  */
-export const load = (source: string, options?: ParseOptions): unknown => loadOne(source, options);
+export const load = (source: string, options?: ParseOptions): unknown => loadOne(source, { ...LENIENT_DEFAULTS, ...options });
 
 /**
  * `js-yaml`-compatible multi-document loader.
  *
  * When an `iterator` is supplied it is invoked once per document (matching the
  * `js-yaml` signature); otherwise the parsed documents are returned as an array.
+ * Like {@link load}, this defaults to `strict: false`.
  */
 export function loadAll(source: string, iterator: (document: unknown) => void, options?: ParseOptions): void;
 export function loadAll(source: string, options?: ParseOptions): unknown[];
 export function loadAll(source: string, iteratorOrOptions?: ((document: unknown) => void) | ParseOptions, maybeOptions?: ParseOptions): unknown[] | void {
     if (typeof iteratorOrOptions === "function") {
-        const documents = loadAllDocuments(source, maybeOptions);
+        const documents = loadAllDocuments(source, { ...LENIENT_DEFAULTS, ...maybeOptions });
 
         for (const document of documents) {
             iteratorOrOptions(document);
@@ -66,7 +76,7 @@ export function loadAll(source: string, iteratorOrOptions?: ((document: unknown)
         return undefined;
     }
 
-    return loadAllDocuments(source, iteratorOrOptions);
+    return loadAllDocuments(source, { ...LENIENT_DEFAULTS, ...iteratorOrOptions });
 }
 
 /**

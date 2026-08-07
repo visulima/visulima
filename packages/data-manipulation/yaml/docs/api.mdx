@@ -54,7 +54,9 @@ parseAll("---\na: 1\n---\nb: 2"); // => [{ a: 1 }, { b: 2 }]
 
 ### load
 
-`js-yaml`-compatible alias of [`parse`](#parse).
+`js-yaml`-compatible alias of [`parse`](#parse). Unlike `parse`, it defaults to
+`strict: false` so it stays a byte-for-byte drop-in for `js-yaml`; pass
+`{ strict: true }` for full strictness.
 
 ```typescript
 function load(source: string, options?: ParseOptions): unknown;
@@ -63,7 +65,8 @@ function load(source: string, options?: ParseOptions): unknown;
 ### loadAll
 
 `js-yaml`-compatible multi-document loader. With an `iterator` it is invoked
-once per document; otherwise it returns an array.
+once per document; otherwise it returns an array. Like [`load`](#load), it
+defaults to `strict: false`.
 
 ```typescript
 function loadAll(source: string, iterator: (document: unknown) => void, options?: ParseOptions): void;
@@ -82,12 +85,15 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 
 | Option                  | Type                                 | Default   | Description                                                             |
 | ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------- |
-| `strict`                | `boolean`                            | `true`    | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.       |
+| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.       |
 | `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                         |
 | `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.           |
 | `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks). |
 | `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                    |
 | `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                         |
+
+\* `strict` defaults to `true` for `parse` / `parseAll`, but to `false` for the
+`js-yaml`-style [`load`](#load) / [`loadAll`](#loadall) aliases.
 
 #### Strict mode
 

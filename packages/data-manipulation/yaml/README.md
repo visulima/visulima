@@ -149,7 +149,7 @@ Parse the first document of a YAML string into a native JavaScript value.
 | `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.                 |
 | `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).       |
 | `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                          |
-| `strict`                | `boolean`                            | `true`    | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency. |
+| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency. |
 | `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                               |
 
 #### Strict mode (default)
@@ -166,6 +166,10 @@ those two checks (closer to `js-yaml`); it never changes the value of an accepte
 parse("--- a: b"); // throws YAMLParseError (block mapping on the --- line)
 parse("--- a: b", { strict: false }); // => { a: "b" }
 ```
+
+\* `strict` defaults to `true` for `parse` / `parseAll`, but the `js-yaml`-style
+`load` / `loadAll` aliases default to `strict: false` so they stay drop-in
+replacements for `js-yaml`. Pass `{ strict: true }` to opt in.
 
 ### `parseAll(source, options?)` / `loadAll(source, iterator?, options?)`
 
