@@ -154,6 +154,8 @@ class State {
 
     public anchorMap = new Map<string, unknown>();
 
+    public anchorMapTransactions: Map<string, { existed: boolean; value: unknown }>[] = [];
+
     public tagMap = new Map<string, string>();
 
     public aliasCount = 0;
@@ -171,6 +173,90 @@ class State {
         };
     }
 }
+
+interface Snapshot {
+    anchor: string | null;
+    kind: string | null;
+    line: number;
+    lineIndent: number;
+    lineStart: number;
+    position: number;
+    result: unknown;
+    tag: string | null;
+}
+
+const snapshotState = (state: State): Snapshot => {
+    return {
+        anchor: state.anchor,
+        kind: state.kind,
+        line: state.line,
+        lineIndent: state.lineIndent,
+        lineStart: state.lineStart,
+        position: state.position,
+        result: state.result,
+        tag: state.tag,
+    };
+};
+
+const restoreState = (state: State, snapshot: Snapshot): void => {
+    state.position = snapshot.position;
+    state.line = snapshot.line;
+    state.lineStart = snapshot.lineStart;
+    state.lineIndent = snapshot.lineIndent;
+    state.tag = snapshot.tag;
+    state.anchor = snapshot.anchor;
+    state.kind = snapshot.kind;
+    state.result = snapshot.result;
+};
+
+// Anchor registration is transactional so a speculative parse (see
+// the rewind helper below) that is rolled back does not leak anchors.
+const storeAnchor = (state: State, name: string, value: unknown): void => {
+    const transactions = state.anchorMapTransactions;
+
+    if (transactions.length > 0) {
+        const transaction = transactions[transactions.length - 1]!;
+
+        if (!transaction.has(name)) {
+            transaction.set(name, { existed: state.anchorMap.has(name), value: state.anchorMap.get(name) });
+        }
+    }
+
+    state.anchorMap.set(name, value);
+};
+
+const beginAnchorTransaction = (state: State): void => {
+    state.anchorMapTransactions.push(new Map());
+};
+
+const commitAnchorTransaction = (state: State): void => {
+    const transaction = state.anchorMapTransactions.pop()!;
+    const transactions = state.anchorMapTransactions;
+
+    if (transactions.length === 0) {
+        return;
+    }
+
+    const parent = transactions[transactions.length - 1]!;
+
+    for (const [name, entry] of transaction) {
+        if (!parent.has(name)) {
+            parent.set(name, entry);
+        }
+    }
+};
+
+const rollbackAnchorTransaction = (state: State): void => {
+    const transaction = state.anchorMapTransactions.pop()!;
+
+    for (const [name, entry] of transaction) {
+        if (entry.existed) {
+            state.anchorMap.set(name, entry.value);
+        } else {
+            state.anchorMap.delete(name);
+        }
+    }
+};
 
 const makeError = (state: State, message: string): YAMLParseError =>
     new YAMLParseError(
@@ -739,7 +825,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     let detected = false;
 
     if (state.anchor !== null) {
-        state.anchorMap.set(state.anchor, result);
+        storeAnchor(state, state.anchor, result);
     }
 
     let ch = state.input.charCodeAt(state.position);
@@ -805,7 +891,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     let allowCompact = false;
 
     if (state.anchor !== null) {
-        state.anchorMap.set(state.anchor, result);
+        storeAnchor(state, state.anchor, result);
     }
 
     let ch = state.input.charCodeAt(state.position);
@@ -954,7 +1040,7 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     }
 
     if (state.anchor !== null) {
-        state.anchorMap.set(state.anchor, result);
+        storeAnchor(state, state.anchor, result);
     }
 
     ch = state.input.charCodeAt(++state.position);
@@ -1186,10 +1272,37 @@ const readAlias = (state: State): boolean => {
     return true;
 };
 
+// `&anchor key: value` / `!!tag key: value` — the node properties belong to the
+// first key of a block mapping, not to the node we were composing. Rewind to
+// before the properties and re-read them as part of that key.
+const tryReadBlockMappingFromProperty = (state: State, propertyStart: Snapshot, nodeIndent: number, flowIndent: number): boolean => {
+    const fallback = snapshotState(state);
+
+    beginAnchorTransaction(state);
+    restoreState(state, propertyStart);
+
+    state.tag = null;
+    state.anchor = null;
+    state.kind = null;
+    state.result = null;
+
+    if (readBlockMapping(state, nodeIndent, flowIndent) && state.kind === "mapping") {
+        commitAnchorTransaction(state);
+
+        return true;
+    }
+
+    rollbackAnchorTransaction(state);
+    restoreState(state, fallback);
+
+    return false;
+};
+
 const composeNode = (state: State, parentIndent: number, nodeContext: number, allowToSeek: boolean, allowCompact: boolean): boolean => {
     let indentStatus = 1;
     let atNewLine = false;
     let hasContent = false;
+    let propertyStart: Snapshot | null = null;
 
     state.tag = null;
     state.anchor = null;
@@ -1213,7 +1326,23 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
     }
 
     if (indentStatus === 1) {
-        while (readTagProperty(state) || readAnchorProperty(state)) {
+        for (;;) {
+            const ch = state.input.charCodeAt(state.position);
+
+            // After a line break, a repeated property token starts the first key
+            // of a nested block mapping (e.g. `!!map\n  !!str key: value`).
+            if (atNewLine && ((ch === 0x21 && state.tag !== null) || (ch === 0x26 && state.anchor !== null))) {
+                break;
+            }
+
+            const propertyState = snapshotState(state);
+
+            if (!readTagProperty(state) && !readAnchorProperty(state)) {
+                break;
+            }
+
+            propertyStart ??= propertyState;
+
             if (skipSeparationSpace(state, true, -1)) {
                 atNewLine = true;
                 allowBlockCollections = allowBlockStyles;
@@ -1246,7 +1375,18 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
                 matchedCollection = readFlowCollection(state, flowIndent);
             }
 
-            if (matchedCollection) {
+            const nextCh = state.input.charCodeAt(state.position);
+            const canRewindProperty = propertyStart !== null && allowBlockStyles && !allowBlockCollections && nextCh !== 0x7c && nextCh !== 0x3e;
+
+            let matchedProperty = false;
+
+            if (!matchedCollection && canRewindProperty && propertyStart) {
+                const keyIndent = propertyStart.position - propertyStart.lineStart;
+
+                matchedProperty = tryReadBlockMappingFromProperty(state, propertyStart, keyIndent, flowIndent);
+            }
+
+            if (matchedCollection || matchedProperty) {
                 hasContent = true;
             } else {
                 let matchedScalar = allowBlockScalars && readBlockScalar(state, flowIndent);
@@ -1274,7 +1414,7 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
                 }
 
                 if (state.anchor !== null) {
-                    state.anchorMap.set(state.anchor, state.result);
+                    storeAnchor(state, state.anchor, state.result);
                 }
             }
         } else if (indentStatus === 0) {
@@ -1284,7 +1424,7 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
 
     if (state.tag === null) {
         if (state.anchor !== null) {
-            state.anchorMap.set(state.anchor, state.result);
+            storeAnchor(state, state.anchor, state.result);
         }
     } else if (state.tag === "?") {
         if (state.kind === "scalar" && typeof state.result === "string") {
@@ -1292,7 +1432,7 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
         }
 
         if (state.anchor !== null) {
-            state.anchorMap.set(state.anchor, state.result);
+            storeAnchor(state, state.anchor, state.result);
         }
     } else if (state.tag !== "!") {
         if (state.kind === "scalar") {
@@ -1304,10 +1444,10 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
         }
 
         if (state.anchor !== null) {
-            state.anchorMap.set(state.anchor, state.result);
+            storeAnchor(state, state.anchor, state.result);
         }
     } else if (state.anchor !== null) {
-        state.anchorMap.set(state.anchor, state.result);
+        storeAnchor(state, state.anchor, state.result);
     }
 
     return state.tag !== null || state.anchor !== null || hasContent;

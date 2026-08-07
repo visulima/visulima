@@ -40,44 +40,34 @@ interface SuiteTest {
 const suite = suiteDefault as unknown as SuiteTest[];
 
 // Number of individual cases (across 350 files) we currently parse correctly.
-const EXPECTED_PASS = 355;
+const EXPECTED_PASS = 365;
 
-// Test files with at least one case we do not yet handle. Grouped by cause:
-// - node properties (anchor/tag) on block-mapping keys (26DV, 2SXE, 6BFJ, 74H7, 7BMT, 7FWL, 9KAX, E76Z, HMQ5, SM9W, U3XV, UKK6, W4TN, ZH7C)
-// - strictness: inputs we accept that the spec rejects (3HFZ, 4EJS, 9C9N, 9JBA, 9KBC, CVW2, DK95, H7J7, H7TQ, LHL4, MUS6, QB6E, S98Z, SF5V, SU5Z, U99R, VJP3, WZ62, Y79Y)
-// - misc scalar/tag edge cases (4FJ6, C4HZ, FH7J, LE5A, PW8X, UGM3)
+// Test files with at least one case we do not yet handle. Most are fail-tests
+// the grammar should reject but we (like js-yaml on some, e.g. 4JVG/CXX2) accept,
+// plus a few tag/scalar edge cases (4FJ6, 9KAX, C4HZ, LE5A, SM9W, UGM3, UKK6, W4TN).
 const KNOWN_FAILING = new Set<string>([
-    "2SXE",
     "3HFZ",
     "4EJS",
     "4FJ6",
-    "6BFJ",
-    "7BMT",
-    "7FWL",
+    "4JVG",
     "9C9N",
     "9JBA",
     "9KAX",
     "9KBC",
-    "26DV",
-    "74H7",
     "C4HZ",
     "CVW2",
+    "CXX2",
     "DK95",
-    "E76Z",
-    "FH7J",
     "H7J7",
     "H7TQ",
-    "HMQ5",
     "LE5A",
     "LHL4",
     "MUS6",
-    "PW8X",
     "QB6E",
     "S98Z",
     "SF5V",
     "SM9W",
     "SU5Z",
-    "U3XV",
     "U99R",
     "UGM3",
     "UKK6",
@@ -85,7 +75,6 @@ const KNOWN_FAILING = new Set<string>([
     "W4TN",
     "WZ62",
     "Y79Y",
-    "ZH7C",
 ]);
 
 const canonicalize = (value: unknown): string => {
