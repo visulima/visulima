@@ -16,7 +16,7 @@ import type { RestrictedProject } from "../../util/write-guard";
 import { buildWriteGuardArtifacts } from "../../util/write-guard";
 import type { SyncOptions } from "./index";
 
-const KNOWN_SOURCES: ReadonlySet<CodeownersSource> = new Set(["nested-codeowners", "package-json-maintainers", "project-json"]);
+const KNOWN_SOURCES: ReadonlySet<CodeownersSource> = new Set<CodeownersSource>(["nested-codeowners", "package-json-maintainers", "project-json"]);
 
 /**
  * Parses a repeated CLI flag like `--fields license,engines --fields author`

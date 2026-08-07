@@ -491,7 +491,7 @@ ${partsXml}
         return {
             CommonPrefixes: commonPrefixes,
             Contents: Array.isArray(contents)
-                ? contents.map((item: Record<string, unknown>) => {
+                ? (contents as Record<string, unknown>[]).map((item) => {
                       return {
                           Key: item.Key as string | undefined,
                           LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,

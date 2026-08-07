@@ -22,7 +22,7 @@ interface ParsedPackageArg {
     spec: string | undefined;
 }
 
-const KNOWN_MARSHALLS: ReadonlySet<MarshallName> = new Set([
+const KNOWN_MARSHALLS: ReadonlySet<MarshallName> = new Set<MarshallName>([
     "archivedRepo",
     "author",
     "downloads",

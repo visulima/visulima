@@ -90,6 +90,7 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@cloudflare/vitest-pool-workers": "catalog:test",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",

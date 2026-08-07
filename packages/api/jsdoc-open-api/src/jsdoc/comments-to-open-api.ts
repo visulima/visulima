@@ -413,7 +413,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean, comments?: B
             // Purge all undefined properties — the JSON roundtrip drops them, which
             // structuredClone would preserve.
             // eslint-disable-next-line unicorn/prefer-structured-clone
-            const spec = JSON.parse(JSON.stringify({ paths: pathsObject }));
+            const spec = JSON.parse(JSON.stringify({ paths: pathsObject })) as OpenApiObject;
 
             return {
                 loc,

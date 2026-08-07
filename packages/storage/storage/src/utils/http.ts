@@ -127,7 +127,7 @@ export const getMetadata = async (request: IncomingMessageWithBody<Record<string
 
     const raw = await readBody(request, "utf8", limit);
 
-    return { ...JSON.parse(raw) } as Record<string, unknown>;
+    return { ...(JSON.parse(raw) as Record<string, unknown>) };
 };
 
 /**

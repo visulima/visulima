@@ -39,7 +39,7 @@ export class PnpmAdapter extends PackageManagerAdapter {
         }
 
         // pnpm pack --json: { name, version, filename, files: [...] }
-        const parsed: { filename?: string } = JSON.parse(result.stdout);
+        const parsed = JSON.parse(result.stdout) as { filename?: string };
         const { filename } = parsed;
 
         if (!filename) {
@@ -81,7 +81,7 @@ export class PnpmAdapter extends PackageManagerAdapter {
         }
 
         try {
-            const parsed: { name?: string; path?: string; private?: boolean; version?: string }[] = JSON.parse(result.stdout);
+            const parsed = JSON.parse(result.stdout) as { name?: string; path?: string; private?: boolean; version?: string }[];
 
             return parsed
                 .filter((p): p is Required<Pick<typeof p, "name">> & typeof p => typeof p.name === "string")

@@ -38,7 +38,7 @@ const hasLockfile = (start: string): boolean => {
     }
 };
 
-const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
+const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set<InstallBackend>(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
 
 const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void> => {
     const { argument, fs, logger, options, visConfig, workspaceRoot: wsRoot } = toolbox;

@@ -121,6 +121,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/cli-progress": "catalog:types",
         "@types/http-errors": "catalog:types",
         "@types/node": "catalog:types",

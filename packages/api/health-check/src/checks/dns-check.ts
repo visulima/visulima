@@ -26,7 +26,11 @@ const dnsCheck = (host: string, expectedAddresses?: string[], options?: DnsOptio
                 ...family === "all" ? { all: true } : { family },
             } as LookupOptions)) as EntryObject | ReadonlyArray<EntryObject>;
 
-            const resolvedAddresses: string[] = Array.isArray(meta) ? meta.map((entry: EntryObject) => entry.address) : [(meta as EntryObject).address];
+            // `Array.isArray` narrows a union to `T & unknown[]`, not to its array
+            // member, so the element type comes from the cast rather than the guard.
+            const resolvedAddresses: string[] = Array.isArray(meta)
+                ? (meta as ReadonlyArray<EntryObject>).map((entry) => entry.address)
+                : [(meta as EntryObject).address];
 
             if (Array.isArray(expectedAddresses) && !resolvedAddresses.some((address) => expectedAddresses.includes(address))) {
                 return {

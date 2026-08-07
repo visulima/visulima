@@ -96,6 +96,7 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@cloudflare/vitest-pool-workers": "catalog:test",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/ms": "catalog:types",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",

@@ -83,7 +83,7 @@ export class YarnAdapter extends PackageManagerAdapter {
             }
 
             try {
-                const parsed: { location?: string; name?: string } = JSON.parse(trimmed);
+                const parsed = JSON.parse(trimmed) as { location?: string; name?: string };
 
                 if (typeof parsed.name !== "string" || parsed.name === "") {
                     continue;
