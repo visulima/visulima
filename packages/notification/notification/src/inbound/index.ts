@@ -7,6 +7,7 @@ export { createTelegramInbound } from "./channels/telegram";
 export type { TwilioInboundOptions } from "./channels/twilio";
 export { createTwilioInbound } from "./channels/twilio";
 export { verifyEd25519 } from "./ed25519";
+export { chatReply, normaliseReply, smsReply } from "./reply";
 export type { FetchHandler } from "./router";
 export { createInboundRouter } from "./router";
 export type {
@@ -20,5 +21,7 @@ export type {
     InboundMessageType,
     InboundParticipant,
     InboundReply,
+    InboundReplyFunction,
+    InboundReplyInput,
     InboundResponse,
 } from "./types";

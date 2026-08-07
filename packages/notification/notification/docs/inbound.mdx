@@ -76,6 +76,29 @@ A handler returns one of:
 - a raw **`Response`** — passed through unchanged;
 - **nothing** — the channel sends its default acknowledgement.
 
+### `context.reply` — the one-call loop
+
+Returning an `InboundReply` only works where the channel can answer synchronously in the HTTP
+response. For everything else (Slack Events API, Discord deferred replies), pass the matching
+**outbound provider** to the receiver and answer with `context.reply()` — it maps the inbound
+message to the right outbound payload (recipient, thread, WhatsApp prefix) and sends it:
+
+```typescript
+import { createSlackInbound } from "@visulima/notification/inbound/slack";
+import slackProvider from "@visulima/notification/providers/slack";
+
+const slack = createSlackInbound({
+    signingSecret,
+    provider: slackProvider({ token }), // enables context.reply()
+    onMessage: async (message, context) => {
+        await context.reply(await runAgent(message.text ?? "")); // string shorthand for { text }
+    },
+});
+```
+
+`reply()` accepts a string or a full `InboundReply` and resolves to the provider's send
+`Result`. It rejects if no `provider` was configured.
+
 ## Channels
 
 | Import                                    | Factory                  | Verification                                              | Synchronous reply                     |
@@ -108,28 +131,24 @@ export default { fetch: handler };
 
 ## Closing the loop with an AI agent
 
-Inbound + outbound together give you a receive → think → reply loop:
+Inbound + outbound together give you a receive → think → reply loop in a single call — pass
+the outbound provider once and answer with `context.reply()`:
 
 ```typescript
-import { createNotification } from "@visulima/notification";
-import slackProvider from "@visulima/notification/providers/slack";
 import { createSlackInbound } from "@visulima/notification/inbound/slack";
-
-const notifier = createNotification({ chat: slackProvider({ token }) });
+import slackProvider from "@visulima/notification/providers/slack";
 
 const slack = createSlackInbound({
     signingSecret,
-    onMessage: async (message) => {
-        if (message.type !== "message") {
-            return undefined;
+    provider: slackProvider({ token }),
+    onMessage: async (message, context) => {
+        if (message.type === "message") {
+            await context.reply(await runAgent(message.text ?? ""));
         }
-
-        const reply = await runAgent(message.text ?? "");
-
-        // Events API can't reply in the HTTP response — send through the provider.
-        await notifier.send({ chat: { to: message.conversationId, text: reply, threadId: message.threadId } });
-
-        return undefined;
     },
 });
 ```
+
+The Twilio receiver works the same way with an SMS provider — `context.reply("…")` addresses
+the response back to the sender (re-applying the `whatsapp:` prefix for WhatsApp) with no
+manual payload wiring.
