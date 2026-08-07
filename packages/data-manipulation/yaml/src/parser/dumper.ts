@@ -19,6 +19,7 @@ interface DumpContext {
     flowLevel: number;
     forceQuotes: boolean;
     indent: number;
+    lineWidth: number;
     replacer?: (key: string, value: unknown) => unknown;
     skipInvalid: boolean;
     sortKeys: boolean | ((a: string, b: string) => number);
@@ -45,6 +46,10 @@ const TRAILING_INLINE_WS = /[ \t]$/;
 const TRAILING_NEWLINES = /\n+$/;
 const NEWLINE_OR_TAB_GLOBAL = /[\n\t]/g;
 const TAB = /\t/;
+// Single-line text made of non-space runs joined by exactly one space each — the
+// only shape that survives being wrapped into (and folded back out of) a folded
+// block scalar without changing its whitespace.
+const FOLDABLE_RE = /^\S+(?: \S+)*$/;
 
 const indentOf = (level: number, context: DumpContext): string => " ".repeat(level * context.indent);
 
@@ -190,6 +195,61 @@ const writeLiteral = (value: string, level: number, context: DumpContext): strin
     return `|${chomp}\n${body}`;
 };
 
+/** Greedily wrap single-spaced words into lines no wider than `width`. */
+const foldText = (value: string, width: number): string[] => {
+    const words = value.split(" ");
+    const lines: string[] = [];
+    let current = "";
+
+    for (const word of words) {
+        if (current === "") {
+            current = word;
+        } else if (current.length + 1 + word.length <= width) {
+            current += ` ${word}`;
+        } else {
+            lines.push(current);
+            current = word;
+        }
+    }
+
+    if (current !== "") {
+        lines.push(current);
+    }
+
+    return lines;
+};
+
+/**
+ * Emit a long single-line string as a folded (`>`) block scalar wrapped to
+ * `lineWidth`. Uses strip chomping (`>-`) because the source has no trailing
+ * newline, so parsing folds the introduced breaks back into single spaces and
+ * reproduces the original value exactly.
+ */
+const writeFolded = (value: string, level: number, context: DumpContext): string => {
+    const contentIndent = indentOf(level + 1, context);
+    const width = Math.max(1, context.lineWidth - contentIndent.length);
+    const body = foldText(value, width)
+        .map((line) => contentIndent + line)
+        .join("\n");
+
+    return `>-\n${body}`;
+};
+
+const shouldFold = (value: string, level: number, context: DumpContext): boolean => {
+    if (context.lineWidth <= 0) {
+        return false;
+    }
+
+    // Cheapest gate first: only long values are worth the space/shape checks.
+    const available = context.lineWidth - (level + 1) * context.indent;
+
+    if (value.length <= available) {
+        return false;
+    }
+
+    return value.includes(" ") && FOLDABLE_RE.test(value);
+};
+
 const writeScalar = (value: string, level: number, context: DumpContext, inFlow: boolean): string => {
     if (value === "") {
         return "\u0022\u0022";
@@ -214,6 +274,10 @@ const writeScalar = (value: string, level: number, context: DumpContext, inFlow:
     }
 
     if (isPlainSafe(value, inFlow) && !wouldResolveToNonString(value)) {
+        if (!inFlow && shouldFold(value, level, context)) {
+            return writeFolded(value, level, context);
+        }
+
         return value;
     }
 
@@ -444,6 +508,7 @@ export const dump = (value: unknown, options: StringifyOptions = {}): string => 
         flowLevel: options.flowLevel ?? -1,
         forceQuotes: options.forceQuotes ?? false,
         indent: options.indent ?? 2,
+        lineWidth: options.lineWidth ?? 80,
         replacer: options.replacer,
         skipInvalid: options.skipInvalid ?? false,
         sortKeys: options.sortKeys ?? false,

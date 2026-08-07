@@ -133,6 +133,50 @@ describe("stringify › options", () => {
 
         expect(() => stringify(value)).toThrow(YAMLStringifyError);
     });
+
+    it("folds long plain strings into a folded block scalar at lineWidth", () => {
+        expect.assertions(3);
+
+        const long = "the quick brown fox jumps over the lazy dog and then keeps on running across the whole meadow";
+
+        const folded = stringify({ description: long });
+
+        expect(folded).toContain("description: >-");
+        // every emitted line stays within the default 80-column budget
+        expect(folded.split("\n").every((line) => line.length <= 80)).toBe(true);
+        // and it round-trips exactly
+        expect(parse(folded)).toStrictEqual({ description: long });
+    });
+
+    it("respects a custom lineWidth and can disable folding with lineWidth 0", () => {
+        expect.assertions(3);
+
+        const long = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen";
+
+        const narrow = stringify(long, { lineWidth: 30 });
+
+        expect(
+            narrow
+                .split("\n")
+                .filter((line) => line.startsWith("  "))
+                .every((line) => line.length <= 30),
+        ).toBe(true);
+        expect(parse(narrow)).toBe(long);
+
+        // lineWidth 0 keeps everything on one plain line
+        expect(stringify(long, { lineWidth: 0 })).toBe(`${long}\n`);
+    });
+
+    it("does not fold strings without break points", () => {
+        expect.assertions(2);
+
+        const url = "https://example.com/a/very/long/path/segment/that/exceeds/eighty/characters/here/ok";
+
+        const output = stringify({ url });
+
+        expect(output).not.toContain(">-");
+        expect(parse(output)).toStrictEqual({ url });
+    });
 });
 
 describe("stringify › round-trips through parse", () => {
