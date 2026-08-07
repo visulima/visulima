@@ -21,11 +21,11 @@ if (ok) {
 
 ## Available verifiers
 
-| Verifier                  | Scheme                                                              |
-| ------------------------- | ------------------------------------------------------------------- |
-| `twilioVerifier`          | `X-Twilio-Signature` — base64 HMAC-SHA1 of URL + sorted params.     |
-| `slackVerifier`           | v0 signing — hex HMAC-SHA256 of `v0:{ts}:{body}` + replay window.   |
-| `standardWebhookVerifier` | [Standard Webhooks](https://www.standardwebhooks.com/) HMAC-SHA256. |
+| Verifier                  | Scheme                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| `twilioVerifier`          | `X-Twilio-Signature` — base64 HMAC-SHA1 of URL + sorted params.              |
+| `slackVerifier`           | v0 signing — hex HMAC-SHA256 of `v0:{ts}:{body}` + replay window.            |
+| `standardWebhookVerifier` | [Standard Webhooks](https://www.standardwebhooks.com/) HMAC-SHA256.          |
 | `snsVerifier`             | SNS SignatureVersion 1 (RSA-SHA1) / 2 (RSA-SHA256) certificate verification. |
 
 Each exposes `verify(payload, headers, secret) => Promise<boolean>` and `parse(body) => NotificationEvent | undefined`.
