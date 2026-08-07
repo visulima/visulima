@@ -27,6 +27,12 @@ A fast, zero-runtime-dependency **YAML 1.2** parser and serializer written from 
 - `<<` merge keys, enabled by default
 - Multi-document streams with `---` / `...` markers and `%YAML` / `%TAG` directives
 
+**Document layer**
+
+- `parseDocument` / `parseAllDocuments` report diagnostics instead of throwing
+- Edits splice the source, preserving comments, blank lines and key order
+- A malformed document does not stop the rest of the stream
+
 **Two compatible APIs**
 
 - `yaml`-style `parse` / `parseAll` / `stringify`

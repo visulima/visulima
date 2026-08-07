@@ -183,13 +183,16 @@ class YAMLDocument {
             depth += 1;
         }
 
-        const entries = this.#ranges.get(container);
+        const entries = this.#ranges.get(container) ?? [];
+        const remaining = keys.slice(depth);
 
-        if (entries === undefined || entries.length === 0) {
+        // An empty or comment-only document has a root mapping with no entries
+        // and therefore nothing to anchor an insert to; append at the end of the
+        // source instead so a config file can be created from nothing.
+        if (entries.length === 0 && container !== this.contents) {
             throw new YAMLStringifyError(`cannot edit ${JSON.stringify(path)}: the target is not a block mapping`);
         }
 
-        const remaining = keys.slice(depth);
         const existing = remaining.length === 1 ? entries.find((entry) => entry.key === remaining[0]) : undefined;
 
         if (existing) {
@@ -238,6 +241,14 @@ class YAMLDocument {
     }
 
     #rootMapping(): Record<string, unknown> {
+        // An empty or comment-only document has no contents yet; treat it as an
+        // empty mapping so the first `setIn` can create one.
+        if (this.contents === null || this.contents === undefined) {
+            this.contents = {};
+
+            return this.contents as Record<string, unknown>;
+        }
+
         if (!isRecord(this.contents)) {
             throw new YAMLStringifyError("cannot edit a document whose root is not a mapping");
         }
@@ -257,15 +268,15 @@ class YAMLDocument {
     }
 
     #insertEntry(entries: MappingEntryRange[], keys: string[], value: unknown): void {
-        let anchor = entries[0]!;
+        let anchor: MappingEntryRange | undefined;
 
         for (const entry of entries) {
-            if (entry.end > anchor.end) {
+            if (anchor === undefined || entry.end > anchor.end) {
                 anchor = entry;
             }
         }
 
-        const indent = anchor.column;
+        const indent = anchor?.column ?? 0;
 
         // Nest the remaining path segments under one another.
         let text = "";
@@ -280,9 +291,19 @@ class YAMLDocument {
             }
         }
 
-        const at = trimTrailingSpace(this.#source, anchor.end);
+        const at = trimTrailingSpace(this.#source, anchor?.end ?? this.#source.length);
 
-        this.#edits.push({ end: at, start: at, text });
+        // With no anchor there is no preceding entry, so the leading newline the
+        // loop added would open the file with a blank line.
+        let body = at === 0 ? text.slice(1) : text;
+
+        // Nothing follows the insert point in a file that never ended in a
+        // newline, so add the one a YAML file is expected to end with.
+        if (!this.#source.slice(at).includes("\n")) {
+            body += "\n";
+        }
+
+        this.#edits.push({ end: at, start: at, text: body });
     }
 }
 

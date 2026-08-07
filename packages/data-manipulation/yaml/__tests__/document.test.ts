@@ -161,6 +161,23 @@ describe("document › comment-preserving edits", () => {
         expect(edit).toThrow(ROOT_NOT_MAPPING);
     });
 
+    it("builds a document from empty or comment-only source", () => {
+        expect.assertions(3);
+
+        const fromEmpty = parseDocument("");
+
+        fromEmpty.setIn(["overrides", "pkg"], "npm:x@1");
+
+        expect(fromEmpty.toString()).toBe("overrides:\n  pkg: npm:x@1\n");
+
+        const fromComment = parseDocument("# keep\n");
+
+        fromComment.setIn(["a"], 1);
+
+        expect(fromComment.toString()).toBe("# keep\na: 1\n");
+        expect(parseDocument(fromEmpty.toString()).toJS()).toStrictEqual({ overrides: { pkg: "npm:x@1" } });
+    });
+
     it("returns the source unchanged when nothing was edited", () => {
         expect.assertions(1);
 
