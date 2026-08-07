@@ -68,23 +68,23 @@ pnpm add @visulima/notification
 
 ```typescript
 import { send } from "@visulima/notification";
-import { twilioProvider } from "@visulima/notification/providers/twilio";
+import { createTwilioProvider } from "@visulima/notification/providers/twilio";
 
-await send("sms", twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }), { to: "+15555550100", text: "Your code is 123" });
+await send("sms", createTwilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }), { to: "+15555550100", text: "Your code is 123" });
 ```
 
 ### Multi-channel send
 
 ```typescript
 import { createNotification } from "@visulima/notification";
-import { twilioProvider } from "@visulima/notification/providers/twilio";
-import { slackProvider } from "@visulima/notification/providers/slack";
-import { fcmProvider } from "@visulima/notification/providers/fcm";
+import { createTwilioProvider } from "@visulima/notification/providers/twilio";
+import { createSlackProvider } from "@visulima/notification/providers/slack";
+import { createFcmProvider } from "@visulima/notification/providers/fcm";
 
 const notify = createNotification({
-    sms: twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
-    chat: slackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
-    push: fcmProvider({ projectId: "my-app", getAccessToken: async () => getGoogleToken() }),
+    sms: createTwilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
+    chat: createSlackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
+    push: createFcmProvider({ projectId: "my-app", getAccessToken: async () => getGoogleToken() }),
 });
 
 // Each present channel is delivered in parallel; you get one receipt per channel.
@@ -126,7 +126,7 @@ Providers are imported from `@visulima/notification/providers/<name>` so unused 
 | **SMS**      | `twilio`, `vonage`, `plivo`, `messagebird`, `telnyx`, `sns`     |
 | **Push**     | `fcm`, `expo`, `web-push`, `apns`                               |
 | **Chat**     | `slack`, `discord`, `msteams`, `telegram`                       |
-| **In-app**   | `inAppProvider` (memory or unstorage store)                     |
+| **In-app**   | `createInAppProvider` (memory or unstorage store)               |
 | **Webhook**  | `webhook`                                                       |
 | **Email**    | `emailChannel(...)` → wraps a `@visulima/email` `Mail` instance |
 | **Wrappers** | `failover`, `roundrobin`, `opentelemetry`, `mock`               |
@@ -161,11 +161,11 @@ export const myProvider = defineProvider<MyConfig, SmsPayload>((config) => ({
 Wrap several same-channel providers to gain resilience or load balancing:
 
 ```typescript
-import { failoverProvider } from "@visulima/notification/providers/failover";
-import { roundRobinProvider } from "@visulima/notification/providers/roundrobin";
+import { createFailoverProvider } from "@visulima/notification/providers/failover";
+import { createRoundRobinProvider } from "@visulima/notification/providers/roundrobin";
 
-const sms = failoverProvider([twilioProvider({ … }), vonageProvider({ … })]); // try Twilio, fall back to Vonage
-const balanced = roundRobinProvider([plivoProvider({ … }), telnyxProvider({ … })]);
+const sms = createFailoverProvider([createTwilioProvider({ … }), createVonageProvider({ … })]); // try Twilio, fall back to Vonage
+const balanced = createRoundRobinProvider([createPlivoProvider({ … }), createTelnyxProvider({ … })]);
 
 const notify = createNotification({ sms });
 ```
@@ -239,9 +239,9 @@ const queue = new UnstorageQueue(createStorage());
 ## In-app inbox
 
 ```typescript
-import { inAppProvider } from "@visulima/notification/channels/inapp";
+import { createInAppProvider } from "@visulima/notification/channels/inapp";
 
-const inapp = inAppProvider();
+const inapp = createInAppProvider();
 const notify = createNotification({ inapp });
 
 await notify.sendToChannel("inapp", { to: "user-1", title: "Welcome", body: "Thanks for joining" });
