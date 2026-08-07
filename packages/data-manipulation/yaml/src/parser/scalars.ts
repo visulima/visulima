@@ -46,6 +46,8 @@ const CHOMPING_STRIP = 2;
 const CHOMPING_KEEP = 3;
 
 const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection: boolean): boolean => {
+    state.scalarStyle = "PLAIN";
+
     const previousKind = state.kind;
     const previousResult = state.result;
     const { input } = state;
@@ -139,6 +141,8 @@ const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection:
 };
 
 const readSingleQuotedScalar = (state: State, nodeIndent: number): boolean => {
+    state.scalarStyle = "QUOTE_SINGLE";
+
     let ch = state.input.charCodeAt(state.position);
 
     if (ch !== 0x27) {
@@ -186,6 +190,8 @@ const readSingleQuotedScalar = (state: State, nodeIndent: number): boolean => {
 };
 
 const readDoubleQuotedScalar = (state: State, nodeIndent: number): boolean => {
+    state.scalarStyle = "QUOTE_DOUBLE";
+
     let ch = state.input.charCodeAt(state.position);
 
     if (ch !== 0x22) {
@@ -283,8 +289,10 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
 
     if (ch === 0x7c) {
         folding = false;
+        state.scalarStyle = "BLOCK_LITERAL";
     } else if (ch === 0x3e) {
         folding = true;
+        state.scalarStyle = "BLOCK_FOLDED";
     } else {
         return false;
     }

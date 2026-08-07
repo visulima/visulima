@@ -32,6 +32,7 @@
 
 import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
+import { Alias, Scalar, YAMLMap, YAMLSeq } from "../nodes/nodes";
 import { resolveExplicitTag } from "../schema/resolve-scalar";
 import { INVALID_SCALAR } from "../schema/schemas";
 import { resolveImplicitTag } from "../schema/tags";
@@ -70,6 +71,14 @@ const YAML_VERSION_RE = /^\d+\.\d+$/;
  * around it is what previously let `&lt;&lt;` bypass the guard entirely.
  */
 const assignMappingKey = (state: State, target: MappingTarget, key: unknown, value: unknown): void => {
+    // In node mode a mapping is an ordered list of `Pair`s, so keys keep their
+    // own nodes (and therefore their styles and tags) rather than collapsing.
+    if (target instanceof YAMLMap) {
+        target.set(key, value);
+
+        return;
+    }
+
     // A Map keeps keys as their own values, so the prototype chain is never in
     // play and no guard is needed.
     if (target instanceof Map) {
@@ -89,6 +98,10 @@ const assignMappingKey = (state: State, target: MappingTarget, key: unknown, val
 
 /** Whether `target` already carries `key`. */
 const mappingHas = (target: MappingTarget, key: unknown): boolean => {
+    if (target instanceof YAMLMap) {
+        return target.has(key);
+    }
+
     if (target instanceof Map) {
         return target.has(key);
     }
@@ -98,6 +111,10 @@ const mappingHas = (target: MappingTarget, key: unknown): boolean => {
 
 /** Every key currently in `target`. */
 const mappingKeys = (target: MappingTarget): unknown[] => {
+    if (target instanceof YAMLMap) {
+        return target.items.map((pair) => pair.key);
+    }
+
     if (target instanceof Map) {
         return [...target.keys()];
     }
@@ -107,6 +124,10 @@ const mappingKeys = (target: MappingTarget): unknown[] => {
 
 /** Read one key back out of `target`. */
 const mappingGet = (target: MappingTarget, key: unknown): unknown => {
+    if (target instanceof YAMLMap) {
+        return target.get(key, true);
+    }
+
     if (target instanceof Map) {
         return target.get(key);
     }
@@ -157,10 +178,59 @@ const stringifyComplexKey = (node: unknown): string => {
 };
 
 /** A parsed mapping: a plain object, or a Map when `mapAsMap` is set. */
-type MappingTarget = Map<unknown, unknown> | Record<string, unknown>;
+type MappingTarget = Map<unknown, unknown> | Record<string, unknown> | YAMLMap;
+
+/**
+ * Wrap a finished value as a node, carrying over the tag, anchor and the style
+ * it was written in. Collections already are nodes by this point.
+ */
+const toNode = (state: State, value: unknown, hasContent: boolean): unknown => {
+    if (value instanceof Alias) {
+        return value;
+    }
+
+    if (value instanceof YAMLMap || value instanceof YAMLSeq) {
+        if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
+            value.tag = state.tag;
+        }
+
+        return value;
+    }
+
+    const scalar = new Scalar(value);
+
+    if (hasContent && state.scalarStyle) {
+        scalar.type = state.scalarStyle;
+    }
+
+    if (state.anchor !== null) {
+        scalar.anchor = state.anchor;
+    }
+
+    if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
+        scalar.tag = state.tag;
+    }
+
+    return scalar;
+};
+
+/** Append to whichever sequence representation is in use. */
+const pushItem = (target: unknown[] | YAMLSeq, value: unknown): void => {
+    if (target instanceof YAMLSeq) {
+        target.items.push(value);
+
+        return;
+    }
+
+    target.push(value);
+};
 
 /** Build the container a mapping accumulates into. */
 const createMapping = (state: State): MappingTarget => {
+    if (state.nodes) {
+        return new YAMLMap();
+    }
+
     if (state.options.mapAsMap) {
         return new Map<unknown, unknown>();
     }
@@ -210,10 +280,13 @@ const storeMappingPair = (
     // A Map can hold a collection as a key; a plain object cannot, so there the
     // key is flattened to a stable string. `stringKeys` forces the flattened
     // form even for a Map.
-    // A Map can hold a collection as a key; a plain object cannot.
+    // A Map or YAMLMap can hold a collection — or a whole node — as a key; a
+    // plain object cannot, so there the key is flattened to a stable string.
+    const keepsNativeKeys = result instanceof Map || result instanceof YAMLMap;
+
     let key: unknown = keyNode;
 
-    if (!(result instanceof Map) || state.options.stringKeys) {
+    if (!keepsNativeKeys || state.options.stringKeys) {
         key = mappingKeyOf(keyNode);
     }
 
@@ -251,7 +324,7 @@ const storeMappingPair = (
 const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    const result: unknown[] = [];
+    const result: unknown[] | YAMLSeq = state.nodes ? new YAMLSeq() : [];
     let detected = false;
 
     // A tab in this line's indentation cannot introduce a block sequence.
@@ -265,6 +338,10 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const entryLine = state.line;
 
     if (state.anchor !== null) {
+        if (state.nodes) {
+            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
+        }
+
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -292,7 +369,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
         state.position++;
 
         if (skipSeparationSpace(state, true, -1) && state.lineIndent <= nodeIndent) {
-            result.push(null);
+            pushItem(result, null);
             ch = state.input.charCodeAt(state.position);
             continue;
         }
@@ -300,7 +377,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
         const { line } = state;
 
         composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
-        result.push(state.result);
+        pushItem(result, state.result);
         skipSeparationSpace(state, true, -1);
 
         ch = state.input.charCodeAt(state.position);
@@ -354,6 +431,10 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     const entryLine = state.line;
 
     if (state.anchor !== null) {
+        if (state.nodes) {
+            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
+        }
+
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -506,12 +587,12 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     let ch = state.input.charCodeAt(state.position);
     let terminator: number;
     let isMapping: boolean;
-    let result: MappingTarget | unknown[];
+    let result: MappingTarget | YAMLSeq | unknown[];
 
     if (ch === 0x5b) {
         terminator = 0x5d;
         isMapping = false;
-        result = [];
+        result = state.nodes ? new YAMLSeq() : [];
     } else if (ch === 0x7b) {
         terminator = 0x7d;
         isMapping = true;
@@ -521,6 +602,10 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     }
 
     if (state.anchor !== null) {
+        if (state.nodes) {
+            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
+        }
+
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -586,12 +671,13 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
         if (isMapping) {
             overridableKeys = storeMappingPair(state, result as Record<string, unknown>, overridableKeys, keyTag, keyNode, valueNode);
         } else if (isPair) {
-            const pair: Record<string, unknown> = {};
+            // `[ key: value ]` — a single-pair mapping as one sequence entry.
+            const pair = createMapping(state);
 
             overridableKeys = storeMappingPair(state, pair, overridableKeys, keyTag, keyNode, valueNode);
-            (result as unknown[]).push(pair);
+            pushItem(result as unknown[] | YAMLSeq, pair);
         } else {
-            (result as unknown[]).push(keyNode);
+            pushItem(result as unknown[] | YAMLSeq, keyNode);
         }
 
         skipSeparationSpace(state, true, nodeIndent);
@@ -757,7 +843,9 @@ const readAlias = (state: State): boolean => {
         throwError(state, "alias reference count limit exceeded (possible resource-exhaustion attack)");
     }
 
-    state.result = state.anchorMap.get(alias);
+    // In node mode an alias stays a reference; `toJS` resolves it later, which
+    // is what lets a document round-trip with its aliases intact.
+    state.result = state.nodes ? new Alias(alias) : state.anchorMap.get(alias);
     state.kind = "scalar";
 
     return true;
@@ -1023,9 +1111,9 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
         // nothing after it, common in flow: `{ a: !!str, ... }`). In the empty
         // case the node has no kind yet — treat the content as the empty string
         // so `!!str` → "" and `!!null` → null, matching the core schema.
-        state.tag !== null &&
-        state.tag !== "!" &&
-        (state.kind === "scalar" || (!hasContent && state.kind === null))
+        state.tag !== null
+        && state.tag !== "!"
+        && (state.kind === "scalar" || (!hasContent && state.kind === null))
     ) {
         const raw = typeof state.result === "string" ? state.result : "";
         // A custom tag takes precedence over the core table for the same name,
@@ -1043,6 +1131,10 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
                 throwError(state, `unacceptable value "${raw}" for the "${state.tag}" tag`);
             }
         }
+    }
+
+    if (state.nodes) {
+        state.result = toNode(state, state.result, hasContent);
     }
 
     if (state.anchor !== null) {

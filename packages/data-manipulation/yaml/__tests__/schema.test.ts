@@ -47,7 +47,7 @@ describe("schema › json", () => {
     it("resolves the JSON grammar", () => {
         expect.assertions(1);
 
-        expect(parse('{"a": 1, "b": true, "c": null, "d": 1.5e3}', { schema: "json" })).toStrictEqual({ a: 1, b: true, c: null, d: 1500 });
+        expect(parse("{\"a\": 1, \"b\": true, \"c\": null, \"d\": 1.5e3}", { schema: "json" })).toStrictEqual({ a: 1, b: true, c: null, d: 1500 });
     });
 
     it("rejects any unquoted scalar outside the JSON grammar", () => {
@@ -55,8 +55,8 @@ describe("schema › json", () => {
 
         // Matches `yaml`: even a bare mapping key is not a valid JSON scalar.
         expect(() => parse("a: 1", { schema: "json" })).toThrow(YAMLParseError);
-        expect(() => parse('{"a": ~}', { schema: "json" })).toThrow(YAMLParseError);
-        expect(() => parse('{"a": 0x1F}', { schema: "json" })).toThrow(YAMLParseError);
+        expect(() => parse("{\"a\": ~}", { schema: "json" })).toThrow(YAMLParseError);
+        expect(() => parse("{\"a\": 0x1F}", { schema: "json" })).toThrow(YAMLParseError);
     });
 });
 
@@ -194,7 +194,7 @@ describe("stringify options", () => {
         expect.assertions(2);
 
         expect(stringify({ a: "l1\nl2" })).toBe("a: |-\n  l1\n  l2\n");
-        expect(stringify({ a: "l1\nl2" }, { blockQuote: false })).toBe('a: "l1\\nl2"\n');
+        expect(stringify({ a: "l1\nl2" }, { blockQuote: false })).toBe("a: \"l1\\nl2\"\n");
     });
 
     it("singleQuote chooses how to quote, never whether to", () => {

@@ -158,6 +158,27 @@ export function loadAll(source: string, iteratorOrOptions?: ((document: unknown)
 export const dump = (value: unknown, options?: StringifyOptions): string => dumpValue(value, options);
 
 /**
+ * Parse a document into a node tree — `Scalar` / `YAMLMap` / `YAMLSeq` / `Pair`
+ * / `Alias` — preserving what native values cannot: scalar styles, tags,
+ * anchors, and aliases as references rather than resolved copies.
+ *
+ * Separate from {@link parse}, which never builds a tree; that is what keeps
+ * its single-pass path fast.
+ */
+export const parseNodes = (source: string, options?: ParseOptions): unknown => {
+    const { documents } = loadDocuments(source, { ...options, nodes: true });
+
+    return documents[0]?.contents;
+};
+
+/** Every document of a stream as node trees. */
+export const parseAllNodes = (source: string, options?: ParseOptions): unknown[] => {
+    const { documents } = loadDocuments(source, { ...options, nodes: true });
+
+    return documents.map((document) => document.contents);
+};
+
+/**
  * Parse the first document without throwing, returning a {@link YAMLDocument}
  * that carries its own diagnostics and supports comment-preserving edits.
  * @example

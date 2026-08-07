@@ -14,6 +14,7 @@
  */
 
 import { YAMLParseError, YAMLWarning } from "../errors";
+import type { ScalarStyle } from "../nodes/nodes";
 import type { ScalarResolver } from "../schema/schemas";
 import { selectScalarResolver } from "../schema/schemas";
 import type { TagRegistry } from "../schema/tags";
@@ -79,6 +80,15 @@ class State {
      */
     public readonly resolveScalar: ScalarResolver;
 
+    /**
+     * Build a `Scalar`/`YAMLMap`/`YAMLSeq` tree instead of native values.
+     * Off for `parse`, which is what keeps its single-pass path fast.
+     */
+    public readonly nodes: boolean;
+
+    /** Style of the scalar just read, used to annotate its node. */
+    public scalarStyle: ScalarStyle | undefined = undefined;
+
     /** Custom scalar tags for this parse, or undefined when none were given. */
     public readonly tags: TagRegistry | undefined;
 
@@ -102,6 +112,7 @@ class State {
         };
         this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
         this.tags = buildTagRegistry(this.options.customTags);
+        this.nodes = options.nodes ?? false;
     }
 }
 

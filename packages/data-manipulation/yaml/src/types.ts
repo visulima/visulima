@@ -63,6 +63,14 @@ export interface ParseOptions {
     merge?: boolean;
 
     /**
+     * Produce a `Scalar` / `YAMLMap` / `YAMLSeq` tree rather than native
+     * values. Set by `parseDocument({ nodes: true })`; `parse` never enables
+     * it, which is what keeps its single-pass path fast.
+     * @default false
+     */
+    nodes?: boolean;
+
+    /**
      * Optional callback invoked for every non-fatal `YAMLWarning`. When
      * omitted, warnings are silently ignored.
      */

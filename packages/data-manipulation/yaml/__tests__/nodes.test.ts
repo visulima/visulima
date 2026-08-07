@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { describe, expect, it } from "vitest";
 
-import { Alias, createNode, isAlias, isCollection, isMap, isNode, isPair, isScalar, isSeq, Pair, Scalar, toJS, visit, YAMLMap, YAMLSeq } from "../src";
+import { Alias, createNode, isAlias, isCollection, isMap, isNode, isPair, isScalar, isSeq, Pair, parse, parseAllNodes, parseNodes, Scalar, toJS, visit, YAMLMap, YAMLSeq } from "../src";
 
 describe("node model › construction and guards", () => {
     it("wraps plain values into a node tree", () => {
@@ -218,5 +218,97 @@ describe("node model › visit", () => {
 
         // Only the key `a`; the sequence's entries were skipped.
         expect(scalars).toBe(1);
+    });
+});
+
+describe("node model › parsing into nodes", () => {
+    it("preserves the style each scalar was written in", () => {
+        expect.assertions(4);
+
+        const tree = parseNodes("a: plain\nb: \u0022double\u0022\nc: 'single'\nd: |\n  block\n") as YAMLMap;
+
+        expect((tree.get("a", true) as Scalar).type).toBe("PLAIN");
+        expect((tree.get("b", true) as Scalar).type).toBe("QUOTE_DOUBLE");
+        expect((tree.get("c", true) as Scalar).type).toBe("QUOTE_SINGLE");
+        expect((tree.get("d", true) as Scalar).type).toBe("BLOCK_LITERAL");
+    });
+
+    it("keeps mapping keys as nodes rather than flattening them", () => {
+        expect.assertions(2);
+
+        const tree = parseNodes("a: 1") as YAMLMap;
+
+        expect(isScalar(tree.items[0]!.key)).toBe(true);
+        expect((tree.items[0]!.key as Scalar).value).toBe("a");
+    });
+
+    it("records the tag and the anchor on the node", () => {
+        expect.assertions(3);
+
+        const tree = parseNodes("a: !!str 5\nb: &anchored 1") as YAMLMap;
+        const tagged = tree.get("a", true) as Scalar;
+
+        expect(tagged.tag).toBe("tag:yaml.org,2002:str");
+        expect(tagged.value).toBe("5");
+        expect((tree.get("b", true) as Scalar).anchor).toBe("anchored");
+    });
+
+    it("keeps an alias as a reference, resolved only by toJS", () => {
+        expect.assertions(3);
+
+        const tree = parseNodes("a: &x { k: 1 }\nb: *x") as YAMLMap;
+        const alias = tree.get("b", true);
+
+        expect(isAlias(alias)).toBe(true);
+        expect((alias as Alias).source).toBe("x");
+
+        const plain = toJS(tree) as { a: unknown; b: unknown };
+
+        // Resolved to the same object, not a copy.
+        expect(plain.b).toBe(plain.a);
+    });
+
+    it("builds nested collections as nodes", () => {
+        expect.assertions(3);
+
+        const tree = parseNodes("a:\n  - 1\n  - b: 2\n") as YAMLMap;
+        const seq = tree.get("a", true) as YAMLSeq;
+
+        expect(isSeq(seq)).toBe(true);
+        expect(isScalar(seq.items[0])).toBe(true);
+        expect(isMap(seq.items[1])).toBe(true);
+    });
+
+    it("converts back to the same value plain parsing produces", () => {
+        expect.assertions(1);
+
+        const source = "a: 1\nb: [1, 2]\nc:\n  d: true\ne: null\n";
+
+        expect(toJS(parseNodes(source))).toStrictEqual(parse(source));
+    });
+
+    it("returns one tree per document in a stream", () => {
+        expect.assertions(2);
+
+        const trees = parseAllNodes("a: 1\n---\nb: 2\n");
+
+        expect(trees).toHaveLength(2);
+        expect(trees.map((tree) => toJS(tree))).toStrictEqual([{ a: 1 }, { b: 2 }]);
+    });
+
+    it("is walkable with visit", () => {
+        expect.assertions(1);
+
+        const tree = parseNodes("a:\n  - 1\n  - 2\n");
+        let scalars = 0;
+
+        visit(tree, {
+            Scalar: () => {
+                scalars += 1;
+            },
+        });
+
+        // The key `a` plus the two entries.
+        expect(scalars).toBe(3);
     });
 });

@@ -65,7 +65,7 @@ Error recovery is **per document, not within one**: `loadDocuments` catches a do
 
 `Scalar`, `YAMLMap`, `YAMLSeq`, `Pair`, `Alias`, the `isX` guards, `createNode`, `toJS` and `visit`, mirroring `yaml`'s.
 
-**`parse` never builds this.** The single-pass native-value path is where the speed comes from, so the tree is a separate opt-in structure — building it from `parse` would erase the package's reason to exist. Anything that needs the tree (styles, anchors on nodes, generic traversal) goes through the node API instead.
+**`parse` never builds this.** `parseNodes` / `parseAllNodes` do, via `ParseOptions.nodes`, which switches the loader's collection factories (`createMapping`, `pushItem`) and wraps each finished value in `toNode`. Aliases stay `Alias` references rather than resolving, which is what lets a document round-trip with its aliases intact; `toJS` resolves them through an anchor map. The single-pass native-value path is where the speed comes from, so the tree is a separate opt-in structure — building it from `parse` would erase the package's reason to exist. Anything that needs the tree (styles, anchors on nodes, generic traversal) goes through the node API instead.
 
 Two constraints that shaped it:
 
