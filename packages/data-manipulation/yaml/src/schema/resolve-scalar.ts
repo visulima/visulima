@@ -5,17 +5,15 @@
 /**
  * YAML 1.2 "core" schema scalar resolution.
  *
- * These regular expressions follow the tag-resolution table from the YAML 1.2
- * specification (§10.2). They are intentionally stricter than YAML 1.1 — for
- * example `yes`/`no`/`on`/`off` are plain strings, not booleans, and integers
- * do not use underscore separators.
+ * Follows the tag-resolution table from the YAML 1.2 specification (§10.2).
+ * Intentionally stricter than YAML 1.1 — `yes`/`no`/`on`/`off` are plain
+ * strings, not booleans, and integers do not use underscore separators.
+ *
+ * The hot path (`resolveScalarValue`) is allocation-free: the loader calls it
+ * once per plain scalar, so it returns the native value directly and uses plain
+ * string comparisons for the fixed null/bool keywords rather than regular
+ * expressions.
  */
-
-const NULL_RE = /^(?:~|null|Null|NULL)$/;
-
-const BOOL_TRUE_RE = /^(?:true|True|TRUE)$/;
-
-const BOOL_FALSE_RE = /^(?:false|False|FALSE)$/;
 
 const INT_DEC_RE = /^[-+]?\d+$/;
 
@@ -29,77 +27,89 @@ const FLOAT_INF_RE = /^([-+]?)\.(?:inf|Inf|INF)$/;
 
 const FLOAT_NAN_RE = /^\.(?:nan|NaN|NAN)$/;
 
-/** The distinct native types a resolved plain scalar can take. */
-export interface ResolvedScalar {
-    /** `true` when the raw string mapped to a non-string native value. */
-    resolved: boolean;
+const isNullKeyword = (raw: string): boolean => raw === "~" || raw === "null" || raw === "Null" || raw === "NULL";
 
-    /** The `!!`-style implicit tag that was applied. */
-    tag: "bool" | "float" | "int" | "null" | "str";
+const isTrueKeyword = (raw: string): boolean => raw === "true" || raw === "True" || raw === "TRUE";
 
-    /** The resolved native value. */
-    value: unknown;
-}
+const isFalseKeyword = (raw: string): boolean => raw === "false" || raw === "False" || raw === "FALSE";
 
 /**
  * Resolve a plain (unquoted) scalar to its native value per the YAML 1.2 core
- * schema. Quoted scalars must never be passed here — they are always strings.
+ * schema, returning the value directly (the raw string itself when it stays a
+ * string). Quoted scalars must never be passed here — they are always strings.
  */
-export const resolvePlainScalar = (raw: string): ResolvedScalar => {
+export const resolveScalarValue = (raw: string): unknown => {
     if (raw.length === 0) {
-        return { resolved: true, tag: "null", value: null };
+        return null;
     }
 
     // Cheap first-character gate keeps the common "it is just a string" path
-    // from running every regex below.
+    // from running any regex below.
     const first = raw.charCodeAt(0);
-    const canBeNumber = (first >= 48 && first <= 57) || first === 43 /* + */ || first === 45 /* - */ || first === 46; /* . */
-    const canBeKeyword = (first >= 65 && first <= 90) || (first >= 97 && first <= 122) || first === 126; /* ~ */
 
-    if (canBeKeyword) {
-        if (NULL_RE.test(raw)) {
-            return { resolved: true, tag: "null", value: null };
+    // A-Z / a-z / `~` — the only starts of a null/bool keyword. Gate on length
+    // first (1/4/5) so ordinary words never run the keyword comparisons.
+    if ((first >= 65 && first <= 90) || (first >= 97 && first <= 122) || first === 126) {
+        const { length } = raw;
+
+        if (length === 1) {
+            return first === 126 ? null : raw;
         }
 
-        if (BOOL_TRUE_RE.test(raw)) {
-            return { resolved: true, tag: "bool", value: true };
+        if (length === 4) {
+            if (isNullKeyword(raw)) {
+                return null;
+            }
+
+            if (isTrueKeyword(raw)) {
+                return true;
+            }
+        } else if (length === 5 && isFalseKeyword(raw)) {
+            return false;
         }
 
-        if (BOOL_FALSE_RE.test(raw)) {
-            return { resolved: true, tag: "bool", value: false };
-        }
+        return raw;
     }
 
-    if (canBeNumber || first === 126) {
+    // 0-9 / `+` / `-` / `.` — the only starts of a number.
+    if ((first >= 48 && first <= 57) || first === 43 || first === 45 || first === 46) {
         if (INT_DEC_RE.test(raw)) {
-            return { resolved: true, tag: "int", value: Number.parseInt(raw, 10) };
+            return Number.parseInt(raw, 10);
         }
 
-        if (INT_HEX_RE.test(raw)) {
-            return { resolved: true, tag: "int", value: Number.parseInt(raw.slice(2), 16) };
+        if (first === 48 && INT_HEX_RE.test(raw)) {
+            return Number.parseInt(raw.slice(2), 16);
         }
 
-        if (INT_OCT_RE.test(raw)) {
-            return { resolved: true, tag: "int", value: Number.parseInt(raw.slice(2), 8) };
+        if (first === 48 && INT_OCT_RE.test(raw)) {
+            return Number.parseInt(raw.slice(2), 8);
         }
 
-        const infMatch = FLOAT_INF_RE.exec(raw);
+        if (first === 46 || first === 43 || first === 45) {
+            const infMatch = FLOAT_INF_RE.exec(raw);
 
-        if (infMatch) {
-            return { resolved: true, tag: "float", value: infMatch[1] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY };
-        }
+            if (infMatch) {
+                return infMatch[1] === "-" ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+            }
 
-        if (FLOAT_NAN_RE.test(raw)) {
-            return { resolved: true, tag: "float", value: Number.NaN };
+            if (FLOAT_NAN_RE.test(raw)) {
+                return Number.NaN;
+            }
         }
 
         if (FLOAT_RE.test(raw)) {
-            return { resolved: true, tag: "float", value: Number.parseFloat(raw) };
+            return Number.parseFloat(raw);
         }
     }
 
-    return { resolved: false, tag: "str", value: raw };
+    return raw;
 };
+
+/**
+ * Whether a plain scalar would resolve to a non-string native value (used by
+ * the serializer to decide whether a string needs quoting).
+ */
+export const resolvesToNonString = (raw: string): boolean => resolveScalarValue(raw) !== raw;
 
 /**
  * Apply an explicit local core-schema tag (e.g. `!!int`) to a raw scalar.
@@ -109,11 +119,11 @@ export const resolveExplicitTag = (tag: string, raw: string): { value: unknown }
     switch (tag) {
         case "!!bool":
         case "tag:yaml.org,2002:bool": {
-            if (BOOL_TRUE_RE.test(raw)) {
+            if (isTrueKeyword(raw)) {
                 return { value: true };
             }
 
-            if (BOOL_FALSE_RE.test(raw)) {
+            if (isFalseKeyword(raw)) {
                 return { value: false };
             }
 
@@ -121,9 +131,9 @@ export const resolveExplicitTag = (tag: string, raw: string): { value: unknown }
         }
         case "!!float":
         case "tag:yaml.org,2002:float": {
-            const resolved = resolvePlainScalar(raw);
+            const value = resolveScalarValue(raw);
 
-            return { value: typeof resolved.value === "number" ? resolved.value : Number.parseFloat(raw) };
+            return { value: typeof value === "number" ? value : Number.parseFloat(raw) };
         }
         case "!!int":
         case "tag:yaml.org,2002:int": {

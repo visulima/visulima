@@ -12,7 +12,7 @@
  */
 
 import { YAMLStringifyError } from "../errors";
-import { resolvePlainScalar } from "../schema/resolve-scalar";
+import { resolvesToNonString } from "../schema/resolve-scalar";
 import type { StringifyOptions } from "../types";
 
 interface DumpContext {
@@ -89,7 +89,7 @@ const isPlainSafe = (value: string, inFlow: boolean): boolean => {
     return true;
 };
 
-const wouldResolveToNonString = (value: string): boolean => resolvePlainScalar(value).resolved;
+const wouldResolveToNonString = (value: string): boolean => resolvesToNonString(value);
 
 const writeSingleQuoted = (value: string): string => `'${value.replaceAll("'", "''")}'`;
 

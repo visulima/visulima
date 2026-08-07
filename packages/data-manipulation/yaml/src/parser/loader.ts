@@ -31,7 +31,7 @@
  */
 
 import { YAMLParseError, YAMLWarning } from "../errors";
-import { resolveExplicitTag, resolvePlainScalar } from "../schema/resolve-scalar";
+import { resolveExplicitTag, resolveScalarValue } from "../schema/resolve-scalar";
 import type { ParseOptions } from "../types";
 
 const CONTEXT_FLOW_IN = 1;
@@ -52,8 +52,15 @@ const isWhiteSpace = (c: number): boolean => c === 0x09 || c === 0x20;
 const isWsOrEol = (c: number): boolean => c === 0x09 || c === 0x20 || c === 0x0a || c === 0x0d || c === 0;
 const isFlowIndicator = (c: number): boolean => c === 0x2c || c === 0x5b || c === 0x5d || c === 0x7b || c === 0x7d;
 
-// `# & * ! | > ' " % @ \`` — none of these may begin a plain scalar.
-const PLAIN_SCALAR_LEAD_BLOCKERS = new Set([0x21, 0x22, 0x23, 0x25, 0x26, 0x27, 0x2a, 0x3e, 0x40, 0x60, 0x7c]);
+// `# & * ! | > ' " % @ \`` — none of these may begin a plain scalar. A 128-entry
+// lookup table is faster than `Set.has` on the scalar hot path.
+const PLAIN_SCALAR_LEAD_BLOCKERS = new Uint8Array(128);
+
+for (const code of [0x21, 0x22, 0x23, 0x25, 0x26, 0x27, 0x2a, 0x3e, 0x40, 0x60, 0x7c]) {
+    PLAIN_SCALAR_LEAD_BLOCKERS[code] = 1;
+}
+
+const isPlainScalarLeadBlocker = (c: number): boolean => c < 128 && PLAIN_SCALAR_LEAD_BLOCKERS[c] === 1;
 
 const fromHexCode = (c: number): number => {
     if (c >= 0x30 && c <= 0x39) {
@@ -296,15 +303,23 @@ const mergeMappings = (state: State, destination: Record<string, unknown>, sourc
     }
 };
 
+/**
+ * Store one key/value pair into `result`, honouring merge keys, duplicate-key
+ * policy and the prototype-pollution guard. `overridableKeys` tracks keys that
+ * a merge introduced (so a later explicit key may override them); it is created
+ * lazily — merge keys are rare, so a merge-free mapping never allocates a Set.
+ * Returns the (possibly newly created) `overridableKeys` set.
+ */
 const storeMappingPair = (
     state: State,
-    result: Record<string, unknown> | null,
-    overridableKeys: Set<string>,
+    result: Record<string, unknown>,
+    overridableKeys: Set<string> | undefined,
     keyTag: string | null,
     keyNodeInput: unknown,
     valueNode: unknown,
-): Record<string, unknown> => {
+): Set<string> | undefined => {
     let keyNode = keyNodeInput;
+    let keys = overridableKeys;
 
     // Flatten complex keys into strings — plain objects can only carry string keys.
     if (Array.isArray(keyNode)) {
@@ -326,59 +341,61 @@ const storeMappingPair = (
     }
 
     const key = String(keyNode);
-    const target = result ?? {};
 
     const isMerge = keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<");
 
     if (isMerge) {
+        keys ??= new Set<string>();
+
         if (Array.isArray(valueNode)) {
             for (const item of valueNode) {
-                mergeMappings(state, target, item, overridableKeys);
+                mergeMappings(state, result, item, keys);
             }
         } else {
-            mergeMappings(state, target, valueNode, overridableKeys);
+            mergeMappings(state, result, valueNode, keys);
         }
 
-        return target;
+        return keys;
     }
 
-    if (!overridableKeys.has(key) && hasOwn(target, key)) {
+    if (!keys?.has(key) && hasOwn(result, key)) {
         if (state.options.duplicateKeys === "error") {
             throwError(state, `duplicated mapping key "${key}"`);
         } else if (state.options.duplicateKeys === "ignore") {
-            return target;
+            return keys;
         }
     }
 
     if (key === "__proto__") {
         if (state.options.preventProtoPollution) {
-            Object.defineProperty(target, key, { configurable: true, enumerable: true, value: valueNode, writable: true });
+            Object.defineProperty(result, key, { configurable: true, enumerable: true, value: valueNode, writable: true });
         }
     } else if ((key === "constructor" || key === "prototype") && state.options.preventProtoPollution) {
         // Silently drop the pollution-prone keys.
     } else {
-        target[key] = valueNode;
+        result[key] = valueNode;
     }
 
-    overridableKeys.delete(key);
+    keys?.delete(key);
 
-    return target;
+    return keys;
 };
 
 const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection: boolean): boolean => {
     const previousKind = state.kind;
     const previousResult = state.result;
+    const { input } = state;
 
-    let ch = state.input.charCodeAt(state.position);
+    let ch = input.charCodeAt(state.position);
 
-    if (isWsOrEol(ch) || isFlowIndicator(ch) || PLAIN_SCALAR_LEAD_BLOCKERS.has(ch)) {
+    if (isWsOrEol(ch) || isFlowIndicator(ch) || isPlainScalarLeadBlocker(ch)) {
         return false;
     }
 
     let following: number;
 
     if (ch === 0x3f || ch === 0x2d) {
-        following = state.input.charCodeAt(state.position + 1);
+        following = input.charCodeAt(state.position + 1);
 
         if (isWsOrEol(following) || (withinFlowCollection && isFlowIndicator(following))) {
             return false;
@@ -397,13 +414,13 @@ const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection:
 
     while (ch !== 0) {
         if (ch === 0x3a) {
-            following = state.input.charCodeAt(state.position + 1);
+            following = input.charCodeAt(state.position + 1);
 
             if (isWsOrEol(following) || (withinFlowCollection && isFlowIndicator(following))) {
                 break;
             }
         } else if (ch === 0x23) {
-            const preceding = state.input.charCodeAt(state.position - 1);
+            const preceding = input.charCodeAt(state.position - 1);
 
             if (isWsOrEol(preceding)) {
                 break;
@@ -419,7 +436,7 @@ const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection:
 
             if (state.lineIndent >= nodeIndent) {
                 hasPendingContent = true;
-                ch = state.input.charCodeAt(state.position);
+                ch = input.charCodeAt(state.position);
                 continue;
             } else {
                 state.position = captureEnd;
@@ -442,7 +459,7 @@ const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection:
             captureEnd = state.position + 1;
         }
 
-        ch = state.input.charCodeAt(++state.position);
+        ch = input.charCodeAt(++state.position);
     }
 
     captureSegment(state, captureStart, captureEnd);
@@ -766,7 +783,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
     const result: Record<string, unknown> = {};
-    const overridableKeys = new Set<string>();
+    let overridableKeys: Set<string> | undefined;
 
     let keyTag: string | null = null;
     let keyNode: unknown = null;
@@ -788,7 +805,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
         if ((ch === 0x3f || ch === 0x3a) && isWsOrEol(following)) {
             if (ch === 0x3f) {
                 if (atExplicitKey) {
-                    storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
+                    overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
                     keyTag = null;
                     keyNode = null;
                     valueNode = null;
@@ -826,7 +843,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
                     }
 
                     if (atExplicitKey) {
-                        storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
+                        overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
                         keyTag = null;
                         keyNode = null;
                         valueNode = null;
@@ -865,7 +882,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
             }
 
             if (!atExplicitKey) {
-                storeMappingPair(state, result, overridableKeys, keyTag, keyNode, valueNode);
+                overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, valueNode);
                 keyTag = null;
                 keyNode = null;
                 valueNode = null;
@@ -883,7 +900,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     }
 
     if (atExplicitKey) {
-        storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
+        overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
     }
 
     if (detected) {
@@ -899,7 +916,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
 const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    const overridableKeys = new Set<string>();
+    let overridableKeys: Set<string> | undefined;
 
     let ch = state.input.charCodeAt(state.position);
     let terminator: number;
@@ -980,9 +997,12 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
         }
 
         if (isMapping) {
-            storeMappingPair(state, result as Record<string, unknown>, overridableKeys, keyTag, keyNode, valueNode);
+            overridableKeys = storeMappingPair(state, result as Record<string, unknown>, overridableKeys, keyTag, keyNode, valueNode);
         } else if (isPair) {
-            (result as unknown[]).push(storeMappingPair(state, {}, overridableKeys, keyTag, keyNode, valueNode));
+            const pair: Record<string, unknown> = {};
+
+            overridableKeys = storeMappingPair(state, pair, overridableKeys, keyTag, keyNode, valueNode);
+            (result as unknown[]).push(pair);
         } else {
             (result as unknown[]).push(keyNode);
         }
@@ -1248,7 +1268,7 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
         }
     } else if (state.tag === "?") {
         if (state.kind === "scalar" && typeof state.result === "string") {
-            state.result = resolvePlainScalar(state.result).value;
+            state.result = resolveScalarValue(state.result);
         }
 
         if (state.anchor !== null) {
