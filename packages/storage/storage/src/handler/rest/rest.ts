@@ -168,7 +168,7 @@ class Rest<
 
         if (metadataHeader) {
             try {
-                metadata = JSON.parse(metadataHeader);
+                metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
             } catch {
                 // Ignore invalid JSON
             }
@@ -221,7 +221,7 @@ class Rest<
         if (contentType.includes("application/json")) {
             try {
                 const body = await readBody(request, "utf8", 1024 * 1024); // 1MB limit
-                const parsed = JSON.parse(body) as unknown;
+                const parsed = JSON.parse(body);
 
                 if (Array.isArray(parsed)) {
                     // Array of IDs: ["id1", "id2", "id3"]

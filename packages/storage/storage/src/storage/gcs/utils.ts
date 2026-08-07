@@ -29,7 +29,11 @@ export const shouldRetry = (error: GaxiosError): boolean => {
     if (error.response !== undefined) {
         const { response } = error;
 
-        return response?.data?.error?.errors
+        // Gaxios types `data` as `{}`, so the error envelope's shape is stated
+        // here rather than inferred.
+        const data = response.data as { error?: { errors?: { reason?: string }[] } } | undefined;
+
+        return data?.error?.errors
             ?.map(({ reason = "" }) => {
                 if (reason === "rateLimitExceeded") {
                     return true;
@@ -41,7 +45,10 @@ export const shouldRetry = (error: GaxiosError): boolean => {
 
                 return !!(reason && reason.includes("EAI_AGAIN"));
             })
-            .includes(true);
+            .includes(true)
+            // The optional chain yields `undefined` when the envelope carries no
+            // errors, which is simply "do not retry".
+            ?? false;
     }
 
     return false;

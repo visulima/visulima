@@ -40,7 +40,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
 
                 if (part.name === "metadata" && part.text) {
                     try {
-                        data = JSON.parse(part.text);
+                        data = JSON.parse(part.text) as Record<string, unknown>;
                     } catch {
                         // ignore
                     }

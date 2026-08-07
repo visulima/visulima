@@ -20,7 +20,7 @@ export const parseMetadata = (request: IncomingMessage, existingMetadata: Record
     }
 
     try {
-        return { ...existingMetadata, ...JSON.parse(metadataHeader) };
+        return { ...existingMetadata, ...(JSON.parse(metadataHeader) as Record<string, unknown>) };
     } catch {
         // Ignore invalid JSON, return existing metadata
         return existingMetadata;
