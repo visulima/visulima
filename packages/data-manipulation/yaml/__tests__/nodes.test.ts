@@ -424,18 +424,36 @@ describe("node model › options that interact with the tree", () => {
         expect(toJS(tree)).toStrictEqual({ "[a,b]": 1 });
     });
 
-    it("looks a key up without scanning every pair", () => {
+    it("builds a mapping in linear time, not quadratic", () => {
         expect.assertions(2);
 
-        // `get`/`has` used to scan `items`, making a mapping quadratic to build:
+        // `get`/`has` used to scan `items`, so building a mapping was quadratic:
         // 8 000 keys took ~370ms against ~4ms natively.
-        const source = Array.from({ length: 8000 }, (_, index) => `k${String(index)}: ${String(index)}`).join("\n");
-        const started = performance.now();
-        const tree = parseNodes(source) as YAMLMap;
-        const elapsed = performance.now() - started;
+        //
+        // Asserted as a ratio between two sizes rather than a wall-clock bound.
+        // An absolute threshold measured 1005ms against a 1000ms limit on a slow
+        // CI runner — it was testing the runner, not the parser. Doubling the
+        // input should roughly double the time; quadratic would quadruple it.
+        const build = (count: number): string => Array.from({ length: count }, (_, index) => `k${String(index)}: ${String(index)}`).join("\n");
+        const time = (source: string): number => {
+            const started = performance.now();
 
-        expect(tree.get("k7999")).toBe(7999);
-        expect(elapsed).toBeLessThan(1000);
+            parseNodes(source);
+
+            return performance.now() - started;
+        };
+
+        const small = build(4000);
+        const large = build(8000);
+
+        // Warm the JIT so the first call does not carry compilation cost.
+        time(small);
+        time(large);
+
+        const ratio = time(large) / Math.max(time(small), 0.5);
+
+        expect(ratio).toBeLessThan(3);
+        expect((parseNodes(large) as YAMLMap).get("k7999")).toBe(7999);
     });
 
     it("keeps the index correct after items are spliced directly", () => {
