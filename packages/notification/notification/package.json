@@ -225,6 +225,14 @@
             "types": "./dist/inbound/channels/telnyx.d.ts",
             "default": "./dist/inbound/channels/telnyx.js"
         },
+        "./inbound/messagebird": {
+            "types": "./dist/inbound/channels/messagebird.d.ts",
+            "default": "./dist/inbound/channels/messagebird.js"
+        },
+        "./inbound/vonage": {
+            "types": "./dist/inbound/channels/vonage.d.ts",
+            "default": "./dist/inbound/channels/vonage.js"
+        },
         "./template/string": {
             "types": "./dist/template-engines/string.d.ts",
             "default": "./dist/template-engines/string.js"

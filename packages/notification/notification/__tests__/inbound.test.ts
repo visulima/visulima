@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { createDiscordInbound } from "../src/inbound/channels/discord";
+import { createMessageBirdInbound } from "../src/inbound/channels/messagebird";
 import { createMsTeamsInbound } from "../src/inbound/channels/msteams";
 import { createSlackInbound } from "../src/inbound/channels/slack";
 import { createTelegramInbound } from "../src/inbound/channels/telegram";
 import { createTelnyxInbound } from "../src/inbound/channels/telnyx";
 import { createTwilioInbound } from "../src/inbound/channels/twilio";
+import { createVonageInbound } from "../src/inbound/channels/vonage";
 import { createInboundRouter } from "../src/inbound/router";
 import type { InboundMessage } from "../src/inbound/types";
 import { mockProvider } from "../src/providers/mock/provider";
@@ -31,6 +33,20 @@ const hmac = async (secret: string, message: string, hash: "SHA-1" | "SHA-256"):
 
     return globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(message));
 };
+
+const toBase64Url = (value: string): string => btoa(value).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+
+const sha256Hex = async (value: string): Promise<string> => toHex(await globalThis.crypto.subtle.digest("SHA-256", encoder.encode(value)));
+
+const signJwt = async (secret: string, claims: Record<string, unknown>): Promise<string> => {
+    const header = toBase64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const payload = toBase64Url(JSON.stringify(claims));
+    const signature = toBase64(await hmac(secret, `${header}.${payload}`, "SHA-256")).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+
+    return `${header}.${payload}.${signature}`;
+};
+
+const inFiveMinutes = (): number => Math.floor(Date.now() / 1000) + 300;
 
 describe(createSlackInbound, () => {
     const secret = "slack-signing-secret";
@@ -443,6 +459,86 @@ describe(createTelnyxInbound, () => {
         const channel = createTelnyxInbound({ onMessage: () => undefined, publicKey: await publicKeyBase64(otherKey) });
         const payload = { data: { event_type: "message.received", payload: { from: { phone_number: "+1" }, id: "m", text: "x", to: [{ phone_number: "+2" }] } } };
         const response = await channel.handle(await signedRequest(keyPair, payload));
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe(createMessageBirdInbound, () => {
+    const signingKey = "messagebird-signing-key";
+    const url = "https://example.com/webhooks/messagebird";
+
+    it("verifies the signed JWT, parses the message and replies through the provider", async () => {
+        expect.assertions(3);
+
+        const body = JSON.stringify({ body: "hey there", createdDatetime: "2026-01-01T00:00:00+00:00", id: "mb1", originator: "+15551230001", recipient: "+15551230009" });
+        const token = await signJwt(signingKey, { exp: inFiveMinutes(), iss: "MessageBird", jti: "j1", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
+        const provider = mockProvider({ channel: "sms", id: "messagebird" });
+        let received: InboundMessage | undefined;
+        const channel = createMessageBirdInbound({
+            onMessage: async (message, context) => {
+                received = message;
+
+                await context.reply("thanks");
+            },
+            provider,
+            signingKey,
+            url,
+        });
+        const response = await channel.handle(new Request(url, { body, headers: { "content-type": "application/json", "messagebird-signature-jwt": token }, method: "POST" }));
+
+        expect(received?.text).toBe("hey there");
+        expect(response.status).toBe(204);
+        expect(provider.getInstance?.().last()?.payload).toMatchObject({ from: "+15551230009", text: "thanks", to: "+15551230001" });
+    });
+
+    it("rejects a JWT signed with the wrong key with 401", async () => {
+        expect.assertions(1);
+
+        const body = JSON.stringify({ id: "mb2", originator: "+1", recipient: "+2" });
+        const token = await signJwt("wrong-key", { exp: inFiveMinutes(), iss: "MessageBird", jti: "j2", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
+        const channel = createMessageBirdInbound({ onMessage: () => undefined, signingKey, url });
+        const response = await channel.handle(new Request(url, { body, headers: { "messagebird-signature-jwt": token }, method: "POST" }));
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe(createVonageInbound, () => {
+    const signatureSecret = "vonage-signature-secret";
+    const url = "https://example.com/webhooks/vonage";
+
+    it("verifies the Bearer JWT and payload_hash, parses and replies", async () => {
+        expect.assertions(3);
+
+        const body = JSON.stringify({ channel: "sms", from: "15551230001", message_type: "text", message_uuid: "v1", text: "hi vonage", timestamp: "2026-01-01T00:00:00Z", to: "15551230009" });
+        const token = await signJwt(signatureSecret, { exp: inFiveMinutes(), payload_hash: await sha256Hex(body) });
+        const provider = mockProvider({ channel: "sms", id: "vonage" });
+        let received: InboundMessage | undefined;
+        const channel = createVonageInbound({
+            onMessage: async (message, context) => {
+                received = message;
+
+                await context.reply("reply");
+            },
+            provider,
+            signatureSecret,
+        });
+        const response = await channel.handle(new Request(url, { body, headers: { authorization: `Bearer ${token}` }, method: "POST" }));
+
+        expect(received?.text).toBe("hi vonage");
+        expect(response.status).toBe(204);
+        expect(provider.getInstance?.().last()?.payload).toMatchObject({ from: "15551230009", text: "reply", to: "15551230001" });
+    });
+
+    it("rejects a tampered body (payload_hash mismatch) with 401", async () => {
+        expect.assertions(1);
+
+        const body = JSON.stringify({ from: "1", text: "original", to: "2" });
+        const token = await signJwt(signatureSecret, { exp: inFiveMinutes(), payload_hash: await sha256Hex(body) });
+        const channel = createVonageInbound({ onMessage: () => undefined, signatureSecret });
+        const tampered = JSON.stringify({ from: "1", text: "changed", to: "2" });
+        const response = await channel.handle(new Request(url, { body: tampered, headers: { authorization: `Bearer ${token}` }, method: "POST" }));
 
         expect(response.status).toBe(401);
     });
