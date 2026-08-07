@@ -43,6 +43,17 @@ describe("stringify › scalars", () => {
 
         expect(stringify("line1\nline2\n")).toBe("|\n  line1\n  line2\n");
     });
+
+    it("round-trips strings with multiple trailing newlines (keep chomping)", () => {
+        expect.assertions(5);
+
+        // Regression: `|+` emission previously added one blank line too many.
+        for (let newlines = 1; newlines <= 5; newlines += 1) {
+            const value = `a${"\n".repeat(newlines)}`;
+
+            expect(parse(stringify(value))).toBe(value);
+        }
+    });
 });
 
 describe("stringify › collections", () => {

@@ -163,12 +163,17 @@ const writeLiteral = (value: string, level: number, context: DumpContext): strin
     let chomp = "";
     let content = value;
 
-    if (!value.endsWith("\n")) {
-        chomp = "-";
-    } else if (value.endsWith("\n\n")) {
-        chomp = "+";
-    } else {
+    if (value.endsWith("\n")) {
+        // `dump()` appends a single trailing newline after the whole node, so the
+        // body must drop one — for both clip (default) and keep (`+`). Keep is
+        // needed whenever there is more than one trailing newline to preserve.
+        if (value.endsWith("\n\n")) {
+            chomp = "+";
+        }
+
         content = value.slice(0, -1);
+    } else {
+        chomp = "-";
     }
 
     const body = content
