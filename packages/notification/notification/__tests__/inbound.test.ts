@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createDiscordInbound } from "../src/inbound/channels/discord";
+import { createMsTeamsInbound } from "../src/inbound/channels/msteams";
 import { createSlackInbound } from "../src/inbound/channels/slack";
 import { createTelegramInbound } from "../src/inbound/channels/telegram";
+import { createTelnyxInbound } from "../src/inbound/channels/telnyx";
 import { createTwilioInbound } from "../src/inbound/channels/twilio";
 import { createInboundRouter } from "../src/inbound/router";
 import type { InboundMessage } from "../src/inbound/types";
@@ -21,6 +23,8 @@ const toBase64 = (buffer: ArrayBuffer): string => {
 
     return btoa(binary);
 };
+
+const base64ToBytes = (value: string): Uint8Array => Uint8Array.from(atob(value), (character) => character.codePointAt(0) ?? 0);
 
 const hmac = async (secret: string, message: string, hash: "SHA-1" | "SHA-256"): Promise<ArrayBuffer> => {
     const key = await globalThis.crypto.subtle.importKey("raw", encoder.encode(secret), { hash, name: "HMAC" }, false, ["sign"]);
@@ -336,6 +340,111 @@ describe(createTwilioInbound, () => {
         const request = await signedRequest({ Body: "hi", From: "+15555550100", MessageSid: "SM4", To: "+15555550111" });
 
         await expect(channel.handle(request)).rejects.toThrow("No `provider` configured to send replies");
+    });
+});
+
+describe(createMsTeamsInbound, () => {
+    const securityToken = btoa("teams-security-token-value-0123456789");
+
+    const signedRequest = async (activity: unknown): Promise<Request> => {
+        const body = JSON.stringify(activity);
+        const key = await globalThis.crypto.subtle.importKey("raw", base64ToBytes(securityToken), { hash: "SHA-256", name: "HMAC" }, false, ["sign"]);
+        const signature = toBase64(await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(body)));
+
+        return new Request("https://example.com/webhooks/teams", {
+            body,
+            headers: { authorization: `HMAC ${signature}`, "content-type": "application/json" },
+            method: "POST",
+        });
+    };
+
+    it("verifies the HMAC and replies with a message activity", async () => {
+        expect.assertions(3);
+
+        let received: InboundMessage | undefined;
+        const channel = createMsTeamsInbound({
+            onMessage: (message) => {
+                received = message;
+
+                return { text: "hello back" };
+            },
+            securityToken,
+        });
+        const response = await channel.handle(await signedRequest({ conversation: { id: "19:abc" }, from: { id: "U1", name: "Ada" }, id: "A1", text: "hi bot", type: "message" }));
+
+        expect(received?.text).toBe("hi bot");
+        expect(received?.from.name).toBe("Ada");
+        await expect(response.json()).resolves.toMatchObject({ text: "hello back", type: "message" });
+    });
+
+    it("rejects a tampered HMAC with 401", async () => {
+        expect.assertions(1);
+
+        const channel = createMsTeamsInbound({ onMessage: () => undefined, securityToken });
+        const request = new Request("https://example.com/webhooks/teams", {
+            body: JSON.stringify({ text: "hi", type: "message" }),
+            headers: { authorization: "HMAC bm90LXZhbGlk", "content-type": "application/json" },
+            method: "POST",
+        });
+        const response = await channel.handle(request);
+
+        expect(response.status).toBe(401);
+    });
+});
+
+describe(createTelnyxInbound, () => {
+    const generateKey = async (): Promise<CryptoKeyPair> =>
+        await globalThis.crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]);
+
+    const publicKeyBase64 = async (keyPair: CryptoKeyPair): Promise<string> => toBase64(await globalThis.crypto.subtle.exportKey("raw", keyPair.publicKey));
+
+    const signedRequest = async (keyPair: CryptoKeyPair, payload: unknown): Promise<Request> => {
+        const body = JSON.stringify(payload);
+        const timestamp = String(Math.floor(Date.now() / 1000));
+        const signature = toBase64(await globalThis.crypto.subtle.sign({ name: "Ed25519" }, keyPair.privateKey, encoder.encode(`${timestamp}|${body}`)));
+
+        return new Request("https://example.com/webhooks/telnyx", {
+            body,
+            headers: { "content-type": "application/json", "telnyx-signature-ed25519": signature, "telnyx-timestamp": timestamp },
+            method: "POST",
+        });
+    };
+
+    it("verifies Ed25519, parses the message and replies through the provider", async () => {
+        expect.assertions(3);
+
+        const keyPair = await generateKey();
+        const provider = mockProvider({ channel: "sms", id: "telnyx" });
+        let received: InboundMessage | undefined;
+        const channel = createTelnyxInbound({
+            onMessage: async (message, context) => {
+                received = message;
+
+                await context.reply("ok");
+            },
+            provider,
+            publicKey: await publicKeyBase64(keyPair),
+        });
+        const payload = {
+            data: { event_type: "message.received", payload: { from: { phone_number: "+15551230001" }, id: "msg1", text: "hey", to: [{ phone_number: "+15551230009" }], type: "SMS" } },
+        };
+        const response = await channel.handle(await signedRequest(keyPair, payload));
+
+        expect(received?.text).toBe("hey");
+        expect(response.status).toBe(204);
+        expect(provider.getInstance?.().last()?.payload).toMatchObject({ from: "+15551230009", text: "ok", to: "+15551230001" });
+    });
+
+    it("rejects a signature made with a different key with 401", async () => {
+        expect.assertions(1);
+
+        const keyPair = await generateKey();
+        const otherKey = await generateKey();
+        const channel = createTelnyxInbound({ onMessage: () => undefined, publicKey: await publicKeyBase64(otherKey) });
+        const payload = { data: { event_type: "message.received", payload: { from: { phone_number: "+1" }, id: "m", text: "x", to: [{ phone_number: "+2" }] } } };
+        const response = await channel.handle(await signedRequest(keyPair, payload));
+
+        expect(response.status).toBe(401);
     });
 });
 
