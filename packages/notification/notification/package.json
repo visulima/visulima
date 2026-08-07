@@ -217,6 +217,14 @@
             "types": "./dist/inbound/channels/twilio.d.ts",
             "default": "./dist/inbound/channels/twilio.js"
         },
+        "./inbound/msteams": {
+            "types": "./dist/inbound/channels/msteams.d.ts",
+            "default": "./dist/inbound/channels/msteams.js"
+        },
+        "./inbound/telnyx": {
+            "types": "./dist/inbound/channels/telnyx.d.ts",
+            "default": "./dist/inbound/channels/telnyx.js"
+        },
         "./template/string": {
             "types": "./dist/template-engines/string.d.ts",
             "default": "./dist/template-engines/string.js"
