@@ -22,12 +22,12 @@ const LOOSE_PARSE_OPTIONS: ParseOptions = { duplicateKeys: "overwrite", strict: 
  * Runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite)
  * (vendored via the `yaml-test-suite` npm package) against our parser.
  *
- * No JavaScript YAML implementation passes 100% of this suite; the goal here is
- * a **regression gate**: the pass count must never drop and no currently-passing
- * test file may start failing. When a fix lifts the count, bump `EXPECTED_PASS`.
+ * Strict mode (the default) passes the whole suite; the loose mode deliberately
+ * re-accepts the six spec-violating fail-tests that `js-yaml` also accepts.
  *
- * The remaining known-failing files fall into a handful of spec corners we do
- * not yet cover — see `KNOWN_FAILING` below and `AGENTS.md`.
+ * Both are **regression gates**: the pass count must never drop, no
+ * currently-passing file may start failing, and a `KNOWN_FAILING*` entry that
+ * begins passing must be pruned. See `AGENTS.md`.
  */
 
 interface SuiteCase {

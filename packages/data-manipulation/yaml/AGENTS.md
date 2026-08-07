@@ -47,9 +47,20 @@ The parser always rejects the unambiguous spec violations (tabs as indentation, 
 - two anchors (or two tags) on a single node (`top: &a\n  &b val`) — a repeated property token on a new line is only valid when it turned out to be the first property of a nested mapping/sequence key (`repeatedPropertyOnNewLine`, checked against `state.kind` after content is read);
 - a block scalar whose leading empty lines are indented more than its first content line (`> \n  \n   \n # x`), and a tab used in block-scalar indentation.
 
-Two composeNode speculations make the property cases work: reading node properties then trying a block mapping both from the _first_ property (`tryReadBlockMappingFromProperty`, for `&anchor key: value`) and from a _later_ new-line property (the inline block in `composeNode`, for `!!map\n&a !!str key: value`). Both are wrapped so a throw during speculation rolls back instead of failing the parse.
+Both property cases route through one helper, `speculateBlockMapping`: it tries a block mapping either from the _first_ property (rewinding to the `propertyStart` snapshot, for `&anchor key: value`) or from the current position (for `!!map\n&a !!str key: value`). On failure it rolls back the cursor, the anchor map and the alias budget together (`beginSpeculation` / `rollbackSpeculation`) — anchors are restored by swapping in a copy of the map rather than by journalling each write, so `state.anchorMap.set` on the hot path stays branch-free. The helper only swallows `YAMLParseError`; anything else (a bug, a `RangeError`) propagates rather than being disguised as a failed guess.
 
 `strict: false` relaxes exactly these checks (closer to `js-yaml`) and nothing else — it never changes the value of an accepted document, only whether these malformed inputs throw. See `__tests__/strict.test.ts`.
+
+## Hardening invariants (do not regress)
+
+These each fixed a reproduced defect; `__tests__/hardening.test.ts` guards them.
+
+- **Every mapping write goes through `assignMappingKey`**, including merge keys (`<<`). `__proto__` is defined as an own data property rather than assigned, so a document can never reach the prototype chain; routing merges around this is what previously let `<<` bypass the guard entirely.
+- **Options spread before the `??` defaults**, never after — otherwise a key that is present but `undefined` silently disables the alias limit, duplicate-key error, strict mode and the pollution guard.
+- **Scans must terminate on the character they mean**, not on `position < length`. Accepting the `\0` sentinel as a terminator advances the cursor to `length`, where `charCodeAt` returns `NaN`, which every `ch !== 0` loop treats as content — an unterminated `!<` tag hung the process forever.
+- **`composeNode` recursion is bounded by `options.maxDepth`** so deep nesting throws a `YAMLParseError` rather than a `RangeError` outside the error hierarchy.
+- **The block writers and `writeNode` must agree on flow-vs-block** for a node — both ask `rendersAsFlow`. They previously disagreed by one level, splicing a block collection inline and silently corrupting output at `flowLevel > 0`.
+- **No unanchored `/x+$/`-style regex on serializer input.** `/\n+$/` retried at every offset (quadratic); trailing newlines are stripped with a backward scan.
 
 ## Parity with `yaml` and `js-yaml`
 
@@ -65,4 +76,4 @@ A differential corpus (135 inputs run through all three parsers) shows:
 ### Known divergences from BOTH (intentional / accepted, do not "fix" without care)
 
 - **Tabs used as block indentation** (`a:\n\t- 1`) are now rejected, matching both refs. The parser tracks `State.firstTabInLine` (the first tab in a line's leading white space, reset on every line break) and `readBlockSequence` / `readBlockMapping` refuse to start — or throw "tab characters must not be used in indentation" — when it is set. Tabs stay legal in scalar content, after `:`, in flow, and in blank lines, because those paths never consult `firstTabInLine`.
-- **A node property inline before a block mapping on the same line** (`&anchor key: value`, `!!str a: b`) is now parsed as a mapping, matching both refs. The parser ports js-yaml's snapshot/rewind mechanism (`snapshotState` / `tryReadBlockMappingFromProperty` in `loader.ts`): after reading node properties it speculatively tries a block mapping and, if that fails, rewinds to re-read the value as a tagged/anchored scalar — so tagged scalars like `!!str 123` / `!foo 123` keep their pre-tag semantics. Do not remove the rewind without re-verifying the differential corpus.
+- **A node property inline before a block mapping on the same line** (`&anchor key: value`, `!!str a: b`) is parsed as a mapping, matching both refs, via the `snapshotState` / `speculateBlockMapping` rewind described above: after reading node properties the loader speculatively tries a block mapping and, if that fails, rewinds to re-read the value as a tagged/anchored scalar — so tagged scalars like `!!str 123` / `!foo 123` keep their pre-tag semantics. Do not remove the rewind without re-verifying the differential corpus.

@@ -83,14 +83,14 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 
 ### ParseOptions
 
-| Option                  | Type                                 | Default   | Description                                                             |
-| ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------- |
-| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.       |
-| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                         |
-| `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.           |
-| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks). |
-| `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                    |
-| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                         |
+| Option                  | Type                                 | Default   | Description                                                               |
+| ----------------------- | ------------------------------------ | --------- | ------------------------------------------------------------------------- |
+| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.         |
+| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                           |
+| `maxDepth`              | `number`                             | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).       |
+| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).   |
+| `preventProtoPollution` | `boolean`                            | `true`    | Make a `__proto__` key an own property instead of touching the prototype. |
+| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                           |
 
 \* `strict` defaults to `true` for `parse` / `parseAll`, but to `false` for the
 `js-yaml`-style [`load`](#load) / [`loadAll`](#loadall) aliases.
@@ -100,12 +100,12 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 The parser always rejects the unambiguous YAML 1.2 violations (tabs used as
 indentation, malformed `%YAML`/`%TAG` directives, deficient indentation, comments
 not separated from other tokens by white space). Strict mode — **on by default** —
-additionally rejects two corner cases that both reference parsers accept but the
+additionally rejects the corner cases that both reference parsers accept but the
 spec forbids: a node property indented no deeper than its parent key
 (`key: &a\n!!map\n  a: b`), and a block collection whose first entry sits on the
 `---` line (`--- a: b`). Flow collections and scalars on the `---` line stay valid.
 
-`strict: false` relaxes exactly those two checks and nothing else; it never changes
+`strict: false` relaxes exactly these checks and nothing else; it never changes
 the value of an accepted document.
 
 ```typescript
@@ -147,7 +147,7 @@ function dump(value: unknown, options?: StringifyOptions): string;
 
 | Option        | Type                            | Default | Description                                                        |
 | ------------- | ------------------------------- | ------- | ------------------------------------------------------------------ |
-| `indent`      | `number`                        | `2`     | Spaces per indentation level.                                      |
+| `indent`      | `number`                        | `2`     | Spaces per indentation level (minimum 2).                          |
 | `flowLevel`   | `number`                        | `-1`    | Use flow style at or beyond this nesting level (`-1` disables it). |
 | `sortKeys`    | `boolean \| ((a, b) => number)` | `false` | Sort mapping keys.                                                 |
 | `lineWidth`   | `number`                        | `80`    | Preferred wrap width for folded scalars (`0` disables folding).    |

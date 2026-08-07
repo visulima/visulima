@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A fast, zero-dependency YAML 1.2 parser and serializer with a drop-in API for both <code>yaml</code> and <code>js-yaml</code>.</h3>
+<h3 align="center">A fast, zero-dependency YAML 1.2 parser and serializer with a drop-in API for both `yaml` and `js-yaml`.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -147,9 +147,9 @@ Parse the first document of a YAML string into a native JavaScript value.
 | Option                  | Type                                 | Default   | Description                                                                   |
 | ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------------- |
 | `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                               |
-| `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.                 |
+| `maxDepth`              | `number`                             | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).           |
 | `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).       |
-| `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                          |
+| `preventProtoPollution` | `boolean`                            | `true`    | Make a `__proto__` key an own property instead of touching the prototype.     |
 | `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency. |
 | `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                               |
 
@@ -158,10 +158,10 @@ Parse the first document of a YAML string into a native JavaScript value.
 The parser always rejects the unambiguous YAML 1.2 violations (tabs used as indentation,
 malformed `%YAML`/`%TAG` directives, deficient indentation, comments not separated from
 other tokens by white space). On top of that, strict mode — **on by default** — rejects
-two corner cases that both reference parsers accept but the spec does not: a node property
+the corner cases that both reference parsers accept but the spec does not: a node property
 indented no deeper than its parent key (`key: &a\n!!map\n  a: b`), and a block collection
 whose first entry sits on the `---` line (`--- a: b`). Pass `strict: false` to relax only
-those two checks (closer to `js-yaml`); it never changes the value of an accepted document.
+these checks (closer to `js-yaml`); it never changes the value of an accepted document.
 
 ```ts
 parse("--- a: b"); // throws YAMLParseError (block mapping on the --- line)
@@ -185,7 +185,7 @@ Serialize a JavaScript value to a YAML document string.
 
 | Option        | Type                            | Default | Description                                                        |
 | ------------- | ------------------------------- | ------- | ------------------------------------------------------------------ |
-| `indent`      | `number`                        | `2`     | Spaces per indentation level.                                      |
+| `indent`      | `number`                        | `2`     | Spaces per indentation level (minimum 2).                          |
 | `flowLevel`   | `number`                        | `-1`    | Use flow style at or beyond this nesting level (`-1` disables it). |
 | `sortKeys`    | `boolean \| ((a, b) => number)` | `false` | Sort mapping keys.                                                 |
 | `lineWidth`   | `number`                        | `80`    | Preferred wrap width for folded scalars.                           |

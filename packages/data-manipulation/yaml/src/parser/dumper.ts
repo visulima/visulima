@@ -41,9 +41,22 @@ const MAPPING_OR_COMMENT = /:[ \t]|:$|[ \t]#/;
 const FLOW_INDICATORS = /[,[\]{}]/;
 const LEADING_WS = /^\s/;
 const TRAILING_INLINE_WS = /[ \t]$/;
-// A single-character class with `+$` cannot backtrack catastrophically.
-// eslint-disable-next-line sonarjs/slow-regex
-const TRAILING_NEWLINES = /\n+$/;
+
+/**
+ * Strip trailing newlines without a regex. `/\n+$/` is unanchored at the start,
+ * so the engine retries the match at every offset and re-walks the run each
+ * time — quadratic on a value ending in many newlines, which untrusted input
+ * reaches trivially via a block scalar full of blank lines.
+ */
+const stripTrailingNewlines = (value: string): string => {
+    let end = value.length;
+
+    while (end > 0 && value.codePointAt(end - 1) === 0x0a) {
+        end -= 1;
+    }
+
+    return end === value.length ? value : value.slice(0, end);
+};
 const NEWLINE_OR_TAB_GLOBAL = /[\n\t]/g;
 const TAB = /\t/;
 // Single-line text made of non-space runs joined by exactly one space each — the
@@ -70,6 +83,12 @@ const isPlainSafe = (value: string, inFlow: boolean): boolean => {
         return false;
     }
 
+    // `<<` is the merge key. Emitted plain it is read back as a merge directive
+    // instead of a literal key, so the document does not round-trip.
+    if (value === "<<") {
+        return false;
+    }
+
     if (PLAIN_LEADING_INDICATORS.has(value[0]!)) {
         return false;
     }
@@ -93,8 +112,6 @@ const isPlainSafe = (value: string, inFlow: boolean): boolean => {
 
     return true;
 };
-
-const wouldResolveToNonString = (value: string): boolean => resolvesToNonString(value);
 
 const writeSingleQuoted = (value: string): string => `'${value.replaceAll("'", "''")}'`;
 
@@ -266,14 +283,14 @@ const writeScalar = (value: string, level: number, context: DumpContext, inFlow:
     const hasNewline = value.includes("\n");
 
     if (hasNewline) {
-        if (!inFlow && !LEADING_WS.test(value) && !TRAILING_INLINE_WS.test(value.replace(TRAILING_NEWLINES, ""))) {
+        if (!inFlow && !LEADING_WS.test(value) && !TRAILING_INLINE_WS.test(stripTrailingNewlines(value))) {
             return writeLiteral(value, level, context);
         }
 
         return writeDoubleQuoted(value, false);
     }
 
-    if (isPlainSafe(value, inFlow) && !wouldResolveToNonString(value)) {
+    if (isPlainSafe(value, inFlow) && !resolvesToNonString(value)) {
         if (!inFlow && shouldFold(value, level, context)) {
             return writeFolded(value, level, context);
         }
@@ -346,18 +363,32 @@ const applyReplacer = (context: DumpContext, key: string, value: unknown): unkno
 
 const writeFlow = (value: unknown, level: number, context: DumpContext): string => {
     if (Array.isArray(value)) {
+        // Flow output needs the same cycle guard as the block writers: a parsed
+        // document can legitimately contain shared/self-referential nodes
+        // (`&a [ *a ]`), and without this the recursion exhausts the stack with a
+        // RangeError instead of a YAMLStringifyError.
+        guardCircular(value, context);
+        context.stack.add(value);
+
         const items = value.map((item) => writeFlow(applyReplacer(context, "", item), level, context));
+
+        context.stack.delete(value);
 
         return `[${items.join(", ")}]`;
     }
 
     if (typeof value === "object" && value !== null) {
+        guardCircular(value, context);
+        context.stack.add(value);
+
         const entries = sortedEntries(value as Record<string, unknown>, context);
         const parts = entries.map(([key, item]) => {
             const keyString = writeScalar(key, level, context, true);
 
             return `${keyString}: ${writeFlow(applyReplacer(context, key, item), level, context)}`;
         });
+
+        context.stack.delete(value);
 
         return `{${parts.join(", ")}}`;
     }
@@ -399,7 +430,7 @@ const writeNode = (value: unknown, level: number, context: DumpContext): string 
             return "[]";
         }
 
-        if (context.flowLevel >= 0 && level >= context.flowLevel) {
+        if (rendersAsFlow(level, context)) {
             return writeFlow(value, level, context);
         }
 
@@ -411,18 +442,14 @@ const writeNode = (value: unknown, level: number, context: DumpContext): string 
             return "{}";
         }
 
-        if (context.flowLevel >= 0 && level >= context.flowLevel) {
+        if (rendersAsFlow(level, context)) {
             return writeFlow(value, level, context);
         }
 
         return writeBlockMapping(value as Record<string, unknown>, level, context);
     }
 
-    if (value !== null && typeof value === "object" && !Array.isArray(value) && Object.prototype.toString.call(value) !== "[object Object]") {
-        // Dates, class instances, etc. — fall back to their primitive form.
-        return writeLeaf(value, level, context, false);
-    }
-
+    // Dates, class instances, etc. fall through to their primitive form.
     return writeLeaf(value, level, context, false);
 };
 
@@ -430,6 +457,34 @@ const guardCircular = (value: object, context: DumpContext): void => {
     if (context.stack.has(value)) {
         throw new YAMLStringifyError("cannot serialize a circular structure to YAML");
     }
+};
+
+/**
+ * Whether a collection at `level` is emitted in flow style. The block writers
+ * and `writeNode` must agree on this for a given node, so both ask here rather
+ * than re-deriving the comparison — they previously disagreed by one level,
+ * which spliced a block collection inline and silently corrupted the output.
+ */
+const rendersAsFlow = (level: number, context: DumpContext): boolean => context.flowLevel >= 0 && level >= context.flowLevel;
+
+/**
+ * Render one child of a block collection.
+ *
+ * Collections are rendered one level deeper, so `writeNode` reaches the same
+ * flow/block verdict the caller does. Scalars keep the parent level because the
+ * leaf writers (`writeLiteral` / `writeFolded` / `shouldFold`) already add the
+ * extra level when computing their content indent.
+ *
+ * `block` reports whether the child came back as a multi-line block collection —
+ * false for a flow child, a scalar, and for a collection that `skipInvalid`
+ * emptied into an inline `[]` / `{}`.
+ */
+const writeChild = (item: unknown, level: number, context: DumpContext): { block: boolean; text: string } => {
+    const isCollection = isBlockCollection(item);
+    const text = writeNode(item, isCollection ? level + 1 : level, context);
+    const block = isCollection && !rendersAsFlow(level + 1, context) && text !== "[]" && text !== "{}";
+
+    return { block, text };
 };
 
 const writeBlockSequence = (value: unknown[], level: number, context: DumpContext): string => {
@@ -448,13 +503,9 @@ const writeBlockSequence = (value: unknown[], level: number, context: DumpContex
             continue;
         }
 
-        if (isBlockCollection(item) && !(context.flowLevel >= 0 && level + 1 >= context.flowLevel)) {
-            const child = writeNode(item, level + 1, context);
+        const { block, text } = writeChild(item, level, context);
 
-            lines.push(indent + marker + child.slice(childPrefixLength));
-        } else {
-            lines.push(indent + marker + writeNode(item, level, context));
-        }
+        lines.push(indent + marker + (block ? text.slice(childPrefixLength) : text));
     }
 
     context.stack.delete(value);
@@ -482,14 +533,9 @@ const writeBlockMapping = (value: Record<string, unknown>, level: number, contex
         }
 
         const keyString = writeScalar(key, level, context, true);
+        const { block, text } = writeChild(item, level, context);
 
-        if (isBlockCollection(item) && !(context.flowLevel >= 0 && level + 1 >= context.flowLevel)) {
-            const child = writeNode(item, level + 1, context);
-
-            lines.push(`${indent + keyString}:\n${child}`);
-        } else {
-            lines.push(`${indent + keyString}: ${writeNode(item, level, context)}`);
-        }
+        lines.push(block ? `${indent + keyString}:\n${text}` : `${indent + keyString}: ${text}`);
     }
 
     context.stack.delete(value);
@@ -515,8 +561,11 @@ export const dump = (value: unknown, options: StringifyOptions = {}): string => 
         stack: new Set<object>(),
     };
 
-    if (context.indent < 1) {
-        throw new YAMLStringifyError("indentation width must be at least 1");
+    // A block sequence entry is `-` plus a separating space, so an indentation
+    // width of 1 leaves no room for the marker: it emitted `-value`, which
+    // re-parses as a single scalar rather than a sequence.
+    if (context.indent < 2) {
+        throw new YAMLStringifyError("indentation width must be at least 2");
     }
 
     const root = applyReplacer(context, "", value);

@@ -105,7 +105,7 @@ parse("--- a: b"); // throws YAMLParseError
 parse("key: &a\n!!map\n  a: b"); // throws YAMLParseError
 ```
 
-Pass `strict: false` to relax exactly those two checks (closer to `js-yaml`).
+Pass `strict: false` to relax exactly these checks (closer to `js-yaml`).
 It never changes the value of an accepted document — only whether these
 malformed inputs throw:
 

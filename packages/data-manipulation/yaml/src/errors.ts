@@ -61,19 +61,25 @@ export class YAMLError extends Error {
 
     public constructor(message: string, mark?: Mark, source?: string) {
         let composed = message;
+        let resolvedMark = mark;
 
         if (mark) {
             composed += ` at line ${String(mark.line + 1)}, column ${String(mark.column + 1)}`;
 
             if (source !== undefined) {
-                composed += `:\n${buildSnippet(source, mark)}`;
+                // Also expose the excerpt on the mark, so callers rendering their
+                // own diagnostics do not have to scrape it back out of `message`.
+                const snippet = buildSnippet(source, mark);
+
+                composed += `:\n${snippet}`;
+                resolvedMark = { ...mark, snippet };
             }
         }
 
         super(composed);
 
         this.name = "YAMLError";
-        this.mark = mark;
+        this.mark = resolvedMark;
     }
 }
 

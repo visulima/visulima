@@ -38,7 +38,7 @@ const isFalseKeyword = (raw: string): boolean => raw === "false" || raw === "Fal
  * schema, returning the value directly (the raw string itself when it stays a
  * string). Quoted scalars must never be passed here — they are always strings.
  */
-export const resolveScalarValue = (raw: string): unknown => {
+const resolveScalarValue = (raw: string): unknown => {
     if (raw.length === 0) {
         return null;
     }
@@ -109,54 +109,75 @@ export const resolveScalarValue = (raw: string): unknown => {
  * Whether a plain scalar would resolve to a non-string native value (used by
  * the serializer to decide whether a string needs quoting).
  */
-export const resolvesToNonString = (raw: string): boolean => resolveScalarValue(raw) !== raw;
+const resolvesToNonString = (raw: string): boolean => resolveScalarValue(raw) !== raw;
 
 /**
- * Apply an explicit local core-schema tag (e.g. `!!int`) to a raw scalar.
- * Returns `undefined` when the tag is not a recognized core tag.
+ * Outcome of applying an explicit core-schema tag to a scalar.
+ *
+ * `invalid` is distinct from `unknown`: an unknown tag is a custom tag whose
+ * raw value we keep, whereas a core tag whose content is outside its value
+ * space (`!!int zzz`, `!!bool maybe`) is a document error. Collapsing the two —
+ * as returning a bare value did — silently produced `NaN` for `!!int zzz` and
+ * `true` for `!!bool no`, inverting the author's intent.
  */
-export const resolveExplicitTag = (tag: string, raw: string): { value: unknown } | undefined => {
+type ExplicitTagResolution = { status: "invalid" } | { status: "ok"; value: unknown } | { status: "unknown" };
+
+const INVALID: ExplicitTagResolution = { status: "invalid" };
+
+const UNKNOWN: ExplicitTagResolution = { status: "unknown" };
+
+/** Apply an explicit local core-schema tag (e.g. `!!int`) to a raw scalar. */
+const resolveExplicitTag = (tag: string, raw: string): ExplicitTagResolution => {
     switch (tag) {
         case "!!bool":
         case "tag:yaml.org,2002:bool": {
             if (isTrueKeyword(raw)) {
-                return { value: true };
+                return { status: "ok", value: true };
             }
 
             if (isFalseKeyword(raw)) {
-                return { value: false };
+                return { status: "ok", value: false };
             }
 
-            return { value: Boolean(raw) };
+            return INVALID;
         }
         case "!!float":
         case "tag:yaml.org,2002:float": {
             const value = resolveScalarValue(raw);
 
-            return { value: typeof value === "number" ? value : Number.parseFloat(raw) };
+            if (typeof value === "number") {
+                return { status: "ok", value };
+            }
+
+            const parsed = Number.parseFloat(raw);
+
+            return Number.isNaN(parsed) ? INVALID : { status: "ok", value: parsed };
         }
         case "!!int":
         case "tag:yaml.org,2002:int": {
             if (INT_HEX_RE.test(raw)) {
-                return { value: Number.parseInt(raw.slice(2), 16) };
+                return { status: "ok", value: Number.parseInt(raw.slice(2), 16) };
             }
 
             if (INT_OCT_RE.test(raw)) {
-                return { value: Number.parseInt(raw.slice(2), 8) };
+                return { status: "ok", value: Number.parseInt(raw.slice(2), 8) };
             }
 
-            return { value: Number.parseInt(raw, 10) };
+            return INT_DEC_RE.test(raw) ? { status: "ok", value: Number.parseInt(raw, 10) } : INVALID;
         }
         case "!!null":
         case "tag:yaml.org,2002:null": {
-            return { value: null };
+            return { status: "ok", value: null };
         }
         case "!!str":
         case "tag:yaml.org,2002:str": {
-            return { value: raw };
+            return { status: "ok", value: raw };
         }
         default: {
-            return undefined;
+            return UNKNOWN;
         }
     }
 };
+
+export type { ExplicitTagResolution };
+export { resolveExplicitTag, resolveScalarValue, resolvesToNonString };

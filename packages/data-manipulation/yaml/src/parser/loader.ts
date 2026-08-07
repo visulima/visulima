@@ -122,9 +122,10 @@ const escapedHexLength = (c: number): number => {
     }
 };
 
-const isPlainObject = (value: unknown): boolean => typeof value === "object" && value !== null && Object.prototype.toString.call(value) === "[object Object]";
+/** The three node shapes the composer distinguishes. */
+type NodeKind = "mapping" | "scalar" | "sequence";
 
-const hasOwn = (object: object, key: PropertyKey): boolean => Object.hasOwn(object, key);
+const isPlainObject = (value: unknown): boolean => typeof value === "object" && value !== null && Object.prototype.toString.call(value) === "[object Object]";
 
 /** The mutable parser cursor + accumulators. */
 class State {
@@ -156,31 +157,36 @@ class State {
 
     public anchor: string | null = null;
 
-    public kind: string | null = null;
+    public kind: NodeKind | null = null;
 
     public result: unknown = null;
 
-    public plainScalar = false;
-
     public anchorMap = new Map<string, unknown>();
-
-    public anchorMapTransactions: Map<string, { existed: boolean; value: unknown }>[] = [];
 
     public tagMap = new Map<string, string>();
 
     public aliasCount = 0;
 
-    public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "preventProtoPollution" | "strict">>;
+    /** Current `composeNode` recursion depth; bounded by `options.maxDepth`. */
+    public depth = 0;
+
+    public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
 
     public constructor(input: string, options: ParseOptions) {
         this.input = input;
         this.length = input.length;
+        // Spread first, then apply the defaults with `??`. The other order lets a
+        // key that is present but `undefined` — the shape you get from
+        // `parse(src, { maxAliasCount: config.maxAliasCount })` — overwrite the
+        // default, silently disabling the alias limit, the duplicate-key error,
+        // strict mode and the prototype-pollution guard.
         this.options = {
+            ...options,
             duplicateKeys: options.duplicateKeys ?? "error",
             maxAliasCount: options.maxAliasCount ?? 100,
+            maxDepth: options.maxDepth ?? 1000,
             preventProtoPollution: options.preventProtoPollution ?? true,
             strict: options.strict ?? true,
-            ...options,
         };
     }
 }
@@ -188,7 +194,7 @@ class State {
 interface Snapshot {
     anchor: string | null;
     firstTabInLine: number;
-    kind: string | null;
+    kind: NodeKind | null;
     line: number;
     lineIndent: number;
     lineStart: number;
@@ -223,57 +229,29 @@ const restoreState = (state: State, snapshot: Snapshot): void => {
     state.result = snapshot.result;
 };
 
-// Anchor registration is transactional so a speculative parse (see
-// the rewind helper below) that is rolled back does not leak anchors.
-const storeAnchor = (state: State, name: string, value: unknown): void => {
-    const transactions = state.anchorMapTransactions;
+/**
+ * State that a speculative parse must be able to undo, beyond the cursor that
+ * `Snapshot` already covers: anchors registered by the attempt and the alias
+ * budget it consumed.
+ */
+interface SpeculationUndo {
+    aliasCount: number;
+    anchorMap: Map<string, unknown>;
+    cursor: Snapshot;
+}
 
-    if (transactions.length > 0) {
-        const transaction = transactions[transactions.length - 1]!;
-
-        if (!transaction.has(name)) {
-            transaction.set(name, { existed: state.anchorMap.has(name), value: state.anchorMap.get(name) });
-        }
-    }
-
-    state.anchorMap.set(name, value);
+const beginSpeculation = (state: State): SpeculationUndo => {
+    return { aliasCount: state.aliasCount, anchorMap: new Map(state.anchorMap), cursor: snapshotState(state) };
 };
 
-const beginAnchorTransaction = (state: State): void => {
-    state.anchorMapTransactions.push(new Map());
+const rollbackSpeculation = (state: State, undo: SpeculationUndo): void => {
+    state.anchorMap = undo.anchorMap;
+    state.aliasCount = undo.aliasCount;
+    restoreState(state, undo.cursor);
 };
 
-const commitAnchorTransaction = (state: State): void => {
-    const transaction = state.anchorMapTransactions.pop()!;
-    const transactions = state.anchorMapTransactions;
-
-    if (transactions.length === 0) {
-        return;
-    }
-
-    const parent = transactions[transactions.length - 1]!;
-
-    for (const [name, entry] of transaction) {
-        if (!parent.has(name)) {
-            parent.set(name, entry);
-        }
-    }
-};
-
-const rollbackAnchorTransaction = (state: State): void => {
-    const transaction = state.anchorMapTransactions.pop()!;
-
-    for (const [name, entry] of transaction) {
-        if (entry.existed) {
-            state.anchorMap.set(name, entry.value);
-        } else {
-            state.anchorMap.delete(name);
-        }
-    }
-};
-
-const makeError = (state: State, message: string): YAMLParseError =>
-    new YAMLParseError(
+const throwError = (state: State, message: string): never => {
+    throw new YAMLParseError(
         message,
         {
             column: state.position - state.lineStart,
@@ -282,9 +260,6 @@ const makeError = (state: State, message: string): YAMLParseError =>
         },
         state.input,
     );
-
-const throwError = (state: State, message: string): never => {
-    throw makeError(state, message);
 };
 
 const emitWarning = (state: State, message: string): void => {
@@ -405,14 +380,40 @@ const testDocumentSeparator = (state: State): boolean => {
     return false;
 };
 
+/**
+ * Write one mapping key, never letting the document reach the prototype chain.
+ *
+ * `target[key] = value` is unsafe for `__proto__`: that name resolves to an
+ * inherited accessor, so the assignment swaps the object's prototype instead of
+ * creating a key. With the guard on we define it as an own data property, which
+ * both keeps the document's data and leaves the prototype untouched. With the
+ * guard off the caller has explicitly opted into the raw assignment.
+ *
+ * `constructor` / `prototype` are written normally: `target` is always a fresh
+ * object literal, so an own property of either name merely shadows a harmless
+ * inherited one — dropping them (as this used to) lost data for no gain.
+ *
+ * Every write goes through here, including merge keys (`&lt;&lt;`) — routing those
+ * around it is what previously let `&lt;&lt;` bypass the guard entirely.
+ */
+const assignMappingKey = (state: State, target: Record<string, unknown>, key: string, value: unknown): void => {
+    if (key === "__proto__" && state.options.preventProtoPollution) {
+        Object.defineProperty(target, key, { configurable: true, enumerable: true, value, writable: true });
+
+        return;
+    }
+
+    target[key] = value;
+};
+
 const mergeMappings = (state: State, destination: Record<string, unknown>, source: unknown, overridableKeys: Set<string>): void => {
     if (!isPlainObject(source)) {
         throwError(state, "cannot merge mappings; the provided source object is unacceptable");
     }
 
     for (const key of Object.keys(source as Record<string, unknown>)) {
-        if (!hasOwn(destination, key)) {
-            destination[key] = (source as Record<string, unknown>)[key];
+        if (!Object.hasOwn(destination, key)) {
+            assignMappingKey(state, destination, key, (source as Record<string, unknown>)[key]);
             overridableKeys.add(key);
         }
     }
@@ -426,16 +427,20 @@ const mergeMappings = (state: State, destination: Record<string, unknown>, sourc
  * Returns the (possibly newly created) `overridableKeys` set.
  */
 // A plain object can only carry string keys, so a complex (collection) key is
-// flattened to a stable string. Sequences join their parts with commas (as JS
-// `Array#toString` would, but recursing through nested sequences instead of
-// throwing) and mappings collapse to `[object Object]`.
+// flattened to a stable string. The brackets/braces matter: without them every
+// mapping key collapsed to the same `[object Object]` and `? [a, b]` collided
+// with the plain string key `a,b`, silently merging distinct entries.
 const stringifyComplexKey = (node: unknown): string => {
     if (Array.isArray(node)) {
-        return (node as unknown[]).map((part) => stringifyComplexKey(part)).join(",");
+        return `[${(node as unknown[]).map((part) => stringifyComplexKey(part)).join(",")}]`;
     }
 
     if (isPlainObject(node)) {
-        return "[object Object]";
+        const entries = Object.entries(node as Record<string, unknown>)
+            .map(([key, item]) => `${key}: ${stringifyComplexKey(item)}`)
+            .toSorted((a, b) => a.localeCompare(b));
+
+        return `{${entries.join(", ")}}`;
     }
 
     return String(node);
@@ -470,7 +475,7 @@ const storeMappingPair = (
         return keys;
     }
 
-    if (!keys?.has(key) && hasOwn(result, key)) {
+    if (!keys?.has(key) && Object.hasOwn(result, key)) {
         if (state.options.duplicateKeys === "error") {
             throwError(state, `duplicated mapping key "${key}"`);
         } else if (state.options.duplicateKeys === "ignore") {
@@ -478,15 +483,7 @@ const storeMappingPair = (
         }
     }
 
-    if (key === "__proto__") {
-        if (state.options.preventProtoPollution) {
-            Object.defineProperty(result, key, { configurable: true, enumerable: true, value: valueNode, writable: true });
-        }
-    } else if ((key === "constructor" || key === "prototype") && state.options.preventProtoPollution) {
-        // Silently drop the pollution-prone keys.
-    } else {
-        result[key] = valueNode;
-    }
+    assignMappingKey(state, result, key, valueNode);
 
     keys?.delete(key);
 
@@ -577,8 +574,6 @@ const readPlainScalar = (state: State, nodeIndent: number, withinFlowCollection:
     captureSegment(state, captureStart, captureEnd);
 
     if (state.result !== "") {
-        state.plainScalar = true;
-
         return true;
     }
 
@@ -597,7 +592,6 @@ const readSingleQuotedScalar = (state: State, nodeIndent: number): boolean => {
 
     state.kind = "scalar";
     state.result = "";
-    state.plainScalar = false;
     state.position++;
 
     let captureStart = state.position;
@@ -645,7 +639,6 @@ const readDoubleQuotedScalar = (state: State, nodeIndent: number): boolean => {
 
     state.kind = "scalar";
     state.result = "";
-    state.plainScalar = false;
     state.position++;
 
     let captureStart = state.position;
@@ -731,7 +724,6 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
 
     state.kind = "scalar";
     state.result = "";
-    state.plainScalar = false;
 
     let chomping = CHOMPING_CLIP;
     let didReadContent = false;
@@ -892,7 +884,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const entryLine = state.line;
 
     if (state.anchor !== null) {
-        storeAnchor(state, state.anchor, result);
+        state.anchorMap.set(state.anchor, result);
     }
 
     let ch = state.input.charCodeAt(state.position);
@@ -979,7 +971,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     const entryLine = state.line;
 
     if (state.anchor !== null) {
-        storeAnchor(state, state.anchor, result);
+        state.anchorMap.set(state.anchor, result);
     }
 
     let ch = state.input.charCodeAt(state.position);
@@ -1140,7 +1132,7 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     }
 
     if (state.anchor !== null) {
-        storeAnchor(state, state.anchor, result);
+        state.anchorMap.set(state.anchor, result);
     }
 
     ch = state.input.charCodeAt(++state.position);
@@ -1263,7 +1255,12 @@ const readTagProperty = (state: State): boolean => {
             ch = state.input.charCodeAt(++state.position);
         } while (ch !== 0 && ch !== 0x3e);
 
-        if (state.position < state.length) {
+        // The loop stops on `>` or on the `\0` sentinel. Only the former is a
+        // terminated tag: testing `position < length` instead would also accept
+        // the sentinel, then advance the cursor to `length`, where `charCodeAt`
+        // yields NaN — which every `ch !== 0` scan treats as content, spinning
+        // forever instead of failing.
+        if (ch === 0x3e) {
             tagName = state.input.slice(position, state.position);
             state.position++;
         } else {
@@ -1377,14 +1374,24 @@ const readAlias = (state: State): boolean => {
     return true;
 };
 
-// `&anchor key: value` / `!!tag key: value` — the node properties belong to the
-// first key of a block mapping, not to the node we were composing. Rewind to
-// before the properties and re-read them as part of that key.
-const tryReadBlockMappingFromProperty = (state: State, propertyStart: Snapshot, nodeIndent: number, flowIndent: number): boolean => {
-    const fallback = snapshotState(state);
+/**
+ * Speculatively read a block mapping, starting at `from` if given.
+ *
+ * Two shapes need this. `&amp;anchor key: value` / `!!tag key: value` put node
+ * properties on the *first key* of a mapping rather than on the node being
+ * composed, so the cursor rewinds to before the properties (`from`) and re-reads
+ * them as that key. `!!map\n&amp;a !!str key: value` instead starts the mapping at
+ * the current position (`from` omitted).
+ *
+ * On failure everything the attempt touched — cursor, anchors, alias budget — is
+ * rolled back, so the caller can try a different shape.
+ */
+const speculateBlockMapping = (state: State, nodeIndent: number, flowIndent: number, from?: Snapshot): boolean => {
+    const undo = beginSpeculation(state);
 
-    beginAnchorTransaction(state);
-    restoreState(state, propertyStart);
+    if (from) {
+        restoreState(state, from);
+    }
 
     state.tag = null;
     state.anchor = null;
@@ -1395,26 +1402,29 @@ const tryReadBlockMappingFromProperty = (state: State, propertyStart: Snapshot, 
 
     try {
         formed = readBlockMapping(state, nodeIndent, flowIndent) && state.kind === "mapping";
-    } catch {
-        // Speculative read: a throw (e.g. a strict-mode indentation error while
-        // trying the properties as a mapping key) just means "not a mapping
-        // here", so roll back rather than fail the whole parse.
+    } catch (error) {
+        // A parse error here only means "no block mapping at this position" —
+        // that is the question being asked, so rewind and let the caller try
+        // another shape. Anything else (a TypeError from a parser bug, a
+        // RangeError from stack exhaustion) is a genuine fault and must not be
+        // disguised as a failed guess.
+        if (!(error instanceof YAMLParseError)) {
+            throw error;
+        }
+
         formed = false;
     }
 
     if (formed) {
-        commitAnchorTransaction(state);
-
         return true;
     }
 
-    rollbackAnchorTransaction(state);
-    restoreState(state, fallback);
+    rollbackSpeculation(state, undo);
 
     return false;
 };
 
-const composeNode = (state: State, parentIndent: number, nodeContext: number, allowToSeek: boolean, allowCompact: boolean): boolean => {
+const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: number, allowToSeek: boolean, allowCompact: boolean): boolean => {
     let indentStatus = 1;
     let atNewLine = false;
     let hasContent = false;
@@ -1467,34 +1477,15 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
             if (atNewLine && (ch === 0x21 || ch === 0x26) && (state.tag !== null || state.anchor !== null)) {
                 const outerTag: string | null = state.tag;
                 const outerAnchor: string | null = state.anchor;
-                const beforeMapping = snapshotState(state);
-                const mappingIndent = state.position - state.lineStart;
-                const mappingFlowIndent = parentIndent + 1;
 
-                beginAnchorTransaction(state);
-                state.tag = null;
-                state.anchor = null;
-                state.kind = null;
-                state.result = null;
-
-                let mappingFormed = false;
-
-                try {
-                    mappingFormed = readBlockMapping(state, mappingIndent, mappingFlowIndent) && state.kind === "mapping";
-                } catch {
-                    // A throw means this is not a valid block mapping here — treat
-                    // it as "no mapping" and fall back to reading the property.
-                    mappingFormed = false;
-                }
-
-                if (mappingFormed) {
-                    commitAnchorTransaction(state);
-
+                if (speculateBlockMapping(state, state.position - state.lineStart, parentIndent + 1)) {
+                    // The mapping is this node's content; the properties we had
+                    // already collected still belong to the node itself.
                     state.tag = outerTag;
                     state.anchor = outerAnchor;
 
                     if (state.anchor !== null) {
-                        storeAnchor(state, state.anchor, state.result);
+                        state.anchorMap.set(state.anchor, state.result);
                     }
 
                     nestedMappingMatched = true;
@@ -1502,8 +1493,6 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
                     break;
                 }
 
-                rollbackAnchorTransaction(state);
-                restoreState(state, beforeMapping);
                 state.tag = outerTag;
                 state.anchor = outerAnchor;
             }
@@ -1568,12 +1557,9 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
             if (!matchedCollection && canRewindProperty && propertyStart) {
                 const keyIndent = propertyStart.position - propertyStart.lineStart;
 
-                matchedProperty = tryReadBlockMappingFromProperty(state, propertyStart, keyIndent, flowIndent);
+                matchedProperty = speculateBlockMapping(state, keyIndent, flowIndent, propertyStart);
             }
 
-            // Strict mode: a repeated anchor/tag on a new line that did NOT turn
-            // out to introduce a nested mapping key is a second property on this
-            // node — `top: &a\n  &b val` gives the scalar two anchors (4JVG).
             // Strict mode: a repeated anchor/tag carried onto a new line is valid
             // only when it turned out to be the first property of a nested block
             // mapping/sequence key. If the node instead resolved to a scalar, the
@@ -1609,50 +1595,62 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
 
                     state.tag ??= "?";
                 }
-
-                if (state.anchor !== null) {
-                    storeAnchor(state, state.anchor, state.result);
-                }
             }
         } else if (indentStatus === 0) {
             hasContent = allowBlockCollections && readBlockSequence(state, blockIndent);
         }
     }
 
-    if (state.tag === null) {
-        if (state.anchor !== null) {
-            storeAnchor(state, state.anchor, state.result);
-        }
-    } else if (state.tag === "?") {
+    // Resolve the tag first, then register the anchor exactly once. The ordering
+    // is load-bearing: an anchor must name the *resolved* value, so the store has
+    // to come last. (Collections register themselves earlier, before their
+    // children are parsed, so that a self-reference like `&a [ *a ]` resolves.)
+    if (state.tag === "?") {
         if (state.kind === "scalar" && typeof state.result === "string") {
             state.result = resolveScalarValue(state.result);
         }
-
-        if (state.anchor !== null) {
-            storeAnchor(state, state.anchor, state.result);
-        }
-    } else if (state.tag !== "!") {
-        // A scalar node, or an explicit tag on empty content (`!!str` with
+    } else if (state.tag !== null && state.tag !== "!" // A scalar node, or an explicit tag on empty content (`!!str` with
         // nothing after it, common in flow: `{ a: !!str, ... }`). In the empty
         // case the node has no kind yet — treat the content as the empty string
         // so `!!str` → "" and `!!null` → null, matching the core schema.
-        if (state.kind === "scalar" || (!hasContent && state.kind === null)) {
-            const raw = typeof state.result === "string" ? state.result : "";
-            const applied = resolveExplicitTag(state.tag, raw);
+        && (state.kind === "scalar" || (!hasContent && state.kind === null))) {
+        const raw = typeof state.result === "string" ? state.result : "";
+        const applied = resolveExplicitTag(state.tag, raw);
 
-            if (applied) {
-                state.result = applied.value;
-            }
+        if (applied.status === "ok") {
+            state.result = applied.value;
+        } else if (applied.status === "invalid") {
+            throwError(state, `unacceptable value "${raw}" for the "${state.tag}" tag`);
         }
+    }
 
-        if (state.anchor !== null) {
-            storeAnchor(state, state.anchor, state.result);
-        }
-    } else if (state.anchor !== null) {
-        storeAnchor(state, state.anchor, state.result);
+    if (state.anchor !== null) {
+        state.anchorMap.set(state.anchor, state.result);
     }
 
     return state.tag !== null || state.anchor !== null || hasContent;
+};
+
+/**
+ * Compose one node, bounding recursion depth.
+ *
+ * Without this a document like `[[[[…` recurses until the JS stack is exhausted
+ * and escapes as a `RangeError`, which is outside the `YAMLError` hierarchy
+ * callers catch. `finally` (rather than a decrement before the single return)
+ * keeps the counter honest when a speculative parse unwinds through here.
+ */
+const composeNode = (state: State, parentIndent: number, nodeContext: number, allowToSeek: boolean, allowCompact: boolean): boolean => {
+    if (state.depth >= state.options.maxDepth) {
+        throwError(state, `maximum nesting depth of ${String(state.options.maxDepth)} exceeded`);
+    }
+
+    state.depth += 1;
+
+    try {
+        return composeNodeAtDepth(state, parentIndent, nodeContext, allowToSeek, allowCompact);
+    } finally {
+        state.depth -= 1;
+    }
 };
 
 const readDocument = (state: State): void => {
@@ -1826,6 +1824,13 @@ const normalizeInput = (input: string): string => {
 
 /** Parse every document in a YAML stream, returning them in order. */
 export const loadAll = (input: string, options: ParseOptions = {}): unknown[] => {
+    // This is a trust boundary, so a non-string must fail as a YAMLParseError
+    // rather than as whichever TypeError the first string method happens to
+    // raise — callers catch the former.
+    if (typeof input !== "string") {
+        throw new YAMLParseError(`expected a string to parse, received ${input === null ? "null" : typeof input}`);
+    }
+
     let source = normalizeInput(input);
 
     if (source.includes("\0")) {

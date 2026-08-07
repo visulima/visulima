@@ -4,13 +4,13 @@ import type { ParseOptions, StringifyOptions } from "./types";
 
 // The `js-yaml`-style aliases default to `strict: false` so they stay
 // byte-for-byte drop-in replacements for `js-yaml`, which is lenient about the
-// two corner cases strict mode rejects. The native `parse`/`parseAll` keep
+// corner cases strict mode rejects. The native `parse`/`parseAll` keep
 // strict on by default. An explicit `strict` in the caller's options wins.
 const LENIENT_DEFAULTS: ParseOptions = { strict: false };
 
 export type { Mark } from "./errors";
 export { YAMLError, YAMLParseError, YAMLStringifyError, YAMLWarning } from "./errors";
-export type { DuplicateKeyBehavior, ParseOptions, ScalarStyle, StringifyOptions } from "./types";
+export type { DuplicateKeyBehavior, ParseOptions, StringifyOptions } from "./types";
 
 /**
  * Parse the first document of a YAML string into a native JavaScript value.

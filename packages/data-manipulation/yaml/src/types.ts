@@ -18,19 +18,19 @@ export interface ParseOptions {
     duplicateKeys?: DuplicateKeyBehavior;
 
     /**
-     * When `true`, mapping keys that are not plain strings/numbers keep their
-     * native representation. When `false`, keys are coerced to strings (closer
-     * to `JSON.parse` behaviour).
-     * @default true
-     */
-    keepNonStringKeys?: boolean;
-
-    /**
      * Maximum number of alias nodes that may be resolved. Guards against
      * "billion laughs" style alias-expansion attacks.
      * @default 100
      */
     maxAliasCount?: number;
+
+    /**
+     * Maximum nesting depth of collections. Guards against a deeply nested
+     * document (`[[[[…`) exhausting the call stack with a `RangeError` that
+     * escapes the `YAMLError` hierarchy.
+     * @default 1000
+     */
+    maxDepth?: number;
 
     /**
      * Optional callback invoked for every non-fatal `YAMLWarning`. When
@@ -39,8 +39,9 @@ export interface ParseOptions {
     onWarning?: (warning: YAMLWarning) => void;
 
     /**
-     * When `true`, `__proto__` / `constructor` / `prototype` mapping keys are
-     * dropped instead of being assigned (prototype-pollution guard).
+     * When `true`, a `__proto__` mapping key becomes an own data property
+     * instead of being assigned through the inherited setter, so a document can
+     * never reach the prototype chain. Merge keys (`&lt;&lt;`) honour this too.
      * @default true
      */
     preventProtoPollution?: boolean;
@@ -49,20 +50,19 @@ export interface ParseOptions {
      * Full YAML 1.2 strictness, on by default. The parser always rejects the
      * unambiguous spec violations (tabs as indentation, malformed directives,
      * deficient indentation, comments not separated by white space). With
-     * `strict` it additionally rejects two corner cases that both `yaml` and
+     * `strict` it additionally rejects the corner cases that both `yaml` and
      * `js-yaml` accept but the spec forbids: a node property (anchor or tag)
-     * carried onto a new line yet indented no deeper than its parent key, and a
+     * carried onto a new line yet indented no deeper than its parent key; a
      * block mapping or sequence whose first entry sits on the document-start
-     * line. Set `strict: false` to relax only those two checks (closer to
+     * line; two anchors or two tags on one node; and a block scalar whose
+     * leading empty lines out-indent its content or that uses a tab for
+     * indentation. Set `strict: false` to relax exactly those checks (closer to
      * `js-yaml`); it never changes the value of an accepted document, only
      * whether these malformed inputs throw.
      * @default true
      */
     strict?: boolean;
 }
-
-/** A user-supplied scalar style hint used when serializing. */
-export type ScalarStyle = "double" | "folded" | "literal" | "plain" | "single";
 
 /** Options accepted by `stringify`. */
 export interface StringifyOptions {

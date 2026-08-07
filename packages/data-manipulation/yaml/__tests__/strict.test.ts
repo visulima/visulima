@@ -5,7 +5,7 @@ import { parse, parseAll, YAMLParseError } from "../src";
 /**
  * Strict parsing is the default. It rejects spec violations that both `yaml`
  * and `js-yaml` are lenient about; passing `strict: false` relaxes exactly
- * those two checks (and nothing else). Each case throws by default and parses
+ * these checks (and nothing else). Each case throws by default and parses
  * under `{ strict: false }`.
  */
 describe("strict mode (default)", () => {
