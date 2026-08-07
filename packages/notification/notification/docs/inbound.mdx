@@ -52,18 +52,18 @@ acknowledgement without invoking your handler.
 
 ```typescript
 interface InboundMessage {
-    channel: ChannelType;            // "chat" | "sms"
-    provider: string;               // "slack" | "discord" | "telegram" | "twilio"
+    channel: ChannelType; // "chat" | "sms"
+    provider: string; // "slack" | "discord" | "telegram" | "twilio"
     type: "message" | "command" | "callback" | "event" | "unknown";
     id: string;
     text?: string;
     from: { id: string; name?: string; username?: string; isBot?: boolean };
-    conversationId?: string;        // channel / chat / room id
-    threadId?: string;              // thread anchor, for threaded replies
+    conversationId?: string; // channel / chat / room id
+    threadId?: string; // thread anchor, for threaded replies
     command?: { name: string; args?: string };
     attachments?: { url?: string; contentType?: string }[];
     timestamp: Date;
-    raw: unknown;                   // the untouched provider payload
+    raw: unknown; // the untouched provider payload
     metadata?: Record<string, unknown>;
 }
 ```
@@ -106,16 +106,16 @@ exports both the outbound provider (`create<Name>Provider`) and the inbound rece
 (`create<Name>Receiver`). The `@visulima/notification/inbound` barrel holds only the shared types,
 `createInboundRouter` and the verification/reply helpers.
 
-| Import                                     | Receiver                   | Verification                                              | Synchronous reply                  |
-| ------------------------------------------ | -------------------------- | -------------------------------------------------------- | ---------------------------------- |
-| `@visulima/notification/providers/slack`   | `createSlackReceiver`       | v0 signature + 5-min replay; `url_verification` handled  | Slash commands & interactions      |
-| `@visulima/notification/providers/discord` | `createDiscordReceiver`     | Ed25519 over `timestamp+body`; `PING` → `PONG` handled   | Interaction response               |
-| `@visulima/notification/providers/telegram`| `createTelegramReceiver`    | `X-Telegram-Bot-Api-Secret-Token` (when set)             | `sendMessage` method               |
-| `@visulima/notification/providers/twilio`  | `createTwilioReceiver`      | `X-Twilio-Signature` HMAC-SHA1 of URL + sorted params    | TwiML message element              |
-| `@visulima/notification/providers/msteams` | `createMsTeamsReceiver`     | `Authorization: HMAC` — base64 HMAC-SHA256 of raw body   | Bot Framework message activity     |
-| `@visulima/notification/providers/telnyx`  | `createTelnyxReceiver`      | Ed25519 over `{timestamp}\|{body}` + 5-min replay        | via `context.reply()` (async)      |
-| `@visulima/notification/providers/messagebird` | `createMessageBirdReceiver` | `messagebird-signature-jwt` HS256 JWT + `url_hash`/`payload_hash` | via `context.reply()` (async) |
-| `@visulima/notification/providers/vonage`  | `createVonageReceiver`      | `Authorization: Bearer` HS256 JWT + `payload_hash`       | via `context.reply()` (async)      |
+| Import                                         | Receiver                    | Verification                                                      | Synchronous reply              |
+| ---------------------------------------------- | --------------------------- | ----------------------------------------------------------------- | ------------------------------ |
+| `@visulima/notification/providers/slack`       | `createSlackReceiver`       | v0 signature + 5-min replay; `url_verification` handled           | Slash commands & interactions  |
+| `@visulima/notification/providers/discord`     | `createDiscordReceiver`     | Ed25519 over `timestamp+body`; `PING` → `PONG` handled            | Interaction response           |
+| `@visulima/notification/providers/telegram`    | `createTelegramReceiver`    | `X-Telegram-Bot-Api-Secret-Token` (when set)                      | `sendMessage` method           |
+| `@visulima/notification/providers/twilio`      | `createTwilioReceiver`      | `X-Twilio-Signature` HMAC-SHA1 of URL + sorted params             | TwiML message element          |
+| `@visulima/notification/providers/msteams`     | `createMsTeamsReceiver`     | `Authorization: HMAC` — base64 HMAC-SHA256 of raw body            | Bot Framework message activity |
+| `@visulima/notification/providers/telnyx`      | `createTelnyxReceiver`      | Ed25519 over `{timestamp}\|{body}` + 5-min replay                 | via `context.reply()` (async)  |
+| `@visulima/notification/providers/messagebird` | `createMessageBirdReceiver` | `messagebird-signature-jwt` HS256 JWT + `url_hash`/`payload_hash` | via `context.reply()` (async)  |
+| `@visulima/notification/providers/vonage`      | `createVonageReceiver`      | `Authorization: Bearer` HS256 JWT + `payload_hash`                | via `context.reply()` (async)  |
 
 Slack receivers cover the Events API, slash commands and interactive components; Twilio, Telnyx,
 MessageBird and Vonage cover SMS (Twilio also WhatsApp — flagged in `metadata.transport`, with
@@ -132,7 +132,7 @@ to this exact request body and URL).
   normalise the body yourself — the `InboundMessage` shape and `context.reply()` mapping are the
   same for any channel.
 
-AWS SNS is a signature *verifier*, not an inbound-message receiver: `snsWebhook.verify` now
+AWS SNS is a signature _verifier_, not an inbound-message receiver: `snsWebhook.verify` now
 implements the full RSA certificate-chain scheme (see the [webhooks docs](/docs/webhooks)).
 
 ## Routing several channels
