@@ -1,4 +1,4 @@
-import type { ChannelType, MaybePromise } from "../types";
+import type { ChannelType, MaybePromise, NotificationResult, Result } from "../types";
 import type { WebhookHeaders } from "../webhooks/types";
 
 /**
@@ -99,14 +99,37 @@ export interface InboundReply {
 }
 
 /**
- * Context passed to an {@link InboundHandler} alongside the parsed message, exposing the
- * verified raw request for handlers that need provider-native fields.
+ * What {@link InboundContext.reply} accepts: a normalised {@link InboundReply} or, as a
+ * shorthand, a plain string treated as `{ text }`.
+ */
+export type InboundReplyInput = InboundReply | string;
+
+/**
+ * Sends a reply back to the originating conversation through the outbound provider configured
+ * on the receiver — the out-of-band counterpart to returning an {@link InboundReply} from the
+ * handler. Resolves to the provider's send {@link Result}; rejects when no provider was
+ * configured. The reply target (recipient, thread) is derived from the inbound message.
+ * @param reply The reply content.
+ * @returns The provider's send result.
+ */
+export type InboundReplyFunction = (reply: InboundReplyInput) => Promise<Result<NotificationResult>>;
+
+/**
+ * Context passed to an {@link InboundHandler} alongside the parsed message: the verified raw
+ * request for handlers that need provider-native fields, plus {@link InboundContext.reply} to
+ * answer in a single call.
  */
 export interface InboundContext {
     /** The raw request body text, already read and signature-verified. */
     body: string;
     /** Case-insensitive request headers. */
     headers: WebhookHeaders;
+
+    /**
+     * Sends a reply to the originating conversation through the receiver's outbound provider.
+     * Rejects if no `provider` was passed to the receiver factory.
+     */
+    reply: InboundReplyFunction;
     /** The originating web-standard {@link Request}. */
     request: Request;
 }

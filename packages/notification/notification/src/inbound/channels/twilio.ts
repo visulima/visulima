@@ -1,5 +1,8 @@
+import type { Provider } from "../../providers/provider";
+import type { SmsPayload } from "../../types";
 import { twilioWebhook } from "../../webhooks/twilio";
 import { getHeader } from "../../webhooks/types";
+import { smsReply } from "../reply";
 import type { InboundAttachment, InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
 import { asRawResponse, asReply, headersToRecord, rejectionResponse } from "../utils";
 
@@ -77,6 +80,12 @@ export interface TwilioInboundOptions extends InboundChannelOptions {
     authToken: string;
 
     /**
+     * The outbound Twilio SMS provider used by `context.reply()`, which addresses the reply
+     * back to the sender (re-applying the `whatsapp:` prefix for WhatsApp). Optional.
+     */
+    provider?: Provider<unknown, SmsPayload>;
+
+    /**
      * The public URL Twilio signed the request against. Twilio's signature covers the exact
      * webhook URL it was configured with, so behind a proxy or rewrite (where `request.url`
      * differs) set this to the configured URL. Defaults to `request.url`.
@@ -113,7 +122,7 @@ export const createTwilioInbound = (options: TwilioInboundOptions): InboundChann
             }
 
             const message = parseTwilio(new URLSearchParams(body));
-            const result = await options.onMessage(message, { body, headers, request });
+            const result = await options.onMessage(message, { body, headers, reply: smsReply(message, options.provider), request });
             const raw = asRawResponse(result);
 
             if (raw !== undefined) {

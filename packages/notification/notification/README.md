@@ -309,8 +309,23 @@ export default { fetch: (request: Request) => slack.handle(request) };
 
 Receivers: `createSlackInbound` (Events API, slash commands, interactions), `createDiscordInbound`
 (Ed25519 interactions), `createTelegramInbound` (bot webhooks), `createTwilioInbound` (SMS &
-WhatsApp). `createInboundRouter` mounts several behind one fetch handler. See the
-[inbound docs](./docs/inbound.mdx).
+WhatsApp). `createInboundRouter` mounts several behind one fetch handler.
+
+For the full receive → think → reply loop in one call, pass the matching outbound `provider` to
+the receiver and answer with `context.reply(...)` — it maps the inbound message to the right
+outbound payload (recipient, thread, WhatsApp prefix) and sends it:
+
+```typescript
+const slack = createSlackInbound({
+    signingSecret,
+    provider: slackProvider({ token }),
+    onMessage: async (message, context) => {
+        await context.reply(await runAgent(message.text ?? ""));
+    },
+});
+```
+
+See the [inbound docs](./docs/inbound.mdx).
 
 ## Supported Node.js Versions
 

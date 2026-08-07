@@ -6,6 +6,7 @@ import { createTelegramInbound } from "../src/inbound/channels/telegram";
 import { createTwilioInbound } from "../src/inbound/channels/twilio";
 import { createInboundRouter } from "../src/inbound/router";
 import type { InboundMessage } from "../src/inbound/types";
+import { mockProvider } from "../src/providers/mock/provider";
 
 const encoder = new TextEncoder();
 
@@ -89,6 +90,30 @@ describe(createSlackInbound, () => {
 
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toMatchObject({ text: "pong" });
+    });
+
+    it("replies to an Events API message out-of-band through the provider", async () => {
+        expect.assertions(3);
+
+        const provider = mockProvider({ channel: "chat", id: "slack" });
+        const channel = createSlackInbound({
+            onMessage: async (_message, context) => {
+                await context.reply("hello back");
+            },
+            provider,
+            signingSecret: secret,
+        });
+        const body = JSON.stringify({
+            event: { channel: "C1", text: "hi", ts: "1700000000.0001", type: "app_mention", user: "U1" },
+            event_id: "Ev2",
+            type: "event_callback",
+        });
+        const response = await channel.handle(await signedRequest(body, "application/json"));
+        const sent = provider.getInstance?.().last();
+
+        expect(response.status).toBe(200);
+        expect(sent?.payload).toMatchObject({ text: "hello back", to: "C1" });
+        expect((sent?.payload as { threadId?: string }).threadId).toBe("1700000000.0001");
     });
 
     it("rejects a tampered signature with 401", async () => {
@@ -279,6 +304,38 @@ describe(createTwilioInbound, () => {
 
         expect(received?.from.id).toBe("+15555550100");
         expect(received?.metadata?.transport).toBe("whatsapp");
+    });
+
+    it("replies to the sender through the provider, re-applying the WhatsApp prefix", async () => {
+        expect.assertions(1);
+
+        const provider = mockProvider({ channel: "sms", id: "twilio" });
+        const channel = createTwilioInbound({
+            authToken,
+            onMessage: async (_message, context) => {
+                await context.reply("got it");
+            },
+            provider,
+        });
+
+        await channel.handle(await signedRequest({ Body: "hi", From: "whatsapp:+15555550100", MessageSid: "SM3", To: "whatsapp:+15555550111" }));
+
+        expect(provider.getInstance?.().last()?.payload).toMatchObject({ from: "whatsapp:+15555550111", text: "got it", to: "whatsapp:+15555550100" });
+    });
+
+    it("rejects context.reply when no provider is configured", async () => {
+        expect.assertions(1);
+
+        const channel = createTwilioInbound({
+            authToken,
+            onMessage: async (_message, context) => {
+                await context.reply("nope");
+            },
+        });
+
+        const request = await signedRequest({ Body: "hi", From: "+15555550100", MessageSid: "SM4", To: "+15555550111" });
+
+        await expect(channel.handle(request)).rejects.toThrow("No `provider` configured to send replies");
     });
 });
 

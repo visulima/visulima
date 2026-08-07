@@ -1,5 +1,8 @@
+import type { Provider } from "../../providers/provider";
+import type { ChatPayload } from "../../types";
 import { timingSafeEqual } from "../../webhooks/crypto";
 import { getHeader, tryParseObject } from "../../webhooks/types";
+import { chatReply } from "../reply";
 import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
 import { asId, asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
@@ -104,6 +107,9 @@ const parseTelegram = (update: Record<string, unknown>): InboundMessage | undefi
  * Options for the Telegram inbound receiver.
  */
 export interface TelegramInboundOptions extends InboundChannelOptions {
+    /** The outbound Telegram chat provider used by `context.reply()`. Optional. */
+    provider?: Provider<unknown, ChatPayload>;
+
     /**
      * The secret token configured via `setWebhook`'s `secret_token`. When set, the receiver
      * requires a matching `X-Telegram-Bot-Api-Secret-Token` header. Strongly recommended —
@@ -154,7 +160,7 @@ export const createTelegramInbound = (options: TelegramInboundOptions): InboundC
                 return noContent();
             }
 
-            const result = await options.onMessage(message, { body, headers, request });
+            const result = await options.onMessage(message, { body, headers, reply: chatReply("telegram", message, options.provider), request });
             const raw = asRawResponse(result);
 
             if (raw !== undefined) {

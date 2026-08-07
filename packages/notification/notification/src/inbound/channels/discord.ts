@@ -1,5 +1,8 @@
+import type { Provider } from "../../providers/provider";
+import type { ChatPayload } from "../../types";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { verifyEd25519 } from "../ed25519";
+import { chatReply } from "../reply";
 import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
 import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
@@ -73,6 +76,11 @@ const parseDiscord = (payload: Record<string, unknown>): InboundMessage | undefi
  * Options for the Discord inbound receiver.
  */
 export interface DiscordInboundOptions extends InboundChannelOptions {
+    /**
+     * The outbound Discord chat provider used by `context.reply()`, which posts a message to
+     * the originating channel (use this instead of the deferred HTTP response). Optional.
+     */
+    provider?: Provider<unknown, ChatPayload>;
     /** The application's Ed25519 public key (hex), from the Discord developer dashboard. */
     publicKey: string;
 }
@@ -122,7 +130,7 @@ export const createDiscordInbound = (options: DiscordInboundOptions): InboundCha
                 return noContent();
             }
 
-            const result = await options.onMessage(message, { body, headers, request });
+            const result = await options.onMessage(message, { body, headers, reply: chatReply("discord", message, options.provider), request });
             const raw = asRawResponse(result);
 
             if (raw !== undefined) {

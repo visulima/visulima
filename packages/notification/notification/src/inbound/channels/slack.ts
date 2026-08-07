@@ -1,5 +1,8 @@
+import type { Provider } from "../../providers/provider";
+import type { ChatPayload } from "../../types";
 import { slackWebhook } from "../../webhooks/slack";
 import { getHeader, tryParseObject } from "../../webhooks/types";
+import { chatReply } from "../reply";
 import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
 import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
@@ -109,6 +112,11 @@ const parseSlack = (body: string, contentType: string): InboundMessage | undefin
  * Options for the Slack inbound receiver.
  */
 export interface SlackInboundOptions extends InboundChannelOptions {
+    /**
+     * The outbound Slack chat provider used by `context.reply()` (and for replying to Events
+     * API deliveries, which cannot answer in the HTTP response). Optional.
+     */
+    provider?: Provider<unknown, ChatPayload>;
     /** The Slack app signing secret, used to verify `X-Slack-Signature`. */
     signingSecret: string;
 }
@@ -156,7 +164,7 @@ export const createSlackInbound = (options: SlackInboundOptions): InboundChannel
                 return noContent();
             }
 
-            const result = await options.onMessage(message, { body, headers, request });
+            const result = await options.onMessage(message, { body, headers, reply: chatReply("slack", message, options.provider), request });
             const raw = asRawResponse(result);
 
             if (raw !== undefined) {
