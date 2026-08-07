@@ -332,6 +332,16 @@ const skipSeparationSpace = (state: State, allowComments: boolean, checkIndent: 
         }
 
         if (allowComments && ch === 0x23) {
+            // A `#` only begins a comment when preceded by white space, a line
+            // break, or the start of a line. `]#c`, `"v"#c`, `a,#c` are therefore
+            // malformed rather than commented — this matches the `yaml` reference
+            // (js-yaml is lenient and silently accepts them).
+            const preceding = state.position === state.lineStart ? 0x0a : state.input.charCodeAt(state.position - 1);
+
+            if (!isWsOrEol(preceding)) {
+                throwError(state, "a comment must be separated from other tokens by white space characters");
+            }
+
             do {
                 ch = state.input.charCodeAt(++state.position);
             } while (ch !== 0x0a && ch !== 0x0d && ch !== 0);
@@ -772,9 +782,14 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
             continue;
         }
 
-        // End of the scalar: a genuine dedent, or EOF for a zero-indented block
-        // (where `lineIndent < textIndent` can never become true).
-        if (state.lineIndent < textIndent || ch === 0) {
+        // End of the scalar: a genuine dedent, EOF, or a `---`/`...` document
+        // marker at column 0. The last case matters only for a zero-indented
+        // block scalar (textIndent 0), where `lineIndent < textIndent` can never
+        // become true; an indented marker keeps `position > lineStart` and stays
+        // scalar content.
+        const atDocumentMarker = state.position === state.lineStart && testDocumentSeparator(state);
+
+        if (state.lineIndent < textIndent || ch === 0 || atDocumentMarker) {
             if (chomping === CHOMPING_KEEP) {
                 state.result = (state.result as string) + "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
             } else if (chomping === CHOMPING_CLIP && didReadContent) {
@@ -1170,7 +1185,12 @@ const readTagProperty = (state: State): boolean => {
             return throwError(state, "unexpected end of the stream within a verbatim tag");
         }
     } else {
-        while (ch !== 0 && !isWsOrEol(ch)) {
+        // Per the YAML grammar `ns-tag-char` excludes the flow indicators
+        // `,[]{}`, so a shorthand tag ends at the first one (e.g. `!!str,` in a
+        // flow collection tags empty content and the comma starts the next
+        // entry). js-yaml instead reads greedily and then rejects — which makes
+        // it fail suite case WZ62; stopping here is the spec-correct behaviour.
+        while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
             if (ch === 0x21) {
                 if (isNamed) {
                     throwError(state, "tag suffix cannot contain exclamation marks");
@@ -1435,8 +1455,13 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
             storeAnchor(state, state.anchor, state.result);
         }
     } else if (state.tag !== "!") {
-        if (state.kind === "scalar") {
-            const applied = resolveExplicitTag(state.tag, state.result as string);
+        // A scalar node, or an explicit tag on empty content (`!!str` with
+        // nothing after it, common in flow: `{ a: !!str, ... }`). In the empty
+        // case the node has no kind yet — treat the content as the empty string
+        // so `!!str` → "" and `!!null` → null, matching the core schema.
+        if (state.kind === "scalar" || (!hasContent && state.kind === null)) {
+            const raw = typeof state.result === "string" ? state.result : "";
+            const applied = resolveExplicitTag(state.tag, raw);
 
             if (applied) {
                 state.result = applied.value;
@@ -1455,6 +1480,7 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
 
 const readDocument = (state: State): void => {
     let hasDirectives = false;
+    let hasYamlDirective = false;
 
     state.tagMap = new Map<string, string>();
     state.anchorMap = new Map<string, unknown>();
@@ -1517,18 +1543,27 @@ const readDocument = (state: State): void => {
         }
 
         if (directiveName === "YAML") {
-            if (directiveArgs.length !== 1) {
-                emitWarning(state, "the YAML directive accepts exactly one argument");
+            // A malformed %YAML directive is a hard error in both refs (js-yaml
+            // and yaml): wrong argument count, an argument that is not `<n>.<n>`,
+            // or a second %YAML directive in the same document.
+            if (hasYamlDirective) {
+                throwError(state, "duplication of a YAML directive");
+            } else if (directiveArgs.length !== 1) {
+                throwError(state, "the YAML directive accepts exactly one argument");
             } else if (!YAML_VERSION_RE.test(directiveArgs[0] ?? "")) {
-                emitWarning(state, "ill-formed argument of the YAML directive");
+                throwError(state, "ill-formed argument of the YAML directive");
             }
+
+            hasYamlDirective = true;
         } else if (directiveName === "TAG") {
             if (directiveArgs.length === 2) {
                 state.tagMap.set(directiveArgs[0]!, directiveArgs[1]!);
             } else {
-                emitWarning(state, "the TAG directive accepts exactly two arguments");
+                throwError(state, "the TAG directive accepts exactly two arguments");
             }
         } else {
+            // Unknown directives are ignored (with a warning) by both refs for
+            // forward-compatibility — do not reject them.
             emitWarning(state, `unknown document directive "${directiveName}"`);
         }
     }
