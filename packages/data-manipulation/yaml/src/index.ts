@@ -225,4 +225,5 @@ export {
 } from "./nodes/nodes";
 export type { Visitor, VisitorFunction } from "./nodes/visit";
 export { visit } from "./nodes/visit";
+export { LineCounter } from "./parser/line-counter";
 export type { DuplicateKeyBehavior, ParseOptions, StringifyOptions } from "./types";

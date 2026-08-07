@@ -129,6 +129,7 @@ const readLineBreak = (state: State): void => {
     state.line += 1;
     state.lineStart = state.position;
     state.firstTabInLine = -1;
+    state.lineCounter?.addNewLine(state.position);
 };
 
 const skipSeparationSpace = (state: State, allowComments: boolean, checkIndent: number): number => {

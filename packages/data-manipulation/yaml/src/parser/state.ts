@@ -20,6 +20,7 @@ import { selectScalarResolver } from "../schema/schemas";
 import type { TagRegistry } from "../schema/tags";
 import { buildTagRegistry } from "../schema/tags";
 import type { ParseOptions } from "../types";
+import type { LineCounter } from "./line-counter";
 import type { MappingRanges } from "./ranges";
 
 /** The three node shapes the composer distinguishes. */
@@ -86,6 +87,9 @@ class State {
      */
     public readonly nodes: boolean;
 
+    /** Line-break offsets collector, when the caller supplied one. */
+    public readonly lineCounter: LineCounter | undefined;
+
     /** Style of the scalar just read, used to annotate its node. */
     public scalarStyle: ScalarStyle | undefined = undefined;
 
@@ -113,6 +117,7 @@ class State {
         this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
         this.tags = buildTagRegistry(this.options.customTags);
         this.nodes = options.nodes ?? false;
+        this.lineCounter = options.lineCounter;
     }
 }
 

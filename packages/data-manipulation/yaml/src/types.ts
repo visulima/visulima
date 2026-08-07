@@ -1,4 +1,5 @@
 import type { YAMLWarning } from "./errors";
+import type { LineCounter } from "./parser/line-counter";
 import type { SchemaName } from "./schema/schemas";
 import type { CustomTags } from "./schema/tags";
 
@@ -32,6 +33,12 @@ export interface ParseOptions {
      * @default false
      */
     intAsBigInt?: boolean;
+
+    /**
+     * Collects the offset of every line break as the document is scanned, so
+     * `lineCounter.linePos(offset)` can resolve any offset afterwards.
+     */
+    lineCounter?: LineCounter;
 
     /**
      * Build mappings as `Map` rather than plain objects, which keeps complex

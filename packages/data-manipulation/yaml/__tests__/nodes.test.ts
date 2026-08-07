@@ -1,7 +1,26 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { describe, expect, it } from "vitest";
 
-import { Alias, createNode, isAlias, isCollection, isMap, isNode, isPair, isScalar, isSeq, Pair, parse, parseAllNodes, parseNodes, Scalar, toJS, visit, YAMLMap, YAMLSeq } from "../src";
+import {
+    Alias,
+    createNode,
+    isAlias,
+    isCollection,
+    isMap,
+    isNode,
+    isPair,
+    isScalar,
+    isSeq,
+    Pair,
+    parse,
+    parseAllNodes,
+    parseNodes,
+    Scalar,
+    toJS,
+    visit,
+    YAMLMap,
+    YAMLSeq,
+} from "../src";
 
 describe("node model › construction and guards", () => {
     it("wraps plain values into a node tree", () => {
