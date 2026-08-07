@@ -1,5 +1,5 @@
 import type { WebhookHeaders } from "../webhooks/types";
-import type { InboundChannelOptions, InboundErrorReason, InboundReply, InboundResponse } from "./types";
+import type { InboundErrorReason, InboundReply, InboundResponse, ReceiverOptions } from "./types";
 
 /**
  * Returns `value` when it is a string, otherwise `undefined`. Narrows the untyped fields of
@@ -67,7 +67,7 @@ export const noContent = (): Response => new Response(undefined, { status: 204 }
 
 /**
  * Resolves the default rejection response for a given reason, giving {@link
- * InboundChannelOptions.onError} the chance to override it first.
+ * ReceiverOptions.onError} the chance to override it first.
  * @param reason Why the request was rejected.
  * @param request The originating request.
  * @param onError The optional consumer error hook.
@@ -76,7 +76,7 @@ export const noContent = (): Response => new Response(undefined, { status: 204 }
 export const rejectionResponse = async (
     reason: InboundErrorReason,
     request: Request,
-    onError: InboundChannelOptions["onError"],
+    onError: ReceiverOptions["onError"],
 ): Promise<Response> => {
     const override = await onError?.(reason, request);
 

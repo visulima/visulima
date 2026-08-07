@@ -3,7 +3,7 @@ import type { SmsPayload } from "../../types";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { isJwtTimeValid, sha256Hex, verifyHs256Jwt } from "../jwt";
 import { smsReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "messagebird-signature-jwt";
@@ -42,7 +42,7 @@ const parseMessageBird = (body: string): InboundMessage | undefined => {
 /**
  * Options for the MessageBird inbound receiver.
  */
-export interface MessageBirdInboundOptions extends InboundChannelOptions {
+export interface MessageBirdReceiverOptions extends ReceiverOptions {
     /** The outbound MessageBird SMS provider used by `context.reply()`. Optional. */
     provider?: Provider<unknown, SmsPayload>;
 
@@ -64,10 +64,10 @@ export interface MessageBirdInboundOptions extends InboundChannelOptions {
  * and `payload_hash` (SHA-256 of the body) — each of which is checked before dispatch.
  *
  * MessageBird has no synchronous reply; acknowledge and answer via `context.reply()`.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createMessageBirdInbound = (options: MessageBirdInboundOptions): InboundChannel => {
+export const createMessageBirdReceiver = (options: MessageBirdReceiverOptions): Receiver => {
     return {
         channel: "sms",
         handle: async (request: Request): Promise<Response> => {

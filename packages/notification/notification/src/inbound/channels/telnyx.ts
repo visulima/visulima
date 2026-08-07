@@ -4,7 +4,7 @@ import { isWithinReplayWindow, REPLAY_WINDOW_SECONDS } from "../../webhooks/cryp
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { verifyEd25519Base64 } from "../ed25519";
 import { smsReply } from "../reply";
-import type { InboundAttachment, InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundAttachment, InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "telnyx-signature-ed25519";
@@ -64,7 +64,7 @@ const parseTelnyx = (body: string): InboundMessage | undefined => {
 /**
  * Options for the Telnyx inbound receiver.
  */
-export interface TelnyxInboundOptions extends InboundChannelOptions {
+export interface TelnyxReceiverOptions extends ReceiverOptions {
     /** The outbound Telnyx SMS provider used by `context.reply()`. Optional. */
     provider?: Provider<unknown, SmsPayload>;
     /** The account's Ed25519 public key (base64), from the Telnyx Mission Control portal. */
@@ -79,10 +79,10 @@ export interface TelnyxInboundOptions extends InboundChannelOptions {
  *
  * Telnyx has no synchronous reply, so acknowledge and answer through `context.reply()` (or the
  * outbound Telnyx provider).
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createTelnyxInbound = (options: TelnyxInboundOptions): InboundChannel => {
+export const createTelnyxReceiver = (options: TelnyxReceiverOptions): Receiver => {
     return {
         channel: "sms",
         handle: async (request: Request): Promise<Response> => {
