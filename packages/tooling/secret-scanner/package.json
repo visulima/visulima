@@ -107,6 +107,7 @@
         "@visulima/fs": "5.1.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "3.1.0",
+        "@visulima/yaml": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -124,8 +125,7 @@
         "semantic-release": "catalog:cli",
         "smol-toml": "^1.7.0",
         "typescript": "catalog:tsc",
-        "vitest": "catalog:test",
-        "yaml": "catalog:dev"
+        "vitest": "catalog:test"
     },
     "peerDependencies": {
         "@aws-sdk/client-sts": "*",
