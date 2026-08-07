@@ -41,7 +41,7 @@
  * the null entries take the inferred level.
  */
 
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisReleaseError } from "../errors";
 import type { BumpLevel, ChangeFile, ChangeFileNested, ChangeFileSimple } from "../types";
@@ -322,7 +322,7 @@ export const parseChangeFile = (content: string, file: string): ChangeFile => {
     let raw: unknown;
 
     try {
-        raw = parseYaml(split.frontmatter, { schema: "core", strict: true });
+        raw = parseYaml(split.frontmatter, { strict: true } /* @visulima/yaml is always YAML 1.2 core */);
     } catch (error) {
         throw new VisReleaseError({
             cause: error,

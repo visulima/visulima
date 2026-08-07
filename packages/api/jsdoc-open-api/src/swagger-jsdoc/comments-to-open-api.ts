@@ -1,8 +1,8 @@
 import type { Block, Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import { mergeWith } from "es-toolkit";
-import type { YAMLError } from "yaml";
-import yaml from "yaml";
+import type { YAMLError } from "@visulima/yaml";
+import * as yaml from "@visulima/yaml";
 
 import type { OpenApiObject } from "../exported";
 import customizer from "../util/customizer";
@@ -50,7 +50,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
                 throw new Error(errorString);
             }
 
-            const parsedDocument = parsed.toJSON();
+            const parsedDocument = parsed.toJSON() as Record<string, any>;
             const specification: Record<string, any> = {
                 tags: [],
             };

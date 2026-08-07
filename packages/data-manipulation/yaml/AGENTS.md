@@ -18,6 +18,8 @@ The pipeline lives entirely in `src/`:
 - `src/schema/resolve-scalar.ts` — YAML 1.2 **core schema** scalar resolution (`null`, `bool`, `int` in dec/hex/oct, `float`, `.inf`/`.nan`) plus explicit-tag (`!!int`, `!!str`, …) application.
 - `src/errors.ts` — `YAMLError`, `YAMLParseError`, `YAMLStringifyError`, `YAMLWarning` carrying a `{ line, column, position }` mark and a source snippet.
 - `src/types.ts` — `ParseOptions` / `StringifyOptions`.
+- `src/document.ts` — the document layer. `parseDocument` / `parseAllDocuments` report diagnostics instead of throwing, and `setIn` edits by **splicing the original source** rather than re-serializing, so comments, blank lines and key order survive. Edits need source spans, which `loader.ts` records into `State.mappingRanges` **only when that field is set** — the plain `parse` path never pays for it.
+- `src/parser/ranges.ts` — the span types, in their own module so `document.ts` can use them without dragging the `State` class into the published `.d.ts` (it is not isolated-declarations clean).
 - `src/index.ts` — public barrel (`parse`, `parseAll`, `stringify`, plus the `js-yaml` aliases `load`, `loadAll`, `dump`).
 
 ## Conventions
@@ -50,6 +52,12 @@ The parser always rejects the unambiguous spec violations (tabs as indentation, 
 Both property cases route through one helper, `speculateBlockMapping`: it tries a block mapping either from the _first_ property (rewinding to the `propertyStart` snapshot, for `&anchor key: value`) or from the current position (for `!!map\n&a !!str key: value`). On failure it rolls back the cursor, the anchor map and the alias budget together (`beginSpeculation` / `rollbackSpeculation`) — anchors are restored by swapping in a copy of the map rather than by journalling each write, so `state.anchorMap.set` on the hot path stays branch-free. The helper only swallows `YAMLParseError`; anything else (a bug, a `RangeError`) propagates rather than being disguised as a failed guess.
 
 `strict: false` relaxes exactly these checks (closer to `js-yaml`) and nothing else — it never changes the value of an accepted document, only whether these malformed inputs throw. See `__tests__/strict.test.ts`.
+
+## Document layer
+
+Error recovery is **per document, not within one**: `loadDocuments` catches a document's `YAMLParseError`, records it, resyncs to the next `---`/`...` marker and carries on. Inside a single document the first error still ends it, because the parser has no resync points — so `parseDocument` reports at most one error while `parseAllDocuments` reports one per document.
+
+`setIn` only edits block mappings. A path through a flow collection or a sequence throws, because there is no unambiguous place to splice. When splicing, spans are trimmed back over trailing whitespace (`trimTrailingSpace`) — a node's recorded end runs past the spaces before a trailing comment and past the file's final newline, and splicing at the raw end would eat both.
 
 ## Hardening invariants (do not regress)
 

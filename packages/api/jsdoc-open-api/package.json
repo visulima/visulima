@@ -111,9 +111,9 @@
     "dependencies": {
         "@apidevtools/swagger-parser": "catalog:prod",
         "@visulima/fs": "5.1.0",
+        "@visulima/yaml": "workspace:*",
         "comment-parser": "catalog:prod",
-        "es-toolkit": "catalog:prod",
-        "yaml": "catalog:prod"
+        "es-toolkit": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -140,6 +140,7 @@
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
+        "yaml": "catalog:prod",
         "webpack": "catalog:build"
     },
     "optionalDependencies": {

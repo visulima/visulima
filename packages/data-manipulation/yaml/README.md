@@ -172,6 +172,45 @@ parse("--- a: b", { strict: false }); // => { a: "b" }
 `load` / `loadAll` aliases default to `strict: false` so they stay drop-in
 replacements for `js-yaml`. Pass `{ strict: true }` to opt in.
 
+### `parseDocument(source, options?)` / `parseAllDocuments(source, options?)`
+
+Parse **without throwing**. Each returns a `YAMLDocument` carrying its own
+`errors` and `warnings`, so a caller can report problems in its own words —
+and `parseAllDocuments` keeps going after a malformed document instead of
+losing the whole stream.
+
+Documents also support **comment-preserving edits**: `setIn` splices the
+original source rather than re-serializing it, so comments, blank lines and key
+order elsewhere in the file are untouched.
+
+```ts
+import { parseDocument } from "@visulima/yaml";
+
+const document = parseDocument("packages:\n  - 'a/*'\n\n# keep me\n");
+
+document.setIn(["overrides", "some-pkg"], "npm:other@1.2.3");
+document.toString();
+// packages:
+//   - 'a/*'
+//
+// # keep me
+// overrides:
+//   some-pkg: npm:other@1.2.3
+```
+
+| Member                           | Description                                   |
+| -------------------------------- | --------------------------------------------- |
+| `errors` / `warnings`            | Diagnostics from reading the document.        |
+| `toJS()` / `toJSON()`            | The parsed value.                             |
+| `get(key)` / `getIn(path)`       | Read a value by key or path.                  |
+| `has(key)` / `hasIn(path)`       | Whether a key or path is present.             |
+| `set(key, v)` / `setIn(path, v)` | Edit, creating missing intermediate mappings. |
+| `toString()`                     | The source with every pending edit applied.   |
+
+Error recovery is per document — within one document the first error ends it.
+`setIn` edits block mappings only; a path through a flow collection or a
+sequence throws.
+
 ### `parseAll(source, options?)` / `loadAll(source, iterator?, options?)`
 
 Parse every document of a multi-document stream. `parseAll` returns an array; the

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import yaml from "yaml";
+import * as yaml from "@visulima/yaml";
 
 import type { BaseDefinition } from "../exported";
 

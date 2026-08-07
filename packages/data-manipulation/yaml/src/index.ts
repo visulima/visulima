@@ -1,5 +1,6 @@
+import { YAMLDocument } from "./document";
 import { dump as dumpValue } from "./parser/dumper";
-import { loadAll as loadAllDocuments, loadOne } from "./parser/loader";
+import { loadAll as loadAllDocuments, loadDocuments, loadOne } from "./parser/loader";
 import type { ParseOptions, StringifyOptions } from "./types";
 
 // The `js-yaml`-style aliases default to `strict: false` so they stay
@@ -8,9 +9,13 @@ import type { ParseOptions, StringifyOptions } from "./types";
 // strict on by default. An explicit `strict` in the caller's options wins.
 const LENIENT_DEFAULTS: ParseOptions = { strict: false };
 
+/** Stand-in for `parseDocument` on empty input: no contents, no diagnostics. */
+// eslint-disable-next-line unicorn/no-null
+const EMPTY_DOCUMENT = { contents: null, errors: [], warnings: [] };
+
+export { YAMLDocument } from "./document";
 export type { Mark } from "./errors";
 export { YAMLError, YAMLParseError, YAMLStringifyError, YAMLWarning } from "./errors";
-export type { DuplicateKeyBehavior, ParseOptions, StringifyOptions } from "./types";
 
 /**
  * Parse the first document of a YAML string into a native JavaScript value.
@@ -83,3 +88,32 @@ export function loadAll(source: string, iteratorOrOptions?: ((document: unknown)
  * `js-yaml`-compatible alias of {@link stringify}.
  */
 export const dump = (value: unknown, options?: StringifyOptions): string => dumpValue(value, options);
+
+/**
+ * Parse the first document without throwing, returning a {@link YAMLDocument}
+ * that carries its own diagnostics and supports comment-preserving edits.
+ * @example
+ * ```ts
+ * const document = parseDocument("a: 1 # keep me");
+ *
+ * document.setIn(["b", "c"], 2);
+ * document.toString(); // "a: 1 # keep me\nb:\n  c: 2\n"
+ * ```
+ */
+export const parseDocument = (source: string, options?: ParseOptions): YAMLDocument => {
+    const { documents, ranges } = loadDocuments(source, options);
+
+    return new YAMLDocument(source, documents[0] ?? EMPTY_DOCUMENT, ranges);
+};
+
+/**
+ * Parse every document of a stream without throwing. A malformed document
+ * reports its error and does not stop the ones after it.
+ */
+export const parseAllDocuments = (source: string, options?: ParseOptions): YAMLDocument[] => {
+    const { documents, ranges } = loadDocuments(source, options);
+
+    return documents.map((document) => new YAMLDocument(source, document, ranges));
+};
+
+export type { DuplicateKeyBehavior, ParseOptions, StringifyOptions } from "./types";
