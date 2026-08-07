@@ -3,7 +3,7 @@ import type { SmsPayload } from "../../types";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { isJwtTimeValid, sha256Hex, verifyHs256Jwt } from "../jwt";
 import { smsReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const AUTH_HEADER = "Authorization";
@@ -56,7 +56,7 @@ const parseVonage = (body: string): InboundMessage | undefined => {
 /**
  * Options for the Vonage inbound receiver.
  */
-export interface VonageInboundOptions extends InboundChannelOptions {
+export interface VonageReceiverOptions extends ReceiverOptions {
     /** The outbound Vonage SMS provider used by `context.reply()`. Optional. */
     provider?: Provider<unknown, SmsPayload>;
     /** The account signature secret (verifies the `Authorization: Bearer` JWT). */
@@ -70,10 +70,10 @@ export interface VonageInboundOptions extends InboundChannelOptions {
  * and `payload_hash` are checked, along with the token's validity window, before dispatch.
  *
  * Vonage has no synchronous reply; acknowledge and answer via `context.reply()`.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createVonageInbound = (options: VonageInboundOptions): InboundChannel => {
+export const createVonageReceiver = (options: VonageReceiverOptions): Receiver => {
     return {
         channel: "sms",
         handle: async (request: Request): Promise<Response> => {

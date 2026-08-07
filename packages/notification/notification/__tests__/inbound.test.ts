@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { createInboundRouter } from "../src/inbound/router";
 import type { InboundMessage } from "../src/inbound/types";
-import { createDiscordInbound } from "../src/providers/chat/discord";
-import { createMsTeamsInbound } from "../src/providers/chat/msteams";
-import { createSlackInbound } from "../src/providers/chat/slack";
-import { createTelegramInbound } from "../src/providers/chat/telegram";
+import { createDiscordReceiver } from "../src/providers/chat/discord";
+import { createMsTeamsReceiver } from "../src/providers/chat/msteams";
+import { createSlackReceiver } from "../src/providers/chat/slack";
+import { createTelegramReceiver } from "../src/providers/chat/telegram";
 import { mockProvider } from "../src/providers/mock/provider";
-import { createMessageBirdInbound } from "../src/providers/sms/messagebird";
-import { createTelnyxInbound } from "../src/providers/sms/telnyx";
-import { createTwilioInbound } from "../src/providers/sms/twilio";
-import { createVonageInbound } from "../src/providers/sms/vonage";
+import { createMessageBirdReceiver } from "../src/providers/sms/messagebird";
+import { createTelnyxReceiver } from "../src/providers/sms/telnyx";
+import { createTwilioReceiver } from "../src/providers/sms/twilio";
+import { createVonageReceiver } from "../src/providers/sms/vonage";
 
 const encoder = new TextEncoder();
 
@@ -48,7 +48,7 @@ const signJwt = async (secret: string, claims: Record<string, unknown>): Promise
 
 const inFiveMinutes = (): number => Math.floor(Date.now() / 1000) + 300;
 
-describe(createSlackInbound, () => {
+describe(createSlackReceiver, () => {
     const secret = "slack-signing-secret";
 
     const signedRequest = async (body: string, contentType: string): Promise<Request> => {
@@ -65,7 +65,7 @@ describe(createSlackInbound, () => {
     it("answers the url_verification handshake with the challenge", async () => {
         expect.assertions(2);
 
-        const channel = createSlackInbound({ onMessage: () => undefined, signingSecret: secret });
+        const channel = createSlackReceiver({ onMessage: () => undefined, signingSecret: secret });
         const body = JSON.stringify({ challenge: "abc123", type: "url_verification" });
         const response = await channel.handle(await signedRequest(body, "application/json"));
 
@@ -77,7 +77,7 @@ describe(createSlackInbound, () => {
         expect.assertions(4);
 
         let received: InboundMessage | undefined;
-        const channel = createSlackInbound({
+        const channel = createSlackReceiver({
             onMessage: (message) => {
                 received = message;
             },
@@ -99,7 +99,7 @@ describe(createSlackInbound, () => {
     it("serialises a slash-command reply into the JSON response", async () => {
         expect.assertions(2);
 
-        const channel = createSlackInbound({
+        const channel = createSlackReceiver({
             onMessage: () => {
                 return { text: "pong" };
             },
@@ -116,7 +116,7 @@ describe(createSlackInbound, () => {
         expect.assertions(3);
 
         const provider = mockProvider({ channel: "chat", id: "slack" });
-        const channel = createSlackInbound({
+        const channel = createSlackReceiver({
             onMessage: async (_message, context) => {
                 await context.reply("hello back");
             },
@@ -139,7 +139,7 @@ describe(createSlackInbound, () => {
     it("rejects a tampered signature with 401", async () => {
         expect.assertions(1);
 
-        const channel = createSlackInbound({ onMessage: () => undefined, signingSecret: secret });
+        const channel = createSlackReceiver({ onMessage: () => undefined, signingSecret: secret });
         const request = new Request("https://example.com/webhooks/slack", {
             body: "{}",
             headers: { "content-type": "application/json", "x-slack-request-timestamp": String(Math.floor(Date.now() / 1000)), "x-slack-signature": "v0=deadbeef" },
@@ -152,7 +152,7 @@ describe(createSlackInbound, () => {
     });
 });
 
-describe(createDiscordInbound, () => {
+describe(createDiscordReceiver, () => {
     const generateKey = async (): Promise<CryptoKeyPair> =>
         await globalThis.crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]);
 
@@ -173,7 +173,7 @@ describe(createDiscordInbound, () => {
         expect.assertions(2);
 
         const keyPair = await generateKey();
-        const channel = createDiscordInbound({ onMessage: () => undefined, publicKey: await publicKeyHex(keyPair) });
+        const channel = createDiscordReceiver({ onMessage: () => undefined, publicKey: await publicKeyHex(keyPair) });
         const response = await channel.handle(await signedRequest(keyPair, JSON.stringify({ type: 1 })));
 
         expect(response.status).toBe(200);
@@ -185,7 +185,7 @@ describe(createDiscordInbound, () => {
 
         const keyPair = await generateKey();
         let received: InboundMessage | undefined;
-        const channel = createDiscordInbound({
+        const channel = createDiscordReceiver({
             onMessage: (message) => {
                 received = message;
 
@@ -206,14 +206,14 @@ describe(createDiscordInbound, () => {
 
         const keyPair = await generateKey();
         const otherKey = await generateKey();
-        const channel = createDiscordInbound({ onMessage: () => undefined, publicKey: await publicKeyHex(otherKey) });
+        const channel = createDiscordReceiver({ onMessage: () => undefined, publicKey: await publicKeyHex(otherKey) });
         const response = await channel.handle(await signedRequest(keyPair, JSON.stringify({ type: 1 })));
 
         expect(response.status).toBe(401);
     });
 });
 
-describe(createTelegramInbound, () => {
+describe(createTelegramReceiver, () => {
     const secretToken = "telegram-secret";
 
     const request = (body: unknown, token?: string): Request =>
@@ -227,7 +227,7 @@ describe(createTelegramInbound, () => {
         expect.assertions(3);
 
         let received: InboundMessage | undefined;
-        const channel = createTelegramInbound({
+        const channel = createTelegramReceiver({
             onMessage: (message) => {
                 received = message;
 
@@ -247,7 +247,7 @@ describe(createTelegramInbound, () => {
     it("rejects a mismatched secret token with 401", async () => {
         expect.assertions(1);
 
-        const channel = createTelegramInbound({ onMessage: () => undefined, secretToken });
+        const channel = createTelegramReceiver({ onMessage: () => undefined, secretToken });
         const response = await channel.handle(request({ update_id: 1 }, "wrong"));
 
         expect(response.status).toBe(401);
@@ -257,7 +257,7 @@ describe(createTelegramInbound, () => {
         expect.assertions(2);
 
         let received: InboundMessage | undefined;
-        const channel = createTelegramInbound({
+        const channel = createTelegramReceiver({
             onMessage: (message) => {
                 received = message;
             },
@@ -271,7 +271,7 @@ describe(createTelegramInbound, () => {
     });
 });
 
-describe(createTwilioInbound, () => {
+describe(createTwilioReceiver, () => {
     const authToken = "twilio-auth-token";
     const url = "https://example.com/webhooks/twilio";
 
@@ -293,7 +293,7 @@ describe(createTwilioInbound, () => {
         expect.assertions(4);
 
         let received: InboundMessage | undefined;
-        const channel = createTwilioInbound({
+        const channel = createTwilioReceiver({
             authToken,
             onMessage: (message) => {
                 received = message;
@@ -313,7 +313,7 @@ describe(createTwilioInbound, () => {
         expect.assertions(2);
 
         let received: InboundMessage | undefined;
-        const channel = createTwilioInbound({
+        const channel = createTwilioReceiver({
             authToken,
             onMessage: (message) => {
                 received = message;
@@ -330,7 +330,7 @@ describe(createTwilioInbound, () => {
         expect.assertions(1);
 
         const provider = mockProvider({ channel: "sms", id: "twilio" });
-        const channel = createTwilioInbound({
+        const channel = createTwilioReceiver({
             authToken,
             onMessage: async (_message, context) => {
                 await context.reply("got it");
@@ -346,7 +346,7 @@ describe(createTwilioInbound, () => {
     it("rejects context.reply when no provider is configured", async () => {
         expect.assertions(1);
 
-        const channel = createTwilioInbound({
+        const channel = createTwilioReceiver({
             authToken,
             onMessage: async (_message, context) => {
                 await context.reply("nope");
@@ -359,7 +359,7 @@ describe(createTwilioInbound, () => {
     });
 });
 
-describe(createMsTeamsInbound, () => {
+describe(createMsTeamsReceiver, () => {
     const securityToken = btoa("teams-security-token-value-0123456789");
 
     const signedRequest = async (activity: unknown): Promise<Request> => {
@@ -378,7 +378,7 @@ describe(createMsTeamsInbound, () => {
         expect.assertions(3);
 
         let received: InboundMessage | undefined;
-        const channel = createMsTeamsInbound({
+        const channel = createMsTeamsReceiver({
             onMessage: (message) => {
                 received = message;
 
@@ -396,7 +396,7 @@ describe(createMsTeamsInbound, () => {
     it("rejects a tampered HMAC with 401", async () => {
         expect.assertions(1);
 
-        const channel = createMsTeamsInbound({ onMessage: () => undefined, securityToken });
+        const channel = createMsTeamsReceiver({ onMessage: () => undefined, securityToken });
         const request = new Request("https://example.com/webhooks/teams", {
             body: JSON.stringify({ text: "hi", type: "message" }),
             headers: { authorization: "HMAC bm90LXZhbGlk", "content-type": "application/json" },
@@ -408,7 +408,7 @@ describe(createMsTeamsInbound, () => {
     });
 });
 
-describe(createTelnyxInbound, () => {
+describe(createTelnyxReceiver, () => {
     const generateKey = async (): Promise<CryptoKeyPair> =>
         await globalThis.crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]);
 
@@ -432,7 +432,7 @@ describe(createTelnyxInbound, () => {
         const keyPair = await generateKey();
         const provider = mockProvider({ channel: "sms", id: "telnyx" });
         let received: InboundMessage | undefined;
-        const channel = createTelnyxInbound({
+        const channel = createTelnyxReceiver({
             onMessage: async (message, context) => {
                 received = message;
 
@@ -456,7 +456,7 @@ describe(createTelnyxInbound, () => {
 
         const keyPair = await generateKey();
         const otherKey = await generateKey();
-        const channel = createTelnyxInbound({ onMessage: () => undefined, publicKey: await publicKeyBase64(otherKey) });
+        const channel = createTelnyxReceiver({ onMessage: () => undefined, publicKey: await publicKeyBase64(otherKey) });
         const payload = { data: { event_type: "message.received", payload: { from: { phone_number: "+1" }, id: "m", text: "x", to: [{ phone_number: "+2" }] } } };
         const response = await channel.handle(await signedRequest(keyPair, payload));
 
@@ -464,7 +464,7 @@ describe(createTelnyxInbound, () => {
     });
 });
 
-describe(createMessageBirdInbound, () => {
+describe(createMessageBirdReceiver, () => {
     const signingKey = "messagebird-signing-key";
     const url = "https://example.com/webhooks/messagebird";
 
@@ -475,7 +475,7 @@ describe(createMessageBirdInbound, () => {
         const token = await signJwt(signingKey, { exp: inFiveMinutes(), iss: "MessageBird", jti: "j1", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
         const provider = mockProvider({ channel: "sms", id: "messagebird" });
         let received: InboundMessage | undefined;
-        const channel = createMessageBirdInbound({
+        const channel = createMessageBirdReceiver({
             onMessage: async (message, context) => {
                 received = message;
 
@@ -497,14 +497,14 @@ describe(createMessageBirdInbound, () => {
 
         const body = JSON.stringify({ id: "mb2", originator: "+1", recipient: "+2" });
         const token = await signJwt("wrong-key", { exp: inFiveMinutes(), iss: "MessageBird", jti: "j2", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
-        const channel = createMessageBirdInbound({ onMessage: () => undefined, signingKey, url });
+        const channel = createMessageBirdReceiver({ onMessage: () => undefined, signingKey, url });
         const response = await channel.handle(new Request(url, { body, headers: { "messagebird-signature-jwt": token }, method: "POST" }));
 
         expect(response.status).toBe(401);
     });
 });
 
-describe(createVonageInbound, () => {
+describe(createVonageReceiver, () => {
     const signatureSecret = "vonage-signature-secret";
     const url = "https://example.com/webhooks/vonage";
 
@@ -515,7 +515,7 @@ describe(createVonageInbound, () => {
         const token = await signJwt(signatureSecret, { exp: inFiveMinutes(), payload_hash: await sha256Hex(body) });
         const provider = mockProvider({ channel: "sms", id: "vonage" });
         let received: InboundMessage | undefined;
-        const channel = createVonageInbound({
+        const channel = createVonageReceiver({
             onMessage: async (message, context) => {
                 received = message;
 
@@ -536,7 +536,7 @@ describe(createVonageInbound, () => {
 
         const body = JSON.stringify({ from: "1", text: "original", to: "2" });
         const token = await signJwt(signatureSecret, { exp: inFiveMinutes(), payload_hash: await sha256Hex(body) });
-        const channel = createVonageInbound({ onMessage: () => undefined, signatureSecret });
+        const channel = createVonageReceiver({ onMessage: () => undefined, signatureSecret });
         const tampered = JSON.stringify({ from: "1", text: "changed", to: "2" });
         const response = await channel.handle(new Request(url, { body: tampered, headers: { authorization: `Bearer ${token}` }, method: "POST" }));
 
@@ -548,7 +548,7 @@ describe(createInboundRouter, () => {
     it("dispatches by path and 404s unknown paths", async () => {
         expect.assertions(2);
 
-        const channel = createTelegramInbound({ onMessage: () => undefined });
+        const channel = createTelegramReceiver({ onMessage: () => undefined });
         const router = createInboundRouter({ "/webhooks/telegram": channel });
 
         const ok = await router(new Request("https://example.com/webhooks/telegram", { body: JSON.stringify({ update_id: 1 }), method: "POST" }));

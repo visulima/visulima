@@ -4,7 +4,7 @@ import type { ChatPayload } from "../../types";
 import { hmacBase64, timingSafeEqual } from "../../webhooks/crypto";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { chatReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
 const AUTH_HEADER = "Authorization";
@@ -45,7 +45,7 @@ const parseTeams = (body: string): InboundMessage | undefined => {
 /**
  * Options for the Microsoft Teams inbound receiver (outgoing webhook).
  */
-export interface MsTeamsInboundOptions extends InboundChannelOptions {
+export interface MsTeamsReceiverOptions extends ReceiverOptions {
     /** The outbound Teams chat provider used by `context.reply()`. Optional. */
     provider?: Provider<unknown, ChatPayload>;
 
@@ -64,10 +64,10 @@ export interface MsTeamsInboundOptions extends InboundChannelOptions {
  *
  * A handler may return an {@link ../types.InboundReply}; its `text` is serialised into a Bot
  * Framework message activity in the HTTP response, which Teams renders as the reply.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createMsTeamsInbound = (options: MsTeamsInboundOptions): InboundChannel => {
+export const createMsTeamsReceiver = (options: MsTeamsReceiverOptions): Receiver => {
     return {
         channel: "chat",
         handle: async (request: Request): Promise<Response> => {

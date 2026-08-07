@@ -3,7 +3,7 @@ import type { SmsPayload } from "../../types";
 import { twilioWebhook } from "../../webhooks/twilio";
 import { getHeader } from "../../webhooks/types";
 import { smsReply } from "../reply";
-import type { InboundAttachment, InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundAttachment, InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asReply, headersToRecord, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "X-Twilio-Signature";
@@ -75,7 +75,7 @@ const parseTwilio = (parameters: URLSearchParams): InboundMessage => {
 /**
  * Options for the Twilio inbound receiver (SMS and WhatsApp).
  */
-export interface TwilioInboundOptions extends InboundChannelOptions {
+export interface TwilioReceiverOptions extends ReceiverOptions {
     /** The Twilio auth token, used to verify `X-Twilio-Signature`. */
     authToken: string;
 
@@ -100,10 +100,10 @@ export interface TwilioInboundOptions extends InboundChannelOptions {
  *
  * A handler may return an {@link ../types.InboundReply}; its `text` is serialised into a TwiML
  * message element. Returning nothing acknowledges with an empty TwiML document.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createTwilioInbound = (options: TwilioInboundOptions): InboundChannel => {
+export const createTwilioReceiver = (options: TwilioReceiverOptions): Receiver => {
     return {
         channel: "sms",
         handle: async (request: Request): Promise<Response> => {

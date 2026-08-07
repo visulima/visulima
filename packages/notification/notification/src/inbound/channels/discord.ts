@@ -3,7 +3,7 @@ import type { ChatPayload } from "../../types";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { verifyEd25519 } from "../ed25519";
 import { chatReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "X-Signature-Ed25519";
@@ -75,7 +75,7 @@ const parseDiscord = (payload: Record<string, unknown>): InboundMessage | undefi
 /**
  * Options for the Discord inbound receiver.
  */
-export interface DiscordInboundOptions extends InboundChannelOptions {
+export interface DiscordReceiverOptions extends ReceiverOptions {
     /**
      * The outbound Discord chat provider used by `context.reply()`, which posts a message to
      * the originating channel (use this instead of the deferred HTTP response). Optional.
@@ -93,10 +93,10 @@ export interface DiscordInboundOptions extends InboundChannelOptions {
  * A handler may return an {@link ../types.InboundReply} to respond with a channel message
  * (`CHANNEL_MESSAGE_WITH_SOURCE`); returning nothing defers the interaction
  * (`DEFERRED_CHANNEL_MESSAGE`), after which you follow up through the Discord API.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createDiscordInbound = (options: DiscordInboundOptions): InboundChannel => {
+export const createDiscordReceiver = (options: DiscordReceiverOptions): Receiver => {
     return {
         channel: "chat",
         handle: async (request: Request): Promise<Response> => {

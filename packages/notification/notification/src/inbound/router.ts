@@ -1,4 +1,4 @@
-import type { InboundChannel } from "./types";
+import type { Receiver } from "./types";
 import { jsonResponse } from "./utils";
 
 /**
@@ -10,7 +10,7 @@ import { jsonResponse } from "./utils";
 export type FetchHandler = (request: Request) => Promise<Response>;
 
 /**
- * Mounts several {@link InboundChannel}s behind a single fetch handler, dispatching by URL
+ * Mounts several {@link Receiver}s behind a single fetch handler, dispatching by URL
  * path. Each key is matched against the request's path (by exact match or suffix, so a
  * mount base path does not need to be known ahead of time); unmatched paths get a `404`.
  *
@@ -19,7 +19,7 @@ export type FetchHandler = (request: Request) => Promise<Response>;
  * @param routes A map of path (e.g. `"/webhooks/slack"`) to channel receiver.
  * @returns A fetch handler dispatching to the matching channel.
  */
-export const createInboundRouter = (routes: Record<string, InboundChannel>): FetchHandler => {
+export const createInboundRouter = (routes: Record<string, Receiver>): FetchHandler => {
     const entries = Object.entries(routes);
 
     return async (request: Request): Promise<Response> => {

@@ -3,7 +3,7 @@ import type { ChatPayload } from "../../types";
 import { timingSafeEqual } from "../../webhooks/crypto";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { chatReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asId, asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
 const SECRET_HEADER = "X-Telegram-Bot-Api-Secret-Token";
@@ -106,7 +106,7 @@ const parseTelegram = (update: Record<string, unknown>): InboundMessage | undefi
 /**
  * Options for the Telegram inbound receiver.
  */
-export interface TelegramInboundOptions extends InboundChannelOptions {
+export interface TelegramReceiverOptions extends ReceiverOptions {
     /** The outbound Telegram chat provider used by `context.reply()`. Optional. */
     provider?: Provider<unknown, ChatPayload>;
 
@@ -120,16 +120,16 @@ export interface TelegramInboundOptions extends InboundChannelOptions {
 
 /**
  * Creates a Telegram inbound receiver for bot webhook updates. When {@link
- * TelegramInboundOptions.secretToken} is set, the `X-Telegram-Bot-Api-Secret-Token` header is
+ * TelegramReceiverOptions.secretToken} is set, the `X-Telegram-Bot-Api-Secret-Token` header is
  * verified before dispatch.
  *
  * A handler may return an {@link ../types.InboundReply}; it is serialised into a Telegram
  * `sendMessage` method call in the response body (`chat_id` taken from the originating chat),
  * which Telegram executes as the reply. Return `raw` to invoke a different method.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createTelegramInbound = (options: TelegramInboundOptions): InboundChannel => {
+export const createTelegramReceiver = (options: TelegramReceiverOptions): Receiver => {
     return {
         channel: "chat",
         handle: async (request: Request): Promise<Response> => {

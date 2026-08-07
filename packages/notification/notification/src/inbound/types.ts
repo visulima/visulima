@@ -159,7 +159,7 @@ export type InboundErrorReason = "invalid_body" | "invalid_signature" | "missing
 /**
  * Options shared by every channel receiver factory.
  */
-export interface InboundChannelOptions {
+export interface ReceiverOptions {
     /**
      * Called when a request fails verification or cannot be parsed, before the handler runs.
      * Return a {@link Response} to override the default (`401` for signature failures,
@@ -179,7 +179,7 @@ export interface InboundChannelOptions {
  * {@link ../providers/provider.Provider Provider}. It verifies, parses and dispatches
  * inbound webhook requests through a single web-standard entry point.
  */
-export interface InboundChannel {
+export interface Receiver {
     /** The logical channel this receiver handles. */
     readonly channel: ChannelType;
 
@@ -193,3 +193,8 @@ export interface InboundChannel {
     /** The provider id this receiver handles. */
     readonly provider: string;
 }
+
+/**
+ * @deprecated Renamed to {@link Receiver}. Kept as an alias for one major; removed in the next.
+ */
+export type InboundChannel = Receiver;

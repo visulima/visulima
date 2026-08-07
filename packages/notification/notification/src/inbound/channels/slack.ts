@@ -3,7 +3,7 @@ import type { ChatPayload } from "../../types";
 import { slackWebhook } from "../../webhooks/slack";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { chatReply } from "../reply";
-import type { InboundChannel, InboundChannelOptions, InboundMessage } from "../types";
+import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
 import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "X-Slack-Signature";
@@ -111,7 +111,7 @@ const parseSlack = (body: string, contentType: string): InboundMessage | undefin
 /**
  * Options for the Slack inbound receiver.
  */
-export interface SlackInboundOptions extends InboundChannelOptions {
+export interface SlackReceiverOptions extends ReceiverOptions {
     /**
      * The outbound Slack chat provider used by `context.reply()` (and for replying to Events
      * API deliveries, which cannot answer in the HTTP response). Optional.
@@ -129,10 +129,10 @@ export interface SlackInboundOptions extends InboundChannelOptions {
  * Slash-command and interaction handlers may return an {@link ../types.InboundReply} to post
  * a synchronous message in the HTTP response; Events API deliveries are acknowledged with
  * `200` and should be replied to through the outbound Slack provider.
- * @param options The receiver options.
+ * @param options Verification config, the message handler and an optional reply provider.
  * @returns The inbound channel.
  */
-export const createSlackInbound = (options: SlackInboundOptions): InboundChannel => {
+export const createSlackReceiver = (options: SlackReceiverOptions): Receiver => {
     return {
         channel: "chat",
         handle: async (request: Request): Promise<Response> => {
