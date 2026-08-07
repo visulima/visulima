@@ -23,6 +23,18 @@ If you need to read or write YAML files, install the `@visulima/yaml` peer depen
 npm install @visulima/yaml
 ```
 
+#### Migrating from the `yaml` peer dependency
+
+The YAML peer changed from `yaml` to `@visulima/yaml`. Parsing is otherwise
+identical — including which malformed documents are rejected — but two results
+differ:
+
+- **Merge keys are resolved.** `<<: *base` splices the referenced mapping in,
+  where `yaml` returned a literal `<<` key unless you passed `merge: true`. This
+  matches `js-yaml`, and is what most configuration files assume.
+- **`!!binary` stays a base64 string** rather than becoming a `Buffer`. Decode it
+  yourself if you need the bytes.
+
 After installing `@visulima/yaml`, you can use YAML functions:
 
 ```typescript
