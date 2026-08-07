@@ -34,6 +34,7 @@ import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
 import { resolveExplicitTag } from "../schema/resolve-scalar";
 import { INVALID_SCALAR } from "../schema/schemas";
+import { resolveImplicitTag } from "../schema/tags";
 import type { ParseOptions } from "../types";
 import type { MappingRanges } from "./ranges";
 import { readBlockScalar, readDoubleQuotedScalar, readPlainScalar, readSingleQuotedScalar } from "./scalars";
@@ -995,6 +996,18 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
     // children are parsed, so that a self-reference like `&a [ *a ]` resolves.)
     if (state.tag === "?") {
         if (state.kind === "scalar" && typeof state.result === "string") {
+            const implicit = resolveImplicitTag(state.tags, state.result);
+
+            if (implicit) {
+                state.result = implicit.value;
+
+                if (state.anchor !== null) {
+                    state.anchorMap.set(state.anchor, state.result);
+                }
+
+                return state.tag !== null || state.anchor !== null || hasContent;
+            }
+
             const resolved = state.resolveScalar(state.result);
 
             // Only the `json` schema rejects: any scalar outside the JSON
@@ -1006,20 +1019,29 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
             state.result = resolved;
         }
     } else if (
-        state.tag !== null
-        && state.tag !== "!" // A scalar node, or an explicit tag on empty content (`!!str` with
+        // A scalar node, or an explicit tag on empty content (`!!str` with
         // nothing after it, common in flow: `{ a: !!str, ... }`). In the empty
         // case the node has no kind yet — treat the content as the empty string
         // so `!!str` → "" and `!!null` → null, matching the core schema.
+        state.tag !== null
+        && state.tag !== "!"
         && (state.kind === "scalar" || (!hasContent && state.kind === null))
     ) {
         const raw = typeof state.result === "string" ? state.result : "";
-        const applied = resolveExplicitTag(state.tag, raw);
+        // A custom tag takes precedence over the core table for the same name,
+        // so a caller can redefine `!!int` if they mean to.
+        const custom = state.tags?.byTag.get(state.tag);
 
-        if (applied.status === "ok") {
-            state.result = applied.value;
-        } else if (applied.status === "invalid") {
-            throwError(state, `unacceptable value "${raw}" for the "${state.tag}" tag`);
+        if (custom) {
+            state.result = custom.resolve(raw);
+        } else {
+            const applied = resolveExplicitTag(state.tag, raw);
+
+            if (applied.status === "ok") {
+                state.result = applied.value;
+            } else if (applied.status === "invalid") {
+                throwError(state, `unacceptable value "${raw}" for the "${state.tag}" tag`);
+            }
         }
     }
 

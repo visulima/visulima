@@ -1,5 +1,6 @@
 import type { YAMLWarning } from "./errors";
 import type { SchemaName } from "./schema/schemas";
+import type { CustomTags } from "./schema/tags";
 
 /**
  * How duplicate keys in a mapping are handled.
@@ -12,6 +13,13 @@ export type DuplicateKeyBehavior = "error" | "ignore" | "overwrite";
 
 /** Options accepted by `parse`. */
 export interface ParseOptions {
+    /**
+     * Extra scalar types. Each tag says how to recognise, resolve and render
+     * one type; set `default` with a `test` pattern to have it participate in
+     * implicit resolution as well as explicit `!!tag` use.
+     */
+    customTags?: CustomTags;
+
     /**
      * How to treat repeated keys inside a single mapping.
      * @default "error"
@@ -137,6 +145,12 @@ export interface StringifyOptions {
      * @default "any"
      */
     collectionStyle?: "any" | "block" | "flow";
+
+    /**
+     * Extra scalar types used when serializing: a value claimed by a tag's
+     * `identify` is written with that tag.
+     */
+    customTags?: CustomTags;
 
     /**
      * Emit an explicit document-start marker (`---`) before the document.

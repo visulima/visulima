@@ -2,6 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import { parse, stringify, YAMLParseError } from "../src";
 
+const HEX_RE = /^0h[\da-f]+$/i;
+
+/** A stand-in custom scalar type used by the `customTags` cases. */
+class Hex {
+    public readonly value: number;
+
+    public constructor(value: number) {
+        this.value = value;
+    }
+}
+
 /**
  * Scalar resolution per schema. Expectations are cross-checked against the
  * `yaml` package, which is the reference for the non-core schemas.
@@ -192,5 +203,55 @@ describe("stringify options", () => {
         // The key stays plain; only the value needed quoting. Matches `yaml`.
         expect(stringify({ a: "x: y" }, { singleQuote: true })).toBe("a: 'x: y'\n");
         expect(stringify({ a: "plain" }, { singleQuote: true })).toBe("a: plain\n");
+    });
+});
+
+describe("customTags", () => {
+    const hex = {
+        default: true,
+        identify: (value: unknown): boolean => value instanceof Hex,
+        resolve: (raw: string): unknown => new Hex(Number.parseInt(raw.slice(2), 16)),
+        stringify: (value: unknown): string => `0h${(value as Hex).value.toString(16)}`,
+        tag: "!!hex",
+        test: HEX_RE,
+    };
+
+    it("resolves an explicit custom tag", () => {
+        expect.assertions(1);
+
+        expect(parse("a: !!hex 0hff", { customTags: [hex] })).toStrictEqual({ a: new Hex(255) });
+    });
+
+    it("resolves implicitly when default and test are set", () => {
+        expect.assertions(2);
+
+        expect(parse("a: 0hff\nb: plain", { customTags: [hex] })).toStrictEqual({ a: new Hex(255), b: "plain" });
+        // Without the tag registered the scalar stays a plain string.
+        expect(parse("a: 0hff")).toStrictEqual({ a: "0hff" });
+    });
+
+    it("accepts a local tag and the function form", () => {
+        expect.assertions(2);
+
+        const host = {
+            resolve: (raw: string): unknown => {
+                return { host: raw };
+            },
+            tag: "!host",
+        };
+
+        expect(parse("a: !host example.test", { customTags: [host] })).toStrictEqual({ a: { host: "example.test" } });
+        expect(parse("a: 0hff", { customTags: () => [hex] })).toStrictEqual({ a: new Hex(255) });
+    });
+
+    it("round-trips through stringify", () => {
+        expect.assertions(2);
+
+        const value = { a: new Hex(255), b: 1, c: [new Hex(16)] };
+        const text = stringify(value, { customTags: [hex] });
+
+        // A tagged value renders inline even though it is a JS object.
+        expect(text).toBe("a: !!hex 0hff\nb: 1\nc:\n  - !!hex 0h10\n");
+        expect(parse(text, { customTags: [hex] })).toStrictEqual(value);
     });
 });

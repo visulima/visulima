@@ -13,11 +13,14 @@
 
 import { YAMLStringifyError } from "../errors";
 import { resolvesToNonString } from "../schema/resolve-scalar";
+import type { ScalarTag } from "../schema/tags";
+import { stringifyCustomTag } from "../schema/tags";
 import type { StringifyOptions } from "../types";
 
 interface DumpContext {
     blockQuote: "folded" | "literal" | boolean;
     collectionStyle: "any" | "block" | "flow";
+    customTags?: ScalarTag[];
     falseStr: string;
     flowCollectionPadding: boolean;
     flowLevel: number;
@@ -382,6 +385,12 @@ const applyReplacer = (context: DumpContext, key: string, value: unknown): unkno
 };
 
 const writeFlow = (value: unknown, level: number, context: DumpContext): string => {
+    const tagged = stringifyCustomTag(context.customTags, value);
+
+    if (tagged !== undefined) {
+        return tagged;
+    }
+
     if (Array.isArray(value)) {
         // Flow output needs the same cycle guard as the block writers: a parsed
         // document can legitimately contain shared/self-referential nodes
@@ -445,6 +454,12 @@ const writeLeaf = (value: unknown, level: number, context: DumpContext, inFlow: 
 };
 
 const writeNode = (value: unknown, level: number, context: DumpContext): string => {
+    const tagged = stringifyCustomTag(context.customTags, value);
+
+    if (tagged !== undefined) {
+        return tagged;
+    }
+
     if (Array.isArray(value)) {
         if (value.length === 0) {
             return "[]";
@@ -510,7 +525,9 @@ const rendersAsFlow = (level: number, context: DumpContext): boolean => {
  * emptied into an inline `[]` / `{}`.
  */
 const writeChild = (item: unknown, level: number, context: DumpContext): { block: boolean; text: string } => {
-    const isCollection = isBlockCollection(item);
+    // A value claimed by a custom tag renders as an inline scalar however its
+    // JS shape looks — a class instance is still `!tag text`, not a mapping.
+    const isCollection = isBlockCollection(item) && stringifyCustomTag(context.customTags, item) === undefined;
     const text = writeNode(item, isCollection ? level + 1 : level, context);
     const block = isCollection && !rendersAsFlow(level + 1, context) && text !== "[]" && text !== "{}";
 
@@ -583,6 +600,7 @@ export const dump = (value: unknown, options: StringifyOptions = {}): string => 
     const context: DumpContext = {
         blockQuote: options.blockQuote ?? true,
         collectionStyle: options.collectionStyle ?? "any",
+        customTags: typeof options.customTags === "function" ? options.customTags([]) : options.customTags,
         falseStr: options.falseStr ?? "false",
         flowCollectionPadding: options.flowCollectionPadding ?? true,
         flowLevel: options.flowLevel ?? -1,

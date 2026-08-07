@@ -89,6 +89,7 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 | `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"`           | `"error"` | How repeated keys within a mapping are handled.                                          |
 | `schema`                | `"core" \| "failsafe" \| "json" \| "yaml-1.1"` | `"core"`  | Scalar-resolution rules (see below).                                                     |
 | `version`               | `"1.1" \| "1.2"`                               | `"1.2"`   | YAML version assumed without a `%YAML` directive. `"1.1"` selects the `yaml-1.1` schema. |
+| `customTags`            | `ScalarTag[] \| (tags) => ScalarTag[]`         | —         | Extra scalar types (see below).                                                          |
 | `reviver`               | `(key, value) => unknown`                      | —         | Applied to every pair after parsing, like `JSON.parse`. Return `undefined` to drop.      |
 | `merge`                 | `boolean`                                      | `true`    | Resolve `<<` merge keys.                                                                 |
 | `mapAsMap`              | `boolean`                                      | `false`   | Build mappings as `Map`, keeping complex keys native.                                    |

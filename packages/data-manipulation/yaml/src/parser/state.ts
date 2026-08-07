@@ -16,6 +16,8 @@
 import { YAMLParseError, YAMLWarning } from "../errors";
 import type { ScalarResolver } from "../schema/schemas";
 import { selectScalarResolver } from "../schema/schemas";
+import type { TagRegistry } from "../schema/tags";
+import { buildTagRegistry } from "../schema/tags";
 import type { ParseOptions } from "../types";
 import type { MappingRanges } from "./ranges";
 
@@ -77,6 +79,9 @@ class State {
      */
     public readonly resolveScalar: ScalarResolver;
 
+    /** Custom scalar tags for this parse, or undefined when none were given. */
+    public readonly tags: TagRegistry | undefined;
+
     public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
 
     public constructor(input: string, options: ParseOptions) {
@@ -96,6 +101,7 @@ class State {
             strict: options.strict ?? true,
         };
         this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
+        this.tags = buildTagRegistry(this.options.customTags);
     }
 }
 

@@ -149,6 +149,7 @@ Parse the first document of a YAML string into a native JavaScript value.
 | `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"`           | `"error"` | How repeated keys within a mapping are handled.                                          |
 | `schema`                | `"core" \| "failsafe" \| "json" \| "yaml-1.1"` | `"core"`  | Scalar-resolution rules (see below).                                                     |
 | `version`               | `"1.1" \| "1.2"`                               | `"1.2"`   | YAML version assumed without a `%YAML` directive. `"1.1"` selects the `yaml-1.1` schema. |
+| `customTags`            | `ScalarTag[] \| (tags) => ScalarTag[]`         | —         | Extra scalar types (see below).                                                          |
 | `reviver`               | `(key, value) => unknown`                      | —         | Applied to every pair after parsing, like `JSON.parse`. Return `undefined` to drop.      |
 | `merge`                 | `boolean`                                      | `true`    | Resolve `<<` merge keys.                                                                 |
 | `mapAsMap`              | `boolean`                                      | `false`   | Build mappings as `Map`, keeping complex keys native.                                    |
@@ -159,6 +160,34 @@ Parse the first document of a YAML string into a native JavaScript value.
 | `preventProtoPollution` | `boolean`                                      | `true`    | Make a `__proto__` key an own property instead of touching the prototype.                |
 | `strict`                | `boolean`                                      | `true`\*  | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency.            |
 | `onWarning`             | `(warning: YAMLWarning) => void`               | —         | Callback for non-fatal notices.                                                          |
+
+#### Custom tags
+
+A tag teaches the parser one extra scalar type. Give it a `test` and
+`default: true` to resolve implicitly as well as via an explicit `!!tag`:
+
+```ts
+class Hex {
+    constructor(readonly value: number) {}
+}
+
+const hex = {
+    tag: "!!hex",
+    test: /^0h[\da-f]+$/i,
+    default: true,
+    resolve: (raw) => new Hex(Number.parseInt(raw.slice(2), 16)),
+    identify: (value) => value instanceof Hex,
+    stringify: (value) => `0h${value.value.toString(16)}`,
+};
+
+parse("a: 0hff", { customTags: [hex] }); // => { a: Hex(255) }
+parse("a: !!hex 0hff", { customTags: [hex] }); // => { a: Hex(255) }
+stringify({ a: new Hex(255) }, { customTags: [hex] }); // => "a: !!hex 0hff\n"
+```
+
+`resolve` receives the raw text and `stringify` the value — this parser builds
+native values directly, so there are no node wrappers to unpack. Collection tags
+are not supported for the same reason.
 
 #### Schemas
 
