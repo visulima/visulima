@@ -309,7 +309,8 @@ export default { fetch: (request: Request) => slack.handle(request) };
 
 Receivers: `createSlackInbound` (Events API, slash commands, interactions), `createDiscordInbound`
 (Ed25519 interactions), `createTelegramInbound` (bot webhooks), `createTwilioInbound` (SMS &
-WhatsApp). `createInboundRouter` mounts several behind one fetch handler.
+WhatsApp), `createMsTeamsInbound` (outgoing-webhook HMAC), `createTelnyxInbound` (SMS, Ed25519).
+`createInboundRouter` mounts several behind one fetch handler.
 
 For the full receive → think → reply loop in one call, pass the matching outbound `provider` to
 the receiver and answer with `context.reply(...)` — it maps the inbound message to the right

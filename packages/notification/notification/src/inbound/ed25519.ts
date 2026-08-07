@@ -1,5 +1,5 @@
 import type { Bytes } from "../providers/utils/webcrypto";
-import { subtle, utf8 } from "../providers/utils/webcrypto";
+import { fromBase64Url, subtle, utf8 } from "../providers/utils/webcrypto";
 
 const HEX_PATTERN = /^[0-9a-f]*$/iu;
 
@@ -47,6 +47,25 @@ export const verifyEd25519 = async (publicKeyHex: string, signatureHex: string, 
         const key = await subtle().importKey("raw", publicKey, { name: "Ed25519" }, false, ["verify"]);
 
         return await subtle().verify({ name: "Ed25519" }, key, signature, utf8(`${timestamp}${body}`));
+    } catch {
+        return false;
+    }
+};
+
+/**
+ * Verifies an Ed25519 signature over an arbitrary message, with the public key and signature
+ * supplied as base64 (Telnyx's webhook signing scheme, where the signed message is
+ * `{timestamp}|{body}`). Any malformed input resolves to `false` rather than throwing.
+ * @param publicKeyBase64 The Ed25519 public key (base64).
+ * @param signatureBase64 The header signature to check (base64).
+ * @param message The exact string that was signed (e.g. `{timestamp}|{body}` for Telnyx).
+ * @returns `true` when the signature is valid.
+ */
+export const verifyEd25519Base64 = async (publicKeyBase64: string, signatureBase64: string, message: string): Promise<boolean> => {
+    try {
+        const key = await subtle().importKey("raw", fromBase64Url(publicKeyBase64), { name: "Ed25519" }, false, ["verify"]);
+
+        return await subtle().verify({ name: "Ed25519" }, key, fromBase64Url(signatureBase64), utf8(message));
     } catch {
         return false;
     }
