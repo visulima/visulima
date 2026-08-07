@@ -32,6 +32,12 @@ The pipeline lives entirely in `src/`:
 - YAML is indentation-sensitive: the parser threads a required-indentation column through block parsing. Changing how blank lines / comments are consumed can silently break nested collections — always run the full `__tests__` suite after tokenizer edits.
 - The core-schema number regexes are intentionally strict (YAML 1.2, not 1.1) — `yes`/`no`/`on`/`off` are **not** booleans. Do not "helpfully" widen them.
 
+## Conformance (official yaml-test-suite)
+
+`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We currently pass **332/402 (82.6%)**; no JavaScript YAML library passes 100%. The test is a **regression gate**: it fails if the pass count drops (`EXPECTED_PASS`), if a currently-passing file starts failing, or if a `KNOWN_FAILING` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
+
+The ~70 known-failing files cluster into: multi-line flow scalars (colon on a new line), node properties (anchor/tag) on block-mapping keys, empty / explicit-`?` mapping keys, zero-indented block scalars, empty/comment-only documents, and strictness gaps (inputs we accept that the spec rejects — e.g. tabs as indentation). These are the same corners noted under "Known divergences" below.
+
 ## Parity with `yaml` and `js-yaml`
 
 A differential corpus (135 inputs run through all three parsers) shows:

@@ -511,8 +511,13 @@ const readSingleQuotedScalar = (state: State, nodeIndent: number): boolean => {
         } else if (state.position === state.lineStart && testDocumentSeparator(state)) {
             throwError(state, "unexpected end of the document within a single quoted scalar");
         } else {
+            // Trailing white space before a line break is folded away, so only
+            // advance the captured end past non-space characters (§7.3.1).
+            if (!isWhiteSpace(ch)) {
+                captureEnd = state.position + 1;
+            }
+
             state.position++;
-            captureEnd = state.position;
         }
     }
 
@@ -587,8 +592,13 @@ const readDoubleQuotedScalar = (state: State, nodeIndent: number): boolean => {
         } else if (state.position === state.lineStart && testDocumentSeparator(state)) {
             throwError(state, "unexpected end of the document within a double quoted scalar");
         } else {
+            // Trailing white space before a line break is folded away, so only
+            // advance the captured end past non-space characters (§7.3.1).
+            if (!isWhiteSpace(ch)) {
+                captureEnd = state.position + 1;
+            }
+
             state.position++;
-            captureEnd = state.position;
         }
     }
 
@@ -1375,7 +1385,9 @@ const readDocument = (state: State): void => {
 
     skipSeparationSpace(state, true, -1);
 
-    if (state.lineIndent === 0 && state.input.startsWith("---", state.position)) {
+    // A document-start marker is `---` only when followed by white space or EOF;
+    // `---foo` is a plain scalar, not a marker.
+    if (state.lineIndent === 0 && state.input.startsWith("---", state.position) && isWsOrEol(state.input.charCodeAt(state.position + 3))) {
         state.position += 3;
         skipSeparationSpace(state, true, -1);
     } else if (hasDirectives) {

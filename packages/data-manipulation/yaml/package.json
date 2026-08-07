@@ -93,7 +93,8 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
+        "vitest": "catalog:test",
+        "yaml-test-suite": "0.1.0"
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
