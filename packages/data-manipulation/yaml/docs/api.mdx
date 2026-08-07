@@ -115,6 +115,74 @@ parse("--- a: b"); // throws YAMLParseError
 parse("--- a: b", { strict: false }); // => { a: "b" }
 ```
 
+### parseDocument
+
+Parse the first document **without throwing**, returning a {@link YAMLDocument}
+that carries its own diagnostics and supports comment-preserving edits.
+
+**Signature:**
+
+```typescript
+function parseDocument(source: string, options?: ParseOptions): YAMLDocument;
+```
+
+**Example:**
+
+```typescript
+import { parseDocument } from "@visulima/yaml";
+
+const document = parseDocument("a:\n\tb: 1\n");
+
+document.errors.length; // 1 — reported, not thrown
+document.contents; // null
+```
+
+### parseAllDocuments
+
+Parse every document of a stream without throwing. A malformed document reports
+its error and does not stop the ones after it.
+
+```typescript
+function parseAllDocuments(source: string, options?: ParseOptions): YAMLDocument[];
+```
+
+### YAMLDocument
+
+| Member                                   | Description                                             |
+| ---------------------------------------- | ------------------------------------------------------- |
+| `errors` / `warnings`                    | Diagnostics collected while reading the document.       |
+| `contents`                               | The parsed value, or `null` when `errors` is non-empty. |
+| `toJS()` / `toJSON()`                    | The parsed value.                                       |
+| `get(key)` / `getIn(path)`               | Read a value by key or path.                            |
+| `has(key)` / `hasIn(path)`               | Whether a key or path is present.                       |
+| `set(key, value)` / `setIn(path, value)` | Edit, creating missing intermediate mappings.           |
+| `toString()`                             | The source with every pending edit applied.             |
+
+**Comment-preserving edits.** `setIn` splices the original source instead of
+re-serializing it, so comments, blank lines and key order elsewhere in the file
+are left byte-identical:
+
+```typescript
+import { parseDocument } from "@visulima/yaml";
+
+const document = parseDocument("packages:\n  - 'a/*'\n\n# keep me\n");
+
+document.setIn(["overrides", "some-pkg"], "npm:other@1.2.3");
+document.toString();
+// packages:
+//   - 'a/*'
+//
+// # keep me
+// overrides:
+//   some-pkg: npm:other@1.2.3
+```
+
+**Limits.** Error recovery is per document — within one document the first error
+ends it, so `parseDocument` reports at most one error while `parseAllDocuments`
+reports one per document. `setIn` edits block mappings only; a path running
+through a flow collection (`{a: 1}`) or a sequence throws, because there is no
+unambiguous place to splice.
+
 ## Serializing
 
 ### stringify

@@ -11,7 +11,7 @@
  * already-parsed YAML content.
  */
 
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisReleaseError } from "../errors";
 import type { DependencyKind, PackageManifest } from "../types";
@@ -38,7 +38,7 @@ export const parseCatalogs = (yamlContent: string | undefined): Catalogs => {
     let raw: unknown;
 
     try {
-        raw = parseYaml(yamlContent, { schema: "core", strict: true });
+        raw = parseYaml(yamlContent, { strict: true } /* @visulima/yaml is always YAML 1.2 core */);
     } catch (error) {
         throw new VisReleaseError({
             cause: error,

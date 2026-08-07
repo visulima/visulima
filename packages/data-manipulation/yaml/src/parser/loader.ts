@@ -30,9 +30,11 @@
  * no intermediate concrete syntax tree on the default path).
  */
 
+import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
 import { resolveExplicitTag, resolveScalarValue } from "../schema/resolve-scalar";
 import type { ParseOptions } from "../types";
+import type { MappingRanges } from "./ranges";
 import { readBlockScalar, readDoubleQuotedScalar, readPlainScalar, readSingleQuotedScalar } from "./scalars";
 import { isEol, isFlowIndicator, isWhiteSpace, isWsOrEol, readLineBreak, skipSeparationSpace, testDocumentSeparator } from "./scanner";
 import type { Snapshot } from "./state";
@@ -115,6 +117,34 @@ const stringifyComplexKey = (node: unknown): string => {
     return String(node);
 };
 
+/** The string a mapping key is stored under. */
+const mappingKeyOf = (keyNode: unknown): string => {
+    if (typeof keyNode === "object" && keyNode !== null) {
+        return stringifyComplexKey(keyNode);
+    }
+
+    return String(keyNode);
+};
+
+/**
+ * Record where one block-mapping entry sits in the source. No-op unless
+ * `parseDocument` asked for ranges.
+ */
+const recordMappingEntry = (state: State, mapping: object, keyNode: unknown, start: number, valueStart: number, end: number): void => {
+    if (state.mappingRanges === null || start < 0) {
+        return;
+    }
+
+    let entries = state.mappingRanges.get(mapping);
+
+    if (entries === undefined) {
+        entries = [];
+        state.mappingRanges.set(mapping, entries);
+    }
+
+    entries.push({ column: start - (state.input.lastIndexOf("\n", start - 1) + 1), end, key: mappingKeyOf(keyNode), start, valueStart });
+};
+
 const storeMappingPair = (
     state: State,
     result: Record<string, unknown>,
@@ -126,7 +156,7 @@ const storeMappingPair = (
     const keyNode = keyNodeInput;
     let keys = overridableKeys;
 
-    const key = typeof keyNode === "object" && keyNode !== null ? stringifyComplexKey(keyNode) : String(keyNode);
+    const key = mappingKeyOf(keyNode);
 
     const isMerge = keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<");
 
@@ -251,6 +281,8 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     let atExplicitKey = false;
     let detected = false;
     let allowCompact = false;
+    let entryKeyStart = -1;
+    let entryValueStart = -1;
 
     // A tab in this line's indentation cannot introduce a block mapping.
     if (state.firstTabInLine !== -1) {
@@ -308,6 +340,8 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
             state.position += 1;
             ch = following;
         } else {
+            entryKeyStart = state.position;
+
             if (!composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
                 break;
             }
@@ -338,6 +372,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
                     allowCompact = false;
                     keyTag = state.tag;
                     keyNode = state.result;
+                    entryValueStart = state.position + 1;
                 } else if (detected) {
                     throwError(state, "can not read an implicit mapping pair; a colon is missed");
                 } else {
@@ -366,10 +401,13 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
             }
 
             if (!atExplicitKey) {
+                recordMappingEntry(state, result, keyNode, entryKeyStart, entryValueStart, state.position);
                 overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, valueNode);
                 keyTag = null;
                 keyNode = null;
                 valueNode = null;
+                entryKeyStart = -1;
+                entryValueStart = -1;
             }
 
             skipSeparationSpace(state, true, -1);
@@ -1117,11 +1155,14 @@ const normalizeInput = (input: string): string => {
     return source;
 };
 
-/** Parse every document in a YAML stream, returning them in order. */
-export const loadAll = (input: string, options: ParseOptions = {}): unknown[] => {
-    // This is a trust boundary, so a non-string must fail as a YAMLParseError
-    // rather than as whichever TypeError the first string method happens to
-    // raise — callers catch the former.
+/**
+ * Validate the input and build a cursor over it. Shared by every entry point so
+ * the trust-boundary checks cannot be bypassed by one of them.
+ */
+const prepareState = (input: string, options: ParseOptions): State => {
+    // A non-string must fail as a YAMLParseError rather than as whichever
+    // TypeError the first string method happens to raise — callers catch the
+    // former.
     if (typeof input !== "string") {
         throw new YAMLParseError(`expected a string to parse, received ${input === null ? "null" : typeof input}`);
     }
@@ -1139,6 +1180,13 @@ export const loadAll = (input: string, options: ParseOptions = {}): unknown[] =>
     state.position = 0;
     state.lineIndent = 0;
 
+    return state;
+};
+
+/** Parse every document in a YAML stream, returning them in order. */
+const loadAll = (input: string, options: ParseOptions = {}): unknown[] => {
+    const state = prepareState(input, options);
+
     while (state.position < state.length - 1) {
         readDocument(state);
     }
@@ -1146,8 +1194,99 @@ export const loadAll = (input: string, options: ParseOptions = {}): unknown[] =>
     return state.documents;
 };
 
+/**
+ * Move the cursor to the next document marker after a failed document, so one
+ * malformed document does not hide the rest of the stream. Returns false when
+ * there is nothing left to parse.
+ */
+const skipToNextDocument = (state: State): boolean => {
+    const { input } = state;
+    let index = input.indexOf("\n", state.position);
+
+    while (index !== -1) {
+        const lineStart = index + 1;
+        const marker = input.slice(lineStart, lineStart + 3);
+
+        if (marker === "---" || marker === "...") {
+            state.position = lineStart;
+            state.lineStart = lineStart;
+            state.line += 1;
+            state.lineIndent = 0;
+            state.firstTabInLine = -1;
+
+            return state.position < state.length - 1;
+        }
+
+        index = input.indexOf("\n", lineStart);
+    }
+
+    return false;
+};
+
+/** One document of a stream, with the diagnostics raised while reading it. */
+interface DocumentResult {
+    contents: unknown;
+    errors: YAMLParseError[];
+    warnings: YAMLWarning[];
+}
+
+/**
+ * Parse a stream without throwing: each document's diagnostics are collected
+ * and a malformed document does not prevent the following ones from parsing.
+ *
+ * Recovery is per document — within one document the first error still ends it,
+ * because the parser has no resync points inside a document.
+ */
+const loadDocuments = (input: string, options: ParseOptions = {}): { documents: DocumentResult[]; ranges: MappingRanges } => {
+    const warnings: YAMLWarning[] = [];
+    const state = prepareState(input, {
+        ...options,
+        onWarning: (warning) => {
+            warnings.push(warning);
+            options.onWarning?.(warning);
+        },
+    });
+
+    state.mappingRanges = new WeakMap();
+
+    const documents: DocumentResult[] = [];
+
+    while (state.position < state.length - 1) {
+        const producedBefore = state.documents.length;
+        const warningsBefore = warnings.length;
+        const positionBefore = state.position;
+
+        try {
+            readDocument(state);
+        } catch (error) {
+            if (!(error instanceof YAMLParseError)) {
+                throw error;
+            }
+
+            documents.push({ contents: null, errors: [error], warnings: warnings.slice(warningsBefore) });
+
+            if (!skipToNextDocument(state)) {
+                break;
+            }
+
+            continue;
+        }
+
+        for (const contents of state.documents.slice(producedBefore)) {
+            documents.push({ contents, errors: [], warnings: warnings.slice(warningsBefore) });
+        }
+
+        // A document that consumed nothing would loop forever.
+        if (state.position === positionBefore) {
+            break;
+        }
+    }
+
+    return { documents, ranges: state.mappingRanges };
+};
+
 /** Parse the first document in a YAML stream. */
-export const loadOne = (input: string, options: ParseOptions = {}): unknown => {
+const loadOne = (input: string, options: ParseOptions = {}): unknown => {
     const documents = loadAll(input, options);
 
     if (documents.length === 0) {
@@ -1160,3 +1299,6 @@ export const loadOne = (input: string, options: ParseOptions = {}): unknown => {
 
     throw new YAMLParseError("expected a single document in the stream, but found more");
 };
+
+export type { DocumentResult };
+export { loadAll, loadDocuments, loadOne };

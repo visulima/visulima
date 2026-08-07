@@ -125,6 +125,48 @@ parse("--- [1, 2]"); // => [1, 2]
 parse("--- scalar"); // => "scalar"
 ```
 
+## Editing a file without losing its comments
+
+`parse` + `stringify` round-trips lose every comment and blank line, which makes
+them unsafe for a hand-maintained config file. `parseDocument` edits by splicing
+the original source instead, so only the bytes you change are touched:
+
+```typescript
+import { parseDocument } from "@visulima/yaml";
+
+const document = parseDocument("packages:\n  - 'a/*'\n\n# keep me\noverrides:\n  foo: '1.0.0'\n");
+
+document.setIn(["overrides", "bar"], "2.0.0");
+document.toString();
+// packages:
+//   - 'a/*'
+//
+// # keep me
+// overrides:
+//   foo: '1.0.0'
+//   bar: 2.0.0
+```
+
+Missing intermediate mappings are created, so the path does not have to exist
+yet — `setIn(["overrides", "bar"], …)` works on a file with no `overrides:` key.
+
+## Reporting errors instead of throwing
+
+A document reports its diagnostics rather than throwing, and one malformed
+document does not stop the rest of a stream:
+
+```typescript
+import { parseAllDocuments, parseDocument } from "@visulima/yaml";
+
+const document = parseDocument("a:\n\tb: 1\n");
+
+document.errors[0]?.message; // "tab characters must not be used in indentation …"
+
+const stream = parseAllDocuments("a: 1\n---\nb:\n\tc: 2\n---\nd: 3\n");
+
+stream.map((entry) => entry.errors.length); // [0, 1, 0] — the third still parsed
+```
+
 ## Handling duplicate keys
 
 By default a repeated key inside one mapping throws. Choose a different policy

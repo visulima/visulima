@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import { collect } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
-import yaml from "yaml";
+import * as yaml from "@visulima/yaml";
 
 import { DEFAULT_EXCLUDE } from "../../constants";
 import type { BaseDefinition } from "../../exported";

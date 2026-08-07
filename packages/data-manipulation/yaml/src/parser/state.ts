@@ -15,6 +15,7 @@
 
 import { YAMLParseError, YAMLWarning } from "../errors";
 import type { ParseOptions } from "../types";
+import type { MappingRanges } from "./ranges";
 
 /** The three node shapes the composer distinguishes. */
 type NodeKind = "mapping" | "scalar" | "sequence";
@@ -61,6 +62,12 @@ class State {
 
     /** Current `composeNode` recursion depth; bounded by `options.maxDepth`. */
     public depth = 0;
+
+    /**
+     * Block-mapping source spans, or `null` to skip recording them. Only
+     * `parseDocument` turns this on — the plain `parse` path never pays for it.
+     */
+    public mappingRanges: MappingRanges | null = null;
 
     public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
 

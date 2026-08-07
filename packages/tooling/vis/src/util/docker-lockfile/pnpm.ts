@@ -1,4 +1,4 @@
-import { parseAllDocuments, stringify as stringifyYaml } from "yaml";
+import { parseAllDocuments, stringify as stringifyYaml } from "@visulima/yaml";
 
 import type { PruneInput, PruneResult } from "./types";
 import { LockfilePruneError } from "./types";

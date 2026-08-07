@@ -2451,15 +2451,15 @@ importers:
       '@visulima/fs':
         specifier: 5.1.0
         version: link:../../filesystem/fs
+      '@visulima/yaml':
+        specifier: workspace:*
+        version: link:../../data-manipulation/yaml
       comment-parser:
         specifier: catalog:prod
         version: 1.4.7
       es-toolkit:
         specifier: catalog:prod
         version: 1.49.0
-      yaml:
-        specifier: catalog:prod
-        version: 2.9.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -2527,6 +2527,9 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.10(@opentelemetry/api@1.9.1)(@types/node@26.1.0)(@vitest/coverage-v8@4.1.10)(@vitest/ui@4.1.10)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.1.0)(typescript@6.0.3))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
+      yaml:
+        specifier: catalog:prod
+        version: 2.9.0
     optionalDependencies:
       cli-progress:
         specifier: catalog:optional
@@ -10376,6 +10379,9 @@ importers:
       '@visulima/tsconfig':
         specifier: 3.2.6
         version: link:../tsconfig
+      '@visulima/yaml':
+        specifier: workspace:*
+        version: link:../../data-manipulation/yaml
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -11920,7 +11926,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: ^7.3.5
+      vite: '>=6.4.2'
       wrangler: ^4.107.0
 
   '@cloudflare/vitest-pool-workers@0.19.0':
