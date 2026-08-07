@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseTOML } from "smol-toml";
-import { parse as parseYaml } from "@visulima/yaml";
+import { parse as parseYaml } from "yaml";
 
 import { analyzeOverlap } from "./analyze-overlap.mjs";
 import { convertKingfisherRule } from "./kingfisher-converter.mjs";
