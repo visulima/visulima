@@ -220,14 +220,14 @@
         "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
-        "yaml": "catalog:dev"
+        "@visulima/yaml": "workspace:*"
     },
     "peerDependencies": {
         "ini": "catalog:peer",
         "json5": "catalog:peer",
         "jsonc-parser": "catalog:peer",
         "smol-toml": "catalog:peer",
-        "yaml": "catalog:peer"
+        "@visulima/yaml": "^1.0.0"
     },
     "peerDependenciesMeta": {
         "ini": {
@@ -242,7 +242,7 @@
         "smol-toml": {
             "optional": true
         },
-        "yaml": {
+        "@visulima/yaml": {
             "optional": true
         }
     },

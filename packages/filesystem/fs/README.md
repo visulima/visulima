@@ -48,28 +48,28 @@ yarn add @visulima/fs
 pnpm add @visulima/fs
 ```
 
-> **Note:** If you want to parse or write YAML, you'll need to install `yaml` as well.
+> **Note:** If you want to parse or write YAML, you'll need to install `@visulima/yaml` as well.
 
 ```sh
-npm install yaml
+npm install @visulima/yaml
 ```
 
 ```sh
-yarn add yaml
+yarn add @visulima/yaml
 ```
 
 ```sh
-pnpm add yaml
+pnpm add @visulima/yaml
 ```
 
-> After installing `yaml`, you can use the `readYaml`, `readYamlSync` and `writeYaml`, `writeYamlSync` functions from `@visulima/fs/yaml`.
+> After installing `@visulima/yaml`, you can use the `readYaml`, `readYamlSync` and `writeYaml`, `writeYamlSync` functions from `@visulima/fs/yaml`.
 
 ## Usage
 
 ### Quickstart by subpath
 
 `@visulima/fs` ships one entry per concern. Import from the narrowest subpath you
-need so the optional parser peers (`yaml`, `smol-toml`, `jsonc-parser`, `json5`,
+need so the optional parser peers (`@visulima/yaml`, `smol-toml`, `jsonc-parser`, `json5`,
 `ini`) stay tree-shaken.
 
 ```typescript

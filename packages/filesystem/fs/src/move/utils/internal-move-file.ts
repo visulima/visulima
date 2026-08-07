@@ -22,7 +22,7 @@ const internalMoveFile = async (
         validateSameDirectory(sourcePath, destinationPath);
     }
 
-    if (!overwrite && await isAccessible(destinationPath)) {
+    if (!overwrite && (await isAccessible(destinationPath))) {
         throw new Error(`The destination file exists: ${destinationPath}`);
     }
 

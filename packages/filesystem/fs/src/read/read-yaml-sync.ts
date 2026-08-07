@@ -1,4 +1,4 @@
-import { parse } from "yaml";
+import { parse } from "@visulima/yaml";
 
 import type { CompressionType, ReadYamlOptions, YamlReviver } from "../types";
 import readFileSync from "./read-file-sync";
@@ -46,7 +46,12 @@ function readYamlSync<R = Record<string, unknown>>(
     reviver?: ReadYamlOptions<CompressionType> | YamlReviver,
     options?: ReadYamlOptions<CompressionType>,
 ): R {
-    const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = options ?? {};
+    // The documented `readYaml(path, options)` overload puts options in the
+    // `reviver` position, so read them from whichever slot they arrived in —
+    // previously only the third argument was inspected, and options passed as
+    // the second were silently dropped.
+    const resolvedOptions = (typeof reviver === "function" ? options : (reviver ?? options)) ?? {};
+    const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = resolvedOptions;
 
     const content = readFileSync(path, { buffer, compression, encoding, flag });
 
