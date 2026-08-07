@@ -430,10 +430,13 @@ describe("node model › options that interact with the tree", () => {
         // `get`/`has` used to scan `items`, so building a mapping was quadratic:
         // 8 000 keys took ~370ms against ~4ms natively.
         //
-        // Asserted as a ratio between two sizes rather than a wall-clock bound.
-        // An absolute threshold measured 1005ms against a 1000ms limit on a slow
-        // CI runner — it was testing the runner, not the parser. Doubling the
-        // input should roughly double the time; quadratic would quadruple it.
+        // Compared across an 8x size gap rather than a wall-clock bound. Linear
+        // work grows ~8x, quadratic ~64x, so the two are far enough apart to
+        // survive a noisy shared runner: linear measures 5-11 here, quadratic
+        // would be ~64. Narrower comparisons did not: an
+        // absolute 1000ms limit measured 1005ms on Windows CI, and a 2x gap
+        // (expected ~2, limit 3) measured 3.59 on macOS CI. Both were testing
+        // the runner rather than the parser.
         const build = (count: number): string => Array.from({ length: count }, (_, index) => `k${String(index)}: ${String(index)}`).join("\n");
         const time = (source: string): number => {
             const started = performance.now();
@@ -443,8 +446,8 @@ describe("node model › options that interact with the tree", () => {
             return performance.now() - started;
         };
 
-        const small = build(4000);
-        const large = build(8000);
+        const small = build(2000);
+        const large = build(16000);
 
         // Warm the JIT so the first call does not carry compilation cost.
         time(small);
@@ -452,8 +455,8 @@ describe("node model › options that interact with the tree", () => {
 
         const ratio = time(large) / Math.max(time(small), 0.5);
 
-        expect(ratio).toBeLessThan(3);
-        expect((parseNodes(large) as YAMLMap).get("k7999")).toBe(7999);
+        expect(ratio).toBeLessThan(30);
+        expect((parseNodes(large) as YAMLMap).get("k15999")).toBe(15999);
     });
 
     it("keeps the index correct after items are spliced directly", () => {
