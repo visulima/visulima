@@ -579,6 +579,10 @@ const writeBlockMapping = (value: Record<string, unknown>, level: number, contex
             continue;
         }
 
+        if (item === undefined && !context.keepUndefined) {
+            continue;
+        }
+
         const keyString = writeScalar(key, level, context, true);
         const { block, text } = writeChild(item, level, context);
 

@@ -29,7 +29,22 @@ export { YAMLError, YAMLParseError, YAMLStringifyError, YAMLWarning } from "./er
  * parse("foo: bar"); // => { foo: "bar" }
  * ```
  */
-export const parse = (source: string, options?: ParseOptions): unknown => loadOne(source, options);
+export function parse(source: string, options?: ParseOptions): unknown;
+export function parse(source: string, reviver?: ParseOptions["reviver"], options?: ParseOptions): unknown;
+
+/**
+ * Parse the first document of a YAML string into a native JavaScript value.
+ *
+ * Accepts the `JSON.parse`-shaped `(source, reviver, options)` form as well as
+ * `(source, options)`.
+ */
+export function parse(source: string, reviverOrOptions?: ParseOptions | ParseOptions["reviver"], maybeOptions?: ParseOptions): unknown {
+    if (typeof reviverOrOptions === "function") {
+        return loadOne(source, { ...maybeOptions, reviver: reviverOrOptions });
+    }
+
+    return loadOne(source, reviverOrOptions ?? maybeOptions);
+}
 
 /**
  * Parse every document of a multi-document YAML stream, returning them in order.
@@ -51,7 +66,51 @@ export const parseAll = (source: string, options?: ParseOptions): unknown[] => l
  * stringify({ foo: "bar" }); // => "foo: bar\n"
  * ```
  */
-export const stringify = (value: unknown, options?: StringifyOptions): string => dumpValue(value, options);
+export function stringify(value: unknown, options?: StringifyOptions): string;
+export function stringify(value: unknown, replacer?: StringifyOptions["replacer"] | unknown[] | null, options?: StringifyOptions | number | string): string;
+
+/**
+ * Serialize a JavaScript value to a YAML document string.
+ *
+ * Accepts the `JSON.stringify`-shaped `(value, replacer, space)` form as well as
+ * `(value, options)`. `space` sets the indentation width; a string is measured
+ * by its length, matching `yaml`.
+ */
+export function stringify(
+    value: unknown,
+    replacerOrOptions?: StringifyOptions | StringifyOptions["replacer"] | unknown[] | null,
+    maybeOptions?: StringifyOptions | number | string,
+): string {
+    const isReplacer = typeof replacerOrOptions === "function" || Array.isArray(replacerOrOptions) || replacerOrOptions === null;
+
+    if (!isReplacer && replacerOrOptions !== undefined) {
+        return dumpValue(value, replacerOrOptions);
+    }
+
+    let options: StringifyOptions = {};
+
+    if (typeof maybeOptions === "number") {
+        options = { indent: maybeOptions };
+    } else if (typeof maybeOptions === "string") {
+        options = { indent: maybeOptions.length };
+    } else if (maybeOptions) {
+        options = maybeOptions;
+    }
+
+    // An array replacer is the `JSON.stringify` allowlist form: keep only those
+    // keys.
+    if (Array.isArray(replacerOrOptions)) {
+        const allowed = new Set(replacerOrOptions.map(String));
+
+        return dumpValue(value, { ...options, replacer: (key, item) => key === "" || allowed.has(key) ? item : undefined });
+    }
+
+    if (typeof replacerOrOptions === "function") {
+        return dumpValue(value, { ...options, replacer: replacerOrOptions });
+    }
+
+    return dumpValue(value, options);
+}
 
 /**
  * `js-yaml`-compatible alias of {@link parse}.
