@@ -3,8 +3,12 @@
     "version": "1.0.12",
     "description": "A reusable, ESM-only, edge-ready multi-channel notification library with SMS, push, chat, in-app and webhook providers",
     "keywords": [
+        "agent",
+        "ai",
         "apns",
         "aws-sns",
+        "chatbot",
+        "inbound",
         "chat",
         "discord",
         "expo",
@@ -192,6 +196,26 @@
         "./webhooks": {
             "types": "./dist/webhooks/index.d.ts",
             "default": "./dist/webhooks/index.js"
+        },
+        "./inbound": {
+            "types": "./dist/inbound/index.d.ts",
+            "default": "./dist/inbound/index.js"
+        },
+        "./inbound/slack": {
+            "types": "./dist/inbound/channels/slack.d.ts",
+            "default": "./dist/inbound/channels/slack.js"
+        },
+        "./inbound/discord": {
+            "types": "./dist/inbound/channels/discord.d.ts",
+            "default": "./dist/inbound/channels/discord.js"
+        },
+        "./inbound/telegram": {
+            "types": "./dist/inbound/channels/telegram.d.ts",
+            "default": "./dist/inbound/channels/telegram.js"
+        },
+        "./inbound/twilio": {
+            "types": "./dist/inbound/channels/twilio.d.ts",
+            "default": "./dist/inbound/channels/twilio.js"
         },
         "./template/string": {
             "types": "./dist/template-engines/string.d.ts",
