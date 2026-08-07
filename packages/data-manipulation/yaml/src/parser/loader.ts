@@ -364,7 +364,7 @@ const skipSeparationSpace = (state: State, allowComments: boolean, checkIndent: 
     }
 
     if (checkIndent !== -1 && lineBreaks !== 0 && state.lineIndent < checkIndent) {
-        emitWarning(state, "deficient indentation");
+        throwError(state, "deficient indentation");
     }
 
     return lineBreaks;
@@ -1595,6 +1595,19 @@ const readDocument = (state: State): void => {
     if (state.position === state.lineStart && testDocumentSeparator(state)) {
         if (state.input.charCodeAt(state.position) === 0x2e) {
             state.position += 3;
+
+            // After a `...` document-end marker only white space and an optional
+            // comment may follow on the same line; `... invalid` is malformed.
+            let after = state.input.charCodeAt(state.position);
+
+            while (after === 0x20 || after === 0x09) {
+                after = state.input.charCodeAt(++state.position);
+            }
+
+            if (after !== 0 && after !== 0x23 && !isEol(after)) {
+                throwError(state, "unexpected content after document end marker");
+            }
+
             skipSeparationSpace(state, true, -1);
         }
 

@@ -42,13 +42,13 @@ interface SuiteTest {
 const suite = suiteDefault as unknown as SuiteTest[];
 
 // Number of individual cases (across 350 files) we currently parse correctly.
-const EXPECTED_PASS = 380;
+const EXPECTED_PASS = 386;
 
 // Test files with at least one case we do not yet handle. Most are fail-tests
 // the grammar should reject but we (like js-yaml on 4JVG/CXX2) accept, plus a
 // few tag/scalar/tab edge cases (4FJ6 nested complex keys, 9KAX tag+anchor on
 // keys, DK95/4EJS/Y79Y tabs, S98Z block-scalar indentation).
-const KNOWN_FAILING = new Set<string>(["3HFZ", "4EJS", "4FJ6", "4JVG", "9C9N", "9KAX", "9KBC", "CXX2", "DK95", "H7J7", "QB6E", "S98Z", "VJP3", "Y79Y"]);
+const KNOWN_FAILING = new Set<string>(["4EJS", "4FJ6", "4JVG", "9KAX", "9KBC", "CXX2", "DK95", "H7J7", "S98Z", "Y79Y"]);
 
 const canonicalize = (value: unknown): string => {
     const seen = new WeakSet<object>();
