@@ -284,7 +284,7 @@ bus.on("*", (event) => store.append(event));
 ## Inbound (two-way channels for bots & AI agents)
 
 Channels are two-way. Each `@visulima/notification/providers/<name>` subpath ships both halves —
-the outbound provider (`<name>Provider`) and the inbound receiver (`create<Name>Inbound`), which
+the outbound provider (`create<Name>Provider`) and the inbound receiver (`create<Name>Receiver`), which
 verifies and normalises incoming webhooks (a Slack mention, a Discord slash command, a Telegram
 message, an inbound SMS/WhatsApp) into a single `InboundMessage` you can hand to an AI agent that
 then replies through the same provider. Receivers are framework-agnostic (`handle(request:
@@ -292,9 +292,9 @@ Request) => Promise<Response>`) and edge-safe (Web Crypto only). The `@visulima/
 barrel holds the shared types, `createInboundRouter` and verification/reply helpers.
 
 ```typescript
-import { createSlackInbound } from "@visulima/notification/providers/slack";
+import { createSlackReceiver } from "@visulima/notification/providers/slack";
 
-const slack = createSlackInbound({
+const slack = createSlackReceiver({
     signingSecret: process.env.SLACK_SIGNING_SECRET!,
     onMessage: async (message) => {
         if (message.type === "message") {
@@ -309,10 +309,10 @@ const slack = createSlackInbound({
 export default { fetch: (request: Request) => slack.handle(request) };
 ```
 
-Receivers: `createSlackInbound` (Events API, slash commands, interactions), `createDiscordInbound`
-(Ed25519 interactions), `createTelegramInbound` (bot webhooks), `createTwilioInbound` (SMS &
-WhatsApp), `createMsTeamsInbound` (outgoing-webhook HMAC), `createTelnyxInbound` (SMS, Ed25519),
-`createMessageBirdInbound` and `createVonageInbound` (SMS, signed-JWT). `createInboundRouter`
+Receivers: `createSlackReceiver` (Events API, slash commands, interactions), `createDiscordReceiver`
+(Ed25519 interactions), `createTelegramReceiver` (bot webhooks), `createTwilioReceiver` (SMS &
+WhatsApp), `createMsTeamsReceiver` (outgoing-webhook HMAC), `createTelnyxReceiver` (SMS, Ed25519),
+`createMessageBirdReceiver` and `createVonageReceiver` (SMS, signed-JWT). `createInboundRouter`
 mounts several behind one fetch handler.
 
 For the full receive → think → reply loop in one call, pass the matching outbound `provider` to
@@ -320,11 +320,11 @@ the receiver and answer with `context.reply(...)` — it maps the inbound messag
 outbound payload (recipient, thread, WhatsApp prefix) and sends it:
 
 ```typescript
-import { createSlackInbound, slackProvider } from "@visulima/notification/providers/slack";
+import { createSlackProvider, createSlackReceiver } from "@visulima/notification/providers/slack";
 
-const slack = createSlackInbound({
+const slack = createSlackReceiver({
     signingSecret,
-    provider: slackProvider({ token }),
+    provider: createSlackProvider({ token }),
     onMessage: async (message, context) => {
         await context.reply(await runAgent(message.text ?? ""));
     },
