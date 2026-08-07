@@ -107,25 +107,28 @@ const slack = createSlackInbound({
 | `@visulima/notification/inbound/discord`  | `createDiscordInbound`   | Ed25519 over `timestamp+body`; `PING` → `PONG` handled   | Interaction response                  |
 | `@visulima/notification/inbound/telegram` | `createTelegramInbound`  | `X-Telegram-Bot-Api-Secret-Token` (when set)             | `sendMessage` method in the response  |
 | `@visulima/notification/inbound/twilio`   | `createTwilioInbound`    | `X-Twilio-Signature` HMAC-SHA1 of URL + sorted params    | TwiML message element                 |
-| `@visulima/notification/inbound/msteams`  | `createMsTeamsInbound`   | `Authorization: HMAC` — base64 HMAC-SHA256 of raw body   | Bot Framework message activity        |
-| `@visulima/notification/inbound/telnyx`   | `createTelnyxInbound`    | Ed25519 over `{timestamp}\|{body}` + 5-min replay        | via `context.reply()` (async)         |
+| `@visulima/notification/inbound/msteams`  | `createMsTeamsInbound`      | `Authorization: HMAC` — base64 HMAC-SHA256 of raw body   | Bot Framework message activity     |
+| `@visulima/notification/inbound/telnyx`   | `createTelnyxInbound`       | Ed25519 over `{timestamp}\|{body}` + 5-min replay        | via `context.reply()` (async)      |
+| `@visulima/notification/inbound/messagebird` | `createMessageBirdInbound` | `messagebird-signature-jwt` — HS256 JWT + `url_hash`/`payload_hash` | via `context.reply()` (async) |
+| `@visulima/notification/inbound/vonage`   | `createVonageInbound`       | `Authorization: Bearer` HS256 JWT + `payload_hash`       | via `context.reply()` (async)      |
 
-Slack receivers cover the Events API, slash commands and interactive components; Twilio and
-Telnyx cover SMS (Twilio also WhatsApp — flagged in `metadata.transport`, with the `whatsapp:`
-prefix stripped from ids); Microsoft Teams covers outgoing-webhook message activities.
+Slack receivers cover the Events API, slash commands and interactive components; Twilio, Telnyx,
+MessageBird and Vonage cover SMS (Twilio also WhatsApp — flagged in `metadata.transport`, with
+the `whatsapp:` prefix stripped from ids); Microsoft Teams covers outgoing-webhook message
+activities. The MessageBird and Vonage receivers verify the full signed-JWT scheme (HS256
+signature plus the `payload_hash` — and, for MessageBird, `url_hash` — claims that bind the JWT
+to this exact request body and URL).
 
 ### Not yet built in
 
-Some providers this package ships outbound do not have an inbound receiver yet, because their
-webhook signature schemes warrant a dedicated, separately-verified implementation:
+- **Plivo** — `X-Plivo-Signature-V3` (HMAC-SHA256 with a nonce and multiple comma-separated
+  signatures). The exact canonicalisation isn't pinned down from a verifiable source, so it is
+  intentionally left out rather than guessed. Verify with the Plivo SDK's own validator, then
+  normalise the body yourself — the `InboundMessage` shape and `context.reply()` mapping are the
+  same for any channel.
 
-- **Plivo** — `X-Plivo-Signature-V3` (HMAC-SHA256 with nonce, multi-signature).
-- **MessageBird / Bird** — `MessageBird-Signature-JWT` (a full JWT with `url_hash` / `payload_hash` / timing claims).
-- **Vonage** — signed webhooks (JWT for the Messages API, `sig`/`nonce`/`timestamp` for the classic SMS API).
-- **AWS SNS** — RSA certificate-chain verification (the existing [`snsWebhook`](/docs/webhooks) verifier fails closed pending that work).
-
-Until they land, verify with the provider's own SDK helper, then normalise the body yourself —
-the `InboundMessage` shape and `context.reply()` mapping are the same for any channel.
+AWS SNS is a signature *verifier*, not an inbound-message receiver: `snsWebhook.verify` now
+implements the full RSA certificate-chain scheme (see the [webhooks docs](/docs/webhooks)).
 
 ## Routing several channels
 
