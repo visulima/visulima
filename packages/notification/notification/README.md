@@ -281,6 +281,37 @@ bus.on("sent", (event) => console.log(event.messageId));
 bus.on("*", (event) => store.append(event));
 ```
 
+## Inbound (two-way channels for bots & AI agents)
+
+Channels are two-way. `@visulima/notification/inbound` verifies and normalises incoming
+webhooks — a Slack mention, a Discord slash command, a Telegram message, an inbound
+SMS/WhatsApp — into a single `InboundMessage` you can hand to an AI agent, which then replies
+through the matching outbound provider. Receivers are framework-agnostic (`handle(request:
+Request) => Promise<Response>`) and edge-safe (Web Crypto only).
+
+```typescript
+import { createSlackInbound } from "@visulima/notification/inbound/slack";
+
+const slack = createSlackInbound({
+    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    onMessage: async (message) => {
+        if (message.type === "message") {
+            return { text: await runAgent(message.text ?? "") };
+        }
+
+        return undefined; // acknowledge; reply out-of-band via the outbound provider
+    },
+});
+
+// Cloudflare Workers / Deno / Bun / Hono / Next.js route handlers …
+export default { fetch: (request: Request) => slack.handle(request) };
+```
+
+Receivers: `createSlackInbound` (Events API, slash commands, interactions), `createDiscordInbound`
+(Ed25519 interactions), `createTelegramInbound` (bot webhooks), `createTwilioInbound` (SMS &
+WhatsApp). `createInboundRouter` mounts several behind one fetch handler. See the
+[inbound docs](./docs/inbound.mdx).
+
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
