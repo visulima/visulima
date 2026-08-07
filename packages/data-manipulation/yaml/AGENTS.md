@@ -34,9 +34,9 @@ The pipeline lives entirely in `src/`:
 
 ## Conformance (official yaml-test-suite)
 
-`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We currently pass **386/402 (96.0%)**; no JavaScript YAML library passes 100%. The test is a **regression gate**: it fails if the pass count drops (`EXPECTED_PASS`), if a currently-passing file starts failing, or if a `KNOWN_FAILING` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
+`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We currently pass **394/402 (98.0%)**; no JavaScript YAML library passes 100%. The test is a **regression gate**: it fails if the pass count drops (`EXPECTED_PASS`), if a currently-passing file starts failing, or if a `KNOWN_FAILING` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
 
-The remaining known-failing files cluster into: strictness gaps (inputs we accept that the spec rejects — e.g. tabs as indentation, content after `...`/`---` markers, flow trailing junk), plus a few tag/scalar edge cases. These are the same corners noted under "Known divergences" below.
+The 8 remaining known-failing files are narrow edges: two fail-tests js-yaml also accepts (`4JVG` two anchors, `CXX2` anchor on the `--- ` line), nested complex keys (`4FJ6`), tag+anchor in both orders on a mapping key (`9KAX`), content-indentation strictness (`9KBC`, `H7J7`), block-scalar indentation (`S98Z`), and a tab-only line inside an empty block scalar (`Y79Y`).
 
 ## Parity with `yaml` and `js-yaml`
 
@@ -51,5 +51,5 @@ A differential corpus (135 inputs run through all three parsers) shows:
 
 ### Known divergences from BOTH (intentional / accepted, do not "fix" without care)
 
-- **Tabs used as block indentation** (`a:\n\t- 1`) are accepted; both refs reject them. We are deliberately lenient here — correct tab-in-indentation rejection is easy to get wrong (tabs are legal in scalar content, after `:`, and in flow), so it is left until it can be done without false positives.
+- **Tabs used as block indentation** (`a:\n\t- 1`) are now rejected, matching both refs. The parser tracks `State.firstTabInLine` (the first tab in a line's leading white space, reset on every line break) and `readBlockSequence` / `readBlockMapping` refuse to start — or throw "tab characters must not be used in indentation" — when it is set. Tabs stay legal in scalar content, after `:`, in flow, and in blank lines, because those paths never consult `firstTabInLine`.
 - **A node property inline before a block mapping on the same line** (`&anchor key: value`, `!!str a: b`) is now parsed as a mapping, matching both refs. The parser ports js-yaml's snapshot/rewind mechanism (`snapshotState` / `tryReadBlockMappingFromProperty` in `loader.ts`): after reading node properties it speculatively tries a block mapping and, if that fails, rewinds to re-read the value as a tagged/anchored scalar — so tagged scalars like `!!str 123` / `!foo 123` keep their pre-tag semantics. Do not remove the rewind without re-verifying the differential corpus.

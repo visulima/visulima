@@ -140,6 +140,11 @@ class State {
 
     public lineIndent = 0;
 
+    // Position of the first tab in the current line's leading white space, or
+    // -1. Tabs are illegal as block indentation; block collections consult this
+    // to reject them. Reset on every line break.
+    public firstTabInLine = -1;
+
     public documents: unknown[] = [];
 
     public tag: string | null = null;
@@ -176,6 +181,7 @@ class State {
 
 interface Snapshot {
     anchor: string | null;
+    firstTabInLine: number;
     kind: string | null;
     line: number;
     lineIndent: number;
@@ -188,6 +194,7 @@ interface Snapshot {
 const snapshotState = (state: State): Snapshot => {
     return {
         anchor: state.anchor,
+        firstTabInLine: state.firstTabInLine,
         kind: state.kind,
         line: state.line,
         lineIndent: state.lineIndent,
@@ -203,6 +210,7 @@ const restoreState = (state: State, snapshot: Snapshot): void => {
     state.line = snapshot.line;
     state.lineStart = snapshot.lineStart;
     state.lineIndent = snapshot.lineIndent;
+    state.firstTabInLine = snapshot.firstTabInLine;
     state.tag = snapshot.tag;
     state.anchor = snapshot.anchor;
     state.kind = snapshot.kind;
@@ -320,6 +328,7 @@ const readLineBreak = (state: State): void => {
 
     state.line += 1;
     state.lineStart = state.position;
+    state.firstTabInLine = -1;
 };
 
 const skipSeparationSpace = (state: State, allowComments: boolean, checkIndent: number): number => {
@@ -328,6 +337,10 @@ const skipSeparationSpace = (state: State, allowComments: boolean, checkIndent: 
 
     while (ch !== 0) {
         while (isWhiteSpace(ch)) {
+            if (ch === 0x09 && state.firstTabInLine === -1) {
+                state.firstTabInLine = state.position;
+            }
+
             ch = state.input.charCodeAt(++state.position);
         }
 
@@ -839,6 +852,11 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const result: unknown[] = [];
     let detected = false;
 
+    // A tab in this line's indentation cannot introduce a block sequence.
+    if (state.firstTabInLine !== -1) {
+        return false;
+    }
+
     if (state.anchor !== null) {
         storeAnchor(state, state.anchor, result);
     }
@@ -846,6 +864,13 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     let ch = state.input.charCodeAt(state.position);
 
     while (ch !== 0) {
+        // Tabs are not valid indentation before a sequence entry (`-\t-`).
+        if (state.firstTabInLine !== -1) {
+            state.position = state.firstTabInLine;
+
+            throwError(state, "tab characters must not be used in indentation");
+        }
+
         if (ch !== 0x2d) {
             break;
         }
@@ -905,6 +930,11 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     let detected = false;
     let allowCompact = false;
 
+    // A tab in this line's indentation cannot introduce a block mapping.
+    if (state.firstTabInLine !== -1) {
+        return false;
+    }
+
     if (state.anchor !== null) {
         storeAnchor(state, state.anchor, result);
     }
@@ -912,6 +942,14 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     let ch = state.input.charCodeAt(state.position);
 
     while (ch !== 0) {
+        // Tabs are not valid indentation before a mapping key (`foo:\n \tb: 2`).
+        // An explicit-key value (`? k\n:\tv`) may legally be tab-separated.
+        if (!atExplicitKey && state.firstTabInLine !== -1) {
+            state.position = state.firstTabInLine;
+
+            throwError(state, "tab characters must not be used in indentation");
+        }
+
         const following = state.input.charCodeAt(state.position + 1);
         const { line } = state;
 
