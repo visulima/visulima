@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parse, stringify, YAMLStringifyError } from "../src";
+import { dump, parse, stringify, YAMLStringifyError } from "../src";
 
 describe("stringify › scalars", () => {
     it("emits primitive scalars", () => {
@@ -16,18 +16,42 @@ describe("stringify › scalars", () => {
     it("quotes strings that would otherwise resolve to another type", () => {
         expect.assertions(4);
 
-        expect(stringify("true")).toBe("'true'\n");
-        expect(stringify("123")).toBe("'123'\n");
-        expect(stringify("null")).toBe("'null'\n");
-        expect(stringify("~")).toBe("'~'\n");
+        expect(stringify("true")).toBe("\u0022true\u0022\n");
+        expect(stringify("123")).toBe("\u0022123\u0022\n");
+        expect(stringify("null")).toBe("\u0022null\u0022\n");
+        expect(stringify("~")).toBe("\u0022~\u0022\n");
     });
 
     it("quotes strings containing structural characters", () => {
         expect.assertions(3);
 
-        expect(stringify("a: b")).toBe("'a: b'\n");
-        expect(stringify("# not a comment")).toContain("'# not a comment'");
-        expect(stringify(" leading")).toBe("' leading'\n");
+        expect(stringify("a: b")).toBe("\u0022a: b\u0022\n");
+        expect(stringify("# not a comment")).toContain("\u0022# not a comment\u0022");
+        expect(stringify(" leading")).toBe("\u0022 leading\u0022\n");
+    });
+
+    it("chooses the quote style with `singleQuote`, defaulting per API surface", () => {
+        expect.assertions(5);
+
+        // `stringify` shadows `yaml`, which reaches for double quotes; `dump`
+        // shadows `js-yaml`, which reaches for single. Both verified against the
+        // package each one stands in for.
+        expect(stringify("a: b")).toBe("\u0022a: b\u0022\n");
+        expect(dump("a: b")).toBe("'a: b'\n");
+
+        expect(stringify("a: b", { singleQuote: true })).toBe("'a: b'\n");
+        expect(dump("a: b", { singleQuote: false })).toBe("\u0022a: b\u0022\n");
+
+        // A plain-safe string stays plain either way — the option picks how to
+        // quote, never whether to.
+        expect(stringify("plain", { singleQuote: true })).toBe("plain\n");
+    });
+
+    it("keeps a tab in double quotes whatever `singleQuote` asks for", () => {
+        expect.assertions(1);
+
+        // Single quotes cannot express a tab, so it overrides the preference.
+        expect(stringify("a\tb", { singleQuote: true })).toBe("\u0022a\\tb\u0022\n");
     });
 
     it("represents float specials", () => {

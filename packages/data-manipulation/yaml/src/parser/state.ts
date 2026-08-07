@@ -19,7 +19,7 @@ import type { ScalarResolver } from "../schema/schemas";
 import { selectScalarResolver } from "../schema/schemas";
 import type { TagRegistry } from "../schema/tags";
 import { buildTagRegistry } from "../schema/tags";
-import type { ParseOptions } from "../types";
+import type { LoaderOptions, ParseOptions } from "../types";
 import type { LineCounter } from "./line-counter";
 import type { MappingRanges } from "./ranges";
 
@@ -76,10 +76,17 @@ class State {
     public mappingRanges: MappingRanges | null = null;
 
     /**
-     * Scalar resolution for the active schema. Chosen once per parse so the
+     * Scalar resolution for the active schema. Chosen once per document so the
      * per-scalar path stays a single indirect call.
      */
-    public readonly resolveScalar: ScalarResolver;
+    public resolveScalar: ScalarResolver;
+
+    /**
+     * The resolver the options alone imply, kept so a `%YAML` directive can be
+     * undone at the next document — directives are scoped to the document that
+     * declares them.
+     */
+    readonly #baseResolver: ScalarResolver;
 
     /**
      * Build a `Scalar`/`YAMLMap`/`YAMLSeq` tree instead of native values.
@@ -96,9 +103,9 @@ class State {
     /** Custom scalar tags for this parse, or undefined when none were given. */
     public readonly tags: TagRegistry | undefined;
 
-    public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
+    public readonly options: LoaderOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
 
-    public constructor(input: string, options: ParseOptions) {
+    public constructor(input: string, options: LoaderOptions) {
         this.input = input;
         this.length = input.length;
         // Spread first, then apply the defaults with `??`. The other order lets a
@@ -114,10 +121,32 @@ class State {
             preventProtoPollution: options.preventProtoPollution ?? true,
             strict: options.strict ?? true,
         };
-        this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
+        this.#baseResolver = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
+        this.resolveScalar = this.#baseResolver;
         this.tags = buildTagRegistry(this.options.customTags);
         this.nodes = options.nodes ?? false;
         this.lineCounter = options.lineCounter;
+    }
+
+    /**
+     * Apply a document's `%YAML` directive to scalar resolution, so
+     * `%YAML 1.1\n---\na: off` yields `false` rather than the string.
+     *
+     * An explicit `schema` option still wins — `selectScalarResolver` only
+     * consults the version when no schema was pinned — because the caller
+     * naming a schema is a stronger statement than the document naming a
+     * version.
+     */
+    public applyVersionDirective(version: string): void {
+        this.resolveScalar
+            = version === "1.1" || version === "1.2"
+                ? selectScalarResolver(this.options.schema, version, this.options.intAsBigInt)
+                : this.#baseResolver;
+    }
+
+    /** Drop any directive-driven resolver before the next document. */
+    public resetVersionDirective(): void {
+        this.resolveScalar = this.#baseResolver;
     }
 }
 
@@ -171,7 +200,7 @@ interface SpeculationUndo {
 }
 
 const beginSpeculation = (state: State): SpeculationUndo => {
-    return { aliasCount: state.aliasCount, anchorMap: new Map(state.anchorMap), cursor: snapshotState(state) };
+    return { aliasCount: state.aliasCount, anchorMap: new Map<string, unknown>(state.anchorMap), cursor: snapshotState(state) };
 };
 
 const rollbackSpeculation = (state: State, undo: SpeculationUndo): void => {

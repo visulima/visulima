@@ -19,8 +19,11 @@ import {
     toJS,
     visit,
     YAMLMap,
+    YAMLParseError,
     YAMLSeq,
 } from "../src";
+
+const HEX_TAG_RE = /^0x[0-9a-f]+$/;
 
 describe("node model › construction and guards", () => {
     it("wraps plain values into a node tree", () => {
@@ -329,5 +332,109 @@ describe("node model › parsing into nodes", () => {
 
         // The key `a` plus the two entries.
         expect(scalars).toBe(3);
+    });
+});
+
+describe("node model › options that interact with the tree", () => {
+    // Each case here corresponds to a bug that shipped: the node path is a
+    // second value representation, so anything branching on it needs coverage
+    // under `nodes` as well as natively.
+
+    it("resolves merge keys through toJS while keeping the pair in the tree", () => {
+        expect.assertions(3);
+
+        const source = "d: &a\n  x: 1\ne:\n  <<: *a\n  y: 2\n";
+        const tree = parseNodes(source) as YAMLMap;
+
+        // The tree keeps `<<` and its alias, so the document still round-trips.
+        const nested = tree.get("e", true) as YAMLMap;
+
+        expect(nested.items.map((pair) => String((pair.key as Scalar).value))).toStrictEqual(["<<", "y"]);
+        expect(isAlias(nested.items[0]!.value)).toBe(true);
+
+        // Resolution happens on conversion, matching what `parse` produces.
+        expect(toJS(tree)).toStrictEqual(parse(source));
+    });
+
+    it("keeps an explicit key when a merge would also supply it", () => {
+        expect.assertions(1);
+
+        // The explicit `x` wins whichever side of the merge key it is written on.
+        expect(toJS(parseNodes("d: &a\n  x: 1\ne:\n  x: 2\n  <<: *a\n"))).toStrictEqual({ d: { x: 1 }, e: { x: 2 } });
+    });
+
+    it("flattens a complex key the same way the native path does", () => {
+        expect.assertions(1);
+
+        // `? [a, b]` and the plain key `"a,b"` are distinct entries; flattening
+        // both to `[object Object]` (or to the node's own fields) collapsed them.
+        const source = "? [a,b]\n: 1\n\u0022a,b\u0022: 2\n";
+
+        expect(toJS(parseNodes(source))).toStrictEqual(parse(source));
+    });
+
+    it("wraps a value resolved by a custom implicit tag", () => {
+        expect.assertions(2);
+
+        const customTags = [{ default: true, resolve: (raw: string) => Number.parseInt(raw.slice(2), 16), tag: "!hex", test: HEX_TAG_RE }];
+        const tree = parseNodes("a: 0xff\n", { customTags }) as YAMLMap;
+
+        // This path returned early and skipped the node wrap entirely, so the
+        // value sat in the tree unwrapped and `visit` could not reach it.
+        expect(isScalar(tree.get("a", true))).toBe(true);
+        expect(tree.get("a")).toBe(255);
+    });
+
+    it("never lets a document reach the prototype chain through toJS", () => {
+        expect.assertions(3);
+
+        const result = toJS(parseNodes("__proto__:\n  polluted: yes\n")) as Record<string, unknown>;
+
+        expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+        expect(Object.hasOwn(result, "__proto__")).toBe(true);
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it("reports a parse error instead of returning an empty tree", () => {
+        expect.assertions(1);
+
+        // `loadDocuments` collects diagnostics rather than throwing, which made
+        // a malformed document indistinguishable from an empty one.
+        expect(() => parseNodes("a: [1, 2\nb: {\n")).toThrow(YAMLParseError);
+    });
+
+    it("looks a key up without scanning every pair", () => {
+        expect.assertions(2);
+
+        // `get`/`has` used to scan `items`, making a mapping quadratic to build:
+        // 8 000 keys took ~370ms against ~4ms natively.
+        const source = Array.from({ length: 8000 }, (_, index) => `k${String(index)}: ${String(index)}`).join("\n");
+        const started = performance.now();
+        const tree = parseNodes(source) as YAMLMap;
+        const elapsed = performance.now() - started;
+
+        expect(tree.get("k7999")).toBe(7999);
+        expect(elapsed).toBeLessThan(1000);
+    });
+
+    it("keeps the index correct after items are spliced directly", () => {
+        expect.assertions(3);
+
+        // `items` is public and `visit` REMOVE splices it, so a cached index has
+        // to notice it went stale.
+        const tree = parseNodes("a: 1\nb: 2\nc: 3\n") as YAMLMap;
+
+        expect(tree.get("b")).toBe(2);
+
+        visit(tree, {
+            Pair: (_key, node) => {
+                const key = (node as Pair).key as Scalar;
+
+                return key.value === "b" ? visit.REMOVE : undefined;
+            },
+        });
+
+        expect(tree.has("b")).toBe(false);
+        expect(tree.get("c")).toBe(3);
     });
 });

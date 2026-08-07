@@ -11,6 +11,8 @@
  * Collection tags are not supported for the same reason.
  */
 
+import { YAMLParseError } from "../errors";
+
 /** One custom scalar type. */
 interface ScalarTag {
     /**
@@ -74,6 +76,10 @@ const buildTagRegistry = (customTags: CustomTags | undefined): TagRegistry | und
 
     const tags = typeof customTags === "function" ? customTags([]) : customTags;
 
+    if (!Array.isArray(tags)) {
+        throw new YAMLParseError("customTags must be an array of tags, or a function returning one");
+    }
+
     if (tags.length === 0) {
         return undefined;
     }
@@ -87,7 +93,15 @@ const buildTagRegistry = (customTags: CustomTags | undefined): TagRegistry | und
         }
 
         if (tag.default && tag.test) {
-            implicit.push(tag as ScalarTag & { test: RegExp });
+            // A caller's `test` may carry the `g` or `y` flag, which makes
+            // `test()` stateful through `lastIndex` — the same scalar would then
+            // match only every other time. Rebuild without them so implicit
+            // resolution is deterministic.
+            const test = tag.test.flags.includes("g") || tag.test.flags.includes("y")
+                ? new RegExp(tag.test.source, tag.test.flags.replaceAll(/[gy]/gu, ""))
+                : tag.test;
+
+            implicit.push({ ...tag, test });
         }
     }
 

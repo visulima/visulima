@@ -28,15 +28,29 @@ describe(LineCounter, () => {
     });
 
     it("does not double-count lines the parser re-scans", () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
         // Anchors and merge keys drive the speculative rewind, so the same line
-        // break is consumed more than once.
+        // break is consumed more than once. Assert the invariant rather than the
+        // exact offsets: the scan order is internal, and a golden array would
+        // break on any unrelated change to the rewind path without saying why.
+        const source = "d: &a\n  x: 1\ne:\n  <<: *a\n";
         const counter = new LineCounter();
 
-        parse("d: &a\n  x: 1\ne:\n  <<: *a\n", { lineCounter: counter });
+        parse(source, { lineCounter: counter });
 
-        expect(counter.lineStarts).toStrictEqual([0, 6, 13, 16, 25]);
+        const sorted = counter.lineStarts.toSorted((a, b) => a - b);
+
+        expect(counter.lineStarts).toStrictEqual(sorted);
+        // Strictly increasing, so no line break was recorded twice.
+        expect(new Set(counter.lineStarts).size).toBe(counter.lineStarts.length);
+
+        // And every offset resolves to the line it actually falls on.
+        const offsets = Array.from({ length: source.length }, (_, offset) => offset);
+
+        expect(offsets.map((offset) => counter.linePos(offset).line)).toStrictEqual(
+            offsets.map((offset) => source.slice(0, offset).split("\n").length),
+        );
     });
 
     it("is only populated when a counter is supplied", () => {

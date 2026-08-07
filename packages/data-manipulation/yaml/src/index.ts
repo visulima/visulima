@@ -1,4 +1,5 @@
 import { YAMLDocument } from "./document";
+import type { YAMLParseError as YAMLParseErrorType } from "./errors";
 import { dump as dumpValue } from "./parser/dumper";
 import { loadAll as loadAllDocuments, loadDocuments, loadOne } from "./parser/loader";
 import type { ParseOptions, StringifyOptions } from "./types";
@@ -12,6 +13,24 @@ const LENIENT_DEFAULTS: ParseOptions = { strict: false };
 /** Stand-in for `parseDocument` on empty input: no contents, no diagnostics. */
 // eslint-disable-next-line unicorn/no-null
 const EMPTY_DOCUMENT = { contents: null, errors: [], warnings: [] };
+
+/**
+ * Re-throw a diagnostic collected by `loadDocuments`.
+ *
+ * `loadDocuments` reports errors instead of throwing so `parseDocument` can hand
+ * them to the caller. `parseNodes` has no such channel, so without this a
+ * malformed document came back as `null` — indistinguishable from an empty one,
+ * and the opposite of what `parse` does with the same input.
+ */
+const throwFirstError = (documents: { errors: YAMLParseErrorType[] }[]): void => {
+    for (const document of documents) {
+        const [error] = document.errors;
+
+        if (error) {
+            throw error;
+        }
+    }
+};
 
 export { YAMLDocument } from "./document";
 export type { Mark } from "./errors";
@@ -39,11 +58,17 @@ export function parse(source: string, reviver?: ParseOptions["reviver"], options
  * `(source, options)`.
  */
 export function parse(source: string, reviverOrOptions?: ParseOptions | ParseOptions["reviver"], maybeOptions?: ParseOptions): unknown {
-    if (typeof reviverOrOptions === "function") {
-        return loadOne(source, { ...maybeOptions, reviver: reviverOrOptions });
-    }
+    const result
+        = typeof reviverOrOptions === "function"
+            ? loadOne(source, { ...maybeOptions, reviver: reviverOrOptions })
+            : loadOne(source, reviverOrOptions ?? maybeOptions);
 
-    return loadOne(source, reviverOrOptions ?? maybeOptions);
+    // An empty stream is `null` here and `undefined` from `load`, because that
+    // is where `yaml` and `js-yaml` differ and each entry point follows the one
+    // it stands in for. YAML itself cannot produce `undefined`, so this only
+    // ever rewrites the empty case.
+    // eslint-disable-next-line unicorn/no-null
+    return result === undefined ? null : result;
 }
 
 /**
@@ -155,7 +180,11 @@ export function loadAll(source: string, iteratorOrOptions?: ((document: unknown)
 /**
  * `js-yaml`-compatible alias of {@link stringify}.
  */
-export const dump = (value: unknown, options?: StringifyOptions): string => dumpValue(value, options);
+export const dump = (value: unknown, options?: StringifyOptions): string =>
+    // `js-yaml` reaches for single quotes where `yaml` reaches for double, and
+    // each alias follows the package it shadows. Spread last so an explicit
+    // `singleQuote` still wins.
+    dumpValue(value, { singleQuote: true, ...options });
 
 /**
  * Parse a document into a node tree — `Scalar` / `YAMLMap` / `YAMLSeq` / `Pair`
@@ -168,12 +197,16 @@ export const dump = (value: unknown, options?: StringifyOptions): string => dump
 export const parseNodes = (source: string, options?: ParseOptions): unknown => {
     const { documents } = loadDocuments(source, { ...options, nodes: true });
 
+    throwFirstError(documents);
+
     return documents[0]?.contents;
 };
 
 /** Every document of a stream as node trees. */
 export const parseAllNodes = (source: string, options?: ParseOptions): unknown[] => {
     const { documents } = loadDocuments(source, { ...options, nodes: true });
+
+    throwFirstError(documents);
 
     return documents.map((document) => document.contents);
 };

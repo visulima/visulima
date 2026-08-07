@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parse, stringify, YAMLParseError } from "../src";
+import { parse, parseAll, stringify, YAMLParseError } from "../src";
 
 const HEX_RE = /^0h[\da-f]+$/i;
 
@@ -253,5 +253,48 @@ describe("customTags", () => {
         // A tagged value renders inline even though it is a JS object.
         expect(text).toBe("a: !!hex 0hff\nb: 1\nc:\n  - !!hex 0h10\n");
         expect(parse(text, { customTags: [hex] })).toStrictEqual(value);
+    });
+});
+
+describe("schema › validation and directives", () => {
+    it("rejects an unknown schema name as a YAML error", () => {
+        expect.assertions(3);
+
+        // An unchecked lookup failed later as a TypeError — outside the error
+        // hierarchy every other bad input reports through. `"toString"` was
+        // worse: it resolved to an inherited function and mangled every scalar.
+        expect(() => parse("a: 1", { schema: "bogus" as never })).toThrow(YAMLParseError);
+        expect(() => parse("a: 1", { schema: "toString" as never })).toThrow(YAMLParseError);
+        expect(() => parse("a: 1", { schema: "__proto__" as never })).toThrow(YAMLParseError);
+    });
+
+    it("applies a %YAML directive to scalar resolution", () => {
+        expect.assertions(2);
+
+        expect(parse("%YAML 1.1\n---\na: off\n")).toStrictEqual({ a: false });
+        // Without the directive the 1.2 core schema keeps it a string.
+        expect(parse("a: off\n")).toStrictEqual({ a: "off" });
+    });
+
+    it("scopes a %YAML directive to its own document", () => {
+        expect.assertions(1);
+
+        expect(parseAll("%YAML 1.1\n---\na: off\n---\nb: off\n")).toStrictEqual([{ a: false }, { b: "off" }]);
+    });
+
+    it("lets an explicit schema outrank the document's directive", () => {
+        expect.assertions(1);
+
+        expect(parse("%YAML 1.1\n---\na: off\n", { schema: "core" })).toStrictEqual({ a: "off" });
+    });
+
+    it("ignores a stateful `g` flag on a custom tag's test", () => {
+        expect.assertions(1);
+
+        // `test()` on a /g/ regex advances `lastIndex`, so the same scalar would
+        // otherwise match only every other time.
+        const customTags = [{ default: true, resolve: (raw: string) => `hex:${raw}`, tag: "!hex", test: /^0h[0-9a-f]+$/g }];
+
+        expect([parse("a: 0hff", { customTags }), parse("a: 0hff", { customTags })]).toStrictEqual([{ a: "hex:0hff" }, { a: "hex:0hff" }]);
     });
 });

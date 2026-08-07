@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { parse, parseAll, YAMLParseError } from "../src";
+import { load, parse, parseAll, YAMLParseError } from "../src";
 
 describe("parse › scalars", () => {
     it("resolves null in all core-schema spellings", () => {
-        expect.assertions(5);
+        expect.assertions(6);
 
         expect(parse("~")).toBeNull();
         expect(parse("null")).toBeNull();
         expect(parse("Null")).toBeNull();
         expect(parse("NULL")).toBeNull();
-        expect(parse("")).toBeUndefined();
+        // An empty stream is `null` from `parse` and `undefined` from `load`,
+        // matching `yaml` and `js-yaml` respectively.
+        expect(parse("")).toBeNull();
+        expect(load("")).toBeUndefined();
     });
 
     it("resolves booleans (1.2 core, not 1.1)", () => {

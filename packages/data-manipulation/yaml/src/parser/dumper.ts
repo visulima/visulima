@@ -279,7 +279,6 @@ const shouldFold = (value: string, level: number, context: DumpContext): boolean
     return value.includes(" ") && FOLDABLE_RE.test(value);
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const writeScalar = (value: string, level: number, context: DumpContext, inFlow: boolean): string => {
     if (value === "") {
         return "\u0022\u0022";
@@ -299,12 +298,11 @@ const writeScalar = (value: string, level: number, context: DumpContext, inFlow:
         const blockAllowed = context.blockQuote !== false && !inFlow && !LEADING_WS.test(value) && !TRAILING_INLINE_WS.test(stripTrailingNewlines(value));
 
         if (blockAllowed) {
-            // `folded` still falls back to literal when the text cannot be
-            // folded without changing its whitespace.
-            if (context.blockQuote === "folded" && FOLDABLE_RE.test(value.replaceAll("\n", " "))) {
-                return writeFolded(value.replaceAll("\n", " "), level, context);
-            }
-
+            // A multi-line value always goes to literal. Folding it would mean
+            // encoding each original newline as a blank line, which `foldText`
+            // has no way to express — the previous shortcut simply replaced
+            // newlines with spaces, so `"l1\nl2"` came back as `"l1 l2"` and the
+            // value did not survive a round trip.
             return writeLiteral(value, level, context);
         }
 
@@ -321,11 +319,12 @@ const writeScalar = (value: string, level: number, context: DumpContext, inFlow:
         return value;
     }
 
+    // A tab survives only inside double quotes, so it overrides the preference.
     if (TAB.test(value)) {
         return writeDoubleQuoted(value, false);
     }
 
-    return writeSingleQuoted(value);
+    return context.singleQuote ? writeSingleQuoted(value) : writeDoubleQuoted(value, false);
 };
 
 const representNumber = (value: number): string => {
@@ -403,6 +402,12 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
 
         context.stack.delete(value);
 
+        // An empty collection never takes padding: `[ ]` is two spaces of
+        // nothing, and both references emit `[]`.
+        if (items.length === 0) {
+            return "[]";
+        }
+
         return context.flowCollectionPadding ? `[ ${items.join(", ")} ]` : `[${items.join(", ")}]`;
     }
 
@@ -418,6 +423,10 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
         });
 
         context.stack.delete(value);
+
+        if (parts.length === 0) {
+            return "{}";
+        }
 
         return context.flowCollectionPadding ? `{ ${parts.join(", ")} }` : `{${parts.join(", ")}}`;
     }
@@ -538,9 +547,14 @@ const writeBlockSequence = (value: unknown[], level: number, context: DumpContex
     guardCircular(value, context);
     context.stack.add(value);
 
-    const indent = indentOf(level, context);
+    // `indentSeq: false` pulls a nested sequence back to its parent key's
+    // column (`a:\n- 1`). The whole sequence moves, children included, so a
+    // block child still lines up under its own `-`. A top-level sequence has
+    // nothing to pull back to.
+    const seqLevel = context.indentSeq || level === 0 ? level : level - 1;
+    const indent = indentOf(seqLevel, context);
     const marker = `-${" ".repeat(context.indent - 1)}`;
-    const childPrefixLength = (level + 1) * context.indent;
+    const childPrefixLength = (seqLevel + 1) * context.indent;
     const lines: string[] = [];
 
     for (const [index, element] of value.entries()) {
@@ -550,7 +564,7 @@ const writeBlockSequence = (value: unknown[], level: number, context: DumpContex
             continue;
         }
 
-        const { block, text } = writeChild(item, level, context);
+        const { block, text } = writeChild(item, seqLevel, context);
 
         lines.push(indent + marker + (block ? text.slice(childPrefixLength) : text));
     }
@@ -574,10 +588,6 @@ const writeBlockMapping = (value: Record<string, unknown>, level: number, contex
 
     for (const [key, rawItem] of entries) {
         const item = applyReplacer(context, key, rawItem);
-
-        if (item === undefined && context.skipInvalid && !context.keepUndefined) {
-            continue;
-        }
 
         if (item === undefined && !context.keepUndefined) {
             continue;

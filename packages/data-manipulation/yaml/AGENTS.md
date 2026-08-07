@@ -67,12 +67,36 @@ Error recovery is **per document, not within one**: `loadDocuments` catches a do
 
 `Scalar`, `YAMLMap`, `YAMLSeq`, `Pair`, `Alias`, the `isX` guards, `createNode`, `toJS` and `visit`, mirroring `yaml`'s.
 
-**`parse` never builds this.** `parseNodes` / `parseAllNodes` do, via `ParseOptions.nodes`, which switches the loader's collection factories (`createMapping`, `pushItem`) and wraps each finished value in `toNode`. Aliases stay `Alias` references rather than resolving, which is what lets a document round-trip with its aliases intact; `toJS` resolves them through an anchor map. The single-pass native-value path is where the speed comes from, so the tree is a separate opt-in structure — building it from `parse` would erase the package's reason to exist. Anything that needs the tree (styles, anchors on nodes, generic traversal) goes through the node API instead.
+**`parse` never builds this.** `parseNodes` / `parseAllNodes` do, via the internal `LoaderOptions.nodes` (deliberately not on the public `ParseOptions` — `parse` is documented to return native values), which switches the loader's collection factories (`createMapping`, `pushItem`) and wraps each finished value in `toNode`. Aliases stay `Alias` references rather than resolving, which is what lets a document round-trip with its aliases intact; `toJS` resolves them through an anchor map. The single-pass native-value path is where the speed comes from, so the tree is a separate opt-in structure — building it from `parse` would erase the package's reason to exist. Anything that needs the tree (styles, anchors on nodes, generic traversal) goes through the node API instead.
 
 Two constraints that shaped it:
 
 - Node kind is a plain `kind: NodeKindName` field, not a symbol brand and not `instanceof`. Guards therefore keep working across module instances, and the type survives `isolatedDeclarations`, which the `.d.ts` build enforces — a computed symbol key does not.
 - `visit` passes a `replace` callback down so a visitor returning a node writes into the parent's slot. Without it the replacement updated only a local variable and the tree was left untouched.
+
+## Per-API-surface defaults
+
+Three behaviours differ between the two packages this one shadows, so each entry
+point follows the one it stands in for. Do not "unify" these — the divergence is
+the point.
+
+| | `parse` / `stringify` (follows `yaml`) | `load` / `dump` (follows `js-yaml`) |
+| --- | --- | --- |
+| quoting a string that needs quotes | double (`singleQuote: false`) | single (`singleQuote: true`) |
+| empty stream | `null` | `undefined` |
+| strict mode | on | off |
+
+## Merge keys are resolved on conversion, not while parsing
+
+In node mode the `<<` pair and its `Alias` stay in the tree, and `toJS` splices
+the referenced mapping in — the same split `yaml` makes, and what lets a
+document with merge keys round-trip. The native path still merges during the
+parse, because there is no later step.
+
+Consequence: anything reading a merged value must go through `toJS`. That is why
+`Document.getIn`/`get`/`has` read from the memoised conversion instead of walking
+nodes — walking cannot see through an `Alias` (its anchor map only exists during
+a walk from the root), so `get("b")` on `a: &x 1\nb: *x` returned `undefined`.
 
 ## Hardening invariants (do not regress)
 
@@ -83,6 +107,26 @@ These each fixed a reproduced defect; `__tests__/hardening.test.ts` guards them.
 - **Scans must terminate on the character they mean**, not on `position < length`. Accepting the `\0` sentinel as a terminator advances the cursor to `length`, where `charCodeAt` returns `NaN`, which every `ch !== 0` loop treats as content — an unterminated `!<` tag hung the process forever.
 - **`composeNode` recursion is bounded by `options.maxDepth`** so deep nesting throws a `YAMLParseError` rather than a `RangeError` outside the error hierarchy.
 - **The block writers and `writeNode` must agree on flow-vs-block** for a node — both ask `rendersAsFlow`. They previously disagreed by one level, splicing a block collection inline and silently corrupting output at `flowLevel > 0`.
+- **`toJS` guards the prototype chain too.** It builds a second object from the
+  node tree, so `__proto__` is an inherited accessor there as well; every key
+  goes through `Object.defineProperty`. The loader's guard does not cover this
+  path, and `parseDocument` is always node mode.
+- **Key flattening has one implementation** (`keyToString`, exported from
+  `nodes/nodes.ts` and aliased as the loader's `mappingKeyOf`). Two copies drifted
+  and the node path stringified a `YAMLSeq` to its own fields, so `? [a, b]`
+  collided with the plain key `"a,b"`. It is also on the hot path — keep the
+  string/primitive cases first.
+- **A `customTags` `test` regex is rebuilt without `g`/`y`.** `test()` on such a
+  regex advances `lastIndex`, so the same scalar matched only every other time.
+- **`schema` is validated before use.** `RESOLVERS[schema]` on an unchecked name
+  threw a `TypeError` outside the error hierarchy, and `"toString"` resolved to an
+  inherited function that silently mangled every scalar.
+- **`YAMLMap` keeps a key index.** `get`/`has` scanned `items`, making a mapping
+  quadratic to build (8 000 keys ≈ 370 ms against ≈ 4 ms natively). `items` is
+  public and callers splice it, so a length mismatch invalidates the index.
+- **A multi-line value is never folded.** Encoding its newlines would need blank
+  lines, which `foldText` cannot express; the previous shortcut replaced newlines
+  with spaces and `"l1\nl2"` came back as `"l1 l2"`.
 - **No unanchored `/x+$/`-style regex on serializer input.** `/\n+$/` retried at every offset (quadratic); trailing newlines are stripped with a backward scan.
 
 ## Parity with `yaml` and `js-yaml`

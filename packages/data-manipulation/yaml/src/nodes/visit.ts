@@ -33,7 +33,11 @@ const REMOVE: unique symbol = Symbol("remove");
  * - {@link SKIP} — do not descend into this node
  * - {@link BREAK} — stop the whole walk
  * - {@link REMOVE} — delete this node from its parent
- * - any node — replace this node, then visit the replacement
+ * - any node — replace this node in its parent, then descend into it
+ *
+ * The visitor is *not* re-invoked on a node it just returned (`yaml` does
+ * re-invoke). Returning a node the visitor would itself replace therefore
+ * terminates here instead of looping.
  */
 type VisitorFunction = (key: number | string | null, node: unknown, path: ReadonlyArray<unknown>) => unknown;
 

@@ -15,6 +15,7 @@
  * `0b` binaries, `1_000` underscores, sexagesimals and timestamps.
  */
 
+import { YAMLParseError } from "../errors";
 import { resolveScalarValue } from "./resolve-scalar";
 
 /** Which scalar-resolution rules to apply. */
@@ -368,10 +369,21 @@ const asBigInt
  * the same way `yaml` does: `version: "1.1"` selects the 1.1 schema unless an
  * explicit `schema` overrides it.
  */
+const isSchemaName = (value: unknown): value is SchemaName => value === "core" || value === "failsafe" || value === "json" || value === "yaml-1.1";
+
 const selectScalarResolver = (schema: SchemaName | undefined, version: "1.1" | "1.2" | undefined, intAsBigInt = false): ScalarResolver => {
     let resolver = RESOLVERS.core;
 
-    if (schema) {
+    if (schema !== undefined) {
+        // An unchecked lookup let an unknown name (from a config file, a CLI
+        // flag, `readYaml(path, opts)`) return undefined and fail later as a
+        // `TypeError` — outside the error hierarchy every other bad input
+        // reports through. `"toString"` was worse: it resolved to an inherited
+        // function and silently mangled every scalar.
+        if (!isSchemaName(schema)) {
+            throw new YAMLParseError(`unknown schema "${String(schema)}"; expected one of core, failsafe, json, yaml-1.1`);
+        }
+
         resolver = RESOLVERS[schema];
     } else if (version === "1.1") {
         resolver = RESOLVERS["yaml-1.1"];
@@ -379,8 +391,6 @@ const selectScalarResolver = (schema: SchemaName | undefined, version: "1.1" | "
 
     return intAsBigInt ? asBigInt(resolver) : resolver;
 };
-
-const isSchemaName = (value: unknown): value is SchemaName => value === "core" || value === "failsafe" || value === "json" || value === "yaml-1.1";
 
 export type { ScalarResolver, SchemaName };
 export { INVALID_SCALAR, isSchemaName, selectScalarResolver };

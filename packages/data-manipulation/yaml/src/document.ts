@@ -12,8 +12,9 @@
 
 import type { YAMLParseError, YAMLWarning } from "./errors";
 import { YAMLStringifyError } from "./errors";
-import { createNode, isMap, isScalar, toJS as nodeToJS, YAMLMap } from "./nodes/nodes";
+import { createNode, isMap, toJS as nodeToJS, YAMLMap } from "./nodes/nodes";
 import { dump } from "./parser/dumper";
+import { applyReviver } from "./parser/loader";
 import type { MappingEntryRange, MappingRanges } from "./parser/ranges";
 import type { StringifyOptions } from "./types";
 
@@ -45,10 +46,6 @@ const trimTrailingSpace = (source: string, end: number): number => {
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
-
-/** A node that can be indexed by key or position. */
-const isCollectionNode = (value: unknown): value is YAMLMap & { get: (key: unknown, keep?: boolean) => unknown } =>
-    typeof value === "object" && value !== null && typeof (value as { get?: unknown }).get === "function";
 
 /**
  * Render a value as the right-hand side of a `key:` entry.
@@ -100,6 +97,13 @@ class YAMLDocument {
 
     readonly #stringifyOptions: StringifyOptions;
 
+    /**
+     * Memoised `toJS` result backing the read accessors, boxed so that a
+     * legitimately `undefined` document is still a cache hit. Cleared by every
+     * edit.
+     */
+    #converted: { value: unknown } | undefined;
+
     #source: string;
 
     public constructor(
@@ -116,30 +120,49 @@ class YAMLDocument {
         this.warnings = result.warnings;
     }
 
-    /** The document's value as plain JavaScript, resolving aliases. */
-    public toJS(): unknown {
-        return nodeToJS(this.contents);
+    /**
+     * The document's value as plain JavaScript, resolving aliases and merge
+     * keys.
+     *
+     * `reviver` runs over the converted value the way `JSON.parse`'s does. It
+     * belongs here rather than on the parse options because it rewrites plain
+     * values, and the document holds a node tree until this point.
+     */
+    public toJS(options?: { reviver?: (key: unknown, value: unknown) => unknown }): unknown {
+        const value = nodeToJS(this.contents);
+
+        return options?.reviver ? applyReviver({ "": value }, "", value, options.reviver) : value;
     }
 
     /** Alias of {@link YAMLDocument.toJS}, so `JSON.stringify` works directly. */
     public toJSON(): unknown {
-        return nodeToJS(this.contents);
+        return this.toJS();
     }
 
-    /** Value at `path`, or `undefined` if any segment is missing. */
+    /**
+     * Value at `path`, or `undefined` if any segment is missing.
+     *
+     * This reads from the converted value rather than walking the node tree.
+     * Walking nodes cannot see through an `Alias` or a merge key — both are
+     * resolved by the conversion, against an anchor map that only exists when
+     * the walk starts at the root — so `get("b")` on `a: &amp;x 1\nb: *x` used to
+     * come back `undefined`. The conversion is memoised and dropped whenever an
+     * edit changes the tree.
+     */
     public getIn(path: ReadonlyArray<number | string>): unknown {
-        let current: unknown = this.contents;
+        this.#converted ??= { value: nodeToJS(this.contents) };
+
+        let current: unknown = this.#converted.value;
 
         for (const segment of path) {
-            if (!isCollectionNode(current)) {
+            if (current === null || (typeof current !== "object" && typeof current !== "string")) {
                 return undefined;
             }
 
-            current = current.get(segment, true);
+            current = (current as Record<string, unknown>)[segment];
         }
 
-        // Callers of the document API want values, not nodes.
-        return isScalar(current) ? current.value : nodeToJS(current);
+        return current;
     }
 
     /** Value of a top-level key. */
@@ -216,6 +239,8 @@ class YAMLDocument {
         }
 
         cursor.set(createNode(remaining.at(-1)!), createNode(value));
+
+        this.#converted = undefined;
     }
 
     /** Set a top-level key. */
@@ -251,6 +276,7 @@ class YAMLDocument {
             const root = new YAMLMap();
 
             this.contents = root;
+            this.#converted = undefined;
 
             return root;
         }

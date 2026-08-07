@@ -301,6 +301,9 @@ Serialize a JavaScript value to a YAML document string.
 | `keepUndefined`         | `boolean`                          | `false`   | Keep `undefined` values instead of dropping them.                  |
 | `replacer`              | `(key, value) => unknown`          | —         | `JSON.stringify`-style value replacer.                             |
 
+> `dump` (the `js-yaml` alias) defaults `singleQuote` to `true`, and `load` returns `undefined` for an empty stream where `parse` returns `null` — each alias follows the package it stands in for.
+
+
 ### Errors
 
 `YAMLParseError`, `YAMLStringifyError`, `YAMLWarning` and the shared base `YAMLError`

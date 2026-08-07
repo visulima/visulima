@@ -258,8 +258,49 @@ class YAMLMap extends Collection {
 
     public items: Pair[] = [];
 
+    /**
+     * Key → first matching pair, so a lookup does not scan `items`.
+     *
+     * Parsing calls `has` and `set` once per key, which made building a mapping
+     * quadratic: 8 000 keys took ~370 ms against ~4 ms for the native path, and
+     * `parseDocument` is exactly the entry point aimed at large hand-edited
+     * files.
+     */
+    #index: Map<unknown, Pair> | undefined;
+
+    /**
+     * How many items the index covers. `items` is public and callers splice it
+     * directly (`visit` with REMOVE does), so a length that no longer matches is
+     * the cheap signal that the index went stale and must be rebuilt.
+     */
+    #indexedCount = 0;
+
+    #keyIndex(): Map<unknown, Pair> {
+        if (this.#index === undefined || this.#indexedCount !== this.items.length) {
+            const index = new Map<unknown, Pair>();
+
+            for (const pair of this.items) {
+                const plain = isScalar(pair.key) ? pair.key.value : pair.key;
+
+                // First wins, matching the `find` this replaced.
+                if (!index.has(plain)) {
+                    index.set(plain, pair);
+                }
+            }
+
+            this.#index = index;
+            this.#indexedCount = this.items.length;
+        }
+
+        return this.#index;
+    }
+
+    #find(key: unknown): Pair | undefined {
+        return this.#keyIndex().get(isScalar(key) ? key.value : key);
+    }
+
     public get(key: unknown, keepScalar = false): unknown {
-        const pair = this.items.find((item) => sameKey(item.key, key));
+        const pair = this.#find(key);
 
         if (!pair) {
             return undefined;
@@ -269,7 +310,7 @@ class YAMLMap extends Collection {
     }
 
     public set(key: unknown, value: unknown): void {
-        const pair = this.items.find((item) => sameKey(item.key, key));
+        const pair = this.#find(key);
 
         if (pair) {
             pair.value = value;
@@ -277,11 +318,21 @@ class YAMLMap extends Collection {
             return;
         }
 
-        this.items.push(new Pair(key, value));
+        const added = new Pair(key, value);
+
+        this.items.push(added);
+
+        // Extend the index rather than dropping it — otherwise every append
+        // would force a full rebuild on the next lookup and the quadratic cost
+        // would simply move.
+        if (this.#index !== undefined && this.#indexedCount === this.items.length - 1) {
+            this.#index.set(isScalar(key) ? key.value : key, added);
+            this.#indexedCount = this.items.length;
+        }
     }
 
     public has(key: unknown): boolean {
-        return this.items.some((item) => sameKey(item.key, key));
+        return this.#find(key) !== undefined;
     }
 
     public delete(key: unknown): boolean {
@@ -292,6 +343,7 @@ class YAMLMap extends Collection {
         }
 
         this.items.splice(index, 1);
+        this.#index = undefined;
 
         return true;
     }
@@ -355,12 +407,145 @@ const asIndex = (key: unknown): number | undefined => {
     return Number.isInteger(index) && index >= 0 ? index : undefined;
 };
 
+/** Whether a pair's key is the merge key `&lt;&lt;`. */
+const isMergeKey = (key: unknown): boolean => (isScalar(key) ? key.value : key) === "<<";
+
+/**
+ * Write one key of a converted mapping without letting the document reach the
+ * prototype chain.
+ *
+ * The loader guards its own writes, but `toJS` builds a second object from the
+ * node tree and `__proto__` is an inherited accessor there too — assigning it
+ * would swap the result's prototype instead of storing a key. Unlike the parse
+ * path this has no opt-out: nothing legitimate needs a node tree to mutate a
+ * prototype.
+ */
+const assignConverted = (target: Record<string, unknown>, key: string, value: unknown): void => {
+    // Both branches write an own data property; `defineProperty` is required for
+    // `__proto__` because plain assignment would hit the inherited accessor.
+    Object.defineProperty(target, key, { configurable: true, enumerable: true, value, writable: true });
+};
+
+/**
+ * The string a collection key is stored under once a mapping is flattened to a
+ * plain object.
+ *
+ * The brackets and braces matter: without them every collection key collapsed
+ * to `[object Object]`, so `? [a, b]` collided with the plain key `"a,b"` and
+ * the two entries silently merged. The loader flattens native keys with this
+ * same function, so both paths agree on the spelling.
+ */
+const keyToString = (node: unknown): string => {
+    // The loader calls this for every key of every plain-object mapping, so the
+    // overwhelmingly common cases answer before any of the node checks run.
+    if (typeof node === "string") {
+        return node;
+    }
+
+    if (node === null || typeof node !== "object") {
+        return String(node);
+    }
+
+    if (isScalar(node)) {
+        return keyToString(node.value);
+    }
+
+    if (isSeq(node)) {
+        return `[${node.items.map((part) => keyToString(part)).join(",")}]`;
+    }
+
+    if (isMap(node)) {
+        return `{${node.items
+            .map((pair) => `${keyToString(pair.key)}: ${keyToString(pair.value)}`)
+            .toSorted((a, b) => a.localeCompare(b))
+            .join(", ")}}`;
+    }
+
+    if (isAlias(node)) {
+        return `*${node.source}`;
+    }
+
+    if (Array.isArray(node)) {
+        return `[${node.map((part) => keyToString(part)).join(",")}]`;
+    }
+
+    if (Object.prototype.toString.call(node) === "[object Object]") {
+        return `{${Object.entries(node as Record<string, unknown>)
+            .map(([key, item]) => `${key}: ${keyToString(item)}`)
+            .toSorted((a, b) => a.localeCompare(b))
+            .join(", ")}}`;
+    }
+
+    // Some other object (a Date, a class instance). Its own tag is the only
+    // stable spelling available; `String(node)` would throw the base-to-string
+    // lint and read `[object Object]` for all of them anyway.
+    return Object.prototype.toString.call(node);
+};
+
+/**
+ * The mappings a merge key pulls from: one for `&lt;&lt;: *a`, several for
+ * `&lt;&lt;: [*a, *b]`. Anything that does not resolve to a mapping is skipped —
+ * the parser has already rejected the malformed forms.
+ */
+const mergeSources = (value: unknown, seen: Map<string, unknown>): Record<string, unknown>[] => {
+    const resolved = toJS(value, seen);
+
+    if (Array.isArray(resolved)) {
+        return resolved.filter((item) => isPlainRecord(item)) as Record<string, unknown>[];
+    }
+
+    return isPlainRecord(resolved) ? [resolved as Record<string, unknown>] : [];
+};
+
+const isPlainRecord = (value: unknown): boolean => typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+ * Convert a mapping, splicing in whatever its merge keys reference.
+ *
+ * A key already present wins, which covers both orders: an explicit key written
+ * before the merge survives it, and one written after simply overwrites.
+ */
+const mapToJS = (value: YAMLMap, seen: Map<string, unknown>): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+
+    if (value.anchor) {
+        seen.set(value.anchor, out);
+    }
+
+    for (const pair of value.items) {
+        if (isMergeKey(pair.key)) {
+            applyMerge(out, pair.value, seen);
+
+            continue;
+        }
+
+        assignConverted(out, keyToString(pair.key), toJS(pair.value, seen));
+    }
+
+    return out;
+};
+
+/** Splice a merge key's referenced mappings into `out`, keeping existing keys. */
+const applyMerge = (out: Record<string, unknown>, value: unknown, seen: Map<string, unknown>): void => {
+    for (const source of mergeSources(value, seen)) {
+        for (const [key, item] of Object.entries(source)) {
+            if (!Object.hasOwn(out, key)) {
+                assignConverted(out, key, item);
+            }
+        }
+    }
+};
+
 /**
  * Convert a node tree to plain JavaScript.
  *
  * `anchors` resolves aliases back to the value their anchor names, so a
  * document with shared references produces shared references rather than
  * duplicated copies.
+ *
+ * Merge keys are resolved here rather than while parsing, so the tree keeps the
+ * `&lt;&lt;` pair and its alias and can still be written back out unchanged — the
+ * same split the `yaml` reference makes.
  */
 const toJS = (value: unknown, anchors?: Map<string, unknown>): unknown => {
     const seen = anchors ?? new Map<string, unknown>();
@@ -392,17 +577,7 @@ const toJS = (value: unknown, anchors?: Map<string, unknown>): unknown => {
     }
 
     if (isMap(value)) {
-        const out: Record<string, unknown> = {};
-
-        if (value.anchor) {
-            seen.set(value.anchor, out);
-        }
-
-        for (const pair of value.items) {
-            out[String(toJS(pair.key, seen))] = toJS(pair.value, seen);
-        }
-
-        return out;
+        return mapToJS(value, seen);
     }
 
     if (isPair(value)) {
@@ -452,4 +627,4 @@ const createNode = (value: unknown): unknown => {
 };
 
 export type { NodeKindName, ScalarStyle };
-export { Alias, Collection, createNode, isAlias, isCollection, isMap, isNode, isPair, isScalar, isSeq, Pair, Scalar, toJS, YAMLMap, YAMLSeq };
+export { Alias, Collection, createNode, isAlias, isCollection, isMap, isNode, isPair, isScalar, isSeq, keyToString, Pair, Scalar, toJS, YAMLMap, YAMLSeq };

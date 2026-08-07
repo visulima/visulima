@@ -70,14 +70,6 @@ export interface ParseOptions {
     merge?: boolean;
 
     /**
-     * Produce a `Scalar` / `YAMLMap` / `YAMLSeq` tree rather than native
-     * values. Set by `parseDocument({ nodes: true })`; `parse` never enables
-     * it, which is what keeps its single-pass path fast.
-     * @default false
-     */
-    nodes?: boolean;
-
-    /**
      * Optional callback invoked for every non-fatal `YAMLWarning`. When
      * omitted, warnings are silently ignored.
      */
@@ -260,4 +252,19 @@ export interface StringifyOptions {
      * @default "true"
      */
     trueStr?: string;
+}
+
+/**
+ * Parse options plus the switches only this package's own entry points set.
+ *
+ * `nodes` is deliberately not on {@link ParseOptions}: `parse` is documented to
+ * return native JavaScript, and an internal mode reachable from the public
+ * options object would be a contract we could not retract later.
+ */
+export interface LoaderOptions extends ParseOptions {
+    /**
+     * Build a `Scalar` / `YAMLMap` / `YAMLSeq` tree instead of native values.
+     * Set by `parseNodes` and `parseDocument`; `parse` never enables it.
+     */
+    nodes?: boolean;
 }

@@ -32,11 +32,11 @@
 
 import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
-import { Alias, Scalar, YAMLMap, YAMLSeq } from "../nodes/nodes";
+import { Alias, keyToString, Scalar, YAMLMap, YAMLSeq } from "../nodes/nodes";
 import { resolveExplicitTag } from "../schema/resolve-scalar";
 import { INVALID_SCALAR } from "../schema/schemas";
 import { resolveImplicitTag } from "../schema/tags";
-import type { ParseOptions } from "../types";
+import type { LoaderOptions, ParseOptions } from "../types";
 import type { MappingRanges } from "./ranges";
 import { readBlockScalar, readDoubleQuotedScalar, readPlainScalar, readSingleQuotedScalar } from "./scalars";
 import { isEol, isFlowIndicator, isWhiteSpace, isWsOrEol, readLineBreak, skipSeparationSpace, testDocumentSeparator } from "./scanner";
@@ -150,33 +150,6 @@ const mergeMappings = (state: State, destination: MappingTarget, source: unknown
     }
 };
 
-/**
- * Store one key/value pair into `result`, honouring merge keys, duplicate-key
- * policy and the prototype-pollution guard. `overridableKeys` tracks keys that
- * a merge introduced (so a later explicit key may override them); it is created
- * lazily — merge keys are rare, so a merge-free mapping never allocates a Set.
- * Returns the (possibly newly created) `overridableKeys` set.
- */
-// A plain object can only carry string keys, so a complex (collection) key is
-// flattened to a stable string. The brackets/braces matter: without them every
-// mapping key collapsed to the same `[object Object]` and `? [a, b]` collided
-// with the plain string key `a,b`, silently merging distinct entries.
-const stringifyComplexKey = (node: unknown): string => {
-    if (Array.isArray(node)) {
-        return `[${(node as unknown[]).map((part) => stringifyComplexKey(part)).join(",")}]`;
-    }
-
-    if (isPlainObject(node)) {
-        const entries = Object.entries(node as Record<string, unknown>)
-            .map(([key, item]) => `${key}: ${stringifyComplexKey(item)}`)
-            .toSorted((a, b) => a.localeCompare(b));
-
-        return `{${entries.join(", ")}}`;
-    }
-
-    return String(node);
-};
-
 /** A parsed mapping: a plain object, or a Map when `mapAsMap` is set. */
 type MappingTarget = Map<unknown, unknown> | Record<string, unknown> | YAMLMap;
 
@@ -247,25 +220,16 @@ const createMapping = (state: State): MappingTarget => {
     }
 
     if (state.options.mapAsMap) {
-        return new Map<unknown, unknown>();
+        return new Map();
     }
 
     return {};
 };
 
 /** The string a mapping key is stored under. */
-const mappingKeyOf = (keyNode: unknown): string => {
-    // In node mode a key arrives wrapped; the stored key is its text either way.
-    if (keyNode instanceof Scalar) {
-        return mappingKeyOf(keyNode.value);
-    }
-
-    if (typeof keyNode === "object" && keyNode !== null) {
-        return stringifyComplexKey(keyNode);
-    }
-
-    return String(keyNode);
-};
+// Shared with `toJS`, so a key spells the same whether it was flattened while
+// parsing or while converting a node tree.
+const mappingKeyOf = keyToString;
 
 /**
  * Record where one block-mapping entry sits in the source. No-op unless
@@ -286,6 +250,13 @@ const recordMappingEntry = (state: State, mapping: object, keyNode: unknown, sta
     entries.push({ column: start - (state.input.lastIndexOf("\n", start - 1) + 1), end, key: mappingKeyOf(keyNode), start, valueStart });
 };
 
+/**
+ * Store one key/value pair into `result`, honouring merge keys, duplicate-key
+ * policy and the prototype-pollution guard. `overridableKeys` tracks keys that
+ * a merge introduced (so a later explicit key may override them); it is created
+ * lazily — merge keys are rare, so a merge-free mapping never allocates a Set.
+ * Returns the (possibly newly created) `overridableKeys` set.
+ */
 const storeMappingPair = (
     state: State,
     result: MappingTarget,
@@ -297,11 +268,9 @@ const storeMappingPair = (
     const keyNode = keyNodeInput;
     let keys = overridableKeys;
 
-    // A Map can hold a collection as a key; a plain object cannot, so there the
-    // key is flattened to a stable string. `stringKeys` forces the flattened
-    // form even for a Map.
     // A Map or YAMLMap can hold a collection — or a whole node — as a key; a
     // plain object cannot, so there the key is flattened to a stable string.
+    // `stringKeys` forces the flattened form even for those two.
     const keepsNativeKeys = result instanceof Map || result instanceof YAMLMap;
 
     let key: unknown = keyNode;
@@ -1109,6 +1078,14 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
             if (implicit) {
                 state.result = implicit.value;
 
+                // Wrap before the anchor is recorded, so node mode registers the
+                // node rather than the raw value. Returning early here used to
+                // skip the wrap below entirely, leaving a custom implicit tag as
+                // the only unwrapped value in an otherwise complete tree.
+                if (state.nodes) {
+                    state.result = toNode(state, state.result, hasContent);
+                }
+
                 if (state.anchor !== null) {
                     state.anchorMap.set(state.anchor, state.result);
                 }
@@ -1193,6 +1170,9 @@ const readDocument = (state: State): void => {
     state.tagMap = new Map<string, string>();
     state.anchorMap = new Map<string, unknown>();
     state.aliasCount = 0;
+    // Directives bind to the document that declares them, so a `%YAML` in an
+    // earlier document of the stream must not leak into this one.
+    state.resetVersionDirective();
 
     let ch: number;
 
@@ -1263,6 +1243,7 @@ const readDocument = (state: State): void => {
             }
 
             hasYamlDirective = true;
+            state.applyVersionDirective(directiveArgs[0]!);
         } else if (directiveName === "TAG") {
             if (directiveArgs.length === 2) {
                 state.tagMap.set(directiveArgs[0]!, directiveArgs[1]!);
@@ -1359,7 +1340,7 @@ const normalizeInput = (input: string): string => {
  * Validate the input and build a cursor over it. Shared by every entry point so
  * the trust-boundary checks cannot be bypassed by one of them.
  */
-const prepareState = (input: string, options: ParseOptions): State => {
+const prepareState = (input: string, options: LoaderOptions): State => {
     // A non-string must fail as a YAMLParseError rather than as whichever
     // TypeError the first string method happens to raise — callers catch the
     // former.
@@ -1393,11 +1374,10 @@ const applyReviver = (holder: unknown, key: unknown, value: unknown, reviver: (k
         for (let index = value.length - 1; index >= 0; index--) {
             const revived = applyReviver(value, String(index), value[index], reviver);
 
-            if (revived === undefined) {
-                value.splice(index, 1);
-            } else {
-                value[index] = revived;
-            }
+            // Assign rather than splice. Removing the element shifts every
+            // later index, so a reviver that drops one entry silently
+            // renumbered the rest.
+            value[index] = revived;
         }
     } else if (value instanceof Map) {
         for (const entryKey of value.keys()) {
@@ -1486,7 +1466,7 @@ interface DocumentResult {
  * Recovery is per document — within one document the first error still ends it,
  * because the parser has no resync points inside a document.
  */
-const loadDocuments = (input: string, options: ParseOptions = {}): { documents: DocumentResult[]; ranges: MappingRanges } => {
+const loadDocuments = (input: string, options: LoaderOptions = {}): { documents: DocumentResult[]; ranges: MappingRanges } => {
     const warnings: YAMLWarning[] = [];
     const state = prepareState(input, {
         ...options,
@@ -1550,4 +1530,4 @@ const loadOne = (input: string, options: ParseOptions = {}): unknown => {
 };
 
 export type { DocumentResult };
-export { loadAll, loadDocuments, loadOne };
+export { applyReviver, loadAll, loadDocuments, loadOne };
