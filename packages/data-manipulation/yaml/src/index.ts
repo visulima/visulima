@@ -1,7 +1,7 @@
 import { YAMLDocument } from "./document";
 import type { YAMLParseError as YAMLParseErrorType } from "./errors";
 import { dump as dumpValue } from "./parser/dumper";
-import { loadAll as loadAllDocuments, loadDocuments, loadOne } from "./parser/loader";
+import { loadAll as loadAllDocuments, loadDocuments, loadOne } from "./parser/stream";
 import type { ParseOptions, StringifyOptions } from "./types";
 
 // The `js-yaml`-style aliases default to `strict: false` so they stay

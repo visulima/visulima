@@ -15,305 +15,45 @@
 /* eslint-disable sonarjs/different-types-comparison */
 /* eslint-disable unicorn/prefer-code-point */
 /* eslint-disable unicorn/no-null */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable sonarjs/cognitive-complexity */
 
 /**
- * Recursive-descent YAML 1.2 loader.
+ * The composer: source text in, a composed node out.
  *
- * The overall control flow (document → node → collection/scalar) follows the
- * well-trodden structure used by mature YAML implementations: a single mutable
- * cursor walks the source string, indentation columns are threaded through the
- * block parsers, and native JavaScript values are produced directly (there is
- * no intermediate concrete syntax tree on the default path).
+ * A single mutable cursor walks the string and indentation columns are threaded
+ * through the block readers. What shape the result takes — plain objects, `Map`s
+ * or a node tree — is not decided here; `state.build` was chosen once from the
+ * options (see `collection-builder.ts`).
+ *
+ * The readers below are mutually recursive, which is why they share a file. The
+ * pieces that are not — node properties, and the document/stream layer — live in
+ * `properties.ts` and `stream.ts`.
  */
 
-import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
-import { Alias, keyToString, Scalar, YAMLMap, YAMLSeq } from "../nodes/nodes";
 import { resolveExplicitTag } from "../schema/resolve-scalar";
 import { INVALID_SCALAR } from "../schema/schemas";
 import { resolveImplicitTag } from "../schema/tags";
-import type { LoaderOptions, ParseOptions } from "../types";
-import type { MappingRanges } from "./ranges";
+import type { MappingTarget, SeqTarget } from "./collection-builder";
+import { recordMappingEntry, storeMappingPair } from "./collections";
+import { readAlias, readAnchorProperty, readTagProperty } from "./properties";
 import { readBlockScalar, readDoubleQuotedScalar, readPlainScalar, readSingleQuotedScalar } from "./scalars";
-import { isEol, isFlowIndicator, isWhiteSpace, isWsOrEol, readLineBreak, skipSeparationSpace, testDocumentSeparator } from "./scanner";
-import type { Snapshot } from "./state";
-import { beginSpeculation, emitWarning, restoreState, rollbackSpeculation, snapshotState, State, throwError } from "./state";
-
-const isPlainObject = (value: unknown): boolean => typeof value === "object" && value !== null && Object.prototype.toString.call(value) === "[object Object]";
+import { isWhiteSpace, isWsOrEol, skipSeparationSpace } from "./scanner";
+import type { Snapshot, State } from "./state";
+import { beginSpeculation, restoreState, rollbackSpeculation, snapshotState, throwError } from "./state";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
 const CONTEXT_BLOCK_IN = 3;
 const CONTEXT_BLOCK_OUT = 4;
 
-const MERGE_TAG = "tag:yaml.org,2002:merge";
-
-const YAML_VERSION_RE = /^\d+\.\d+$/;
-
-/**
- * Write one mapping key, never letting the document reach the prototype chain.
- *
- * `target[key] = value` is unsafe for `__proto__`: that name resolves to an
- * inherited accessor, so the assignment swaps the object's prototype instead of
- * creating a key. With the guard on we define it as an own data property, which
- * both keeps the document's data and leaves the prototype untouched. With the
- * guard off the caller has explicitly opted into the raw assignment.
- *
- * `constructor` / `prototype` are written normally: `target` is always a fresh
- * object literal, so an own property of either name merely shadows a harmless
- * inherited one — dropping them (as this used to) lost data for no gain.
- *
- * Every write goes through here, including merge keys (`&lt;&lt;`) — routing those
- * around it is what previously let `&lt;&lt;` bypass the guard entirely.
- */
-const assignMappingKey = (state: State, target: MappingTarget, key: unknown, value: unknown): void => {
-    // In node mode a mapping is an ordered list of `Pair`s, so keys keep their
-    // own nodes (and therefore their styles and tags) rather than collapsing.
-    if (target instanceof YAMLMap) {
-        target.set(key, value);
-
-        return;
-    }
-
-    // A Map keeps keys as their own values, so the prototype chain is never in
-    // play and no guard is needed.
-    if (target instanceof Map) {
-        target.set(key, value);
-
-        return;
-    }
-
-    if (key === "__proto__" && state.options.preventProtoPollution) {
-        Object.defineProperty(target, key, { configurable: true, enumerable: true, value, writable: true });
-
-        return;
-    }
-
-    target[key as string] = value;
-};
-
-/** Whether `target` already carries `key`. */
-const mappingHas = (target: MappingTarget, key: unknown): boolean => {
-    if (target instanceof YAMLMap) {
-        return target.has(key);
-    }
-
-    if (target instanceof Map) {
-        return target.has(key);
-    }
-
-    return Object.hasOwn(target, key as string);
-};
-
-/** Every key currently in `target`. */
-const mappingKeys = (target: MappingTarget): unknown[] => {
-    if (target instanceof YAMLMap) {
-        return target.items.map((pair) => pair.key);
-    }
-
-    if (target instanceof Map) {
-        return [...target.keys()];
-    }
-
-    return Object.keys(target);
-};
-
-/** Read one key back out of `target`. */
-const mappingGet = (target: MappingTarget, key: unknown): unknown => {
-    if (target instanceof YAMLMap) {
-        return target.get(key, true);
-    }
-
-    if (target instanceof Map) {
-        return target.get(key);
-    }
-
-    return target[String(key)];
-};
-
-const mergeMappings = (state: State, destination: MappingTarget, source: unknown, overridableKeys: Set<unknown>): void => {
-    if (!isPlainObject(source) && !(source instanceof Map)) {
-        throwError(state, "cannot merge mappings; the provided source object is unacceptable");
-    }
-
-    const from = source as MappingTarget;
-
-    for (const key of mappingKeys(from)) {
-        if (!mappingHas(destination, key)) {
-            assignMappingKey(state, destination, key, mappingGet(from, key));
-            overridableKeys.add(key);
-        }
-    }
-};
-
-/** A parsed mapping: a plain object, or a Map when `mapAsMap` is set. */
-type MappingTarget = Map<unknown, unknown> | Record<string, unknown> | YAMLMap;
-
-/**
- * Wrap a finished value as a node, carrying over the tag, anchor and the style
- * it was written in. Collections already are nodes by this point.
- */
-const toNode = (state: State, value: unknown, hasContent: boolean): unknown => {
-    if (value instanceof Alias) {
-        return value;
-    }
-
-    // Already a node: `composeNode` can run over the same result more than once
-    // (a speculative parse that succeeds, a rewind that re-reads the value), and
-    // wrapping twice would bury the value inside a second Scalar.
-    if (value instanceof Scalar) {
-        if (state.anchor !== null) {
-            value.anchor = state.anchor;
-        }
-
-        if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
-            value.tag = state.tag;
-        }
-
-        return value;
-    }
-
-    if (value instanceof YAMLMap || value instanceof YAMLSeq) {
-        if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
-            value.tag = state.tag;
-        }
-
-        return value;
-    }
-
-    const scalar = new Scalar(value);
-
-    if (hasContent && state.scalarStyle) {
-        scalar.type = state.scalarStyle;
-    }
-
-    if (state.anchor !== null) {
-        scalar.anchor = state.anchor;
-    }
-
-    if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
-        scalar.tag = state.tag;
-    }
-
-    return scalar;
-};
-
-/** Append to whichever sequence representation is in use. */
-const pushItem = (target: unknown[] | YAMLSeq, value: unknown): void => {
-    if (target instanceof YAMLSeq) {
-        target.items.push(value);
-
-        return;
-    }
-
-    target.push(value);
-};
-
-/** Build the container a mapping accumulates into. */
-const createMapping = (state: State): MappingTarget => {
-    if (state.nodes) {
-        return new YAMLMap();
-    }
-
-    if (state.options.mapAsMap) {
-        return new Map();
-    }
-
-    return {};
-};
-
-/** The string a mapping key is stored under. */
-// Shared with `toJS`, so a key spells the same whether it was flattened while
-// parsing or while converting a node tree.
-const mappingKeyOf = keyToString;
-
-/**
- * Record where one block-mapping entry sits in the source. No-op unless
- * `parseDocument` asked for ranges.
- */
-const recordMappingEntry = (state: State, mapping: object, keyNode: unknown, start: number, valueStart: number, end: number): void => {
-    if (state.mappingRanges === null || start < 0) {
-        return;
-    }
-
-    let entries = state.mappingRanges.get(mapping);
-
-    if (entries === undefined) {
-        entries = [];
-        state.mappingRanges.set(mapping, entries);
-    }
-
-    entries.push({ column: start - (state.input.lastIndexOf("\n", start - 1) + 1), end, key: mappingKeyOf(keyNode), start, valueStart });
-};
-
-/**
- * Store one key/value pair into `result`, honouring merge keys, duplicate-key
- * policy and the prototype-pollution guard. `overridableKeys` tracks keys that
- * a merge introduced (so a later explicit key may override them); it is created
- * lazily — merge keys are rare, so a merge-free mapping never allocates a Set.
- * Returns the (possibly newly created) `overridableKeys` set.
- */
-const storeMappingPair = (
-    state: State,
-    result: MappingTarget,
-    overridableKeys: Set<unknown> | undefined,
-    keyTag: string | null,
-    keyNodeInput: unknown,
-    valueNode: unknown,
-): Set<unknown> | undefined => {
-    const keyNode = keyNodeInput;
-    let keys = overridableKeys;
-
-    // A Map or YAMLMap can hold a collection — or a whole node — as a key; a
-    // plain object cannot, so there the key is flattened to a stable string.
-    // `stringKeys` forces the flattened form even for those two.
-    const keepsNativeKeys = result instanceof Map || result instanceof YAMLMap;
-
-    let key: unknown = keyNode;
-
-    if (!keepsNativeKeys || state.options.stringKeys) {
-        key = mappingKeyOf(keyNode);
-    }
-
-    const isMerge = state.options.merge !== false && (keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<"));
-
-    if (isMerge) {
-        keys ??= new Set<unknown>();
-
-        if (Array.isArray(valueNode)) {
-            for (const item of valueNode) {
-                mergeMappings(state, result, item, keys);
-            }
-        } else {
-            mergeMappings(state, result, valueNode, keys);
-        }
-
-        return keys;
-    }
-
-    if (!keys?.has(key) && mappingHas(result, key)) {
-        if (state.options.duplicateKeys === "error") {
-            throwError(state, `duplicated mapping key "${String(key)}"`);
-        } else if (state.options.duplicateKeys === "ignore") {
-            return keys;
-        }
-    }
-
-    assignMappingKey(state, result, key, valueNode);
-
-    keys?.delete(key);
-
-    return keys;
-};
-
 const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    const result: unknown[] | YAMLSeq = state.nodes ? new YAMLSeq() : [];
+    const result: SeqTarget = state.build.seq();
     let detected = false;
 
     // A tab in this line's indentation cannot introduce a block sequence.
@@ -327,10 +67,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     const entryLine = state.line;
 
     if (state.anchor !== null) {
-        if (state.nodes) {
-            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
-        }
-
+        state.build.anchor(result, state.anchor);
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -358,7 +95,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
         state.position++;
 
         if (skipSeparationSpace(state, true, -1) && state.lineIndent <= nodeIndent) {
-            pushItem(result, null);
+            state.build.push(result, null);
             ch = state.input.charCodeAt(state.position);
             continue;
         }
@@ -366,7 +103,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
         const { line } = state;
 
         composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
-        pushItem(result, state.result);
+        state.build.push(result, state.result);
         skipSeparationSpace(state, true, -1);
 
         ch = state.input.charCodeAt(state.position);
@@ -397,7 +134,7 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
 const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    const result = createMapping(state);
+    const result = state.build.map();
     let overridableKeys: Set<unknown> | undefined;
 
     let keyTag: string | null = null;
@@ -420,10 +157,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     const entryLine = state.line;
 
     if (state.anchor !== null) {
-        if (state.nodes) {
-            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
-        }
-
+        state.build.anchor(result, state.anchor);
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -576,25 +310,22 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     let ch = state.input.charCodeAt(state.position);
     let terminator: number;
     let isMapping: boolean;
-    let result: MappingTarget | YAMLSeq | unknown[];
+    let result: MappingTarget | SeqTarget;
 
     if (ch === 0x5b) {
         terminator = 0x5d;
         isMapping = false;
-        result = state.nodes ? new YAMLSeq() : [];
+        result = state.build.seq();
     } else if (ch === 0x7b) {
         terminator = 0x7d;
         isMapping = true;
-        result = createMapping(state);
+        result = state.build.map();
     } else {
         return false;
     }
 
     if (state.anchor !== null) {
-        if (state.nodes) {
-            (result as YAMLMap | YAMLSeq).anchor = state.anchor;
-        }
-
+        state.build.anchor(result, state.anchor);
         state.anchorMap.set(state.anchor, result);
     }
 
@@ -661,12 +392,12 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
             overridableKeys = storeMappingPair(state, result as Record<string, unknown>, overridableKeys, keyTag, keyNode, valueNode);
         } else if (isPair) {
             // `[ key: value ]` — a single-pair mapping as one sequence entry.
-            const pair = createMapping(state);
+            const pair = state.build.map();
 
             overridableKeys = storeMappingPair(state, pair, overridableKeys, keyTag, keyNode, valueNode);
-            pushItem(result as unknown[] | YAMLSeq, pair);
+            state.build.push(result as SeqTarget, pair);
         } else {
-            pushItem(result as unknown[] | YAMLSeq, keyNode);
+            state.build.push(result as SeqTarget, keyNode);
         }
 
         skipSeparationSpace(state, true, nodeIndent);
@@ -681,163 +412,6 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     }
 
     return throwError(state, "unexpected end of the stream within a flow collection");
-};
-
-const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z-]+!)$/i;
-
-const readTagProperty = (state: State): boolean => {
-    let ch = state.input.charCodeAt(state.position);
-
-    if (ch !== 0x21) {
-        return false;
-    }
-
-    if (state.tag !== null) {
-        throwError(state, "duplication of a tag property");
-    }
-
-    let isVerbatim = false;
-    let isNamed = false;
-    let tagHandle = "!";
-
-    ch = state.input.charCodeAt(++state.position);
-
-    if (ch === 0x3c) {
-        isVerbatim = true;
-        ch = state.input.charCodeAt(++state.position);
-    } else if (ch === 0x21) {
-        isNamed = true;
-        tagHandle = "!!";
-        ch = state.input.charCodeAt(++state.position);
-    }
-
-    let { position } = state;
-    let tagName: string;
-
-    if (isVerbatim) {
-        do {
-            ch = state.input.charCodeAt(++state.position);
-        } while (ch !== 0 && ch !== 0x3e);
-
-        // The loop stops on `>` or on the `\0` sentinel. Only the former is a
-        // terminated tag: testing `position < length` instead would also accept
-        // the sentinel, then advance the cursor to `length`, where `charCodeAt`
-        // yields NaN — which every `ch !== 0` scan treats as content, spinning
-        // forever instead of failing.
-        if (ch === 0x3e) {
-            tagName = state.input.slice(position, state.position);
-            state.position++;
-        } else {
-            return throwError(state, "unexpected end of the stream within a verbatim tag");
-        }
-    } else {
-        // Per the YAML grammar `ns-tag-char` excludes the flow indicators
-        // `,[]{}`, so a shorthand tag ends at the first one (e.g. `!!str,` in a
-        // flow collection tags empty content and the comma starts the next
-        // entry). js-yaml instead reads greedily and then rejects — which makes
-        // it fail suite case WZ62; stopping here is the spec-correct behaviour.
-        while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-            if (ch === 0x21) {
-                if (isNamed) {
-                    throwError(state, "tag suffix cannot contain exclamation marks");
-                } else {
-                    tagHandle = state.input.slice(position - 1, state.position + 1);
-
-                    if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-                        throwError(state, "named tag handle cannot contain such characters");
-                    }
-
-                    isNamed = true;
-                    position = state.position + 1;
-                }
-            }
-
-            ch = state.input.charCodeAt(++state.position);
-        }
-
-        tagName = state.input.slice(position, state.position);
-    }
-
-    if (isVerbatim) {
-        state.tag = tagName;
-    } else if (state.tagMap.has(tagHandle)) {
-        state.tag = state.tagMap.get(tagHandle)! + tagName;
-    } else if (tagHandle === "!") {
-        state.tag = `!${tagName}`;
-    } else if (tagHandle === "!!") {
-        state.tag = `tag:yaml.org,2002:${tagName}`;
-    } else {
-        throwError(state, `undeclared tag handle "${tagHandle}"`);
-    }
-
-    return true;
-};
-
-const readAnchorProperty = (state: State): boolean => {
-    let ch = state.input.charCodeAt(state.position);
-
-    if (ch !== 0x26) {
-        return false;
-    }
-
-    if (state.anchor !== null) {
-        throwError(state, "duplication of an anchor property");
-    }
-
-    ch = state.input.charCodeAt(++state.position);
-
-    const { position } = state;
-
-    while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-        ch = state.input.charCodeAt(++state.position);
-    }
-
-    if (state.position === position) {
-        throwError(state, "name of an anchor node must contain at least one character");
-    }
-
-    state.anchor = state.input.slice(position, state.position);
-
-    return true;
-};
-
-const readAlias = (state: State): boolean => {
-    let ch = state.input.charCodeAt(state.position);
-
-    if (ch !== 0x2a) {
-        return false;
-    }
-
-    ch = state.input.charCodeAt(++state.position);
-
-    const { position } = state;
-
-    while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
-        ch = state.input.charCodeAt(++state.position);
-    }
-
-    if (state.position === position) {
-        throwError(state, "name of an alias node must contain at least one character");
-    }
-
-    const alias = state.input.slice(position, state.position);
-
-    if (!state.anchorMap.has(alias)) {
-        throwError(state, `unidentified alias "${alias}"`);
-    }
-
-    state.aliasCount++;
-
-    if (state.aliasCount > state.options.maxAliasCount) {
-        throwError(state, "alias reference count limit exceeded (possible resource-exhaustion attack)");
-    }
-
-    // In node mode an alias stays a reference; `toJS` resolves it later, which
-    // is what lets a document round-trip with its aliases intact.
-    state.result = state.nodes ? new Alias(alias) : state.anchorMap.get(alias);
-    state.kind = "scalar";
-
-    return true;
 };
 
 /**
@@ -1078,13 +652,11 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
             if (implicit) {
                 state.result = implicit.value;
 
-                // Wrap before the anchor is recorded, so node mode registers the
-                // node rather than the raw value. Returning early here used to
-                // skip the wrap below entirely, leaving a custom implicit tag as
-                // the only unwrapped value in an otherwise complete tree.
-                if (state.nodes) {
-                    state.result = toNode(state, state.result, hasContent);
-                }
+                // Finish before the anchor is recorded, so node mode registers
+                // the node rather than the raw value. Returning early here used
+                // to skip the wrap below entirely, leaving a custom implicit tag
+                // as the only unwrapped value in an otherwise complete tree.
+                state.result = state.build.finish(state, state.result, hasContent);
 
                 if (state.anchor !== null) {
                     state.anchorMap.set(state.anchor, state.result);
@@ -1130,9 +702,7 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
         }
     }
 
-    if (state.nodes) {
-        state.result = toNode(state, state.result, hasContent);
-    }
+    state.result = state.build.finish(state, state.result, hasContent);
 
     if (state.anchor !== null) {
         state.anchorMap.set(state.anchor, state.result);
@@ -1163,371 +733,4 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
     }
 };
 
-const readDocument = (state: State): void => {
-    let hasDirectives = false;
-    let hasYamlDirective = false;
-
-    state.tagMap = new Map<string, string>();
-    state.anchorMap = new Map<string, unknown>();
-    state.aliasCount = 0;
-    // Directives bind to the document that declares them, so a `%YAML` in an
-    // earlier document of the stream must not leak into this one.
-    state.resetVersionDirective();
-
-    let ch: number;
-
-    while (state.input.charCodeAt(state.position) !== 0) {
-        skipSeparationSpace(state, true, -1);
-        ch = state.input.charCodeAt(state.position);
-
-        if (state.lineIndent > 0 || ch !== 0x25) {
-            break;
-        }
-
-        hasDirectives = true;
-        ch = state.input.charCodeAt(++state.position);
-
-        let { position } = state;
-
-        while (ch !== 0 && !isWsOrEol(ch)) {
-            ch = state.input.charCodeAt(++state.position);
-        }
-
-        const directiveName = state.input.slice(position, state.position);
-        const directiveArgs: string[] = [];
-
-        if (directiveName.length === 0) {
-            throwError(state, "directive name must not be less than one character in length");
-        }
-
-        while (ch !== 0) {
-            while (isWhiteSpace(ch)) {
-                ch = state.input.charCodeAt(++state.position);
-            }
-
-            if (ch === 0x23) {
-                do {
-                    ch = state.input.charCodeAt(++state.position);
-                } while (ch !== 0 && !isEol(ch));
-
-                break;
-            }
-
-            if (isEol(ch)) {
-                break;
-            }
-
-            position = state.position;
-
-            while (ch !== 0 && !isWsOrEol(ch)) {
-                ch = state.input.charCodeAt(++state.position);
-            }
-
-            directiveArgs.push(state.input.slice(position, state.position));
-        }
-
-        if (ch !== 0) {
-            readLineBreak(state);
-        }
-
-        if (directiveName === "YAML") {
-            // A malformed %YAML directive is a hard error in both refs (js-yaml
-            // and yaml): wrong argument count, an argument that is not `<n>.<n>`,
-            // or a second %YAML directive in the same document.
-            if (hasYamlDirective) {
-                throwError(state, "duplication of a YAML directive");
-            } else if (directiveArgs.length !== 1) {
-                throwError(state, "the YAML directive accepts exactly one argument");
-            } else if (!YAML_VERSION_RE.test(directiveArgs[0] ?? "")) {
-                throwError(state, "ill-formed argument of the YAML directive");
-            }
-
-            hasYamlDirective = true;
-            state.applyVersionDirective(directiveArgs[0]!);
-        } else if (directiveName === "TAG") {
-            if (directiveArgs.length === 2) {
-                state.tagMap.set(directiveArgs[0]!, directiveArgs[1]!);
-            } else {
-                throwError(state, "the TAG directive accepts exactly two arguments");
-            }
-        } else {
-            // Unknown directives are ignored (with a warning) by both refs for
-            // forward-compatibility — do not reject them.
-            emitWarning(state, `unknown document directive "${directiveName}"`);
-        }
-    }
-
-    skipSeparationSpace(state, true, -1);
-
-    // A document-start marker is `---` only when followed by white space or EOF;
-    // `---foo` is a plain scalar, not a marker.
-    let explicitMarker = false;
-
-    if (state.lineIndent === 0 && state.input.startsWith("---", state.position) && isWsOrEol(state.input.charCodeAt(state.position + 3))) {
-        state.position += 3;
-        explicitMarker = true;
-
-        // In strict mode a *block* collection may not begin on the `---` line
-        // (`--- a: b`), while a flow collection or scalar is fine (`--- {a: b}`,
-        // `--- a`). Record the marker's line so readBlockMapping/readBlockSequence
-        // can reject a first key/entry that sits on it; content (or just a
-        // property like `--- !tag`) followed by a line break is unaffected.
-        if (skipSeparationSpace(state, true, -1) === 0) {
-            state.documentMarkerLine = state.line;
-        }
-    } else if (hasDirectives) {
-        throwError(state, "directives end mark is expected");
-    }
-
-    const hadContent = composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
-
-    state.documentMarkerLine = -1;
-
-    skipSeparationSpace(state, true, -1);
-
-    // A comment/whitespace/`...`-only section is not a document; only emit one
-    // when it has content, an explicit `---` marker, or directives.
-    if (hadContent || explicitMarker || hasDirectives) {
-        state.documents.push(state.result);
-    }
-
-    if (state.position === state.lineStart && testDocumentSeparator(state)) {
-        if (state.input.charCodeAt(state.position) === 0x2e) {
-            state.position += 3;
-
-            // After a `...` document-end marker only white space and an optional
-            // comment may follow on the same line; `... invalid` is malformed.
-            let after = state.input.charCodeAt(state.position);
-
-            while (after === 0x20 || after === 0x09) {
-                after = state.input.charCodeAt(++state.position);
-            }
-
-            if (after !== 0 && after !== 0x23 && !isEol(after)) {
-                throwError(state, "unexpected content after document end marker");
-            }
-
-            skipSeparationSpace(state, true, -1);
-        }
-
-        return;
-    }
-
-    if (state.position < state.length - 1) {
-        throwError(state, "end of the stream or a document separator is expected");
-    }
-};
-
-const normalizeInput = (input: string): string => {
-    let source = input;
-
-    if (source.length > 0) {
-        const last = source.charCodeAt(source.length - 1);
-
-        if (last !== 0x0a && last !== 0x0d) {
-            source += "\n";
-        }
-
-        if (source.charCodeAt(0) === 0xfe_ff) {
-            source = source.slice(1);
-        }
-    }
-
-    return source;
-};
-
-/**
- * Validate the input and build a cursor over it. Shared by every entry point so
- * the trust-boundary checks cannot be bypassed by one of them.
- */
-const prepareState = (input: string, options: LoaderOptions): State => {
-    // A non-string must fail as a YAMLParseError rather than as whichever
-    // TypeError the first string method happens to raise — callers catch the
-    // former.
-    if (typeof input !== "string") {
-        throw new YAMLParseError(`expected a string to parse, received ${input === null ? "null" : typeof input}`);
-    }
-
-    let source = normalizeInput(input);
-
-    if (source.includes("\0")) {
-        throw new YAMLParseError("null byte is not allowed in input");
-    }
-
-    source += "\0";
-
-    const state = new State(source, options);
-
-    state.position = 0;
-    state.lineIndent = 0;
-
-    return state;
-};
-
-/**
- * Walk a parsed value depth-first, letting `reviver` rewrite or drop entries —
- * the `JSON.parse` contract, extended to `Map` so it also works under
- * `mapAsMap`. Returning `undefined` removes the entry.
- */
-const applyReviver = (holder: unknown, key: unknown, value: unknown, reviver: (key: unknown, value: unknown) => unknown): unknown => {
-    if (Array.isArray(value)) {
-        for (let index = value.length - 1; index >= 0; index--) {
-            const revived = applyReviver(value, String(index), value[index], reviver);
-
-            // Assign rather than splice. Removing the element shifts every
-            // later index, so a reviver that drops one entry silently
-            // renumbered the rest.
-            value[index] = revived;
-        }
-    } else if (value instanceof Map) {
-        for (const entryKey of value.keys()) {
-            const revived = applyReviver(value, entryKey, value.get(entryKey), reviver);
-
-            if (revived === undefined) {
-                value.delete(entryKey);
-            } else {
-                value.set(entryKey, revived);
-            }
-        }
-    } else if (isPlainObject(value)) {
-        const record = value as Record<string, unknown>;
-
-        for (const entryKey of Object.keys(record)) {
-            const revived = applyReviver(record, entryKey, record[entryKey], reviver);
-
-            if (revived === undefined) {
-                delete record[entryKey];
-            } else {
-                record[entryKey] = revived;
-            }
-        }
-    }
-
-    return reviver.call(holder, key, value);
-};
-
-/** Parse every document in a YAML stream, returning them in order. */
-const loadAll = (input: string, options: ParseOptions = {}): unknown[] => {
-    const state = prepareState(input, options);
-
-    while (state.position < state.length - 1) {
-        readDocument(state);
-    }
-
-    const { reviver } = options;
-
-    if (reviver) {
-        return state.documents.map((document) => applyReviver({ "": document }, "", document, reviver));
-    }
-
-    return state.documents;
-};
-
-/**
- * Move the cursor to the next document marker after a failed document, so one
- * malformed document does not hide the rest of the stream. Returns false when
- * there is nothing left to parse.
- */
-const skipToNextDocument = (state: State): boolean => {
-    const { input } = state;
-    let index = input.indexOf("\n", state.position);
-
-    while (index !== -1) {
-        const lineStart = index + 1;
-        const marker = input.slice(lineStart, lineStart + 3);
-
-        if (marker === "---" || marker === "...") {
-            state.position = lineStart;
-            state.lineStart = lineStart;
-            state.line += 1;
-            state.lineIndent = 0;
-            state.firstTabInLine = -1;
-
-            return state.position < state.length - 1;
-        }
-
-        index = input.indexOf("\n", lineStart);
-    }
-
-    return false;
-};
-
-/** One document of a stream, with the diagnostics raised while reading it. */
-interface DocumentResult {
-    contents: unknown;
-    errors: YAMLParseError[];
-    warnings: YAMLWarning[];
-}
-
-/**
- * Parse a stream without throwing: each document's diagnostics are collected
- * and a malformed document does not prevent the following ones from parsing.
- *
- * Recovery is per document — within one document the first error still ends it,
- * because the parser has no resync points inside a document.
- */
-const loadDocuments = (input: string, options: LoaderOptions = {}): { documents: DocumentResult[]; ranges: MappingRanges } => {
-    const warnings: YAMLWarning[] = [];
-    const state = prepareState(input, {
-        ...options,
-        onWarning: (warning) => {
-            warnings.push(warning);
-            options.onWarning?.(warning);
-        },
-    });
-
-    state.mappingRanges = new WeakMap();
-
-    const documents: DocumentResult[] = [];
-
-    while (state.position < state.length - 1) {
-        const producedBefore = state.documents.length;
-        const warningsBefore = warnings.length;
-        const positionBefore = state.position;
-
-        try {
-            readDocument(state);
-        } catch (error) {
-            if (!(error instanceof YAMLParseError)) {
-                throw error;
-            }
-
-            documents.push({ contents: null, errors: [error], warnings: warnings.slice(warningsBefore) });
-
-            if (!skipToNextDocument(state)) {
-                break;
-            }
-
-            continue;
-        }
-
-        for (const contents of state.documents.slice(producedBefore)) {
-            documents.push({ contents, errors: [], warnings: warnings.slice(warningsBefore) });
-        }
-
-        // A document that consumed nothing would loop forever.
-        if (state.position === positionBefore) {
-            break;
-        }
-    }
-
-    return { documents, ranges: state.mappingRanges };
-};
-
-/** Parse the first document in a YAML stream. */
-const loadOne = (input: string, options: ParseOptions = {}): unknown => {
-    const documents = loadAll(input, options);
-
-    if (documents.length === 0) {
-        return undefined;
-    }
-
-    if (documents.length === 1) {
-        return documents[0];
-    }
-
-    throw new YAMLParseError("expected a single document in the stream, but found more");
-};
-
-export type { DocumentResult };
-export { applyReviver, loadAll, loadDocuments, loadOne };
+export { composeNode, CONTEXT_BLOCK_OUT };

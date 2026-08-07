@@ -403,6 +403,17 @@ describe("node model › options that interact with the tree", () => {
         expect(() => parseNodes("a: [1, 2\nb: {\n")).toThrow(YAMLParseError);
     });
 
+    it("keeps a stringKeys-flattened key as a Scalar", () => {
+        expect.assertions(2);
+
+        // A bare string here would be a `Pair.key` that `visit` skips and
+        // `isScalar` rejects, leaving one un-node in an otherwise uniform tree.
+        const tree = parseNodes("? [a,b]\n: 1", { stringKeys: true }) as YAMLMap;
+
+        expect(isScalar(tree.items[0]!.key)).toBe(true);
+        expect(toJS(tree)).toStrictEqual({ "[a,b]": 1 });
+    });
+
     it("looks a key up without scanning every pair", () => {
         expect.assertions(2);
 

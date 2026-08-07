@@ -13,13 +13,17 @@ This file provides guidance to AI coding agents when working with code in this d
 
 The pipeline lives entirely in `src/`:
 
-- `src/parser/loader.ts` — the recursive-descent parser/composer. A single mutable cursor (`State`) walks the source string, threads indentation columns through the block parsers, resolves anchors/aliases, applies merge keys (`<<`), and produces native JS values directly (no intermediate CST on the default path). Exports `loadOne` / `loadAll`.
+- `src/parser/loader.ts` — the composer. The mutually recursive block/flow readers plus `composeNode`. A single mutable cursor (`State`) walks the source string, threads indentation columns through the block parsers, resolves anchors/aliases, applies merge keys (`<<`), and produces native JS values directly (no intermediate CST on the default path). Exports `loadOne` / `loadAll`.
 - `src/parser/dumper.ts` — value → YAML serializer with automatic scalar-style selection (plain / single / double / literal / folded), block and flow output, and configurable indentation, key sorting, quoting and `lineWidth` folding. Long plain single-line strings are wrapped into a folded (`>-`) block scalar at `lineWidth` (default 80; `0` disables) — only when the value is single-spaced words, so folding always round-trips. Exports `dump`.
 - `src/schema/schemas.ts` — scalar resolution per schema (`core`, `failsafe`, `json`, `yaml-1.1`). The resolver is chosen once per parse from `schema`/`version`, so the per-scalar path stays a single indirect call and the default keeps its fast path.
 - `src/schema/resolve-scalar.ts` — YAML 1.2 **core schema** scalar resolution (`null`, `bool`, `int` in dec/hex/oct, `float`, `.inf`/`.nan`) plus explicit-tag (`!!int`, `!!str`, …) application.
 - `src/errors.ts` — `YAMLError`, `YAMLParseError`, `YAMLStringifyError`, `YAMLWarning` carrying a `{ line, column, position }` mark and a source snippet.
 - `src/types.ts` — `ParseOptions` / `StringifyOptions`.
 - `src/document.ts` — the document layer. `parseDocument` / `parseAllDocuments` report diagnostics instead of throwing, and `setIn` edits by **splicing the original source** rather than re-serializing, so comments, blank lines and key order survive. Edits need source spans, which `loader.ts` records into `State.mappingRanges` **only when that field is set** — the plain `parse` path never pays for it.
+- `src/parser/collection-builder.ts` — **how a parse accumulates collections**, chosen once from the options. Three builders (`plain`, `map`, `node`) behind one interface, so no reader re-derives the shape. See below.
+- `src/parser/collections.ts` — storing one pair: merge keys, duplicate-key policy, source spans. Knows nothing about which shape it is filling.
+- `src/parser/properties.ts` — the tag / anchor / alias tokens that may precede a node.
+- `src/parser/stream.ts` — directives, `---`/`...` handling, and the `loadAll` / `loadOne` / `loadDocuments` entry points.
 - `src/parser/ranges.ts` — the span types, in their own module so `document.ts` can use them without dragging the `State` class into the published `.d.ts` (it is not isolated-declarations clean).
 - `src/index.ts` — public barrel (`parse`, `parseAll`, `stringify`, plus the `js-yaml` aliases `load`, `loadAll`, `dump`).
 
@@ -73,6 +77,35 @@ Two constraints that shaped it:
 
 - Node kind is a plain `kind: NodeKindName` field, not a symbol brand and not `instanceof`. Guards therefore keep working across module instances, and the type survives `isolatedDeclarations`, which the `.d.ts` build enforces — a computed symbol key does not.
 - `visit` passes a `replace` callback down so a visitor returning a node writes into the parent's slot. Without it the replacement updated only a local variable and the tree was left untouched.
+
+## One decision, one place: `CollectionBuilder`
+
+The parser produces three shapes — plain objects, `Map`s (`mapAsMap`), or a node
+tree (`parseNodes` / `parseDocument`) — and which is in play is fixed before any
+input is read. `State.build` is selected once in the constructor; the readers
+call `state.build.map()`, `.seq()`, `.push()`, `.set()`, `.key()`, `.finish()`,
+`.alias()` and never ask what shape they are filling.
+
+This replaced eight `state.nodes ? …` branches, four `instanceof` chains and a
+triplicated anchor block. That was not cosmetic: each site re-derived the same
+constant, and they could disagree. Merge keys were detected by comparing a key
+against `"<<"`, which silently stopped matching the moment keys became
+`Scalar`s, so `parseDocument` returned an unmerged `<<` key while `parse`
+merged. Representation-dependent logic now has exactly one home.
+
+Two rules keep it honest:
+
+- **All three builders are object literals with the same keys in the same
+  order**, so they share a hidden class and the call sites stay monomorphic.
+  Measured neutral against the pre-refactor baseline; re-run `__bench__` if you
+  change their shape.
+- **`import type { State }` in `collection-builder.ts` must stay type-only.**
+  `state.ts` imports the builder as a value, so a runtime import back would be a
+  cycle.
+
+`nodeBuilder.isMergeKey` returns `false` — node mode defers merges to `toJS`
+(see below), so `collections.ts`'s merge path only ever sees the two native
+shapes. `mapAsMap` has no meaning against a node tree and is ignored there.
 
 ## Per-API-surface defaults
 

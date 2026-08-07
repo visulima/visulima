@@ -14,8 +14,8 @@ import type { YAMLParseError, YAMLWarning } from "./errors";
 import { YAMLStringifyError } from "./errors";
 import { createNode, isMap, toJS as nodeToJS, YAMLMap } from "./nodes/nodes";
 import { dump } from "./parser/dumper";
-import { applyReviver } from "./parser/loader";
 import type { MappingEntryRange, MappingRanges } from "./parser/ranges";
+import { applyReviver } from "./parser/stream";
 import type { StringifyOptions } from "./types";
 
 /** A pending source edit, applied by `toString`. */

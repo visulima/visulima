@@ -20,6 +20,8 @@ import { selectScalarResolver } from "../schema/schemas";
 import type { TagRegistry } from "../schema/tags";
 import { buildTagRegistry } from "../schema/tags";
 import type { LoaderOptions, ParseOptions } from "../types";
+import type { CollectionBuilder } from "./collection-builder";
+import { selectBuilder } from "./collection-builder";
 import type { LineCounter } from "./line-counter";
 import type { MappingRanges } from "./ranges";
 
@@ -94,6 +96,12 @@ class State {
      */
     public readonly nodes: boolean;
 
+    /**
+     * How collections are accumulated, chosen once from the options so the
+     * readers never re-derive it. See `collection-builder.ts`.
+     */
+    public readonly build: CollectionBuilder;
+
     /** Line-break offsets collector, when the caller supplied one. */
     public readonly lineCounter: LineCounter | undefined;
 
@@ -125,6 +133,7 @@ class State {
         this.resolveScalar = this.#baseResolver;
         this.tags = buildTagRegistry(this.options.customTags);
         this.nodes = options.nodes ?? false;
+        this.build = selectBuilder(this.nodes, this.options.mapAsMap);
         this.lineCounter = options.lineCounter;
     }
 
