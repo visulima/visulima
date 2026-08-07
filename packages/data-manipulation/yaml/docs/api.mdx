@@ -1,0 +1,176 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/yaml"
+---
+
+# API Reference
+
+Complete reference for the public API of the `@visulima/yaml` package.
+
+## Parsing
+
+### parse
+
+Parse the first document of a YAML string into a native JavaScript value.
+
+**Signature:**
+
+```typescript
+function parse(source: string, options?: ParseOptions): unknown;
+```
+
+**Parameters:**
+
+- `source` (`string`) - The YAML document text
+- `options` (`ParseOptions`) - Optional parsing options (see [ParseOptions](#parseoptions))
+
+**Returns:** `unknown` - The parsed value
+
+**Example:**
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("foo: bar"); // => { foo: "bar" }
+```
+
+### parseAll
+
+Parse every document of a multi-document stream, returning them in order.
+
+**Signature:**
+
+```typescript
+function parseAll(source: string, options?: ParseOptions): unknown[];
+```
+
+**Example:**
+
+```typescript
+import { parseAll } from "@visulima/yaml";
+
+parseAll("---\na: 1\n---\nb: 2"); // => [{ a: 1 }, { b: 2 }]
+```
+
+### load
+
+`js-yaml`-compatible alias of [`parse`](#parse).
+
+```typescript
+function load(source: string, options?: ParseOptions): unknown;
+```
+
+### loadAll
+
+`js-yaml`-compatible multi-document loader. With an `iterator` it is invoked
+once per document; otherwise it returns an array.
+
+```typescript
+function loadAll(source: string, iterator: (document: unknown) => void, options?: ParseOptions): void;
+function loadAll(source: string, options?: ParseOptions): unknown[];
+```
+
+**Example:**
+
+```typescript
+import { loadAll } from "@visulima/yaml";
+
+loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] then [2]
+```
+
+### ParseOptions
+
+| Option                  | Type                                 | Default   | Description                                                             |
+| ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------- |
+| `strict`                | `boolean`                            | `true`    | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.       |
+| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                         |
+| `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.           |
+| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks). |
+| `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                    |
+| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                         |
+
+#### Strict mode
+
+The parser always rejects the unambiguous YAML 1.2 violations (tabs used as
+indentation, malformed `%YAML`/`%TAG` directives, deficient indentation, comments
+not separated from other tokens by white space). Strict mode — **on by default** —
+additionally rejects two corner cases that both reference parsers accept but the
+spec forbids: a node property indented no deeper than its parent key
+(`key: &a\n!!map\n  a: b`), and a block collection whose first entry sits on the
+`---` line (`--- a: b`). Flow collections and scalars on the `---` line stay valid.
+
+`strict: false` relaxes exactly those two checks and nothing else; it never changes
+the value of an accepted document.
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("--- a: b"); // throws YAMLParseError
+parse("--- a: b", { strict: false }); // => { a: "b" }
+```
+
+## Serializing
+
+### stringify
+
+Serialize a JavaScript value to a YAML document string.
+
+**Signature:**
+
+```typescript
+function stringify(value: unknown, options?: StringifyOptions): string;
+```
+
+**Example:**
+
+```typescript
+import { stringify } from "@visulima/yaml";
+
+stringify({ foo: "bar" }); // => "foo: bar\n"
+```
+
+### dump
+
+`js-yaml`-compatible alias of [`stringify`](#stringify).
+
+```typescript
+function dump(value: unknown, options?: StringifyOptions): string;
+```
+
+### StringifyOptions
+
+| Option        | Type                            | Default | Description                                                        |
+| ------------- | ------------------------------- | ------- | ------------------------------------------------------------------ |
+| `indent`      | `number`                        | `2`     | Spaces per indentation level.                                      |
+| `flowLevel`   | `number`                        | `-1`    | Use flow style at or beyond this nesting level (`-1` disables it). |
+| `sortKeys`    | `boolean \| ((a, b) => number)` | `false` | Sort mapping keys.                                                 |
+| `lineWidth`   | `number`                        | `80`    | Preferred wrap width for folded scalars (`0` disables folding).    |
+| `forceQuotes` | `boolean`                       | `false` | Escape non-ASCII characters in double-quoted scalars.              |
+| `skipInvalid` | `boolean`                       | `false` | Skip `undefined` members instead of emitting `null`.               |
+| `directives`  | `boolean`                       | `false` | Emit a leading `---` document marker.                              |
+| `replacer`    | `(key, value) => unknown`       | —       | `JSON.stringify`-style value replacer.                             |
+
+## Errors
+
+The following error classes are exported alongside the shared base `YAMLError`:
+
+- **`YAMLParseError`** - thrown on invalid input during parsing.
+- **`YAMLStringifyError`** - thrown when a value cannot be serialized.
+- **`YAMLWarning`** - a non-fatal notice, delivered through the `onWarning` callback.
+
+Parse errors carry a `mark` with `{ line, column, position }` and a source snippet.
+
+**Example:**
+
+```typescript
+import { parse, YAMLParseError } from "@visulima/yaml";
+
+try {
+    parse("a: 1\na: 2"); // duplicate key
+} catch (error) {
+    if (error instanceof YAMLParseError) {
+        console.log(error.message);
+        console.log(error.mark); // { line, column, position }
+    }
+}
+```

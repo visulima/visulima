@@ -1,0 +1,204 @@
+---
+title: "Usage Guide"
+description: "Learn how to parse, serialize and configure @visulima/yaml"
+---
+
+# Usage Guide
+
+Learn how to use `@visulima/yaml` for parsing and serializing YAML, working with
+multi-document streams, anchors and merge keys, and tuning strict mode.
+
+## Parsing
+
+### Parse a single document
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse(`
+name: my-app
+version: 1.0.0
+scripts:
+  build: packem build
+  test: vitest run
+tags: [cli, tooling]
+`);
+// => {
+//   name: "my-app",
+//   version: "1.0.0",
+//   scripts: { build: "packem build", test: "vitest run" },
+//   tags: ["cli", "tooling"],
+// }
+```
+
+### Core-schema scalar resolution
+
+Scalars resolve per the YAML 1.2 core schema. Unlike YAML 1.1, the words
+`yes`/`no`/`on`/`off` stay strings and only `true`/`false` are booleans:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("enabled: true"); // => { enabled: true }
+parse("enabled: yes"); // => { enabled: "yes" }
+parse("count: 0x1F"); // => { count: 31 }
+parse("ratio: 3.14"); // => { ratio: 3.14 }
+parse("nothing: null"); // => { nothing: null }
+```
+
+## Multiple documents
+
+Use `parseAll` for a `---`/`...` separated stream:
+
+```typescript
+import { parseAll } from "@visulima/yaml";
+
+parseAll("---\na: 1\n---\nb: 2"); // => [{ a: 1 }, { b: 2 }]
+```
+
+The `js-yaml`-style `loadAll` optionally takes a per-document iterator:
+
+```typescript
+import { loadAll } from "@visulima/yaml";
+
+loadAll("---\n- 1\n---\n- 2", (document) => console.log(document));
+// logs [1] then [2]
+```
+
+## Anchors, aliases and merge keys
+
+`&anchor` / `*alias` share the same underlying reference, and `<<` merge keys
+are enabled by default:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse(`
+defaults: &defaults
+  adapter: postgres
+  host: localhost
+development:
+  <<: *defaults
+  database: dev
+`);
+// => {
+//   defaults: { adapter: "postgres", host: "localhost" },
+//   development: { adapter: "postgres", host: "localhost", database: "dev" },
+// }
+```
+
+## Strict mode
+
+Strict YAML 1.2 parsing is **on by default**. The parser always rejects the
+unambiguous spec violations — tabs used as indentation, malformed
+`%YAML`/`%TAG` directives, deficient indentation, and comments not separated
+from other tokens by white space. Strict mode additionally rejects two corner
+cases that both `yaml` and `js-yaml` accept but the spec forbids:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+// A block mapping whose first entry sits on the `---` line
+parse("--- a: b"); // throws YAMLParseError
+
+// A node property indented no deeper than its parent key
+parse("key: &a\n!!map\n  a: b"); // throws YAMLParseError
+```
+
+Pass `strict: false` to relax exactly those two checks (closer to `js-yaml`).
+It never changes the value of an accepted document — only whether these
+malformed inputs throw:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("--- a: b", { strict: false }); // => { a: "b" }
+```
+
+Flow collections and scalars on the `---` line are always valid, in both modes:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("--- {a: b}"); // => { a: "b" }
+parse("--- [1, 2]"); // => [1, 2]
+parse("--- scalar"); // => "scalar"
+```
+
+## Handling duplicate keys
+
+By default a repeated key inside one mapping throws. Choose a different policy
+with `duplicateKeys`:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse("a: 1\na: 2"); // throws YAMLParseError
+parse("a: 1\na: 2", { duplicateKeys: "overwrite" }); // => { a: 2 }
+parse("a: 1\na: 2", { duplicateKeys: "ignore" }); // => { a: 1 }
+```
+
+## Serializing
+
+### Stringify a value
+
+```typescript
+import { stringify } from "@visulima/yaml";
+
+stringify({ name: "my-app", tags: ["cli", "tooling"], nested: { a: 1 } });
+// name: my-app
+// tags:
+//   - cli
+//   - tooling
+// nested:
+//   a: 1
+```
+
+### Sort keys and control indentation
+
+```typescript
+import { stringify } from "@visulima/yaml";
+
+stringify({ b: 2, a: 1 }, { sortKeys: true, indent: 4 });
+// a: 1
+// b: 2
+```
+
+### Emit a document marker
+
+```typescript
+import { stringify } from "@visulima/yaml";
+
+stringify({ a: 1 }, { directives: true });
+// ---
+// a: 1
+```
+
+## js-yaml-compatible API
+
+Already using `js-yaml`? Swap the import — `load`, `loadAll` and `dump` are
+exported with the same shape:
+
+```typescript
+import { load, loadAll, dump } from "@visulima/yaml";
+
+load("foo: bar"); // => { foo: "bar" }
+dump({ foo: "bar" }); // => "foo: bar\n"
+```
+
+## Error handling
+
+Parse errors throw a `YAMLParseError` carrying a `mark` with `{ line, column, position }`
+and a source snippet:
+
+```typescript
+import { parse, YAMLParseError } from "@visulima/yaml";
+
+try {
+    parse("a:\n\t- 1"); // tab used as indentation
+} catch (error) {
+    if (error instanceof YAMLParseError) {
+        console.log(error.mark); // { line, column, position }
+    }
+}
+```
