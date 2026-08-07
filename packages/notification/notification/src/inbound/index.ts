@@ -1,19 +1,6 @@
-export type { DiscordInboundOptions } from "./channels/discord";
-export { createDiscordInbound } from "./channels/discord";
-export type { MessageBirdInboundOptions } from "./channels/messagebird";
-export { createMessageBirdInbound } from "./channels/messagebird";
-export type { MsTeamsInboundOptions } from "./channels/msteams";
-export { createMsTeamsInbound } from "./channels/msteams";
-export type { SlackInboundOptions } from "./channels/slack";
-export { createSlackInbound } from "./channels/slack";
-export type { TelegramInboundOptions } from "./channels/telegram";
-export { createTelegramInbound } from "./channels/telegram";
-export type { TelnyxInboundOptions } from "./channels/telnyx";
-export { createTelnyxInbound } from "./channels/telnyx";
-export type { TwilioInboundOptions } from "./channels/twilio";
-export { createTwilioInbound } from "./channels/twilio";
-export type { VonageInboundOptions } from "./channels/vonage";
-export { createVonageInbound } from "./channels/vonage";
+// Channel receivers are intentionally NOT re-exported here — import each from its own subpath
+// (e.g. `@visulima/notification/inbound/slack`) so bundles only pull in the channels they use.
+// This barrel exposes the shared types, router and verification/reply helpers.
 export { verifyEd25519, verifyEd25519Base64 } from "./ed25519";
 export { isJwtTimeValid, sha256Hex, verifyHs256Jwt } from "./jwt";
 export { chatReply, normaliseReply, smsReply } from "./reply";
