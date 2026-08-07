@@ -16,7 +16,14 @@ let yamlJs: { parse: (source: string) => unknown; stringify: (value: unknown) =>
 try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     yamlJs = require_("yamljs") as typeof yamlJs;
-} catch {
+} catch (error) {
+    // Only "not installed" is expected. Anything else means yamljs is present
+    // but broken, and silently dropping it would report a complete comparison
+    // that is missing a target.
+    if ((error as NodeJS.ErrnoException).code !== "MODULE_NOT_FOUND") {
+        throw error;
+    }
+
     yamlJs = undefined;
 }
 

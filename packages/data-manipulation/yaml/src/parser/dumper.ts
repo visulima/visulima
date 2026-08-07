@@ -370,7 +370,7 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
         guardCircular(value, context);
         context.stack.add(value);
 
-        const items = value.map((item) => writeFlow(applyReplacer(context, "", item), level, context));
+        const items = value.map((item, index) => writeFlow(applyReplacer(context, String(index), item), level, context));
 
         context.stack.delete(value);
 

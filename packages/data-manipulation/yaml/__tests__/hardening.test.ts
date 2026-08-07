@@ -82,6 +82,31 @@ describe("parser hardening", () => {
         expect(parse("a: !!int 42")).toStrictEqual({ a: 42 });
     });
 
+    it("rejects an out-of-range unicode escape as a parse error", () => {
+        expect.assertions(4);
+
+        // `String.fromCodePoint` raises a RangeError above 0x10FFFF, which would
+        // escape the YAMLError hierarchy — and slip past the speculative-parse
+        // boundary, which deliberately only swallows YAMLParseError.
+        expect(() => parse(String.raw`a: "\U0011FFFF"`)).toThrow(YAMLParseError);
+        // Eight `\U` digits overflowed the sign bit of a 32-bit `<< 4`, giving a
+        // negative code point.
+        expect(() => parse(String.raw`a: "\U80000000"`)).toThrow(YAMLParseError);
+        expect(parse(String.raw`a: "\U0001F600"`)).toStrictEqual({ a: "\u{1F600}" });
+        expect(parse(String.raw`a: "\u00e9"`)).toStrictEqual({ a: "\u00E9" });
+    });
+
+    it("rejects malformed !!float content instead of truncating it", () => {
+        expect.assertions(4);
+
+        // `Number.parseFloat` read the leading digits and silently resolved
+        // `!!float 12abc` to 12.
+        expect(() => parse("a: !!float 12abc")).toThrow(YAMLParseError);
+        expect(() => parse("a: !!float 1.5x")).toThrow(YAMLParseError);
+        expect(parse("a: !!float 1.5")).toStrictEqual({ a: 1.5 });
+        expect(parse("a: !!float .inf")).toStrictEqual({ a: Number.POSITIVE_INFINITY });
+    });
+
     it("keeps distinct complex keys distinct", () => {
         expect.assertions(2);
 

@@ -7,9 +7,9 @@
  */
 
 /* eslint-disable no-plusplus */
-/* eslint-disable no-cond-assign */
+
 /* eslint-disable no-useless-assignment */
-/* eslint-disable sonarjs/no-dead-store */
+
 /* eslint-disable sonarjs/no-redundant-assignments */
 /* eslint-disable no-param-reassign */
 /* eslint-disable sonarjs/different-types-comparison */
@@ -422,7 +422,7 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     }
 
     if (atExplicitKey) {
-        overridableKeys = storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
+        storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
     }
 
     if (detected) {
@@ -996,7 +996,7 @@ const readDocument = (state: State): void => {
 
     let ch: number;
 
-    while ((ch = state.input.charCodeAt(state.position)) !== 0) {
+    while (state.input.charCodeAt(state.position) !== 0) {
         skipSeparationSpace(state, true, -1);
         ch = state.input.charCodeAt(state.position);
 

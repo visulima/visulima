@@ -143,15 +143,13 @@ const resolveExplicitTag = (tag: string, raw: string): ExplicitTagResolution => 
         }
         case "!!float":
         case "tag:yaml.org,2002:float": {
+            // Core resolution already accepts every shape a float tag may carry
+            // (decimals, exponents, `.inf`, `.nan`, and integers). Falling back to
+            // `Number.parseFloat` only ever added garbage: it reads the leading
+            // digits of `12abc` and silently resolves the scalar to `12`.
             const value = resolveScalarValue(raw);
 
-            if (typeof value === "number") {
-                return { status: "ok", value };
-            }
-
-            const parsed = Number.parseFloat(raw);
-
-            return Number.isNaN(parsed) ? INVALID : { status: "ok", value: parsed };
+            return typeof value === "number" ? { status: "ok", value } : INVALID;
         }
         case "!!int":
         case "tag:yaml.org,2002:int": {

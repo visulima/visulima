@@ -4,7 +4,7 @@
  * through every function (parameter reassignment), and scanning is done with
  * `charCodeAt` against a `0` EOF sentinel.
  */
-/* eslint-disable no-bitwise */
+
 /* eslint-disable no-plusplus */
 /* eslint-disable no-cond-assign */
 /* eslint-disable no-param-reassign */
@@ -229,10 +229,22 @@ const readDoubleQuotedScalar = (state: State, nodeIndent: number): boolean => {
                         const digit = fromHexCode(ch);
 
                         if (digit >= 0) {
-                            hexResult = (hexResult << 4) + digit;
+                            // Multiply rather than `<< 4`: a `\U` escape has eight
+                            // digits, so a leading digit of 8 or more would set the
+                            // sign bit of the 32-bit shift and yield a negative
+                            // code point.
+                            hexResult = hexResult * 16 + digit;
                         } else {
                             throwError(state, "expected hexadecimal character");
                         }
+                    }
+
+                    // Anything past the Unicode maximum makes `String.fromCodePoint`
+                    // raise a RangeError, which would escape the YAMLError hierarchy
+                    // callers catch — and slip past the speculative-parse boundary,
+                    // which deliberately only swallows YAMLParseError.
+                    if (hexResult > 0x10_ff_ff) {
+                        throwError(state, `code point \u0022${hexResult.toString(16).toUpperCase()}\u0022 is outside the Unicode range`);
                     }
 
                     state.result = (state.result as string) + String.fromCodePoint(hexResult);

@@ -192,3 +192,24 @@ describe("stringify › round-trips through parse", () => {
         expect(parse(stringify(value))).toStrictEqual(value);
     });
 });
+
+describe("replacer", () => {
+    it("passes the array index as the key in flow style too", () => {
+        expect.assertions(1);
+
+        // Block and flow output must agree with each other and with
+        // `JSON.stringify`, which always passes the index as a string.
+        const keys: string[] = [];
+
+        stringify([10, 20], {
+            flowLevel: 0,
+            replacer: (key, value) => {
+                keys.push(key);
+
+                return value;
+            },
+        });
+
+        expect(keys).toStrictEqual(["", "0", "1"]);
+    });
+});
