@@ -145,6 +145,11 @@ class State {
     // to reject them. Reset on every line break.
     public firstTabInLine = -1;
 
+    // Line of a `---` marker that carried content on the same line, or -1. In
+    // strict mode a block collection whose first entry sits on this line is
+    // rejected (`--- a: b`). Reset once the document's top node is composed.
+    public documentMarkerLine = -1;
+
     public documents: unknown[] = [];
 
     public tag: string | null = null;
@@ -165,7 +170,7 @@ class State {
 
     public aliasCount = 0;
 
-    public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "preventProtoPollution">>;
+    public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "preventProtoPollution" | "strict">>;
 
     public constructor(input: string, options: ParseOptions) {
         this.input = input;
@@ -174,6 +179,7 @@ class State {
             duplicateKeys: options.duplicateKeys ?? "error",
             maxAliasCount: options.maxAliasCount ?? 100,
             preventProtoPollution: options.preventProtoPollution ?? true,
+            strict: options.strict ?? true,
             ...options,
         };
     }
@@ -857,6 +863,11 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
         return false;
     }
 
+    // Strict mode: a block sequence may not begin on the `---` marker line
+    // (checked once an entry is actually detected, since this reader is also
+    // invoked speculatively for scalars).
+    const entryLine = state.line;
+
     if (state.anchor !== null) {
         storeAnchor(state, state.anchor, result);
     }
@@ -906,6 +917,10 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
     }
 
     if (detected) {
+        if (state.options.strict && entryLine === state.documentMarkerLine) {
+            throwError(state, "a block collection cannot start on the same line as the document start marker");
+        }
+
         state.tag = savedTag;
         state.anchor = savedAnchor;
         state.kind = "sequence";
@@ -934,6 +949,11 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     if (state.firstTabInLine !== -1) {
         return false;
     }
+
+    // Strict mode: a block mapping may not begin on the `---` marker line
+    // (checked once a key is actually detected — this reader also runs
+    // speculatively for scalars and block scalars).
+    const entryLine = state.line;
 
     if (state.anchor !== null) {
         storeAnchor(state, state.anchor, result);
@@ -1061,6 +1081,10 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
     }
 
     if (detected) {
+        if (state.options.strict && entryLine === state.documentMarkerLine) {
+            throwError(state, "a block collection cannot start on the same line as the document start marker");
+        }
+
         state.tag = savedTag;
         state.anchor = savedAnchor;
         state.kind = "mapping";
@@ -1393,6 +1417,14 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
                 break;
             }
 
+            // Strict mode: a node property carried onto a new line must be
+            // indented deeper than the parent node. `key: &a\n!!map\n  a: b`
+            // puts `!!map` at the key's own column, which the spec forbids even
+            // though both refs accept it.
+            if (state.options.strict && atNewLine && indentStatus !== 1 && (ch === 0x21 || ch === 0x26)) {
+                throwError(state, "a node property must be indented more than its parent node");
+            }
+
             const propertyState = snapshotState(state);
 
             if (!readTagProperty(state) && !readAnchorProperty(state)) {
@@ -1615,12 +1647,22 @@ const readDocument = (state: State): void => {
     if (state.lineIndent === 0 && state.input.startsWith("---", state.position) && isWsOrEol(state.input.charCodeAt(state.position + 3))) {
         state.position += 3;
         explicitMarker = true;
-        skipSeparationSpace(state, true, -1);
+
+        // In strict mode a *block* collection may not begin on the `---` line
+        // (`--- a: b`), while a flow collection or scalar is fine (`--- {a: b}`,
+        // `--- a`). Record the marker's line so readBlockMapping/readBlockSequence
+        // can reject a first key/entry that sits on it; content (or just a
+        // property like `--- !tag`) followed by a line break is unaffected.
+        if (skipSeparationSpace(state, true, -1) === 0) {
+            state.documentMarkerLine = state.line;
+        }
     } else if (hasDirectives) {
         throwError(state, "directives end mark is expected");
     }
 
     const hadContent = composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+
+    state.documentMarkerLine = -1;
 
     skipSeparationSpace(state, true, -1);
 

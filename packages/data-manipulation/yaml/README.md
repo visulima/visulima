@@ -143,12 +143,29 @@ Parse the first document of a YAML string into a native JavaScript value.
 
 `options`:
 
-| Option                  | Type                                 | Default   | Description                                                             |
-| ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------- |
-| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                         |
-| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks). |
-| `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                    |
-| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                         |
+| Option                  | Type                                 | Default   | Description                                                                   |
+| ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------------- |
+| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                               |
+| `keepNonStringKeys`     | `boolean`                            | `true`    | Keep non-string mapping keys native instead of coercing them.                 |
+| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).       |
+| `preventProtoPollution` | `boolean`                            | `true`    | Drop `__proto__` / `constructor` / `prototype` keys.                          |
+| `strict`                | `boolean`                            | `true`    | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency. |
+| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                               |
+
+#### Strict mode (default)
+
+The parser always rejects the unambiguous YAML 1.2 violations (tabs used as indentation,
+malformed `%YAML`/`%TAG` directives, deficient indentation, comments not separated from
+other tokens by white space). On top of that, strict mode — **on by default** — rejects
+two corner cases that both reference parsers accept but the spec does not: a node property
+indented no deeper than its parent key (`key: &a\n!!map\n  a: b`), and a block collection
+whose first entry sits on the `---` line (`--- a: b`). Pass `strict: false` to relax only
+those two checks (closer to `js-yaml`); it never changes the value of an accepted document.
+
+```ts
+parse("--- a: b"); // throws YAMLParseError (block mapping on the --- line)
+parse("--- a: b", { strict: false }); // => { a: "b" }
+```
 
 ### `parseAll(source, options?)` / `loadAll(source, iterator?, options?)`
 

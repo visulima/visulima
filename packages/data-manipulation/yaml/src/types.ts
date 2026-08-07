@@ -44,6 +44,21 @@ export interface ParseOptions {
      * @default true
      */
     preventProtoPollution?: boolean;
+
+    /**
+     * Full YAML 1.2 strictness, on by default. The parser always rejects the
+     * unambiguous spec violations (tabs as indentation, malformed directives,
+     * deficient indentation, comments not separated by white space). With
+     * `strict` it additionally rejects two corner cases that both `yaml` and
+     * `js-yaml` accept but the spec forbids: a node property (anchor or tag)
+     * carried onto a new line yet indented no deeper than its parent key, and a
+     * block mapping or sequence whose first entry sits on the document-start
+     * line. Set `strict: false` to relax only those two checks (closer to
+     * `js-yaml`); it never changes the value of an accepted document, only
+     * whether these malformed inputs throw.
+     * @default true
+     */
+    strict?: boolean;
 }
 
 /** A user-supplied scalar style hint used when serializing. */

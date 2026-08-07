@@ -34,9 +34,18 @@ The pipeline lives entirely in `src/`:
 
 ## Conformance (official yaml-test-suite)
 
-`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We currently pass **394/402 (98.0%)**; no JavaScript YAML library passes 100%. The test is a **regression gate**: it fails if the pass count drops (`EXPECTED_PASS`), if a currently-passing file starts failing, or if a `KNOWN_FAILING` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
+`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We pass **397/402 (98.8%)** by default (strict) and **394/402 (98.0%)** with `strict: false`; no JavaScript YAML library passes 100%. `conformance.test.ts` runs `describe.each` over both modes and each is a **regression gate**: it fails if that mode's pass count drops (`EXPECTED_PASS` / `EXPECTED_PASS_LOOSE`), if a currently-passing file starts failing, or if a `KNOWN_FAILING*` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
 
-The 8 remaining known-failing files are narrow edges: two fail-tests js-yaml also accepts (`4JVG` two anchors, `CXX2` anchor on the `--- ` line), nested complex keys (`4FJ6`), tag+anchor in both orders on a mapping key (`9KAX`), content-indentation strictness (`9KBC`, `H7J7`), block-scalar indentation (`S98Z`), and a tab-only line inside an empty block scalar (`Y79Y`).
+Default (strict) mode's 5 known-failing files: `4JVG` (two anchors, a fail-test js-yaml also accepts), `4FJ6` (nested complex keys), `9KAX` (tag+anchor in both orders on a mapping key), `S98Z` (block-scalar indentation), and `Y79Y` (a tab-only line inside an empty block scalar). Turning `strict: false` re-accepts `H7J7`, `9KBC` and `CXX2`, so the loose allowlist carries those three back (8 total).
+
+## Strict mode (`strict`, default `true`)
+
+The parser always rejects the unambiguous spec violations (tabs as indentation, malformed directives, deficient indentation, comments not separated by white space), matching the `yaml` reference. Strict mode — **on by default** — additionally rejects the extra corner cases that **both** `yaml` and `js-yaml` are lenient about:
+
+- a node property (anchor/tag) carried onto a new line but indented no deeper than its parent key (`key: &a\n!!map\n  a: b`) — checked in `composeNode`'s property loop;
+- a **block** mapping or sequence whose first key/entry sits on the `---` line (`--- a: b`), while a flow collection or scalar there stays valid (`--- {a: b}`, `--- a`) — tracked via `State.documentMarkerLine` and enforced at the point `readBlockMapping` / `readBlockSequence` actually detect an entry (not at entry, since those readers also run speculatively for scalars).
+
+`strict: false` relaxes exactly those two checks (closer to `js-yaml`) and nothing else — it never changes the value of an accepted document, only whether these malformed inputs throw. See `__tests__/strict.test.ts`.
 
 ## Parity with `yaml` and `js-yaml`
 

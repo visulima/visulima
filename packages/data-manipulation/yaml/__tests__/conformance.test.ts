@@ -11,7 +11,12 @@ const WHITESPACE = /\s/;
 
 // Duplicate keys are a schema/application concern, not a grammar (parse) error,
 // and the suite only exercises the grammar — so never throw on them here.
+//
+// `strict` is on by default; it rejects extra spec violations both refs are
+// lenient about, clearing a few more fail-tests (H7J7, 9KBC, CXX2) than the
+// opt-out `strict: false` (loose) mode.
 const PARSE_OPTIONS: ParseOptions = { duplicateKeys: "overwrite" };
+const LOOSE_PARSE_OPTIONS: ParseOptions = { duplicateKeys: "overwrite", strict: false };
 
 /**
  * Runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite)
@@ -41,15 +46,17 @@ interface SuiteTest {
 
 const suite = suiteDefault as unknown as SuiteTest[];
 
-// Number of individual cases (across 350 files) we currently parse correctly.
-const EXPECTED_PASS = 394;
+// Number of individual cases (across 350 files) each mode parses correctly, and
+// the files it still trips on. The default (strict) mode rejects more of the
+// fail-tests, so it clears H7J7 (under-indented property) and 9KBC/CXX2 (block
+// collection on the `---` line). The rest are shared: 4JVG two anchors, 4FJ6
+// nested complex keys, 9KAX tag+anchor both orders on a key, S98Z block-scalar
+// indentation, and Y79Y's tab-only line inside an empty block scalar.
+const EXPECTED_PASS = 397;
+const KNOWN_FAILING = new Set<string>(["4FJ6", "4JVG", "9KAX", "S98Z", "Y79Y"]);
 
-// Test files with at least one case we do not yet handle. 4JVG and CXX2 are
-// fail-tests js-yaml also accepts; the rest are narrow edges: 4FJ6 nested
-// complex keys, 9KAX tag+anchor both-orders on a mapping key, 9KBC/H7J7
-// content-indentation strictness, S98Z block-scalar indentation, and Y79Y's
-// tab-only line inside an empty block scalar.
-const KNOWN_FAILING = new Set<string>(["4FJ6", "4JVG", "9KAX", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
+const EXPECTED_PASS_LOOSE = 394;
+const KNOWN_FAILING_LOOSE = new Set<string>(["4FJ6", "4JVG", "9KAX", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
 
 const canonicalize = (value: unknown): string => {
     const seen = new WeakSet<object>();
@@ -151,10 +158,10 @@ const splitJsonStream = (text: string): unknown[] => {
     return out;
 };
 
-const runCase = (testCase: SuiteCase): boolean => {
+const runCase = (testCase: SuiteCase, options: ParseOptions): boolean => {
     if (testCase.fail) {
         try {
-            parseAll(testCase.yaml, PARSE_OPTIONS);
+            parseAll(testCase.yaml, options);
 
             return false;
         } catch {
@@ -164,7 +171,7 @@ const runCase = (testCase: SuiteCase): boolean => {
 
     if (testCase.json !== undefined && testCase.json !== null) {
         try {
-            return canonicalize(parseAll(testCase.yaml, PARSE_OPTIONS)) === canonicalize(splitJsonStream(testCase.json));
+            return canonicalize(parseAll(testCase.yaml, options)) === canonicalize(splitJsonStream(testCase.json));
         } catch {
             return false;
         }
@@ -172,7 +179,7 @@ const runCase = (testCase: SuiteCase): boolean => {
 
     // Valid document without a JSON representation: it just has to parse.
     try {
-        parseAll(testCase.yaml, PARSE_OPTIONS);
+        parseAll(testCase.yaml, options);
 
         return true;
     } catch {
@@ -180,9 +187,21 @@ const runCase = (testCase: SuiteCase): boolean => {
     }
 };
 
-describe("official yaml-test-suite", () => {
+interface Mode {
+    expectedPass: number;
+    knownFailing: Set<string>;
+    label: string;
+    options: ParseOptions;
+}
+
+const MODES: Mode[] = [
+    { expectedPass: EXPECTED_PASS, knownFailing: KNOWN_FAILING, label: "default (strict)", options: PARSE_OPTIONS },
+    { expectedPass: EXPECTED_PASS_LOOSE, knownFailing: KNOWN_FAILING_LOOSE, label: "loose", options: LOOSE_PARSE_OPTIONS },
+];
+
+describe.each(MODES)("official yaml-test-suite ($label)", ({ expectedPass, knownFailing, options }) => {
     const results = suite.map((test) => {
-        const caseResults = test.cases.map((testCase) => runCase(testCase));
+        const caseResults = test.cases.map((testCase) => runCase(testCase, options));
         const passCount = caseResults.filter(Boolean).length;
 
         return { allPass: passCount === test.cases.length, id: test.id, passCount, total: test.cases.length };
@@ -198,17 +217,17 @@ describe("official yaml-test-suite", () => {
         expect(results.length).toBeGreaterThanOrEqual(350);
     });
 
-    it(`parses at least ${String(EXPECTED_PASS)} of ${String(402)} cases`, () => {
+    it(`parses at least ${String(expectedPass)} of ${String(402)} cases`, () => {
         expect.assertions(1);
 
-        // If this fails high, we improved — bump EXPECTED_PASS to the new number.
-        expect(passedCases).toBeGreaterThanOrEqual(EXPECTED_PASS);
+        // If this fails high, we improved — bump the mode's expected count.
+        expect(passedCases).toBeGreaterThanOrEqual(expectedPass);
     });
 
     it("does not regress any currently-passing test file", () => {
         expect.assertions(1);
 
-        const unexpected = failingIds.filter((id) => !KNOWN_FAILING.has(id));
+        const unexpected = failingIds.filter((id) => !knownFailing.has(id));
 
         expect(unexpected).toStrictEqual([]);
     });
@@ -216,8 +235,8 @@ describe("official yaml-test-suite", () => {
     it("keeps the known-failing allowlist tight (no stale entries)", () => {
         expect.assertions(1);
 
-        // A KNOWN_FAILING id that now fully passes should be removed from the set.
-        const stale = [...KNOWN_FAILING].filter((id) => !failingIds.includes(id));
+        // A known-failing id that now fully passes should be removed from the set.
+        const stale = [...knownFailing].filter((id) => !failingIds.includes(id));
 
         expect(stale).toStrictEqual([]);
     });
