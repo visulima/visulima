@@ -57,6 +57,46 @@ describe("strict mode (default)", () => {
         expect(parse("--- !!map\na: b\n")).toStrictEqual({ a: "b" });
     });
 
+    it("rejects two anchors (or two tags) on a single node", () => {
+        expect.assertions(2);
+
+        const input = "top: &node\n  &other value\n";
+
+        expect(() => parse(input)).toThrow(YAMLParseError);
+        expect(parse(input, { strict: false })).toStrictEqual({ top: "value" });
+    });
+
+    it("still accepts an anchored mapping whose first key is also anchored", () => {
+        expect.assertions(1);
+
+        // `&node` anchors the mapping, `&key` anchors its first key — two anchors
+        // on two different nodes, which is valid.
+        expect(parse("top: &node\n  &key k: v\n")).toStrictEqual({ top: { k: "v" } });
+    });
+
+    it("rejects a block scalar whose leading empty lines out-indent its content", () => {
+        expect.assertions(2);
+
+        const input = "x: >\n \n  \n   \n # c\n";
+
+        expect(() => parse(input)).toThrow(YAMLParseError);
+        expect(() => parse(input, { strict: false })).not.toThrow();
+    });
+
+    it("rejects a tab in block-scalar indentation but keeps tabs as content", () => {
+        expect.assertions(2);
+
+        expect(() => parse("foo: |\n\t\nbar: 1\n")).toThrow("tab characters");
+        expect(parse("foo: |\n \t\nbar: 1\n")).toStrictEqual({ bar: 1, foo: "\t\n" });
+    });
+
+    it("parses a tag and anchor in either order on a mapping key", () => {
+        expect.assertions(2);
+
+        expect(parse("!!map\n&a !!str key: value\n")).toStrictEqual({ key: "value" });
+        expect(parse("!!map\n!!str &a key: value\n")).toStrictEqual({ key: "value" });
+    });
+
     it("parses ordinary documents identically with and without strict", () => {
         expect.assertions(2);
 

@@ -47,17 +47,16 @@ interface SuiteTest {
 const suite = suiteDefault as unknown as SuiteTest[];
 
 // Number of individual cases (across 350 files) each mode parses correctly, and
-// the files it still trips on. The default (strict) mode rejects more of the
-// fail-tests, so it clears H7J7 (under-indented property) and 9KBC/CXX2 (block
-// collection on the `---` line). The four shared failures are exactly the cases
-// js-yaml also fails (this parser shares its recursive-descent algorithm): 4JVG
-// two anchors, 9KAX tag+anchor both orders on a key, S98Z block-scalar
-// indentation, and Y79Y's tab-only line inside an empty block scalar.
-const EXPECTED_PASS = 398;
-const KNOWN_FAILING = new Set<string>(["4JVG", "9KAX", "S98Z", "Y79Y"]);
+// the files it still trips on. The default (strict) mode passes the ENTIRE
+// suite — 402/402. The loose (`strict: false`) mode deliberately re-accepts the
+// six spec-violating fail-tests that js-yaml also accepts, matching its
+// leniency: 4JVG two anchors, 9KBC/CXX2 block collection on the `---` line, H7J7
+// under-indented property, S98Z block-scalar indentation, Y79Y tab-in-scalar.
+const EXPECTED_PASS = 402;
+const KNOWN_FAILING = new Set<string>();
 
-const EXPECTED_PASS_LOOSE = 395;
-const KNOWN_FAILING_LOOSE = new Set<string>(["4JVG", "9KAX", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
+const EXPECTED_PASS_LOOSE = 396;
+const KNOWN_FAILING_LOOSE = new Set<string>(["4JVG", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
 
 const canonicalize = (value: unknown): string => {
     const seen = new WeakSet<object>();

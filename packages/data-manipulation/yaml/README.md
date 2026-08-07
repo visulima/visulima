@@ -36,6 +36,7 @@
 
 ## Features
 
+- **100% spec conformance** — passes all 402 cases of the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) in the default (strict) mode.
 - **YAML 1.2 core schema** — strict, spec-compliant scalar resolution (`null`, `bool`, `int` in dec/hex/oct, `float`, `.inf`/`.nan`). `yes`/`no`/`on`/`off` are strings, as YAML 1.2 mandates.
 - **Full block & flow grammar** — block/flow mappings and sequences, all five scalar styles (plain, single-quoted, double-quoted, literal `|`, folded `>`) with chomping and indentation indicators.
 - **Anchors, aliases & merge keys** — `&anchor` / `*alias` with shared references, plus `<<` merge keys.

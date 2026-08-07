@@ -34,18 +34,22 @@ The pipeline lives entirely in `src/`:
 
 ## Conformance (official yaml-test-suite)
 
-`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. We pass **398/402 (99.0%)** by default (strict) and **395/402 (98.3%)** with `strict: false`; no JavaScript YAML library passes 100%. `conformance.test.ts` runs `describe.each` over both modes and each is a **regression gate**: it fails if that mode's pass count drops (`EXPECTED_PASS` / `EXPECTED_PASS_LOOSE`), if a currently-passing file starts failing, or if a `KNOWN_FAILING*` entry becomes stale — so a fix that lifts the number forces you to bump the constant and prune the allowlist.
+`__tests__/conformance.test.ts` runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (vendored as the `yaml-test-suite` npm dev dependency) — 350 files / 402 cases. The default (strict) mode passes the **entire suite — 402/402 (100%)**; the opt-out `strict: false` mode passes **396/402 (98.5%)**, deliberately re-accepting six spec-violating fail-tests to match `js-yaml`'s leniency. `conformance.test.ts` runs `describe.each` over both modes and each is a **regression gate**: it fails if that mode's pass count drops (`EXPECTED_PASS` / `EXPECTED_PASS_LOOSE`), if a currently-passing file starts failing, or if a `KNOWN_FAILING*` entry becomes stale.
 
-Default (strict) mode's 4 remaining known-failing files are exactly the cases **js-yaml also fails** — this parser shares js-yaml's recursive-descent algorithm, and closing them needs the CST architecture the `yaml` library uses: `4JVG` (two anchors on one node), `9KAX` (tag+anchor in both orders on a mapping key — js-yaml throws here too), `S98Z` (block-scalar leading-empty-line indentation), and `Y79Y` (a tab-only line inside an empty block scalar). Turning `strict: false` re-accepts `H7J7`, `9KBC` and `CXX2`, so the loose allowlist carries those three back (7 total).
+`strict: false` re-accepts the six fail-tests both `yaml` and `js-yaml` are lenient about: `4JVG` (two anchors on one node), `9KBC`/`CXX2` (block collection on the `---` line), `H7J7` (under-indented node property), `S98Z` (block-scalar leading-empty-line indentation), and `Y79Y` (a tab-only line inside a block scalar). Strict rejects all of these, and additionally handles the tag+anchor-in-either-order-on-a-key case (`9KAX`) and nested complex keys (`4FJ6`) that js-yaml itself throws on.
 
 ## Strict mode (`strict`, default `true`)
 
 The parser always rejects the unambiguous spec violations (tabs as indentation, malformed directives, deficient indentation, comments not separated by white space), matching the `yaml` reference. Strict mode — **on by default** — additionally rejects the extra corner cases that **both** `yaml` and `js-yaml` are lenient about:
 
 - a node property (anchor/tag) carried onto a new line but indented no deeper than its parent key (`key: &a\n!!map\n  a: b`) — checked in `composeNode`'s property loop;
-- a **block** mapping or sequence whose first key/entry sits on the `---` line (`--- a: b`), while a flow collection or scalar there stays valid (`--- {a: b}`, `--- a`) — tracked via `State.documentMarkerLine` and enforced at the point `readBlockMapping` / `readBlockSequence` actually detect an entry (not at entry, since those readers also run speculatively for scalars).
+- a **block** mapping or sequence whose first key/entry sits on the `---` line (`--- a: b`), while a flow collection or scalar there stays valid (`--- {a: b}`, `--- a`) — tracked via `State.documentMarkerLine` and enforced at the point `readBlockMapping` / `readBlockSequence` actually detect an entry (not at entry, since those readers also run speculatively for scalars);
+- two anchors (or two tags) on a single node (`top: &a\n  &b val`) — a repeated property token on a new line is only valid when it turned out to be the first property of a nested mapping/sequence key (`repeatedPropertyOnNewLine`, checked against `state.kind` after content is read);
+- a block scalar whose leading empty lines are indented more than its first content line (`> \n  \n   \n # x`), and a tab used in block-scalar indentation.
 
-`strict: false` relaxes exactly those two checks (closer to `js-yaml`) and nothing else — it never changes the value of an accepted document, only whether these malformed inputs throw. See `__tests__/strict.test.ts`.
+Two composeNode speculations make the property cases work: reading node properties then trying a block mapping both from the _first_ property (`tryReadBlockMappingFromProperty`, for `&anchor key: value`) and from a _later_ new-line property (the inline block in `composeNode`, for `!!map\n&a !!str key: value`). Both are wrapped so a throw during speculation rolls back instead of failing the parse.
+
+`strict: false` relaxes exactly these checks (closer to `js-yaml`) and nothing else — it never changes the value of an accepted document, only whether these malformed inputs throw. See `__tests__/strict.test.ts`.
 
 ## Parity with `yaml` and `js-yaml`
 

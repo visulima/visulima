@@ -739,6 +739,10 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
     let textIndent = nodeIndent;
     let emptyLines = 0;
     let atMoreIndented = false;
+    // Largest indentation seen on a leading (pre-content) empty line — used only
+    // in strict mode to reject a scalar whose leading blank lines are indented
+    // more than its first content line (YAML 1.2 §8.1.1.1).
+    let leadingEmptyIndent = 0;
 
     while (ch !== 0) {
         ch = state.input.charCodeAt(++state.position);
@@ -794,8 +798,22 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
         }
 
         if (isEol(ch)) {
+            // Remember the widest leading (pre-content) empty line so strict mode
+            // can reject a first content line indented less than them (§8.1.1.1).
+            if (!detectedIndent && state.lineIndent > leadingEmptyIndent) {
+                leadingEmptyIndent = state.lineIndent;
+            }
+
             emptyLines++;
             continue;
+        }
+
+        // Strict mode: a tab sitting in the block scalar's indentation (before
+        // the content column is reached with spaces) is illegal — `foo: |\n\t\n`
+        // is malformed, while `foo: |\n \t\n` (tab as content past one space of
+        // indent) stays valid because there `lineIndent === textIndent`.
+        if (state.options.strict && ch === 0x09 && state.lineIndent < textIndent) {
+            throwError(state, "tab characters must not be used in indentation");
         }
 
         // End of the scalar: a genuine dedent, EOF, or a `---`/`...` document
@@ -804,6 +822,14 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
         // become true; an indented marker keeps `position > lineStart` and stays
         // scalar content.
         const atDocumentMarker = state.position === state.lineStart && testDocumentSeparator(state);
+
+        // Strict mode: if the first content line is indented less than a leading
+        // empty line, those empty lines were over-indented (`>` then `  \n   \n # x`)
+        // — a spec error. Only fires for a real content line (not EOF / marker),
+        // so an all-empty keep-chomped scalar (`|+\n   \n`) is unaffected.
+        if (state.options.strict && ch !== 0 && !atDocumentMarker && !detectedIndent && leadingEmptyIndent > state.lineIndent) {
+            throwError(state, "a block scalar's leading empty lines cannot be indented more than its content");
+        }
 
         if (state.lineIndent < textIndent || ch === 0 || atDocumentMarker) {
             if (chomping === CHOMPING_KEEP) {
@@ -1365,7 +1391,18 @@ const tryReadBlockMappingFromProperty = (state: State, propertyStart: Snapshot, 
     state.kind = null;
     state.result = null;
 
-    if (readBlockMapping(state, nodeIndent, flowIndent) && state.kind === "mapping") {
+    let formed = false;
+
+    try {
+        formed = readBlockMapping(state, nodeIndent, flowIndent) && state.kind === "mapping";
+    } catch {
+        // Speculative read: a throw (e.g. a strict-mode indentation error while
+        // trying the properties as a mapping key) just means "not a mapping
+        // here", so roll back rather than fail the whole parse.
+        formed = false;
+    }
+
+    if (formed) {
         commitAnchorTransaction(state);
 
         return true;
@@ -1381,6 +1418,8 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
     let indentStatus = 1;
     let atNewLine = false;
     let hasContent = false;
+    let nestedMappingMatched = false;
+    let repeatedPropertyOnNewLine = false;
     let propertyStart: Snapshot | null = null;
 
     state.tag = null;
@@ -1409,9 +1448,64 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
             const ch = state.input.charCodeAt(state.position);
 
             // After a line break, a repeated property token starts the first key
-            // of a nested block mapping (e.g. `!!map\n  !!str key: value`).
+            // of a nested block mapping (e.g. `!!map\n  !!str key: value`) — OR it
+            // is a second anchor/tag on this same node, which is illegal. Which
+            // one is only known after trying to read a mapping below; flag it so
+            // strict mode can reject the "two anchors on one node" case (4JVG).
             if (atNewLine && ((ch === 0x21 && state.tag !== null) || (ch === 0x26 && state.anchor !== null))) {
+                repeatedPropertyOnNewLine = true;
+
                 break;
+            }
+
+            // A new-line property of a *different* kind than what we already hold
+            // may still begin a block-mapping key whose value is the current node
+            // (`!!map\n&a8 !!str key: value`). Try that mapping transactionally;
+            // if it forms, it becomes the content (outer tag/anchor still apply)
+            // and we stop. If not, fall through and read the property normally so
+            // a multi-line scalar with several properties (`&a\n!!str\nx`) works.
+            if (atNewLine && (ch === 0x21 || ch === 0x26) && (state.tag !== null || state.anchor !== null)) {
+                const outerTag: string | null = state.tag;
+                const outerAnchor: string | null = state.anchor;
+                const beforeMapping = snapshotState(state);
+                const mappingIndent = state.position - state.lineStart;
+                const mappingFlowIndent = parentIndent + 1;
+
+                beginAnchorTransaction(state);
+                state.tag = null;
+                state.anchor = null;
+                state.kind = null;
+                state.result = null;
+
+                let mappingFormed = false;
+
+                try {
+                    mappingFormed = readBlockMapping(state, mappingIndent, mappingFlowIndent) && state.kind === "mapping";
+                } catch {
+                    // A throw means this is not a valid block mapping here — treat
+                    // it as "no mapping" and fall back to reading the property.
+                    mappingFormed = false;
+                }
+
+                if (mappingFormed) {
+                    commitAnchorTransaction(state);
+
+                    state.tag = outerTag;
+                    state.anchor = outerAnchor;
+
+                    if (state.anchor !== null) {
+                        storeAnchor(state, state.anchor, state.result);
+                    }
+
+                    nestedMappingMatched = true;
+
+                    break;
+                }
+
+                rollbackAnchorTransaction(state);
+                restoreState(state, beforeMapping);
+                state.tag = outerTag;
+                state.anchor = outerAnchor;
             }
 
             // Strict mode: a node property carried onto a new line must be
@@ -1451,7 +1545,11 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
         allowBlockCollections = atNewLine || allowCompact;
     }
 
-    if (indentStatus === 1 || nodeContext === CONTEXT_BLOCK_OUT) {
+    if (nestedMappingMatched) {
+        // The content was already read as a block mapping in the property loop
+        // (its outer tag/anchor re-applied there); skip the normal content scan.
+        hasContent = true;
+    } else if (indentStatus === 1 || nodeContext === CONTEXT_BLOCK_OUT) {
         const flowIndent = nodeContext === CONTEXT_FLOW_IN || nodeContext === CONTEXT_FLOW_OUT ? parentIndent : parentIndent + 1;
         const blockIndent = state.position - state.lineStart;
 
@@ -1471,6 +1569,18 @@ const composeNode = (state: State, parentIndent: number, nodeContext: number, al
                 const keyIndent = propertyStart.position - propertyStart.lineStart;
 
                 matchedProperty = tryReadBlockMappingFromProperty(state, propertyStart, keyIndent, flowIndent);
+            }
+
+            // Strict mode: a repeated anchor/tag on a new line that did NOT turn
+            // out to introduce a nested mapping key is a second property on this
+            // node — `top: &a\n  &b val` gives the scalar two anchors (4JVG).
+            // Strict mode: a repeated anchor/tag carried onto a new line is valid
+            // only when it turned out to be the first property of a nested block
+            // mapping/sequence key. If the node instead resolved to a scalar, the
+            // repeated property is a second anchor/tag on that one scalar — e.g.
+            // `top: &a\n  &b val` gives the scalar two anchors (suite case 4JVG).
+            if (state.options.strict && repeatedPropertyOnNewLine && state.kind !== "mapping" && state.kind !== "sequence") {
+                throwError(state, "a node may only have one anchor and one tag");
             }
 
             if (matchedCollection || matchedProperty) {
