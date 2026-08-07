@@ -61,6 +61,17 @@ Error recovery is **per document, not within one**: `loadDocuments` catches a do
 
 `setIn` only edits block mappings. A path through a flow collection or a sequence throws, because there is no unambiguous place to splice. When splicing, spans are trimmed back over trailing whitespace (`trimTrailingSpace`) — a node's recorded end runs past the spaces before a trailing comment and past the file's final newline, and splicing at the raw end would eat both.
 
+## Node model (`src/nodes/`)
+
+`Scalar`, `YAMLMap`, `YAMLSeq`, `Pair`, `Alias`, the `isX` guards, `createNode`, `toJS` and `visit`, mirroring `yaml`'s.
+
+**`parse` never builds this.** The single-pass native-value path is where the speed comes from, so the tree is a separate opt-in structure — building it from `parse` would erase the package's reason to exist. Anything that needs the tree (styles, anchors on nodes, generic traversal) goes through the node API instead.
+
+Two constraints that shaped it:
+
+- Node kind is a plain `kind: NodeKindName` field, not a symbol brand and not `instanceof`. Guards therefore keep working across module instances, and the type survives `isolatedDeclarations`, which the `.d.ts` build enforces — a computed symbol key does not.
+- `visit` passes a `replace` callback down so a visitor returning a node writes into the parent's slot. Without it the replacement updated only a local variable and the tree was left untouched.
+
 ## Hardening invariants (do not regress)
 
 These each fixed a reproduced defect; `__tests__/hardening.test.ts` guards them.

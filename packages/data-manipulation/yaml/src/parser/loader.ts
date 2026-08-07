@@ -1023,9 +1023,9 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
         // nothing after it, common in flow: `{ a: !!str, ... }`). In the empty
         // case the node has no kind yet — treat the content as the empty string
         // so `!!str` → "" and `!!null` → null, matching the core schema.
-        state.tag !== null
-        && state.tag !== "!"
-        && (state.kind === "scalar" || (!hasContent && state.kind === null))
+        state.tag !== null &&
+        state.tag !== "!" &&
+        (state.kind === "scalar" || (!hasContent && state.kind === null))
     ) {
         const raw = typeof state.result === "string" ? state.result : "";
         // A custom tag takes precedence over the core table for the same name,

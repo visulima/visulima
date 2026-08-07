@@ -349,19 +349,19 @@ const BIGINT_SAFE_RE = /^[-+]?(?:0B[01]+|0O[0-7]+|0X[\dA-F]+|\d+)$/i;
  * past 2^53, so the raw text is parsed again rather than converted. Underscore
  * separators are stripped first because `BigInt()` rejects them.
  */
-const asBigInt
-    = (resolve: ScalarResolver): ScalarResolver =>
-        (raw) => {
-            const value = resolve(raw);
+const asBigInt =
+    (resolve: ScalarResolver): ScalarResolver =>
+    (raw) => {
+        const value = resolve(raw);
 
-            if (typeof value !== "number" || !Number.isInteger(value)) {
-                return value;
-            }
+        if (typeof value !== "number" || !Number.isInteger(value)) {
+            return value;
+        }
 
-            const cleaned = stripUnderscores(raw);
+        const cleaned = stripUnderscores(raw);
 
-            return BIGINT_SAFE_RE.test(cleaned) ? BigInt(cleaned) : value;
-        };
+        return BIGINT_SAFE_RE.test(cleaned) ? BigInt(cleaned) : value;
+    };
 
 /**
  * Pick the resolver for a schema, resolving the `version`/`schema` interaction

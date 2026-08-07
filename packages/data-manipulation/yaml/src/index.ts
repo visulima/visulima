@@ -102,7 +102,16 @@ export function stringify(
     if (Array.isArray(replacerOrOptions)) {
         const allowed = new Set(replacerOrOptions.map(String));
 
-        return dumpValue(value, { ...options, replacer: (key, item) => key === "" || allowed.has(key) ? item : undefined });
+        return dumpValue(value, {
+            ...options,
+            replacer: (key, item) => {
+                if (key === "" || allowed.has(key)) {
+                    return item;
+                }
+
+                return undefined;
+            },
+        });
     }
 
     if (typeof replacerOrOptions === "function") {
@@ -175,4 +184,24 @@ export const parseAllDocuments = (source: string, options?: ParseOptions): YAMLD
     return documents.map((document) => new YAMLDocument(source, document, ranges));
 };
 
+export type { NodeKindName, ScalarStyle } from "./nodes/nodes";
+export {
+    Alias,
+    Collection,
+    createNode,
+    isAlias,
+    isCollection,
+    isMap,
+    isNode,
+    isPair,
+    isScalar,
+    isSeq,
+    Pair,
+    Scalar,
+    toJS,
+    YAMLMap,
+    YAMLSeq,
+} from "./nodes/nodes";
+export type { Visitor, VisitorFunction } from "./nodes/visit";
+export { visit } from "./nodes/visit";
 export type { DuplicateKeyBehavior, ParseOptions, StringifyOptions } from "./types";
