@@ -30,7 +30,7 @@ export type BuiltInCustomDepType = "devEngines.packageManager" | "devEngines.run
 // eslint-disable-next-line sonarjs/redundant-type-aliases -- documentation alias: open-ended union of built-in literals and user-defined names
 export type CustomDepType = string;
 
-export const BUILTIN_CUSTOM_TYPES: ReadonlySet<BuiltInCustomDepType> = new Set([
+export const BUILTIN_CUSTOM_TYPES: ReadonlySet<BuiltInCustomDepType> = new Set<BuiltInCustomDepType>([
     "devEngines.packageManager",
     "devEngines.runtime",
     "engines",
@@ -158,7 +158,7 @@ interface DevEnginesEntry {
 const isDevEnginesEntry = (value: unknown): value is DevEnginesEntry =>
     typeof value === "object" && value !== null && !Array.isArray(value) && typeof (value as DevEnginesEntry).name === "string";
 
-const STRATEGIES: ReadonlySet<ExtraTypeMeta["strategy"]> = new Set(["name@version", "name~version", "string", "versionsByName"]);
+const STRATEGIES: ReadonlySet<ExtraTypeMeta["strategy"]> = new Set<ExtraTypeMeta["strategy"]>(["name@version", "name~version", "string", "versionsByName"]);
 
 /**
  * Validate a `policy.customTypes.extraTypes` config block. Returns one

@@ -65,7 +65,7 @@ export class NpmAdapter extends PackageManagerAdapter {
         }
 
         // npm pack --json emits an array; first entry has `filename`.
-        const parsed: { filename?: string }[] = JSON.parse(result.stdout);
+        const parsed = JSON.parse(result.stdout) as { filename?: string }[];
         const filename = parsed[0]?.filename;
 
         if (!filename) {
@@ -111,7 +111,7 @@ export class NpmAdapter extends PackageManagerAdapter {
         }
 
         try {
-            const parsed: { location?: string; name?: string; path?: string; private?: boolean; version?: string }[] = JSON.parse(result.stdout);
+            const parsed = JSON.parse(result.stdout) as { location?: string; name?: string; path?: string; private?: boolean; version?: string }[];
 
             return parsed
                 .filter((p): p is Required<Pick<typeof p, "name">> & typeof p => typeof p.name === "string")

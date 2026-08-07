@@ -169,7 +169,7 @@ const readReleaseRc = async (path: string): Promise<ReleaseRcFile | undefined> =
 
     try {
         const content = await readFile(path, "utf8");
-        const parsed = JSON.parse(content);
+        const parsed = JSON.parse(content) as { branches?: unknown; extends?: unknown; plugins?: unknown };
 
         return {
             branches: parsed.branches,
