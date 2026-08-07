@@ -1,0 +1,20 @@
+{
+    "name": "yaml-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/yaml": "workspace:*",
+        "js-yaml": "4.1.0",
+        "yaml": "2.9.0"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@types/js-yaml": "4.0.9",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}
