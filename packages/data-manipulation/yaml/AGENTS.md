@@ -57,6 +57,8 @@ Both property cases route through one helper, `speculateBlockMapping`: it tries 
 
 ## Document layer
 
+`parseDocument` / `parseAllDocuments` build node trees, so `Document.contents` is a `YAMLMap` / `YAMLSeq` / `Scalar` and `toJS()` / `toJSON()` convert. The comment-preserving editor keeps working because `State.mappingRanges` is keyed on whichever object the mapping produced — in node mode that is the `YAMLMap` itself, so the source spans follow the tree without extra bookkeeping.
+
 Error recovery is **per document, not within one**: `loadDocuments` catches a document's `YAMLParseError`, records it, resyncs to the next `---`/`...` marker and carries on. Inside a single document the first error still ends it, because the parser has no resync points — so `parseDocument` reports at most one error while `parseAllDocuments` reports one per document.
 
 `setIn` only edits block mappings. A path through a flow collection or a sequence throws, because there is no unambiguous place to splice. When splicing, spans are trimmed back over trailing whitespace (`trimTrailingSpace`) — a node's recorded end runs past the spaces before a trailing comment and past the file's final newline, and splicing at the raw end would eat both.

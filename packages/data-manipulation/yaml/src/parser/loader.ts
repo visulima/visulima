@@ -189,6 +189,21 @@ const toNode = (state: State, value: unknown, hasContent: boolean): unknown => {
         return value;
     }
 
+    // Already a node: `composeNode` can run over the same result more than once
+    // (a speculative parse that succeeds, a rewind that re-reads the value), and
+    // wrapping twice would bury the value inside a second Scalar.
+    if (value instanceof Scalar) {
+        if (state.anchor !== null) {
+            value.anchor = state.anchor;
+        }
+
+        if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
+            value.tag = state.tag;
+        }
+
+        return value;
+    }
+
     if (value instanceof YAMLMap || value instanceof YAMLSeq) {
         if (state.tag !== null && state.tag !== "?" && state.tag !== "!") {
             value.tag = state.tag;
@@ -240,6 +255,11 @@ const createMapping = (state: State): MappingTarget => {
 
 /** The string a mapping key is stored under. */
 const mappingKeyOf = (keyNode: unknown): string => {
+    // In node mode a key arrives wrapped; the stored key is its text either way.
+    if (keyNode instanceof Scalar) {
+        return mappingKeyOf(keyNode.value);
+    }
+
     if (typeof keyNode === "object" && keyNode !== null) {
         return stringifyComplexKey(keyNode);
     }

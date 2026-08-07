@@ -12,6 +12,7 @@
 
 import type { YAMLParseError, YAMLWarning } from "./errors";
 import { YAMLStringifyError } from "./errors";
+import { createNode, isMap, isScalar, toJS as nodeToJS, YAMLMap } from "./nodes/nodes";
 import { dump } from "./parser/dumper";
 import type { MappingEntryRange, MappingRanges } from "./parser/ranges";
 import type { StringifyOptions } from "./types";
@@ -44,6 +45,10 @@ const trimTrailingSpace = (source: string, end: number): number => {
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** A node that can be indexed by key or position. */
+const isCollectionNode = (value: unknown): value is YAMLMap & { get: (key: unknown, keep?: boolean) => unknown } =>
+    typeof value === "object" && value !== null && typeof (value as { get?: unknown }).get === "function";
 
 /**
  * Render a value as the right-hand side of a `key:` entry.
@@ -111,14 +116,14 @@ class YAMLDocument {
         this.warnings = result.warnings;
     }
 
-    /** The document's value as plain JavaScript. */
+    /** The document's value as plain JavaScript, resolving aliases. */
     public toJS(): unknown {
-        return this.contents;
+        return nodeToJS(this.contents);
     }
 
     /** Alias of {@link YAMLDocument.toJS}, so `JSON.stringify` works directly. */
     public toJSON(): unknown {
-        return this.contents;
+        return nodeToJS(this.contents);
     }
 
     /** Value at `path`, or `undefined` if any segment is missing. */
@@ -126,16 +131,15 @@ class YAMLDocument {
         let current: unknown = this.contents;
 
         for (const segment of path) {
-            if (Array.isArray(current) && typeof segment === "number") {
-                current = current[segment];
-            } else if (isRecord(current)) {
-                current = current[String(segment)];
-            } else {
+            if (!isCollectionNode(current)) {
                 return undefined;
             }
+
+            current = current.get(segment, true);
         }
 
-        return current;
+        // Callers of the document API want values, not nodes.
+        return isScalar(current) ? current.value : nodeToJS(current);
     }
 
     /** Value of a top-level key. */
@@ -169,13 +173,13 @@ class YAMLDocument {
         const keys = path.map(String);
 
         // Walk as far down the existing structure as the path allows.
-        let container: Record<string, unknown> = this.#rootMapping();
+        let container: YAMLMap = this.#rootMapping();
         let depth = 0;
 
         while (depth < keys.length - 1) {
-            const next = container[keys[depth]!];
+            const next = container.get(keys[depth]!, true);
 
-            if (!isRecord(next)) {
+            if (!isMap(next)) {
                 break;
             }
 
@@ -201,17 +205,17 @@ class YAMLDocument {
             this.#insertEntry(entries, remaining, value);
         }
 
-        // Keep the parsed view consistent with the text we just edited.
-        let cursor: Record<string, unknown> = container;
+        // Keep the parsed tree consistent with the text we just edited.
+        let cursor: YAMLMap = container;
 
         for (const key of remaining.slice(0, -1)) {
-            const created: Record<string, unknown> = {};
+            const created = new YAMLMap();
 
-            cursor[key] = created;
+            cursor.set(createNode(key), created);
             cursor = created;
         }
 
-        cursor[remaining.at(-1)!] = value;
+        cursor.set(createNode(remaining.at(-1)!), createNode(value));
     }
 
     /** Set a top-level key. */
@@ -240,16 +244,18 @@ class YAMLDocument {
         return output;
     }
 
-    #rootMapping(): Record<string, unknown> {
+    #rootMapping(): YAMLMap {
         // An empty or comment-only document has no contents yet; treat it as an
         // empty mapping so the first `setIn` can create one.
         if (this.contents === null || this.contents === undefined) {
-            this.contents = {};
+            const root = new YAMLMap();
 
-            return this.contents as Record<string, unknown>;
+            this.contents = root;
+
+            return root;
         }
 
-        if (!isRecord(this.contents)) {
+        if (!isMap(this.contents)) {
             throw new YAMLStringifyError("cannot edit a document whose root is not a mapping");
         }
 

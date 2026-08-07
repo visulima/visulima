@@ -190,7 +190,7 @@ export const parseAllNodes = (source: string, options?: ParseOptions): unknown[]
  * ```
  */
 export const parseDocument = (source: string, options?: ParseOptions): YAMLDocument => {
-    const { documents, ranges } = loadDocuments(source, options);
+    const { documents, ranges } = loadDocuments(source, { ...options, nodes: true });
 
     return new YAMLDocument(source, documents[0] ?? EMPTY_DOCUMENT, ranges);
 };
@@ -200,7 +200,7 @@ export const parseDocument = (source: string, options?: ParseOptions): YAMLDocum
  * reports its error and does not stop the ones after it.
  */
 export const parseAllDocuments = (source: string, options?: ParseOptions): YAMLDocument[] => {
-    const { documents, ranges } = loadDocuments(source, options);
+    const { documents, ranges } = loadDocuments(source, { ...options, nodes: true });
 
     return documents.map((document) => new YAMLDocument(source, document, ranges));
 };
