@@ -89,6 +89,11 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 | `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"`           | `"error"` | How repeated keys within a mapping are handled.                                          |
 | `schema`                | `"core" \| "failsafe" \| "json" \| "yaml-1.1"` | `"core"`  | Scalar-resolution rules (see below).                                                     |
 | `version`               | `"1.1" \| "1.2"`                               | `"1.2"`   | YAML version assumed without a `%YAML` directive. `"1.1"` selects the `yaml-1.1` schema. |
+| `reviver`               | `(key, value) => unknown`                      | —         | Applied to every pair after parsing, like `JSON.parse`. Return `undefined` to drop.      |
+| `merge`                 | `boolean`                                      | `true`    | Resolve `<<` merge keys.                                                                 |
+| `mapAsMap`              | `boolean`                                      | `false`   | Build mappings as `Map`, keeping complex keys native.                                    |
+| `intAsBigInt`           | `boolean`                                      | `false`   | Resolve integers as `BigInt`.                                                            |
+| `stringKeys`            | `boolean`                                      | `false`   | Keep every mapping key a string.                                                         |
 | `maxDepth`              | `number`                                       | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).                      |
 | `maxAliasCount`         | `number`                                       | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).                  |
 | `preventProtoPollution` | `boolean`                                      | `true`    | Make a `__proto__` key an own property instead of touching the prototype.                |
@@ -215,16 +220,25 @@ function dump(value: unknown, options?: StringifyOptions): string;
 
 ### StringifyOptions
 
-| Option        | Type                            | Default | Description                                                        |
-| ------------- | ------------------------------- | ------- | ------------------------------------------------------------------ |
-| `indent`      | `number`                        | `2`     | Spaces per indentation level (minimum 2).                          |
-| `flowLevel`   | `number`                        | `-1`    | Use flow style at or beyond this nesting level (`-1` disables it). |
-| `sortKeys`    | `boolean \| ((a, b) => number)` | `false` | Sort mapping keys.                                                 |
-| `lineWidth`   | `number`                        | `80`    | Preferred wrap width for folded scalars (`0` disables folding).    |
-| `forceQuotes` | `boolean`                       | `false` | Escape non-ASCII characters in double-quoted scalars.              |
-| `skipInvalid` | `boolean`                       | `false` | Skip `undefined` members instead of emitting `null`.               |
-| `directives`  | `boolean`                       | `false` | Emit a leading `---` document marker.                              |
-| `replacer`    | `(key, value) => unknown`       | —       | `JSON.stringify`-style value replacer.                             |
+| Option                  | Type                               | Default   | Description                                                        |
+| ----------------------- | ---------------------------------- | --------- | ------------------------------------------------------------------ |
+| `indent`                | `number`                           | `2`       | Spaces per indentation level (minimum 2).                          |
+| `flowLevel`             | `number`                           | `-1`      | Use flow style at or beyond this nesting level (`-1` disables it). |
+| `sortKeys`              | `boolean \| ((a, b) => number)`    | `false`   | Sort mapping keys.                                                 |
+| `lineWidth`             | `number`                           | `80`      | Preferred wrap width for folded scalars (`0` disables folding).    |
+| `forceQuotes`           | `boolean`                          | `false`   | Escape non-ASCII characters in double-quoted scalars.              |
+| `skipInvalid`           | `boolean`                          | `false`   | Skip `undefined` members instead of emitting `null`.               |
+| `directives`            | `boolean`                          | `false`   | Emit a leading `---` document marker.                              |
+| `nullStr`               | `string`                           | `"null"`  | String written for `null`.                                         |
+| `trueStr`               | `string`                           | `"true"`  | String written for `true`.                                         |
+| `falseStr`              | `string`                           | `"false"` | String written for `false`.                                        |
+| `singleQuote`           | `boolean`                          | `false`   | Prefer single quotes when a string must be quoted.                 |
+| `blockQuote`            | `boolean \| "literal" \| "folded"` | `true`    | How to render multi-line strings.                                  |
+| `collectionStyle`       | `"any" \| "block" \| "flow"`       | `"any"`   | Force one collection style.                                        |
+| `flowCollectionPadding` | `boolean`                          | `true`    | Pad flow collections: `{ a: 1 }` vs `{a: 1}`.                      |
+| `indentSeq`             | `boolean`                          | `true`    | Indent block sequences under their key.                            |
+| `keepUndefined`         | `boolean`                          | `false`   | Keep `undefined` values instead of dropping them.                  |
+| `replacer`              | `(key, value) => unknown`          | —         | `JSON.stringify`-style value replacer.                             |
 
 ## Errors
 

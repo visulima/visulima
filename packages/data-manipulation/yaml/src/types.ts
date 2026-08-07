@@ -19,6 +19,21 @@ export interface ParseOptions {
     duplicateKeys?: DuplicateKeyBehavior;
 
     /**
+     * Resolve integers to `BigInt` instead of `number`, so values beyond
+     * `Number.MAX_SAFE_INTEGER` survive. Floats are unaffected.
+     * @default false
+     */
+    intAsBigInt?: boolean;
+
+    /**
+     * Build mappings as `Map` rather than plain objects, which keeps complex
+     * keys (sequences, mappings) as their native values instead of flattening
+     * them to strings.
+     * @default false
+     */
+    mapAsMap?: boolean;
+
+    /**
      * Maximum number of alias nodes that may be resolved. Guards against
      * "billion laughs" style alias-expansion attacks.
      * @default 100
@@ -34,6 +49,12 @@ export interface ParseOptions {
     maxDepth?: number;
 
     /**
+     * Resolve `&lt;&lt;` merge keys. Disable to treat `&lt;&lt;` as an ordinary key.
+     * @default true
+     */
+    merge?: boolean;
+
+    /**
      * Optional callback invoked for every non-fatal `YAMLWarning`. When
      * omitted, warnings are silently ignored.
      */
@@ -46,6 +67,12 @@ export interface ParseOptions {
      * @default true
      */
     preventProtoPollution?: boolean;
+
+    /**
+     * Applied to every key/value pair after parsing, like the `JSON.parse`
+     * reviver. Returning `undefined` drops the entry.
+     */
+    reviver?: (key: unknown, value: unknown) => unknown;
 
     /**
      * Which scalar-resolution rules to apply.
@@ -82,6 +109,12 @@ export interface ParseOptions {
     strict?: boolean;
 
     /**
+     * Keep every mapping key a string, skipping scalar resolution for keys.
+     * @default false
+     */
+    stringKeys?: boolean;
+
+    /**
      * YAML version to assume when the document carries no `%YAML` directive.
      * `"1.1"` selects the `yaml-1.1` schema unless {@link ParseOptions.schema}
      * says otherwise.
@@ -93,10 +126,35 @@ export interface ParseOptions {
 /** Options accepted by `stringify`. */
 export interface StringifyOptions {
     /**
+     * How to render a multi-line string: `literal` (`|`), `folded` (`>`), or
+     * `false` to always use a quoted style.
+     * @default true
+     */
+    blockQuote?: "folded" | "literal" | boolean;
+
+    /**
+     * Force every collection to one style, overriding {@link StringifyOptions.flowLevel}.
+     * @default "any"
+     */
+    collectionStyle?: "any" | "block" | "flow";
+
+    /**
      * Emit an explicit document-start marker (`---`) before the document.
      * @default false
      */
     directives?: boolean;
+
+    /**
+     * String written for `false`.
+     * @default "false"
+     */
+    falseStr?: string;
+
+    /**
+     * Pad the inside of flow collections: `{ a: 1 }` rather than `{a: 1}`.
+     * @default true
+     */
+    flowCollectionPadding?: boolean;
 
     /**
      * Force flow style (`{a: 1, b: [2, 3]}`) for collections nested deeper than
@@ -119,16 +177,40 @@ export interface StringifyOptions {
     indent?: number;
 
     /**
+     * Indent block sequences inside a mapping under their key.
+     * @default true
+     */
+    indentSeq?: boolean;
+
+    /**
+     * Keep `undefined` values instead of dropping them, writing them as `null`.
+     * @default false
+     */
+    keepUndefined?: boolean;
+
+    /**
      * Preferred maximum line width for folded scalars. `0` disables folding.
      * @default 80
      */
     lineWidth?: number;
 
     /**
+     * String written for `null`.
+     * @default "null"
+     */
+    nullStr?: string;
+
+    /**
      * A `JSON.stringify`-style replacer applied to every value before it is
      * serialized. Return `undefined` to omit the value.
      */
     replacer?: (key: string, value: unknown) => unknown;
+
+    /**
+     * Prefer single quotes over double quotes when a string must be quoted.
+     * @default false
+     */
+    singleQuote?: boolean;
 
     /**
      * When `true`, keys with `undefined` values (and `undefined` array members)
@@ -143,4 +225,10 @@ export interface StringifyOptions {
      * @default false
      */
     sortKeys?: boolean | ((a: string, b: string) => number);
+
+    /**
+     * String written for `true`.
+     * @default "true"
+     */
+    trueStr?: string;
 }

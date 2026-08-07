@@ -68,24 +68,61 @@ const YAML_VERSION_RE = /^\d+\.\d+$/;
  * Every write goes through here, including merge keys (`&lt;&lt;`) — routing those
  * around it is what previously let `&lt;&lt;` bypass the guard entirely.
  */
-const assignMappingKey = (state: State, target: Record<string, unknown>, key: string, value: unknown): void => {
+const assignMappingKey = (state: State, target: MappingTarget, key: unknown, value: unknown): void => {
+    // A Map keeps keys as their own values, so the prototype chain is never in
+    // play and no guard is needed.
+    if (target instanceof Map) {
+        target.set(key, value);
+
+        return;
+    }
+
     if (key === "__proto__" && state.options.preventProtoPollution) {
         Object.defineProperty(target, key, { configurable: true, enumerable: true, value, writable: true });
 
         return;
     }
 
-    target[key] = value;
+    target[key as string] = value;
 };
 
-const mergeMappings = (state: State, destination: Record<string, unknown>, source: unknown, overridableKeys: Set<string>): void => {
-    if (!isPlainObject(source)) {
+/** Whether `target` already carries `key`. */
+const mappingHas = (target: MappingTarget, key: unknown): boolean => {
+    if (target instanceof Map) {
+        return target.has(key);
+    }
+
+    return Object.hasOwn(target, key as string);
+};
+
+/** Every key currently in `target`. */
+const mappingKeys = (target: MappingTarget): unknown[] => {
+    if (target instanceof Map) {
+        return [...target.keys()];
+    }
+
+    return Object.keys(target);
+};
+
+/** Read one key back out of `target`. */
+const mappingGet = (target: MappingTarget, key: unknown): unknown => {
+    if (target instanceof Map) {
+        return target.get(key);
+    }
+
+    return target[String(key)];
+};
+
+const mergeMappings = (state: State, destination: MappingTarget, source: unknown, overridableKeys: Set<unknown>): void => {
+    if (!isPlainObject(source) && !(source instanceof Map)) {
         throwError(state, "cannot merge mappings; the provided source object is unacceptable");
     }
 
-    for (const key of Object.keys(source as Record<string, unknown>)) {
-        if (!Object.hasOwn(destination, key)) {
-            assignMappingKey(state, destination, key, (source as Record<string, unknown>)[key]);
+    const from = source as MappingTarget;
+
+    for (const key of mappingKeys(from)) {
+        if (!mappingHas(destination, key)) {
+            assignMappingKey(state, destination, key, mappingGet(from, key));
             overridableKeys.add(key);
         }
     }
@@ -118,6 +155,18 @@ const stringifyComplexKey = (node: unknown): string => {
     return String(node);
 };
 
+/** A parsed mapping: a plain object, or a Map when `mapAsMap` is set. */
+type MappingTarget = Map<unknown, unknown> | Record<string, unknown>;
+
+/** Build the container a mapping accumulates into. */
+const createMapping = (state: State): MappingTarget => {
+    if (state.options.mapAsMap) {
+        return new Map<unknown, unknown>();
+    }
+
+    return {};
+};
+
 /** The string a mapping key is stored under. */
 const mappingKeyOf = (keyNode: unknown): string => {
     if (typeof keyNode === "object" && keyNode !== null) {
@@ -148,21 +197,29 @@ const recordMappingEntry = (state: State, mapping: object, keyNode: unknown, sta
 
 const storeMappingPair = (
     state: State,
-    result: Record<string, unknown>,
-    overridableKeys: Set<string> | undefined,
+    result: MappingTarget,
+    overridableKeys: Set<unknown> | undefined,
     keyTag: string | null,
     keyNodeInput: unknown,
     valueNode: unknown,
-): Set<string> | undefined => {
+): Set<unknown> | undefined => {
     const keyNode = keyNodeInput;
     let keys = overridableKeys;
 
-    const key = mappingKeyOf(keyNode);
+    // A Map can hold a collection as a key; a plain object cannot, so there the
+    // key is flattened to a stable string. `stringKeys` forces the flattened
+    // form even for a Map.
+    // A Map can hold a collection as a key; a plain object cannot.
+    let key: unknown = keyNode;
 
-    const isMerge = keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<");
+    if (!(result instanceof Map) || state.options.stringKeys) {
+        key = mappingKeyOf(keyNode);
+    }
+
+    const isMerge = state.options.merge !== false && (keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<"));
 
     if (isMerge) {
-        keys ??= new Set<string>();
+        keys ??= new Set<unknown>();
 
         if (Array.isArray(valueNode)) {
             for (const item of valueNode) {
@@ -175,9 +232,9 @@ const storeMappingPair = (
         return keys;
     }
 
-    if (!keys?.has(key) && Object.hasOwn(result, key)) {
+    if (!keys?.has(key) && mappingHas(result, key)) {
         if (state.options.duplicateKeys === "error") {
-            throwError(state, `duplicated mapping key "${key}"`);
+            throwError(state, `duplicated mapping key "${String(key)}"`);
         } else if (state.options.duplicateKeys === "ignore") {
             return keys;
         }
@@ -273,8 +330,8 @@ const readBlockSequence = (state: State, nodeIndent: number): boolean => {
 const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    const result: Record<string, unknown> = {};
-    let overridableKeys: Set<string> | undefined;
+    const result = createMapping(state);
+    let overridableKeys: Set<unknown> | undefined;
 
     let keyTag: string | null = null;
     let keyNode: unknown = null;
@@ -443,12 +500,12 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
 const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     const savedTag = state.tag;
     const savedAnchor = state.anchor;
-    let overridableKeys: Set<string> | undefined;
+    let overridableKeys: Set<unknown> | undefined;
 
     let ch = state.input.charCodeAt(state.position);
     let terminator: number;
     let isMapping: boolean;
-    let result: unknown[] | Record<string, unknown>;
+    let result: MappingTarget | unknown[];
 
     if (ch === 0x5b) {
         terminator = 0x5d;
@@ -457,7 +514,7 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
     } else if (ch === 0x7b) {
         terminator = 0x7d;
         isMapping = true;
-        result = {};
+        result = createMapping(state);
     } else {
         return false;
     }
@@ -1192,12 +1249,61 @@ const prepareState = (input: string, options: ParseOptions): State => {
     return state;
 };
 
+/**
+ * Walk a parsed value depth-first, letting `reviver` rewrite or drop entries —
+ * the `JSON.parse` contract, extended to `Map` so it also works under
+ * `mapAsMap`. Returning `undefined` removes the entry.
+ */
+const applyReviver = (holder: unknown, key: unknown, value: unknown, reviver: (key: unknown, value: unknown) => unknown): unknown => {
+    if (Array.isArray(value)) {
+        for (let index = value.length - 1; index >= 0; index--) {
+            const revived = applyReviver(value, String(index), value[index], reviver);
+
+            if (revived === undefined) {
+                value.splice(index, 1);
+            } else {
+                value[index] = revived;
+            }
+        }
+    } else if (value instanceof Map) {
+        for (const entryKey of value.keys()) {
+            const revived = applyReviver(value, entryKey, value.get(entryKey), reviver);
+
+            if (revived === undefined) {
+                value.delete(entryKey);
+            } else {
+                value.set(entryKey, revived);
+            }
+        }
+    } else if (isPlainObject(value)) {
+        const record = value as Record<string, unknown>;
+
+        for (const entryKey of Object.keys(record)) {
+            const revived = applyReviver(record, entryKey, record[entryKey], reviver);
+
+            if (revived === undefined) {
+                delete record[entryKey];
+            } else {
+                record[entryKey] = revived;
+            }
+        }
+    }
+
+    return reviver.call(holder, key, value);
+};
+
 /** Parse every document in a YAML stream, returning them in order. */
 const loadAll = (input: string, options: ParseOptions = {}): unknown[] => {
     const state = prepareState(input, options);
 
     while (state.position < state.length - 1) {
         readDocument(state);
+    }
+
+    const { reviver } = options;
+
+    if (reviver) {
+        return state.documents.map((document) => applyReviver({ "": document }, "", document, reviver));
     }
 
     return state.documents;

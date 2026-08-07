@@ -107,9 +107,11 @@ describe("stringify › options", () => {
     });
 
     it("supports flow style via flowLevel", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
-        expect(stringify({ a: [1, 2], b: { c: 3 } }, { flowLevel: 0 })).toBe("{a: [1, 2], b: {c: 3}}\n");
+        // Flow collections are padded by default, matching `yaml`.
+        expect(stringify({ a: [1, 2], b: { c: 3 } }, { flowLevel: 0 })).toBe("{ a: [ 1, 2 ], b: { c: 3 } }\n");
+        expect(stringify({ a: [1, 2], b: { c: 3 } }, { flowCollectionPadding: false, flowLevel: 0 })).toBe("{a: [1, 2], b: {c: 3}}\n");
     });
 
     it("emits a document marker with directives:true", () => {

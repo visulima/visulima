@@ -16,14 +16,23 @@ import { resolvesToNonString } from "../schema/resolve-scalar";
 import type { StringifyOptions } from "../types";
 
 interface DumpContext {
+    blockQuote: "folded" | "literal" | boolean;
+    collectionStyle: "any" | "block" | "flow";
+    falseStr: string;
+    flowCollectionPadding: boolean;
     flowLevel: number;
     forceQuotes: boolean;
     indent: number;
+    indentSeq: boolean;
+    keepUndefined: boolean;
     lineWidth: number;
+    nullStr: string;
     replacer?: (key: string, value: unknown) => unknown;
+    singleQuote: boolean;
     skipInvalid: boolean;
     sortKeys: boolean | ((a: string, b: string) => number);
     stack: Set<object>;
+    trueStr: string;
 }
 
 // C0 controls (excluding TAB/LF which are stripped before this test), DEL,
@@ -267,6 +276,7 @@ const shouldFold = (value: string, level: number, context: DumpContext): boolean
     return value.includes(" ") && FOLDABLE_RE.test(value);
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const writeScalar = (value: string, level: number, context: DumpContext, inFlow: boolean): string => {
     if (value === "") {
         return "\u0022\u0022";
@@ -283,13 +293,23 @@ const writeScalar = (value: string, level: number, context: DumpContext, inFlow:
     const hasNewline = value.includes("\n");
 
     if (hasNewline) {
-        if (!inFlow && !LEADING_WS.test(value) && !TRAILING_INLINE_WS.test(stripTrailingNewlines(value))) {
+        const blockAllowed = context.blockQuote !== false && !inFlow && !LEADING_WS.test(value) && !TRAILING_INLINE_WS.test(stripTrailingNewlines(value));
+
+        if (blockAllowed) {
+            // `folded` still falls back to literal when the text cannot be
+            // folded without changing its whitespace.
+            if (context.blockQuote === "folded" && FOLDABLE_RE.test(value.replaceAll("\n", " "))) {
+                return writeFolded(value.replaceAll("\n", " "), level, context);
+            }
+
             return writeLiteral(value, level, context);
         }
 
         return writeDoubleQuoted(value, false);
     }
 
+    // `singleQuote` only chooses *how* to quote, never *whether* to — a plain
+    // key must stay plain, as it does in `yaml`.
     if (isPlainSafe(value, inFlow) && !resolvesToNonString(value)) {
         if (!inFlow && shouldFold(value, level, context)) {
             return writeFolded(value, level, context);
@@ -374,7 +394,7 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
 
         context.stack.delete(value);
 
-        return `[${items.join(", ")}]`;
+        return context.flowCollectionPadding ? `[ ${items.join(", ")} ]` : `[${items.join(", ")}]`;
     }
 
     if (typeof value === "object" && value !== null) {
@@ -390,7 +410,7 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
 
         context.stack.delete(value);
 
-        return `{${parts.join(", ")}}`;
+        return context.flowCollectionPadding ? `{ ${parts.join(", ")} }` : `{${parts.join(", ")}}`;
     }
 
     return writeLeaf(value, level, context, true);
@@ -398,7 +418,7 @@ const writeFlow = (value: unknown, level: number, context: DumpContext): string 
 
 const writeLeaf = (value: unknown, level: number, context: DumpContext, inFlow: boolean): string => {
     if (value === null || value === undefined) {
-        return "null";
+        return context.nullStr;
     }
 
     switch (typeof value) {
@@ -406,7 +426,7 @@ const writeLeaf = (value: unknown, level: number, context: DumpContext, inFlow: 
             return value.toString();
         }
         case "boolean": {
-            return value ? "true" : "false";
+            return value ? context.trueStr : context.falseStr;
         }
         case "number": {
             return representNumber(value);
@@ -416,7 +436,7 @@ const writeLeaf = (value: unknown, level: number, context: DumpContext, inFlow: 
         }
         default: {
             if (context.skipInvalid) {
-                return "null";
+                return context.nullStr;
             }
 
             throw new YAMLStringifyError(`cannot serialize a value of type "${typeof value}"`);
@@ -465,7 +485,17 @@ const guardCircular = (value: object, context: DumpContext): void => {
  * than re-deriving the comparison — they previously disagreed by one level,
  * which spliced a block collection inline and silently corrupted the output.
  */
-const rendersAsFlow = (level: number, context: DumpContext): boolean => context.flowLevel >= 0 && level >= context.flowLevel;
+const rendersAsFlow = (level: number, context: DumpContext): boolean => {
+    if (context.collectionStyle === "flow") {
+        return true;
+    }
+
+    if (context.collectionStyle === "block") {
+        return false;
+    }
+
+    return context.flowLevel >= 0 && level >= context.flowLevel;
+};
 
 /**
  * Render one child of a block collection.
@@ -499,7 +529,7 @@ const writeBlockSequence = (value: unknown[], level: number, context: DumpContex
     for (const [index, element] of value.entries()) {
         const item = applyReplacer(context, String(index), element);
 
-        if (item === undefined && context.skipInvalid) {
+        if (item === undefined && context.skipInvalid && !context.keepUndefined) {
             continue;
         }
 
@@ -528,7 +558,7 @@ const writeBlockMapping = (value: Record<string, unknown>, level: number, contex
     for (const [key, rawItem] of entries) {
         const item = applyReplacer(context, key, rawItem);
 
-        if (item === undefined && context.skipInvalid) {
+        if (item === undefined && context.skipInvalid && !context.keepUndefined) {
             continue;
         }
 
@@ -551,14 +581,23 @@ const writeBlockMapping = (value: Record<string, unknown>, level: number, contex
 // eslint-disable-next-line import/prefer-default-export
 export const dump = (value: unknown, options: StringifyOptions = {}): string => {
     const context: DumpContext = {
+        blockQuote: options.blockQuote ?? true,
+        collectionStyle: options.collectionStyle ?? "any",
+        falseStr: options.falseStr ?? "false",
+        flowCollectionPadding: options.flowCollectionPadding ?? true,
         flowLevel: options.flowLevel ?? -1,
         forceQuotes: options.forceQuotes ?? false,
         indent: options.indent ?? 2,
+        indentSeq: options.indentSeq ?? true,
+        keepUndefined: options.keepUndefined ?? false,
         lineWidth: options.lineWidth ?? 80,
+        nullStr: options.nullStr ?? "null",
         replacer: options.replacer,
+        singleQuote: options.singleQuote ?? false,
         skipInvalid: options.skipInvalid ?? false,
         sortKeys: options.sortKeys ?? false,
         stack: new Set<object>(),
+        trueStr: options.trueStr ?? "true",
     };
 
     // A block sequence entry is `-` plus a separating space, so an indentation

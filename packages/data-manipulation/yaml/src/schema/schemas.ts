@@ -340,17 +340,42 @@ const RESOLVERS: Record<SchemaName, ScalarResolver> = {
     "yaml-1.1": resolveYaml11,
 };
 
+const BIGINT_SAFE_RE = /^[-+]?(?:0B[01]+|0O[0-7]+|0X[\dA-F]+|\d+)$/i;
+
+/**
+ * Re-read an integer-valued scalar as a `BigInt`.
+ *
+ * The base resolvers hand back a `number`, which has already lost precision
+ * past 2^53, so the raw text is parsed again rather than converted. Underscore
+ * separators are stripped first because `BigInt()` rejects them.
+ */
+const asBigInt = (resolve: ScalarResolver): ScalarResolver => (raw) => {
+    const value = resolve(raw);
+
+    if (typeof value !== "number" || !Number.isInteger(value)) {
+        return value;
+    }
+
+    const cleaned = stripUnderscores(raw);
+
+    return BIGINT_SAFE_RE.test(cleaned) ? BigInt(cleaned) : value;
+};
+
 /**
  * Pick the resolver for a schema, resolving the `version`/`schema` interaction
  * the same way `yaml` does: `version: "1.1"` selects the 1.1 schema unless an
  * explicit `schema` overrides it.
  */
-const selectScalarResolver = (schema: SchemaName | undefined, version: "1.1" | "1.2" | undefined): ScalarResolver => {
+const selectScalarResolver = (schema: SchemaName | undefined, version: "1.1" | "1.2" | undefined, intAsBigInt = false): ScalarResolver => {
+    let resolver = RESOLVERS.core;
+
     if (schema) {
-        return RESOLVERS[schema];
+        resolver = RESOLVERS[schema];
+    } else if (version === "1.1") {
+        resolver = RESOLVERS["yaml-1.1"];
     }
 
-    return version === "1.1" ? RESOLVERS["yaml-1.1"] : RESOLVERS.core;
+    return intAsBigInt ? asBigInt(resolver) : resolver;
 };
 
 const isSchemaName = (value: unknown): value is SchemaName => value === "core" || value === "failsafe" || value === "json" || value === "yaml-1.1";

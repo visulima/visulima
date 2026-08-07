@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parse, YAMLParseError } from "../src";
+import { parse, stringify, YAMLParseError } from "../src";
 
 /**
  * Scalar resolution per schema. Expectations are cross-checked against the
@@ -104,5 +104,93 @@ describe("schema › yaml-1.1", () => {
 
         expect(parse("a: off", { version: "1.1" })).toStrictEqual({ a: false });
         expect(parse("a: off", { schema: "core", version: "1.1" })).toStrictEqual({ a: "off" });
+    });
+});
+
+describe("parse options", () => {
+    it("resolves integers as BigInt without losing precision", () => {
+        expect.assertions(2);
+
+        // 9007199254740993 is not representable as a double.
+        expect(parse("a: 9007199254740993", { intAsBigInt: true })).toStrictEqual({ a: 9_007_199_254_740_993n });
+        expect(parse("a: 1.5", { intAsBigInt: true })).toStrictEqual({ a: 1.5 });
+    });
+
+    it("builds Maps and keeps complex keys native under mapAsMap", () => {
+        expect.assertions(2);
+
+        const result = parse("? [a, b]\n: 1", { mapAsMap: true }) as Map<unknown, unknown>;
+
+        expect(result).toBeInstanceOf(Map);
+        expect([...result.keys()][0]).toStrictEqual(["a", "b"]);
+    });
+
+    it("flattens keys under stringKeys even with mapAsMap", () => {
+        expect.assertions(1);
+
+        const result = parse("? [a, b]\n: 1", { mapAsMap: true, stringKeys: true }) as Map<unknown, unknown>;
+
+        expect([...result.keys()]).toStrictEqual(["[a,b]"]);
+    });
+
+    it("treats << as an ordinary key when merge is disabled", () => {
+        expect.assertions(2);
+
+        const source = "d: &d { a: 1 }\nx:\n  <<: *d\n  b: 2\n";
+
+        expect(parse(source)).toStrictEqual({ d: { a: 1 }, x: { a: 1, b: 2 } });
+        expect(parse(source, { merge: false })).toStrictEqual({ d: { a: 1 }, x: { "<<": { a: 1 }, b: 2 } });
+    });
+
+    it("applies a reviver, dropping entries that return undefined", () => {
+        expect.assertions(1);
+
+        const revived = parse("a: 1\nb: 2\nc: 3", {
+            reviver: (key, value) => {
+                if (key === "b") {
+                    return undefined;
+                }
+
+                return typeof value === "number" ? value * 10 : value;
+            },
+        });
+
+        expect(revived).toStrictEqual({ a: 10, c: 30 });
+    });
+});
+
+describe("stringify options", () => {
+    it("honours the scalar keyword overrides", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: null, b: true, c: false }, { falseStr: "no", nullStr: "~", trueStr: "yes" })).toBe("a: ~\nb: yes\nc: no\n");
+    });
+
+    it("forces a collection style", () => {
+        expect.assertions(2);
+
+        expect(stringify({ a: 1, b: [1, 2] }, { collectionStyle: "flow" })).toBe("{ a: 1, b: [ 1, 2 ] }\n");
+        expect(stringify({ a: 1, b: [1, 2] }, { collectionStyle: "block", flowLevel: 0 })).toBe("a: 1\nb:\n  - 1\n  - 2\n");
+    });
+
+    it("can drop flow-collection padding", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: 1, b: [1, 2] }, { collectionStyle: "flow", flowCollectionPadding: false })).toBe("{a: 1, b: [1, 2]}\n");
+    });
+
+    it("can refuse block scalars for multi-line strings", () => {
+        expect.assertions(2);
+
+        expect(stringify({ a: "l1\nl2" })).toBe("a: |-\n  l1\n  l2\n");
+        expect(stringify({ a: "l1\nl2" }, { blockQuote: false })).toBe("a: \"l1\\nl2\"\n");
+    });
+
+    it("singleQuote chooses how to quote, never whether to", () => {
+        expect.assertions(2);
+
+        // The key stays plain; only the value needed quoting. Matches `yaml`.
+        expect(stringify({ a: "x: y" }, { singleQuote: true })).toBe("a: 'x: y'\n");
+        expect(stringify({ a: "plain" }, { singleQuote: true })).toBe("a: plain\n");
     });
 });

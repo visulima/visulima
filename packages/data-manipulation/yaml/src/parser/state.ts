@@ -95,7 +95,7 @@ class State {
             preventProtoPollution: options.preventProtoPollution ?? true,
             strict: options.strict ?? true,
         };
-        this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version);
+        this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version, this.options.intAsBigInt);
     }
 }
 
