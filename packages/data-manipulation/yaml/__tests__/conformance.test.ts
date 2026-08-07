@@ -49,14 +49,15 @@ const suite = suiteDefault as unknown as SuiteTest[];
 // Number of individual cases (across 350 files) each mode parses correctly, and
 // the files it still trips on. The default (strict) mode rejects more of the
 // fail-tests, so it clears H7J7 (under-indented property) and 9KBC/CXX2 (block
-// collection on the `---` line). The rest are shared: 4JVG two anchors, 4FJ6
-// nested complex keys, 9KAX tag+anchor both orders on a key, S98Z block-scalar
+// collection on the `---` line). The four shared failures are exactly the cases
+// js-yaml also fails (this parser shares its recursive-descent algorithm): 4JVG
+// two anchors, 9KAX tag+anchor both orders on a key, S98Z block-scalar
 // indentation, and Y79Y's tab-only line inside an empty block scalar.
-const EXPECTED_PASS = 397;
-const KNOWN_FAILING = new Set<string>(["4FJ6", "4JVG", "9KAX", "S98Z", "Y79Y"]);
+const EXPECTED_PASS = 398;
+const KNOWN_FAILING = new Set<string>(["4JVG", "9KAX", "S98Z", "Y79Y"]);
 
-const EXPECTED_PASS_LOOSE = 394;
-const KNOWN_FAILING_LOOSE = new Set<string>(["4FJ6", "4JVG", "9KAX", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
+const EXPECTED_PASS_LOOSE = 395;
+const KNOWN_FAILING_LOOSE = new Set<string>(["4JVG", "9KAX", "9KBC", "CXX2", "H7J7", "S98Z", "Y79Y"]);
 
 const canonicalize = (value: unknown): string => {
     const seen = new WeakSet<object>();

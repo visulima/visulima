@@ -425,6 +425,22 @@ const mergeMappings = (state: State, destination: Record<string, unknown>, sourc
  * lazily — merge keys are rare, so a merge-free mapping never allocates a Set.
  * Returns the (possibly newly created) `overridableKeys` set.
  */
+// A plain object can only carry string keys, so a complex (collection) key is
+// flattened to a stable string. Sequences join their parts with commas (as JS
+// `Array#toString` would, but recursing through nested sequences instead of
+// throwing) and mappings collapse to `[object Object]`.
+const stringifyComplexKey = (node: unknown): string => {
+    if (Array.isArray(node)) {
+        return (node as unknown[]).map((part) => stringifyComplexKey(part)).join(",");
+    }
+
+    if (isPlainObject(node)) {
+        return "[object Object]";
+    }
+
+    return String(node);
+};
+
 const storeMappingPair = (
     state: State,
     result: Record<string, unknown>,
@@ -433,29 +449,10 @@ const storeMappingPair = (
     keyNodeInput: unknown,
     valueNode: unknown,
 ): Set<string> | undefined => {
-    let keyNode = keyNodeInput;
+    const keyNode = keyNodeInput;
     let keys = overridableKeys;
 
-    // Flatten complex keys into strings — plain objects can only carry string keys.
-    if (Array.isArray(keyNode)) {
-        keyNode = [...(keyNode as unknown[])];
-
-        for (let index = 0; index < (keyNode as unknown[]).length; index++) {
-            if (Array.isArray((keyNode as unknown[])[index])) {
-                throwError(state, "nested arrays are not supported inside keys");
-            }
-
-            if (isPlainObject((keyNode as unknown[])[index])) {
-                (keyNode as unknown[])[index] = "[object Object]";
-            }
-        }
-    }
-
-    if (isPlainObject(keyNode)) {
-        keyNode = "[object Object]";
-    }
-
-    const key = String(keyNode);
+    const key = typeof keyNode === "object" && keyNode !== null ? stringifyComplexKey(keyNode) : String(keyNode);
 
     const isMerge = keyTag === MERGE_TAG || (keyTag === "?" && keyNode === "<<");
 
