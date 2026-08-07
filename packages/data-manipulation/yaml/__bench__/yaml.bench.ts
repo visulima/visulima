@@ -1,8 +1,24 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { createRequire } from "node:module";
+
 import jsYaml from "js-yaml";
 import * as visulima from "@visulima/yaml";
 import { bench, describe } from "vitest";
 import * as yaml from "yaml";
+
+// `yamljs` (a widely-used, older pure-JS YAML 1.1 parser) is an optional third
+// comparison target — it is required lazily so the suite still runs where the
+// dependency could not be installed.
+const require_ = createRequire(import.meta.url);
+
+let yamlJs: { parse: (source: string) => unknown; stringify: (value: unknown) => string } | undefined;
+
+try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    yamlJs = require_("yamljs") as typeof yamlJs;
+} catch {
+    yamlJs = undefined;
+}
 
 const SMALL = ["name: my-app", "version: 1.0.0", "private: true", "scripts:", "  build: packem build", "  test: vitest run"].join("\n");
 
@@ -81,6 +97,12 @@ describe("parse › small document", () => {
     bench("js-yaml", () => {
         jsYaml.load(SMALL);
     });
+
+    if (yamlJs) {
+        bench("yamljs", () => {
+            yamlJs!.parse(SMALL);
+        });
+    }
 });
 
 describe("parse › medium config", () => {
@@ -95,6 +117,12 @@ describe("parse › medium config", () => {
     bench("js-yaml", () => {
         jsYaml.load(CONFIG);
     });
+
+    if (yamlJs) {
+        bench("yamljs", () => {
+            yamlJs!.parse(CONFIG);
+        });
+    }
 });
 
 describe("parse › anchors + merge keys", () => {
@@ -109,6 +137,12 @@ describe("parse › anchors + merge keys", () => {
     bench("js-yaml", () => {
         jsYaml.load(ANCHORS);
     });
+
+    if (yamlJs) {
+        bench("yamljs", () => {
+            yamlJs!.parse(ANCHORS);
+        });
+    }
 });
 
 describe("parse › large document (200 records)", () => {
@@ -123,6 +157,12 @@ describe("parse › large document (200 records)", () => {
     bench("js-yaml", () => {
         jsYaml.load(LARGE);
     });
+
+    if (yamlJs) {
+        bench("yamljs", () => {
+            yamlJs!.parse(LARGE);
+        });
+    }
 });
 
 describe("stringify › medium config", () => {
@@ -137,4 +177,10 @@ describe("stringify › medium config", () => {
     bench("js-yaml", () => {
         jsYaml.dump(parsedConfig);
     });
+
+    if (yamlJs) {
+        bench("yamljs", () => {
+            yamlJs!.stringify(parsedConfig);
+        });
+    }
 });

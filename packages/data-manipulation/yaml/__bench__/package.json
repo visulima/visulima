@@ -9,7 +9,8 @@
     "dependencies": {
         "@visulima/yaml": "workspace:*",
         "js-yaml": "4.1.0",
-        "yaml": "2.9.0"
+        "yaml": "2.9.0",
+        "yamljs": "0.3.0"
     },
     "devDependencies": {
         "@codspeed/vitest-plugin": "catalog:test",
