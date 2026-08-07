@@ -1,4 +1,5 @@
 import type { YAMLWarning } from "./errors";
+import type { SchemaName } from "./schema/schemas";
 
 /**
  * How duplicate keys in a mapping are handled.
@@ -47,6 +48,23 @@ export interface ParseOptions {
     preventProtoPollution?: boolean;
 
     /**
+     * Which scalar-resolution rules to apply.
+     *
+     * `core` (default) is YAML 1.2 core: `~`/`null`, `true`/`false`, decimal,
+     * hex and octal ints, floats, `.inf`/`.nan`.
+     * `failsafe` resolves nothing; every scalar stays a string.
+     * `json` resolves only the JSON grammar; any other unquoted scalar is a
+     * document error.
+     * `yaml-1.1` is the older, wider set: `yes`/`no`/`on`/`off` as booleans,
+     * `010` as octal, `0b` binaries, `1_000` underscores, sexagesimals, and
+     * timestamps as `Date`.
+     *
+     * Defaults to `yaml-1.1` when {@link ParseOptions.version} is `"1.1"`.
+     * @default "core"
+     */
+    schema?: SchemaName;
+
+    /**
      * Full YAML 1.2 strictness, on by default. The parser always rejects the
      * unambiguous spec violations (tabs as indentation, malformed directives,
      * deficient indentation, comments not separated by white space). With
@@ -62,6 +80,14 @@ export interface ParseOptions {
      * @default true
      */
     strict?: boolean;
+
+    /**
+     * YAML version to assume when the document carries no `%YAML` directive.
+     * `"1.1"` selects the `yaml-1.1` schema unless {@link ParseOptions.schema}
+     * says otherwise.
+     * @default "1.2"
+     */
+    version?: "1.1" | "1.2";
 }
 
 /** Options accepted by `stringify`. */

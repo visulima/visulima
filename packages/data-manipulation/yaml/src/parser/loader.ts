@@ -32,7 +32,8 @@
 
 import type { YAMLWarning } from "../errors";
 import { YAMLParseError } from "../errors";
-import { resolveExplicitTag, resolveScalarValue } from "../schema/resolve-scalar";
+import { resolveExplicitTag } from "../schema/resolve-scalar";
+import { INVALID_SCALAR } from "../schema/schemas";
 import type { ParseOptions } from "../types";
 import type { MappingRanges } from "./ranges";
 import { readBlockScalar, readDoubleQuotedScalar, readPlainScalar, readSingleQuotedScalar } from "./scalars";
@@ -937,7 +938,15 @@ const composeNodeAtDepth = (state: State, parentIndent: number, nodeContext: num
     // children are parsed, so that a self-reference like `&a [ *a ]` resolves.)
     if (state.tag === "?") {
         if (state.kind === "scalar" && typeof state.result === "string") {
-            state.result = resolveScalarValue(state.result);
+            const resolved = state.resolveScalar(state.result);
+
+            // Only the `json` schema rejects: any scalar outside the JSON
+            // grammar is a document error there.
+            if (resolved === INVALID_SCALAR) {
+                throwError(state, `unquoted scalar "${state.result}" is not valid under the json schema`);
+            }
+
+            state.result = resolved;
         }
     } else if (
         state.tag !== null

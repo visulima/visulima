@@ -15,6 +15,7 @@ The pipeline lives entirely in `src/`:
 
 - `src/parser/loader.ts` — the recursive-descent parser/composer. A single mutable cursor (`State`) walks the source string, threads indentation columns through the block parsers, resolves anchors/aliases, applies merge keys (`<<`), and produces native JS values directly (no intermediate CST on the default path). Exports `loadOne` / `loadAll`.
 - `src/parser/dumper.ts` — value → YAML serializer with automatic scalar-style selection (plain / single / double / literal / folded), block and flow output, and configurable indentation, key sorting, quoting and `lineWidth` folding. Long plain single-line strings are wrapped into a folded (`>-`) block scalar at `lineWidth` (default 80; `0` disables) — only when the value is single-spaced words, so folding always round-trips. Exports `dump`.
+- `src/schema/schemas.ts` — scalar resolution per schema (`core`, `failsafe`, `json`, `yaml-1.1`). The resolver is chosen once per parse from `schema`/`version`, so the per-scalar path stays a single indirect call and the default keeps its fast path.
 - `src/schema/resolve-scalar.ts` — YAML 1.2 **core schema** scalar resolution (`null`, `bool`, `int` in dec/hex/oct, `float`, `.inf`/`.nan`) plus explicit-tag (`!!int`, `!!str`, …) application.
 - `src/errors.ts` — `YAMLError`, `YAMLParseError`, `YAMLStringifyError`, `YAMLWarning` carrying a `{ line, column, position }` mark and a source snippet.
 - `src/types.ts` — `ParseOptions` / `StringifyOptions`.
@@ -32,7 +33,8 @@ The pipeline lives entirely in `src/`:
 ## Gotchas
 
 - YAML is indentation-sensitive: the parser threads a required-indentation column through block parsing. Changing how blank lines / comments are consumed can silently break nested collections — always run the full `__tests__` suite after tokenizer edits.
-- The core-schema number regexes are intentionally strict (YAML 1.2, not 1.1) — `yes`/`no`/`on`/`off` are **not** booleans. Do not "helpfully" widen them.
+- The **core**-schema number regexes are intentionally strict (YAML 1.2, not 1.1) — `yes`/`no`/`on`/`off` are **not** booleans there. Do not "helpfully" widen them; the 1.1 behaviour lives in the opt-in `yaml-1.1` schema instead (`src/schema/schemas.ts`).
+- Schema resolvers run per plain scalar on untrusted input, so they avoid regexes with a trailing catch-all group — the timestamp parser is a hand-written scanner for exactly that reason.
 
 ## Conformance (official yaml-test-suite)
 

@@ -83,14 +83,16 @@ loadAll("---\n- 1\n---\n- 2", (document) => console.log(document)); // logs [1] 
 
 ### ParseOptions
 
-| Option                  | Type                                 | Default   | Description                                                               |
-| ----------------------- | ------------------------------------ | --------- | ------------------------------------------------------------------------- |
-| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.         |
-| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                           |
-| `maxDepth`              | `number`                             | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).       |
-| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).   |
-| `preventProtoPollution` | `boolean`                            | `true`    | Make a `__proto__` key an own property instead of touching the prototype. |
-| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                           |
+| Option                  | Type                                           | Default   | Description                                                                              |
+| ----------------------- | ---------------------------------------------- | --------- | ---------------------------------------------------------------------------------------- |
+| `strict`                | `boolean`                                      | `true`\*  | Full YAML 1.2 strictness. Set `false` for js-yaml-style leniency.                        |
+| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"`           | `"error"` | How repeated keys within a mapping are handled.                                          |
+| `schema`                | `"core" \| "failsafe" \| "json" \| "yaml-1.1"` | `"core"`  | Scalar-resolution rules (see below).                                                     |
+| `version`               | `"1.1" \| "1.2"`                               | `"1.2"`   | YAML version assumed without a `%YAML` directive. `"1.1"` selects the `yaml-1.1` schema. |
+| `maxDepth`              | `number`                                       | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).                      |
+| `maxAliasCount`         | `number`                                       | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).                  |
+| `preventProtoPollution` | `boolean`                                      | `true`    | Make a `__proto__` key an own property instead of touching the prototype.                |
+| `onWarning`             | `(warning: YAMLWarning) => void`               | —         | Callback for non-fatal notices.                                                          |
 
 \* `strict` defaults to `true` for `parse` / `parseAll`, but to `false` for the
 `js-yaml`-style [`load`](#load) / [`loadAll`](#loadall) aliases.

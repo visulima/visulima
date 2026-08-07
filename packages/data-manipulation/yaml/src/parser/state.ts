@@ -14,6 +14,8 @@
  */
 
 import { YAMLParseError, YAMLWarning } from "../errors";
+import type { ScalarResolver } from "../schema/schemas";
+import { selectScalarResolver } from "../schema/schemas";
 import type { ParseOptions } from "../types";
 import type { MappingRanges } from "./ranges";
 
@@ -69,6 +71,12 @@ class State {
      */
     public mappingRanges: MappingRanges | null = null;
 
+    /**
+     * Scalar resolution for the active schema. Chosen once per parse so the
+     * per-scalar path stays a single indirect call.
+     */
+    public readonly resolveScalar: ScalarResolver;
+
     public readonly options: ParseOptions & Required<Pick<ParseOptions, "duplicateKeys" | "maxAliasCount" | "maxDepth" | "preventProtoPollution" | "strict">>;
 
     public constructor(input: string, options: ParseOptions) {
@@ -87,6 +95,7 @@ class State {
             preventProtoPollution: options.preventProtoPollution ?? true,
             strict: options.strict ?? true,
         };
+        this.resolveScalar = selectScalarResolver(this.options.schema, this.options.version);
     }
 }
 

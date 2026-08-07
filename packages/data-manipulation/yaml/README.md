@@ -144,14 +144,39 @@ Parse the first document of a YAML string into a native JavaScript value.
 
 `options`:
 
-| Option                  | Type                                 | Default   | Description                                                                   |
-| ----------------------- | ------------------------------------ | --------- | ----------------------------------------------------------------------------- |
-| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"` | `"error"` | How repeated keys within a mapping are handled.                               |
-| `maxDepth`              | `number`                             | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).           |
-| `maxAliasCount`         | `number`                             | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).       |
-| `preventProtoPollution` | `boolean`                            | `true`    | Make a `__proto__` key an own property instead of touching the prototype.     |
-| `strict`                | `boolean`                            | `true`\*  | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency. |
-| `onWarning`             | `(warning: YAMLWarning) => void`     | —         | Callback for non-fatal notices.                                               |
+| Option                  | Type                                           | Default   | Description                                                                              |
+| ----------------------- | ---------------------------------------------- | --------- | ---------------------------------------------------------------------------------------- |
+| `duplicateKeys`         | `"error" \| "overwrite" \| "ignore"`           | `"error"` | How repeated keys within a mapping are handled.                                          |
+| `schema`                | `"core" \| "failsafe" \| "json" \| "yaml-1.1"` | `"core"`  | Scalar-resolution rules (see below).                                                     |
+| `version`               | `"1.1" \| "1.2"`                               | `"1.2"`   | YAML version assumed without a `%YAML` directive. `"1.1"` selects the `yaml-1.1` schema. |
+| `maxDepth`              | `number`                                       | `1000`    | Maximum collection nesting depth (guards against stack exhaustion).                      |
+| `maxAliasCount`         | `number`                                       | `100`     | Upper bound on resolved alias nodes (guards against expansion attacks).                  |
+| `preventProtoPollution` | `boolean`                                      | `true`    | Make a `__proto__` key an own property instead of touching the prototype.                |
+| `strict`                | `boolean`                                      | `true`\*  | Full YAML 1.2 strictness (see below). Set `false` for js-yaml-style leniency.            |
+| `onWarning`             | `(warning: YAMLWarning) => void`               | —         | Callback for non-fatal notices.                                                          |
+
+#### Schemas
+
+A schema decides which unquoted scalars stop being strings. `core` (the default)
+is YAML 1.2 core. `failsafe` resolves nothing. `json` resolves only the JSON
+grammar and rejects anything else. `yaml-1.1` is the older, wider set:
+
+```ts
+parse("a: off"); // => { a: "off" }   — core: not a boolean
+parse("a: off", { schema: "yaml-1.1" }); // => { a: false }
+parse("a: 010", { schema: "yaml-1.1" }); // => { a: 8 }       — octal
+parse("a: 1_000", { schema: "yaml-1.1" }); // => { a: 1000 }  — underscores
+parse("a: 1:30", { schema: "yaml-1.1" }); // => { a: 90 }     — sexagesimal
+parse("a: 2001-12-15", { schema: "yaml-1.1" }); // => { a: Date }
+
+parse("a: 1", { schema: "failsafe" }); // => { a: "1" }
+parse("a: ~", { schema: "json" }); // throws — not JSON
+```
+
+`version: "1.1"` selects the `yaml-1.1` schema unless `schema` says otherwise.
+Note that under 1.1 a bare `y` or `n` key is a boolean, which is why
+`x: true\ny: off` parses as `{ x: true, true: false }` — the same result `yaml`
+produces.
 
 #### Strict mode (default)
 
