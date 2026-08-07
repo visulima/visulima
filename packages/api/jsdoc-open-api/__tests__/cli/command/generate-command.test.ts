@@ -298,7 +298,7 @@ describe("generate command", () => {
         try {
             await expect(generateCommand(".openapirc.js", [sourceDirectory], { config: join(fixturesDirectory, ".openapirc.js") })).rejects.toThrow();
 
-            expect(multiBarStopMock).toHaveBeenCalled();
+            expect(multiBarStopMock).toHaveBeenCalledWith();
         } finally {
             rmSync(workDirectory, { force: true, recursive: true });
         }

@@ -1,8 +1,8 @@
+import type { YAMLError } from "@visulima/yaml";
+import { parseDocument } from "@visulima/yaml";
 import type { Block, Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import { mergeWith } from "es-toolkit";
-import type { YAMLError } from "@visulima/yaml";
-import * as yaml from "@visulima/yaml";
 
 import type { OpenApiObject } from "../exported";
 import customizer from "../util/customizer";
@@ -31,7 +31,7 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
                 yamlContent = yamlContent.trim() === "" ? spec.name : `${spec.name}\n${yamlContent}`;
             }
 
-            const parsed = yaml.parseDocument(yamlContent);
+            const parsed = parseDocument(yamlContent);
 
             if (parsed.errors.length > 0) {
                 parsed.errors.forEach((error) => {
