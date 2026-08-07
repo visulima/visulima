@@ -16,6 +16,7 @@ import {
     parseAllNodes,
     parseNodes,
     Scalar,
+    stringify,
     toJS,
     visit,
     YAMLMap,
@@ -401,6 +402,15 @@ describe("node model › options that interact with the tree", () => {
         // `loadDocuments` collects diagnostics rather than throwing, which made
         // a malformed document indistinguishable from an empty one.
         expect(() => parseNodes("a: [1, 2\nb: {\n")).toThrow(YAMLParseError);
+    });
+
+    it("serializes a node tree back to YAML", () => {
+        expect.assertions(2);
+
+        // The node API exposes construction and mutation, so there has to be a
+        // way back out; `stringify` reaches it through each node's `toJSON`.
+        expect(stringify(createNode({ a: 1, b: [1, 2] }))).toBe("a: 1\nb:\n  - 1\n  - 2\n");
+        expect(stringify(parseNodes("a: 1\n"))).toBe("a: 1\n");
     });
 
     it("keeps a stringKeys-flattened key as a Scalar", () => {
