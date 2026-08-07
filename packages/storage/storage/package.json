@@ -325,6 +325,7 @@
         "@solidjs/start": "catalog:frontend",
         "@supabase/storage-js": "2.110.0",
         "@tanstack/ai": "^0.39.0",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/etag": "catalog:types",
         "@types/express": "catalog:types",
         "@types/http-errors": "catalog:types",

@@ -44,6 +44,9 @@ import type { DoctorResults, SectionId, SectionStatus } from "./sections";
 import { buildJsonPayload, resolveSections, sectionStatus, shouldFail, summarizeOptimizations } from "./sections";
 import { buildSupplyChainPosture } from "./supply-chain";
 
+/** What `checkOutdated` resolves to; the module does not export the interface. */
+type OutdatedResult = Awaited<ReturnType<typeof checkOutdated>>;
+
 interface ScanContext {
     /** --filter regexes applied to per-section findings before they hit the store/results. */
     filterPatterns: ReadonlyArray<RegExp>;
@@ -237,7 +240,10 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     // (CVEs embedded on the entries), so it runs when either is selected.
     const needsOutdated = (wantsDeps || wantsSec) && catalogs.size > 0;
 
-    const outdatedPromise = needsOutdated
+    // Annotated so both branches agree: the fallback's empty arrays would
+    // otherwise infer `never[]`, leaving a union of two Promise types that
+    // `.catch` cannot be called on.
+    const outdatedPromise: Promise<OutdatedResult> = needsOutdated
         ? tracked(
             progress,
             "outdated",
@@ -251,7 +257,10 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
                 };
             },
         )
-        : Promise.resolve({ failed: [], ignored: [], outdated: [] });
+        // `checkedCount` and `filteredByTarget` were missing here: the fallback
+        // did not actually satisfy the result type, and nothing caught it while
+        // the branch's type was being inferred rather than checked.
+        : Promise.resolve<OutdatedResult>({ checkedCount: 0, failed: [], filteredByTarget: [], ignored: [], outdated: [] });
 
     const vulnPromise
         = wantsSec && installed.length > 0

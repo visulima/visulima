@@ -1,3 +1,5 @@
+import type { Spec } from "comment-parser";
+
 import { isTagPresentInTags, mergeDeep } from "./utils";
 
 /**
@@ -55,7 +57,9 @@ const organizeSwaggerObject = (swaggerObject: Record<string, any>, annotation: R
         const { tags } = annotation;
 
         if (Array.isArray(tags)) {
-            tags.forEach((tag) => {
+            // `Array.isArray` narrows to `unknown[]`, so the element type comes
+            // from the annotation's own shape rather than the guard.
+            (tags as Spec[]).forEach((tag) => {
                 if (!isTagPresentInTags(tag, swaggerObject.tags)) {
                     swaggerObject.tags.push(tag);
                 }

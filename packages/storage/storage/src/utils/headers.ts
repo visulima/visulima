@@ -184,7 +184,7 @@ export const HeaderUtilities = {
         const enhanced = new Headers();
 
         if (Array.isArray(headers)) {
-            headers.forEach(([name, value]) => {
+            (headers as [string, unknown][]).forEach(([name, value]) => {
                 enhanced.set(name, Array.isArray(value) ? value.join(", ") : String(value));
             });
         } else {

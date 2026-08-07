@@ -15,10 +15,18 @@ const GCP_REJECTED_ERROR_PATTERN = /invalid_grant|unauthorized_client|invalid_cl
 export const resolveGcpHosts: TransportHostResolver = () => ["oauth2.googleapis.com"];
 
 export const validateGcp: TransportValidator = async ({ secret }): Promise<ValidationStatus> => {
-    let serviceAccount: { client_email?: string; private_key?: string };
+    let serviceAccount: { client_email?: unknown; private_key?: unknown };
 
     try {
-        serviceAccount = JSON.parse(secret);
+        // The secret is attacker-supplied, so the parse result is genuinely
+        // unknown until the shape below is checked.
+        const parsed: unknown = JSON.parse(secret);
+
+        if (typeof parsed !== "object" || parsed === null) {
+            return "rejected";
+        }
+
+        serviceAccount = parsed as { client_email?: unknown; private_key?: unknown };
     } catch {
         return "rejected";
     }

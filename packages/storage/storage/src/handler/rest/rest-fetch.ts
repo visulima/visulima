@@ -170,7 +170,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         if (metadataHeader) {
             try {
-                metadata = JSON.parse(metadataHeader);
+                metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
             } catch {
                 // Ignore invalid JSON
             }
@@ -238,7 +238,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     throw createHttpError(413, "Batch delete body exceeds 1 MiB");
                 }
 
-                const parsed = JSON.parse(body) as unknown;
+                const parsed = JSON.parse(body);
 
                 if (Array.isArray(parsed)) {
                     // Array of IDs: ["id1", "id2", "id3"]
@@ -392,7 +392,7 @@ const extractFileInitFromRequest = (request: Request, contentLength: number, con
 
     if (metadataHeader) {
         try {
-            metadata = JSON.parse(metadataHeader);
+            metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
         } catch {
             // Ignore invalid JSON
         }
