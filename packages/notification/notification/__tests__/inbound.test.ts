@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { createDiscordInbound } from "../src/inbound/channels/discord";
-import { createMessageBirdInbound } from "../src/inbound/channels/messagebird";
-import { createMsTeamsInbound } from "../src/inbound/channels/msteams";
-import { createSlackInbound } from "../src/inbound/channels/slack";
-import { createTelegramInbound } from "../src/inbound/channels/telegram";
-import { createTelnyxInbound } from "../src/inbound/channels/telnyx";
-import { createTwilioInbound } from "../src/inbound/channels/twilio";
-import { createVonageInbound } from "../src/inbound/channels/vonage";
 import { createInboundRouter } from "../src/inbound/router";
 import type { InboundMessage } from "../src/inbound/types";
+import { createDiscordInbound } from "../src/providers/chat/discord";
+import { createMsTeamsInbound } from "../src/providers/chat/msteams";
+import { createSlackInbound } from "../src/providers/chat/slack";
+import { createTelegramInbound } from "../src/providers/chat/telegram";
 import { mockProvider } from "../src/providers/mock/provider";
+import { createMessageBirdInbound } from "../src/providers/sms/messagebird";
+import { createTelnyxInbound } from "../src/providers/sms/telnyx";
+import { createTwilioInbound } from "../src/providers/sms/twilio";
+import { createVonageInbound } from "../src/providers/sms/vonage";
 
 const encoder = new TextEncoder();
 

@@ -283,14 +283,16 @@ bus.on("*", (event) => store.append(event));
 
 ## Inbound (two-way channels for bots & AI agents)
 
-Channels are two-way. `@visulima/notification/inbound` verifies and normalises incoming
-webhooks — a Slack mention, a Discord slash command, a Telegram message, an inbound
-SMS/WhatsApp — into a single `InboundMessage` you can hand to an AI agent, which then replies
-through the matching outbound provider. Receivers are framework-agnostic (`handle(request:
-Request) => Promise<Response>`) and edge-safe (Web Crypto only).
+Channels are two-way. Each `@visulima/notification/providers/<name>` subpath ships both halves —
+the outbound provider (`<name>Provider`) and the inbound receiver (`create<Name>Inbound`), which
+verifies and normalises incoming webhooks (a Slack mention, a Discord slash command, a Telegram
+message, an inbound SMS/WhatsApp) into a single `InboundMessage` you can hand to an AI agent that
+then replies through the same provider. Receivers are framework-agnostic (`handle(request:
+Request) => Promise<Response>`) and edge-safe (Web Crypto only). The `@visulima/notification/inbound`
+barrel holds the shared types, `createInboundRouter` and verification/reply helpers.
 
 ```typescript
-import { createSlackInbound } from "@visulima/notification/inbound/slack";
+import { createSlackInbound } from "@visulima/notification/providers/slack";
 
 const slack = createSlackInbound({
     signingSecret: process.env.SLACK_SIGNING_SECRET!,
@@ -318,6 +320,8 @@ the receiver and answer with `context.reply(...)` — it maps the inbound messag
 outbound payload (recipient, thread, WhatsApp prefix) and sends it:
 
 ```typescript
+import { createSlackInbound, slackProvider } from "@visulima/notification/providers/slack";
+
 const slack = createSlackInbound({
     signingSecret,
     provider: slackProvider({ token }),
