@@ -686,7 +686,9 @@ const readBlockScalar = (state: State, nodeIndent: number): boolean => {
             continue;
         }
 
-        if (state.lineIndent < textIndent) {
+        // End of the scalar: a genuine dedent, or EOF for a zero-indented block
+        // (where `lineIndent < textIndent` can never become true).
+        if (state.lineIndent < textIndent || ch === 0) {
             if (chomping === CHOMPING_KEEP) {
                 state.result = (state.result as string) + "\n".repeat(didReadContent ? 1 + emptyLines : emptyLines);
             } else if (chomping === CHOMPING_CLIP && didReadContent) {
@@ -828,7 +830,13 @@ const readBlockMapping = (state: State, nodeIndent: number, flowIndent: number):
                 atExplicitKey = false;
                 allowCompact = true;
             } else {
-                throwError(state, "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line");
+                // A `:` with no key node is an implicit entry with an empty
+                // (null) key, e.g. `: value`.
+                detected = true;
+                atExplicitKey = false;
+                allowCompact = false;
+                keyTag = null;
+                keyNode = null;
             }
 
             state.position += 1;
@@ -977,28 +985,30 @@ const readFlowCollection = (state: State, nodeIndent: number): boolean => {
         let keyNode: unknown = null;
         let valueNode: unknown = null;
         let isPair = false;
-        let isExplicitPair = false;
 
         if (ch === 0x3f) {
             const following = state.input.charCodeAt(state.position + 1);
 
             if (isWsOrEol(following)) {
                 isPair = true;
-                isExplicitPair = true;
                 state.position++;
                 skipSeparationSpace(state, true, nodeIndent);
             }
         }
 
-        const { line } = state;
+        const keyStartLine = state.line;
 
         composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
         keyTag = state.tag;
         keyNode = state.result;
+
         skipSeparationSpace(state, true, nodeIndent);
         ch = state.input.charCodeAt(state.position);
 
-        if ((isExplicitPair || state.line === line) && ch === 0x3a) {
+        // Inside a flow mapping (`{}`) the `:` may appear on a later line than
+        // its key. An implicit-key pair inside a flow sequence (`[ key: v ]`)
+        // requires a single-line implicit key with the colon on that same line.
+        if (ch === 0x3a && (isMapping || isPair || keyStartLine === state.line)) {
             isPair = true;
             state.position++;
             skipSeparationSpace(state, true, nodeIndent);
@@ -1387,17 +1397,25 @@ const readDocument = (state: State): void => {
 
     // A document-start marker is `---` only when followed by white space or EOF;
     // `---foo` is a plain scalar, not a marker.
+    let explicitMarker = false;
+
     if (state.lineIndent === 0 && state.input.startsWith("---", state.position) && isWsOrEol(state.input.charCodeAt(state.position + 3))) {
         state.position += 3;
+        explicitMarker = true;
         skipSeparationSpace(state, true, -1);
     } else if (hasDirectives) {
         throwError(state, "directives end mark is expected");
     }
 
-    composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+    const hadContent = composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
+
     skipSeparationSpace(state, true, -1);
 
-    state.documents.push(state.result);
+    // A comment/whitespace/`...`-only section is not a document; only emit one
+    // when it has content, an explicit `---` marker, or directives.
+    if (hadContent || explicitMarker || hasDirectives) {
+        state.documents.push(state.result);
+    }
 
     if (state.position === state.lineStart && testDocumentSeparator(state)) {
         if (state.input.charCodeAt(state.position) === 0x2e) {

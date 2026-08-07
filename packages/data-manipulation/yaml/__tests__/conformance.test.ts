@@ -4,9 +4,14 @@
 import { describe, expect, it } from "vitest";
 import suiteDefault from "yaml-test-suite";
 
+import type { ParseOptions } from "../src";
 import { parseAll } from "../src";
 
 const WHITESPACE = /\s/;
+
+// Duplicate keys are a schema/application concern, not a grammar (parse) error,
+// and the suite only exercises the grammar — so never throw on them here.
+const PARSE_OPTIONS: ParseOptions = { duplicateKeys: "overwrite" };
 
 /**
  * Runs the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite)
@@ -35,59 +40,39 @@ interface SuiteTest {
 const suite = suiteDefault as unknown as SuiteTest[];
 
 // Number of individual cases (across 350 files) we currently parse correctly.
-const EXPECTED_PASS = 332;
+const EXPECTED_PASS = 355;
 
 // Test files with at least one case we do not yet handle. Grouped by cause:
-// - multi-line flow scalars / colon on a new line (4MUZ, 5MUD, 9SA2, VJP3, K3WX, NJ66, UT92)
-// - node properties (anchor/tag) on block-mapping keys (26DV, 2SXE, 74H7, 7BMT, 7FWL, E76Z, HMQ5, U3XV, ZH7C, 6BFJ, W4TN, 9KAX, M7A3, SM9W, KSS4, L383, WZ62, 9WXW, 6ZKB, UKK6)
-// - empty / explicit-`?` mapping keys (2JQS, M2N8, NHX8, 4FJ6, 6M2F, FH7J, NKF9, S3PD, PW8X, X38W)
-// - zero-indented block scalars & empty/comment-only documents (FP8R, DK3J, 8G76, 98YD, HWV9, QT73, C4HZ, LE5A, UGM3, 5TYM, 6WLZ)
-// - strictness: inputs we accept that the spec rejects (3HFZ, 4EJS, 9C9N, 9JBA, 9KBC, CVW2, DK95, H7J7, H7TQ, LHL4, MUS6, QB6E, S98Z, SF5V, SU5Z, U99R, Y79Y)
+// - node properties (anchor/tag) on block-mapping keys (26DV, 2SXE, 6BFJ, 74H7, 7BMT, 7FWL, 9KAX, E76Z, HMQ5, SM9W, U3XV, UKK6, W4TN, ZH7C)
+// - strictness: inputs we accept that the spec rejects (3HFZ, 4EJS, 9C9N, 9JBA, 9KBC, CVW2, DK95, H7J7, H7TQ, LHL4, MUS6, QB6E, S98Z, SF5V, SU5Z, U99R, VJP3, WZ62, Y79Y)
+// - misc scalar/tag edge cases (4FJ6, C4HZ, FH7J, LE5A, PW8X, UGM3)
 const KNOWN_FAILING = new Set<string>([
-    "2JQS",
     "2SXE",
     "3HFZ",
     "4EJS",
     "4FJ6",
-    "4MUZ",
-    "5MUD",
     "6BFJ",
-    "6M2F",
     "7BMT",
     "7FWL",
-    "8G76",
     "9C9N",
     "9JBA",
     "9KAX",
     "9KBC",
-    "9SA2",
     "26DV",
     "74H7",
-    "98YD",
     "C4HZ",
     "CVW2",
-    "DK3J",
     "DK95",
     "E76Z",
     "FH7J",
-    "FP8R",
     "H7J7",
     "H7TQ",
     "HMQ5",
-    "HWV9",
-    "K3WX",
     "LE5A",
     "LHL4",
-    "M2N8",
-    "M7A3",
     "MUS6",
-    "NHX8",
-    "NJ66",
-    "NKF9",
     "PW8X",
     "QB6E",
-    "QT73",
-    "S3PD",
     "S98Z",
     "SF5V",
     "SM9W",
@@ -96,11 +81,9 @@ const KNOWN_FAILING = new Set<string>([
     "U99R",
     "UGM3",
     "UKK6",
-    "UT92",
     "VJP3",
     "W4TN",
     "WZ62",
-    "X38W",
     "Y79Y",
     "ZH7C",
 ]);
@@ -198,7 +181,7 @@ const splitJsonStream = (text: string): unknown[] => {
 const runCase = (testCase: SuiteCase): boolean => {
     if (testCase.fail) {
         try {
-            parseAll(testCase.yaml);
+            parseAll(testCase.yaml, PARSE_OPTIONS);
 
             return false;
         } catch {
@@ -208,7 +191,7 @@ const runCase = (testCase: SuiteCase): boolean => {
 
     if (testCase.json !== undefined) {
         try {
-            return canonicalize(parseAll(testCase.yaml)) === canonicalize(splitJsonStream(testCase.json));
+            return canonicalize(parseAll(testCase.yaml, PARSE_OPTIONS)) === canonicalize(splitJsonStream(testCase.json));
         } catch {
             return false;
         }
@@ -216,7 +199,7 @@ const runCase = (testCase: SuiteCase): boolean => {
 
     // Valid document without a JSON representation: it just has to parse.
     try {
-        parseAll(testCase.yaml);
+        parseAll(testCase.yaml, PARSE_OPTIONS);
 
         return true;
     } catch {
