@@ -1,3 +1,5 @@
+## @visulima/health-check [6.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fhealth-check%405.0.0...%40visulima%2Fhealth-check%406.0.0) (2026-08-08)
+
 ## @visulima/health-check [5.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fhealth-check%404.0.0...%40visulima%2Fhealth-check%405.0.0) (2026-08-02)
 
 ## @visulima/health-check [4.0.0](https://github.com/visulima/visulima/compare/@visulima/health-check@3.0.5...@visulima/health-check@4.0.0) (2026-07-03)
