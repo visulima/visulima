@@ -1,3 +1,5 @@
+## @visulima/workflow [3.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fworkflow%402.0.0...%40visulima%2Fworkflow%403.0.0) (2026-08-08)
+
 ## @visulima/workflow [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fworkflow%401.0.0...%40visulima%2Fworkflow%402.0.0) (2026-08-02)
 
 ## @visulima/workflow 1.0.0 (2026-07-03)
