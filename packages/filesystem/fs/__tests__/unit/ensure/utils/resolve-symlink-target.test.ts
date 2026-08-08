@@ -15,7 +15,7 @@ describe(resolveSymlinkTarget, () => {
         expect(result).toBe(target);
     });
 
-    it('should return the resolved target if it starts with "./"', () => {
+    it("should return the resolved target if it starts with \"./\"", () => {
         expect.assertions(1);
 
         const target = "./path/to/file";

@@ -141,7 +141,7 @@ export const buildCacheAttestationHooks = (options: CacheAttestationOptions): Re
         let bundle: unknown;
 
         try {
-            bundle = JSON.parse(attestation) as unknown;
+            bundle = JSON.parse(attestation);
         } catch {
             return Promise.resolve(false);
         }

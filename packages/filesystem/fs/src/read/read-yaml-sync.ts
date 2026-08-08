@@ -50,7 +50,7 @@ function readYamlSync<R = Record<string, unknown>>(
     // `reviver` position, so read them from whichever slot they arrived in —
     // previously only the third argument was inspected, and options passed as
     // the second were silently dropped.
-    const resolvedOptions = (typeof reviver === "function" ? options : (reviver ?? options)) ?? {};
+    const resolvedOptions = (typeof reviver === "function" ? options : reviver ?? options) ?? {};
     const { buffer, compression, encoding = "utf8", flag, ...parseOptions } = resolvedOptions;
 
     const content = readFileSync(path, { buffer, compression, encoding, flag });

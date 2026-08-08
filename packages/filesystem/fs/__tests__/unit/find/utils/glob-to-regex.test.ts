@@ -154,7 +154,7 @@ describe(globToRegExp, () => {
         expect(regex.test("foo.txt/bar.txt")).toBe(false);
     });
 
-    it('match multiple characters with "?"', () => {
+    it("match multiple characters with \"?\"", () => {
         expect.assertions(5);
 
         const globPattern = "fi?e.txt";

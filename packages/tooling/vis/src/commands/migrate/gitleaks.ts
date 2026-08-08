@@ -60,7 +60,7 @@ const detectGitleaksBaseline = (root: string): string | undefined => {
         }
 
         try {
-            const parsed = JSON.parse(readFileSync(path)) as unknown;
+            const parsed = JSON.parse(readFileSync(path));
 
             // Heuristic: gitleaks reports start with PascalCase RuleID
             if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object" && parsed[0] !== null && "RuleID" in parsed[0]) {
