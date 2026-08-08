@@ -1,3 +1,5 @@
+## @visulima/redact [4.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fredact%403.1.0...%40visulima%2Fredact%404.0.0) (2026-08-08)
+
 ## @visulima/redact [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fredact%403.0.0...%40visulima%2Fredact%403.1.0) (2026-08-02)
 
 ## @visulima/redact [3.0.0](https://github.com/visulima/visulima/compare/@visulima/redact@2.0.5...@visulima/redact@3.0.0) (2026-07-03)
