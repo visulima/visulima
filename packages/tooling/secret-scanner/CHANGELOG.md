@@ -1,3 +1,11 @@
+## @visulima/secret-scanner [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fsecret-scanner%401.1.0...%40visulima%2Fsecret-scanner%402.0.0) (2026-08-08)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.0
+* **@visulima/path:** upgraded to 4.0.0
+
 ## @visulima/secret-scanner [1.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fsecret-scanner%401.0.0...%40visulima%2Fsecret-scanner%401.1.0) (2026-08-02)
 
 
