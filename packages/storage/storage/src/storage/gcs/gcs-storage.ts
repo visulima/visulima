@@ -521,7 +521,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                             parameters = {
                                 ...parameters,
                                 params: {
-                                    ...parameters.params,
+                                    ...(parameters.params as Record<string, unknown>),
                                     maxResults: Math.min(pageSize, limit - items.length),
                                     pageToken: data.nextPageToken,
                                 },
@@ -595,7 +595,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                             parameters = {
                                 ...parameters,
                                 params: {
-                                    ...parameters.params,
+                                    ...(parameters.params as Record<string, unknown>),
                                     maxResults: Math.min(pageSize, limit - files.length),
                                     pageToken: data.nextPageToken,
                                 },
@@ -731,7 +731,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             },
             params: {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
-                ...data.params,
+                ...(data.params as Record<string, unknown>),
             },
             // An explicit `retry: false` from the caller (e.g. a one-shot
             // stream upload) wins over the per-call retries override.
@@ -748,7 +748,7 @@ class GCStorage extends BaseStorage<GCSFile> {
         return this.authClient.request(data);
     }
 
-    private async accessCheck(): Promise<GaxiosResponse<unknown>> {
+    private async accessCheck(): Promise<GaxiosResponse> {
         return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 }

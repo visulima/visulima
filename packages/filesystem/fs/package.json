@@ -177,6 +177,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/glob-parent": "^5.1.3",
         "@types/ini": "catalog:types",
         "@types/is-glob": "^4.0.4",

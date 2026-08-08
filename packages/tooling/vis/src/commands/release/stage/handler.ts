@@ -79,7 +79,7 @@ const runList = async (
 
     if (npmResult.exitCode === 0 && npmResult.stdout.trim()) {
         try {
-            npmEntries = JSON.parse(npmResult.stdout);
+            npmEntries = JSON.parse(npmResult.stdout) as { id?: string; package?: string; tag?: string; version?: string }[];
         } catch {
             // npm changed the JSON shape — keep the registry view alive
             // and print the raw npm output so the operator can still see it.

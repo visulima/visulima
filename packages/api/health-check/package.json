@@ -93,6 +93,7 @@
         "@eslint-react/eslint-plugin": "catalog:lint",
         "@rushstack/eslint-plugin-security": "catalog:lint",
         "@testing-library/react": "catalog:test",
+        "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",

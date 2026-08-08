@@ -17,11 +17,13 @@ interface MatcherResult {
 type MatcherTarget = ReadonlyArray<MockEmailEntry> | TestEmail;
 
 const toEntries = (target: MatcherTarget): ReadonlyArray<MockEmailEntry> => {
-    if (Array.isArray(target)) {
-        return target;
+    // Discriminate on the harness's own method rather than `Array.isArray`,
+    // which cannot narrow a union to its array member without a cast.
+    if ("sent" in target) {
+        return target.sent();
     }
 
-    return (target as TestEmail).sent();
+    return target;
 };
 
 const addressesOf = (value: EmailAddress | EmailAddress[] | undefined): string[] => {

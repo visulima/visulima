@@ -287,7 +287,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                 const platformManifestPath = path.join(npmDir, platform.name, "package.json");
 
                 try {
-                    const platformManifest = JSON.parse(await fs.readFile(platformManifestPath, "utf8"));
+                    const platformManifest = JSON.parse(await fs.readFile(platformManifestPath, "utf8")) as { version?: string };
 
                     if (platformManifest.version !== pkg.version) {
                         mismatches.push(`${platform.name} (${platformManifest.version} vs parent ${pkg.version})`);
