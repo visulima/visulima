@@ -13,7 +13,7 @@
 import { readFileSync, walkSync } from "@visulima/fs";
 import { readYamlSync } from "@visulima/fs/yaml";
 import { join, relative } from "@visulima/path";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import { pail } from "../../io/logger";
 import type { Creation, CreationDirectory, CreationFile, FileMeta, Template, TemplateContext, Variable, VariableMap } from "../types";

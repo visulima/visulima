@@ -4,7 +4,7 @@ import { unlinkSync, writeFileSync } from "node:fs";
 import { ensureDirSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { readTomlSync } from "@visulima/fs/toml";
 import { join } from "@visulima/path";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import { resolveIndentForFile } from "../../util/editorconfig";
 import { isKnownTag } from "../../util/identify";
@@ -405,7 +405,7 @@ const convertPrekConfig = (config: PrekConfig): ConversionResult => {
  * Parse a prek YAML config. Returns undefined if the content is empty or malformed.
  */
 const parsePrekConfig = (content: string): PrekConfig | undefined => {
-    const parsed = parseYaml(content) as unknown;
+    const parsed = parseYaml(content);
 
     if (parsed && typeof parsed === "object") {
         return parsed;

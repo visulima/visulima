@@ -4,9 +4,9 @@ import { stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 
 import { collect } from "@visulima/fs";
+import { stringify as stringifyYaml } from "@visulima/yaml";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
-import yaml from "yaml";
 
 import { DEFAULT_EXCLUDE } from "../../constants";
 import type { BaseDefinition } from "../../exported";
@@ -180,7 +180,7 @@ const buildSpec = async (
 const serializeSpec = (spec: SpecBuilder, output: string): string => {
     if (YAML_OUTPUT_EXTENSIONS.has(extname(output))) {
         // structuredClone strips the SpecBuilder class wrapper to a plain object.
-        return yaml.stringify(structuredClone(spec));
+        return stringifyYaml(structuredClone(spec));
     }
 
     return JSON.stringify(spec, undefined, 2);

@@ -6,7 +6,7 @@ import type { DurableObjectStorageLike } from "../../src/store/durable-object-st
  * single alarm. Plain JS is single-threaded, so it models the DO's serial execution.
  */
 class FakeDurableObjectStorage implements DurableObjectStorageLike {
-    readonly #data = new Map<string, unknown>();
+    readonly #data = new Map<string>();
 
     #alarm: number | null = null;
 

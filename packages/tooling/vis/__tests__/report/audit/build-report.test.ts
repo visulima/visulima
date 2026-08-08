@@ -167,7 +167,7 @@ describe(buildAuditReport, () => {
         });
 
         // eslint-disable-next-line unicorn/prefer-structured-clone -- intentional JSON round-trip: asserts the report is losslessly JSON-serializable, which structuredClone would not verify
-        const round = JSON.parse(JSON.stringify(report)) as unknown;
+        const round = JSON.parse(JSON.stringify(report));
 
         expect(round).toStrictEqual(report);
     });

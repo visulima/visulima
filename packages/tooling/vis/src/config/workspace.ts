@@ -11,7 +11,7 @@ import type {
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
 import { looksLikeInputUri, parseInputUri } from "@visulima/task-runner";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";

@@ -1,5 +1,5 @@
 import type { Span, SpanOptions, Tracer } from "@opentelemetry/api";
-import type { Task, TaskResult, TaskResults } from "@visulima/task-runner";
+import type { Task, TaskResult } from "@visulima/task-runner";
 import { describe, expect, it, vi } from "vitest";
 
 import { otelPlugin } from "../../src/plugins/otel";
@@ -82,7 +82,7 @@ describe(otelPlugin, () => {
         const tasks = [makeTask("a:build"), makeTask("b:build")];
 
         await hooks.callHook("run:before", { tasks, workspaceRoot: "/ws" });
-        await hooks.callHook("run:after", new Map() as TaskResults);
+        await hooks.callHook("run:after", new Map());
 
         const runSpan = spans.find((s) => s.name === "vis.run");
 
@@ -277,7 +277,7 @@ describe(otelPlugin, () => {
         await hooks.callHook("task:before", makeTask("app:build"));
         // Orchestrator short-circuited: run:after fires without a
         // matching task:after. The plugin must close the stray span.
-        await hooks.callHook("run:after", new Map() as TaskResults);
+        await hooks.callHook("run:after", new Map());
 
         const runSpan = spans.find((s) => s.name === "vis.run");
         const taskSpan = spans.find((s) => s.name === "app:build");

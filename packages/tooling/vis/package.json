@@ -208,6 +208,7 @@
         "@visulima/spinner": "1.0.1",
         "@visulima/string": "3.1.0",
         "@visulima/tsconfig": "3.2.6",
+        "@visulima/yaml": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@yarnpkg/parsers": "^3.0.3",

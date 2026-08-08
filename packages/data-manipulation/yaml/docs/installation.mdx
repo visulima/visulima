@@ -1,0 +1,108 @@
+---
+title: "Installation"
+description: "How to install and import @visulima/yaml"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation
+
+Install the package using your preferred package manager:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">
+
+```bash
+npm install @visulima/yaml
+```
+
+    </Tab>
+    <Tab value="pnpm">
+
+```bash
+pnpm add @visulima/yaml
+```
+
+    </Tab>
+    <Tab value="yarn">
+
+```bash
+yarn add @visulima/yaml
+```
+
+    </Tab>
+    <Tab value="bun">
+
+```bash
+bun add @visulima/yaml
+```
+
+    </Tab>
+
+</Tabs>
+
+## Import Methods
+
+### ESM (Recommended)
+
+Import the functions you need:
+
+```typescript
+import { parse, parseAll, stringify } from "@visulima/yaml";
+```
+
+Or the `js-yaml`-compatible aliases:
+
+```typescript
+import { load, loadAll, dump } from "@visulima/yaml";
+```
+
+### CommonJS
+
+The package is ESM-only. In a CommonJS module, use a dynamic import:
+
+```javascript
+const { parse } = await import("@visulima/yaml");
+```
+
+## Requirements
+
+- **Node.js:** ^22.14.0 || >=24.10.0
+- **TypeScript:** ≥5.0 (optional, but recommended for type safety)
+
+## Verify Installation
+
+```typescript
+import { parse, stringify } from "@visulima/yaml";
+
+const value = parse("greeting: hello");
+
+console.log(value); // { greeting: "hello" }
+console.log(stringify(value)); // "greeting: hello\n"
+```
+
+If you see the expected output, installation was successful!
+
+## TypeScript Support
+
+The package includes full TypeScript type definitions — no additional `@types` packages are needed.
+
+```typescript
+import type { ParseOptions, StringifyOptions } from "@visulima/yaml";
+import { parse } from "@visulima/yaml";
+
+const options: ParseOptions = { duplicateKeys: "error" };
+
+parse("a: 1", options);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to parse, serialize and tune strict mode
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
+</Cards>

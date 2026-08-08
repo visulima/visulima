@@ -26,7 +26,7 @@ export const validateGcp: TransportValidator = async ({ secret }): Promise<Valid
             return "rejected";
         }
 
-        serviceAccount = parsed as { client_email?: unknown; private_key?: unknown };
+        serviceAccount = parsed;
     } catch {
         return "rejected";
     }

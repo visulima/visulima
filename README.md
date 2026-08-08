@@ -121,6 +121,7 @@ Packages are grouped into eight categories. Jump to the section you need:
 | [@visulima/object](packages/data-manipulation/object/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fobject?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fobject) | Helper functions for working with objects and arrays. |
 | [@visulima/redact](packages/data-manipulation/redact/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fredact?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fredact) | A library for redacting and masking sensitive data from objects and strings, with support for GDPR compliance, custom rules, and deep object traversal. |
 | [@visulima/string](packages/data-manipulation/string/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fstring?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fstring) | Functions for manipulating strings. |
+| [@visulima/yaml](packages/data-manipulation/yaml/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fyaml?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fyaml) | A fast, zero-dependency YAML 1.2 parser and serializer with a drop-in API for both `yaml` and `js-yaml`. |
 
 ### Email
 

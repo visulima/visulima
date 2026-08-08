@@ -1,6 +1,6 @@
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import type { EcosystemId } from "./types";
 

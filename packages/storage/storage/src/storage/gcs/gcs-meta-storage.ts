@@ -118,7 +118,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return this.save(id, file);
     }
 
-    private async accessCheck(): Promise<GaxiosResponse<unknown>> {
+    private async accessCheck(): Promise<GaxiosResponse> {
         return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 

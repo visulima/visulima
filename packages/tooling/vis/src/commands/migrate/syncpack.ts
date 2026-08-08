@@ -263,7 +263,7 @@ const noteUnsupportedKeys = (config: SyncpackConfig, report: MigrationReport): v
         // 1:1 mapping today. Malformed entries (null / non-object) are
         // skipped here so they don't inflate the count; raw config
         // validation is upstream.
-        const remaining = config.versionGroups.filter((g) => g && typeof g === "object" && !isVersionGroupBanned(g as Record<string, unknown>));
+        const remaining = config.versionGroups.filter((g) => g && typeof g === "object" && !isVersionGroupBanned(g));
 
         if (remaining.length > 0) {
             addMigrationWarning(
@@ -367,14 +367,14 @@ const translateBannedDeps = (config: SyncpackConfig, report: MigrationReport): R
             continue;
         }
 
-        const group = raw as Record<string, unknown>;
+        const group = raw;
 
         if (!isVersionGroupBanned(group)) {
             continue;
         }
 
         const deps = Array.isArray(group["dependencies"])
-            ? (group["dependencies"] as unknown[]).filter((d): d is string => typeof d === "string" && d.length > 0)
+            ? (group["dependencies"]).filter((d): d is string => typeof d === "string" && d.length > 0)
             : [];
 
         if (deps.length === 0) {
@@ -383,7 +383,7 @@ const translateBannedDeps = (config: SyncpackConfig, report: MigrationReport): R
         }
 
         const packages = Array.isArray(group["packages"])
-            ? (group["packages"] as unknown[]).filter((p): p is string => typeof p === "string" && p.length > 0)
+            ? (group["packages"]).filter((p): p is string => typeof p === "string" && p.length > 0)
             : [];
 
         const labelRaw = group["label"];

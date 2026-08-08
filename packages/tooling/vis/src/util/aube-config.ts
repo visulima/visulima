@@ -1,6 +1,6 @@
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 /**
  * Subset of `aube-workspace.yaml` / `pnpm-workspace.yaml` that aube

@@ -29,7 +29,7 @@ const detectDeprecatedConfigKeys = (raw: Record<string, unknown>): DeprecatedKey
         if (Array.isArray(taskDefaults)) {
             for (const [index, block] of taskDefaults.entries()) {
                 if (block && typeof block === "object") {
-                    if (Object.hasOwn(block as object, "scope")) {
+                    if (Object.hasOwn(block, "scope")) {
                         children.push({
                             location: `taskDefaults[${index}].scope`,
                             name: "scope",
@@ -37,7 +37,7 @@ const detectDeprecatedConfigKeys = (raw: Record<string, unknown>): DeprecatedKey
                         });
                     }
 
-                    if (Object.hasOwn(block as object, "targets")) {
+                    if (Object.hasOwn(block, "targets")) {
                         children.push({
                             location: `taskDefaults[${index}].targets`,
                             name: "targets",
@@ -57,7 +57,7 @@ const detectDeprecatedConfigKeys = (raw: Record<string, unknown>): DeprecatedKey
         // User already adopted `scopedTasks` but may still use old inner keys.
         for (const [index, block] of raw.scopedTasks.entries()) {
             if (block && typeof block === "object") {
-                if (Object.hasOwn(block as object, "scope")) {
+                if (Object.hasOwn(block, "scope")) {
                     found.push({
                         location: `scopedTasks[${index}].scope`,
                         name: "scope",
@@ -65,7 +65,7 @@ const detectDeprecatedConfigKeys = (raw: Record<string, unknown>): DeprecatedKey
                     });
                 }
 
-                if (Object.hasOwn(block as object, "targets")) {
+                if (Object.hasOwn(block, "targets")) {
                     found.push({
                         location: `scopedTasks[${index}].targets`,
                         name: "targets",

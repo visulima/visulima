@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 
 import { dirname, join } from "@visulima/path";
-import { parseDocument } from "yaml";
+import { parseDocument } from "@visulima/yaml";
 
 import type { LockfilePackageManager } from "./lockfile";
 import { detectPackageManager } from "./lockfile";

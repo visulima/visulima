@@ -138,7 +138,7 @@ export interface SafeFetchOptions {
  * connection pool, so we want one per unique proxy URL — not one per
  * request. Lazy-initialised on first use.
  */
-const proxyAgentCache = new Map<string, unknown>();
+const proxyAgentCache = new Map<string>();
 
 /**
  * Resolve (and lazily construct) an undici ProxyAgent for the given
@@ -270,7 +270,7 @@ export const safeFetchVersionMetadata = async (url: string, options: SafeFetchOp
             return {
                 json: async (): Promise<unknown> => {
                     try {
-                        return (await response.json()) as unknown;
+                        return (await response.json());
                     } catch {
                         return undefined;
                     }

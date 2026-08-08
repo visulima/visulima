@@ -1,0 +1,241 @@
+import { describe, expect, it } from "vitest";
+
+import { dump, parse, stringify, YAMLStringifyError } from "../src";
+
+describe("stringify › scalars", () => {
+    it("emits primitive scalars", () => {
+        expect.assertions(5);
+
+        expect(stringify("hello")).toBe("hello\n");
+        expect(stringify(42)).toBe("42\n");
+        expect(stringify(true)).toBe("true\n");
+        expect(stringify(null)).toBe("null\n");
+        expect(stringify(3.14)).toBe("3.14\n");
+    });
+
+    it("quotes strings that would otherwise resolve to another type", () => {
+        expect.assertions(4);
+
+        expect(stringify("true")).toBe("\u0022true\u0022\n");
+        expect(stringify("123")).toBe("\u0022123\u0022\n");
+        expect(stringify("null")).toBe("\u0022null\u0022\n");
+        expect(stringify("~")).toBe("\u0022~\u0022\n");
+    });
+
+    it("quotes strings containing structural characters", () => {
+        expect.assertions(3);
+
+        expect(stringify("a: b")).toBe("\u0022a: b\u0022\n");
+        expect(stringify("# not a comment")).toContain("\u0022# not a comment\u0022");
+        expect(stringify(" leading")).toBe("\u0022 leading\u0022\n");
+    });
+
+    it("chooses the quote style with `singleQuote`, defaulting per API surface", () => {
+        expect.assertions(5);
+
+        // `stringify` shadows `yaml`, which reaches for double quotes; `dump`
+        // shadows `js-yaml`, which reaches for single. Both verified against the
+        // package each one stands in for.
+        expect(stringify("a: b")).toBe("\u0022a: b\u0022\n");
+        expect(dump("a: b")).toBe("'a: b'\n");
+
+        expect(stringify("a: b", { singleQuote: true })).toBe("'a: b'\n");
+        expect(dump("a: b", { singleQuote: false })).toBe("\u0022a: b\u0022\n");
+
+        // A plain-safe string stays plain either way — the option picks how to
+        // quote, never whether to.
+        expect(stringify("plain", { singleQuote: true })).toBe("plain\n");
+    });
+
+    it("keeps a tab in double quotes whatever `singleQuote` asks for", () => {
+        expect.assertions(1);
+
+        // Single quotes cannot express a tab, so it overrides the preference.
+        expect(stringify("a\tb", { singleQuote: true })).toBe("\u0022a\\tb\u0022\n");
+    });
+
+    it("represents float specials", () => {
+        expect.assertions(3);
+
+        expect(stringify(Number.POSITIVE_INFINITY)).toBe(".inf\n");
+        expect(stringify(Number.NEGATIVE_INFINITY)).toBe("-.inf\n");
+        expect(stringify(Number.NaN)).toBe(".nan\n");
+    });
+
+    it("uses literal block style for multi-line strings", () => {
+        expect.assertions(1);
+
+        expect(stringify("line1\nline2\n")).toBe("|\n  line1\n  line2\n");
+    });
+
+    it("round-trips strings with multiple trailing newlines (keep chomping)", () => {
+        expect.assertions(5);
+
+        // Regression: `|+` emission previously added one blank line too many.
+        for (let newlines = 1; newlines <= 5; newlines += 1) {
+            const value = `a${"\n".repeat(newlines)}`;
+
+            expect(parse(stringify(value))).toBe(value);
+        }
+    });
+});
+
+describe("stringify › collections", () => {
+    it("emits a block mapping", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: 1, b: "two" })).toBe("a: 1\nb: two\n");
+    });
+
+    it("emits a block sequence", () => {
+        expect.assertions(1);
+
+        expect(stringify(["a", "b"])).toBe("- a\n- b\n");
+    });
+
+    it("emits nested structures", () => {
+        expect.assertions(1);
+
+        const value = { root: { items: [1, 2], name: "x" } };
+
+        expect(stringify(value)).toBe(["root:", "  items:", "    - 1", "    - 2", "  name: x", ""].join("\n"));
+    });
+
+    it("emits a compact sequence of mappings", () => {
+        expect.assertions(1);
+
+        const value = [{ id: 1 }, { id: 2 }];
+
+        expect(stringify(value)).toBe(["- id: 1", "- id: 2", ""].join("\n"));
+    });
+
+    it("uses flow style for empty collections", () => {
+        expect.assertions(2);
+
+        expect(stringify({ a: [], b: {} })).toBe("a: []\nb: {}\n");
+        expect(stringify([])).toBe("[]\n");
+    });
+});
+
+describe("stringify › options", () => {
+    it("honours a custom indent", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: { b: 1 } }, { indent: 4 })).toBe("a:\n    b: 1\n");
+    });
+
+    it("sorts keys when requested", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: 2, b: 3, c: 1 }, { sortKeys: true })).toBe("a: 2\nb: 3\nc: 1\n");
+    });
+
+    it("supports flow style via flowLevel", () => {
+        expect.assertions(2);
+
+        // Flow collections are padded by default, matching `yaml`.
+        expect(stringify({ a: [1, 2], b: { c: 3 } }, { flowLevel: 0 })).toBe("{ a: [ 1, 2 ], b: { c: 3 } }\n");
+        expect(stringify({ a: [1, 2], b: { c: 3 } }, { flowCollectionPadding: false, flowLevel: 0 })).toBe("{a: [1, 2], b: {c: 3}}\n");
+    });
+
+    it("emits a document marker with directives:true", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: 1 }, { directives: true })).toBe("---\na: 1\n");
+    });
+
+    it("skips undefined-valued members when skipInvalid is set", () => {
+        expect.assertions(1);
+
+        expect(stringify({ a: 1, b: undefined, c: 3 }, { skipInvalid: true })).toBe("a: 1\nc: 3\n");
+    });
+
+    it("throws on circular structures", () => {
+        expect.assertions(1);
+
+        const value: Record<string, unknown> = {};
+
+        value.self = value;
+
+        expect(() => stringify(value)).toThrow(YAMLStringifyError);
+    });
+
+    it("folds long plain strings into a folded block scalar at lineWidth", () => {
+        expect.assertions(3);
+
+        const long = "the quick brown fox jumps over the lazy dog and then keeps on running across the whole meadow";
+
+        const folded = stringify({ description: long });
+
+        expect(folded).toContain("description: >-");
+        // every emitted line stays within the default 80-column budget
+        expect(folded.split("\n").every((line) => line.length <= 80)).toBe(true);
+        // and it round-trips exactly
+        expect(parse(folded)).toStrictEqual({ description: long });
+    });
+
+    it("respects a custom lineWidth and can disable folding with lineWidth 0", () => {
+        expect.assertions(3);
+
+        const long = "one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen";
+
+        const narrow = stringify(long, { lineWidth: 30 });
+
+        expect(
+            narrow
+                .split("\n")
+                .filter((line) => line.startsWith("  "))
+                .every((line) => line.length <= 30),
+        ).toBe(true);
+        expect(parse(narrow)).toBe(long);
+
+        // lineWidth 0 keeps everything on one plain line
+        expect(stringify(long, { lineWidth: 0 })).toBe(`${long}\n`);
+    });
+
+    it("does not fold strings without break points", () => {
+        expect.assertions(2);
+
+        const url = "https://example.com/a/very/long/path/segment/that/exceeds/eighty/characters/here/ok";
+
+        const output = stringify({ url });
+
+        expect(output).not.toContain(">-");
+        expect(parse(output)).toStrictEqual({ url });
+    });
+});
+
+describe("stringify › round-trips through parse", () => {
+    it.each([
+        ["primitive map", { active: true, count: 3, name: "test" }],
+        ["nested", { list: [1, 2, { deep: [true, null, "x"] }], meta: { a: 1 } }],
+        ["strings needing quotes", { colon: "a: b", empty: "", num: "42", special: "line\nbreak\n" }],
+        ["mixed array", [1, "two", true, null, { k: "v" }]],
+        ["unicode", { emoji: "😀", greek: "αβγ" }],
+    ])("round-trips %s", (_label, value) => {
+        expect.assertions(1);
+
+        expect(parse(stringify(value))).toStrictEqual(value);
+    });
+});
+
+describe("replacer", () => {
+    it("passes the array index as the key in flow style too", () => {
+        expect.assertions(1);
+
+        // Block and flow output must agree with each other and with
+        // `JSON.stringify`, which always passes the index as a string.
+        const keys: string[] = [];
+
+        stringify([10, 20], {
+            flowLevel: 0,
+            replacer: (key, value) => {
+                keys.push(key);
+
+                return value;
+            },
+        });
+
+        expect(keys).toStrictEqual(["", "0", "1"]);
+    });
+});

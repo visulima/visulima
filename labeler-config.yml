@@ -259,6 +259,9 @@
 "package: workflow":
     - changed-files:
           - any-glob-to-any-file: "packages/workflow/workflow/**/*"
+"package: yaml":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/yaml/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"

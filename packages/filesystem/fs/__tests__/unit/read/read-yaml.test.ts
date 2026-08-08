@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 
 import { dirname, join } from "@visulima/path";
+import { YAMLError } from "@visulima/yaml";
 import { describe, expect, it } from "vitest";
-import { YAMLError } from "yaml";
 
 import readYaml from "../../../src/read/read-yaml";
 import readYamlSync from "../../../src/read/read-yaml-sync";
@@ -57,5 +57,26 @@ describe.each([
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() => function_(path)).toThrow(YAMLError);
         }
+    });
+});
+
+describe("readYaml parse options", () => {
+    const optionsFixture = join(fixturePath, "off.yaml");
+
+    it("accepts parse options in the second argument", async () => {
+        expect.assertions(2);
+
+        // The documented `readYaml(path, options)` overload used to be ignored:
+        // only the third argument was inspected, so options passed here were
+        // silently dropped.
+        await expect(readYaml(optionsFixture)).resolves.toStrictEqual({ a: "off" });
+        await expect(readYaml(optionsFixture, { schema: "yaml-1.1" })).resolves.toStrictEqual({ a: false });
+    });
+
+    it("accepts parse options in the second argument synchronously", () => {
+        expect.assertions(2);
+
+        expect(readYamlSync(optionsFixture)).toStrictEqual({ a: "off" });
+        expect(readYamlSync(optionsFixture, { schema: "yaml-1.1" })).toStrictEqual({ a: false });
     });
 });

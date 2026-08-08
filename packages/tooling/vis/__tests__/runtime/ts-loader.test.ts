@@ -72,7 +72,7 @@ const runInLoader = (body: string): unknown => {
 
     const lastLine = result.stdout.trim().split("\n").at(-1) ?? "";
 
-    return JSON.parse(lastLine) as unknown;
+    return JSON.parse(lastLine);
 };
 
 describeHooked("ts-loader data-file imports", () => {
