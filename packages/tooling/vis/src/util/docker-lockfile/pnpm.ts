@@ -1,4 +1,4 @@
-import { parseAllDocuments, stringify as stringifyYaml } from "yaml";
+import { parseAllDocuments, stringify as stringifyYaml } from "@visulima/yaml";
 
 import type { PruneInput, PruneResult } from "./types";
 import { LockfilePruneError } from "./types";
@@ -154,7 +154,7 @@ export const prunePnpmLockfile = (input: PruneInput): PruneResult => {
             throw new LockfilePruneError(`${displayName}: parse failed — ${firstError.message}`);
         }
 
-        const value = lockDocument.toJS() as unknown;
+        const value = lockDocument.toJS();
 
         if (!value || typeof value !== "object") {
             continue;

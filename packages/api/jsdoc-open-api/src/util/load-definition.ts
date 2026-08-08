@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import yaml from "yaml";
+import { parse as parseYaml } from "@visulima/yaml";
 
 import type { BaseDefinition } from "../exported";
 
@@ -15,7 +15,7 @@ const parseFile = (file: string): BaseDefinition => {
     const fileContent = readFileSync(file, { encoding: "utf8" });
 
     if (extension === ".yaml" || extension === ".yml") {
-        return yaml.parse(fileContent) as BaseDefinition;
+        return parseYaml(fileContent) as BaseDefinition;
     }
 
     return JSON.parse(fileContent) as BaseDefinition;

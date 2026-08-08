@@ -1,7 +1,7 @@
 import type { Dirent, PathLike } from "node:fs";
 
+import type { ParseOptions as YamlParseOptions, StringifyOptions as YamlStringifyOptions } from "@visulima/yaml";
 import type { GlobOptions as TinyGlobOptions } from "tinyglobby";
-import type { CreateNodeOptions, DocumentOptions, ParseOptions, SchemaOptions, ToJSOptions, ToStringOptions } from "yaml";
 
 import type { FIND_UP_STOP } from "./constants";
 
@@ -448,7 +448,7 @@ export type RetryOptions = {
  * and custom {@link ReadFileOptions}.
  */
 
-export type ReadYamlOptions<C> = DocumentOptions & ParseOptions & ReadFileOptions<C> & SchemaOptions & ToJSOptions;
+export type ReadYamlOptions<C> = ReadFileOptions<C> & YamlParseOptions;
 
 /**
  * Type for the `reviver` parameter used in YAML deserialization, similar to `JSON.parse`'s reviver.
@@ -474,7 +474,7 @@ export type WriteYamlExtras = {
     space?: number | string;
 };
 
-export type WriteYamlOptions = CreateNodeOptions & DocumentOptions & ParseOptions & SchemaOptions & ToStringOptions & WriteFileOptions & WriteYamlExtras;
+export type WriteYamlOptions = WriteFileOptions & WriteYamlExtras & YamlStringifyOptions;
 
 /**
  * Options for reading TOML files.

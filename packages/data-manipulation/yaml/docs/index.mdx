@@ -1,0 +1,142 @@
+---
+title: Introduction
+description: "A fast, zero-dependency YAML 1.2 parser and serializer with a drop-in API for both yaml and js-yaml"
+---
+
+# @visulima/yaml
+
+A fast, zero-runtime-dependency **YAML 1.2** parser and serializer written from scratch in TypeScript. It ships two compatible API surfaces so it drops into projects using either [`yaml`](https://www.npmjs.com/package/yaml) or [`js-yaml`](https://www.npmjs.com/package/js-yaml).
+
+## Key Features
+
+**Spec-compliant YAML 1.2**
+
+- Core-schema scalar resolution (`null`, `bool`, `int` in dec/hex/oct, `float`, `.inf`/`.nan`)
+- `yes`/`no`/`on`/`off` are strings, exactly as YAML 1.2 mandates (not booleans)
+- Passes **all 402** cases of the official [yaml-test-suite](https://github.com/yaml/yaml-test-suite) (100%) in strict mode
+
+**Full block & flow grammar**
+
+- Block and flow mappings and sequences
+- All five scalar styles: plain, single-quoted, double-quoted, literal `|`, folded `>`
+- Chomping (`-`/`+`) and explicit indentation indicators
+
+**Anchors, aliases, merge keys & documents**
+
+- `&anchor` / `*alias` with shared references
+- `<<` merge keys, enabled by default
+- Multi-document streams with `---` / `...` markers and `%YAML` / `%TAG` directives
+
+**Document layer**
+
+- `parseDocument` / `parseAllDocuments` report diagnostics instead of throwing
+- Edits splice the source, preserving comments, blank lines and key order
+- A malformed document does not stop the rest of the stream
+
+**Two compatible APIs**
+
+- `yaml`-style `parse` / `parseAll` / `stringify`
+- `js-yaml`-style `load` / `loadAll` / `dump`
+
+**Safe and strict by default**
+
+- Prototype-pollution guard, duplicate-key detection, alias-expansion (billion-laughs) limit
+- Strict YAML 1.2 rejection on by default, with an opt-out for js-yaml-style leniency
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/yaml
+```
+
+Parse a document:
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse(`
+name: my-app
+version: 1.0.0
+tags: [cli, tooling]
+`);
+// => { name: "my-app", version: "1.0.0", tags: ["cli", "tooling"] }
+```
+
+Serialize a value:
+
+```typescript
+import { stringify } from "@visulima/yaml";
+
+stringify({ name: "my-app", tags: ["cli", "tooling"] });
+// name: my-app
+// tags:
+//   - cli
+//   - tooling
+```
+
+## Use Cases
+
+### Loading configuration files
+
+```typescript
+import { readFileSync } from "node:fs";
+
+import { parse } from "@visulima/yaml";
+
+const config = parse(readFileSync("config.yaml", "utf8"));
+```
+
+### Migrating from js-yaml
+
+Swap the import — `load`, `loadAll` and `dump` keep the same shape:
+
+```typescript
+import { load, dump } from "@visulima/yaml";
+
+load("foo: bar"); // => { foo: "bar" }
+dump({ foo: "bar" }); // => "foo: bar\n"
+```
+
+### Sharing config with anchors and merge keys
+
+```typescript
+import { parse } from "@visulima/yaml";
+
+parse(`
+defaults: &defaults
+  adapter: postgres
+  host: localhost
+development:
+  <<: *defaults
+  database: dev
+`);
+// => {
+//   defaults: { adapter: "postgres", host: "localhost" },
+//   development: { adapter: "postgres", host: "localhost", database: "dev" },
+// }
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore parsing, serializing and strict mode with examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with options and types
+    </Card>
+</Cards>
+
+## Runtime Support
+
+This package works in both Node.js and browser environments:
+
+- **Node.js:** full support
+- **Browsers / Deno / Bun:** compatible with all modern JavaScript runtimes
+
+Requires Node.js `^22.14.0 || >=24.10.0`.

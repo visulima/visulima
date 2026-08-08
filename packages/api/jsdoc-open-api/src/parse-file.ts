@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { parse as parseYaml } from "@visulima/yaml";
 import type { Block } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
-import yaml from "yaml";
 
 import type { OpenApiObject } from "./exported";
 import yamlLoc from "./util/yaml-loc";
@@ -25,7 +25,8 @@ export type CommentsToOpenApi = (fileContent: string, verbose?: boolean, comment
 const YAML_EXTENSIONS = new Set([".yaml", ".yml"]);
 
 const parseYamlFile = (file: string, fileContent: string): { loc: number; spec: OpenApiObject }[] => {
-    const spec = yaml.parse(fileContent);
+    // `@visulima/yaml` returns `unknown`, so narrow before use.
+    const spec = parseYaml(fileContent) as OpenApiObject | null;
 
     if (spec === null || typeof spec !== "object") {
         return [];

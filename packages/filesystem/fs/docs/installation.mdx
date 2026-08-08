@@ -17,13 +17,25 @@ npm install @visulima/fs
 
 ### YAML Support
 
-If you need to read or write YAML files, install the `yaml` peer dependency:
+If you need to read or write YAML files, install the `@visulima/yaml` peer dependency:
 
 ```bash npm2yarn
-npm install yaml
+npm install @visulima/yaml
 ```
 
-After installing `yaml`, you can use YAML functions:
+#### Migrating from the `yaml` peer dependency
+
+The YAML peer changed from `yaml` to `@visulima/yaml`. Parsing is otherwise
+identical — including which malformed documents are rejected — but two results
+differ:
+
+- **Merge keys are resolved.** `<<: *base` splices the referenced mapping in,
+  where `yaml` returned a literal `<<` key unless you passed `merge: true`. This
+  matches `js-yaml`, and is what most configuration files assume.
+- **`!!binary` stays a base64 string** rather than becoming a `Buffer`. Decode it
+  yourself if you need the bytes.
+
+After installing `@visulima/yaml`, you can use YAML functions:
 
 ```typescript
 import { readYaml, writeYaml } from "@visulima/fs/yaml";
@@ -232,7 +244,7 @@ If YAML functions throw errors:
 
 ```bash npm2yarn
 # Install the yaml peer dependency
-npm install yaml
+npm install @visulima/yaml
 ```
 
 ### TypeScript Errors

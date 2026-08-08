@@ -1,0 +1,8 @@
+{
+    "name": "data-manipulation/yaml",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/yaml/src",
+    "projectType": "library",
+    "tags": ["yaml", "type:package", "category:data"],
+    "implicitDependencies": []
+}

@@ -44,6 +44,6 @@ describe("diskStorage auto-purge lifecycle", () => {
         await wait(90);
 
         // No further purges once the timer is cleared.
-        expect(purgeSpy.mock.calls.length).toBe(callsAfterStop);
+        expect(purgeSpy).toHaveBeenCalledTimes(callsAfterStop);
     });
 });

@@ -15,6 +15,21 @@ const createContainer = (node: LayoutNode) =>
 // The reconciler flushes commits on a microtask/timer, so let the scheduler run.
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+/**
+ * Wait until `predicate` holds, rather than for a fixed number of ticks.
+ *
+ * How many turns of the scheduler a commit needs varies by runtime: a single
+ * `setTimeout(0)` was enough under Node but not under bun on CI, where the
+ * second container's callback had not fired yet when the assertion ran.
+ */
+const flushUntil = async (predicate: () => boolean, timeoutMs = 5000): Promise<void> => {
+    const deadline = Date.now() + timeoutMs;
+
+    while (!predicate() && Date.now() < deadline) {
+        await flush();
+    }
+};
+
 describe("react/reconciler after-commit registry", () => {
     afterEach(() => {
         vi.restoreAllMocks();
@@ -35,7 +50,7 @@ describe("react/reconciler after-commit registry", () => {
         registerAfterCommit(nodeB, callbackB);
 
         TuiReconciler.updateContainer(React.createElement("box", null), containerA, null, () => {});
-        await flush();
+        await flushUntil(() => callbackA.mock.calls.length > 0);
 
         expect(callbackA).toHaveBeenCalledTimes(1);
         expect(callbackB).not.toHaveBeenCalled();
@@ -43,7 +58,7 @@ describe("react/reconciler after-commit registry", () => {
         callbackA.mockClear();
 
         TuiReconciler.updateContainer(React.createElement("box", null), containerB, null, () => {});
-        await flush();
+        await flushUntil(() => callbackB.mock.calls.length > 0);
 
         expect(callbackB).toHaveBeenCalledTimes(1);
         expect(callbackA).not.toHaveBeenCalled();

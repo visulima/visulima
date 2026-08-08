@@ -205,7 +205,7 @@ const JSON_OBJECT_REGEX = /\{[\s\S]*\}/;
 
 const extractJson = (text: string): unknown => {
     try {
-        return JSON.parse(text) as unknown;
+        return JSON.parse(text);
     } catch {
         // continue
     }
@@ -214,7 +214,7 @@ const extractJson = (text: string): unknown => {
 
     if (blockMatch?.[1]) {
         try {
-            return JSON.parse(blockMatch[1]) as unknown;
+            return JSON.parse(blockMatch[1]);
         } catch {
             // continue
         }
@@ -224,7 +224,7 @@ const extractJson = (text: string): unknown => {
 
     if (objectMatch?.[0]) {
         try {
-            return JSON.parse(objectMatch[0]) as unknown;
+            return JSON.parse(objectMatch[0]);
         } catch {
             // continue
         }

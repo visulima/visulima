@@ -1,4 +1,4 @@
-import { stringify } from "yaml";
+import { stringify } from "@visulima/yaml";
 
 import type { JsonReplacer, WriteYamlOptions } from "../types";
 import writeFile from "./write-file";
