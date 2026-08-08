@@ -447,7 +447,7 @@ describe("node model › options that interact with the tree", () => {
         };
 
         const small = build(2000);
-        const large = build(16000);
+        const large = build(16_000);
 
         // Warm the JIT so the first call does not carry compilation cost.
         time(small);
@@ -456,7 +456,7 @@ describe("node model › options that interact with the tree", () => {
         const ratio = time(large) / Math.max(time(small), 0.5);
 
         expect(ratio).toBeLessThan(30);
-        expect((parseNodes(large) as YAMLMap).get("k15999")).toBe(15999);
+        expect((parseNodes(large) as YAMLMap).get("k15999")).toBe(15_999);
     });
 
     it("keeps the index correct after items are spliced directly", () => {
