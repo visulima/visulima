@@ -1,3 +1,11 @@
+## @visulima/tui [4.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%403.0.0...%40visulima%2Ftui%404.0.0) (2026-08-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.1.1
+* **@visulima/boxen:** upgraded to 4.0.0
+
 ## @visulima/tui [3.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%402.0.1...%40visulima%2Ftui%403.0.0) (2026-08-02)
 
 
