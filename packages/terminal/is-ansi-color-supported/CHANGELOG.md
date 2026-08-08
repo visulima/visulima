@@ -1,3 +1,5 @@
+## @visulima/is-ansi-color-supported [4.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fis-ansi-color-supported%403.1.0...%40visulima%2Fis-ansi-color-supported%404.0.0) (2026-08-08)
+
 ## @visulima/is-ansi-color-supported [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fis-ansi-color-supported%403.0.1...%40visulima%2Fis-ansi-color-supported%403.1.0) (2026-08-02)
 
 ## @visulima/is-ansi-color-supported [3.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fis-ansi-color-supported%403.0.0...%40visulima%2Fis-ansi-color-supported%403.0.1) (2026-07-26)
