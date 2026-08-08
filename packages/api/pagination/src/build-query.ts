@@ -15,6 +15,10 @@ export const serializeQuery = (values: Record<string, unknown>): string => {
         if (Array.isArray(value)) {
             for (const item of value) {
                 if (item !== undefined && item !== null) {
+                    // Same reasoning as the scalar branch below: a caller passing
+                    // an object gets its default stringification, and
+                    // `Array.isArray` narrows the element to `unknown`.
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     searchParameters.append(key, String(item));
                 }
             }

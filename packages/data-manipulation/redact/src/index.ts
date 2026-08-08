@@ -274,7 +274,7 @@ const recursiveFilter = (
                 result = iterator.next();
             }
 
-            return copy as unknown;
+            return copy;
         }
 
         if (input instanceof Set) {

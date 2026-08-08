@@ -77,7 +77,7 @@ class Healthcheck implements HealthcheckInterface {
         const type = options.type ?? ALL_TYPES;
         // `Array.isArray` narrows neither branch of a `T | readonly T[]` union,
         // so both sides are spelled out rather than inferred from the guard.
-        const typeList: readonly CheckerType[] = Array.isArray(type) ? (type as readonly CheckerType[]) : [type as CheckerType];
+        const typeList: ReadonlyArray<CheckerType> = Array.isArray(type) ? (type as ReadonlyArray<CheckerType>) : [type as CheckerType];
         const types = new Set<CheckerType>(typeList);
 
         this.healthCheckers[service] = {
