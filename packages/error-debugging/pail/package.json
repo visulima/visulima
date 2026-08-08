@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.1.0",
+    "version": "4.1.1",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "anolilab",
@@ -272,7 +272,7 @@
         "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
     "dependencies": {
-        "@visulima/colorize": "2.1.0",
+        "@visulima/colorize": "2.1.1",
         "@visulima/interactive-manager": "1.0.1"
     },
     "devDependencies": {
@@ -288,10 +288,10 @@
         "@types/node": "catalog:types",
         "@visulima/ansi": "4.1.0",
         "@visulima/error": "6.1.0",
-        "@visulima/fmt": "2.1.0",
+        "@visulima/fmt": "3.0.0",
         "@visulima/inspector": "2.1.0",
         "@visulima/packem": "catalog:dev",
-        "@visulima/redact": "3.1.0",
+        "@visulima/redact": "4.0.0",
         "@visulima/string": "3.1.0",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
@@ -314,7 +314,7 @@
     "peerDependencies": {
         "@opentelemetry/api": "catalog:peer",
         "@sveltejs/kit": ">=2.0",
-        "@visulima/redact": "3.1.0",
+        "@visulima/redact": "4.0.0",
         "elysia": ">=1.0",
         "express": ">=4.0",
         "fastify": ">=4.0",
