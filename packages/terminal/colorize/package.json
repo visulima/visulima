@@ -1,6 +1,6 @@
 {
     "name": "@visulima/colorize",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Terminal and Console string styling done right.",
     "keywords": [
         "256",
@@ -164,7 +164,7 @@
         "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "3.1.0"
+        "@visulima/is-ansi-color-supported": "4.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
