@@ -557,10 +557,17 @@ jobs:
               run: "pnpm vitest run __tests__/native/native-binding.test.ts"
               working-directory: "packages/tooling/vis"
 
-            # @visulima/path and @visulima/error have no @visulima inter-deps, so
-            # they build concurrently. @visulima/fs depends on @visulima/path, so it
-            # stays sequential AFTER the group (the implicit wait-all guarantees path
-            # is built before fs starts).
+            # @visulima/path, @visulima/error and @visulima/yaml have no @visulima
+            # inter-deps, so they build concurrently. @visulima/fs depends on all
+            # three, so it stays sequential AFTER the group (the implicit wait-all
+            # guarantees they are built before fs starts).
+            #
+            # These steps run `pnpm run build` inside each package rather than
+            # through nx, so nothing resolves the dependency graph for us: a new
+            # workspace dependency of fs has to be added here by hand. Missing
+            # @visulima/yaml is what broke this job — fs's `src/types.ts` imports
+            # its option types, so generating fs's declarations needs yaml's
+            # `dist/index.d.ts` to exist.
             - parallel:
                   - name: "Build @visulima/path (secret-scanner dep)"
                     if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
@@ -571,6 +578,11 @@ jobs:
                     if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
                     run: "pnpm --config.verify-deps-before-run=false run build"
                     working-directory: "packages/error-debugging/error"
+
+                  - name: "Build @visulima/yaml (fs dep)"
+                    if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+                    run: "pnpm --config.verify-deps-before-run=false run build"
+                    working-directory: "packages/data-manipulation/yaml"
 
             - name: "Build @visulima/fs (secret-scanner dep)"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
