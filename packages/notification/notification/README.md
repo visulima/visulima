@@ -68,23 +68,23 @@ pnpm add @visulima/notification
 
 ```typescript
 import { send } from "@visulima/notification";
-import { twilioProvider } from "@visulima/notification/providers/twilio";
+import { createTwilioProvider } from "@visulima/notification/providers/twilio";
 
-await send("sms", twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }), { to: "+15555550100", text: "Your code is 123" });
+await send("sms", createTwilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }), { to: "+15555550100", text: "Your code is 123" });
 ```
 
 ### Multi-channel send
 
 ```typescript
 import { createNotification } from "@visulima/notification";
-import { twilioProvider } from "@visulima/notification/providers/twilio";
-import { slackProvider } from "@visulima/notification/providers/slack";
-import { fcmProvider } from "@visulima/notification/providers/fcm";
+import { createTwilioProvider } from "@visulima/notification/providers/twilio";
+import { createSlackProvider } from "@visulima/notification/providers/slack";
+import { createFcmProvider } from "@visulima/notification/providers/fcm";
 
 const notify = createNotification({
-    sms: twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
-    chat: slackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
-    push: fcmProvider({ projectId: "my-app", getAccessToken: async () => getGoogleToken() }),
+    sms: createTwilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
+    chat: createSlackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
+    push: createFcmProvider({ projectId: "my-app", getAccessToken: async () => getGoogleToken() }),
 });
 
 // Each present channel is delivered in parallel; you get one receipt per channel.
@@ -126,7 +126,7 @@ Providers are imported from `@visulima/notification/providers/<name>` so unused 
 | **SMS**      | `twilio`, `vonage`, `plivo`, `messagebird`, `telnyx`, `sns`     |
 | **Push**     | `fcm`, `expo`, `web-push`, `apns`                               |
 | **Chat**     | `slack`, `discord`, `msteams`, `telegram`                       |
-| **In-app**   | `inAppProvider` (memory or unstorage store)                     |
+| **In-app**   | `createInAppProvider` (memory or unstorage store)               |
 | **Webhook**  | `webhook`                                                       |
 | **Email**    | `emailChannel(...)` → wraps a `@visulima/email` `Mail` instance |
 | **Wrappers** | `failover`, `roundrobin`, `opentelemetry`, `mock`               |
@@ -161,11 +161,11 @@ export const myProvider = defineProvider<MyConfig, SmsPayload>((config) => ({
 Wrap several same-channel providers to gain resilience or load balancing:
 
 ```typescript
-import { failoverProvider } from "@visulima/notification/providers/failover";
-import { roundRobinProvider } from "@visulima/notification/providers/roundrobin";
+import { createFailoverProvider } from "@visulima/notification/providers/failover";
+import { createRoundRobinProvider } from "@visulima/notification/providers/roundrobin";
 
-const sms = failoverProvider([twilioProvider({ … }), vonageProvider({ … })]); // try Twilio, fall back to Vonage
-const balanced = roundRobinProvider([plivoProvider({ … }), telnyxProvider({ … })]);
+const sms = createFailoverProvider([createTwilioProvider({ … }), createVonageProvider({ … })]); // try Twilio, fall back to Vonage
+const balanced = createRoundRobinProvider([createPlivoProvider({ … }), createTelnyxProvider({ … })]);
 
 const notify = createNotification({ sms });
 ```
@@ -239,9 +239,9 @@ const queue = new UnstorageQueue(createStorage());
 ## In-app inbox
 
 ```typescript
-import { inAppProvider } from "@visulima/notification/channels/inapp";
+import { createInAppProvider } from "@visulima/notification/channels/inapp";
 
-const inapp = inAppProvider();
+const inapp = createInAppProvider();
 const notify = createNotification({ inapp });
 
 await notify.sendToChannel("inapp", { to: "user-1", title: "Welcome", body: "Thanks for joining" });
@@ -280,6 +280,58 @@ const bus = new NotificationEventBus();
 bus.on("sent", (event) => console.log(event.messageId));
 bus.on("*", (event) => store.append(event));
 ```
+
+## Inbound (two-way channels for bots & AI agents)
+
+Channels are two-way. Each `@visulima/notification/providers/<name>` subpath ships both halves —
+the outbound provider (`create<Name>Provider`) and the inbound receiver (`create<Name>Receiver`), which
+verifies and normalises incoming webhooks (a Slack mention, a Discord slash command, a Telegram
+message, an inbound SMS/WhatsApp) into a single `InboundMessage` you can hand to an AI agent that
+then replies through the same provider. Receivers are framework-agnostic (`handle(request:
+Request) => Promise<Response>`) and edge-safe (Web Crypto only). The `@visulima/notification/inbound`
+barrel holds the shared types, `createInboundRouter` and verification/reply helpers.
+
+```typescript
+import { createSlackReceiver } from "@visulima/notification/providers/slack";
+
+const slack = createSlackReceiver({
+    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    onMessage: async (message) => {
+        if (message.type === "message") {
+            return { text: await runAgent(message.text ?? "") };
+        }
+
+        return undefined; // acknowledge; reply out-of-band via the outbound provider
+    },
+});
+
+// Cloudflare Workers / Deno / Bun / Hono / Next.js route handlers …
+export default { fetch: (request: Request) => slack.handle(request) };
+```
+
+Receivers: `createSlackReceiver` (Events API, slash commands, interactions), `createDiscordReceiver`
+(Ed25519 interactions), `createTelegramReceiver` (bot webhooks), `createTwilioReceiver` (SMS &
+WhatsApp), `createMsTeamsReceiver` (outgoing-webhook HMAC), `createTelnyxReceiver` (SMS, Ed25519),
+`createMessageBirdReceiver` and `createVonageReceiver` (SMS, signed-JWT). `createInboundRouter`
+mounts several behind one fetch handler.
+
+For the full receive → think → reply loop in one call, pass the matching outbound `provider` to
+the receiver and answer with `context.reply(...)` — it maps the inbound message to the right
+outbound payload (recipient, thread, WhatsApp prefix) and sends it:
+
+```typescript
+import { createSlackProvider, createSlackReceiver } from "@visulima/notification/providers/slack";
+
+const slack = createSlackReceiver({
+    signingSecret,
+    provider: createSlackProvider({ token }),
+    onMessage: async (message, context) => {
+        await context.reply(await runAgent(message.text ?? ""));
+    },
+});
+```
+
+See the [inbound docs](./docs/inbound.mdx).
 
 ## Supported Node.js Versions
 
