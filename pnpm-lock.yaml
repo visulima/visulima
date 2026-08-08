@@ -2463,10 +2463,10 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/yaml':
-        specifier: workspace:*
+        specifier: 1.0.0
         version: link:../../data-manipulation/yaml
       comment-parser:
         specifier: catalog:prod
@@ -3516,7 +3516,7 @@ importers:
         version: 26.1.0
       '@visulima/colorize':
         specifier: 2.1.0
-        version: link:../../terminal/colorize
+        version: 2.1.0
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
@@ -3909,7 +3909,7 @@ importers:
         version: link:../../error-debugging/error
       '@visulima/fs':
         specifier: 5.1.0
-        version: link:../../filesystem/fs
+        version: 5.1.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(9871b03cf54d41f5cb3415bdd14c31f3)
@@ -5061,7 +5061,7 @@ importers:
         version: 26.1.0
       '@visulima/colorize':
         specifier: 2.1.0
-        version: link:../../terminal/colorize
+        version: 2.1.0
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
@@ -5228,7 +5228,7 @@ importers:
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/path':
         specifier: 3.1.0
-        version: link:../../filesystem/path
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -5339,7 +5339,7 @@ importers:
         specifier: '>=2.70.2 <3'
         version: 2.70.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.4(@typescript-eslint/types@8.62.1))(vite@8.2.1(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0)))(svelte@5.56.4(@typescript-eslint/types@8.62.1))(typescript@6.0.3)(vite@8.2.1(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../../terminal/colorize
       '@visulima/interactive-manager':
         specifier: 1.0.1
@@ -5397,7 +5397,7 @@ importers:
         specifier: 6.1.0
         version: link:../error
       '@visulima/fmt':
-        specifier: 2.1.0
+        specifier: 3.0.0
         version: link:../../terminal/fmt
       '@visulima/inspector':
         specifier: 2.1.0
@@ -5406,7 +5406,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.99(bcfe0a629d33d403be83cd1be3377417)
       '@visulima/redact':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../data-manipulation/redact
       '@visulima/string':
         specifier: 3.1.0
@@ -5735,7 +5735,7 @@ importers:
         version: 2.0.0-alpha.99(a120fb2c5b573f316a4d9d87a1eed604)
       '@visulima/path':
         specifier: 3.1.0
-        version: link:../../filesystem/path
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6227,13 +6227,13 @@ importers:
         version: 26.1.0
       '@visulima/fs':
         specifier: 5.1.0
-        version: link:../fs
+        version: 5.1.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/path':
         specifier: 3.1.0
-        version: link:../path
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6283,7 +6283,7 @@ importers:
   packages/filesystem/fs:
     dependencies:
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../path
     devDependencies:
       '@anolilab/eslint-config':
@@ -6326,7 +6326,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/yaml':
-        specifier: workspace:*
+        specifier: 1.0.0
         version: link:../../data-manipulation/yaml
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -6621,7 +6621,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/workflow':
-        specifier: 2.0.0
+        specifier: 3.0.0
         version: link:../../workflow/workflow
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -6687,7 +6687,7 @@ importers:
         specifier: catalog:prod
         version: 3.1.0
       '@visulima/pagination':
-        specifier: 6.0.0
+        specifier: 7.0.0
         version: link:../../api/pagination
       file-type:
         specifier: catalog:prod
@@ -6811,16 +6811,16 @@ importers:
         specifier: catalog:dev
         version: 2.5.0
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/humanizer':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../data-manipulation/humanizer
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(0478bbdb7c66d6dcde774c441046aba5)
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -7894,7 +7894,7 @@ importers:
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/path':
         specifier: 3.1.0
-        version: link:../../filesystem/path
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -7989,13 +7989,13 @@ importers:
         specifier: catalog:types
         version: 26.1.0
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../colorize
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/string':
         specifier: 3.1.0
@@ -8076,7 +8076,7 @@ importers:
   packages/terminal/cerebro:
     dependencies:
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../colorize
       '@visulima/tabular':
         specifier: 4.1.0
@@ -8110,7 +8110,7 @@ importers:
         specifier: catalog:types
         version: 26.1.0
       '@visulima/boxen':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../boxen
       '@visulima/command-line-args':
         specifier: 2.0.1
@@ -8125,10 +8125,10 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.99(e55d782119d14ed3577ecce3d1b1ba33)
       '@visulima/pail':
-        specifier: 4.1.0
+        specifier: 4.1.1
         version: link:../../error-debugging/pail
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/string':
         specifier: 3.1.0
@@ -8287,7 +8287,7 @@ importers:
   packages/terminal/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -9105,7 +9105,7 @@ importers:
         version: 26.1.0
       '@visulima/colorize':
         specifier: 2.1.0
-        version: link:../colorize
+        version: 2.1.0
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
@@ -9209,7 +9209,7 @@ importers:
         specifier: 4.1.0
         version: link:../ansi
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../colorize
       '@visulima/error':
         specifier: 6.1.0
@@ -9282,7 +9282,7 @@ importers:
         specifier: catalog:types
         version: 0.26.0
       '@visulima/boxen':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../boxen
       '@visulima/packem':
         specifier: catalog:dev
@@ -9418,7 +9418,7 @@ importers:
         specifier: 4.1.0
         version: link:../ansi
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../colorize
       '@visulima/spinner':
         specifier: 1.0.1
@@ -9461,7 +9461,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.99(6ad71286a7eb1ab4937c2b19b80500c8)
       '@visulima/tui':
-        specifier: 3.0.0
+        specifier: 4.0.0
         version: link:../tui
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -9619,10 +9619,10 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       json5:
         specifier: catalog:prod
@@ -9792,13 +9792,13 @@ importers:
         specifier: 3.0.1
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(e55d782119d14ed3577ecce3d1b1ba33)
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -9905,10 +9905,10 @@ importers:
         specifier: catalog:dev
         version: 1.2.0-beta.12
       '@visulima/humanizer':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../data-manipulation/humanizer
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       nanotar:
         specifier: catalog:node
@@ -10131,10 +10131,10 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       jsonc-parser:
         specifier: catalog:prod
@@ -10252,7 +10252,7 @@ importers:
         specifier: 6.1.0
         version: link:../../error-debugging/error
       '@visulima/secret-scanner':
-        specifier: 1.1.0
+        specifier: 2.0.0
         version: link:../secret-scanner
       '@visulima/source-map':
         specifier: 3.0.1
@@ -10261,13 +10261,13 @@ importers:
         specifier: 4.1.0
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.3
+        specifier: 1.0.4
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 3.0.0
+        specifier: 4.0.0
         version: link:../../terminal/tui
       '@visulima/tui-kit':
-        specifier: 1.0.2
+        specifier: 1.0.3
         version: link:../../terminal/tui-kit
       fb-watchman:
         specifier: '>=2.0.0'
@@ -10385,10 +10385,10 @@ importers:
         specifier: 4.1.0
         version: link:../../terminal/ansi
       '@visulima/cerebro':
-        specifier: 3.0.5
+        specifier: 3.0.6
         version: link:../../terminal/cerebro
       '@visulima/colorize':
-        specifier: 2.1.0
+        specifier: 2.1.1
         version: link:../../terminal/colorize
       '@visulima/find-ai-runner':
         specifier: 1.0.1
@@ -10397,28 +10397,28 @@ importers:
         specifier: 3.0.1
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/humanizer':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../data-manipulation/humanizer
       '@visulima/interactive-manager':
         specifier: 1.0.1
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.11
+        specifier: 5.0.12
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.99(d000fecee8c0979b0bf5429c9a6e433c)
       '@visulima/pail':
-        specifier: 4.1.0
+        specifier: 4.1.1
         version: link:../../error-debugging/pail
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/redact':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../data-manipulation/redact
       '@visulima/spinner':
         specifier: 1.0.1
@@ -10427,10 +10427,10 @@ importers:
         specifier: 3.1.0
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
-        specifier: 3.2.6
+        specifier: 3.2.7
         version: link:../tsconfig
       '@visulima/yaml':
-        specifier: workspace:*
+        specifier: 1.0.0
         version: link:../../data-manipulation/yaml
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -10608,13 +10608,13 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 5.1.0
+        specifier: 6.0.0
         version: link:../../filesystem/fs
       '@visulima/path':
-        specifier: 3.1.0
+        specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 2.0.2
+        specifier: 3.0.0
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -11961,7 +11961,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: ^7.3.5
+      vite: '>=6.4.2'
       wrangler: ^4.107.0
 
   '@cloudflare/vitest-pool-workers@0.19.0':
@@ -19835,6 +19835,11 @@ packages:
     engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
 
+  '@visulima/colorize@2.1.0':
+    resolution: {integrity: sha512-B5dQTVSWoT7Yh53MakCvsIu3UaaukXj6JU+tJ4E7mgZORI0kNksLuOafXmrG5ZUTpezgdMgWiag6E/wOX2fTjA==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+
   '@visulima/css-style-inject@1.0.0-alpha.19':
     resolution: {integrity: sha512-5N/GyXctpHOyJZEbkQA46fWRulYSy6wby3LSmqkd4YZNbexi5RhD7rtdA196XCBjagKTxXX4MH87bfuG6r7t/g==}
     engines: {node: ^22.14.0 || >= 24.10.0}
@@ -19897,12 +19902,38 @@ packages:
       yaml:
         optional: true
 
+  '@visulima/fs@5.1.0':
+    resolution: {integrity: sha512-KJmLA9iJAwx+GOhjLT1kcqBhY/s1uOU8eJrBz+TeyZX0h2p5USYKHlNd1p+VaB4/9ltl1MR4oRuXgY5jLP0vOA==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ini: ^7.0.0
+      json5: ^2.2.3
+      jsonc-parser: ^3.3.1
+      smol-toml: ^1.7.0
+      yaml: '>=2.9.0'
+    peerDependenciesMeta:
+      ini:
+        optional: true
+      json5:
+        optional: true
+      jsonc-parser:
+        optional: true
+      smol-toml:
+        optional: true
+      yaml:
+        optional: true
+
   '@visulima/interactive-manager@1.0.0':
     resolution: {integrity: sha512-sPiEitNQbO81FnuMQJ3d/Anef5vTd9xDwB1o2MJQtI52taG8HXbgtESqVWajnpjBLpgY5n4Gn/Sw1ut8WUN90A==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
   '@visulima/is-ansi-color-supported@3.0.0':
     resolution: {integrity: sha512-uHSrAgO9qrBlP+VQbkXh+/jKHzW2aKZNyrwrBXA0qR/Ro4dsrt3A6oZ9CMB7jVlCmHR/WKLP16o7ch+B1XhItw==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+
+  '@visulima/is-ansi-color-supported@3.1.0':
+    resolution: {integrity: sha512-ofQwEhsWSpTr+4TGB8RubE6xTNq5YAWU2scdmYy+8hwwn2SduMhQSOas0j8N/yy7kjz6TkS4LPAC4cULc3a6RQ==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
   '@visulima/package@4.1.7':
@@ -20078,6 +20109,11 @@ packages:
 
   '@visulima/path@3.0.0':
     resolution: {integrity: sha512-l9vlDaoFrmPlG3OFuC+ZitAT8fMB2AJu1ILNZhgToVQ0HCAFVG8X1pIM/GIBQeDULveW+unIRYR4HOhS+plsCA==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+
+  '@visulima/path@3.1.0':
+    resolution: {integrity: sha512-vCncF9YVP4zf+GKPRx7PTyxtivlUqJP22jWFcFpLhrM8raGX+WckNQWV/uxeOpfkEWN363zBi9TWcc5XQLcagw==}
     engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
 
@@ -45025,6 +45061,10 @@ snapshots:
     dependencies:
       '@visulima/is-ansi-color-supported': 3.0.0
 
+  '@visulima/colorize@2.1.0':
+    dependencies:
+      '@visulima/is-ansi-color-supported': 3.1.0
+
   '@visulima/css-style-inject@1.0.0-alpha.19': {}
 
   '@visulima/find-cache-dir@3.0.0': {}
@@ -45056,9 +45096,21 @@ snapshots:
       smol-toml: 1.7.0
       yaml: 2.9.0
 
+  '@visulima/fs@5.1.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)':
+    dependencies:
+      '@visulima/path': 3.1.0
+    optionalDependencies:
+      ini: 7.0.0
+      json5: 2.2.3
+      jsonc-parser: 3.3.1
+      smol-toml: 1.7.0
+      yaml: 2.9.0
+
   '@visulima/interactive-manager@1.0.0': {}
 
   '@visulima/is-ansi-color-supported@3.0.0': {}
+
+  '@visulima/is-ansi-color-supported@3.1.0': {}
 
   '@visulima/package@4.1.7(@types/node@26.1.0)':
     dependencies:
@@ -45944,6 +45996,8 @@ snapshots:
   '@visulima/path@2.0.5': {}
 
   '@visulima/path@3.0.0': {}
+
+  '@visulima/path@3.1.0': {}
 
   '@visulima/rollup-plugin-css@1.0.0-alpha.60(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)(@csstools/postcss-slow-plugins@3.0.0(postcss@8.5.23))(@tailwindcss/node@4.3.2)(@tailwindcss/oxide@4.3.2)(@visulima/css-style-inject@1.0.0-alpha.19)(cssnano@7.1.9(postcss@8.5.23))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(lightningcss@1.33.0)(postcss-value-parser@4.2.0)(postcss@8.5.23)(rollup@4.62.2)(smol-toml@1.7.0)(yaml@2.9.0)':
     dependencies:
