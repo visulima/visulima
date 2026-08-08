@@ -1,3 +1,23 @@
+## @visulima/vis [3.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%402.0.2...%40visulima%2Fvis%403.0.0) (2026-08-08)
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 2.0.0
+* **@visulima/task-runner:** upgraded to 1.0.4
+* **@visulima/tui:** upgraded to 4.0.0
+* **@visulima/tui-kit:** upgraded to 1.0.3
+* **@visulima/cerebro:** upgraded to 3.0.6
+* **@visulima/colorize:** upgraded to 2.1.1
+* **@visulima/fs:** upgraded to 6.0.0
+* **@visulima/humanizer:** upgraded to 4.0.0
+* **@visulima/package:** upgraded to 5.0.12
+* **@visulima/pail:** upgraded to 4.1.1
+* **@visulima/path:** upgraded to 4.0.0
+* **@visulima/redact:** upgraded to 4.0.0
+* **@visulima/tsconfig:** upgraded to 3.2.7
+* **@visulima/yaml:** upgraded to 1.0.0
+
 ## @visulima/vis [2.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%402.0.1...%40visulima%2Fvis%402.0.2) (2026-08-02)
 
 
