@@ -1,3 +1,12 @@
+## @visulima/pail [4.1.1](https://github.com/visulima/visulima/compare/%40visulima%2Fpail%404.1.0...%40visulima%2Fpail%404.1.1) (2026-08-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.1.1
+* **@visulima/fmt:** upgraded to 3.0.0
+* **@visulima/redact:** upgraded to 4.0.0
+
 ## @visulima/pail [4.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fpail%404.0.2...%40visulima%2Fpail%404.1.0) (2026-08-02)
 
 
