@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
         "ansi",
@@ -139,7 +139,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.1.0",
+        "@visulima/colorize": "2.1.1",
         "@visulima/tabular": "4.1.0",
         "fastest-levenshtein": "catalog:prod"
     },
@@ -152,13 +152,13 @@
         "@bomb.sh/tab": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/boxen": "3.1.0",
+        "@visulima/boxen": "4.0.0",
         "@visulima/command-line-args": "2.0.1",
         "@visulima/error": "6.1.0",
         "@visulima/find-cache-dir": "3.0.1",
         "@visulima/packem": "catalog:dev",
-        "@visulima/pail": "4.1.0",
-        "@visulima/path": "3.1.0",
+        "@visulima/pail": "4.1.1",
+        "@visulima/path": "4.0.0",
         "@visulima/string": "3.1.0",
         "@vitest/coverage-v8": "catalog:test",
         "ci-info": "catalog:dev",
@@ -178,9 +178,9 @@
     },
     "peerDependencies": {
         "@bomb.sh/tab": "catalog:peer",
-        "@visulima/boxen": "3.1.0",
+        "@visulima/boxen": "4.0.0",
         "@visulima/find-cache-dir": "3.0.1",
-        "@visulima/pail": "4.1.0",
+        "@visulima/pail": "4.1.1",
         "github-slugger": "catalog:peer"
     },
     "peerDependenciesMeta": {
