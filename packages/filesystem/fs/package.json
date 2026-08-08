@@ -1,6 +1,6 @@
 {
     "name": "@visulima/fs",
-    "version": "5.1.0",
+    "version": "6.0.0",
     "description": "Human friendly file system utilities for Node.js",
     "keywords": [
         "anolilab",
@@ -169,7 +169,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "3.1.0"
+        "@visulima/path": "4.0.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -185,7 +185,7 @@
         "@types/picomatch": "^4.0.3",
         "@visulima/error": "6.1.0",
         "@visulima/packem": "catalog:dev",
-        "@visulima/yaml": "workspace:*",
+        "@visulima/yaml": "1.0.0",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -215,7 +215,7 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
-        "@visulima/yaml": "^1.0.0",
+        "@visulima/yaml": "1.0.0",
         "ini": "catalog:peer",
         "json5": "catalog:peer",
         "jsonc-parser": "catalog:peer",
