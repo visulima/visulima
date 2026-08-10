@@ -11961,7 +11961,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: ^7.3.5
       wrangler: ^4.107.0
 
   '@cloudflare/vitest-pool-workers@0.19.0':
