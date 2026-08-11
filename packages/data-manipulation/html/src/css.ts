@@ -1,6 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { escapeCss } from "@std/html/unstable-escape-css";
 import type { Properties } from "csstype";
+
+import { escapeCss } from "./std-html";
 
 /**
  * The standard CSS properties type from `csstype`.
