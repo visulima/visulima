@@ -36,6 +36,12 @@ export default defineConfig({
                 /^react-reconciler(\/|$)/,
                 "@visulima/tui",
                 /^@visulima\/tui(\/|$)/,
+                // tui-kit declares react + @visulima/tui as peers. Left external it
+                // resolves its own copy of both from node_modules, so its components
+                // call hooks against a React whose dispatcher the inlined reconciler
+                // never set → "Invalid hook call" the moment a tui-kit component renders.
+                "@visulima/tui-kit",
+                /^@visulima\/tui-kit(\/|$)/,
             ],
         },
         css: {
