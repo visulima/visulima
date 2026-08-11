@@ -1,14 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { withConsole } from "@storybook/addon-console";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { withThemeByClassName } from "@storybook/addon-themes";
-import type { Preview, ReactRenderer, StoryContext } from "@storybook/react";
+import type { Preview, ReactRenderer } from "@storybook/react";
 
+// `@storybook/addon-console` is abandoned at v3 and imports `action`/`configureActions` from
+// `@storybook/addon-actions`, which stopped exporting them once actions moved into core.
 const preview: Preview = {
     decorators: [
-        // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-        (storyFunction, context: StoryContext) => withConsole({})(storyFunction)(context),
-
         withThemeByClassName<ReactRenderer>({
             defaultTheme: "light",
             themes: {

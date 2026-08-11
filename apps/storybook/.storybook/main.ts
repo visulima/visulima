@@ -3,15 +3,9 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
-    addons: [
-        "@storybook/addon-essentials",
-        "@storybook/addon-interactions",
-        "@storybook/addon-a11y",
-        "@storybook/addon-actions",
-        "@storybook/addon-themes",
-        "@storybook/addon-links",
-        "@storybook/addon-docs",
-    ],
+    // essentials, interactions and actions ship inside the `storybook` core package since v9 and
+    // have no v10 release; listing them pulls in v8 builds that import symbols core no longer exports.
+    addons: ["@storybook/addon-a11y", "@storybook/addon-themes", "@storybook/addon-links", "@storybook/addon-docs"],
     docs: {
         autodocs: "tag",
     },

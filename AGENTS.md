@@ -58,9 +58,9 @@ Types: `feat`, `fix`, `perf`, `docs`, `dx`, `refactor`, `test`, `workflow`, `bui
 
 ## Branch Strategy
 
-- **alpha**: Primary development branch — most PRs target this
-- **main**: Stable releases
-- **next/beta**: Pre-release channels
+- **main**: The only long-lived branch and the repo default — PRs target this. The former
+  `alpha` branch no longer exists on the remote; don't branch from or target it.
+- **next/beta**: Pre-release channels, cut on demand
 - Feature branches: `feat/name`, `fix/issue-number`
 
 ## Architecture & Patterns
@@ -77,6 +77,26 @@ Every package follows the same layout:
 - `packem.config.ts` — bundler config (uses `@visulima/packem`)
 
 All packages are ESM (`"type": "module"`), use conditional exports, and have `"sideEffects": false`.
+
+### Nothing in the published output may come from a devDependency
+
+packem fails the build when a package that only lives in `devDependencies` survives into
+`dist` — as a runtime import **or** as an import in the emitted `.d.ts`. A consumer never
+installs devDependencies, so such an import resolves only where the package manager happens
+to hoist it. `failOnWarn` makes this fatal, so it cannot be ignored.
+
+packem inlines external type declarations, so most types-only imports disappear on their own.
+When one survives, pick by what the type actually is:
+
+- **A large shared schema** (`csstype`, `openapi-types`) — declare it in `dependencies`. These
+  ship no runtime code; the entry just makes the published types resolvable.
+- **A one-line helper** — declare the type locally instead of pulling in the whole package.
+- **Not installable at all** (a `jsr:` specifier, e.g. `@std/html` in `@visulima/html`) — it has
+  to stay a devDependency and be bundled. Re-export it through a local module that restates the
+  signatures explicitly; a direct `export { x } from "…"` leaves the unresolvable import in the
+  `.d.ts` even though the implementation is inlined.
+- **Reachable only through dead API** — delete or loosen the type. `@visulima/package` widened a
+  deprecated, runtime-ignored `theme` option to `Record<string, unknown>` and dropped two deps.
 
 ### Nx Tags on project.json
 

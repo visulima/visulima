@@ -86,13 +86,20 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
-        "openapi-types": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "openapi-types": ">=12.1.3"
+    },
+    "peerDependenciesMeta": {
+        "openapi-types": {
+            "optional": true
+        }
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
