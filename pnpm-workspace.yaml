@@ -176,7 +176,7 @@ catalogs:
     '@visulima/fs': 5.0.0
     '@visulima/humanizer': 3.0.0
     '@visulima/inspector': 2.0.0
-    '@visulima/packem': 2.0.0-alpha.99
+    '@visulima/packem': 2.0.0
     '@visulima/path': 3.0.0
     '@visulima/redact': 3.0.0
     '@visulima/string': 3.0.0
@@ -306,15 +306,10 @@ catalogs:
     zeptomatch: ^2.1.0
   docs:
     '@storybook/addon-a11y': 10.4.6
-    '@storybook/addon-actions': ^9.0.8
-    '@storybook/addon-console': 3.0.0
     '@storybook/addon-docs': 10.4.6
-    '@storybook/addon-essentials': ^8.6.14
-    '@storybook/addon-interactions': ^8.6.14
     '@storybook/addon-links': 10.4.6
     '@storybook/addon-themes': 10.4.6
     '@storybook/builder-vite': 10.4.6
-    '@storybook/core-server': ~8.6.14
     '@storybook/react': 10.4.6
     '@storybook/react-vite': 10.4.6
     storybook: 10.4.6
@@ -606,6 +601,7 @@ catalogs:
     nuxt: ^4.5.1
     nx: 23.0.2
     object-inspect: ^1.13.4
+    openapi-types: ^12.1.3
     patch-console: ^2.0.0
     path-to-regexp: 8.4.2
     picocolors: ^1.1.1
