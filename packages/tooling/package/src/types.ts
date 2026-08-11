@@ -20,8 +20,10 @@ export type EnsurePackagesOptions = {
          * @deprecated Not implemented — the readline-based prompt ignores this option and uses
          * fixed styling. It will be removed in a future major release. Kept loosely typed so the
          * published declarations don't depend on `@inquirer/core`, which consumers never install.
+         * `object` rather than a string-keyed record, because an interface-typed theme has no
+         * index signature and so cannot satisfy the record form.
          */
-        theme?: Record<string, unknown>;
+        theme?: object;
         /** Function to transform the boolean value for display */
         transformer?: (value: boolean) => string;
     };
