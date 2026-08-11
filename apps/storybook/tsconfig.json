@@ -4,5 +4,5 @@
         "types": ["node"]
     },
     "include": ["."],
-    "exclude": ["dist", "build", "node_modules", "eslint.config.js"]
+    "exclude": ["dist", "build", "node_modules", "storybook-static", "eslint.config.js"]
 }
