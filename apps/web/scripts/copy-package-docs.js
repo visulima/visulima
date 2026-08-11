@@ -28,7 +28,8 @@ const docExists = (base) =>
 const EXTERNAL_DOCS = [
     {
         repo: "visulima/packem",
-        branches: { default: "alpha" },
+        // packem 2.0.0 shipped from main and the alpha branch was deleted upstream.
+        branches: { default: "main" },
         docsPath: "docs",
         destName: "packem",
     },
