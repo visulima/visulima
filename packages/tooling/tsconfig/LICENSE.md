@@ -116,6 +116,7 @@ Repository: sindresorhus/type-fest
 >    revocation, rescission, cancellation, termination, or any other legal or
 >    equitable action to disrupt the quiet enjoyment of the Work by the public
 >    as contemplated by Affirmer's express Statement of Purpose.
+>
 > 3. Public License Fallback. Should any part of the Waiver for any reason
 >    be judged legally invalid or ineffective under applicable law, then the
 >    Waiver shall be preserved to the maximum extent permitted taking into
@@ -137,6 +138,7 @@ Repository: sindresorhus/type-fest
 >    Rights in the Work or (ii) assert any associated claims and causes of
 >    action with respect to the Work, in either case contrary to Affirmer's
 >    express Statement of Purpose.
+>
 > 4. Limitations and Disclaimers.
 >
 > a. No trademark or patent rights held by Affirmer are waived, abandoned,
