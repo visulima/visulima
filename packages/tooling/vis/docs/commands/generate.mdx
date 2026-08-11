@@ -177,7 +177,7 @@ variables:
 
 `[name].tsx.tera`:
 
-```tera
+```jinja
 {% include "header" %}
 import * as React from "react";
 
@@ -186,7 +186,7 @@ export const {{ name | pascal_case }}: React.FC = () => <div className="{{ style
 
 `[name].test.tsx.tera` (frontmatter `if: withTest` skips the file when `withTest === false`):
 
-```tera
+```jinja
 ---
 if: withTest
 ---
