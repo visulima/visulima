@@ -39,9 +39,7 @@ cerebro only recognises `--no-x` when an option **literally named `no-x`** is de
 Spread `negatable()` (`src/util/negatable-option.ts`) instead of writing the object inline:
 
 ```ts
-options: [
-    ...negatable({ defaultValue: true, description: "Enable caching (use --no-cache to disable)", name: "cache", type: Boolean }),
-]
+options: [...negatable({ defaultValue: true, description: "Enable caching (use --no-cache to disable)", name: "cache", type: Boolean })];
 ```
 
 Omit `defaultValue` when you need a tri-state (`undefined` = "fall back to config") — neither flag present then stays `undefined` instead of collapsing to a boolean.
@@ -65,6 +63,27 @@ A flag that parses but does nothing is worse than one that errors: it is how a C
 ### Ecosystem-update feature
 
 `vis` can auto-update references in **GitHub Actions workflows**, **Docker** images, and **GitLab CI** include/image references, with a breaking-change UI and interactive picker. When extending the updater, keep changes confined to the relevant module under `src/commands/`/`src/inference/` and reuse the existing picker rather than building a new TUI.
+
+### The TUI must close over exactly one React
+
+`rollup.resolveExternals.exclude` in `packem.config.ts` force-**inlines** the whole React
+renderer stack — `react`, `react-reconciler`, `@visulima/tui`, `@visulima/tui-kit`,
+`@visulima/tabular`. This is not a size optimisation: `@visulima/tui` and `@visulima/tui-kit`
+declare `react` as a _peer_, so any one of them left external resolves its own copy from
+`node_modules`. Its components then call hooks against a React whose dispatcher the inlined
+reconciler never set, and the CLI dies on the first render with
+
+```
+Invalid hook call ... more than one copy of React
+Cannot read properties of null (reading 'useContext')
+```
+
+**Adding a dependency that renders React components means adding it to that exclude list**
+(both the bare name and a `/^name(\/|$)/` regex, since subpath imports are separate specifiers).
+`__tests__/packem-react-externals.test.ts` enforces this: it reads each installed manifest and
+fails when a dependency carrying `react` isn't matched. The packages stay in `package.json` so
+their transitive runtime deps (`yoga-layout`, `scheduler`, …) still install — only the inlined
+copies execute.
 
 ### Native addon
 

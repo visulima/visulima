@@ -20,3 +20,9 @@ Each concern is a separate sub-export — agents should import from the narrowes
 - `./error` — `PackageNotFoundError`.
 
 Relies on `@visulima/fs` and `@visulima/path` (implicit Nx deps — both must build before this).
+
+`EnsurePackagesOptions.confirm.theme` is deprecated and ignored — the readline-based prompt
+uses fixed styling. It is typed `Record<string, unknown>` on purpose: its former
+`PartialDeep<Theme>` type put `@inquirer/core` and `@inquirer/type` into the published
+declarations, which no consumer installs. Don't re-narrow it; remove the option instead when a
+major lands.
