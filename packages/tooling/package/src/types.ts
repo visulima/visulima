@@ -1,6 +1,4 @@
 import type { InstallPackageOptions } from "@antfu/install-pkg";
-import type { Theme } from "@inquirer/core";
-import type { PartialDeep } from "@inquirer/type";
 import type { Package as normalizePackage } from "normalize-package-data";
 import type { PackageJson as typeFestPackageJson } from "type-fest";
 
@@ -20,9 +18,10 @@ export type EnsurePackagesOptions = {
         /**
          * Theme configuration for the prompt interface.
          * @deprecated Not implemented — the readline-based prompt ignores this option and uses
-         * fixed styling. It will be removed in a future major release.
+         * fixed styling. It will be removed in a future major release. Kept loosely typed so the
+         * published declarations don't depend on `@inquirer/core`, which consumers never install.
          */
-        theme?: PartialDeep<Theme>;
+        theme?: Record<string, unknown>;
         /** Function to transform the boolean value for display */
         transformer?: (value: boolean) => string;
     };
