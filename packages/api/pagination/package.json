@@ -70,6 +70,9 @@
         "test:watch": "vitest",
         "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
+    "dependencies": {
+        "openapi-types": "catalog:prod"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
@@ -86,7 +89,6 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
-        "openapi-types": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
