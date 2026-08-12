@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-namespace, jsdoc/no-undefined-types, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, no-empty, no-void, react-x/no-context-provider, sonarjs/different-types-comparison, sonarjs/no-async-constructor, sonarjs/no-tab */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-namespace, jsdoc/no-undefined-types, jsdoc/tag-lines, no-empty, no-void, react-x/no-context-provider, sonarjs/different-types-comparison, sonarjs/no-async-constructor */
 import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
@@ -26,6 +26,7 @@ import logUpdate from "./log-update";
 import type { NativeLogUpdate } from "./log-update-native";
 import { createNative } from "./log-update-native";
 import { clearStyledLineCache } from "./measure-text";
+import runExclusiveProbe from "./probe-terminal";
 import reconciler from "./reconciler";
 import { renderToStatic } from "./render-node-to-output";
 import render from "./renderer";
@@ -154,7 +155,7 @@ const shouldClearTerminalForFrame = ({
         return false;
     }
 
-    const hadPreviousFrame = previousOutputHeight > 0;
+    const isHadPreviousFrame = previousOutputHeight > 0;
     const wasFullscreen = previousOutputHeight >= viewportRows;
     const isFullscreen = nextOutputHeight >= viewportRows;
     const wasOverflowing = previousOutputHeight > viewportRows;
@@ -167,18 +168,18 @@ const shouldClearTerminalForFrame = ({
     // so on Windows the cursor arithmetic drifts one row per frame and stale
     // fullscreen frames leak through. Force a full clear for any fullscreen
     // frame on Windows. See vadimdemedes/ink#971.
-    const windowsFullscreenRedraw = isWindows && (isFullscreen || wasFullscreen);
+    const isWindowsFullscreenRedraw = isWindows && (isFullscreen || wasFullscreen);
 
     return (
         // Overflowing frames still need full clear fallback.
         wasOverflowing
-        || (isOverflowing && hadPreviousFrame)
+        || (isOverflowing && isHadPreviousFrame)
         // Clear when shrinking from fullscreen to non-fullscreen output.
         || isLeavingFullscreen
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
         || shouldClearOnUnmount
-        || windowsFullscreenRedraw
+        || isWindowsFullscreenRedraw
     );
 };
 
@@ -237,13 +238,13 @@ export type Options = {
      *
      * Note: Ink intentionally treats alternate-screen teardown output as disposable. It does not preserve or replay teardown-time frames, hook writes, or `console.*` output after restoring the primary screen.
      *
-	Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
-     
-	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-     
-	@default false
-     
-	@see {@link RenderOptions.alternateScreen}
+     * Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
+     *
+     * Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
+     *
+     * @default false
+     *
+     * @see {@link RenderOptions.alternateScreen}
      */
     alternateScreen?: boolean;
 
@@ -253,12 +254,12 @@ export type Options = {
      * When enabled:
      * - Suspense boundaries work correctly with async data
      * - `useTransition` and `useDeferredValue` are fully functional
-	- Updates can be interrupted for higher priority work
-     
-	Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
-     
-	@default false
-	@experimental
+     * - Updates can be interrupted for higher priority work
+     *
+     * Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
+     *
+     * @default false
+     * @experimental
      */
     concurrent?: boolean;
     debug: boolean;
@@ -272,13 +273,13 @@ export type Options = {
      *
      * When non-interactive, Ink disables ANSI erase sequences, cursor manipulation, synchronized output, resize handling, and kitty keyboard auto-detection, writing only the final frame at unmount.
      *
-	Set to `false` to force non-interactive mode or `true` to force interactive mode when the automatic detection doesn't suit your use case.
-     
-	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-     
-	@default true (false if in CI or `stdout.isTTY` is falsy)
-     
-	@see {@link RenderOptions.interactive}
+     * Set to `false` to force non-interactive mode or `true` to force interactive mode when the automatic detection doesn't suit your use case.
+     *
+     * Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
+     *
+     * @default true (false if in CI or `stdout.isTTY` is falsy)
+     *
+     * @see {@link RenderOptions.interactive}
      */
     interactive?: boolean;
     isScreenReaderEnabled?: boolean;
@@ -423,13 +424,13 @@ export default class Ink {
 
         this.alternateScreen = false;
 
-        const unthrottled = options.debug || this.isScreenReaderEnabled;
+        const isUnthrottled = options.debug || this.isScreenReaderEnabled;
         const maxFps = options.maxFps ?? 30;
         const renderThrottleMs = maxFps > 0 ? Math.max(1, Math.ceil(1000 / maxFps)) : 0;
 
-        this.renderThrottleMs = unthrottled ? 0 : renderThrottleMs;
+        this.renderThrottleMs = isUnthrottled ? 0 : renderThrottleMs;
 
-        const baseOnRender = unthrottled
+        const baseOnRender = isUnthrottled
             ? this.onRender
             : (() => {
                 const throttled = throttle(this.onRender, renderThrottleMs, {
@@ -445,7 +446,7 @@ export default class Ink {
                 };
             })();
 
-        if (unthrottled) {
+        if (isUnthrottled) {
             this.throttledOnRender = undefined;
         } else {
             // throttledOnRender already set above
@@ -497,20 +498,20 @@ export default class Ink {
         this.manualCursorPosition = undefined;
         this.renderedCursorPosition = undefined;
         this.renderedCursorRequested = false;
-        this.throttledLog = unthrottled
+        this.throttledLog = isUnthrottled
             ? this.log
             : throttle(
                 (output: string) => {
                     const shouldWrite = this.log.willRender(output);
-                    const sync = this.shouldSync();
+                    const isSync = this.shouldSync();
 
-                    if (sync && shouldWrite) {
+                    if (isSync && shouldWrite) {
                         this.options.stdout.write(bsu);
                     }
 
                     this.log(output);
 
-                    if (sync && shouldWrite) {
+                    if (isSync && shouldWrite) {
                         this.options.stdout.write(esu);
                     }
                 },
@@ -997,9 +998,9 @@ export default class Ink {
         }
 
         if (this.isScreenReaderEnabled) {
-            const sync = this.shouldSync();
+            const isSync = this.shouldSync();
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(bsu);
             }
 
@@ -1013,7 +1014,7 @@ export default class Ink {
             }
 
             if (output === this.lastOutput && !hasStaticOutput) {
-                if (sync) {
+                if (isSync) {
                     this.options.stdout.write(esu);
                 }
 
@@ -1041,7 +1042,7 @@ export default class Ink {
             this.lastOutputToRender = wrappedOutput;
             this.lastOutputHeight = wrappedOutput === "" ? 0 : wrappedOutput.split("\n").length;
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(esu);
             }
 
@@ -1109,9 +1110,9 @@ export default class Ink {
             return;
         }
 
-        const sync = this.shouldSync();
+        const isSync = this.shouldSync();
 
-        if (sync) {
+        if (isSync) {
             this.options.stdout.write(bsu);
         }
 
@@ -1119,7 +1120,7 @@ export default class Ink {
         this.options.stdout.write(data);
         this.restoreLastOutput();
 
-        if (sync) {
+        if (isSync) {
             this.options.stdout.write(esu);
         }
     };
@@ -1142,9 +1143,9 @@ export default class Ink {
             return;
         }
 
-        const sync = this.shouldSync();
+        const isSync = this.shouldSync();
 
-        if (sync) {
+        if (isSync) {
             this.options.stdout.write(bsu);
         }
 
@@ -1152,7 +1153,7 @@ export default class Ink {
         this.options.stderr.write(data);
         this.restoreLastOutput();
 
-        if (sync) {
+        if (isSync) {
             this.options.stdout.write(esu);
         }
     };
@@ -1223,7 +1224,7 @@ export default class Ink {
 
             if (canWriteToStdout) {
                 if (this.kittyProtocolEnabled) {
-                    this.writeBestEffort(this.options.stdout, "\u001B[<u");
+                    this.writeBestEffort(this.options.stdout, "\u{1B}[<u");
                 }
 
                 // Alternate-screen content is disposable by design. We intentionally
@@ -1379,12 +1380,14 @@ export default class Ink {
     }
 
     clear(): void {
-        if (this.interactive && !this.options.debug) {
-            this.log.clear();
-            // Sync lastOutput so that unmount's final onRender
-            // sees it as unchanged and log-update skips it
-            this.log.sync(this.lastOutputToRender || `${this.lastOutput}\n`);
+        if (!this.interactive || this.options.debug) {
+            return;
         }
+
+        this.log.clear();
+        // Sync lastOutput so that unmount's final onRender
+        // sees it as unchanged and log-update skips it
+        this.log.sync(this.lastOutputToRender || `${this.lastOutput}\n`);
     }
 
     patchConsole(): void {
@@ -1417,11 +1420,11 @@ export default class Ink {
     }
 
     private resolveInteractiveOption(interactive: boolean | undefined): boolean {
-        return interactive ?? (!isInCi && Boolean(this.options.stdout.isTTY));
+        return interactive ?? (!isInCi && this.options.stdout.isTTY);
     }
 
     private resolveAlternateScreenOption(alternateScreen: boolean | undefined, interactive: boolean): boolean {
-        return Boolean(alternateScreen) && interactive && Boolean(this.options.stdout.isTTY);
+        return Boolean(alternateScreen) && interactive && this.options.stdout.isTTY;
     }
 
     private shouldSync(): boolean {
@@ -1487,7 +1490,7 @@ export default class Ink {
         // On Windows, fullscreen incremental redraws are broken (immediate scroll
         // drifts the cursor arithmetic), so the clear cannot be skipped even in
         // incremental mode. See vadimdemedes/ink#971.
-        const windowsFullscreenRedraw = isTty && isWindows && (isFullscreen || this.lastOutputHeight >= viewportRows);
+        const isWindowsFullscreenRedraw = isTty && isWindows && (isFullscreen || this.lastOutputHeight >= viewportRows);
 
         const shouldClearTerminal = shouldClearTerminalForFrame({
             isTty,
@@ -1504,7 +1507,7 @@ export default class Ink {
             // static output is still handled and the log-update diffing takes care of it.
             // Exception: Windows fullscreen redraws must perform a real clear because
             // the incremental eraseLines path is broken there (see ink#971).
-            if (this.options.incrementalRendering && !windowsFullscreenRedraw) {
+            if (this.options.incrementalRendering && !isWindowsFullscreenRedraw) {
                 if (hasPrepend) {
                     this.log.clear();
                     this.options.stdout.write(prepend);
@@ -1521,9 +1524,9 @@ export default class Ink {
                 return;
             }
 
-            const sync = this.shouldSync();
+            const isSync = this.shouldSync();
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(bsu);
             }
 
@@ -1547,7 +1550,7 @@ export default class Ink {
             this.lastOutputHeight = outputHeight;
             this.log.sync(outputToRender);
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(esu);
             }
 
@@ -1557,9 +1560,9 @@ export default class Ink {
         // To ensure prepended output (static + backbuffer) is cleanly rendered
         // before main output, clear main output first
         if (hasPrepend) {
-            const sync = this.shouldSync();
+            const isSync = this.shouldSync();
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(bsu);
             }
 
@@ -1567,7 +1570,7 @@ export default class Ink {
             this.options.stdout.write(prepend);
             this.log(outputToRender);
 
-            if (sync) {
+            if (isSync) {
                 this.options.stdout.write(esu);
             }
         } else if (output !== this.lastOutput || this.log.isCursorDirty()) {
@@ -1635,13 +1638,27 @@ export default class Ink {
     }
 
     private confirmKittySupport(flags: KittyFlagName[]): void {
+        // Serialized against the OSC palette query, which reads the same stdin. Concurrent probes
+        // mistake each other's answers for user input: this one's stripper does not know about OSC
+        // replies, so it would unshift the palette's answer into the input pipeline.
+        void runExclusiveProbe(this.options.stdin, async () => this.runKittySupportQuery(flags));
+    }
+
+    private async runKittySupportQuery(flags: KittyFlagName[]): Promise<void> {
         const { stdin, stdout } = this.options;
 
         let responseBuffer: number[] = [];
 
+        let timer: NodeJS.Timeout | undefined;
+        let settle: (() => void) | undefined;
+
         const cleanup = (): void => {
             this.cancelKittyDetection = undefined;
-            clearTimeout(timer);
+
+            if (timer) {
+                clearTimeout(timer);
+            }
+
             stdin.removeListener("data", onData);
 
             // Re-emit any buffered data that wasn't the protocol response,
@@ -1669,17 +1686,31 @@ export default class Ink {
                 if (!this.isUnmounted) {
                     this.enableKittyProtocol(flags);
                 }
+
+                settle?.();
             }
         };
 
         // Attach listener before writing the query so that synchronous
         // or immediate responses are not missed.
         stdin.on("data", onData);
-        const timer = setTimeout(cleanup, 200);
 
-        this.cancelKittyDetection = cleanup;
+        stdout.write("\u{1B}[?u");
 
-        stdout.write("\u001B[?u");
+        // Resolve when the answer lands or the window closes, so the next probe in the queue does
+        // not start while this listener is still attached.
+        return new Promise<void>((resolve) => {
+            settle = resolve;
+            timer = setTimeout(() => {
+                cleanup();
+                resolve();
+            }, 200);
+
+            this.cancelKittyDetection = () => {
+                cleanup();
+                resolve();
+            };
+        });
     }
 
     // Called by the App component to register how input is paused/resumed. Kept
@@ -1779,7 +1810,7 @@ export default class Ink {
         }
 
         if (this.kittyProtocolEnabled && this.kittyFlags) {
-            this.writeBestEffort(this.options.stdout, `\u001B[>${resolveFlags(this.kittyFlags)}u`);
+            this.writeBestEffort(this.options.stdout, `\u{1B}[>${resolveFlags(this.kittyFlags)}u`);
         }
 
         // Force a full redraw instead of diffing against the stale pre-suspension
@@ -1800,7 +1831,7 @@ export default class Ink {
 
     private enableKittyProtocol(flags: KittyFlagName[]): void {
         this.kittyFlags = flags;
-        this.options.stdout.write(`\u001B[>${resolveFlags(flags)}u`);
+        this.options.stdout.write(`\u{1B}[>${resolveFlags(flags)}u`);
         this.kittyProtocolEnabled = true;
     }
 }
