@@ -5,6 +5,9 @@ import preserveAnsi from "./utils/preserve-ansi";
 import readControlSequence from "./utils/read-control-sequence";
 
 const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
+
+/** Shared so the wrap path does not build a segmenter per call. */
+const graphemeSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
 /**
@@ -32,6 +35,61 @@ const getSingleCharWidth = (char: string): number => {
 
     return charWidth;
 };
+
+/**
+ * Splits a token so a run of wide characters can wrap.
+ *
+ * Word wrapping looks for whitespace, and scripts written with fullwidth characters — Chinese,
+ * Japanese, Korean — do not use it. Without this, a CJK paragraph is one unbreakable token and
+ * overflows its container at whatever width it happens to be. UAX #14 allows a break between two
+ * ideographs, so each wide character becomes its own breakable unit and the narrow runs around it
+ * stay whole.
+ *
+ * Segmented by grapheme cluster rather than code point: a ZWJ emoji such as a family sequence is
+ * several wide code points that must never be split from each other.
+ * @param token A whitespace-free token.
+ * @returns The token split into breakable pieces, in order.
+ */
+const splitAtWideCharacters = (token: string): string[] => {
+    const pieces: string[] = [];
+
+    let current = "";
+
+    for (const { segment } of graphemeSegmenter.segment(token)) {
+        if (getStringWidth(segment) > 1) {
+            if (current !== "") {
+                pieces.push(current);
+                current = "";
+            }
+
+            pieces.push(segment);
+
+            continue;
+        }
+
+        current += segment;
+    }
+
+    if (current !== "") {
+        pieces.push(current);
+    }
+
+    return pieces;
+};
+
+/**
+ * Splits input into wrappable tokens: whitespace runs, words, and individual wide characters.
+ * @param input The line to tokenize.
+ * @returns The tokens, in order.
+ */
+const tokenize = (input: string): string[] =>
+    input.split(RE_SPLIT_WHITESPACE).flatMap((token) => {
+        if (token === "" || RE_WHITESPACE_ONLY.test(token)) {
+            return [token];
+        }
+
+        return splitAtWideCharacters(token);
+    });
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences.
@@ -277,7 +335,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
     // Split by space but preserve ANSI escape sequences
     // This is crucial for the test case with "\u001B[1D" between words
-    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
+    const tokens = tokenize(inputToProcess);
     const rows: string[] = [];
 
     let currentLine = "";
@@ -358,7 +416,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         return [];
     }
 
-    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
+    const tokens = tokenize(inputToProcess);
     const rows: string[] = [];
 
     let currentLine = "";

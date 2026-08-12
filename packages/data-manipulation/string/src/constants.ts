@@ -62,9 +62,17 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
  * It is **not** the only ANSI pattern in the package, and that is intentional.
  * `src/utils/strip-vt-control-characters.ts` carries `RE_VT_CONTROL`, whose sole
  * contract is byte-compatibility with `node:util.stripVTControlCharacters`. The
- * two genuinely disagree — `ESC[s`, `ESC[u`, `ESC[~` and generic OSC are stripped
- * by `RE_VT_CONTROL` and left alone here — so neither can be folded into the
- * other without changing observable behaviour somewhere.
+ * two genuinely disagree — `ESC[s`, `ESC[u` and `ESC[~` are stripped by
+ * `RE_VT_CONTROL` and left alone here — so neither can be folded into the other
+ * without changing observable behaviour somewhere. `RE_VT_CONTROL` also mangles a
+ * non-ASCII OSC payload, because its allow-list is ASCII; that is Node's
+ * behaviour and this package reproduces it deliberately, which is another reason
+ * the two must stay apart.
+ *
+ * The third branch matches OSC generally, not just OSC 8. Every OSC the terminal
+ * consumes — a title, a working directory, a notification, a clipboard write —
+ * occupies no columns, and counting its payload as text inflated the measured
+ * width of any string carrying one.
  *
  * Change this pattern for bugs in this package's own ANSI handling (width,
  * slicing, wrapping, `stripAnsi`). Change `RE_VT_CONTROL` only to restore parity
@@ -72,7 +80,7 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
  * pattern, so the question does not need re-opening here.
  */
 // eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
-export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
+export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\)|\][^\u0007\u001B]*(?:\u0007|\u001B\\))/g;
 
 /**
  * Regular expression for valid ANSI color/style sequences with proper open/close pairs

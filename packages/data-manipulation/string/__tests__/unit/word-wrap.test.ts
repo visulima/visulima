@@ -4,6 +4,7 @@ import { bgGreen, black, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { RE_FAST_ANSI } from "../../src/constants";
+import { getStringWidth } from "../../src/get-string-width";
 import { toEqualAnsi } from "../../src/test/vitest";
 import { wordWrap, WrapMode } from "../../src/word-wrap";
 
@@ -777,5 +778,41 @@ describe(wordWrap, () => {
         const wrapped = wordWrap("\u001B[38mword word word word", { width: 9 });
 
         expect(wrapped.split("\n").slice(1).join("")).not.toContain("\u001B[38m");
+    });
+
+    // Regression: word wrapping looks for whitespace, which CJK does not use, so a run of
+    // ideographs was one unbreakable token and overflowed the container at any width.
+    describe("wide characters as break points", () => {
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("breaks a CJK run in %s", (wrapMode) => {
+            expect.assertions(2);
+
+            const wrapped = wordWrap("你好世界你好世界", { width: 8, wrapMode });
+            const lines = wrapped.split("\n");
+
+            expect(lines).toStrictEqual(["你好世界", "你好世界"]);
+            expect(Math.max(...lines.map((line) => getStringWidth(line)))).toBeLessThanOrEqual(8);
+        });
+
+        it("keeps narrow words whole around a wide run", () => {
+            expect.assertions(1);
+
+            expect(wordWrap("hello 世界 bye", { width: 6 }).split("\n")).toStrictEqual(["hello", "世界", "bye"]);
+        });
+
+        it("never splits a ZWJ emoji cluster", () => {
+            expect.assertions(2);
+
+            // The family sequence is several wide code points joined by ZWJ; it is one grapheme.
+            expect(wordWrap("👨‍👩‍👧‍👦 family", { width: 4 })).toBe("👨‍👩‍👧‍👦\nfamily");
+            expect(wordWrap("🏴‍☠️ flag", { width: 4 })).toBe("🏴‍☠️\nflag");
+        });
+
+        it("respects the width for mixed narrow and wide text", () => {
+            expect.assertions(1);
+
+            const wrapped = wordWrap("ab你好cd世界ef", { width: 4 });
+
+            expect(wrapped.split("\n").every((line) => getStringWidth(line) <= 4)).toBe(true);
+        });
     });
 });
