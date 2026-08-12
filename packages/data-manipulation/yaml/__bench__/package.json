@@ -14,7 +14,6 @@
     },
     "devDependencies": {
         "@codspeed/vitest-plugin": "catalog:test",
-        "@types/js-yaml": "4.0.9",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     }
