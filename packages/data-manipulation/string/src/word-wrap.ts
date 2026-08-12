@@ -8,6 +8,9 @@ const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
 
 /** Shared so the wrap path does not build a segmenter per call. */
 const graphemeSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+
+/** Matches the first character that could be wide, or could combine with the one before it. */
+const RE_NEEDS_SEGMENTING = /[^\u0000-\u02FF]/;
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
 /**
@@ -51,6 +54,14 @@ const getSingleCharWidth = (char: string): number => {
  * @returns The token split into breakable pieces, in order.
  */
 const splitAtWideCharacters = (token: string): string[] => {
+    // Segmenting is the expensive part, and most tokens cannot need it: nothing below U+0300 is
+    // wide or combines with what precedes it, so such a token is always one indivisible piece.
+    // Skipping the walk here is what keeps wrapping plain prose as cheap as it was before this
+    // function existed.
+    if (!RE_NEEDS_SEGMENTING.test(token)) {
+        return [token];
+    }
+
     const pieces: string[] = [];
 
     let current = "";
