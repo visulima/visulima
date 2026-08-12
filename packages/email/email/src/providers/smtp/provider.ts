@@ -4,6 +4,7 @@ import type { Socket } from "node:net";
 import { createConnection } from "node:net";
 import { connect } from "node:tls";
 
+import { createTransportDkimSigner } from "../../crypto/dkim-signer";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
@@ -13,7 +14,6 @@ import isPortAvailable from "../../utils/is-port-available";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { signMessageWithDkim } from "./dkim";
 import type { SmtpConfig, SmtpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "smtp";
@@ -610,22 +610,24 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
     };
 
     /**
-     * Signs an email message with DKIM if configured.
-     * @param message The email message to sign.
-     * @returns The signed email message, or the original message if DKIM is not configured.
+     * Signs the serialized MIME message with DKIM if configured.
+     *
+     * A signing failure is fatal rather than a warning: a caller who configured `dkim` expects
+     * signed mail, and quietly sending it unsigned means the message fails DMARC alignment at the
+     * recipient with nothing but a stderr line to explain why.
+     * @param message The serialized MIME message to sign.
+     * @returns The signed message, or the original message if DKIM is not configured.
+     * @throws {EmailError} When DKIM is configured but signing fails.
      */
-    const signWithDkim = (message: string): string => {
+    const signWithDkim = async (message: string): Promise<string> => {
         if (!options.dkim) {
             return message;
         }
 
         try {
-            return signMessageWithDkim(message, options.dkim);
+            return await createTransportDkimSigner(options.dkim).signMimeMessage(message);
         } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error(`[${PROVIDER_NAME}] DKIM signing error:`, error);
-
-            return message;
+            throw new EmailError(PROVIDER_NAME, `DKIM signing failed: ${(error as Error).message}`);
         }
     };
 
@@ -946,7 +948,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
 
                     // Apply DKIM signing if configured and requested
                     if (options.dkim && (emailOptions.useDkim || emailOptions.useDkim === undefined)) {
-                        mimeMessage = signWithDkim(mimeMessage);
+                        mimeMessage = await signWithDkim(mimeMessage);
                     }
 
                     // Send message content and finish with .

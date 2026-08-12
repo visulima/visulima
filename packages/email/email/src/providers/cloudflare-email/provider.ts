@@ -1,3 +1,4 @@
+import { createTransportDkimSigner } from "../../crypto/dkim-signer";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
@@ -73,10 +74,16 @@ const cloudflareEmailProvider: ProviderFactory<CloudflareEmailConfig> = definePr
                 }
 
                 const messageId = generateMessageId();
-                const raw = await buildMimeMessage({
+                let raw = await buildMimeMessage({
                     ...emailOptions,
                     headers: { ...emailOptions.headers ? headersToRecord(emailOptions.headers) : {}, "Message-ID": messageId },
                 });
+
+                // DKIM commits to the serialized message, so it has to run here — after the MIME
+                // is built and before the binding takes it.
+                if (config.dkim) {
+                    raw = await createTransportDkimSigner(config.dkim).signMimeMessage(raw);
+                }
 
                 await config.send(emailOptions.from.email, recipient.email, raw);
 

@@ -1,115 +1,36 @@
 import type { KeyObject } from "node:crypto";
 import { createHash, createPrivateKey, createSign, sign as cryptoSign } from "node:crypto";
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { readFile } from "@visulima/fs";
-
-import type { EmailOptions } from "../types";
-import headersToRecord from "../utils/headers-to-record";
-import type { DkimOptions, EmailSigner } from "./types";
+import { canonicalizeBody, canonicalizeHeader, orderSignedHeaders, parseMimeHeaders, splitMimeMessage } from "./canonicalize";
+import type { DkimOptions } from "./types";
 
 /**
- * Canonicalizes headers according to DKIM specification.
- * @param headers The headers to canonicalize.
- * @param method The canonicalization method ('simple' or 'relaxed').
- * @returns The canonicalized header string.
+ * Headers signed by default when present in the message.
+ *
+ * `Return-Path` and `Bcc` are deliberately absent: MTAs rewrite the former and strip the latter,
+ * so signing either guarantees a verification failure downstream. Everything here is stable from
+ * the moment the message leaves this process.
+ *
+ * Only headers that are actually present get listed in `h=`. The alternative — "over-signing", where
+ * an absent name is listed anyway so that adding one later invalidates the signature — is not done
+ * here, because a signature that a legitimate mailing list breaks is worse for deliverability than
+ * a replay that appends a `Subject` the original never had. Revisit that trade-off deliberately if
+ * this signer ever needs to defend against header-injection replays.
  */
-const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" | "relaxed" = "simple"): string => {
-    const headerLines: string[] = [];
-
-    for (const [key, value] of Object.entries(headers)) {
-        const normalizedKey = method === "relaxed" ? key.toLowerCase().trim() : key;
-        const normalizedValue = method === "relaxed" ? value.replaceAll(/\s+/g, " ").trim() : value;
-
-        headerLines.push(`${normalizedKey}:${normalizedValue}`);
-    }
-
-    return headerLines.join("\r\n");
-};
-
-/**
- * Canonicalizes body according to DKIM specification.
- * @param body The email body to canonicalize.
- * @param method The canonicalization method ('simple' or 'relaxed').
- * @returns The canonicalized body string.
- */
-const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple"): string => {
-    if (method === "simple") {
-        // Simple: Remove empty lines (consecutive CRLFs) at the end, but preserve the CRLF
-        // that terminates the last line of actual content. If no trailing CRLF, add one.
-        // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group
-        const normalized = body.replace(/(\r\n|\r|\n)$/, "\n");
-        // Remove trailing newlines efficiently without regex backtracking
-        let endIndex = normalized.length;
-
-        while (endIndex > 0 && normalized[endIndex - 1] === "\n") {
-            endIndex -= 1;
-        }
-
-        const trimmed = normalized.slice(0, endIndex);
-
-        return trimmed ? `${trimmed}\n` : "\n";
-    }
-
-    // Relaxed: Normalize line endings, reduce whitespace sequences, remove trailing whitespace
-    // per line, remove empty lines at end, but preserve indentation (leading whitespace)
-    let normalized = body.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
-
-    // Process each line: reduce whitespace sequences to single space, remove trailing whitespace
-    const lines = normalized.split("\n");
-    const processedLines = lines.map((line) => {
-        // Reduce sequences of whitespace within a line to a single space
-        // Processing line-by-line limits input size, preventing DoS
-        const normalizedLine = line.replaceAll(/\s+/g, " ");
-
-        // Remove trailing whitespace (but preserve the line itself)
-        // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/slow-regex -- Anchored pattern, safe from backtracking
-        return normalizedLine.replace(/[ \t]+$/, "");
-    });
-
-    normalized = processedLines.join("\n");
-
-    // Remove empty lines at the end, but ensure there's at least one \n at the end
-    // Remove trailing newlines efficiently without regex backtracking
-    let endIndex = normalized.length;
-
-    while (endIndex > 0 && normalized[endIndex - 1] === "\n") {
-        endIndex -= 1;
-    }
-
-    const trimmed = normalized.slice(0, endIndex);
-
-    return trimmed ? `${trimmed}\n` : "\n";
-};
-
-/**
- * Creates DKIM signature header value (without the signature itself).
- * @param headers The email headers.
- * @param options DKIM signing options.
- * @param bodyHash The base64-encoded body hash.
- * @returns The DKIM signature header string (without the signature value).
- */
-const createDkimSignatureHeader = (headers: Record<string, string>, options: DkimOptions, bodyHash: string): string => {
-    const headerCanon = options.headerCanon ?? "simple";
-    const bodyCanon = options.bodyCanon ?? "simple";
-    const headersToSign = Object.keys(headers)
-        .filter((h) => !options.headersToIgnore?.some((ignore) => ignore.toLowerCase() === h.toLowerCase()))
-        .map((h) => h.toLowerCase())
-        .join(":");
-
-    const dkimHeader = [
-        `v=1`,
-        `a=${options.algorithm ?? "rsa-sha256"}`,
-        `c=${headerCanon}/${bodyCanon}`,
-        `d=${options.domainName}`,
-        `s=${options.keySelector}`,
-        `h=${headersToSign}`,
-        `bh=${bodyHash}`,
-        `b=`,
-    ].join("; ");
-
-    return dkimHeader;
-};
+const DEFAULT_SIGNED_HEADERS = new Set([
+    "cc",
+    "content-transfer-encoding",
+    "content-type",
+    "date",
+    "from",
+    "in-reply-to",
+    "message-id",
+    "mime-version",
+    "references",
+    "reply-to",
+    "subject",
+    "to",
+]);
 
 /**
  * Signs the canonicalized DKIM data with the configured algorithm.
@@ -129,83 +50,16 @@ const signDkimData = (data: string, key: KeyObject, algorithm?: "ed25519-sha256"
 };
 
 /**
- * DKIM signer implementation
+ * DKIM signer.
+ *
+ * DKIM signs the message **as transmitted**: the `bh=` tag is a hash of the canonicalized MIME
+ * body, and `h=` covers the headers the recipient's MTA will see. That means signing can only
+ * happen after the message has been serialized, so this deliberately does **not** implement
+ * `EmailSigner` — `MailMessage.sign()` runs at the `EmailOptions` layer, where the body does not
+ * exist yet, and passing a DKIM signer there is a compile error rather than a runtime surprise.
+ * Configure DKIM on a transport that emits raw MIME instead.
  */
-export class DkimSigner implements EmailSigner {
-    /**
-     * Sanitizes a display name for use in quoted email headers per RFC 5322.
-     * Removes/replaces CR, LF, tabs with space, escapes backslashes and quotes,
-     * and strips non-printable control characters.
-     * @param name The display name to sanitize.
-     * @returns The sanitized display name, or empty string if nothing remains.
-     */
-    private static sanitizeDisplayName(name: string): string {
-        // Replace CR, LF, and tabs with a single space
-        let sanitized = name.replaceAll(/[\r\n\t]+/g, " ");
-
-        // Strip non-printable control characters (outside ASCII printable range 0x20-0x7E)
-        // This removes characters below space (0x20) and above tilde (0x7E)
-        // Use character code filtering to avoid regex control character issues
-        // eslint-disable-next-line @typescript-eslint/no-misused-spread
-        sanitized = [...sanitized]
-            .filter((char) => {
-                const code = char.codePointAt(0);
-
-                if (code === undefined) {
-                    return false;
-                }
-
-                // Keep printable ASCII range (0x20-0x7E) and allow extended ASCII/Unicode
-                // Remove only control characters (0x00-0x1F and 0x7F-0x9F)
-                return (code >= 0x20 && code <= 0x7e) || code > 0x9f;
-            })
-            .join("");
-
-        // Escape backslashes and double quotes per RFC 5322
-        const backslashChar = "\\";
-        const quoteChar = "\"";
-
-        sanitized = sanitized.replaceAll(backslashChar, backslashChar + backslashChar).replaceAll(quoteChar, backslashChar + quoteChar);
-
-        // Trim and collapse multiple spaces
-        sanitized = sanitized.trim().replaceAll(/\s+/g, " ");
-
-        return sanitized;
-    }
-
-    /**
-     * Formats an email address for use in email headers.
-     * @param address The email address object to format.
-     * @param address.email The email address string.
-     * @param address.name Optional display name for the email address.
-     * @returns The formatted email address string in RFC 5322 format.
-     */
-    private static formatAddress(address: { email: string; name?: string }): string {
-        if (address.name) {
-            const sanitizedName = DkimSigner.sanitizeDisplayName(address.name);
-
-            // If name is empty after sanitization, return only the email
-            if (!sanitizedName) {
-                return address.email;
-            }
-
-            return `"${sanitizedName}" <${address.email}>`;
-        }
-
-        return address.email;
-    }
-
-    /**
-     * Formats email addresses for headers.
-     * @param addresses The email address(es) to format (single or array).
-     * @returns The formatted email addresses string (comma-separated if multiple).
-     */
-    private static formatAddresses(addresses: { email: string; name?: string } | { email: string; name?: string }[]): string {
-        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
-
-        return addressArray.map((addr) => DkimSigner.formatAddress(addr)).join(", ");
-    }
-
+export class DkimSigner {
     private readonly options: DkimOptions;
 
     /**
@@ -217,67 +71,77 @@ export class DkimSigner implements EmailSigner {
     }
 
     /**
-     * Signs an email message with DKIM.
-     * @param email The email options to sign.
-     * @returns The email options with DKIM signature header added.
-     * @throws {Error} When signing fails (e.g., invalid private key).
+     * Signs a fully-built MIME message and returns it with a `DKIM-Signature` header prepended.
+     * @param message The complete MIME message: headers, a blank line, then the body, CRLF-delimited.
+     * @returns The message with the signature prepended.
+     * @throws {Error} When the message has no header/body separator, or signing fails (e.g. an
+     * unreadable or malformed private key).
+     * @example
+     * ```typescript
+     * const raw = await buildMimeMessage(emailOptions);
+     * const signed = await createDkimSigner({ domainName: "example.com", keySelector: "s1", privateKey }).signMimeMessage(raw);
+     * ```
      */
-    public async sign(email: EmailOptions): Promise<EmailOptions> {
-        let privateKeyContent = this.options.privateKey;
+    public async signMimeMessage(message: string): Promise<string> {
+        const parts = splitMimeMessage(message);
 
-        if (privateKeyContent.startsWith("file://")) {
-            const filePath = privateKeyContent.slice(7);
-
-            privateKeyContent = await readFile(filePath, { encoding: "utf8" });
+        if (parts === undefined) {
+            throw new Error("Failed to create DKIM signature: the message has no CRLFCRLF header/body separator, so it is not a complete MIME message.");
         }
 
-        const headers: Record<string, string> = {
-            ...email.headers ? headersToRecord(email.headers) : {},
-            From: DkimSigner.formatAddress(email.from),
-            To: DkimSigner.formatAddresses(email.to),
-        };
-
-        if (email.cc) {
-            headers.Cc = DkimSigner.formatAddresses(email.cc);
-        }
-
-        if (email.replyTo) {
-            headers["Reply-To"] = DkimSigner.formatAddress(email.replyTo);
-        }
-
-        headers.Subject = email.subject;
-        headers["MIME-Version"] = "1.0";
-
-        const bodyParts: string[] = [];
-
-        if (email.text) {
-            bodyParts.push(email.text);
-        }
-
-        if (email.html) {
-            bodyParts.push(email.html);
-        }
-
-        const body = bodyParts.join("\n\n");
+        const { body: bodyPart, headersPart } = parts;
 
         const headerCanon = this.options.headerCanon ?? "simple";
         const bodyCanon = this.options.bodyCanon ?? "simple";
-        const canonicalHeaders = canonicalizeHeaders(headers, headerCanon);
-        const canonicalBody = canonicalizeBody(body, bodyCanon);
 
-        const bodyHash = createHash("sha256").update(canonicalBody).digest("base64");
+        const bodyHash = createHash("sha256").update(canonicalizeBody(bodyPart, bodyCanon)).digest("base64");
 
-        const dkimSignatureHeader = createDkimSignatureHeader(headers, this.options, bodyHash);
+        const ignored = new Set((this.options.headersToIgnore ?? []).map((header) => header.toLowerCase()));
+        const candidates = parseMimeHeaders(headersPart).filter((header) => {
+            const lower = header.name.toLowerCase();
 
-        const signData = `${canonicalHeaders}\r\nDKIM-Signature: ${dkimSignatureHeader}`;
+            return DEFAULT_SIGNED_HEADERS.has(lower) && !ignored.has(lower);
+        });
+
+        const orderedHeaders = orderSignedHeaders(candidates);
+
+        const dkimTags = [
+            "v=1",
+            `a=${this.options.algorithm ?? "rsa-sha256"}`,
+            `c=${headerCanon}/${bodyCanon}`,
+            `d=${this.options.domainName}`,
+            `s=${this.options.keySelector}`,
+            // Signature time. Verifiers use it to reject a signature older than any `x=` expiry
+            // and to bound replay windows; RFC 6376 §3.5 recommends including it.
+            `t=${Math.floor(Date.now() / 1000).toString()}`,
+            `bh=${bodyHash}`,
+            `h=${orderedHeaders.map((header) => header.name.toLowerCase()).join(":")}`,
+            "b=",
+        ].join("; ");
+
+        // RFC 6376 §3.7: the DKIM-Signature field itself is signed last, with an empty `b=` value
+        // and no trailing CRLF. Verifiers blank out `b=` before hashing, so folding the signature
+        // into the emitted header below does not disturb this.
+        const signData = [...orderedHeaders.map((header) => canonicalizeHeader(header.name, header.value, headerCanon)), canonicalizeHeader("DKIM-Signature", ` ${dkimTags}`, headerCanon)].join(
+            "\r\n",
+        );
 
         let signature: string;
 
         try {
-            const key = createPrivateKey({
-                key: privateKeyContent,
-                passphrase: this.options.passphrase,
-            });
+            let privateKeyContent = this.options.privateKey;
+
+            if (privateKeyContent.startsWith("file://")) {
+                // Imported lazily: `@visulima/fs` reaches for `node:fs/promises` and `node:zlib` at
+                // module-evaluation time, and this signer is reachable from the Cloudflare Email
+                // provider — a runtime with no filesystem, where a static import fails the build.
+                // eslint-disable-next-line import/no-extraneous-dependencies
+                const { readFile } = await import("@visulima/fs");
+
+                privateKeyContent = await readFile(privateKeyContent.slice(7), { encoding: "utf8" });
+            }
+
+            const key = createPrivateKey({ key: privateKeyContent, passphrase: this.options.passphrase });
 
             signature = signDkimData(signData, key, this.options.algorithm);
         } catch (error) {
@@ -285,17 +149,9 @@ export class DkimSigner implements EmailSigner {
             throw new Error(`Failed to create DKIM signature: ${(error as Error).message}`);
         }
 
-        const formattedSignature = signature.match(/.{1,72}/g)?.join("\r\n ") ?? signature;
+        const foldedSignature = signature.match(/.{1,72}/g)?.join("\r\n ") ?? signature;
 
-        const signedHeaders = {
-            ...headers,
-            "DKIM-Signature": `${dkimSignatureHeader}${formattedSignature}`,
-        };
-
-        return {
-            ...email,
-            headers: signedHeaders,
-        };
+        return `DKIM-Signature: ${dkimTags}${foldedSignature}\r\n${message}`;
     }
 }
 
@@ -305,3 +161,14 @@ export class DkimSigner implements EmailSigner {
  * @returns A new DkimSigner instance.
  */
 export const createDkimSigner = (options: DkimOptions): DkimSigner => new DkimSigner(options);
+
+/**
+ * Builds a signer for a transport that writes the MIME message itself.
+ *
+ * Canonicalization defaults to relaxed/relaxed rather than the `simple/simple` of
+ * {@link DkimOptions}: SMTP hops routinely re-wrap whitespace, which `simple` does not survive.
+ * Callers can still override either field.
+ * @param options DKIM signing options from the transport config.
+ * @returns A signer configured for on-the-wire use.
+ */
+export const createTransportDkimSigner = (options: DkimOptions): DkimSigner => new DkimSigner({ bodyCanon: "relaxed", headerCanon: "relaxed", ...options });

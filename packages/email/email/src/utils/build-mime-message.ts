@@ -55,6 +55,19 @@ const hasBuffer = globalThis.Buffer !== undefined;
  */
 const wrapBase64 = (b64: string): string => b64.replaceAll(/.{1,76}/g, "$&\r\n").trimEnd();
 
+/** Any of the three line endings a caller's body might use. */
+const RE_LINE_BREAK = /\r\n|\r|\n/;
+
+/**
+ * Splits body text on any line ending so the caller's CRLF join normalizes it.
+ *
+ * Bodies arrive as ordinary JS strings with bare LFs; every line of the emitted message has to be
+ * CRLF-terminated for the bytes on the wire to match what DKIM signs and what dot-stuffing scans.
+ * @param body The body text.
+ * @returns The body's lines, without their terminators.
+ */
+const splitLines = (body: string): string[] => body.split(RE_LINE_BREAK);
+
 /**
  * Builds a MIME-formatted email message from email options.
  * @param options The email options to build the MIME message from.
@@ -99,12 +112,17 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
 
     // Renders a single body leaf (text or html) as MIME part lines. Non-ASCII
     // bodies must not be labelled 7bit; encode them quoted-printable.
+    //
+    // The body is split on its own line breaks so the CRLF join at the end of this function
+    // reaches inside it. A JS string almost always carries bare LFs, and RFC 5322 §2.1 requires
+    // CRLF on the wire: leaving them raw makes the transmitted bytes differ from what any
+    // line-oriented pass over the message sees — DKIM signs a CRLF body that was never sent, and
+    // SMTP dot-stuffing misses a `\n.` line.
     const renderBodyLeaf = (contentType: string, body: string): string[] => {
-        if (NON_ASCII_REGEX.test(body)) {
-            return [`Content-Type: ${contentType}; charset=UTF-8`, "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(body), ""];
-        }
+        const encoded = NON_ASCII_REGEX.test(body) ? encodeQuotedPrintable(body) : body;
+        const transferEncoding = NON_ASCII_REGEX.test(body) ? "quoted-printable" : "7bit";
 
-        return [`Content-Type: ${contentType}; charset=UTF-8`, "Content-Transfer-Encoding: 7bit", "", body, ""];
+        return [`Content-Type: ${contentType}; charset=UTF-8`, `Content-Transfer-Encoding: ${transferEncoding}`, "", ...splitLines(encoded), ""];
     };
 
     if (options.text && options.html) {

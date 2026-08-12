@@ -13,13 +13,12 @@ import type { TemplateRenderer } from "./types";
  */
 const reactEmail: TemplateRenderer = async (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
     try {
-        const node = template as Parameters<typeof render>[0];
+        // `Options` is a discriminated union on `plainText`, so the two shapes have to be built
+        // separately — an object with `plainText: boolean | undefined` matches neither arm.
+        const component = template as Parameters<typeof render>[0];
         const pretty = options?.pretty as boolean | undefined;
 
-        // `render`'s options are a union discriminated on `plainText`, so a plain `boolean` fits
-        // no branch of it — the flag has to reach the call as a literal, and the non-plain-text
-        // branch omits it rather than passing `false`, which is the same to `render`.
-        return await (options?.plainText === true ? render(node, { plainText: true, pretty }) : render(node, { pretty }));
+        return await (options?.plainText === true ? render(component, { plainText: true, pretty }) : render(component, { pretty }));
     } catch (error) {
         if (error instanceof Error && error.message.includes("Cannot find module")) {
             throw new EmailError("react-email", "@react-email/render is not installed. Please install it: pnpm add @react-email/render", { cause: error });
