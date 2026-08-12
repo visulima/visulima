@@ -34,8 +34,8 @@ describe(preserveAnsi, () => {
             expect.assertions(1);
 
             expect(preserveAnsi(["\u001B[31m\u001B[42mColored", "Text\u001B[0m"])).toMatchInlineSnapshot(`
-                "\u001B[31m\u001B[42mColored\u001B[49m
-                \u001B[42mText\u001B[0m"
+                "\u001B[31m\u001B[42mColored\u001B[39m\u001B[49m
+                \u001B[42m\u001B[31mText\u001B[0m"
             `);
         });
 
@@ -83,7 +83,7 @@ describe(preserveAnsi, () => {
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
                 "\u001B[31mRed\u001B[39m
-                \u001B[39m
+                \u001B[31m\u001B[39m
                 \u001B[31mStill Red\u001B[0m"
             `);
         });
@@ -95,8 +95,8 @@ describe(preserveAnsi, () => {
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
                 "\u001B[31m\u001B[39m
-                \u001B[31m\u001B[42m\u001B[49m
-                \u001B[42m\u001B[0m"
+                \u001B[31m\u001B[42m\u001B[39m\u001B[49m
+                \u001B[42m\u001B[31m\u001B[0m"
             `);
         });
 
@@ -106,8 +106,8 @@ describe(preserveAnsi, () => {
             const input = ["\u001B[31m\u001B[1m\u001B[42mText", "More\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-                "\u001B[31m\u001B[1m\u001B[42mText\u001B[49m
-                \u001B[42mMore\u001B[0m"
+                "\u001B[31m\u001B[1m\u001B[42mText\u001B[22m\u001B[39m\u001B[49m
+                \u001B[42m\u001B[31m\u001B[1mMore\u001B[0m"
             `);
         });
 
@@ -117,8 +117,8 @@ describe(preserveAnsi, () => {
             const input = ["\u001B[31mText\u001B[", "More Text\u001B[0m"];
 
             expect(preserveAnsi(input)).toMatchInlineSnapshot(`
-                "\u001B[31mText\u001B[
-                More Text\u001B[0m"
+                "\u001B[31mText\u001B[\u001B[39m
+                \u001B[31mMore Text\u001B[0m"
             `);
         });
     });

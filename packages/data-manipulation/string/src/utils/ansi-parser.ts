@@ -1,5 +1,5 @@
-import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ANSI_SGR_TERMINATOR, ESCAPES } from "../constants";
-import AnsiStateTracker from "./ansi-state-tracker";
+import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ESCAPES } from "../constants";
+import readControlSequence from "./read-control-sequence";
 import type { AnsiSegment, HyperlinkSegment, ProcessAnsiStringOptions } from "./types";
 
 /**
@@ -8,7 +8,7 @@ import type { AnsiSegment, HyperlinkSegment, ProcessAnsiStringOptions } from "./
  * @param index Current index
  * @returns Object with isInsideEscape and isInsideLinkEscape flags
  */
-export const checkEscapeSequence = (
+const checkEscapeSequence = (
     chars: string[],
     index: number,
 ): {
@@ -32,12 +32,32 @@ export const checkEscapeSequence = (
  * @param string The string to process
  * @param options Processing options
  */
+
+/**
+ * Counts a sequence's length in code points, matching the unit the scan loop advances in.
+ * @param sequence The sequence to measure.
+ * @returns Its length in code points.
+ */
+const codePointLength = (sequence: string): number => {
+    let count = 0;
+
+    for (let index = 0; index < sequence.length; index += 1) {
+        // Surrogate pairs are two UTF-16 units but one code point; skip the low half.
+        if ((sequence.codePointAt(index) as number) > 0xFF_FF) {
+            index += 1;
+        }
+
+        count += 1;
+    }
+
+    return count;
+};
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const processAnsiString = (string: string, options: ProcessAnsiStringOptions = {}): void => {
-    const stateTracker = new AnsiStateTracker();
-
     let currentText = "";
     let isInsideEscape = false;
+    let escapeStart = 0;
     let escapeBuffer = "";
     let currentUrl = "";
     let isInHyperlink = false;
@@ -66,7 +86,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
                 }
 
-                if (options.onSegment?.(segment, stateTracker) === false) {
+                if (options.onSegment?.(segment) === false) {
                     return;
                 }
 
@@ -75,6 +95,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             }
 
             isInsideEscape = true;
+            escapeStart = index;
             escapeBuffer = character;
 
             // Check for hyperlink sequence
@@ -112,7 +133,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     width: 0,
                 };
 
-                if (options.onSegment?.(segment, stateTracker) === false) {
+                if (options.onSegment?.(segment) === false) {
                     return;
                 }
 
@@ -135,7 +156,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                     width: 0,
                 };
 
-                if (options.onSegment?.(segment, stateTracker) === false) {
+                if (options.onSegment?.(segment) === false) {
                     return;
                 }
 
@@ -151,28 +172,38 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
         }
 
         if (isInsideEscape) {
-            if (escapeBuffer !== character) {
-                escapeBuffer += character;
+            // Read the whole sequence rather than waiting for an "m": a non-SGR sequence such as
+            // CSI 1 D has a different final byte, and scanning for "m" swallowed the rest of the
+            // string into the escape buffer.
+            const sequence = readControlSequence(string, escapeStart);
+
+            isInsideEscape = false;
+
+            if (sequence === undefined) {
+                // Truncated at the end of the input: emit the remainder as one incomplete escape
+                // rather than letting the loop re-read its bytes as text.
+                escapeBuffer = chars.slice(escapeStart).join("");
+                // eslint-disable-next-line sonarjs/updated-loop-counter
+                index = chars.length;
+            } else {
+                escapeBuffer = sequence;
+                // Continue after the sequence. `index++` in the loop header moves past the last byte.
+                // eslint-disable-next-line sonarjs/updated-loop-counter
+                index = escapeStart + codePointLength(sequence) - 1;
             }
 
-            if (character === ANSI_SGR_TERMINATOR) {
-                // End of SGR sequence
-                isInsideEscape = false;
-                stateTracker.processEscape(escapeBuffer);
+            const segment: AnsiSegment = {
+                isEscapeSequence: true,
+                isGrapheme: false,
+                text: escapeBuffer,
+                width: 0,
+            };
 
-                const segment: AnsiSegment = {
-                    isEscapeSequence: true,
-                    isGrapheme: false,
-                    text: escapeBuffer,
-                    width: 0,
-                };
-
-                if (options.onSegment?.(segment, stateTracker) === false) {
-                    return;
-                }
-
-                escapeBuffer = "";
+            if (options.onSegment?.(segment) === false) {
+                return;
             }
+
+            escapeBuffer = "";
 
             continue;
         }
@@ -194,7 +225,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
         }
 
-        if (options.onSegment?.(segment, stateTracker) === false) {
+        if (options.onSegment?.(segment) === false) {
             return;
         }
 
@@ -216,7 +247,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             (segment as HyperlinkSegment).hyperlinkUrl = currentUrl;
         }
 
-        options.onSegment?.(segment, stateTracker);
+        options.onSegment?.(segment);
     }
 
     // Handle any incomplete escape sequence
@@ -228,6 +259,8 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             width: 0,
         };
 
-        options.onSegment?.(segment, stateTracker);
+        options.onSegment?.(segment);
     }
 };
+
+export { checkEscapeSequence };

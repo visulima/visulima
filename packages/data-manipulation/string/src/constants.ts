@@ -27,55 +27,10 @@ export const ANSI_SGR_TERMINATOR: string = "m";
 export const ANSI_ESCAPE_LINK: string = `]8;;`;
 
 /**
- * Default foreground color code
- */
-export const END_CODE: number = 39;
-
-/**
  * Regular expression to match zero-width characters, excluding the zero-width joiner used in emoji sequences.
  * Zero-width characters to remove, EXCLUDING zero-width joiner used in emoji
  */
 export const RE_ZERO_WIDTH: RegExp = /[\u200B\uFEFF\u2060-\u2064]/g;
-
-/**
- * RegExp pattern for ANSI escape sequences
- * Compiled once for better performance
- */
-export const RE_ESCAPE_PATTERN: RegExp = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
-
-/**
- * Map of ANSI style codes to their reset codes
- * Used to properly reset styles when needed
- */
-export const ANSI_RESET_CODES: Map<number, number> = Object.freeze(
-    new Map([
-        [0, 0], // Reset all
-        [1, 22], // Bold → Not bold
-        [2, 22], // Dim → Not bold
-        [3, 23], // Italic → Not italic
-        [4, 24], // Underline → Not underline
-        [7, 27], // Inverse → Not inverse
-        [8, 28], // Hidden → Not hidden
-        [9, 29], // Strikethrough → Not strikethrough
-        [30, 39], // Foreground colors → Default foreground
-        [31, 39],
-        [32, 39],
-        [33, 39],
-        [34, 39],
-        [35, 39],
-        [36, 39],
-        [37, 39],
-        [40, 49], // Background colors → Default background
-        [41, 49],
-        [42, 49],
-        [43, 49],
-        [44, 49],
-        [45, 49],
-        [46, 49],
-        [47, 49],
-        [90, 39], // Bright foreground → Default foreground
-    ]),
-);
 
 /** Regular expression to match leading newlines and surrounding whitespace. */
 export const RE_LEADING_NEWLINE: RegExp = /^[ \t]*(?:\r\n|\r|\n)/;
