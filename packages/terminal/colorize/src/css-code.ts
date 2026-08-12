@@ -12,6 +12,10 @@ export const baseStyles: Required<Record<AnsiStyles, string>> = {
     strike: "text-decoration: line-through;",
     strikethrough: "text-decoration: line-through;",
     underline: "text-decoration: underline;",
+    underlineCurly: "text-decoration: underline wavy;",
+    underlineDashed: "text-decoration: underline dashed;",
+    underlineDotted: "text-decoration: underline dotted;",
+    underlineDouble: "text-decoration: underline double;",
     visible: "",
 };
 
