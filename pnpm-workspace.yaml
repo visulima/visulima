@@ -391,13 +391,7 @@ catalogs:
     '@tanstack/eslint-plugin-router': 1.162.0
     '@typescript-eslint/eslint-plugin': 8.67.0
     '@typescript-eslint/parser': 8.67.0
-    # Held at 10.6.0. Under 10.8.1, eslint-plugin-sonarjs (pulled in by the
-    # shared config) resolves a TypeScript that has no CommonJS default export
-    # and dies on load — `Cannot read properties of undefined (reading
-    # 'FunctionType')` — taking every lint:eslint task with it. No sonarjs
-    # release fixes it: 4.2.0 has the identical line. Unpin once sonarjs stops
-    # reaching for `typescript.default`.
-    eslint: 10.6.0
+    eslint: 10.8.1
     eslint-config-next: 16.3.0
     eslint-plugin-jsx-a11y: ^6.10.2
     eslint-plugin-react: ^7.37.5
