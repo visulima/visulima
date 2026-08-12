@@ -378,6 +378,53 @@ describe("terminal-palette", () => {
             clearTerminalPaletteCache(stdout);
         });
 
+        it.each([
+            ["an rgb: device specification", "rgb:ffff/0000/0000"],
+            ["a short rgb: specification", "rgb:f/0/0"],
+            ["a hex triplet", "#ff0000"],
+            ["a long hex triplet", "#ffff00000000"],
+            ["an X11 colour name", "red"],
+        ])("accepts %s as a foreground reply", async (_name, spec) => {
+            expect.assertions(1);
+
+            // Only `rgb:` used to be understood; every other form a terminal answers with was
+            // silently dropped and the palette came back missing that entry.
+            vi.useFakeTimers();
+
+            const stdin = new FakeStdin();
+            const stdout = createStdout();
+
+            const query = queryTerminalPalette(stdin, stdout, 50);
+
+            stdin.send(`${OSC}10;${spec}${BEL}`);
+            // Only one of the nineteen answers arrived, so the batch runs to its timeout.
+            await vi.advanceTimersByTimeAsync(60);
+
+            await expect(query).resolves.toMatchObject({ foreground: "#ff0000" });
+
+            clearTerminalPaletteCache(stdout);
+        });
+
+        it("reads the colour from an indexed reply, which carries two fields before it", async () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+
+            const stdin = new FakeStdin();
+            const stdout = createStdout();
+
+            const query = queryTerminalPalette(stdin, stdout, 50);
+
+            stdin.send(`${OSC}4;7;cornflowerblue${BEL}`);
+            await vi.advanceTimersByTimeAsync(60);
+
+            const result = await query;
+
+            expect(result.colors?.[7]).toBe("#6495ed");
+
+            clearTerminalPaletteCache(stdout);
+        });
+
         it("stops waiting when aborted", async () => {
             expect.assertions(1);
 

@@ -9,6 +9,8 @@
  */
 import type { Writable } from "node:stream";
 
+import { parseColor } from "@visulima/ansi";
+
 import runExclusiveProbe from "./probe-terminal";
 
 const BEL = "\u{7}";
@@ -30,8 +32,6 @@ const EXPECTED_RESPONSES = 3 + PALETTE_SIZE;
  */
 const MAX_RESPONSE_BYTES = 8192;
 
-const RE_OSC_COLOR = /rgb:([\da-f]{2,4})\/([\da-f]{2,4})\/([\da-f]{2,4})/i;
-
 export type TerminalPalette = {
     readonly background: string;
     readonly colors: ReadonlyArray<string>;
@@ -40,27 +40,28 @@ export type TerminalPalette = {
 };
 
 /**
- * Parse an OSC color response like `rgb:RRRR/GGGG/BBBB` to a hex string.
- * Terminal color responses use 16-bit values per channel; we extract the top 8 bits.
- * @param response The response payload to parse.
- * @returns The colour as `#rrggbb`, or null when the payload is not a colour.
+ * Reads the colour out of an OSC 10/11/12 reply payload.
+ *
+ * Terminals disagree about the form they answer in: `rgb:` device specifications are the documented
+ * one, but `#rrggbb` and bare X11 colour names both occur. Delegating to the shared parser means
+ * this does not have to guess which terminal it is talking to — it previously understood `rgb:`
+ * only, and silently dropped every other reply.
+ * @param payload The reply payload, `&lt;ps>;&lt;colour>`.
+ * @returns The colour as `#rrggbb`, or null when the payload names no colour.
  */
-const parseOscColorResponse = (response: string): string | null => {
-    const match = RE_OSC_COLOR.exec(response);
+const parseOscColorResponse = (payload: string): string | null => {
+    // The last field is the colour: OSC 10/11/12 answer `<ps>;<colour>`, but OSC 4 answers
+    // `4;<index>;<colour>`. No colour form contains a semicolon, so the last one always precedes it.
+    const separator = payload.lastIndexOf(";");
+    const color = parseColor(separator === -1 ? payload : payload.slice(separator + 1));
 
-    if (!match) {
+    if (color === undefined) {
         return null;
     }
 
-    const toHex = (value: string): string => {
-        if (value.length <= 2) {
-            return value.padStart(2, "0");
-        }
+    const channel = (value: number): string => value.toString(16).padStart(2, "0");
 
-        return value.slice(0, 2);
-    };
-
-    return `#${toHex(match[1]!)}${toHex(match[2]!)}${toHex(match[3]!)}`;
+    return `#${channel(color.r)}${channel(color.g)}${channel(color.b)}`;
 };
 
 /**
