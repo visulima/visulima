@@ -161,7 +161,11 @@ catalogs:
     '@inquirer/type': 4.0.7
     '@jridgewell/trace-mapping': ^0.3.31
     "@lydell/node-pty": 1.2.0-beta.12
-    '@napi-rs/cli': 3.8.5
+    # Held at 3.7.2. On 3.8.5 the native builds still succeed, but the
+    # artifacts never reach the platform packages, so secret-scanner's tests
+    # fail at load with "Cannot find native binding". Unpin once the 3.8.x
+    # artifact layout has been worked through.
+    '@napi-rs/cli': 3.7.2
     '@netlify/blobs': 10.7.12
     '@nuxt/kit': 4.5.2
     '@opentelemetry/api': 1.9.1
@@ -387,7 +391,13 @@ catalogs:
     '@tanstack/eslint-plugin-router': 1.162.0
     '@typescript-eslint/eslint-plugin': 8.67.0
     '@typescript-eslint/parser': 8.67.0
-    eslint: 10.8.1
+    # Held at 10.6.0. Under 10.8.1, eslint-plugin-sonarjs (pulled in by the
+    # shared config) resolves a TypeScript that has no CommonJS default export
+    # and dies on load — `Cannot read properties of undefined (reading
+    # 'FunctionType')` — taking every lint:eslint task with it. No sonarjs
+    # release fixes it: 4.2.0 has the identical line. Unpin once sonarjs stops
+    # reaching for `typescript.default`.
+    eslint: 10.6.0
     eslint-config-next: 16.3.0
     eslint-plugin-jsx-a11y: ^6.10.2
     eslint-plugin-react: ^7.37.5
