@@ -74,13 +74,22 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
  * occupies no columns, and counting its payload as text inflated the measured
  * width of any string carrying one.
  *
+ * Its payload is bounded, like the OSC 8 branch beside it. The bound is not what
+ * makes it safe — the class and the terminator are disjoint, so the quantifier
+ * has nothing to backtrack into, and an unbounded version measured linear and
+ * sub-millisecond over 320 KB of adversarial input. It is here because a static
+ * scanner reads `[^x]*` before a required terminator as polynomial regardless,
+ * and because an unbounded quantifier would contradict the note above. A payload
+ * past the bound falls back to being treated as text, which is exactly what
+ * happened before this branch existed.
+ *
  * Change this pattern for bugs in this package's own ANSI handling (width,
  * slicing, wrapping, `stripAnsi`). Change `RE_VT_CONTROL` only to restore parity
  * with `node:util`. That file also records the ReDoS measurements for its
  * pattern, so the question does not need re-opening here.
  */
 // eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
-export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\)|\][^\u0007\u001B]*(?:\u0007|\u001B\\))/g;
+export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\)|\][^\u0007\u001B]{0,1000}(?:\u0007|\u001B\\))/g;
 
 /**
  * Regular expression for valid ANSI color/style sequences with proper open/close pairs
