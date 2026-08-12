@@ -546,7 +546,14 @@ catalogs:
     comment-parser: 1.4.8
     commitizen: ^4.3.2
     compression: ^1.8.1
-    compromise: ^14.16.0
+    # Held at 14.15.x. 14.16.0 retokenises phone numbers, which changes what
+    # @visulima/redact masks: it now covers `+1 (555) 123-4567` as one span
+    # (an improvement), but leaves the `+` of `+1-234-567-8900` outside the
+    # mask, and a bare year that used to be masked as a date no longer is.
+    # Changing what a PII redactor redacts is not something a dependency
+    # refresh should decide — unpin once redact's expectations have been
+    # reviewed and the leading `+` is folded back into the phone span.
+    compromise: ~14.15.1
     consola: ^3.4.2
     copy-file: ^11.1.0
     core-js: 3.50.0
