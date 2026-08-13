@@ -284,8 +284,19 @@ jobs:
                   tarball="actionlint_${version}_linux_amd64.tar.gz"
                   checksums="actionlint_${version}_checksums.txt"
 
-                  curl --fail --silent --show-error --location --output "$tarball" "${base}/${tarball}"
-                  curl --fail --silent --show-error --location --output "$checksums" "${base}/${checksums}"
+                  # A single-shot fetch makes this job fail whenever the release CDN
+                  # hiccups; it has died on both `curl: (56)` and 503. --retry alone
+                  # skips transport-level errors, so --retry-all-errors is needed to
+                  # cover the connection-died case.
+                  fetch() {
+                      curl --fail --silent --show-error --location \
+                          --retry 5 --retry-delay 2 --retry-all-errors \
+                          --connect-timeout 10 --max-time 120 \
+                          --output "$1" "$2"
+                  }
+
+                  fetch "$tarball" "${base}/${tarball}"
+                  fetch "$checksums" "${base}/${checksums}"
 
                   grep " ${tarball}\$" "$checksums" | sha256sum --check --status
 

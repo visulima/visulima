@@ -150,6 +150,15 @@ jobs:
               if: "${{ steps.native-artifacts.outcome == 'success' }}"
               shell: "bash"
               run: |
+                  # `if_no_artifact_found: ignore` makes the download step succeed while
+                  # creating nothing, so outcome == 'success' is not evidence that any
+                  # prebuild arrived — a PR that touches no native code reaches here with
+                  # no artifacts directory at all, and `find` then kills the job.
+                  if [ ! -d artifacts ]; then
+                      echo "No native prebuilds for this PR; nothing to distribute."
+                      exit 0
+                  fi
+
                   # task-runner: move matching .node files and distribute to npm packages
                   find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
                   cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
