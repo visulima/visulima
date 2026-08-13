@@ -86,6 +86,14 @@ auditConfig:
     # untrusted images in this repo. Re-check when image-size publishes a fix.
     - GHSA-w3rx-r6r6-pgpr
     - GHSA-5p2g-fcmc-qvqq
+    # extract-zip symlink path traversal. The advisory names 2.0.2 as the fix
+    # but no such release exists — 2.0.1 is the latest published version — so
+    # neither an upgrade nor an override can resolve it. Every path is
+    # dev-only tooling (apps/web > @netlify/vite-plugin-tanstack-start, and
+    # inspector > webdriverio > @puppeteer/browsers), each unpacking archives
+    # it fetched itself, so no untrusted zip reaches it. Re-check when
+    # extract-zip publishes a patched release.
+    - GHSA-jmr9-qjv8-65gv
 
 autoInstallPeers: true
 
