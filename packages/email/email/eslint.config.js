@@ -31,6 +31,9 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-return": "off",
+            // `mime` is a hard dependency here (see AGENTS.md): the attachment helpers need its
+            // full type database, which the suggested `mrmime` does not carry.
+            "e18e/ban-dependencies": ["error", { allowed: ["mime"] }],
         },
     },
     {
