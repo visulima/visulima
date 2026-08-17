@@ -5702,8 +5702,8 @@ importers:
         specifier: catalog:dev
         version: 2.0.0(30fd1da60f85e8a2fbddd44c4d1957c5)
       '@visulima/path':
-        specifier: 3.1.0
-        version: 3.1.0
+        specifier: 4.0.0
+        version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
@@ -6652,7 +6652,7 @@ importers:
         specifier: catalog:prod
         version: 3.1.0
       '@visulima/pagination':
-        specifier: 7.0.0
+        specifier: 7.0.1
         version: link:../../api/pagination
       file-type:
         specifier: catalog:prod
@@ -10350,7 +10350,7 @@ importers:
         specifier: 2.1.1
         version: link:../../terminal/colorize
       '@visulima/find-ai-runner':
-        specifier: 1.0.1
+        specifier: 1.0.2
         version: link:../find-ai-runner
       '@visulima/find-cache-dir':
         specifier: 3.0.1
@@ -10365,7 +10365,7 @@ importers:
         specifier: 1.0.1
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.12
+        specifier: 5.0.13
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
@@ -10573,7 +10573,7 @@ importers:
         specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../vis
       zod:
         specifier: catalog:utils
