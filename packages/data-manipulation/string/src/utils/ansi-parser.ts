@@ -65,6 +65,18 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for character-by-character ANSI parsing
     const chars = [...string];
 
+    // The loop counts in code points; `readControlSequence` indexes the raw string in UTF-16 units.
+    // A single astral character ahead of an escape puts the two out of step, the sequence reads as
+    // truncated, and everything after it collapses into one zero-width escape segment — which then
+    // drops out of width accounting in the wrapping paths. Map each code-point index to its UTF-16
+    // offset once, so every jump the loop makes stays translatable.
+    const unitOffsets = new Array<number>(chars.length);
+
+    for (let cursor = 0, units = 0; cursor < chars.length; cursor += 1) {
+        unitOffsets[cursor] = units;
+        units += (chars[cursor] as string).length;
+    }
+
     // eslint-disable-next-line no-plusplus
     for (let index = 0; index < chars.length; index++) {
         const character = chars[index] as string;
@@ -175,7 +187,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             // Read the whole sequence rather than waiting for an "m": a non-SGR sequence such as
             // CSI 1 D has a different final byte, and scanning for "m" swallowed the rest of the
             // string into the escape buffer.
-            const sequence = readControlSequence(string, escapeStart);
+            const sequence = readControlSequence(string, unitOffsets[escapeStart] as number);
 
             isInsideEscape = false;
 
