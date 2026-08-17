@@ -34,6 +34,20 @@ export const asId = (value: unknown): string | undefined => {
 };
 
 /**
+ * Parses a provider-supplied timestamp, falling back to now when it is missing or malformed.
+ *
+ * `new Date("not a date")` produces an `Invalid Date` that passes silently through assignment and
+ * only throws once a consumer calls `toISOString()` on it — far from the payload that caused it.
+ * @param value The timestamp string, if the payload carried one.
+ * @returns A valid {@link Date}.
+ */
+export const asDate = (value: string | undefined): Date => {
+    const parsed = value === undefined ? Number.NaN : Date.parse(value);
+
+    return Number.isNaN(parsed) ? new Date() : new Date(parsed);
+};
+
+/**
  * Reads a web-standard {@link Headers} object into a plain, case-insensitive
  * {@link WebhookHeaders} map so the existing webhook verifiers can consume it.
  * @param headers The request headers.

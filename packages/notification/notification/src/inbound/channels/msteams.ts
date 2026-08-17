@@ -5,7 +5,7 @@ import { hmacBase64, timingSafeEqual } from "../../webhooks/crypto";
 import { getHeader, tryParseObject } from "../../webhooks/types";
 import { chatReply } from "../reply";
 import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
-import { asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
+import { asDate, asRawResponse, asReply, asString, headersToRecord, jsonResponse, noContent, rejectionResponse } from "../utils";
 
 const AUTH_HEADER = "Authorization";
 const HMAC_PREFIX = "HMAC ";
@@ -37,7 +37,7 @@ const parseTeams = (body: string): InboundMessage | undefined => {
         raw: activity,
         text: asString(activity.text),
         threadId: asString(conversation?.id),
-        timestamp: timestamp === undefined ? new Date() : new Date(timestamp),
+        timestamp: asDate(timestamp),
         type: "message",
     };
 };

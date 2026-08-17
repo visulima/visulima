@@ -19,6 +19,26 @@ const PONG = 1;
 const CHANNEL_MESSAGE_WITH_SOURCE = 4;
 const DEFERRED_CHANNEL_MESSAGE = 5;
 
+/** Comfortably inside Discord's three-second initial-response window. */
+const DEFAULT_DEFER_AFTER_MS = 2000;
+
+/** Sentinel resolved by {@link deferAfter}; a unique object cannot collide with a handler result. */
+const DEFER = Symbol("defer");
+
+/**
+ * Resolves to {@link DEFER} once the deadline passes.
+ * @param milliseconds How long to wait.
+ * @returns A promise resolving to the defer sentinel.
+ */
+const deferAfter = async (milliseconds: number): Promise<typeof DEFER> =>
+    new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(DEFER), milliseconds);
+
+        // Node keeps the process alive for a pending timer; nothing waits on this one once the
+        // handler wins the race.
+        (timer as unknown as { unref?: () => void }).unref?.();
+    });
+
 /**
  * Extracts the invoking user from a Discord interaction, which lives under `member.user`
  * inside a guild and `user` in a DM.
@@ -77,6 +97,16 @@ const parseDiscord = (payload: Record<string, unknown>): InboundMessage | undefi
  */
 export interface DiscordReceiverOptions extends ReceiverOptions {
     /**
+     * How long the handler may run before the interaction is deferred, in milliseconds.
+     *
+     * Discord discards an interaction whose endpoint does not answer within three seconds, so a
+     * handler that outruns this deadline gets a `DEFERRED_CHANNEL_MESSAGE` sent on its behalf and
+     * keeps running; its eventual reply has to go out through the Discord API (or `provider`).
+     * @default 2000
+     */
+    deferAfterMs?: number;
+
+    /**
      * The outbound Discord chat provider used by `context.reply()`, which posts a message to
      * the originating channel (use this instead of the deferred HTTP response). Optional.
      */
@@ -130,7 +160,20 @@ export const createDiscordReceiver = (options: DiscordReceiverOptions): Receiver
                 return noContent();
             }
 
-            const result = await options.onMessage(message, { body, headers, reply: chatReply("discord", message, options.provider), request });
+            // Discord drops an interaction that is not answered within three seconds. Race the
+            // handler against a shorter deadline so slow work defers instead of timing out; the
+            // handler keeps running and follows up through the Discord API.
+            const handled = Promise.resolve(options.onMessage(message, { body, headers, reply: chatReply("discord", message, options.provider), request }));
+            const result = await Promise.race([handled, deferAfter(options.deferAfterMs ?? DEFAULT_DEFER_AFTER_MS)]);
+
+            if (result === DEFER) {
+                // Nothing awaits the handler now, so its rejection would surface as an unhandled
+                // one. The request itself is already answered.
+                handled.catch(() => undefined);
+
+                return jsonResponse({ type: DEFERRED_CHANNEL_MESSAGE });
+            }
+
             const raw = asRawResponse(result);
 
             if (raw !== undefined) {

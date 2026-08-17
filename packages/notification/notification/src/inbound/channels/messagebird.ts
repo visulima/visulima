@@ -4,7 +4,7 @@ import { getHeader, tryParseObject } from "../../webhooks/types";
 import { isJwtTimeValid, sha256Hex, verifyHs256Jwt } from "../jwt";
 import { smsReply } from "../reply";
 import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
-import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
+import { asDate, asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "messagebird-signature-jwt";
 
@@ -18,8 +18,11 @@ const parseMessageBird = (body: string): InboundMessage | undefined => {
     const payload = tryParseObject(body);
     const originator = asString(payload?.originator);
     const text = asString(payload?.body);
+    const id = asString(payload?.id);
 
-    if (payload === undefined || originator === undefined) {
+    // A missing id used to become `""`, which collides with every other id-less message once a
+    // consumer deduplicates, persists or correlates on it. Reject the payload instead.
+    if (payload === undefined || originator === undefined || id === undefined) {
         return undefined;
     }
 
@@ -29,12 +32,12 @@ const parseMessageBird = (body: string): InboundMessage | undefined => {
         channel: "sms",
         conversationId: asString(payload.recipient),
         from: { id: originator },
-        id: asString(payload.id) ?? "",
+        id,
         metadata: { direction: payload.direction },
         provider: "messagebird",
         raw: payload,
         text,
-        timestamp: createdAt === undefined ? new Date() : new Date(createdAt),
+        timestamp: asDate(createdAt),
         type: "message",
     };
 };

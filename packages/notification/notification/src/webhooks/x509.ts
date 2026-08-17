@@ -50,16 +50,32 @@ const readTlv = (bytes: Uint8Array, offset: number): Tlv => {
     if (lengthByte < 0x80) {
         const valueOffset = offset + 2;
 
+        // Same bounds check as the long form below. Without it a truncated element returns an `end`
+        // past the buffer, and the clamped `subarray` copy in `pemCertificateToSpki` silently pads
+        // the SPKI with trailing zero bytes instead of failing.
+        if (valueOffset + lengthByte > bytes.length) {
+            throw new RangeError("truncated DER");
+        }
+
         return { end: valueOffset + lengthByte, length: lengthByte, tag, valueOffset };
     }
 
     // eslint-disable-next-line no-bitwise -- DER long-form length is defined bitwise
     const byteCount = lengthByte & 0x7f;
+
+    // `byteCount === 0` is BER's indefinite-length form, which DER forbids. Beyond four bytes the
+    // length exceeds anything a certificate can hold, and accumulating it would only risk losing
+    // precision on a value that must fail the bounds check anyway.
+    if (byteCount === 0 || byteCount > 4) {
+        throw new RangeError("unsupported DER length");
+    }
+
     let length = 0;
 
     for (let index = 0; index < byteCount; index += 1) {
-        // eslint-disable-next-line no-bitwise -- assembling a big-endian length
-        length = (length << 8) | (bytes[offset + 2 + index] ?? 0);
+        // Arithmetic rather than `<<`: a 32-bit shift turns a large length negative, which would
+        // pass the bounds check below and yield `end < valueOffset`.
+        length = length * 256 + (bytes[offset + 2 + index] ?? 0);
     }
 
     const valueOffset = offset + 2 + byteCount;

@@ -5,7 +5,7 @@ import { getHeader, tryParseObject } from "../../webhooks/types";
 import { verifyEd25519Base64 } from "../ed25519";
 import { smsReply } from "../reply";
 import type { InboundAttachment, InboundMessage, Receiver, ReceiverOptions } from "../types";
-import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
+import { asDate, asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const SIGNATURE_HEADER = "telnyx-signature-ed25519";
 const TIMESTAMP_HEADER = "telnyx-timestamp";
@@ -22,8 +22,10 @@ const parseMedia = (payload: Record<string, unknown>): InboundAttachment[] | und
         return undefined;
     }
 
-    return media.map((item: Record<string, unknown>) => {
-        return { contentType: asString(item.content_type), url: asString(item.url) };
+    return media.map((item) => {
+        const entry = item as Record<string, unknown>;
+
+        return { contentType: asString(entry.content_type), url: asString(entry.url) };
     });
 };
 
@@ -56,7 +58,7 @@ const parseTelnyx = (body: string): InboundMessage | undefined => {
         provider: "telnyx",
         raw: envelope,
         text: asString(payload.text),
-        timestamp: receivedAt === undefined ? new Date() : new Date(receivedAt),
+        timestamp: asDate(receivedAt),
         type: "message",
     };
 };

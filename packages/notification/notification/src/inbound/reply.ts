@@ -39,10 +39,10 @@ export const chatReply = (provider: string, message: InboundMessage, outbound: P
     };
 
 /**
- * Creates the reply sender for the Twilio channel, mapping the inbound message and reply into
- * an {@link SmsPayload} sent through `outbound`. The reply is addressed back to the sender from
- * the receiving number, re-applying the `whatsapp:` prefix for WhatsApp. The returned function
- * rejects when `outbound` is absent.
+ * Creates the reply sender for an SMS channel (Twilio, Telnyx, Vonage, MessageBird), mapping the
+ * inbound message and reply into an {@link SmsPayload} sent through `outbound`. The reply is
+ * addressed back to the sender from the receiving number, re-applying the `whatsapp:` prefix for
+ * WhatsApp. The returned function rejects when `outbound` is absent.
  * @param message The inbound message being replied to.
  * @param outbound The matching outbound SMS provider, or `undefined`.
  * @returns A reply sender bound to `message`.
@@ -50,8 +50,10 @@ export const chatReply = (provider: string, message: InboundMessage, outbound: P
 export const smsReply = (message: InboundMessage, outbound: Provider<unknown, SmsPayload> | undefined): InboundReplyFunction =>
     async (input: InboundReplyInput): Promise<Result<NotificationResult>> => {
         if (outbound === undefined) {
-            throw new NotificationError("twilio-inbound", "No `provider` configured to send replies", {
-                hint: "Pass `provider` to the twilio inbound receiver to enable context.reply()",
+            // Named from the message rather than a hardcoded "twilio": four receivers share this
+            // sender, and a Telnyx handler pointed at the Twilio docs is a wrong answer.
+            throw new NotificationError(`${message.provider}-inbound`, "No `provider` configured to send replies", {
+                hint: `Pass \`provider\` to the ${message.provider} inbound receiver to enable context.reply()`,
             });
         }
 
