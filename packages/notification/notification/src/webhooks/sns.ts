@@ -41,8 +41,29 @@ const SIGNABLE_SUBSCRIPTION = ["Message", "MessageId", "SubscribeURL", "Timestam
 /**
  * Per-URL cache of extracted signing public keys, so repeated deliveries from the same topic do
  * not re-fetch and re-parse the certificate.
+ *
+ * Bounded: {@link isValidCertUrl} pins the host, but the path is whatever the caller sent, so an
+ * unbounded map would grow one entry per distinct `.pem` path a forged delivery names. Real
+ * deployments see a handful of signing certificates.
  */
 const spkiCache = new Map<string, Bytes>();
+
+/** Maximum number of cached signing keys before the oldest is evicted. */
+const SPKI_CACHE_LIMIT = 64;
+
+/** How long the certificate fetch may block the webhook request path. */
+const CERT_FETCH_TIMEOUT_MS = 5000;
+
+/**
+ * How stale a `Timestamp` may be before the message is rejected.
+ *
+ * Deliberately far wider than the shared five-minute window the Slack and Telnyx verifiers use:
+ * an SNS `Timestamp` records when the message was *published* and does not change across
+ * redeliveries, so a tight window would drop legitimate retries. An hour still ends the
+ * indefinite replay that an unchecked timestamp allows — the signature itself stays valid for
+ * the lifetime of the signing certificate.
+ */
+const MAX_TIMESTAMP_AGE_MS = 60 * 60 * 1000;
 
 /**
  * Safely parses an SNS message envelope.
@@ -109,7 +130,9 @@ const loadSpki = async (url: string): Promise<Bytes | undefined> => {
         return cached;
     }
 
-    const response = await globalThis.fetch(url);
+    // This runs on the webhook request path; without a timeout an unreachable certificate host
+    // holds the handler open until the platform's own (much longer) default fires.
+    const response = await globalThis.fetch(url, { signal: AbortSignal.timeout(CERT_FETCH_TIMEOUT_MS) });
 
     if (!response.ok) {
         return undefined;
@@ -118,6 +141,15 @@ const loadSpki = async (url: string): Promise<Bytes | undefined> => {
     const spki = pemCertificateToSpki(await response.text());
 
     if (spki !== undefined) {
+        if (spkiCache.size >= SPKI_CACHE_LIMIT) {
+            // A Map iterates in insertion order, so the first key is the oldest entry.
+            const oldest = spkiCache.keys().next().value;
+
+            if (oldest !== undefined) {
+                spkiCache.delete(oldest);
+            }
+        }
+
         spkiCache.set(url, spki);
     }
 
@@ -128,8 +160,8 @@ const loadSpki = async (url: string): Promise<Bytes | undefined> => {
  * Verifies an AWS SNS message signature (SignatureVersion 1 = RSA-SHA1, 2 = RSA-SHA256) against
  * the certificate at its `SigningCertURL`. Validates the certificate host, rebuilds the
  * canonical string-to-sign, fetches (and caches) the signing certificate, and checks the RSA
- * signature with Web Crypto. Returns `false` on any malformed input, disallowed host, fetch
- * failure or signature mismatch. Edge-safe — `fetch` + Web Crypto only.
+ * signature with Web Crypto. Returns `false` on any malformed input, disallowed host, stale
+ * `Timestamp`, fetch failure or signature mismatch. Edge-safe — `fetch` + Web Crypto only.
  * @param message The parsed SNS envelope.
  * @returns `true` when the signature is valid.
  */
@@ -142,6 +174,14 @@ export const verifySnsMessage = async (message: SnsMessage): Promise<boolean> =>
     }
 
     if (!isValidCertUrl(url)) {
+        return false;
+    }
+
+    // `Timestamp` is one of the signed fields, so an attacker cannot move it. Without this check a
+    // captured delivery replays successfully for as long as the signing certificate lives.
+    const timestampMs = Date.parse(message.Timestamp ?? "");
+
+    if (Number.isNaN(timestampMs) || Math.abs(Date.now() - timestampMs) > MAX_TIMESTAMP_AGE_MS) {
         return false;
     }
 

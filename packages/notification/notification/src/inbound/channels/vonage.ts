@@ -4,7 +4,7 @@ import { getHeader, tryParseObject } from "../../webhooks/types";
 import { isJwtTimeValid, sha256Hex, verifyHs256Jwt } from "../jwt";
 import { smsReply } from "../reply";
 import type { InboundMessage, Receiver, ReceiverOptions } from "../types";
-import { asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
+import { asDate, asRawResponse, asString, headersToRecord, noContent, rejectionResponse } from "../utils";
 
 const AUTH_HEADER = "Authorization";
 const BEARER_PREFIX = "Bearer ";
@@ -32,8 +32,11 @@ const partyNumber = (value: unknown): string | undefined => {
 const parseVonage = (body: string): InboundMessage | undefined => {
     const payload = tryParseObject(body);
     const from = partyNumber(payload?.from);
+    const id = asString(payload?.message_uuid);
 
-    if (payload === undefined || from === undefined) {
+    // See the MessageBird parser: an id-less message normalised to `""` collides with every other
+    // one, so it is not a message this receiver can hand on.
+    if (payload === undefined || from === undefined || id === undefined) {
         return undefined;
     }
 
@@ -43,12 +46,12 @@ const parseVonage = (body: string): InboundMessage | undefined => {
         channel: "sms",
         conversationId: partyNumber(payload.to),
         from: { id: from },
-        id: asString(payload.message_uuid) ?? "",
+        id,
         metadata: { channelType: payload.channel, messageType: payload.message_type },
         provider: "vonage",
         raw: payload,
         text: asString(payload.text),
-        timestamp: timestamp === undefined ? new Date() : new Date(timestamp),
+        timestamp: asDate(timestamp),
         type: "message",
     };
 };

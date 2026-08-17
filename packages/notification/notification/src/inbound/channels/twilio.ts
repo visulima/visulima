@@ -10,12 +10,25 @@ const SIGNATURE_HEADER = "X-Twilio-Signature";
 const WHATSAPP_PREFIX = "whatsapp:";
 
 /**
- * Escapes the five XML predefined entities so message text is safe to embed in TwiML.
+ * Control characters XML 1.0 forbids in character data: U+0000–U+0008, U+000B, U+000C and
+ * U+000E–U+001F. Tab, LF and CR are legal and are deliberately absent.
+ */
+// eslint-disable-next-line no-control-regex -- matching the control characters is the point
+const XML_ILLEGAL_CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/gu;
+
+/**
+ * Escapes the five XML predefined entities and drops the control characters XML forbids, so
+ * message text is safe to embed in TwiML.
+ *
+ * Handler output routinely echoes the inbound `Body`, which is user-controlled. A single stray
+ * control character makes the document unparseable, and Twilio then reports a document-parse
+ * error instead of delivering the reply.
  * @param value The text to escape.
  * @returns The escaped text.
  */
 const escapeXml = (value: string): string =>
     value
+        .replaceAll(XML_ILLEGAL_CONTROLS, "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")

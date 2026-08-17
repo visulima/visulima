@@ -201,6 +201,32 @@ describe(createDiscordReceiver, () => {
         await expect(response.json()).resolves.toStrictEqual({ data: { content: "hi" }, type: 4 });
     });
 
+    it("defers the interaction when the handler outruns the deadline", async () => {
+        expect.assertions(2);
+
+        const keyPair = await generateKey();
+        let finished = false;
+        const channel = createDiscordReceiver({
+            deferAfterMs: 10,
+            onMessage: async () => {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 60);
+                });
+                finished = true;
+
+                return { text: "too late" };
+            },
+            publicKey: await publicKeyHex(keyPair),
+        });
+        const body = JSON.stringify({ channel_id: "C1", data: { name: "slow" }, id: "I2", member: { user: { id: "U1" } }, type: 2 });
+        const response = await channel.handle(await signedRequest(keyPair, body));
+
+        // Discord discards an interaction that is unanswered after three seconds, so a slow
+        // handler has to be deferred rather than waited on.
+        await expect(response.json()).resolves.toStrictEqual({ type: 5 });
+        expect(finished).toBe(false);
+    });
+
     it("rejects an invalid signature with 401", async () => {
         expect.assertions(1);
 
@@ -251,6 +277,23 @@ describe(createTelegramReceiver, () => {
         const response = await channel.handle(request({ update_id: 1 }, "wrong"));
 
         expect(response.status).toBe(401);
+    });
+
+    it("sends a topic reply as message_thread_id, not as a quoted message", async () => {
+        expect.assertions(2);
+
+        const channel = createTelegramReceiver({ onMessage: (message) => ({ text: "pong", threadId: message.threadId }), secretToken });
+        const response = await channel.handle(
+            request(
+                { message: { chat: { id: 42, type: "supergroup" }, date: 1_700_000_000, from: { id: 7 }, message_id: 5, message_thread_id: 99, text: "ping" }, update_id: 1 },
+                secretToken,
+            ),
+        );
+        const payload = (await response.json()) as Record<string, unknown>;
+
+        // 99 is a forum topic, not message 99 — quoting it would target the wrong message.
+        expect(payload.message_thread_id).toBe(99);
+        expect(payload.reply_parameters).toBeUndefined();
     });
 
     it("detects bot commands", async () => {
@@ -307,6 +350,19 @@ describe(createTwilioReceiver, () => {
         expect(received?.from.id).toBe("+15555550100");
         expect(response.headers.get("content-type")).toContain("text/xml");
         await expect(response.text()).resolves.toContain("<Message>got it</Message>");
+    });
+
+    it("drops XML-illegal control characters from the reply", async () => {
+        expect.assertions(2);
+
+        // A handler echoing the inbound Body can carry anything the sender typed; a control
+        // character reaches TwiML and Twilio answers with a document-parse error instead.
+        const channel = createTwilioReceiver({ authToken, onMessage: (message) => ({ text: message.text }) });
+        const response = await channel.handle(await signedRequest({ Body: "ok\u0000 <bad>\u0007", From: "+15555550100", MessageSid: "SM9", To: "+15555550111" }));
+        const document = await response.text();
+
+        expect(document).toContain("<Message>ok &lt;bad&gt;</Message>");
+        expect(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/u.test(document)).toBe(false);
     });
 
     it("flags WhatsApp transport and strips the prefix", async () => {
@@ -391,6 +447,23 @@ describe(createMsTeamsReceiver, () => {
         expect(received?.text).toBe("hi bot");
         expect(received?.from.name).toBe("Ada");
         await expect(response.json()).resolves.toMatchObject({ text: "hello back", type: "message" });
+    });
+
+    it("falls back to now when the activity timestamp is malformed", async () => {
+        expect.assertions(1);
+
+        let received: InboundMessage | undefined;
+        const channel = createMsTeamsReceiver({
+            onMessage: (message) => {
+                received = message;
+            },
+            securityToken,
+        });
+
+        await channel.handle(await signedRequest({ from: { id: "U1" }, id: "A2", text: "hi", timestamp: "not-a-date", type: "message" }));
+
+        // An `Invalid Date` passes silently through assignment and only throws in the consumer.
+        expect(Number.isNaN(received?.timestamp.getTime())).toBe(false);
     });
 
     it("rejects a tampered HMAC with 401", async () => {
@@ -492,6 +565,27 @@ describe(createMessageBirdReceiver, () => {
         expect(provider.getInstance?.().last()?.payload).toMatchObject({ from: "+15551230009", text: "thanks", to: "+15551230001" });
     });
 
+    it("ignores a message with no provider id", async () => {
+        expect.assertions(2);
+
+        // Normalising a missing id to "" makes every id-less message look like the same one to a
+        // consumer that deduplicates or persists on it.
+        const body = JSON.stringify({ body: "no id", createdDatetime: "2026-01-01T00:00:00+00:00", originator: "+15551230001", recipient: "+15551230009" });
+        const token = await signJwt(signingKey, { exp: inFiveMinutes(), iss: "MessageBird", jti: "j3", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
+        let called = false;
+        const channel = createMessageBirdReceiver({
+            onMessage: () => {
+                called = true;
+            },
+            signingKey,
+            url,
+        });
+        const response = await channel.handle(new Request(url, { body, headers: { "content-type": "application/json", "messagebird-signature-jwt": token }, method: "POST" }));
+
+        expect(called).toBe(false);
+        expect(response.status).toBe(204);
+    });
+
     it("rejects a JWT signed with the wrong key with 401", async () => {
         expect.assertions(1);
 
@@ -556,5 +650,39 @@ describe(createInboundRouter, () => {
 
         expect(ok.status).toBe(204);
         expect(missing.status).toBe(404);
+    });
+
+    it("matches a route only at a path-segment boundary", async () => {
+        expect.assertions(1);
+
+        const router = createInboundRouter({ telegram: createTelegramReceiver({ onMessage: () => undefined }) });
+
+        // The path ends with "telegram", but as part of "evil-telegram" — a different endpoint.
+        const response = await router(new Request("https://example.com/webhooks/evil-telegram", { body: "{}", method: "POST" }));
+
+        expect(response.status).toBe(404);
+    });
+
+    it("prefers the most specific route over declaration order", async () => {
+        expect.assertions(1);
+
+        let reached: string | undefined;
+        const receiver = (name: string) =>
+            createTelegramReceiver({
+                onMessage: () => {
+                    reached = name;
+                },
+            });
+        // The short route is declared first; an unordered scan would let it swallow the request.
+        const router = createInboundRouter({ "/telegram": receiver("short"), "/inbound/telegram": receiver("specific") });
+
+        await router(
+            new Request("https://example.com/inbound/telegram", {
+                body: JSON.stringify({ message: { chat: { id: 1 }, from: { id: 1 }, message_id: 1, text: "hi" }, update_id: 1 }),
+                method: "POST",
+            }),
+        );
+
+        expect(reached).toBe("specific");
     });
 });

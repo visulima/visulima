@@ -162,7 +162,11 @@ Wrap several same-channel providers to gain resilience or load balancing:
 
 ```typescript
 import { createFailoverProvider } from "@visulima/notification/providers/failover";
+import { createPlivoProvider } from "@visulima/notification/providers/plivo";
 import { createRoundRobinProvider } from "@visulima/notification/providers/roundrobin";
+import { createTelnyxProvider } from "@visulima/notification/providers/telnyx";
+import { createTwilioProvider } from "@visulima/notification/providers/twilio";
+import { createVonageProvider } from "@visulima/notification/providers/vonage";
 
 const sms = createFailoverProvider([createTwilioProvider({ … }), createVonageProvider({ … })]); // try Twilio, fall back to Vonage
 const balanced = createRoundRobinProvider([createPlivoProvider({ … }), createTelnyxProvider({ … })]);

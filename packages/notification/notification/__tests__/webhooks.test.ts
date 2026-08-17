@@ -199,7 +199,7 @@ describe("snsWebhook", () => {
     });
 
     it("verifies a genuine SignatureVersion 2 (RSA-SHA256) message and rejects a tampered one", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const keyPair = await globalThis.crypto.subtle.generateKey(
             { hash: "SHA-256", modulusLength: 2048, name: "RSASSA-PKCS1-v1_5", publicExponent: new Uint8Array([1, 0, 1]) },
@@ -216,7 +216,7 @@ describe("snsWebhook", () => {
             MessageId: "id-1",
             SignatureVersion: "2",
             SigningCertURL: "https://sns.us-east-1.amazonaws.com/SimpleNotificationService.pem",
-            Timestamp: "2026-01-01T00:00:00.000Z",
+            Timestamp: new Date().toISOString(),
             TopicArn: "arn:aws:sns:us-east-1:1:topic",
             Type: "Notification",
         };
@@ -224,6 +224,13 @@ describe("snsWebhook", () => {
 
         await expect(snsWebhook.verify(JSON.stringify({ ...message, Signature: signature }), {}, "")).resolves.toBe(true);
         await expect(snsWebhook.verify(JSON.stringify({ ...message, Message: "tampered", Signature: signature }), {}, "")).resolves.toBe(false);
+
+        // A captured delivery stays signature-valid for the certificate's lifetime, so age is the
+        // only thing standing between the endpoint and an indefinite replay.
+        const stale = { ...message, Timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() };
+        const staleSignature = toBase64(await globalThis.crypto.subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, keyPair.privateKey, encoder.encode(stringToSign(stale))));
+
+        await expect(snsWebhook.verify(JSON.stringify({ ...stale, Signature: staleSignature }), {}, "")).resolves.toBe(false);
 
         const event = snsWebhook.parse(JSON.stringify(message));
 

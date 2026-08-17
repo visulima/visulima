@@ -9,6 +9,9 @@ import { asId, asRawResponse, asReply, asString, headersToRecord, jsonResponse, 
 const SECRET_HEADER = "X-Telegram-Bot-Api-Secret-Token";
 const WHITESPACE = /\s/u;
 
+/** A forum topic id, which Telegram always reports as a positive integer. */
+const TOPIC_ID = /^\d+$/u;
+
 /**
  * Parses a Telegram message body into a bot command, or `undefined` when the text is absent
  * or not a `/`-prefixed command. Splits on the first whitespace into `/name[@bot]` and the
@@ -170,10 +173,16 @@ export const createTelegramReceiver = (options: TelegramReceiverOptions): Receiv
             const reply = asReply(result);
 
             if (reply !== undefined && message.conversationId !== undefined) {
+                // `threadId` round-trips Telegram's `message_thread_id`, which identifies a forum
+                // topic — not a message. Sending it as `reply_parameters.message_id` quotes
+                // whichever message happens to carry that id, or fails outright. Non-integer
+                // values are not thread ids at all, so they are dropped.
+                const threadId = reply.threadId !== undefined && TOPIC_ID.test(reply.threadId) ? Number.parseInt(reply.threadId, 10) : undefined;
+
                 return jsonResponse({
                     chat_id: message.conversationId,
+                    message_thread_id: threadId,
                     method: "sendMessage",
-                    reply_parameters: reply.threadId === undefined ? undefined : { message_id: Number.parseInt(reply.threadId, 10) },
                     text: reply.text,
                     ...reply.raw,
                 });
