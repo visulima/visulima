@@ -10570,7 +10570,7 @@ importers:
         specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../vis
       zod:
         specifier: catalog:utils
