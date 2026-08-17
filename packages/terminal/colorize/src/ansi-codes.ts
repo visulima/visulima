@@ -94,6 +94,13 @@ const createAnsiCodes = (supportedColor: ColorSupportLevel): AnsiCodes => {
         strike: esc(9, 29), // alias for strikethrough
         strikethrough: esc(9, 29),
         underline: esc(4, 24),
+        // The `4:n` sub-parameter form selects an underline style. Terminals that do not
+        // know it ignore the sub-parameter and fall back to a plain underline, so the text
+        // stays legible everywhere; `24` closes all of them.
+        underlineCurly: esc("4:3", 24),
+        underlineDashed: esc("4:5", 24),
+        underlineDotted: esc("4:4", 24),
+        underlineDouble: esc("4:2", 24),
         visible: mono,
     };
 

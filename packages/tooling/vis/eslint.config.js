@@ -69,6 +69,9 @@ export default createConfig(
             "@typescript-eslint/require-await": "off",
             // Template expressions use dynamic values throughout CLI output
             "@typescript-eslint/restrict-template-expressions": "off",
+            // `is-in-ci` covers the providers that do not set a bare `CI`; the CLI gates prompts
+            // and TUI output on it, so a hand-rolled check would prompt in a CI run.
+            "e18e/ban-dependencies": ["error", { allowed: ["is-in-ci"] }],
             // Static regex optimization is not critical in CLI startup code
             "e18e/prefer-static-regex": "off",
             // Inline exports are used throughout for co-located declarations

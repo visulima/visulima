@@ -83,6 +83,10 @@ export default createConfig(
             // which can't tell an inlined devDep from a stray one — only produces
             // false positives here.
             "import/no-extraneous-dependencies": "off",
+            // `is-in-ci` (above) also trips the banned-dependency preset. It covers the providers
+            // that do not set a bare `CI`; the renderer picks its output mode from it, so a
+            // hand-rolled `process.env.CI` check would silently degrade on those.
+            "e18e/ban-dependencies": ["error", { allowed: ["is-in-ci"] }],
             // Node.js EventEmitter is the appropriate choice for terminal I/O, not web EventTarget
             "unicorn/prefer-event-target": "off",
             // TUI rendering mutates output/node objects by design (canvas cells, layout nodes)
@@ -178,6 +182,8 @@ export default createConfig(
             "@typescript-eslint/restrict-plus-operands": "off",
             "@typescript-eslint/restrict-template-expressions": "off",
             "@typescript-eslint/unbound-method": "off",
+            // See the src block: `is-in-ci` is a deliberate dependency here.
+            "e18e/ban-dependencies": ["error", { allowed: ["is-in-ci"] }],
             "e18e/prefer-static-regex": "off",
             "no-bitwise": "off",
             "no-plusplus": "off",

@@ -15,11 +15,6 @@
     ],
     "homepage": "https://visulima.com/packages/vis-mcp",
     "bugs": "https://github.com/visulima/visulima/issues",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -35,6 +30,20 @@
             "url": "https://anolilab.com/support"
         }
     ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
     "bin": {
         "vis-mcp": "./dist/bin.js"
     },
@@ -44,19 +53,6 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
-    "type": "module",
-    "sideEffects": false,
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -78,7 +74,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "^1.29.0",
+        "@modelcontextprotocol/sdk": "^1.30.0",
         "@visulima/fs": "6.0.0",
         "@visulima/path": "4.0.0",
         "zod": "catalog:utils"
@@ -99,7 +95,7 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
-        "eslint-plugin-zod": "4.7.0",
+        "eslint-plugin-zod": "4.9.1",
         "fallow": "catalog:lint",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
@@ -114,5 +110,9 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
 }
