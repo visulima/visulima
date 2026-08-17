@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { createRequire } from "node:module";
 
-import { dump as jsYamlDump, load as jsYamlLoad } from "js-yaml";
+import jsYaml from "js-yaml";
 import * as visulima from "@visulima/yaml";
 import { bench, describe } from "vitest";
 import * as yaml from "yaml";
@@ -102,7 +102,7 @@ describe("parse › small document", () => {
     });
 
     bench("js-yaml", () => {
-        jsYamlLoad(SMALL);
+        jsYaml.load(SMALL);
     });
 
     if (yamlJs) {
@@ -122,7 +122,7 @@ describe("parse › medium config", () => {
     });
 
     bench("js-yaml", () => {
-        jsYamlLoad(CONFIG);
+        jsYaml.load(CONFIG);
     });
 
     if (yamlJs) {
@@ -142,7 +142,7 @@ describe("parse › anchors + merge keys", () => {
     });
 
     bench("js-yaml", () => {
-        jsYamlLoad(ANCHORS);
+        jsYaml.load(ANCHORS);
     });
 
     if (yamlJs) {
@@ -162,7 +162,7 @@ describe("parse › large document (200 records)", () => {
     });
 
     bench("js-yaml", () => {
-        jsYamlLoad(LARGE);
+        jsYaml.load(LARGE);
     });
 
     if (yamlJs) {
@@ -182,7 +182,7 @@ describe("stringify › medium config", () => {
     });
 
     bench("js-yaml", () => {
-        jsYamlDump(parsedConfig);
+        jsYaml.dump(parsedConfig);
     });
 
     if (yamlJs) {
