@@ -70,14 +70,14 @@ export const resolveWindowsShimTarget = (shimPath: string): string | undefined =
  *
  * `cmd-shim` prefers a `node.exe` sitting next to the shim and only falls back to `node` on PATH.
  * Honouring that matters in two real setups: under nvm-windows or Volta the neighbouring binary can
- * be a different Node major, and when this library is embedded in an Electron host
- * `process.execPath` is the Electron binary, which would launch the app instead of running the
- * script.
+ * be a different Node major, and `process.execPath` is not a safe substitute for the PATH lookup —
+ * in an Electron host it is the Electron binary, which would launch the app instead of running the
+ * script, and it can just as easily be a Node major the shim was never tested against.
  * @param shimPath Absolute path to the shim.
- * @returns The interpreter to spawn.
+ * @returns The interpreter to spawn: the adjacent `node.exe`, else `node` from PATH.
  */
 export const resolveShimInterpreter = (shimPath: string): string => {
     const neighbour = windowsPath.join(windowsPath.dirname(shimPath), "node.exe");
 
-    return existsSync(neighbour) ? neighbour : process.execPath;
+    return existsSync(neighbour) ? neighbour : "node";
 };

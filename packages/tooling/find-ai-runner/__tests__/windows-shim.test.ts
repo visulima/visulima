@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { planInvocation } from "../src/index";
-import { parseShimTarget } from "../src/windows-shim";
+import { parseShimTarget, resolveShimInterpreter } from "../src/windows-shim";
 
 /*
  * Real `cmd-shim` output. npm, pnpm and yarn all generate their `.cmd` shims with the same package,
@@ -98,6 +98,14 @@ describe(planInvocation, () => {
         expect(planInvocation("/opt/weird/claude.cmd", false).mode).toBe("direct");
     });
 
+    it("falls back to `node` on PATH when no node.exe sits next to the shim", () => {
+        expect.assertions(1);
+
+        // `cmd-shim`'s own fallback. `process.execPath` would be the Electron binary in an embedded
+        // host, and the wrong Node major under nvm-windows or Volta.
+        expect(resolveShimInterpreter(String.raw`C:\does\not\exist\claude.cmd`)).toBe("node");
+    });
+
     it("falls back to the shell for a Windows shim it cannot resolve", () => {
         expect.assertions(1);
 
@@ -127,7 +135,10 @@ describe(planInvocation, () => {
         expect(plan.mode).toBe("direct");
         // The prompt is handed over as argv, so cmd.exe never parses it and %VAR% is inert.
         expect(plan).toHaveProperty("prefixArguments", [target]);
-        expect(plan).toHaveProperty("file", process.execPath);
+        // No `node.exe` next to the shim, so the interpreter is `node` from PATH — the same
+        // fallback `cmd-shim` itself uses. `process.execPath` would be wrong here: an Electron
+        // host would launch the app instead of the script.
+        expect(plan).toHaveProperty("file", "node");
 
         await rm(directory, { force: true, recursive: true });
     });
