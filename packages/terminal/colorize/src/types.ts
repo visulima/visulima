@@ -201,22 +201,22 @@ export type ColorData = { close: string; open: string };
 /**
  * Base ANSI Styles
  */
-export type AnsiStyles =
-    | "bold"
-    | "dim"
-    | "hidden"
-    | "inverse"
-    | "italic"
-    | "overline"
-    | "reset"
-    | "strike"
-    | "strikethrough"
-    | "underline"
-    | "underlineCurly"
-    | "underlineDashed"
-    | "underlineDotted"
-    | "underlineDouble"
-    | "visible";
+export type AnsiStyles
+    = | "bold"
+        | "dim"
+        | "hidden"
+        | "inverse"
+        | "italic"
+        | "overline"
+        | "reset"
+        | "strike"
+        | "strikethrough"
+        | "underline"
+        | "underlineCurly"
+        | "underlineDashed"
+        | "underlineDotted"
+        | "underlineDouble"
+        | "visible";
 
 /**
  * Base ANSI Colors

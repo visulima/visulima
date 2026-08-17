@@ -893,6 +893,12 @@ overrides:
   # picomatch. Bumping either one is now a deliberate edit here plus a re-cut patch.
   picomatch: 4.0.5
   tinyglobby: 0.2.17
+  # eslint-plugin-sonarjs reads `require("typescript").default.SyntaxKind` at plugin-load time.
+  # TypeScript 7 drops that CJS default-export shape, so once the plugin's own loose typescript
+  # range floats to 7.x every `lint:eslint` task dies with `Cannot read properties of undefined
+  # (reading 'FunctionType')` before a single file is checked. Pin that one edge to the catalog
+  # compiler; drop it when sonarjs supports TypeScript 7.
+  'eslint-plugin-sonarjs>typescript': 6.0.3
   # adm-zip <0.6.0 (GHSA-xcpc-8h2w-3j85, high): a crafted ZIP triggers a ~4GB memory
   # allocation. Only reached via mysql-memory-server (a dev-only MySQL test helper in
   # @visulima/workflow) which pins ^0.5.16; force the patched 0.6.0. adm-zip 0.6.0 needs
