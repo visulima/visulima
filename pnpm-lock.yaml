@@ -1750,6 +1750,8 @@ overrides:
   axios@1: '>=1.18.0 <2'
   body-parser@2: '>=2.3.0 <3'
   brace-expansion@5: '>=5.0.9 <6'
+  deepmerge-ts@7: '>=8.0.1 <9'
+  deepmerge-ts@8: '>=8.0.1 <9'
   dompurify@3: '>=3.4.13 <4'
   fast-uri@3: '>=3.1.5 <4'
   fast-xml-parser@5: '>=5.10.1 <6'
@@ -23836,8 +23838,8 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  deepmerge-ts@7.1.5:
-    resolution: {integrity: sha512-HOJkrhaYsweh+W+e74Yn7YStZOilkoPb6fycpwNLKzSPtruFs48nYis0zy5yJz1+ktUhHxoRDJ27RQAWLIJVJw==}
+  deepmerge-ts@8.0.1:
+    resolution: {integrity: sha512-szCXE7YLCvLKR9bFPJcvsezOShdalctSvrgN/LM/QGUEPZQajwjmsMObZ6/DuANT5lxzM/wtO8Feubwdkz8myA==}
     engines: {node: '>=16.0.0'}
 
   deepmerge@4.3.1:
@@ -49403,7 +49405,7 @@ snapshots:
       '@wdio/logger': 9.29.1
       '@wdio/types': 9.30.1
       '@wdio/utils': 9.30.1
-      deepmerge-ts: 7.1.5
+      deepmerge-ts: 8.0.1
       glob: 13.0.6
       import-meta-resolve: 4.2.0
       jiti: 2.7.0
@@ -49437,7 +49439,7 @@ snapshots:
       '@wdio/logger': 9.29.1
       '@wdio/types': 9.30.1
       decamelize: 6.0.1
-      deepmerge-ts: 7.1.5
+      deepmerge-ts: 8.0.1
       edgedriver: 6.3.0
       geckodriver: 6.1.1
       get-port: 7.2.0
@@ -51894,7 +51896,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  deepmerge-ts@7.1.5: {}
+  deepmerge-ts@8.0.1: {}
 
   deepmerge@4.3.1: {}
 
@@ -55559,7 +55561,7 @@ snapshots:
   html-to-text@10.0.0:
     dependencies:
       '@selderee/plugin-htmlparser2': 0.12.0(selderee@0.12.0)
-      deepmerge-ts: 7.1.5
+      deepmerge-ts: 8.0.1
       dom-serializer: 2.0.0
       htmlparser2: 10.1.0
       selderee: 0.12.0
@@ -67723,7 +67725,7 @@ snapshots:
       '@wdio/protocols': 9.30.1
       '@wdio/types': 9.30.1
       '@wdio/utils': 9.30.1
-      deepmerge-ts: 7.1.5
+      deepmerge-ts: 8.0.1
       https-proxy-agent: 7.0.6
       undici: 8.10.0
       ws: 8.21.2

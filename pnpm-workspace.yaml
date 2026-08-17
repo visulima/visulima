@@ -1151,6 +1151,12 @@ overrides:
   axios@1: '>=1.18.0 <2'
   body-parser@2: '>=2.3.0 <3'
   brace-expansion@5: '>=5.0.9 <6'
+  # Stack exhaustion on recursive object graphs (GHSA-ggr8-5vv4-36mx, high), reached
+  # through html-to-text and @wdio/config. There is no patched 7.x — the fix landed in
+  # 8.0.0 — so this floor has to cross the major. v8 keeps the same dual ESM/CJS entry
+  # points and the same node >=16 engine, so both consumers resolve unchanged.
+  deepmerge-ts@7: '>=8.0.1 <9'
+  deepmerge-ts@8: '>=8.0.1 <9'
   dompurify@3: '>=3.4.13 <4'
   fast-uri@3: '>=3.1.5 <4'
   fast-xml-parser@5: '>=5.10.1 <6'

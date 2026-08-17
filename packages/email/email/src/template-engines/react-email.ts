@@ -17,8 +17,9 @@ const reactEmail: TemplateRenderer = async (template: unknown, _data?: Record<st
         const pretty = options?.pretty as boolean | undefined;
 
         // `render`'s options are a union discriminated on `plainText`, so a plain `boolean` fits
-        // no branch of it — the flag has to reach the call as a literal.
-        return await (options?.plainText === true ? render(node, { plainText: true, pretty }) : render(node, { plainText: false, pretty }));
+        // no branch of it — the flag has to reach the call as a literal, and the non-plain-text
+        // branch omits it rather than passing `false`, which is the same to `render`.
+        return await (options?.plainText === true ? render(node, { plainText: true, pretty }) : render(node, { pretty }));
     } catch (error) {
         if (error instanceof Error && error.message.includes("Cannot find module")) {
             throw new EmailError("react-email", "@react-email/render is not installed. Please install it: pnpm add @react-email/render", { cause: error });
