@@ -987,10 +987,13 @@ overrides:
   flatted@<=3.4.1: '>=3.4.2'
   follow-redirects@<=1.15.11: ^1.15.12
   # google-auth-library / gcp-metadata pull in gaxios ^7.1.4, which resolves to a
-  # second 7.1.4 copy alongside the catalog's 7.1.5 — the two emit structurally
-  # identical but nominally distinct GaxiosResponse/GaxiosOptions types, breaking
-  # @visulima/storage's GCS/Drive type checks. All ranges accept 7.1.5, so dedupe.
-  gaxios@<7.1.5: ^7.1.5
+  # second copy alongside the catalog's — the two emit structurally identical but
+  # nominally distinct GaxiosResponse/GaxiosOptions types, breaking
+  # @visulima/storage's GCS/Drive type checks. A floor is not enough: it dedupes only
+  # while the catalog happens to sit on that same floor, and moving the catalog to
+  # ^7.3.0 split the tree again. Pin the one version, in lockstep with the `gaxios`
+  # catalog entry above.
+  gaxios: 7.3.0
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
   glob@>=11.0.0 <11.1.0: '>=11.1.0'
   # @googleapis/drive's transitive googleapis-common pins google-auth-library
