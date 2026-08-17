@@ -7,6 +7,32 @@
  * drifted, and only one of them was right.
  */
 
+/** A run of WSP — SP and HTAB, the only white space RFC 6376 collapses. */
+const WSP_RUN = /[ \t]+/g;
+
+/**
+ * Strips leading and trailing WSP.
+ *
+ * Scanned rather than matched with an anchored regex: a header padded with a long run of spaces
+ * makes `/^[ \t]+|[ \t]+$/` backtrack quadratically, and this runs on message data.
+ * @param value The value to trim.
+ * @returns The value without leading or trailing SP/HTAB.
+ */
+const trimWsp = (value: string): string => {
+    let start = 0;
+    let end = value.length;
+
+    while (start < end && (value[start] === " " || value[start] === "\t")) {
+        start += 1;
+    }
+
+    while (end > start && (value[end - 1] === " " || value[end - 1] === "\t")) {
+        end -= 1;
+    }
+
+    return value.slice(start, end);
+};
+
 /** One logical header field, with folded continuation lines still attached to `raw`/`value`. */
 export interface MimeHeader {
     /** Field name exactly as it appears in the message. */
@@ -92,7 +118,7 @@ export const canonicalizeBody = (body: string, method: Canonicalization): string
         for (const [index, line] of lines.entries()) {
             // §3.4.4: collapse each WSP run to a single SP, then drop the trailing WSP. The
             // collapse leaves at most one trailing space, so no second scan is needed.
-            const collapsed = line.replaceAll(/[ \t]+/g, " ");
+            const collapsed = line.replaceAll(WSP_RUN, " ");
 
             lines[index] = collapsed.endsWith(" ") ? collapsed.slice(0, -1) : collapsed;
         }
@@ -126,7 +152,13 @@ export const canonicalizeHeader = (name: string, value: string, method: Canonica
         return `${name}:${value}`;
     }
 
-    return `${name.toLowerCase().trim()}:${value.replaceAll(/\s+/g, " ").trim()}`;
+    // §3.4.2 operates on WSP — SP and HTAB — not on the wider set `\s`/`trim()` match. A verifier
+    // preserves a non-breaking space, vertical tab or form feed byte-for-byte, so collapsing one
+    // here would hash a header the recipient never sees. Unfold first (delete the CRLF of each
+    // continuation line), then collapse and trim WSP only.
+    const collapsed = value.replaceAll("\r\n", "").replaceAll(WSP_RUN, " ");
+
+    return `${trimWsp(name.toLowerCase())}:${trimWsp(collapsed)}`;
 };
 
 /**

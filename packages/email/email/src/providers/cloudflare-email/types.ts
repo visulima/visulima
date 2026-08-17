@@ -37,4 +37,10 @@ export interface CloudflareEmailConfig extends BaseConfig {
 /**
  * Cloudflare Email-specific options.
  */
-export type CloudflareEmailOptions = EmailOptions;
+export interface CloudflareEmailOptions extends EmailOptions {
+    /**
+     * Sign this message with DKIM when {@link CloudflareEmailConfig.dkim} is configured.
+     * @default true
+     */
+    useDkim?: boolean;
+}

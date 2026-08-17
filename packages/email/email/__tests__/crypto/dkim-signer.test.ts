@@ -52,6 +52,22 @@ const parseHeaders = (headersPart: string): ParsedHeader[] => {
 };
 
 const WSP_RUN = /[ \t]+/g;
+
+/** Strips leading and trailing SP/HTAB, scanned rather than matched (an anchored `+$` backtracks). */
+const trimWsp = (value: string): string => {
+    let start = 0;
+    let end = value.length;
+
+    while (start < end && (value[start] === " " || value[start] === "\t")) {
+        start += 1;
+    }
+
+    while (end > start && (value[end - 1] === " " || value[end - 1] === "\t")) {
+        end -= 1;
+    }
+
+    return value.slice(start, end);
+};
 const FOLDING_WHITESPACE = /\s+/g;
 const SIGNATURE_TAG = /;\s*b=[\s\S]*$/;
 
@@ -84,7 +100,11 @@ const canonicalizeHeader = (name: string, value: string, method: string): string
         return `${name}:${value}`;
     }
 
-    return `${name.toLowerCase().trim()}:${value.replaceAll(FOLDING_WHITESPACE, " ").trim()}`;
+    // RFC 6376 §3.4.2: unfold, then collapse and trim WSP — SP and HTAB — only. A verifier that
+    // used `\s`/`trim()` here would also fold away NBSP, VT and FF, which no real one does.
+    const unfolded = value.replaceAll("\r\n", "").replaceAll(WSP_RUN, " ");
+
+    return `${trimWsp(name.toLowerCase())}:${trimWsp(unfolded)}`;
 };
 
 interface VerifyResult {
@@ -429,6 +449,30 @@ describe(DkimSigner, () => {
             // A and B are not in the default signed set, so only `from` is signed — the point is
             // that folded, whitespace-padded neighbours do not disturb it.
             expect(verifyDkim(signed, TEST_PUBLIC_KEY).signatureVerifies).toBe(true);
+        });
+
+        it("leaves non-WSP whitespace in a relaxed header untouched", async () => {
+            expect.assertions(2);
+
+            // A verifier preserves NBSP, VT and FF byte-for-byte — §3.4.2 collapses SP and HTAB
+            // only. Collapsing them here would sign a Subject the recipient never sees.
+            const subject = "Caf\u00A0 e\u000BX\u000CY";
+            const message = `From: sender@example.com\r\nSubject: ${subject}\r\n\r\nbody\r\n`;
+            const signed = await createDkimSigner({ ...baseOptions, headerCanon: "relaxed" }).signMimeMessage(message);
+
+            expect(signed).toContain(`Subject: ${subject}`);
+            expect(verifyDkim(signed, TEST_PUBLIC_KEY).signatureVerifies).toBe(true);
+        });
+
+        it("rejects a message with no signable From header", async () => {
+            expect.assertions(2);
+
+            const raw = await buildMimeMessage(email);
+
+            // RFC 6376 §5.4 requires `from` in h=. Both routes to a signature without it must fail
+            // here rather than at the recipient, where it reads like a DNS or key problem.
+            await expect(createDkimSigner(baseOptions).signMimeMessage("Subject: Orphan\r\n\r\nbody\r\n")).rejects.toThrow("no signable From header");
+            await expect(createDkimSigner({ ...baseOptions, headersToIgnore: ["from"] }).signMimeMessage(raw)).rejects.toThrow("no signable From header");
         });
 
         it("rejects a message with no header/body separator", async () => {

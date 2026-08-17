@@ -67,7 +67,7 @@ const message = new MailMessage().to("user@example.com").from("sender@example.co
 const result = await mail.send(message);
 ```
 
-Set `useDkim: false` on an individual message to skip signing it.
+Set `useDkim: false` on an individual message to skip signing it — the SMTP and Cloudflare Email providers both honour it.
 
 If you serialize the message yourself — a custom transport, a Cloudflare Email Worker, an `.eml` on disk — call the signer directly on the finished MIME string:
 

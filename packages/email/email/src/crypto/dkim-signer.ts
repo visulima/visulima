@@ -74,8 +74,8 @@ export class DkimSigner {
      * Signs a fully-built MIME message and returns it with a `DKIM-Signature` header prepended.
      * @param message The complete MIME message: headers, a blank line, then the body, CRLF-delimited.
      * @returns The message with the signature prepended.
-     * @throws {Error} When the message has no header/body separator, or signing fails (e.g. an
-     * unreadable or malformed private key).
+     * @throws {Error} When the message has no header/body separator, has no signable `From` header,
+     * or signing fails (e.g. an unreadable or malformed private key).
      * @example
      * ```typescript
      * const raw = await buildMimeMessage(emailOptions);
@@ -104,6 +104,13 @@ export class DkimSigner {
         });
 
         const orderedHeaders = orderSignedHeaders(candidates);
+
+        // RFC 6376 §5.4: `from` is mandatory in `h=`. Without it the signature is still well-formed,
+        // so the failure only surfaces at the recipient and reads like a DNS or key problem. Both a
+        // message with no From header and `headersToIgnore: ["from"]` land here.
+        if (!orderedHeaders.some((header) => header.name.toLowerCase() === "from")) {
+            throw new Error("Failed to create DKIM signature: the message has no signable From header (RFC 6376 §5.4 requires it in h=).");
+        }
 
         const dkimTags = [
             "v=1",

@@ -69,10 +69,17 @@ export interface OAuth2MiddlewareOptions {
  * @param options OAuth2 configuration. See {@link OAuth2MiddlewareOptions}.
  * @returns The middleware.
  * @throws {TypeError} If neither `onToken` nor `headerName` is supplied — the token would have
- * nowhere to go and the middleware would silently do nothing but burn token-endpoint calls.
+ * nowhere to go and the middleware would silently do nothing but burn token-endpoint calls — or if
+ * `headerName` is empty.
  */
 export const oauth2Middleware = (options: OAuth2MiddlewareOptions): Middleware => {
     const { fetchToken, headerName, now = Date.now, onToken, scheme = "Bearer", skewMs = 60_000 } = options;
+
+    if (headerName?.trim() === "") {
+        // An empty name passes the `undefined` check below and then reaches MIME construction as a
+        // nameless field.
+        throw new TypeError("oauth2Middleware: `headerName` must be a non-empty header name.");
+    }
 
     if (onToken === undefined && headerName === undefined) {
         throw new TypeError("oauth2Middleware: supply `onToken` to receive the token (recommended), or `headerName` to inject it into a message header.");

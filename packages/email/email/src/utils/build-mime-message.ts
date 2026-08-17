@@ -207,16 +207,20 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
             if (encoding === "base64") {
                 message.push(wrapBase64(toBase64(attachmentContent)));
             } else if (encoding === "7bit" || encoding === "8bit") {
+                let text: string;
+
                 if (typeof attachmentContent === "string") {
-                    message.push(attachmentContent);
+                    text = attachmentContent;
                 } else if (hasBuffer && attachmentContent instanceof Buffer) {
-                    message.push(attachmentContent.toString("utf8"));
+                    text = attachmentContent.toString("utf8");
                 } else {
                     // Uint8Array
-                    const decoder = new TextDecoder();
-
-                    message.push(decoder.decode(attachmentContent));
+                    text = new TextDecoder().decode(attachmentContent);
                 }
+
+                // Unencoded content keeps whatever line endings it arrived with; the CRLF join
+                // below cannot reach inside a single pushed string, so split it here.
+                message.push(...splitLines(text));
             } else {
                 message.push(wrapBase64(toBase64(attachmentContent)));
             }

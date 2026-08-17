@@ -104,5 +104,18 @@ describe("new providers", () => {
             // The SMTP default applies here too: simple/simple does not survive a relaying hop.
             expect(raw).toContain("c=relaxed/relaxed");
         });
+
+        it("skips DKIM signing when useDkim is false", async () => {
+            expect.assertions(2);
+
+            const send = vi.fn(() => Promise.resolve());
+            const result = await cloudflareEmailProvider({
+                dkim: { domainName: "example.com", keySelector: "default", privateKey: TEST_PRIVATE_KEY },
+                send,
+            }).sendEmail({ ...message, useDkim: false });
+
+            expect(result.success).toBe(true);
+            expect((send.mock.calls[0] as [string, string, string])[2]).not.toContain("DKIM-Signature:");
+        });
     });
 });

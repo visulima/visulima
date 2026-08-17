@@ -81,7 +81,7 @@ const cloudflareEmailProvider: ProviderFactory<CloudflareEmailConfig> = definePr
 
                 // DKIM commits to the serialized message, so it has to run here — after the MIME
                 // is built and before the binding takes it.
-                if (config.dkim) {
+                if (config.dkim && emailOptions.useDkim !== false) {
                     raw = await createTransportDkimSigner(config.dkim).signMimeMessage(raw);
                 }
 

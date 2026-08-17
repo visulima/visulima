@@ -45,6 +45,15 @@ describe(oauth2Middleware, () => {
         expect(() => oauth2Middleware({ fetchToken })).toThrow(TypeError);
     });
 
+    it("rejects an empty headerName rather than emitting a nameless header", () => {
+        expect.assertions(2);
+
+        const fetchToken = vi.fn(() => Promise.resolve<OAuth2Token>({ accessToken: "tok-1" }));
+
+        expect(() => oauth2Middleware({ fetchToken, headerName: "" })).toThrow(TypeError);
+        expect(() => oauth2Middleware({ fetchToken, headerName: "   " })).toThrow(TypeError);
+    });
+
     it("reuses a cached token while it is still valid", async () => {
         expect.assertions(2);
 
