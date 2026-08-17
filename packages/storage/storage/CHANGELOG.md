@@ -1,3 +1,10 @@
+## @visulima/storage [2.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%402.0.0...%40visulima%2Fstorage%402.0.1) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 7.0.1
+
 ## @visulima/storage [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%401.0.11...%40visulima%2Fstorage%402.0.0) (2026-08-08)
 
 
