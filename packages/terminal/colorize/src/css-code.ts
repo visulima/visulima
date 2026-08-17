@@ -12,10 +12,13 @@ export const baseStyles: Required<Record<AnsiStyles, string>> = {
     strike: "text-decoration: line-through;",
     strikethrough: "text-decoration: line-through;",
     underline: "text-decoration: underline;",
-    underlineCurly: "text-decoration: underline wavy;",
-    underlineDashed: "text-decoration: underline dashed;",
-    underlineDotted: "text-decoration: underline dotted;",
-    underlineDouble: "text-decoration: underline double;",
+    // A shorthand carrying a style keyword is dropped whole where that keyword is unsupported,
+    // taking the underline with it. Declaring the underline on its own first leaves a plain
+    // underline standing, and `text-decoration-style` then upgrades it where it is understood.
+    underlineCurly: "text-decoration: underline; text-decoration-style: wavy;",
+    underlineDashed: "text-decoration: underline; text-decoration-style: dashed;",
+    underlineDotted: "text-decoration: underline; text-decoration-style: dotted;",
+    underlineDouble: "text-decoration: underline; text-decoration-style: double;",
     visible: "",
 };
 
