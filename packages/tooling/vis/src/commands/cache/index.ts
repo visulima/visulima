@@ -1,5 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
-import { lazyNamed } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions, InferOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
 const cacheDirectoryOption = {
     description: "Cache directory (overrides config and default). Relative paths are resolved against the workspace root.",
@@ -193,7 +193,27 @@ const cacheVerify: Command = {
     options: [cacheDirectoryOption, scopeOption, formatOption],
 };
 
-const cacheDoctor: Command = {
+const cacheDoctorOptionDefinitions = {
+    backend: {
+        description: "Override backend selector: 'http' or 'reapi'",
+        type: String,
+    },
+    format: {
+        description: "Output format: table or json (default: table)",
+        type: String,
+    },
+    timeout: {
+        defaultValue: 5000,
+        description: "Probe timeout in milliseconds (default: 5000)",
+        type: Number,
+    },
+    url: {
+        description: "Override remote cache URL (otherwise read from vis.config.ts remoteCache.url, or TURBO_API env var)",
+        type: String,
+    },
+} as const;
+
+const cacheDoctor = defineCommand({
     commandPath: ["cache"],
     description: "Probe the configured remote cache (HTTP HEAD or REAPI Capabilities) and report reachability, latency, and negotiated capabilities",
     examples: [
@@ -204,32 +224,10 @@ const cacheDoctor: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./doctor-probe"), "cacheDoctorExecute"),
     name: "doctor",
-    options: [
-        {
-            description: "Override remote cache URL (otherwise read from vis.config.ts remoteCache.url, or TURBO_API env var)",
-            name: "url",
-            type: String,
-        },
-        {
-            description: "Override backend selector: 'http' or 'reapi'",
-            name: "backend",
-            type: String,
-        },
-        {
-            description: "Output format: table or json (default: table)",
-            name: "format",
-            type: String,
-        },
-        {
-            defaultValue: 5000,
-            description: "Probe timeout in milliseconds (default: 5000)",
-            name: "timeout",
-            type: Number,
-        },
-    ],
-};
+    options: cacheDoctorOptionDefinitions,
+});
 
-const cacheCommands = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheVerify, cacheDoctor];
+const cacheCommands: AnyCommandInput[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheVerify, cacheDoctor];
 
 export default cacheCommands;
 
@@ -271,12 +269,7 @@ export type CacheHashOptions = CreateOptions<{
     run: string | undefined;
 }>;
 
-export type CacheDoctorOptions = CreateOptions<{
-    backend: string | undefined;
-    format: string | undefined;
-    timeout: number | undefined;
-    url: string | undefined;
-}>;
+export type CacheDoctorOptions = InferOptions<typeof cacheDoctorOptionDefinitions>;
 
 export type CacheVerifyOptions = CreateOptions<{
     "cache-dir": string | undefined;

@@ -1,6 +1,31 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const pre: Command = {
+const preOptionDefinitions = {
+    action: {
+        defaultOption: true,
+        defaultValue: "status",
+        description: "Subcommand: enter | exit | status",
+        type: String,
+    },
+    commit: {
+        defaultValue: true,
+        description: "Commit pre.json after writing. Default: commit",
+        type: Boolean,
+    },
+    push: {
+        defaultValue: true,
+        description: "Push the commit. Default: push",
+        type: Boolean,
+    },
+    tag: {
+        description: "Prerelease tag (e.g. alpha, beta, rc). Required for `enter`",
+        multiple: true,
+        type: String,
+    },
+} as const;
+
+const pre = defineCommand({
     commandPath: ["release"],
     description: "Enter / exit pre-release mode (changesets-compatible — every `version` produces a prerelease until exit)",
     examples: [
@@ -12,34 +37,8 @@ const pre: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "pre",
-    options: [
-        {
-            defaultOption: true,
-            defaultValue: "status",
-            description: "Subcommand: enter | exit | status",
-            name: "action",
-            type: String,
-        },
-        {
-            description: "Prerelease tag (e.g. alpha, beta, rc). Required for `enter`",
-            multiple: true,
-            name: "tag",
-            type: String,
-        },
-        {
-            defaultValue: true,
-            description: "Commit pre.json after writing. Default: commit",
-            name: "commit",
-            type: Boolean,
-        },
-        {
-            defaultValue: true,
-            description: "Push the commit. Default: push",
-            name: "push",
-            type: Boolean,
-        },
-    ],
-};
+    options: preOptionDefinitions,
+});
 
 export default pre;
 

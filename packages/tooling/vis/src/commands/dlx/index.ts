@@ -3,7 +3,6 @@ import { defineCommand } from "@visulima/cerebro";
 
 const dlxOptionDefinitions = {
     info: {
-        defaultValue: false,
         description: "Always show the first-run info panel (size, security score, permissions, changelog), even for an approved package",
         type: Boolean,
     },

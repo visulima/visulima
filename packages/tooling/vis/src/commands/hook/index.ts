@@ -1,4 +1,4 @@
-import type { Command, CreateEnv, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateEnv, CreateOptions } from "@visulima/cerebro";
 
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 
@@ -173,7 +173,7 @@ const hookAdd: Command = {
     options: [hooksDirectoryOption],
 };
 
-const hookCommands = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
+const hookCommands: AnyCommandInput[] = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
 
 export default hookCommands;
 

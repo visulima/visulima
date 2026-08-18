@@ -1,4 +1,4 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions } from "@visulima/cerebro";
 import { lazyNamed } from "@visulima/cerebro";
 
 /**
@@ -93,7 +93,7 @@ const attestEmit: Command = {
     ],
 };
 
-const attestCommands = [attestEmit, attestVerify];
+const attestCommands: AnyCommandInput[] = [attestEmit, attestVerify];
 
 export default attestCommands;
 

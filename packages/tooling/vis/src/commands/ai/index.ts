@@ -1,5 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
-import { lazyNamed } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions, InferOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
 const formatOption = {
     description: "Output format: table or json (default: table)",
@@ -20,15 +20,19 @@ const aiProviders: Command = {
     options: [formatOption],
 };
 
-const aiTest: Command = {
+const aiTestOptionDefinitions = {
+
+} as const;
+
+const aiTest = defineCommand({
     commandPath: ["ai"],
     description: "Test the best available AI provider with a quick prompt",
     examples: [["vis ai test", "Test the selected provider"]],
     group: "System",
     loader: lazyNamed(() => import("./handler"), "aiTestExecute"),
     name: "test",
-    options: [],
-};
+    options: aiTestOptionDefinitions,
+});
 
 const aiFix: Command = {
     argument: {
@@ -75,7 +79,11 @@ const aiFix: Command = {
     ],
 };
 
-const aiRoot: Command = {
+const aiRootOptionDefinitions = {
+
+} as const;
+
+const aiRoot = defineCommand({
     description: "AI-assisted commands: provider detection and failure-fix proposals (cache management lives under `vis cache`)",
     examples: [
         ["vis ai", "List all AI subcommands"],
@@ -84,10 +92,14 @@ const aiRoot: Command = {
     group: "System",
     loader: lazyNamed(() => import("./handler"), "aiRootExecute"),
     name: "ai",
-    options: [],
-};
+    options: aiRootOptionDefinitions,
+});
 
-const aiDiscoverHelp: Command = {
+const aiDiscoverHelpOptionDefinitions = {
+
+} as const;
+
+const aiDiscoverHelp = defineCommand({
     commandPath: ["ai"],
     description: "Print the machine-readable AI subcommand catalogue (JSON to stdout, designed for AI agents)",
     examples: [
@@ -97,10 +109,31 @@ const aiDiscoverHelp: Command = {
     group: "System",
     loader: lazyNamed(() => import("./handler"), "aiDiscoverHelpExecute"),
     name: "discover-help",
-    options: [],
-};
+    options: aiDiscoverHelpOptionDefinitions,
+});
 
-const aiHeal: Command = {
+const aiHealOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Show the proposal and exit without applying or posting it",
+        type: Boolean,
+    },
+    "no-cache": {
+        defaultValue: false,
+        description: "Bypass the AI response cache",
+        type: Boolean,
+    },
+    run: {
+        description: "Use a specific run ID from .vis/runs/ instead of the latest run",
+        type: String,
+    },
+    "validation-timeout": {
+        description: "Per-task validation timeout in seconds (default: 1800)",
+        type: Number,
+    },
+} as const;
+
+const aiHeal = defineCommand({
     commandPath: ["ai"],
     description: "Diagnose the most recent failed task and post a structured patch as a PR/MR comment (or Buildkite annotation)",
     examples: [
@@ -111,66 +144,43 @@ const aiHeal: Command = {
     group: "System",
     loader: lazyNamed(() => import("./heal"), "aiHeal"),
     name: "heal",
-    options: [
-        {
-            defaultValue: false,
-            description: "Show the proposal and exit without applying or posting it",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Bypass the AI response cache",
-            name: "no-cache",
-            type: Boolean,
-        },
-        {
-            description: "Use a specific run ID from .vis/runs/ instead of the latest run",
-            name: "run",
-            type: String,
-        },
-        {
-            description: "Per-task validation timeout in seconds (default: 1800)",
-            name: "validation-timeout",
-            type: Number,
-        },
-    ],
-};
+    options: aiHealOptionDefinitions,
+});
 
-const aiHealAccept: Command = {
+const aiHealAcceptOptionDefinitions = {
+    run: {
+        description: "Use a specific run ID from .vis/runs/ instead of the latest run",
+        type: String,
+    },
+    "validation-timeout": {
+        description: "Per-task validation timeout in seconds (default: 1800)",
+        type: Number,
+    },
+} as const;
+
+const aiHealAccept = defineCommand({
     commandPath: ["ai", "heal"],
     description: "Re-run the proposed fix and commit it to the PR/MR branch when validation passes",
     examples: [["vis ai heal accept", "Triggered automatically by a `/vis heal accept` PR comment (GitHub/GitLab) or a Buildkite block-step unblock"]],
     group: "System",
     loader: lazyNamed(() => import("./heal-accept"), "aiHealAccept"),
     name: "accept",
-    options: [
-        {
-            description: "Use a specific run ID from .vis/runs/ instead of the latest run",
-            name: "run",
-            type: String,
-        },
-        {
-            description: "Per-task validation timeout in seconds (default: 1800)",
-            name: "validation-timeout",
-            type: Number,
-        },
-    ],
-};
+    options: aiHealAcceptOptionDefinitions,
+});
 
-const aiCommands = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix, aiHeal, aiHealAccept];
+const aiCommands: AnyCommandInput[] = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix, aiHeal, aiHealAccept];
 
 export default aiCommands;
 
-export type AiRootOptions = CreateOptions<Record<string, never>>;
+export type AiRootOptions = InferOptions<typeof aiRootOptionDefinitions>;
 
-export type AiDiscoverHelpOptions = CreateOptions<Record<string, never>>;
+export type AiDiscoverHelpOptions = InferOptions<typeof aiDiscoverHelpOptionDefinitions>;
 
 export type AiProvidersOptions = CreateOptions<{
     format: string | undefined;
 }>;
 
-export type AiTestOptions = CreateOptions<Record<string, never>>;
+export type AiTestOptions = InferOptions<typeof aiTestOptionDefinitions>;
 
 export type AiFixOptions = CreateOptions<{
     apply: boolean | undefined;
@@ -180,14 +190,6 @@ export type AiFixOptions = CreateOptions<{
     yes: boolean | undefined;
 }>;
 
-export type AiHealOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    "no-cache": boolean | undefined;
-    run: string | undefined;
-    "validation-timeout": number | undefined;
-}>;
+export type AiHealOptions = InferOptions<typeof aiHealOptionDefinitions>;
 
-export type AiHealAcceptOptions = CreateOptions<{
-    run: string | undefined;
-    "validation-timeout": number | undefined;
-}>;
+export type AiHealAcceptOptions = InferOptions<typeof aiHealAcceptOptionDefinitions>;

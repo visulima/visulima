@@ -1,5 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
-import { lazyNamed } from "@visulima/cerebro";
+import type { AnyCommandInput, InferOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
 import { negatable } from "../../util/negatable-option";
 
@@ -19,7 +19,29 @@ import { negatable } from "../../util/negatable-option";
 
 const GROUP = "Workspace";
 
-const dockerScaffold: Command = {
+const dockerScaffoldOptionDefinitions = {
+    focus: {
+        description: "Project name(s) to focus on — comma-separated for multiple",
+        type: String,
+    },
+    "include-sources": {
+        defaultValue: false,
+        description: "Also copy focus project source trees to <out>/sources",
+        type: Boolean,
+    },
+    out: {
+        description: "Output directory for the scaffold (default: .vis/docker)",
+        type: String,
+    },
+    ...negatable({
+        defaultValue: true,
+        description: "Rewrite the workspace lockfile to drop unfocused projects (use --no-prune-lockfile to copy verbatim)",
+        name: "prune-lockfile",
+        type: Boolean,
+    }),
+} as const;
+
+const dockerScaffold = defineCommand({
     commandPath: ["docker"],
     description: "Build a minimal, cache-friendly Docker context for a focus project + its deps",
     examples: [
@@ -30,30 +52,48 @@ const dockerScaffold: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "scaffoldExecute"),
     name: "scaffold",
-    options: [
-        { description: "Project name(s) to focus on — comma-separated for multiple", name: "focus", type: String },
-        { description: "Output directory for the scaffold (default: .vis/docker)", name: "out", type: String },
-        { defaultValue: false, description: "Also copy focus project source trees to <out>/sources", name: "include-sources", type: Boolean },
-        ...negatable({
-            defaultValue: true,
-            description: "Rewrite the workspace lockfile to drop unfocused projects (use --no-prune-lockfile to copy verbatim)",
-            name: "prune-lockfile",
-            type: Boolean,
-        }),
-    ],
-};
+    options: dockerScaffoldOptionDefinitions,
+});
 
-const dockerPrune: Command = {
+const dockerPruneOptionDefinitions = {
+    context: {
+        description: "Scaffold root for prune (default: .vis/docker)",
+        type: String,
+    },
+} as const;
+
+const dockerPrune = defineCommand({
     commandPath: ["docker"],
     description: "Strip unfocused workspace projects from a scaffolded context (run inside a build stage)",
     examples: [["vis docker prune --context=.vis/docker", "Strip unfocused projects inside a build stage"]],
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "pruneExecute"),
     name: "prune",
-    options: [{ description: "Scaffold root for prune (default: .vis/docker)", name: "context", type: String }],
-};
+    options: dockerPruneOptionDefinitions,
+});
 
-const dockerInit: Command = {
+const dockerInitOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Print the Dockerfile to stdout instead of writing it",
+        type: Boolean,
+    },
+    focus: {
+        description: "Focus project name for the build filter",
+        type: String,
+    },
+    force: {
+        defaultValue: false,
+        description: "Overwrite an existing Dockerfile without prompting",
+        type: Boolean,
+    },
+    node: {
+        description: "Node.js version tag for the base image (default: 22)",
+        type: String,
+    },
+} as const;
+
+const dockerInit = defineCommand({
     argument: { description: "Output path for the Dockerfile (default: ./Dockerfile)", name: "path", type: String },
     commandPath: ["docker"],
     description: "Generate a multi-stage Dockerfile wired to the scaffold/prune flow (create-only)",
@@ -66,15 +106,32 @@ const dockerInit: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "initExecute"),
     name: "init",
-    options: [
-        { description: "Focus project name for the build filter", name: "focus", type: String },
-        { description: "Node.js version tag for the base image (default: 22)", name: "node", type: String },
-        { defaultValue: false, description: "Overwrite an existing Dockerfile without prompting", name: "force", type: Boolean },
-        { defaultValue: false, description: "Print the Dockerfile to stdout instead of writing it", name: "dry-run", type: Boolean },
-    ],
-};
+    options: dockerInitOptionDefinitions,
+});
 
-const dockerLint: Command = {
+const dockerLintOptionDefinitions = {
+    config: {
+        description: "Path to a hadolint config (.hadolint.yaml)",
+        type: String,
+    },
+    fix: {
+        defaultValue: false,
+        description: "Apply safe autofixes, then re-lint and report what remains",
+        type: Boolean,
+    },
+    install: {
+        defaultValue: false,
+        description: "Download hadolint without prompting if it is missing",
+        type: Boolean,
+    },
+    json: {
+        defaultValue: false,
+        description: "Emit findings as JSON",
+        type: Boolean,
+    },
+} as const;
+
+const dockerLint = defineCommand({
     argument: { description: "Dockerfile path(s) to lint (default: ./Dockerfile)", name: "file", type: String },
     commandPath: ["docker"],
     description: "Lint a Dockerfile with hadolint (downloaded on demand); --fix applies safe autofixes",
@@ -87,39 +144,17 @@ const dockerLint: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "lintExecute"),
     name: "lint",
-    options: [
-        { defaultValue: false, description: "Apply safe autofixes, then re-lint and report what remains", name: "fix", type: Boolean },
-        { defaultValue: false, description: "Download hadolint without prompting if it is missing", name: "install", type: Boolean },
-        { description: "Path to a hadolint config (.hadolint.yaml)", name: "config", type: String },
-        { defaultValue: false, description: "Emit findings as JSON", name: "json", type: Boolean },
-    ],
-};
+    options: dockerLintOptionDefinitions,
+});
 
-const dockerCommands = [dockerScaffold, dockerPrune, dockerInit, dockerLint];
+const dockerCommands: AnyCommandInput[] = [dockerScaffold, dockerPrune, dockerInit, dockerLint];
 
 export default dockerCommands;
 
-export type DockerScaffoldOptions = CreateOptions<{
-    focus: string | undefined;
-    "include-sources": boolean | undefined;
-    out: string | undefined;
-    "prune-lockfile": boolean | undefined;
-}>;
+export type DockerScaffoldOptions = InferOptions<typeof dockerScaffoldOptionDefinitions>;
 
-export type DockerPruneOptions = CreateOptions<{
-    context: string | undefined;
-}>;
+export type DockerPruneOptions = InferOptions<typeof dockerPruneOptionDefinitions>;
 
-export type DockerInitOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    focus: string | undefined;
-    force: boolean | undefined;
-    node: string | undefined;
-}>;
+export type DockerInitOptions = InferOptions<typeof dockerInitOptionDefinitions>;
 
-export type DockerLintOptions = CreateOptions<{
-    config: string | undefined;
-    fix: boolean | undefined;
-    install: boolean | undefined;
-    json: boolean | undefined;
-}>;
+export type DockerLintOptions = InferOptions<typeof dockerLintOptionDefinitions>;
