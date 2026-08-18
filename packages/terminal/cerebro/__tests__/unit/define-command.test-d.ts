@@ -1,4 +1,4 @@
-/* eslint-disable sonarjs/assertions-in-tests, vitest/expect-expect, vitest/prefer-expect-assertions -- `.test-d.ts` files are
+/* eslint-disable vitest/prefer-expect-assertions -- `.test-d.ts` files are
    compiled, never executed: `expectTypeOf` is the assertion, and a runtime
    assertion counter here would be dead code. */
 import { describe, expectTypeOf, it } from "vitest";
@@ -164,6 +164,13 @@ describe("defineCommand type inference", () => {
         }>();
     });
 
+    it("keeps a required boolean positional non-optional, unlike a required boolean option", () => {
+        // `resolveArguments` reports every unfilled required slot whatever its
+        // type, so the boolean carve-out that options need does not apply here.
+        expectTypeOf<InferArguments<[{ name: "enabled"; required: true; type: BooleanConstructor }]>>().toEqualTypeOf<{ enabled: boolean }>();
+        expectTypeOf<InferOptions<{ enabled: { required: true; type: BooleanConstructor } }>>().toEqualTypeOf<{ enabled: boolean | undefined }>();
+    });
+
     it("folds positional names the same way options are folded", () => {
         expectTypeOf<
             InferArguments<[{ name: "source-file"; required: true; type: StringConstructor }, { name: "UPPER"; type: StringConstructor }]>
@@ -174,7 +181,7 @@ describe("defineCommand type inference", () => {
         defineCommand({
             execute: ({ options }) => {
                 // @ts-expect-error -- `typo` is not a declared option
-                options.typo;
+                expectTypeOf(options.typo).toBeUnknown();
             },
             name: "build",
             options: { verbose: { type: Boolean } },

@@ -89,6 +89,7 @@ export { Cli as Cerebro } from "./cli";
 export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
 export type { DefinedCommand, InferredToolbox } from "./define-command";
 export { default as defineCommand } from "./define-command";
+export { default as InvalidArgumentChoiceError } from "./errors/invalid-argument-choice-error";
 export { default as MissingArgumentError } from "./errors/missing-argument-error";
 export { default as SurplusArgumentError } from "./errors/surplus-argument-error";
 export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";

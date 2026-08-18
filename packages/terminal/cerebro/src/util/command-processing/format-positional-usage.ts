@@ -45,6 +45,10 @@ const formatPositionalUsage = (command: Pick<ICommand, "argument" | "arguments">
     // A lone `argument` has no per-slot structure to show, so it keeps the
     // generic placeholder it has always rendered in the help usage line.
     if (command.argument) {
+        if (command.argument.hidden) {
+            return "";
+        }
+
         return style === "readme" ? ` ${formatOne(command.argument, style)}` : " [positional arguments]";
     }
 

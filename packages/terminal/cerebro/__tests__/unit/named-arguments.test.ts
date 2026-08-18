@@ -10,7 +10,9 @@ const MISPLACED_VARIADIC_PATTERN = /variadic positional "sources" that is not th
 const RECORD_ARGUMENTS_PATTERN = /must declare "arguments" as an array/;
 const DUPLICATE_ARGUMENT_PATTERN = /duplicate positional argument "x"/;
 const REQUIRED_AFTER_OPTIONAL_PATTERN = /required positional "target" after an optional one/;
-const INVALID_CHOICE_PATTERN = /Invalid value "nope" for option "source"/;
+const MISSING_BOOLEAN_PATTERN = /is missing required arguments: enabled/;
+const ARGUMENT_CHOICE_PATTERN = /for argument "source"/;
+const INVALID_CHOICE_PATTERN = /Invalid value "nope" for argument "source"/;
 const FOLDED_DUPLICATE_PATTERN = /duplicate positional argument "aB"/;
 const NON_OBJECT_PATTERN = /at index 0 that is not an object/;
 const SURPLUS_PATTERN = /accepts 2 positional arguments, but got 1 extra: c/;
@@ -258,6 +260,43 @@ describe("positional argument behaviour", () => {
 
         expect(output).not.toContain("secret");
         expect(output).toContain("shown");
+    });
+
+    it("rejects a missing required boolean positional", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["copy"] });
+
+        cli.addCommand({ arguments: [{ name: "enabled", required: true, type: Boolean }], execute: vi.fn(), name: "copy" });
+
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(MISSING_BOOLEAN_PATTERN);
+    });
+
+    it("phrases a positional choice failure without a flag", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["copy", "nope"] });
+
+        cli.addCommand({ arguments: [{ choices: ["yes", "no"], name: "source", type: String }], execute: vi.fn(), name: "copy" });
+
+        // `--source nope` would name a flag the command does not declare.
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(ARGUMENT_CHOICE_PATTERN);
+    });
+
+    it("omits the positional section entirely when every positional is hidden", async () => {
+        expect.assertions(1);
+
+        const lines: string[] = [];
+        const cli = new Cli("MyCLI", {
+            argv: ["help", "copy"],
+            logger: { ...console, log: (line: string) => lines.push(line) } as unknown as Console,
+        });
+
+        cli.addCommand({ arguments: [{ hidden: true, name: "secret", type: String }], execute: vi.fn(), name: "copy" });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(lines.join("\n")).not.toContain("Command Positional Arguments");
     });
 
     it("wraps a scalar defaultValue for an empty variadic slot", async () => {

@@ -126,11 +126,15 @@ interface OptionDefinition<T> {
 ### ArgumentDefinition
 
 ```typescript
-interface ArgumentDefinition<T = any> {
+interface ArgumentDefinition<T = unknown> {
     name: string;
     type?: TypeConstructor<T>;
     description?: string;
     defaultValue?: T;
+    required?: boolean;
+    multiple?: boolean;
+    choices?: ReadonlyArray<string>;
+    hidden?: boolean;
     typeLabel?: string;
 }
 ```
