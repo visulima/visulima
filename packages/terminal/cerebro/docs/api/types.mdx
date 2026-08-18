@@ -135,6 +135,50 @@ interface ArgumentDefinition<T = any> {
 }
 ```
 
+### Record Forms
+
+`options` and `env` can each be given as a record keyed by name instead of an
+array. The key is the name, so `name` is omitted from the value:
+
+```typescript
+type OptionDefinitionRecord = Record<string, Omit<OptionDefinition<unknown>, "name">>;
+type EnvDefinitionRecord = Record<string, Omit<EnvDefinition<unknown>, "name">>;
+```
+
+`arguments` has no record form — slot order is load-bearing, and an alphabetical
+object-key sorter would silently renumber the positionals.
+
+`CommandInput` is the shape `addCommand` accepts — `Command` with those two fields
+widened to accept either form. `addCommand` normalizes them to arrays, so `Command`
+(and `toolbox.command`) always holds the array form.
+
+## Inference Types
+
+Used by [`defineCommand`](/docs/cerebro/guides/options#type-inference-with-definecommand)
+to derive the toolbox shape from the definitions themselves:
+
+```typescript
+type InferOptions<R extends OptionDefinitionRecord>; // → toolbox.options
+type InferEnv<R extends EnvDefinitionRecord>; // → toolbox.env
+type InferArguments<T extends readonly ArgumentDefinition[]>; // → toolbox.args
+```
+
+`InferArguments` reads a tuple; `defineCommand` captures it with a `const` type
+parameter, so no `as const` is needed at the call site.
+
+Options and positionals share one fold — a hyphen folds into the next character
+only when it is an ASCII lowercase letter, transcribed from the parser's
+`/-([a-z])/g`. Environment variables lowercase first instead, which is what
+`OptionNameToCamelCase` (and `CreateOptions` / `CreateEnv`) model.
+
+```typescript
+type Options = InferOptions<{
+    "output-dir": { type: StringConstructor; required: true };
+    verbose: { type: BooleanConstructor };
+}>;
+// { outputDir: string; verbose: boolean | undefined }
+```
+
 ## Configuration Types
 
 ### CliOptions
@@ -219,8 +263,16 @@ import type {
     CommandExecute,
     LazyCommandModule,
     EnvDefinition,
+    CommandInput,
     OptionDefinition,
+    OptionDefinitionRecord,
     ArgumentDefinition,
+    EnvDefinitionRecord,
+    DefinedCommand,
+    InferredToolbox,
+    InferOptions,
+    InferEnv,
+    InferArguments,
     Plugin,
     PluginContext,
     Toolbox,
@@ -231,5 +283,5 @@ import type {
 } from "@visulima/cerebro";
 
 // Runtime exports
-import { lazyNamed } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 ```

@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.json",
+    // Widens `tsconfig.json` (src only) by one glob so the `.test-d.ts` type
+    // assertions compile. The runtime specs under `__tests__` are deliberately
+    // left out: they have never been type-checked and carry pre-existing errors
+    // that would drown out the assertions this project exists to run. That debt
+    // is untracked — bringing them in is its own change, not a side effect of
+    // this file.
+    //
+    // Keep the non-test globs in sync with `tsconfig.json`; TypeScript has no
+    // include-merge, so they have to be restated.
+    "include": ["__tests__/**/*.test-d.ts", "src/**/*", "*.d.ts"]
+}

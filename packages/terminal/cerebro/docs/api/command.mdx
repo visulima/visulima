@@ -13,9 +13,12 @@ interface Command<O extends OptionDefinition = OptionDefinition, TContext extend
     loader?: () => Promise<{ default: (toolbox: TContext) => Promise<void> | void }>;
     description?: string;
     alias?: string | string[];
+    /** Mutually exclusive with `arguments`. */
     argument?: ArgumentDefinition;
-    options?: OptionDefinition[];
-    env?: EnvDefinition[];
+    /** Named positionals, in slot order. */
+    arguments?: ArgumentDefinition[];
+    options?: OptionDefinition[] | Record<string, Omit<OptionDefinition, "name">>;
+    env?: EnvDefinition[] | Record<string, Omit<EnvDefinition, "name">>;
     hidden?: boolean;
     group?: string;
     examples?: string[] | string[][];
@@ -146,12 +149,42 @@ Positional argument definition:
 }
 ```
 
-### options
+### arguments
 
-**Type:** `OptionDefinition[]`  
+**Type:** `ArgumentDefinition[]`  
 **Required:** No
 
-Command options:
+Named positional arguments, surfaced on `toolbox.args`. Array order is slot order;
+only the last entry may set `multiple: true`. Mutually exclusive with `argument`.
+
+An array rather than a record because slot order is load-bearing — an alphabetical
+object-key sorter would silently renumber the positionals.
+
+```typescript
+{
+    arguments: [
+        { name: "source", type: String, required: true },
+        { name: "targets", type: String, multiple: true, required: true },
+    ];
+}
+```
+
+### options
+
+**Type:** `OptionDefinition[] | Record<string, Omit<OptionDefinition, "name">>`  
+**Required:** No
+
+Command options. The record form is keyed by option name, so `name` is omitted:
+
+```typescript
+{
+    options: {
+        production: { type: Boolean, description: "Build for production" },
+    };
+}
+```
+
+Or as an array:
 
 ```typescript
 {
@@ -167,7 +200,7 @@ Command options:
 
 ### env
 
-**Type:** `EnvDefinition[]`  
+**Type:** `EnvDefinition[] | Record<string, Omit<EnvDefinition, "name">>`  
 **Required:** No
 
 Environment variables supported by this command:

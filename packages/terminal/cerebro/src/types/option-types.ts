@@ -59,6 +59,15 @@ export type OptionNameToCamelCase<T extends string> = T extends `${infer Start}-
 
 /**
  * Helper type to create a type-safe options object from option definitions.
+ *
+ * Prefer `defineCommand`, which infers this shape from the definitions
+ * themselves instead of restating their names. Reach for `CreateOptions` when
+ * you are annotating a `Toolbox` by hand — typically because the command uses
+ * the array form of `options`, which carries no inferable key information.
+ *
+ * Note that this type lowercases a name with no separator in it (`outputDir`
+ * becomes `outputdir`), which matches how environment variables are folded but
+ * not* how the option parser folds option names.
  * @example
  * ```typescript
  * type MyOptions = CreateOptions<{
@@ -75,6 +84,9 @@ export type CreateOptions<T extends Record<string, unknown>> = {
 
 /**
  * Helper type to create a type-safe environment variables object from env definitions.
+ *
+ * Prefer `defineCommand`, which infers this shape from the definitions
+ * themselves. This type matches the env folding rules exactly.
  * Environment variable names are converted from UPPER_SNAKE_CASE to camelCase.
  * @example
  * ```typescript

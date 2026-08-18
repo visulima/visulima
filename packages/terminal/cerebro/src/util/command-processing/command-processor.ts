@@ -5,12 +5,16 @@ import { commandLineArgs } from "@visulima/command-line-args";
 import { POSITIONALS_KEY } from "../../constants";
 import EmptyToolbox from "../../empty-toolbox";
 import CommandLoaderError from "../../errors/command-loader-error";
+import InvalidChoiceError from "../../errors/invalid-choice-error";
+import MissingArgumentError from "../../errors/missing-argument-error";
+import SurplusArgumentError from "../../errors/surplus-argument-error";
 import type { Command as ICommand, CommandExecute, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import getBooleanValues from "../arg-processing/get-boolean-values";
 import removeBooleanValues from "../arg-processing/remove-boolean-values";
 import mergeArguments from "../data-processing/merge-arguments";
 import processEnvVariables from "../process-env-variables";
+import resolveArguments from "./resolve-arguments";
 
 /**
  * Builds option lookup maps for O(1) access instead of O(n) find() operations.
@@ -113,6 +117,10 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
 
     toolbox.argument = ((positionals as Record<string, unknown> | undefined)?.[POSITIONALS_KEY] as string[] | undefined) ?? [];
 
+    // Named positionals are resolved by the caller, which owns the validation
+    // that falls out of it; assembly only supplies the default.
+    toolbox.args = {};
+
     // Expose the tail that command-line-args could not match (typically
     // everything after a `--` separator) so commands can forward it to
     // inner tools without peeking at `process.argv`. `stopAtFirstUnknown`
@@ -160,16 +168,20 @@ export const processCommandArgs = <OD extends OptionDefinition<unknown>, TLogger
         }
     }
 
-    if (command.argument) {
+    const hasNamedArguments = command.arguments !== undefined && command.arguments.length > 0;
+
+    if (command.argument || hasNamedArguments) {
         arguments_ = [
             {
                 defaultOption: true,
-                description: command.argument.description,
+                description: command.argument?.description,
                 group: "positionals",
                 multiple: true,
                 name: POSITIONALS_KEY,
-                type: command.argument.type,
-                typeLabel: command.argument.typeLabel,
+                // Named positionals are collected as raw tokens; each slot's own
+                // `type` is applied afterwards by `resolveArguments`.
+                type: command.argument?.type ?? String,
+                typeLabel: command.argument?.typeLabel,
             },
             ...arguments_,
         ];
@@ -222,4 +234,60 @@ export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogg
     const handler = await loadLazyHandler(command);
 
     return handler(toolbox);
+};
+
+/**
+ * Resolves a command's named positionals onto `toolbox.args`, rejecting an
+ * invocation the declarations cannot describe.
+ *
+ * Resolution and its validation are deliberately one call: a caller that
+ * resolved without checking would accept a missing required positional in
+ * silence, and `toolbox.args` would look complete while being wrong.
+ *
+ * The tokens after a `--` separator belong to the passthrough buffer
+ * (`toolbox.rawUnknown`), not to the declared slots — the parser's
+ * `defaultOption` collects them alongside real positionals, so they are trimmed
+ * here before any slot is filled. Without that, `run vite -- --template react`
+ * would bind `--template` to the second slot.
+ * @param command The command being executed.
+ * @param toolbox The toolbox under construction.
+ * @throws {MissingArgumentError} When a required positional was not supplied.
+ * @throws {InvalidChoiceError} When a positional value is outside its `choices`.
+ * @throws {SurplusArgumentError} When more positionals were supplied than declared.
+ */
+export const applyNamedArguments = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    command: ICommand<OD, TLogger>,
+    toolbox: IToolbox<TLogger>,
+): void => {
+    if (!command.arguments || command.arguments.length === 0) {
+        return;
+    }
+
+    // `_unknown` holds the whole post-`--` tail, and the parser puts those same
+    // tokens in the positionals group. That correspondence is parser behaviour
+    // rather than a documented contract, so it is worth re-checking on a
+    // `command-line-args` bump.
+    const separatorIndex = toolbox.rawUnknown.indexOf("--");
+    const passthrough = separatorIndex === -1 ? [] : toolbox.rawUnknown.slice(separatorIndex + 1);
+    const declaredPositionals
+        = passthrough.length === 0 ? toolbox.argument : toolbox.argument.slice(0, Math.max(0, toolbox.argument.length - passthrough.length));
+
+    const outcome = resolveArguments(command.arguments, declaredPositionals);
+
+    // eslint-disable-next-line no-param-reassign
+    toolbox.args = outcome.resolved;
+
+    if (outcome.missing.length > 0) {
+        throw new MissingArgumentError(command.name, outcome.missing);
+    }
+
+    const [invalid] = outcome.invalid;
+
+    if (invalid) {
+        throw new InvalidChoiceError(invalid.name, invalid.value, invalid.choices);
+    }
+
+    if (outcome.surplus.length > 0) {
+        throw new SurplusArgumentError(command.name, outcome.surplus, command.arguments.length);
+    }
 };
