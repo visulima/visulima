@@ -88,7 +88,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             `--downstream=${String(options.downstream ?? "deep")}`,
         ];
 
-        if (options.parallel !== undefined) {
+        if (Number.isFinite(options.parallel)) {
             argv.push(`--parallel=${String(options.parallel)}`);
         }
 
