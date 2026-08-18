@@ -8,6 +8,13 @@ delete process.env.NO_COLOR;
 const config = getVitestConfig({
     test: {
         setupFiles: ["./__tests__/setup.ts"],
+        // `defineCommand`'s value is entirely type-level, so its assertions only
+        // mean anything when the compiler runs over them.
+        typecheck: {
+            enabled: true,
+            include: ["__tests__/**/*.test-d.ts"],
+            tsconfig: "./tsconfig.typecheck.json",
+        },
     },
 });
 
