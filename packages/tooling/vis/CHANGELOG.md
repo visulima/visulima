@@ -1,3 +1,22 @@
+## @visulima/vis [3.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%403.0.1...%40visulima%2Fvis%403.0.2) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.1
+* **@visulima/tui-kit:** upgraded to 1.0.4
+* **@visulima/fs:** upgraded to 6.0.1
+* **@visulima/package:** upgraded to 5.0.14
+* **@visulima/tsconfig:** upgraded to 3.2.8
+
+## @visulima/vis [3.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%403.0.0...%40visulima%2Fvis%403.0.1) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/find-ai-runner:** upgraded to 1.0.2
+* **@visulima/package:** upgraded to 5.0.13
+
 ## @visulima/vis [3.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%402.0.2...%40visulima%2Fvis%403.0.0) (2026-08-08)
 
 

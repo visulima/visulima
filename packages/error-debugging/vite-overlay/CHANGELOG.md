@@ -1,3 +1,7 @@
+## @visulima/vite-overlay [2.0.14](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.13...%40visulima%2Fvite-overlay%402.0.14) (2026-08-17)
+
+## @visulima/vite-overlay [2.0.13](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.12...%40visulima%2Fvite-overlay%402.0.13) (2026-08-17)
+
 ## @visulima/vite-overlay [2.0.12](https://github.com/visulima/visulima/compare/%40visulima%2Fvite-overlay%402.0.11...%40visulima%2Fvite-overlay%402.0.12) (2026-08-02)
 
 
