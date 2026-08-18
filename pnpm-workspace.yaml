@@ -60,26 +60,11 @@ allowBuilds:
   yarn: true
 
 auditConfig:
-  ignoreCves:
-    - CVE-2022-37620
-    - CVE-2020-8203
-    - CVE-2025-67898
-    - CVE-2025-13465
-    - CVE-2025-69874
-    - CVE-2026-0540
   ignoreGhsas:
-    - GHSA-chqc-8p9q-pq6q
     # lodash.set prototype pollution — dev-only path
     # (redact/__bench__ > @qiwi/masker); no patched release of the
     # frozen per-method package exists. Re-check if @qiwi/masker updates.
     - GHSA-p6mc-m468-83gw
-    # js-yaml merge-key quadratic DoS — only via @yarnpkg/parsers@3.x, which
-    # calls the v3-only safeLoad API (removed in v4), so we cannot move to 4.x.
-    # We pin its nested js-yaml to ^3.14.2, the patched v3 backport that fixes
-    # this CVE. The advisory's vulnerable range (<=4.1.1) is overly broad and
-    # still flags 3.14.2 even though the fix is present. Re-check if
-    # @yarnpkg/parsers adopts js-yaml v4.
-    - GHSA-h67p-54hq-rp68
     # image-size ICNS / JXL / HEIF parser DoS. No patched release exists for
     # either advisory (2.0.2 is latest and still affected), and it reaches us
     # only through @netlify/dev-utils, a dev-time dependency that never parses
