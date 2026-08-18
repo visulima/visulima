@@ -1,3 +1,4 @@
+import type { DkimOptions } from "../../crypto/types";
 import type { BaseConfig, EmailOptions } from "../../types";
 
 /**
@@ -7,6 +8,16 @@ import type { BaseConfig, EmailOptions } from "../../types";
  * `send` function — keeping this provider runtime-agnostic and testable.
  */
 export interface CloudflareEmailConfig extends BaseConfig {
+    /**
+     * DKIM signing, applied to the serialized MIME message just before it is handed to
+     * {@link CloudflareEmailConfig.send}.
+     *
+     * Canonicalization defaults to `relaxed/relaxed` here rather than the `simple/simple` of
+     * {@link DkimOptions}, since relaying hops re-wrap whitespace. `privateKey` must be key
+     * content — the Workers runtime has no filesystem, so `file://` paths do not resolve.
+     */
+    dkim?: DkimOptions;
+
     /**
      * Sends a raw RFC 822 message via your Worker's Email binding.
      * @param from The envelope-from address.
@@ -26,4 +37,10 @@ export interface CloudflareEmailConfig extends BaseConfig {
 /**
  * Cloudflare Email-specific options.
  */
-export type CloudflareEmailOptions = EmailOptions;
+export interface CloudflareEmailOptions extends EmailOptions {
+    /**
+     * Sign this message with DKIM when {@link CloudflareEmailConfig.dkim} is configured.
+     * @default true
+     */
+    useDkim?: boolean;
+}

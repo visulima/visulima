@@ -20,8 +20,16 @@ export interface OAuth2MiddlewareOptions {
     fetchToken: () => Promise<OAuth2Token> | OAuth2Token;
 
     /**
-     * The header to inject the credential into.
-     * @default "Authorization"
+     * Inject the credential into this **message** header.
+     *
+     * `EmailOptions.headers` are MIME headers written onto the outgoing message (see
+     * `buildMimeMessage`), so every recipient — and every hop — sees this value. Providers
+     * authenticate over their own transport (`apiKey` in the HTTP request, SMTP XOAUTH2), never
+     * from here, so there is no legitimate reason to set this to `Authorization`.
+     *
+     * Leave it unset unless a provider genuinely requires a custom credential header on the
+     * message itself. Use {@link OAuth2MiddlewareOptions.onToken} instead.
+     * @default undefined — no header is injected
      */
     headerName?: string;
 
@@ -51,16 +59,31 @@ export interface OAuth2MiddlewareOptions {
 }
 
 /**
- * Injects an OAuth2 bearer credential into each outgoing message, refreshing it on demand and caching
- * it until just before expiry.
+ * Acquires an OAuth2 credential for each outgoing message, refreshing it on demand and caching it
+ * until just before expiry.
  *
- * Supplies the token to provider clients (Gmail, Microsoft 365) either via a request header or the
- * {@link OAuth2MiddlewareOptions.onToken} callback (for SMTP XOAUTH2).
+ * The token is handed to the caller through {@link OAuth2MiddlewareOptions.onToken} — the channel
+ * provider clients (Gmail, Microsoft 365, SMTP XOAUTH2) authenticate from. It is **not** written
+ * onto the message unless {@link OAuth2MiddlewareOptions.headerName} is set explicitly, because
+ * `EmailOptions.headers` are MIME headers the recipient can read.
  * @param options OAuth2 configuration. See {@link OAuth2MiddlewareOptions}.
  * @returns The middleware.
+ * @throws {TypeError} If neither `onToken` nor `headerName` is supplied — the token would have
+ * nowhere to go and the middleware would silently do nothing but burn token-endpoint calls — or if
+ * `headerName` is empty.
  */
 export const oauth2Middleware = (options: OAuth2MiddlewareOptions): Middleware => {
-    const { fetchToken, headerName = "Authorization", now = Date.now, onToken, scheme = "Bearer", skewMs = 60_000 } = options;
+    const { fetchToken, headerName, now = Date.now, onToken, scheme = "Bearer", skewMs = 60_000 } = options;
+
+    if (headerName?.trim() === "") {
+        // An empty name passes the `undefined` check below and then reaches MIME construction as a
+        // nameless field.
+        throw new TypeError("oauth2Middleware: `headerName` must be a non-empty header name.");
+    }
+
+    if (onToken === undefined && headerName === undefined) {
+        throw new TypeError("oauth2Middleware: supply `onToken` to receive the token (recommended), or `headerName` to inject it into a message header.");
+    }
 
     const getToken = createTokenCache(async () => {
         const token = await fetchToken();
@@ -72,6 +95,10 @@ export const oauth2Middleware = (options: OAuth2MiddlewareOptions): Middleware =
 
     return async (emailOptions, next) => {
         const token = await getToken();
+
+        if (headerName === undefined) {
+            return next(emailOptions);
+        }
 
         const headers = emailOptions.headers ? headersToRecord(emailOptions.headers) : {};
 

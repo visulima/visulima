@@ -514,15 +514,18 @@ class MailMessage {
     }
 
     /**
-     * Signs the email message using a signer (DKIM or S/MIME).
+     * Signs the email message with an S/MIME signer.
+     *
+     * DKIM is not accepted here and `DkimSigner` deliberately does not satisfy `EmailSigner`: a
+     * DKIM signature commits to the serialized MIME message, which does not exist at this layer.
+     * Configure it on a transport that writes raw MIME instead — `smtpProvider({ dkim: {...} })`.
      * @param signer The signer instance to use.
      * @example
      * ```ts
-     * import { createDkimSigner } from '@visulima/email/crypto';
-     * const signer = createDkimSigner({
-     *   domainName: 'example.com',
-     *   keySelector: 'default',
-     *   privateKey: '-----BEGIN PRIVATE KEY-----...'
+     * import { createSmimeSigner } from '@visulima/email/crypto';
+     * const signer = createSmimeSigner({
+     *   certificate: '/path/to/certificate.crt',
+     *   privateKey: '/path/to/private-key.pem'
      * });
      * message.sign(signer)
      * ```

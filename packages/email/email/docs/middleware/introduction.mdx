@@ -170,9 +170,15 @@ mail.use(loggingMiddleware({ logger: myLogger, redact: false }));
 
 ## oauth2Middleware
 
-Injects an OAuth2 bearer credential into each outgoing message, caching it until just before expiry and refreshing on demand. Use it for Gmail / Microsoft 365, where access tokens are short-lived. The token can be injected as a request header (default) or handed to the `onToken` callback for SMTP XOAUTH2 clients. Concurrent sends during a refresh share one in-flight request rather than stampeding the token endpoint.
+Acquires an OAuth2 bearer credential for each outgoing message, caching it until just before expiry and refreshing on demand. Use it for Gmail / Microsoft 365, where access tokens are short-lived. The token is delivered through the `onToken` callback — feed it to your SMTP XOAUTH2 client or provider SDK. Concurrent sends during a refresh share one in-flight request rather than stampeding the token endpoint.
 
-> **Note:** the [Outlook365 provider](/docs/providers/outlook365) authenticates to Microsoft Graph itself — app-only (client credentials) and delegated (refresh token) flows are built in, so it needs no middleware. Reach for `oauth2Middleware` when a provider takes its credential from a request header, or for SMTP XOAUTH2.
+> **Note:** the [Outlook365 provider](/docs/providers/outlook365) authenticates to Microsoft Graph itself — app-only (client credentials) and delegated (refresh token) flows are built in, so it needs no middleware. Reach for `oauth2Middleware` for SMTP XOAUTH2, or when you drive a provider client yourself.
+
+<Callout type="warning">
+    `headerName` writes the credential into `EmailOptions.headers`, which are **MIME headers on the message** — not HTTP request headers. Every recipient, and
+    the ESP's stored copy, can read them. Providers take their credential from their own transport (`apiKey` on the request, SMTP XOAUTH2), so leave
+    `headerName` unset unless a provider specifically requires a credential header on the message itself.
+</Callout>
 
 ```typescript
 type OAuth2Token = {
@@ -182,10 +188,10 @@ type OAuth2Token = {
 
 type OAuth2MiddlewareOptions = {
     fetchToken: () => Promise<OAuth2Token> | OAuth2Token; // your refresh flow
-    headerName?: string; // header to inject into (default: "Authorization")
+    onToken?: (token: OAuth2Token) => void; // e.g. feed SMTP XOAUTH2
+    headerName?: string; // opt-in: inject into this MIME header (default: none)
     scheme?: string; // auth scheme prefix (default: "Bearer")
     skewMs?: number; // refresh this many ms before expiry (default: 60000)
-    onToken?: (token: OAuth2Token) => void; // e.g. feed SMTP XOAUTH2
     now?: () => number; // time source in ms (default: Date.now)
 };
 ```
@@ -200,11 +206,12 @@ mail.use(
 
             return { accessToken: access_token, expiresAt: Date.now() + expires_in * 1000 };
         },
+        onToken: (token) => transport.setXOAuth2(token.accessToken),
     }),
 );
 ```
 
-`fetchToken` is only called when the cached token is missing or within `skewMs` of expiry, so token refreshes are minimized across sends.
+`fetchToken` is only called when the cached token is missing or within `skewMs` of expiry, so token refreshes are minimized across sends. Supplying neither `onToken` nor `headerName` throws a `TypeError` — the token would have nowhere to go.
 
 ## composeMiddleware
 

@@ -4,6 +4,7 @@ import cloudflareEmailProvider from "../../src/providers/cloudflare-email/provid
 import loopsProvider from "../../src/providers/loops/provider";
 import mailchannelsProvider from "../../src/providers/mailchannels/provider";
 import type { EmailOptions } from "../../src/types";
+import { TEST_PRIVATE_KEY } from "../crypto/fixtures";
 
 const message: EmailOptions = {
     from: { email: "from@example.com", name: "Sender" },
@@ -84,6 +85,37 @@ describe("new providers", () => {
 
             expect([from, to]).toStrictEqual(["from@example.com", "to@example.com"]);
             expect(raw).toContain("Subject:");
+        });
+
+        it("signs the serialized message with DKIM before handing it to the binding", async () => {
+            expect.assertions(3);
+
+            const send = vi.fn(() => Promise.resolve());
+            const result = await cloudflareEmailProvider({
+                dkim: { domainName: "example.com", keySelector: "default", privateKey: TEST_PRIVATE_KEY },
+                send,
+            }).sendEmail(message);
+
+            expect(result.success).toBe(true);
+
+            const raw = (send.mock.calls[0] as [string, string, string])[2];
+
+            expect(raw.startsWith("DKIM-Signature: ")).toBe(true);
+            // The SMTP default applies here too: simple/simple does not survive a relaying hop.
+            expect(raw).toContain("c=relaxed/relaxed");
+        });
+
+        it("skips DKIM signing when useDkim is false", async () => {
+            expect.assertions(2);
+
+            const send = vi.fn(() => Promise.resolve());
+            const result = await cloudflareEmailProvider({
+                dkim: { domainName: "example.com", keySelector: "default", privateKey: TEST_PRIVATE_KEY },
+                send,
+            }).sendEmail({ ...message, useDkim: false });
+
+            expect(result.success).toBe(true);
+            expect((send.mock.calls[0] as [string, string, string])[2]).not.toContain("DKIM-Signature:");
         });
     });
 });

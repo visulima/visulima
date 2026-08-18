@@ -5,12 +5,8 @@ import { createHash, createPrivateKey, createPublicKey, createSign, sign as cryp
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { readFile } from "@visulima/fs";
 
-import type { EmailOptions } from "../types";
-import headersToRecord from "../utils/headers-to-record";
-import { formatAddresses } from "./format-address";
+import { canonicalizeBody, canonicalizeHeader, orderSignedHeaders, parseMimeHeaders, splitMimeMessage } from "./canonicalize";
 
-const WHITESPACE_RUN = /\s+/g;
-const TRAILING_SPACE = / $/;
 const AAR_INSTANCE = /^\s*i=(\d+)\s*;/;
 
 /**
@@ -135,48 +131,7 @@ interface ArcVerifyResult {
  * @param value The header field value.
  * @returns The canonicalized `name:value` line.
  */
-const relaxedHeader = (name: string, value: string): string => `${name.toLowerCase()}:${value.replaceAll(WHITESPACE_RUN, " ").trim()}`;
-
-/**
- * RFC 6376 "relaxed" body canonicalization.
- * @param body The message body.
- * @returns The canonicalized body.
- */
-const relaxedBody = (body: string): string => {
-    const lines = body.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n");
-    const processed = lines.map((line) => line.replaceAll(WHITESPACE_RUN, " ").replace(TRAILING_SPACE, ""));
-
-    let text = processed.join("\r\n");
-
-    while (text.endsWith("\r\n")) {
-        text = text.slice(0, -2);
-    }
-
-    // RFC 6376 relaxed body canonicalization: an empty body still hashes as a single CRLF.
-    return text.length > 0 ? `${text}\r\n` : "\r\n";
-};
-
-/**
- * Builds the signable header map (well-known fields plus any caller headers).
- * @param email The email being sealed.
- * @returns The header record.
- */
-const buildHeaders = (email: EmailOptions): Record<string, string> => {
-    const headers: Record<string, string> = {
-        ...email.headers ? headersToRecord(email.headers) : {},
-        From: formatAddresses(email.from),
-        Subject: email.subject,
-        To: formatAddresses(email.to),
-    };
-
-    if (email.cc) {
-        headers.Cc = formatAddresses(email.cc);
-    }
-
-    headers["MIME-Version"] ??= "1.0";
-
-    return headers;
-};
+const relaxedHeader = (name: string, value: string): string => canonicalizeHeader(name, value, "relaxed");
 
 /**
  * Parses a DKIM/ARC tag string (`k=v; k2=v2`) into a record of trimmed tag values.
@@ -208,18 +163,6 @@ const stripSignature = (headerValue: string): string => {
     return index === -1 ? headerValue : headerValue.slice(0, index + 2);
 };
 
-/**
- * Computes the body hash for the message, matching the signer (relaxed canonicalization of
- * `text` + "\n\n" + `html`).
- * @param email The email whose body to hash.
- * @returns The base64 SHA-256 body hash.
- */
-const bodyHashOf = (email: EmailOptions): string => {
-    const body = [email.text, email.html].filter((part): part is string => part !== undefined).join("\n\n");
-
-    return createHash("sha256").update(relaxedBody(body)).digest("base64");
-};
-
 const signData = (data: string, key: KeyObject, algorithm: ArcAlgorithm): string => {
     if (algorithm === "ed25519-sha256") {
         // RFC 8463: Ed25519 signs the SHA-256 digest of the data. node requires `null` as the algorithm.
@@ -249,23 +192,30 @@ const verifyData = (data: string, signature: string, key: KeyObject, algorithm: 
  * Computes the exact byte string that the ARC-Message-Signature `b=` value signs.
  *
  * Exposed so ARC verifiers (and tests) can re-derive the signing input.
- * @param email The email being sealed.
+ * @param message The serialized MIME message being sealed.
  * @param options The seal options.
  * @returns The AMS header (without the `b=` value) and the data signed.
+ * @throws {Error} When `message` has no header/body separator.
  */
-const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): { header: string; signBase: string } => {
+const arcMessageSignatureBase = (message: string, options: ArcSealOptions): { header: string; signBase: string } => {
+    const parts = splitMimeMessage(message);
+
+    if (parts === undefined) {
+        throw new Error("Failed to seal with ARC: the message has no CRLFCRLF header/body separator, so it is not a complete MIME message.");
+    }
+
     const instance = options.instance ?? 1;
     const algorithm = options.algorithm ?? "rsa-sha256";
     const timestamp = options.timestamp ?? Math.floor(Date.now() / 1000);
-    const headers = buildHeaders(email);
 
-    // Only sign headers that are actually present with a non-empty value: a name in h= whose value
+    const wanted = new Set(options.headersToSign ?? DEFAULT_SIGNED_HEADERS);
+    // Only sign headers actually present with a non-empty value: a name in h= whose value
     // canonicalizes to empty would break verification, and we do not synthesize Date/Message-ID.
-    const signedHeaderNames = (options.headersToSign ?? DEFAULT_SIGNED_HEADERS).filter((name) => {
-        const key = Object.keys(headers).find((header) => header.toLowerCase() === name);
+    const signedHeaders = orderSignedHeaders(
+        parseMimeHeaders(parts.headersPart).filter((header) => wanted.has(header.name.toLowerCase()) && header.value.trim() !== ""),
+    );
 
-        return key !== undefined && headers[key] !== undefined && headers[key] !== "";
-    });
+    const bodyHash = createHash("sha256").update(canonicalizeBody(parts.body, "relaxed")).digest("base64");
 
     const headerValue = [
         `i=${String(instance)}`,
@@ -274,18 +224,12 @@ const arcMessageSignatureBase = (email: EmailOptions, options: ArcSealOptions): 
         `d=${options.domainName}`,
         `s=${options.keySelector}`,
         `t=${String(timestamp)}`,
-        `h=${signedHeaderNames.join(":")}`,
-        `bh=${bodyHashOf(email)}`,
+        `h=${signedHeaders.map((header) => header.name.toLowerCase()).join(":")}`,
+        `bh=${bodyHash}`,
         "b=",
     ].join("; ");
 
-    const canonicalizedHeaders = signedHeaderNames
-        .map((name) => {
-            const key = Object.keys(headers).find((header) => header.toLowerCase() === name) as string;
-
-            return relaxedHeader(name, headers[key] ?? "");
-        })
-        .join("\r\n");
+    const canonicalizedHeaders = signedHeaders.map((header) => canonicalizeHeader(header.name, header.value, "relaxed")).join("\r\n");
 
     // The AMS header itself is included with a trailing (empty) b= and no trailing CRLF.
     const signBase = `${canonicalizedHeaders}\r\n${relaxedHeader("ARC-Message-Signature", headerValue)}`;
@@ -345,16 +289,17 @@ const loadPrivateKey = async (privateKey: string, passphrase?: string): Promise<
  * your service forwards mail and wants downstream receivers to trust the authentication results you
  * observed. Supports RSA (default) and Ed25519 (`algorithm: "ed25519-sha256"`, RFC 8463) keys.
  *
- * IMPORTANT: the body hash (`bh=`) is computed over `text` + "\n\n" + `html` with relaxed
- * canonicalization — the same simplification as the DKIM signer. For a third-party ARC verifier to
- * accept the seal, the body actually transmitted on the wire must canonicalize to this same value, so
- * apply ARC at the point where the MIME body is finalized (or feed in the exact rendered body).
- * @param email The email to seal.
+ * Takes the serialized message rather than `EmailOptions`, because an ARC seal — like a DKIM
+ * signature — commits to the bytes on the wire: `bh=` hashes the transmitted body and `h=` covers
+ * the headers a downstream verifier will actually read. Forwarding is where ARC belongs, and there
+ * the raw message is what you already have.
+ * @param message The serialized MIME message to seal.
  * @param options The seal options. See {@link ArcSealOptions}.
- * @returns The email with the ARC header set added, and the raw {@link ArcHeaderSet}.
- * @throws {Error} When the private key cannot be loaded or signing fails.
+ * @returns The message with the ARC header set prepended, and the raw {@link ArcHeaderSet}.
+ * @throws {Error} When the message is not a complete MIME message, the private key cannot be
+ * loaded, or signing fails.
  */
-const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ email: EmailOptions; headers: ArcHeaderSet }> => {
+const signArc = async (message: string, options: ArcSealOptions): Promise<{ headers: ArcHeaderSet; message: string }> => {
     const instance = options.instance ?? 1;
     const cv = options.cv ?? "none";
 
@@ -377,7 +322,7 @@ const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ 
 
     const aarValue = `i=${String(instance)}; ${options.authenticationResults}`;
 
-    const ams = arcMessageSignatureBase(email, sealOptions);
+    const ams = arcMessageSignatureBase(message, sealOptions);
     const amsValue = `${ams.header}${signData(ams.signBase, key, algorithm)}`;
 
     const seal = arcSealBase(aarValue, amsValue, sealOptions);
@@ -389,27 +334,25 @@ const signArc = async (email: EmailOptions, options: ArcSealOptions): Promise<{ 
         "ARC-Seal": sealValue,
     };
 
-    return {
-        email: {
-            ...email,
-            headers: { ...email.headers ? headersToRecord(email.headers) : {}, ...headers },
-        },
-        headers,
-    };
+    // RFC 8617 §5.1: the set is prepended in reverse instance order, newest first, so a verifier
+    // reading top-down walks the chain from the most recent seal backwards.
+    const headerBlock = [`ARC-Seal: ${sealValue}`, `ARC-Message-Signature: ${amsValue}`, `ARC-Authentication-Results: ${aarValue}`].join("\r\n");
+
+    return { headers, message: `${headerBlock}\r\n${message}` };
 };
 
 /**
  * Verifies an originating (i=1) ARC header set against the signing domain's public key.
  *
- * Re-derives the AMS and ARC-Seal signing inputs from `email` + the supplied ARC headers, recomputes
- * the body hash, and checks all three. The public key must be the one published for the seal's
- * `s=`/`d=` (the DKIM-style `&lt;selector>._domainkey.&lt;domain>` TXT `p=` value).
- * @param email The message that was sealed (same fields used when signing).
+ * Re-derives the AMS and ARC-Seal signing inputs from the message + the supplied ARC headers,
+ * recomputes the body hash, and checks all three. The public key must be the one published for the
+ * seal's `s=`/`d=` (the DKIM-style `&lt;selector>._domainkey.&lt;domain>` TXT `p=` value).
+ * @param message The serialized MIME message that was sealed, without the ARC header set.
  * @param headers The ARC header set (or any record containing the three `ARC-*` headers).
  * @param options Verification options. See {@link ArcVerifyOptions}.
  * @returns The verification result. See {@link ArcVerifyResult}.
  */
-const verifyArc = (email: EmailOptions, headers: ArcHeaderSet | Record<string, string>, options: ArcVerifyOptions): ArcVerifyResult => {
+const verifyArc = (message: string, headers: ArcHeaderSet | Record<string, string>, options: ArcVerifyOptions): ArcVerifyResult => {
     const lower = Object.fromEntries(Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value])) as Record<string, string>;
     const amsValue = lower["arc-message-signature"];
     const sealValue = lower["arc-seal"];
@@ -440,20 +383,31 @@ const verifyArc = (email: EmailOptions, headers: ArcHeaderSet | Record<string, s
     const amsAlgorithm: ArcAlgorithm = amsTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
     const sealAlgorithm: ArcAlgorithm = sealTags.a === "ed25519-sha256" ? "ed25519-sha256" : "rsa-sha256";
 
-    // Body hash: recompute and compare to the bh= tag.
-    const bodyHash = amsTags.bh !== undefined && amsTags.bh === bodyHashOf(email);
+    const parts = splitMimeMessage(message);
+
+    if (parts === undefined) {
+        return { components: { ams: false, bodyHash: false, seal: false }, reason: "malformed-message", valid: false };
+    }
+
+    // Body hash: recompute over the transmitted body and compare to the bh= tag.
+    const bodyHash = amsTags.bh !== undefined && amsTags.bh === createHash("sha256").update(canonicalizeBody(parts.body, "relaxed")).digest("base64");
 
     // ARC-Message-Signature: canonicalize the h= headers + the AMS header with an emptied b=.
-    const messageHeaders = buildHeaders(email);
+    const messageHeaders = parseMimeHeaders(parts.headersPart);
     const signedNames = (amsTags.h ?? "")
         .split(":")
         .map((name) => name.trim().toLowerCase())
         .filter(Boolean);
+    // §5.4.2 again: a repeated name is satisfied from the bottom of the block upward.
+    const takenPerName = new Map<string, number>();
     const canonicalizedHeaders = signedNames
         .map((name) => {
-            const key = Object.keys(messageHeaders).find((header) => header.toLowerCase() === name);
+            const instances = messageHeaders.filter((header) => header.name.toLowerCase() === name);
+            const taken = takenPerName.get(name) ?? 0;
 
-            return relaxedHeader(name, key ? messageHeaders[key] ?? "" : "");
+            takenPerName.set(name, taken + 1);
+
+            return canonicalizeHeader(name, instances[instances.length - 1 - taken]?.value ?? "", "relaxed");
         })
         .join("\r\n");
     const amsSignBase = `${canonicalizedHeaders}\r\n${relaxedHeader("ARC-Message-Signature", stripSignature(amsValue))}`;

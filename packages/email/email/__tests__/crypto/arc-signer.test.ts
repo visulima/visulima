@@ -1,11 +1,12 @@
 import { Buffer } from "node:buffer";
-import { generateKeyPairSync, verify as cryptoVerify } from "node:crypto";
+import { createHash, generateKeyPairSync, verify as cryptoVerify } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
 import type { ArcSealOptions } from "../../src/crypto/arc-signer";
 import { arcMessageSignatureBase, arcSealBase, signArc, verifyArc } from "../../src/crypto/arc-signer";
 import type { EmailOptions } from "../../src/types";
+import buildMimeMessage from "../../src/utils/build-mime-message";
 
 const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const privateKeyPem = privateKey.export({ format: "pem", type: "pkcs8" });
@@ -28,6 +29,12 @@ const options: ArcSealOptions = {
     timestamp: 1_700_000_000,
 };
 
+/** The serialized message an ARC sealer actually receives. */
+const rawMessage = await buildMimeMessage(email);
+
+const RE_WSP_RUN = /[ \t]+/g;
+const RE_TRAILING_SPACE = / $/;
+
 const tagValue = (header: string, tag: string): string | undefined =>
     header
         .split(";")
@@ -39,7 +46,7 @@ describe("arc signer", () => {
     it("produces an i=1 ARC header set with the expected tags", async () => {
         expect.assertions(7);
 
-        const { headers } = await signArc(email, options);
+        const { headers } = await signArc(rawMessage, options);
 
         expect(headers["ARC-Authentication-Results"]).toBe(`i=1; ${options.authenticationResults}`);
         expect(tagValue(headers["ARC-Seal"], "i")).toBe("1");
@@ -50,25 +57,59 @@ describe("arc signer", () => {
         expect(tagValue(headers["ARC-Seal"], "b")?.length ?? 0).toBeGreaterThan(0);
     });
 
-    it("adds the three ARC headers to the returned email", async () => {
-        expect.assertions(3);
+    it("prepends the three ARC headers to the message, newest first", async () => {
+        expect.assertions(4);
 
-        const { email: sealed } = await signArc(email, options);
-        const headers = sealed.headers as Record<string, string>;
+        const { message: sealed } = await signArc(rawMessage, options);
+        const lines = sealed.split("\r\n");
 
-        expect(headers["ARC-Authentication-Results"]).toBeDefined();
-        expect(headers["ARC-Message-Signature"]).toBeDefined();
-        expect(headers["ARC-Seal"]).toBeDefined();
+        // RFC 8617 §5.1: the set is prepended in reverse instance order.
+        expect(lines[0]?.startsWith("ARC-Seal: ")).toBe(true);
+        expect(lines[1]?.startsWith("ARC-Message-Signature: ")).toBe(true);
+        expect(lines[2]?.startsWith("ARC-Authentication-Results: ")).toBe(true);
+        // The original message survives intact underneath.
+        expect(sealed.endsWith(rawMessage)).toBe(true);
+    });
+
+    it("hashes the transmitted body, not a synthesized text + html string", async () => {
+        expect.assertions(2);
+
+        const { headers } = await signArc(rawMessage, options);
+        const bh = tagValue(headers["ARC-Message-Signature"], "bh") as string;
+
+        // The old signer hashed `text + "\n\n" + html`, which is not what goes on the wire — so
+        // every seal it produced failed third-party verification for the same reason DKIM did.
+        const naive = createHash("sha256")
+            .update(`${email.text as string}\r\n\r\n${email.html as string}\r\n`)
+            .digest("base64");
+
+        expect(bh).not.toBe(naive);
+
+        // What it must be: the relaxed canonicalization of the real MIME body.
+        const body = rawMessage.slice(rawMessage.indexOf("\r\n\r\n") + 4);
+        const lines = body.split("\r\n").map((line) => line.replaceAll(RE_WSP_RUN, " ").replace(RE_TRAILING_SPACE, ""));
+
+        let end = lines.length;
+
+        while (end > 0 && lines[end - 1] === "") {
+            end -= 1;
+        }
+
+        expect(bh).toBe(
+            createHash("sha256")
+                .update(end === 0 ? "" : `${lines.slice(0, end).join("\r\n")}\r\n`)
+                .digest("base64"),
+        );
     });
 
     it("signs AMS and AS so both verify against the public key", async () => {
         expect.assertions(2);
 
-        const { headers } = await signArc(email, options);
+        const { headers } = await signArc(rawMessage, options);
 
         // ARC-Message-Signature: strip the b= value and verify it over the AMS sign base.
         const amsSignature = tagValue(headers["ARC-Message-Signature"], "b") as string;
-        const ams = arcMessageSignatureBase(email, options);
+        const ams = arcMessageSignatureBase(rawMessage, options);
 
         expect(cryptoVerify("RSA-SHA256", Buffer.from(ams.signBase), publicKey, Buffer.from(amsSignature, "base64"))).toBe(true);
 
@@ -82,8 +123,8 @@ describe("arc signer", () => {
     it("is deterministic for a fixed timestamp", async () => {
         expect.assertions(1);
 
-        const first = await signArc(email, options);
-        const second = await signArc(email, options);
+        const first = await signArc(rawMessage, options);
+        const second = await signArc(rawMessage, options);
 
         expect(first.headers).toStrictEqual(second.headers);
     });
@@ -92,8 +133,8 @@ describe("arc signer", () => {
         it("verifies an RSA-signed chain it produced", async () => {
             expect.assertions(4);
 
-            const { headers } = await signArc(email, options);
-            const result = verifyArc(email, headers, { publicKey });
+            const { headers } = await signArc(rawMessage, options);
+            const result = verifyArc(rawMessage, headers, { publicKey });
 
             expect(result.valid).toBe(true);
             expect(result.components.ams).toBe(true);
@@ -104,8 +145,8 @@ describe("arc signer", () => {
         it("verifies an Ed25519-signed chain (RFC 8463)", async () => {
             expect.assertions(1);
 
-            const { headers } = await signArc(email, { ...options, algorithm: "ed25519-sha256", privateKey: edPrivatePem });
-            const result = verifyArc(email, headers, { publicKey: ed.publicKey });
+            const { headers } = await signArc(rawMessage, { ...options, algorithm: "ed25519-sha256", privateKey: edPrivatePem });
+            const result = verifyArc(rawMessage, headers, { publicKey: ed.publicKey });
 
             expect(result.valid).toBe(true);
         });
@@ -113,8 +154,8 @@ describe("arc signer", () => {
         it("rejects a tampered body (body-hash mismatch)", async () => {
             expect.assertions(2);
 
-            const { headers } = await signArc(email, options);
-            const result = verifyArc({ ...email, text: "tampered" }, headers, { publicKey });
+            const { headers } = await signArc(rawMessage, options);
+            const result = verifyArc(rawMessage.replace("Hi", "tampered"), headers, { publicKey });
 
             expect(result.valid).toBe(false);
             expect(result.components.bodyHash).toBe(false);
@@ -123,8 +164,8 @@ describe("arc signer", () => {
         it("rejects verification with the wrong key", async () => {
             expect.assertions(1);
 
-            const { headers } = await signArc(email, options);
-            const result = verifyArc(email, headers, { publicKey: ed.publicKey });
+            const { headers } = await signArc(rawMessage, options);
+            const result = verifyArc(rawMessage, headers, { publicKey: ed.publicKey });
 
             expect(result.valid).toBe(false);
         });
@@ -132,7 +173,7 @@ describe("arc signer", () => {
         it("reports missing ARC headers", () => {
             expect.assertions(2);
 
-            const result = verifyArc(email, {}, { publicKey });
+            const result = verifyArc(rawMessage, {}, { publicKey });
 
             expect(result.valid).toBe(false);
             expect(result.reason).toBe("missing-arc-headers");
