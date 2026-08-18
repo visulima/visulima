@@ -1862,7 +1862,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // config; both default to on. The helper logs the warn line itself
     // in TTY; in CI it stays silent and we throw with `formattedMessage`
     // so the user sees the detail exactly once.
-    const preflightEnabled = options.preflight && config.preflight?.lockfile !== false;
+    const preflightEnabled = options.preflight !== false && config.preflight?.lockfile !== false;
     const lockfilePreflight = runLockfilePreflight(
         workspaceRoot,
         isInCi,

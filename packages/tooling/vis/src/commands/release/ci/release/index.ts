@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const ciReleaseOptionDefinitions = {
@@ -40,10 +40,4 @@ const ciRelease = defineCommand({
 
 export default ciRelease;
 
-export type ReleaseCiReleaseOptions = CreateOptions<{
-    "auto-publish": boolean | undefined;
-    branch: string | undefined;
-    channel: string | undefined;
-    "first-release": boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseCiReleaseOptions = InferOptions<typeof ciReleaseOptionDefinitions>;

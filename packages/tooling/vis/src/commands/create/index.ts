@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const createOptionDefinitions = {
@@ -47,9 +47,4 @@ const create = defineCommand({
 
 export default create;
 
-export type CreateCommandOptions = CreateOptions<{
-    editor: string | undefined;
-    "git-init": boolean | undefined;
-    list: boolean | undefined;
-    "no-interactive": boolean | undefined;
-}>;
+export type CreateCommandOptions = InferOptions<typeof createOptionDefinitions>;

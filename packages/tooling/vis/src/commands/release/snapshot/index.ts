@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const snapshotOptionDefinitions = {
@@ -40,10 +40,4 @@ const snapshot = defineCommand({
 
 export default snapshot;
 
-export type ReleaseSnapshotOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    filter: string | undefined;
-    "print-config": string | undefined;
-    registry: string | undefined;
-    tag: string | undefined;
-}>;
+export type ReleaseSnapshotOptions = InferOptions<typeof snapshotOptionDefinitions>;

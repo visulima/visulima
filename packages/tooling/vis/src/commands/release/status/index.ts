@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const statusOptionDefinitions = {
@@ -41,10 +41,4 @@ const status = defineCommand({
 
 export default status;
 
-export type ReleaseStatusOptions = CreateOptions<{
-    bump: string | undefined;
-    channel: string | undefined;
-    filter: string | undefined;
-    json: boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseStatusOptions = InferOptions<typeof statusOptionDefinitions>;

@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const versionOptionDefinitions = {
@@ -49,12 +49,4 @@ const version = defineCommand({
 
 export default version;
 
-export type ReleaseVersionOptions = CreateOptions<{
-    channel: string | undefined;
-    "check-only": boolean | undefined;
-    commit: boolean | undefined;
-    "dry-run": boolean | undefined;
-    filter: string | undefined;
-    "first-release": boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseVersionOptions = InferOptions<typeof versionOptionDefinitions>;

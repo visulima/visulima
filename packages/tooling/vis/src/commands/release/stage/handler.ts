@@ -218,7 +218,7 @@ const runApproveOrReject = async (
             if (next !== registry) {
                 const write = await writeStagedRegistry(cwd, changesDir, next);
 
-                if (write.changed && options.commit !== false) {
+                if (write.changed && options.commit) {
                     const { stageAndCommitFile } = await import("../../../release/core/git");
                     const message = write.removed
                         ? `chore(release): clear pending stage registry [skip ci]`
@@ -226,11 +226,11 @@ const runApproveOrReject = async (
 
                     await stageAndCommitFile({ cwd, runner }, write.path, message, {
                         author: ctx.config.gitUser,
-                        push: options.push !== false,
+                        push: options.push,
                         sign: ctx.config.gitSignCommits === true,
                     });
 
-                    logger.info(`Updated ${write.path} and committed${options.push === false ? "" : " + pushed"}.`);
+                    logger.info(`Updated ${write.path} and committed${options.push ? " + pushed" : ""}.`);
                 } else if (write.changed) {
                     logger.info(`Updated ${write.path}. Commit + push it so the next release wave sees the resolved state.`);
                 }
@@ -298,7 +298,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     let lockChangesDir: string | undefined;
     let lockAcquired = false;
 
-    if (options.commit !== false) {
+    if (options.commit) {
         try {
             const ctx = await buildContext({ cwd });
 

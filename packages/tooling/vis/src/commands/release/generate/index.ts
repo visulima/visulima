@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const generateOptionDefinitions = {
@@ -36,9 +36,4 @@ const generate = defineCommand({
 
 export default generate;
 
-export type ReleaseGenerateOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    from: string | undefined;
-    name: string | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseGenerateOptions = InferOptions<typeof generateOptionDefinitions>;

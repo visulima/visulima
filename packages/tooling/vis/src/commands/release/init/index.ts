@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const initOptionDefinitions = {
@@ -64,15 +64,4 @@ const init = defineCommand({
 
 export default init;
 
-export type ReleaseInitOptions = CreateOptions<{
-    agent: boolean | undefined;
-    apply: boolean | undefined;
-    "dry-run": boolean | undefined;
-    fresh: boolean | undefined;
-    "from-bumpy": boolean | undefined;
-    "from-changesets": boolean | undefined;
-    "from-semantic-release": boolean | undefined;
-    "package-manager": string | undefined;
-    workflows: boolean | undefined;
-    yes: boolean | undefined;
-}>;
+export type ReleaseInitOptions = InferOptions<typeof initOptionDefinitions>;

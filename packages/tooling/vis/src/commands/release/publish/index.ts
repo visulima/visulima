@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const publishOptionDefinitions = {
@@ -62,15 +62,4 @@ const publish = defineCommand({
 
 export default publish;
 
-export type ReleasePublishOptions = CreateOptions<{
-    channel: string | undefined;
-    "check-only": boolean | undefined;
-    "dry-run": boolean | undefined;
-    filter: string | undefined;
-    "first-release": boolean | undefined;
-    "no-push": boolean | undefined;
-    otp: string | undefined;
-    "print-config": string | undefined;
-    resume: boolean | undefined;
-    tag: string | undefined;
-}>;
+export type ReleasePublishOptions = InferOptions<typeof publishOptionDefinitions>;

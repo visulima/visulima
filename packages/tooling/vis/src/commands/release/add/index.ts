@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const addOptionDefinitions = {
@@ -46,11 +46,4 @@ const add = defineCommand({
 
 export default add;
 
-export type ReleaseAddOptions = CreateOptions<{
-    empty: boolean | undefined;
-    "from-bot-pr": boolean | undefined;
-    message: string | undefined;
-    name: string | undefined;
-    none: boolean | undefined;
-    packages: string | undefined;
-}>;
+export type ReleaseAddOptions = InferOptions<typeof addOptionDefinitions>;

@@ -19,7 +19,7 @@ import type { ReleaseCheckOptions } from "./index";
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseCheckOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
-    const noFail = options.noFail === true;
+    const noFail = !options.fail;
     const strict = options.strict === true;
 
     const ctx = await buildContext({ cwd });

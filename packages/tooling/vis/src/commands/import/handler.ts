@@ -53,7 +53,7 @@ const execute: CommandExecute<Toolbox<Console, ImportOptions>> = async ({ argume
         logger.info("Dry run — no changes will be made. Planned steps:");
         logger.info(`  git subtree add --prefix=${prefix}${squash}${message} ${source} ${ref}`);
 
-        if (!options.noRegister) {
+        if (options.register) {
             logger.info(`  register ${prefix} into the workspace config (skipped if already covered by an existing glob)`);
         }
 
@@ -70,9 +70,7 @@ const execute: CommandExecute<Toolbox<Console, ImportOptions>> = async ({ argume
 
     logger.info(`✓ Imported ${source} into ${prefix} (history preserved).`);
 
-    if (options.noRegister) {
-        logger.info(dim(`Skipped workspace registration (--no-register). Add ${prefix} to your workspace config manually.`));
-    } else {
+    if (options.register) {
         const result = ensureWorkspaceMembership({ prefix, workspaceRoot: wsRoot });
 
         if (result.status === "already-covered") {
@@ -82,6 +80,8 @@ const execute: CommandExecute<Toolbox<Console, ImportOptions>> = async ({ argume
         } else {
             logger.warn(`Could not auto-register ${prefix}: no workspace config found. Add it to pnpm-workspace.yaml or package.json#workspaces manually.`);
         }
+    } else {
+        logger.info(dim(`Skipped workspace registration (--no-register). Add ${prefix} to your workspace config manually.`));
     }
 
     logger.info(dim("Note: project.json / nx tags are not generated. Add them if your tooling needs them."));
