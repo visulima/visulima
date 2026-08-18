@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const preOptionDefinitions = {
@@ -42,9 +42,4 @@ const pre = defineCommand({
 
 export default pre;
 
-export type ReleasePreOptions = CreateOptions<{
-    action: string;
-    commit: boolean | undefined;
-    push: boolean | undefined;
-    tag: string[] | undefined;
-}>;
+export type ReleasePreOptions = InferOptions<typeof preOptionDefinitions>;

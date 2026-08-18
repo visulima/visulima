@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 /**
@@ -57,11 +57,4 @@ const importCommand = defineCommand({
 
 export default importCommand;
 
-export type ImportOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    message: string | undefined;
-    "no-register": boolean | undefined;
-    prefix: string | undefined;
-    ref: string | undefined;
-    squash: boolean | undefined;
-}>;
+export type ImportOptions = InferOptions<typeof importCommandOptionDefinitions>;

@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const checkOptionDefinitions = {
@@ -37,9 +37,4 @@ const check = defineCommand({
 
 export default check;
 
-export type ReleaseCheckOptions = CreateOptions<{
-    hook: string | undefined;
-    "no-fail": boolean | undefined;
-    "print-config": string | undefined;
-    strict: boolean | undefined;
-}>;
+export type ReleaseCheckOptions = InferOptions<typeof checkOptionDefinitions>;

@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const doctorOptionDefinitions = {
@@ -32,8 +32,4 @@ const doctor = defineCommand({
 
 export default doctor;
 
-export type ReleaseDoctorOptions = CreateOptions<{
-    "first-release": boolean | undefined;
-    json: boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseDoctorOptions = InferOptions<typeof doctorOptionDefinitions>;

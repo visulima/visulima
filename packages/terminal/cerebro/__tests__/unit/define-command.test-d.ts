@@ -79,6 +79,19 @@ describe("defineCommand type inference", () => {
         expectTypeOf<InferOptions<{ raw: { description: "a raw value" } }>>().toEqualTypeOf<{ raw: string | undefined }>();
     });
 
+    it("keeps a declared positive half tri-state when it has no defaultValue", () => {
+        // `negatable()` declares both halves. Without a `defaultValue` the
+        // parsed options carry neither key, so the value really is `undefined`
+        // and the handler is meant to fall back to config.
+        expectTypeOf<InferOptions<{ "no-preflight": { type: BooleanConstructor }; preflight: { type: BooleanConstructor } }>>().toEqualTypeOf<{
+            preflight: boolean | undefined;
+        }>();
+
+        expectTypeOf<InferOptions<{ "no-cache": { type: BooleanConstructor }; cache: { defaultValue: true; type: BooleanConstructor } }>>().toEqualTypeOf<{
+            cache: boolean;
+        }>();
+    });
+
     it("exposes a no- prefixed option under its non-negated name only", () => {
         // `addNegatableOptions` generates `clean`, `mapNegatableOptions` deletes `noClean`.
         expectTypeOf<InferOptions<{ "no-clean": { type: BooleanConstructor } }>>().toEqualTypeOf<{ clean: boolean }>();

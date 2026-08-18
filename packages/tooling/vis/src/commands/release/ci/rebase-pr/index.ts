@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const ciRebasePrOptionDefinitions = {
@@ -27,7 +27,4 @@ const ciRebasePr = defineCommand({
 
 export default ciRebasePr;
 
-export type ReleaseCiRebasePrOptions = CreateOptions<{
-    base: string | undefined;
-    branch: string | undefined;
-}>;
+export type ReleaseCiRebasePrOptions = InferOptions<typeof ciRebasePrOptionDefinitions>;

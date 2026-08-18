@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const stageOptionDefinitions = {
@@ -58,12 +58,4 @@ const stage = defineCommand({
 
 export default stage;
 
-export type ReleaseStageOptions = CreateOptions<{
-    action: string;
-    all: boolean | undefined;
-    commit: boolean | undefined;
-    filter: string | undefined;
-    json: boolean | undefined;
-    push: boolean | undefined;
-    "stage-ids": string[] | undefined;
-}>;
+export type ReleaseStageOptions = InferOptions<typeof stageOptionDefinitions>;

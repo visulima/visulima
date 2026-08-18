@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const planOptionDefinitions = {
@@ -41,10 +41,4 @@ const plan = defineCommand({
 
 export default plan;
 
-export type ReleasePlanOptions = CreateOptions<{
-    channel: string | undefined;
-    filter: string | undefined;
-    interactive: boolean | undefined;
-    "print-config": string | undefined;
-    write: boolean | undefined;
-}>;
+export type ReleasePlanOptions = InferOptions<typeof planOptionDefinitions>;

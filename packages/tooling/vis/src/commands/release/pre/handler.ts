@@ -68,21 +68,21 @@ const runEnter = async (cwd: string, options: ReleasePreOptions, logger: Toolbox
 
     logger.info(`Entered pre-mode with tag "${tag}". ${Object.keys(file.initialVersions).length} package version(s) snapshot.`);
 
-    if (options.commit === false) {
-        logger.info(`Run \`git add ${path} && git commit -m 'chore(release): enter pre-mode (${tag}) [skip ci]'\` so CI sees the state.`);
-    } else {
+    if (options.commit) {
         const runner = createShellRunner();
 
         try {
             await stageAndCommitFile({ cwd, runner }, path, `chore(release): enter pre-mode (${tag}) [skip ci]`, {
                 author: ctx.config.gitUser,
-                push: options.push !== false,
+                push: options.push,
                 sign: ctx.config.gitSignCommits === true,
             });
-            logger.info(`Committed ${path}${options.push === false ? "" : " + pushed"}.`);
+            logger.info(`Committed ${path}${options.push ? " + pushed" : ""}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
         }
+    } else {
+        logger.info(`Run \`git add ${path} && git commit -m 'chore(release): enter pre-mode (${tag}) [skip ci]'\` so CI sees the state.`);
     }
 };
 
@@ -125,16 +125,16 @@ const runExit = async (cwd: string, options: ReleasePreOptions, logger: Toolbox<
 
     logger.info(`Pre-mode flagged for exit. The next \`vis release version\` will consolidate the prereleases and delete pre.json.`);
 
-    if (options.commit !== false) {
+    if (options.commit) {
         const runner = createShellRunner();
 
         try {
             await stageAndCommitFile({ cwd, runner }, path, `chore(release): exit pre-mode (was ${existing.tag}) [skip ci]`, {
                 author: ctx.config.gitUser,
-                push: options.push !== false,
+                push: options.push,
                 sign: ctx.config.gitSignCommits === true,
             });
-            logger.info(`Committed ${path}${options.push === false ? "" : " + pushed"}.`);
+            logger.info(`Committed ${path}${options.push ? " + pushed" : ""}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
         }

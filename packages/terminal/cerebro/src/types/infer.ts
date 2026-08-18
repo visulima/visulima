@@ -71,11 +71,18 @@ type IsArgumentAlwaysPresent<D> = D extends { required: true } ? true : HasDefau
  * parsed value onto the non-negated key, deleting `noX` — so `no-x` never
  * surfaces on the toolbox under its own name.
  */
-type NegatedName<K> = K extends `no-${infer Rest}` ? Rest : never;
-
 type PositiveOptionKeys<R> = { [K in keyof R]: K extends `no-${string}` ? never : K }[keyof R];
 
-type NegatedOptionKeys<R> = { [K in keyof R]: NegatedName<K> }[keyof R];
+/**
+ * The positive names cerebro *generates* from a `no-x` declaration.
+ *
+ * Only when `x` is not declared itself. `negatable()` declares both halves, and
+ * a positive half without a `defaultValue` stays `undefined` when neither flag
+ * is passed — `mapNegatableOptions` rewrites nothing because the negated key
+ * never reaches the parsed options. Claiming `boolean` there would erase a
+ * deliberate tri-state.
+ */
+type NegatedOptionKeys<R> = { [K in keyof R]: K extends `no-${infer Rest}` ? (Rest extends keyof R ? never : Rest) : never }[keyof R];
 
 /** Collapses an intersection into a single object literal so tooltips stay readable. */
 type Simplify<T> = { [K in keyof T]: T[K] } & {};
@@ -101,8 +108,8 @@ type InferOptions<R extends OptionDefinitionRecord> = Simplify<
     {
         [K in PositiveOptionKeys<R> & string as FoldName<K>]: IsOptionAlwaysPresent<R[K]> extends true ? Collected<R[K]> : Collected<R[K]> | undefined;
     } & {
-        // Negated booleans always resolve to a value — the generated counterpart
-        // carries a `defaultValue`.
+        // A generated counterpart always resolves to a value: `addNegatableOptions`
+        // gives it a `defaultValue`.
         [K in NegatedOptionKeys<R> & string as FoldName<K>]: boolean;
     }
 >;

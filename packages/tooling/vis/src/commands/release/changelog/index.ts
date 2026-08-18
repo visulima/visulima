@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const changelogOptionDefinitions = {
@@ -35,9 +35,4 @@ const changelog = defineCommand({
 
 export default changelog;
 
-export type ReleaseChangelogOptions = CreateOptions<{
-    channel: string | undefined;
-    filter: string | undefined;
-    json: boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseChangelogOptions = InferOptions<typeof changelogOptionDefinitions>;

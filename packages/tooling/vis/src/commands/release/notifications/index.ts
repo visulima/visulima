@@ -15,7 +15,7 @@
  *      succeeded.
  */
 
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const notificationsOptionDefinitions = {
@@ -57,9 +57,4 @@ const notifications = defineCommand({
 
 export default notifications;
 
-export type ReleaseNotificationsOptions = CreateOptions<{
-    action: string;
-    channel: string | undefined;
-    "custom-context": string | undefined;
-    json: boolean | undefined;
-}>;
+export type ReleaseNotificationsOptions = InferOptions<typeof notificationsOptionDefinitions>;

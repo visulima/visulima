@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const pretrustOptionDefinitions = {
@@ -76,19 +76,4 @@ const pretrust = defineCommand({
 
 export default pretrust;
 
-export type ReleasePretrustOptions = CreateOptions<{
-    access: string | undefined;
-    "allow-stage-publish": boolean | undefined;
-    "dry-run": boolean | undefined;
-    env: string | undefined;
-    filter: string | undefined;
-    force: boolean | undefined;
-    "no-trust": boolean | undefined;
-    "print-config": string | undefined;
-    provider: string | undefined;
-    registry: string | undefined;
-    repo: string | undefined;
-    tag: string | undefined;
-    version: string | undefined;
-    workflow: string | undefined;
-}>;
+export type ReleasePretrustOptions = InferOptions<typeof pretrustOptionDefinitions>;

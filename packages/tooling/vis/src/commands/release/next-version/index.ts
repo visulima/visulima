@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 const nextVersionOptionDefinitions = {
@@ -41,10 +41,4 @@ const nextVersion = defineCommand({
 
 export default nextVersion;
 
-export type ReleaseNextVersionOptions = CreateOptions<{
-    channel: string | undefined;
-    "first-release": boolean | undefined;
-    json: boolean | undefined;
-    package: string | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseNextVersionOptions = InferOptions<typeof nextVersionOptionDefinitions>;

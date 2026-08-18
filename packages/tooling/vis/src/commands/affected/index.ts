@@ -1,4 +1,4 @@
-import type { CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
 import { negatable } from "../../util/negatable-option";
@@ -102,19 +102,4 @@ const affected = defineCommand({
 
 export default affected;
 
-export type AffectedCommandOptions = CreateOptions<{
-    base: string | undefined;
-    cache: boolean | undefined;
-    downstream: string | undefined;
-    "dry-run": boolean | undefined;
-    head: string | undefined;
-    parallel: number | undefined;
-    partition: string | undefined;
-    query: string | undefined;
-    reverse: boolean | undefined;
-    "runner-tags": string | undefined;
-    "sparse-checkout": boolean | undefined;
-    tag: string[] | undefined;
-    uncommitted: boolean | undefined;
-    upstream: string | undefined;
-}>;
+export type AffectedCommandOptions = InferOptions<typeof affectedOptionDefinitions>;
