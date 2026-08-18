@@ -2426,7 +2426,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/yaml':
         specifier: 1.0.0
@@ -3872,7 +3872,7 @@ importers:
         specifier: 6.1.0
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
@@ -5356,7 +5356,7 @@ importers:
         version: 26.2.0
       '@visulima/ansi':
         specifier: 4.1.0
-        version: link:../../terminal/ansi
+        version: 4.1.0
       '@visulima/error':
         specifier: 6.1.0
         version: link:../error
@@ -6576,7 +6576,7 @@ importers:
         specifier: catalog:types
         version: 26.2.0
       '@visulima/email':
-        specifier: 2.1.9
+        specifier: 3.0.0
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.1.0
@@ -6778,7 +6778,7 @@ importers:
         specifier: catalog:dev
         version: 2.8.0
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 4.0.0
@@ -8719,7 +8719,7 @@ importers:
         version: 26.2.0
       '@visulima/ansi':
         specifier: 4.1.0
-        version: link:../ansi
+        version: 4.1.0
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0(a86497e7b83c4448ec9e74aa850fcd80)
@@ -9170,7 +9170,7 @@ importers:
   packages/terminal/tui:
     dependencies:
       '@visulima/ansi':
-        specifier: 4.1.0
+        specifier: 4.2.0
         version: link:../ansi
       '@visulima/colorize':
         specifier: 2.1.1
@@ -9379,7 +9379,7 @@ importers:
   packages/terminal/tui-kit:
     dependencies:
       '@visulima/ansi':
-        specifier: 4.1.0
+        specifier: 4.2.0
         version: link:../ansi
       '@visulima/colorize':
         specifier: 2.1.1
@@ -9425,7 +9425,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0(a86497e7b83c4448ec9e74aa850fcd80)
       '@visulima/tui':
-        specifier: 4.0.1
+        specifier: 4.0.2
         version: link:../tui
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -9583,7 +9583,7 @@ importers:
         specifier: catalog:prod
         version: 2.0.1
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 4.0.0
@@ -10089,7 +10089,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 4.0.0
@@ -10222,10 +10222,10 @@ importers:
         specifier: 1.0.4
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 4.0.1
+        specifier: 4.0.2
         version: link:../../terminal/tui
       '@visulima/tui-kit':
-        specifier: 1.0.4
+        specifier: 1.0.5
         version: link:../../terminal/tui-kit
       fb-watchman:
         specifier: '>=2.0.0'
@@ -10340,7 +10340,7 @@ importers:
         specifier: ^4.0.2
         version: 4.0.2
       '@visulima/ansi':
-        specifier: 4.1.0
+        specifier: 4.2.0
         version: link:../../terminal/ansi
       '@visulima/cerebro':
         specifier: 3.0.6
@@ -10355,7 +10355,7 @@ importers:
         specifier: 3.0.1
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 4.0.0
@@ -10364,7 +10364,7 @@ importers:
         specifier: 1.0.1
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.14
+        specifier: 5.0.15
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
@@ -10385,7 +10385,7 @@ importers:
         specifier: 3.1.0
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
-        specifier: 3.2.8
+        specifier: 3.2.9
         version: link:../tsconfig
       '@visulima/yaml':
         specifier: 1.0.0
@@ -10566,13 +10566,13 @@ importers:
         specifier: ^1.30.0
         version: 1.30.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 6.0.1
+        specifier: 6.0.2
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -11954,7 +11954,7 @@ packages:
     resolution: {integrity: sha512-RfmOrJtjc1c/o2PzuEMLqFJs6OUG+wLJLdUUHnES/y6nxx/xSQhfWRaEbac2GdllNl3W9YvtDSHXv1pkBZh8FQ==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: ^7.3.5
       wrangler: ^4.120.1
 
   '@cloudflare/vitest-pool-workers@0.21.0':
@@ -17918,7 +17918,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.5.7
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
@@ -20018,6 +20018,10 @@ packages:
   '@vinxi/listhen@1.5.6':
     resolution: {integrity: sha512-WSN1z931BtasZJlgPp704zJFnQFRg7yzSjkm3MzAWQYe4uXFXlFr1hc5Ac2zae5/HDOz5x1/zDM5Cb54vTCnWw==}
     hasBin: true
+
+  '@visulima/ansi@4.1.0':
+    resolution: {integrity: sha512-RginrGOLIDbPn7HUNK1Sk2D0uXlVTokB4YJohxMdaOJ4T3sT7HqaCi7uB1+6UIf2hwBDxmpY5ZLbFzs91E9suQ==}
+    engines: {node: ^22.14.0 || >=24.10.0}
 
   '@visulima/cerebro@3.0.0':
     resolution: {integrity: sha512-DuwJbqND+Ie3niYLm79OBD5ECETj5daBd5Srqf8Syf+duwLWi02XgSU3wZ99N3LKs8NJs13dJl2Aq4/cuuCpcw==}
@@ -45323,6 +45327,8 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.3
 
+  '@visulima/ansi@4.1.0': {}
+
   '@visulima/cerebro@3.0.0(@bomb.sh/tab@0.0.22(cac@7.0.0)(citty@0.2.2)(commander@15.0.0))(@visulima/boxen@packages+terminal+boxen)(@visulima/find-cache-dir@3.0.0)(@visulima/pail@4.0.0(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.70.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.56.8(@typescript-eslint/types@8.67.0))(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)))(svelte@5.56.8(@typescript-eslint/types@8.67.0))(typescript@6.0.3)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.12)(yaml@2.9.0)))(elysia@1.4.28(@sinclair/typebox@0.34.49)(exact-mirror@1.0.0)(file-type@22.0.1)(openapi-types@12.1.3)(typescript@6.0.3))(express@5.2.1)(fastify@5.11.3)(hono@4.13.1)(next@16.3.0(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(rotating-file-stream@3.2.9))(github-slugger@2.0.0)':
     dependencies:
       '@visulima/colorize': 2.0.0
@@ -50022,7 +50028,7 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
@@ -61364,7 +61370,7 @@ snapshots:
     dependencies:
       eslint: 8.57.1
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
       eslint-plugin-promise: 6.6.0(eslint@8.57.1)
