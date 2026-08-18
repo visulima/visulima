@@ -120,10 +120,12 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
         usageGroups.push({ content: command.description, header: " Description " });
     }
 
-    const positionals = command.argument ? [command.argument] : command.arguments;
+    // Filter before testing the length: a command whose positionals are all
+    // hidden must not render the header above an empty table.
+    const positionals = (command.argument ? [command.argument] : command.arguments ?? []).filter((positional) => !positional.hidden);
 
-    if (positionals && positionals.length > 0) {
-        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: positionals.filter((positional) => !positional.hidden) });
+    if (positionals.length > 0) {
+        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: positionals });
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {

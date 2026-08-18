@@ -48,10 +48,22 @@ type HasDefault<D> = "defaultValue" extends keyof D ? true : false;
 type IsBooleanOption<D> = D extends { type: BooleanConstructor } ? true : false;
 
 /**
- * Whether the parser guarantees a value: `required` is enforced before `execute`
- * runs, and a `defaultValue` fills the gap when the flag is absent.
+ * Whether an **option** is guaranteed a value.
+ *
+ * `required` is enforced before `execute` runs, and a `defaultValue` fills the
+ * gap when the flag is absent — except for booleans, which
+ * `listMissingArguments` lets through (see {@link IsBooleanOption}).
  */
-type IsAlwaysPresent<D> = D extends { required: true } ? (IsBooleanOption<D> extends true ? HasDefault<D> : true) : HasDefault<D>;
+type IsOptionAlwaysPresent<D> = D extends { required: true } ? (IsBooleanOption<D> extends true ? HasDefault<D> : true) : HasDefault<D>;
+
+/**
+ * Whether a **positional** is guaranteed a value.
+ *
+ * No boolean exception here: `resolveArguments` reports every unfilled
+ * `required` slot whatever its `type`, and `applyNamedArguments` raises before
+ * `execute` runs. A required boolean positional really is always present.
+ */
+type IsArgumentAlwaysPresent<D> = D extends { required: true } ? true : HasDefault<D>;
 
 /**
  * Keys declared as `no-x` produce an `x` option instead. `addNegatableOptions`
@@ -87,7 +99,7 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {};
  */
 type InferOptions<R extends OptionDefinitionRecord> = Simplify<
     {
-        [K in PositiveOptionKeys<R> & string as FoldName<K>]: IsAlwaysPresent<R[K]> extends true ? Collected<R[K]> : Collected<R[K]> | undefined;
+        [K in PositiveOptionKeys<R> & string as FoldName<K>]: IsOptionAlwaysPresent<R[K]> extends true ? Collected<R[K]> : Collected<R[K]> | undefined;
     } & {
         // Negated booleans always resolve to a value — the generated counterpart
         // carries a `defaultValue`.
@@ -134,7 +146,7 @@ type ArgumentNamed<T extends ReadonlyArray<ArgumentDefinition>, N extends string
  * ```
  */
 type InferArguments<T extends ReadonlyArray<ArgumentDefinition>> = Simplify<{
-    [K in T[number]["name"] as FoldName<K>]: IsAlwaysPresent<ArgumentNamed<T, K>> extends true
+    [K in T[number]["name"] as FoldName<K>]: IsArgumentAlwaysPresent<ArgumentNamed<T, K>> extends true
         ? Collected<ArgumentNamed<T, K>>
         : Collected<ArgumentNamed<T, K>> | undefined;
 }>;

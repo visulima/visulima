@@ -5,7 +5,7 @@ import { commandLineArgs } from "@visulima/command-line-args";
 import { POSITIONALS_KEY } from "../../constants";
 import EmptyToolbox from "../../empty-toolbox";
 import CommandLoaderError from "../../errors/command-loader-error";
-import InvalidChoiceError from "../../errors/invalid-choice-error";
+import InvalidArgumentChoiceError from "../../errors/invalid-argument-choice-error";
 import MissingArgumentError from "../../errors/missing-argument-error";
 import SurplusArgumentError from "../../errors/surplus-argument-error";
 import type { Command as ICommand, CommandExecute, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
@@ -252,7 +252,7 @@ export const executeCommand = async <OD extends OptionDefinition<unknown>, TLogg
  * @param command The command being executed.
  * @param toolbox The toolbox under construction.
  * @throws {MissingArgumentError} When a required positional was not supplied.
- * @throws {InvalidChoiceError} When a positional value is outside its `choices`.
+ * @throws {InvalidArgumentChoiceError} When a positional value is outside its `choices`.
  * @throws {SurplusArgumentError} When more positionals were supplied than declared.
  */
 export const applyNamedArguments = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
@@ -284,7 +284,7 @@ export const applyNamedArguments = <OD extends OptionDefinition<unknown>, TLogge
     const [invalid] = outcome.invalid;
 
     if (invalid) {
-        throw new InvalidChoiceError(invalid.name, invalid.value, invalid.choices);
+        throw new InvalidArgumentChoiceError(invalid.name, invalid.value, invalid.choices);
     }
 
     if (outcome.surplus.length > 0) {

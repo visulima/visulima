@@ -163,8 +163,8 @@ You should see help output and command execution based on the options provided:
 `options` and `env` can also be given as records keyed by name. Wrap the command in
 `defineCommand` and the toolbox types are inferred from those definitions — no separate
 options interface to keep in sync, and a renamed option becomes a compile error rather
-than a silent `undefined`. `arguments` stays an array (slot order is load-bearing) and
-takes `as const` to keep its names typed:
+than a silent `undefined`. `arguments` stays an array, because slot order is
+load-bearing, and its names stay typed without an `as const`:
 
 ```ts
 import { Cerebro, defineCommand } from "@visulima/cerebro";
