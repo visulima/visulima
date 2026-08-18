@@ -94,6 +94,8 @@ export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2";
 export { IT2_AUTO, it2Cells, it2Percent, it2Pixels, iTerm2, ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2";
 export { DECKPAM, DECKPNM, keypadApplicationMode, keypadNumericMode } from "./keypad";
 export { default as kittyGraphics } from "./kitty-graphics";
+export type { KittyAction, KittyDelete, KittyFormat, KittyGraphicsOptions, KittyTransmission } from "./kitty-graphics-options";
+export { default as kittyGraphicsOptions } from "./kitty-graphics-options";
 export type { AnsiMode, DecMode, Mode } from "./mode";
 export {
     BDSM,
@@ -178,10 +180,14 @@ export {
     mouseX10Sequence,
 } from "./mouse";
 export { desktopNotification, notify } from "./notification";
+export type { Rgb } from "./parse-color";
+export { default as parseColor } from "./parse-color";
 export { SCREEN_MAX_LEN_DEFAULT, SCREEN_TYPICAL_LIMIT, screenPassthrough, tmuxPassthrough } from "./passthrough";
 export { bracketedPasteEnd, bracketedPasteStart, wrapBracketedPaste } from "./paste";
 export { resetProgressBar, setErrorProgressBar, setIndeterminateProgressBar, setProgressBar, setWarningProgressBar } from "./progress";
 export { RESET_INITIAL_STATE, RIS } from "./reset";
+export type { AnsiToken, PartialToken, SequenceKind, SequenceToken, TextToken } from "./scan";
+export { default as scan } from "./scan";
 export {
     clearTabStop,
     deleteCharacter,
@@ -274,6 +280,7 @@ export {
     xtermWindowOp,
     XTWINOPS,
 } from "./window-ops";
+export { default as x11ColorToHex } from "./x11-colors";
 export type { KittyKeyboardFlags } from "./xterm";
 export {
     keyModifierOptions,
