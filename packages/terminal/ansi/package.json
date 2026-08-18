@@ -128,6 +128,10 @@
             "types": "./dist/sixel.d.ts",
             "default": "./dist/sixel.js"
         },
+        "./scan": {
+            "types": "./dist/scan.d.ts",
+            "default": "./dist/scan.js"
+        },
         "./strip": {
             "types": "./dist/strip.d.ts",
             "default": "./dist/strip.js"
@@ -200,7 +204,19 @@
             "types": "./dist/status.d.ts",
             "default": "./dist/status.js"
         },
-        "./package.json": "./package.json"
+        "./package.json": "./package.json",
+        "./parse-color": {
+            "types": "./dist/parse-color.d.ts",
+            "default": "./dist/parse-color.js"
+        },
+        "./x11-colors": {
+            "types": "./dist/x11-colors.d.ts",
+            "default": "./dist/x11-colors.js"
+        },
+        "./kitty-graphics-options": {
+            "types": "./dist/kitty-graphics-options.d.ts",
+            "default": "./dist/kitty-graphics-options.js"
+        }
     },
     "files": [
         "dist",
