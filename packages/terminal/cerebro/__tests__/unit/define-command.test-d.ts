@@ -46,7 +46,9 @@ describe("defineCommand type inference", () => {
     });
 
     it("drops the undefined union for required options and options with a default", () => {
-        expectTypeOf<InferOptions<{ out: { required: true; type: StringConstructor }; retries: { defaultValue: 3; type: NumberConstructor } }>>().toEqualTypeOf<{
+        expectTypeOf<
+            InferOptions<{ out: { required: true; type: StringConstructor }; retries: { defaultValue: 3; type: NumberConstructor } }>
+        >().toEqualTypeOf<{
             out: string;
             retries: number;
         }>();
@@ -61,7 +63,9 @@ describe("defineCommand type inference", () => {
     });
 
     it("produces arrays for multiple and lazyMultiple options", () => {
-        expectTypeOf<InferOptions<{ file: { multiple: true; type: StringConstructor }; tag: { lazyMultiple: true; type: StringConstructor } }>>().toEqualTypeOf<{
+        expectTypeOf<
+            InferOptions<{ file: { multiple: true; type: StringConstructor }; tag: { lazyMultiple: true; type: StringConstructor } }>
+        >().toEqualTypeOf<{
             file: string[] | undefined;
             tag: string[] | undefined;
         }>();
@@ -161,8 +165,9 @@ describe("defineCommand type inference", () => {
     });
 
     it("folds positional names the same way options are folded", () => {
-        expectTypeOf<InferArguments<[{ name: "source-file"; required: true; type: StringConstructor }, { name: "UPPER"; type: StringConstructor }]>>()
-            .toEqualTypeOf<{ sourceFile: string; UPPER: string | undefined }>();
+        expectTypeOf<
+            InferArguments<[{ name: "source-file"; required: true; type: StringConstructor }, { name: "UPPER"; type: StringConstructor }]>
+        >().toEqualTypeOf<{ sourceFile: string; UPPER: string | undefined }>();
     });
 
     it("rejects an option name that was not declared", () => {

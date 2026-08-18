@@ -25,10 +25,13 @@ describe("record-shaped option definitions", () => {
     it("parses the record form exactly like the array form", async () => {
         expect.assertions(2);
 
-        const fromArray = await runBuild(["build", "--output-dir", "dist", "-v"], [
-            { name: "output-dir", type: String },
-            { alias: "v", name: "verbose", type: Boolean },
-        ]);
+        const fromArray = await runBuild(
+            ["build", "--output-dir", "dist", "-v"],
+            [
+                { name: "output-dir", type: String },
+                { alias: "v", name: "verbose", type: Boolean },
+            ],
+        );
 
         const fromRecord = await runBuild(["build", "--output-dir", "dist", "-v"], {
             "output-dir": { type: String },
