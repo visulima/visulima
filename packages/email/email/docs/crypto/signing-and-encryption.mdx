@@ -33,27 +33,67 @@ You can sign messages using either **S/MIME** or **DKIM**. In both cases, the ce
 
 DKIM is an email authentication method that affixes a digital signature, linked to a domain name, to each outgoing email message. It requires a private key but not a certificate.
 
+<Callout type="warning">
+    A DKIM signature commits to the message **as transmitted** — the `bh=` tag hashes the serialized MIME body, including multipart boundaries, part headers and transfer encoding. None of that exists at the `EmailOptions` layer, so `MailMessage.sign(dkimSigner)` throws. Sign on a transport that emits raw MIME instead.
+
+    This also means DKIM is not something you apply on top of an HTTP ESP (Resend, SendGrid, Postmark, …): those build and sign the MIME message on their own infrastructure, from the fields you send them. Configure DKIM in the ESP's dashboard by publishing their selector in your DNS.
+
+</Callout>
+
+The supported path is the SMTP provider, which signs the message it is about to write to `DATA`:
+
 ```typescript
 import { createMail, MailMessage } from "@visulima/email";
-import { resendProvider } from "@visulima/email/providers/resend";
-import { createDkimSigner } from "@visulima/email/crypto";
+import { smtpProvider } from "@visulima/email/providers/smtp";
 
-const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+const mail = createMail(
+    smtpProvider({
+        host: "smtp.example.com",
+        port: 587,
+        user: "postmaster@example.com",
+        password: process.env.SMTP_PASSWORD,
+        dkim: {
+            domainName: "example.com",
+            keySelector: "default",
+            privateKey: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+            // Optional: passphrase if the key is encrypted
+            // passphrase: "your-passphrase",
+        },
+    }),
+);
 
-// Create DKIM signer
-const dkimSigner = createDkimSigner({
-    domainName: "example.com",
-    keySelector: "default",
-    privateKey: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
-    // Optional: passphrase if the key is encrypted
-    // passphrase: "your-passphrase",
-});
-
-// Sign and send email
-const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").sign(dkimSigner);
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
+
+Set `useDkim: false` on an individual message to skip signing it — the SMTP and Cloudflare Email providers both honour it.
+
+If you serialize the message yourself — a custom transport, a Cloudflare Email Worker, an `.eml` on disk — call the signer directly on the finished MIME string:
+
+```typescript
+import { createDkimSigner } from "@visulima/email/crypto";
+
+const signer = createDkimSigner({
+    domainName: "example.com",
+    keySelector: "default",
+    privateKey: process.env.DKIM_PRIVATE_KEY,
+});
+
+const signed = await signer.signMimeMessage(rawMimeMessage);
+```
+
+`signMimeMessage` expects a complete message: headers, a blank line, then the body, CRLF-delimited. It returns the same message with a `DKIM-Signature` header prepended, and throws if the message has no header/body separator.
+
+#### Signed headers
+
+Every header from this set that is present in the message gets signed, in message order:
+
+`From`, `To`, `Cc`, `Subject`, `Date`, `Message-ID`, `In-Reply-To`, `References`, `Reply-To`, `MIME-Version`, `Content-Type`, `Content-Transfer-Encoding`.
+
+`Return-Path` and `Bcc` are never signed — MTAs rewrite the former and strip the latter, so signing either guarantees a verification failure downstream. Use `headersToIgnore` to drop anything else from the set.
+
+Only headers actually present are listed in `h=`; the signer does not over-sign absent names. A signature also carries `t=` (signing time), which verifiers use to bound replay windows.
 
 #### DKIM Options
 
@@ -69,6 +109,9 @@ const dkimSigner = createDkimSigner({
     privateKey: "file:///path/to/private-key.pem",
     passphrase: "optional-passphrase",
 
+    // Signature algorithm
+    algorithm: "rsa-sha256", // 'rsa-sha256' (default, RFC 6376) or 'ed25519-sha256' (RFC 8463)
+
     // Canonicalization algorithms
     headerCanon: "relaxed", // 'simple' (default) or 'relaxed'
     bodyCanon: "relaxed", // 'simple' (default) or 'relaxed'
@@ -77,6 +120,8 @@ const dkimSigner = createDkimSigner({
     headersToIgnore: ["Message-ID", "X-Custom-Header"],
 });
 ```
+
+Prefer `relaxed` for both: SMTP hops routinely re-wrap whitespace, which `simple` does not tolerate. The SMTP provider therefore defaults its `dkim` block to `relaxed/relaxed` rather than the `simple/simple` of `createDkimSigner`; set the fields explicitly to override.
 
 **Platform Support**:
 
@@ -90,17 +135,20 @@ const dkimSigner = createDkimSigner({
 
 ARC ([Authenticated Received Chain, RFC 8617](https://www.rfc-editor.org/rfc/rfc8617)) lets a forwarding service preserve the authentication results (SPF/DKIM/DMARC) it observed, so downstream receivers can still trust them after the message is relayed. `signArc` seals a message for an **originating sealer** (instance `i=1`), adding three headers: `ARC-Authentication-Results`, `ARC-Message-Signature`, and `ARC-Seal`.
 
+`signArc` takes the **serialized message**, for the same reason DKIM does: the seal commits to the bytes on the wire. Forwarding is where ARC belongs, and there the raw message is what you already have.
+
 ```typescript
 import { signArc } from "@visulima/email/crypto";
 
-const { email: sealed, headers } = await signArc(message, {
+const { message: sealed, headers } = await signArc(rawMimeMessage, {
     domainName: "forwarder.example.com",
     keySelector: "arc1",
     privateKey: process.env.ARC_PRIVATE_KEY, // PEM string, or a "file://" path
     authenticationResults: "forwarder.example.com; spf=pass smtp.mailfrom=sender.example; dkim=pass header.d=sender.example",
 });
 
-// `sealed` is the EmailOptions with the three ARC-* headers added; `headers` is the raw header set.
+// `sealed` is the message with the three ARC-* headers prepended (newest first, per RFC 8617 §5.1);
+// `headers` is the raw header set.
 ```
 
 #### ARC Options
@@ -117,9 +165,9 @@ const { email: sealed, headers } = await signArc(message, {
 | `timestamp`             | `number`                     | now        | Signature time (`t=`) in unix seconds              |
 | `passphrase`            | `string`                     | -          | Passphrase for an encrypted private key            |
 
-The signature-base builders `arcMessageSignatureBase(email, options)` and `arcSealBase(aarValue, amsValue, options)` are also exported so an ARC verifier can re-derive the exact bytes that were signed.
+The signature-base builders `arcMessageSignatureBase(message, options)` and `arcSealBase(aarValue, amsValue, options)` are also exported so an ARC verifier can re-derive the exact bytes that were signed. `verifyArc(message, headers, { publicKey })` checks a seal this library produced.
 
-> **Note:** like the DKIM signer, the body hash (`bh=`) is computed over `text` + `"\n\n"` + `html` with relaxed canonicalization. For a third-party ARC verifier to accept the seal, the body transmitted on the wire must canonicalize to the same value — apply ARC where the final MIME body is known. Only RSA keys are supported today (Ed25519 is not yet implemented).
+> **Note:** the seal covers only an originating chain (`i=1`, `cv=none`); relaying an existing chain is not supported. RSA (default) and Ed25519 (RFC 8463) keys both work.
 
 ### S/MIME Signer
 
@@ -211,14 +259,13 @@ You can combine signing and encryption. The message will be signed first, then e
 ```typescript
 import { createMail, MailMessage } from "@visulima/email";
 import { resendProvider } from "@visulima/email/providers/resend";
-import { createDkimSigner, createSmimeEncrypter } from "@visulima/email/crypto";
+import { createSmimeEncrypter, createSmimeSigner } from "@visulima/email/crypto";
 
 const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
 
-const dkimSigner = createDkimSigner({
-    domainName: "example.com",
-    keySelector: "default",
-    privateKey: "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+const signer = createSmimeSigner({
+    certificate: "/path/to/certificate.crt",
+    privateKey: "/path/to/private-key.pem",
 });
 
 const encrypter = createSmimeEncrypter({
@@ -231,11 +278,13 @@ const message = new MailMessage()
     .from("sender@example.com")
     .subject("Hello")
     .html("<h1>Hello World</h1>")
-    .sign(dkimSigner)
+    .sign(signer)
     .encrypt(encrypter);
 
 const result = await mail.send(message);
 ```
+
+`MailMessage.sign()` takes an S/MIME signer. DKIM is not a `MailMessage` signer — see the [DKIM section](#dkim-signer) for why, and configure it on the transport instead.
 
 ## Important Notes
 
@@ -273,43 +322,30 @@ const result = await mail.send(message);
 ```typescript
 import { createMail, MailMessage } from "@visulima/email";
 import { smtpProvider } from "@visulima/email/providers/smtp";
-import { createDkimSigner } from "@visulima/email/crypto";
 
 const mail = createMail(
     smtpProvider({
         host: "smtp.example.com",
         port: 587,
-        auth: {
-            user: "user@example.com",
-            pass: "password",
+        user: "user@example.com",
+        password: "password",
+
+        dkim: {
+            domainName: "example.com",
+            keySelector: "default",
+            // Use a file:// path (Node.js, Bun, Deno) …
+            privateKey: "file:///path/to/dkim-private-key.pem",
+            // … or read it yourself and pass the content:
+            // privateKey: readFileSync("/path/to/dkim-private-key.pem", "utf-8"),
         },
     }),
 );
-
-// Option 1: Use file:// path (works in Node.js, Bun, Deno)
-const dkimSigner = createDkimSigner({
-    domainName: "example.com",
-    keySelector: "default",
-    privateKey: "file:///path/to/dkim-private-key.pem",
-    headerCanon: "relaxed",
-    bodyCanon: "relaxed",
-});
-
-// Option 2: Read file manually (Node.js example)
-// import { readFileSync } from "node:fs";
-// const privateKey = readFileSync("/path/to/dkim-private-key.pem", "utf-8");
-// const dkimSigner = createDkimSigner({
-//   domainName: "example.com",
-//   keySelector: "default",
-//   privateKey,
-// });
 
 const message = new MailMessage()
     .to("recipient@example.com")
     .from("sender@example.com")
     .subject("Signed Email")
-    .html("<h1>This email is signed with DKIM</h1>")
-    .sign(dkimSigner);
+    .html("<h1>This email is signed with DKIM</h1>");
 
 await mail.send(message);
 ```
@@ -372,27 +408,32 @@ compatibility_flags = ["nodejs_compat"]
 
 ```typescript
 import { createMail, MailMessage } from "@visulima/email";
-import { resendProvider } from "@visulima/email/providers/resend";
-import { createDkimSigner } from "@visulima/email/crypto";
+import { cloudflareEmailProvider } from "@visulima/email/providers/cloudflare-email";
 
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
-        const mail = createMail(resendProvider({ apiKey: env.RESEND_API_KEY }));
+        const mail = createMail(
+            cloudflareEmailProvider({
+                send: async (from, to, raw) => {
+                    const { EmailMessage } = await import("cloudflare:email");
 
-        const dkimSigner = createDkimSigner({
-            domainName: "example.com",
-            keySelector: "default",
-            privateKey: env.DKIM_PRIVATE_KEY, // Must be string, not file:// path
-            // Optional: passphrase for encrypted keys (supported via unenv)
-            // passphrase: env.DKIM_PASSPHRASE,
-        });
+                    await env.SEND_EMAIL.send(new EmailMessage(from, to, raw));
+                },
+                dkim: {
+                    domainName: "example.com",
+                    keySelector: "default",
+                    privateKey: env.DKIM_PRIVATE_KEY, // Must be key content — Workers has no filesystem
+                    // Optional: passphrase for encrypted keys (supported via unenv)
+                    // passphrase: env.DKIM_PASSPHRASE,
+                },
+            }),
+        );
 
         const message = new MailMessage()
             .to("recipient@example.com")
             .from("sender@example.com")
             .subject("Signed Email")
-            .html("<h1>This email is signed with DKIM</h1>")
-            .sign(dkimSigner);
+            .html("<h1>This email is signed with DKIM</h1>");
 
         await mail.send(message);
 

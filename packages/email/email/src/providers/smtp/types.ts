@@ -1,3 +1,4 @@
+import type { DkimOptions } from "../../crypto/types";
 import type { BaseConfig, EmailOptions } from "../../types";
 
 /**
@@ -5,11 +6,15 @@ import type { BaseConfig, EmailOptions } from "../../types";
  */
 export interface SmtpConfig extends BaseConfig {
     authMethod?: "LOGIN" | "PLAIN" | "CRAM-MD5" | "OAUTH2";
-    dkim?: {
-        domainName: string;
-        keySelector: string;
-        privateKey: string;
-    };
+
+    /**
+     * DKIM signing, applied to the serialized MIME message just before `DATA` is sent.
+     *
+     * Canonicalization defaults to `relaxed/relaxed` here rather than the `simple/simple` of
+     * {@link DkimOptions}: SMTP hops routinely re-wrap whitespace, which `simple` does not
+     * tolerate. Set `headerCanon`/`bodyCanon` explicitly to override.
+     */
+    dkim?: DkimOptions;
     host: string;
     maxConnections?: number;
     oauth2?: {
