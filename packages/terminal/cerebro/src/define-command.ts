@@ -33,8 +33,12 @@ type DefinedCommand<
 > = Omit<CommandInput<OptionDefinition<unknown>, TLogger>, "arguments" | "env" | "execute" | "loader" | "options"> & {
     arguments?: TArguments;
     env?: TEnv;
-    execute?: CommandExecute<InferredToolbox<TOptions, TEnv, TArguments, TLogger>>;
-    loader?: () => Promise<LazyCommandModule<InferredToolbox<TOptions, TEnv, TArguments, TLogger>>>;
+    // `NoInfer` keeps the handler out of inference: the toolbox shape is decided
+    // by `options` / `env` / `arguments` alone. Without it a `loader` pointing at
+    // a separately-typed handler module becomes a competing inference site and
+    // collapses `TEnv` / `TArguments` / `TLogger` to `never`.
+    execute?: CommandExecute<NoInfer<InferredToolbox<TOptions, TEnv, TArguments, TLogger>>>;
+    loader?: () => Promise<LazyCommandModule<NoInfer<InferredToolbox<TOptions, TEnv, TArguments, TLogger>>>>;
     options?: TOptions;
 };
 

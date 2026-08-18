@@ -362,3 +362,21 @@ export type CommandInput<
     /** Options supported by this command, as an array or keyed by option name. */
     options?: Command<O, TLogger, TContext>["options"] | OptionDefinitionRecord;
 };
+
+/**
+ * A command of any shape, for collections.
+ *
+ * Handlers are contravariant in their toolbox, so a `CommandInput[]` annotated
+ * with the default toolbox rejects every command whose handler was typed against
+ * the narrower toolbox `defineCommand` infers — which is all of them. Pinning
+ * `TContext` to `never` accepts any handler, because `never` is assignable to
+ * whatever toolbox that handler asked for.
+ *
+ * Use it for arrays and registries that carry commands from different sources.
+ * It says nothing about the toolbox, so it is not useful for declaring one.
+ * @example
+ * ```typescript
+ * const releaseCommands: AnyCommandInput[] = [addCommand, generateCommand, doctorCommand];
+ * ```
+ */
+export type AnyCommandInput<TLogger extends Console = Console> = CommandInput<OptionDefinition<unknown>, TLogger, never>;

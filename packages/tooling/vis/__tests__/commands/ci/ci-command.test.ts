@@ -113,7 +113,7 @@ describe("vis ci", () => {
         await ciExecute({
             argument: ["lint,test"],
             logger,
-            options: { skipToolchain: true },
+            options: { install: true, skipToolchain: true },
             runtime,
             visConfig: undefined,
             workspaceRoot,

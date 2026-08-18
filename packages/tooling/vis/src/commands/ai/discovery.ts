@@ -1,4 +1,4 @@
-import type { Command } from "@visulima/cerebro";
+import type { AnyCommandInput } from "@visulima/cerebro";
 import { bold, cyan, dim, green, yellow } from "@visulima/colorize";
 
 export interface DiscoveryOption {
@@ -35,6 +35,8 @@ const AI_DISCOVERY_META: DiscoveryMeta = {
     description: "AI-assisted commands: provider detection, cache management, and failure-fix proposals.",
 };
 
+type DiscoveryOptionSource = { defaultValue?: unknown; description?: string; type?: unknown };
+
 const typeName = (type: unknown): string => {
     if (typeof type !== "function") {
         return String(type);
@@ -57,7 +59,28 @@ const typeName = (type: unknown): string => {
     return name ?? "unknown";
 };
 
-const buildSubcommand = (command: Command): DiscoverySubcommand => {
+/**
+ * Flattens either shape of `options` into `[name, definition]` pairs.
+ *
+ * Commands may declare options as an array carrying `name`, or as a record keyed
+ * by name. Discovery output must not depend on which one a command happened to
+ * use.
+ * @param options The command's options, in either form.
+ * @returns One entry per option, name first.
+ */
+const toOptionEntries = (options: AnyCommandInput["options"]): [string, DiscoveryOptionSource][] => {
+    if (options === undefined) {
+        return [];
+    }
+
+    if (Array.isArray(options)) {
+        return options.map((option) => [option.name, option as DiscoveryOptionSource]);
+    }
+
+    return Object.entries(options);
+};
+
+const buildSubcommand = (command: AnyCommandInput): DiscoverySubcommand => {
     const path = [...(command.commandPath ?? []), command.name].join(" ");
     const examples = (command.examples ?? []).map(([cmd, description]) => {
         return {
@@ -65,11 +88,11 @@ const buildSubcommand = (command: Command): DiscoverySubcommand => {
             description: description ?? "",
         };
     });
-    const options = (command.options ?? []).map((option): DiscoveryOption => {
+    const options = toOptionEntries(command.options).map(([name, option]): DiscoveryOption => {
         return {
             defaultValue: option.defaultValue,
             description: option.description,
-            name: option.name,
+            name,
             type: typeName(option.type),
         };
     });
@@ -84,7 +107,7 @@ const buildSubcommand = (command: Command): DiscoverySubcommand => {
     };
 };
 
-export const buildDiscoveryPayload = (subcommands: Command[], meta: DiscoveryMeta = AI_DISCOVERY_META): DiscoveryPayload => {
+export const buildDiscoveryPayload = (subcommands: AnyCommandInput[], meta: DiscoveryMeta = AI_DISCOVERY_META): DiscoveryPayload => {
     return {
         command: meta.command,
         description: meta.description,
@@ -92,10 +115,10 @@ export const buildDiscoveryPayload = (subcommands: Command[], meta: DiscoveryMet
     };
 };
 
-export const renderDiscoveryJson = (subcommands: Command[], meta: DiscoveryMeta = AI_DISCOVERY_META): string =>
+export const renderDiscoveryJson = (subcommands: AnyCommandInput[], meta: DiscoveryMeta = AI_DISCOVERY_META): string =>
     `${JSON.stringify(buildDiscoveryPayload(subcommands, meta), undefined, 2)}\n`;
 
-export const renderDiscoveryText = (subcommands: Command[], meta: DiscoveryMeta = AI_DISCOVERY_META): string => {
+export const renderDiscoveryText = (subcommands: AnyCommandInput[], meta: DiscoveryMeta = AI_DISCOVERY_META): string => {
     const payload = buildDiscoveryPayload(subcommands, meta);
     const lines: string[] = [bold(`vis ${payload.command} — ${payload.description}`), "", dim("Subcommands:")];
 

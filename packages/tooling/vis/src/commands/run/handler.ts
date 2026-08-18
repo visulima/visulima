@@ -1264,7 +1264,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // "I ran tests 30s ago, show me what happened" case without
     // re-running and (more importantly) without needing the
     // workspace to be in a runnable state.
-    if (options.lastDetails === true) {
+    if (options.lastDetails) {
         await renderLastRunSummary(workspaceRoot, logger);
 
         return;
@@ -1329,7 +1329,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     if (!options.affected) {
         // `--no-uncommitted` arrives here as `uncommitted: false`, so report
         // the flag the user actually typed rather than its positive twin.
-        const uncommittedFlag = options.uncommitted === false ? "--no-uncommitted" : "--uncommitted";
+        const uncommittedFlag = options.uncommitted ? "--uncommitted" : "--no-uncommitted";
         const affectedOnlyFlags = (
             [
                 ["--base", options.base],
@@ -1568,7 +1568,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         return;
     }
 
-    const ptyFlag = options.pty === true;
+    const ptyFlag = options.pty;
 
     // First-class task arguments: validate the forwarded args against the
     // invoked target's declared schema, surface per-task `--help`, and expose
@@ -1862,7 +1862,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // config; both default to on. The helper logs the warn line itself
     // in TTY; in CI it stays silent and we throw with `formattedMessage`
     // so the user sees the detail exactly once.
-    const preflightEnabled = options.preflight !== false && config.preflight?.lockfile !== false;
+    const preflightEnabled = options.preflight && config.preflight?.lockfile !== false;
     const lockfilePreflight = runLockfilePreflight(
         workspaceRoot,
         isInCi,
@@ -2591,7 +2591,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
      * listener so children don't outlive the run when the dynamic TUI's
      * own `process.exit(1)` short-circuits the normal exit path.
      */
-    const stopServicesOnExit = options.stopServices === true;
+    const stopServicesOnExit = options.stopServices;
     let cleanupRan = false;
     const runCleanupOnce = (): void => {
         if (cleanupRan) {
@@ -3107,7 +3107,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             // `--no-flaky`. Reuses the history already loaded for the
             // timing comparison above — the runs/ directory hasn't
             // changed since this turn of the loop started.
-            if (options.flaky !== false) {
+            if (options.flaky) {
                 const flakyStats = analyzeFlakiness(workspaceRoot, { minRuns: 2 }, firstRun.runHistory);
 
                 if (flakyStats.length > 0) {
@@ -3135,7 +3135,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 }
             }
 
-            const failOnRetry = options.failOnRetry === true && retriedTaskIds.length > 0;
+            const failOnRetry = options.failOnRetry && retriedTaskIds.length > 0;
 
             if (failOnRetry) {
                 // Cap the rendered list so a wide flake (every task retried

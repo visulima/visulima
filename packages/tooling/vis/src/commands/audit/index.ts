@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis audit` — vulnerability and supply-chain scan over installed packages.
@@ -8,7 +9,110 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * and renders the result in one of the supported formats. Also drives the
  * `--fix` / `--fix-transitive` apply loops and the HTML report writer.
  */
-const audit: Command = {
+const auditOptionDefinitions = {
+    "allow-major": {
+        defaultValue: false,
+        description: "Allow --fix to bump a direct dep across a major version when the lowest fix is outside the existing range",
+        type: Boolean,
+    },
+    backend: {
+        description:
+                "Audit backend: 'auto' (default, delegates to 'aube audit' when aube is the installer), 'aube' (force delegate), or 'vis' (always use vis's OSV/Socket scanner).",
+        type: String,
+    },
+    db: {
+        description: "Override the offline advisory DB path (default: <cache>/vis/advisories/db.sqlite).",
+        type: String,
+    },
+    ecosystem: {
+        description:
+                "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
+        type: String,
+    },
+    "exit-code": {
+        defaultValue: false,
+        description: "Exit with code 1 if any issues found (for CI)",
+        type: Boolean,
+    },
+    explain: {
+        description:
+                "Add a plain-English AI explanation to findings. Bare flag explains all findings at/above --severity; pass a finding index (e.g. 2) or a CVE/GHSA id to explain just one. Auto-detects an installed AI CLI; mutually exclusive with --offline.",
+        type: String,
+    },
+    "fail-on": {
+        description: "Exit non-zero when any finding is at this severity or higher. One of: low, medium, high, critical.",
+        type: String,
+    },
+    fix: {
+        defaultValue: false,
+        description: "Apply direct-dep fixes for vulnerable packages by running the active PM update command, then rescan",
+        type: Boolean,
+    },
+    "fix-transitive": {
+        defaultValue: false,
+        description: "Apply transitive fixes by writing PM-specific overrides (pnpm-workspace.yaml / package.json overrides / resolutions)",
+        type: Boolean,
+    },
+    format: {
+        description: "Output format: table, json, sarif, csaf, cyclonedx-vex, gitlab, or junit (default: table)",
+        type: String,
+    },
+    "no-usage": {
+        defaultValue: false,
+        description: "Disable the reachability filter even if enabled in config.",
+        type: Boolean,
+    },
+    offline: {
+        defaultValue: false,
+        description: "Query the local OSV advisory cache only — no network calls. Errors if the cache is missing.",
+        type: Boolean,
+    },
+    policies: {
+        description:
+                "Comma-separated list of supply-chain policies to evaluate (default: every configured policy). Use 'none' to skip the engine entirely, 'all' to force the full set. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.",
+        type: String,
+    },
+    "prod-only": {
+        defaultValue: false,
+        description: "Skip devDependencies — scan production graph only.",
+        type: Boolean,
+    },
+    report: {
+        description: "Write a self-contained HTML report to this path. Auto-opens in a TTY when not in CI.",
+        type: String,
+    },
+    severity: {
+        description: "Minimum severity to report: low, medium, high, critical (default: low)",
+        type: String,
+    },
+    "show-accepted": {
+        defaultValue: false,
+        description: "Include acknowledged (accepted risk) issues in output",
+        type: Boolean,
+    },
+    "show-fixes": {
+        defaultValue: false,
+        description: "Print fix-suggestion lines for each finding (no apply, no rescan)",
+        type: Boolean,
+    },
+    sync: {
+        defaultValue: false,
+        description: "Sync vis accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)",
+        type: Boolean,
+    },
+    usage: {
+        defaultValue: false,
+        description: "Only report vulnerabilities in statically-imported packages (reachability filter).",
+        type: Boolean,
+    },
+    yes: {
+        defaultValue: false,
+        description: "Skip confirmation prompt for --fix / --fix-transitive (required in CI)",
+        type: Boolean,
+    },
+} as const;
+
+const audit = defineCommand({
     description: "Audit installed packages for vulnerabilities and supply chain risks",
     examples: [
         ["vis audit", "Full audit of all installed packages"],
@@ -43,154 +147,10 @@ const audit: Command = {
     group: "Security & Health",
     loader: () => import("./handler"),
     name: "audit",
-    options: [
-        {
-            description: "Minimum severity to report: low, medium, high, critical (default: low)",
-            name: "severity",
-            type: String,
-        },
-        {
-            description: "Output format: table, json, sarif, csaf, cyclonedx-vex, gitlab, or junit (default: table)",
-            name: "format",
-            type: String,
-        },
-        {
-            description: "Write a self-contained HTML report to this path. Auto-opens in a TTY when not in CI.",
-            name: "report",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Only report vulnerabilities in statically-imported packages (reachability filter).",
-            name: "usage",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Disable the reachability filter even if enabled in config.",
-            name: "no-usage",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Query the local OSV advisory cache only — no network calls. Errors if the cache is missing.",
-            name: "offline",
-            type: Boolean,
-        },
-        {
-            description: "Override the offline advisory DB path (default: <cache>/vis/advisories/db.sqlite).",
-            name: "db",
-            type: String,
-        },
-        {
-            description:
-                "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
-            name: "ecosystem",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Skip devDependencies — scan production graph only.",
-            name: "prod-only",
-            type: Boolean,
-        },
-        {
-            description: "Exit non-zero when any finding is at this severity or higher. One of: low, medium, high, critical.",
-            name: "fail-on",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Print fix-suggestion lines for each finding (no apply, no rescan)",
-            name: "show-fixes",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Apply direct-dep fixes for vulnerable packages by running the active PM update command, then rescan",
-            name: "fix",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Apply transitive fixes by writing PM-specific overrides (pnpm-workspace.yaml / package.json overrides / resolutions)",
-            name: "fix-transitive",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Skip confirmation prompt for --fix / --fix-transitive (required in CI)",
-            name: "yes",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Allow --fix to bump a direct dep across a major version when the lowest fix is outside the existing range",
-            name: "allow-major",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Exit with code 1 if any issues found (for CI)",
-            name: "exit-code",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Include acknowledged (accepted risk) issues in output",
-            name: "show-accepted",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Sync vis accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)",
-            name: "sync",
-            type: Boolean,
-        },
-        {
-            description:
-                "Comma-separated list of supply-chain policies to evaluate (default: every configured policy). Use 'none' to skip the engine entirely, 'all' to force the full set. Known: malware, firstSeen, unexpectedDeps, publisherChange, installScripts, score, vulnerability, license.",
-            name: "policies",
-            type: String,
-        },
-        {
-            description:
-                "Audit backend: 'auto' (default, delegates to 'aube audit' when aube is the installer), 'aube' (force delegate), or 'vis' (always use vis's OSV/Socket scanner).",
-            name: "backend",
-            type: String,
-        },
-        {
-            description:
-                "Add a plain-English AI explanation to findings. Bare flag explains all findings at/above --severity; pass a finding index (e.g. 2) or a CVE/GHSA id to explain just one. Auto-detects an installed AI CLI; mutually exclusive with --offline.",
-            name: "explain",
-            type: String,
-        },
-    ],
-};
+    options: auditOptionDefinitions,
+});
 
 export default audit;
 
 /** Typed options object for the `vis audit` command handler, derived from {@link audit.options}. */
-export type AuditOptions = CreateOptions<{
-    "allow-major": boolean | undefined;
-    backend: string | undefined;
-    db: string | undefined;
-    ecosystem: string | undefined;
-    "exit-code": boolean | undefined;
-    explain: boolean | string | undefined;
-    "fail-on": string | undefined;
-    fix: boolean | undefined;
-    "fix-transitive": boolean | undefined;
-    format: string | undefined;
-    "no-usage": boolean | undefined;
-    offline: boolean | undefined;
-    policies: string | undefined;
-    "prod-only": boolean | undefined;
-    report: string | undefined;
-    severity: string | undefined;
-    "show-accepted": boolean | undefined;
-    "show-fixes": boolean | undefined;
-    sync: boolean | undefined;
-    usage: boolean | undefined;
-    yes: boolean | undefined;
-}>;
+export type AuditOptions = InferOptions<typeof auditOptionDefinitions>;

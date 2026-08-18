@@ -1,6 +1,43 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const stage: Command = {
+const stageOptionDefinitions = {
+    action: {
+        defaultOption: true,
+        defaultValue: "list",
+        description: "Subcommand: list | approve | reject",
+        type: String,
+    },
+    all: {
+        description: "Approve every pending stage tracked in .vis/release/staged.json",
+        type: Boolean,
+    },
+    commit: {
+        defaultValue: true,
+        description: "Update .vis/release/staged.json but skip the auto-commit. Default: commit",
+        type: Boolean,
+    },
+    filter: {
+        description: "Package name filter for `list`",
+        type: String,
+    },
+    json: {
+        description: "Emit machine-readable JSON",
+        type: Boolean,
+    },
+    push: {
+        defaultValue: true,
+        description: "Skip pushing the registry commit to the remote. Default: push",
+        type: Boolean,
+    },
+    "stage-ids": {
+        description: "Stage IDs (positional args after the action)",
+        multiple: true,
+        type: String,
+    },
+} as const;
+
+const stage = defineCommand({
     commandPath: ["release"],
     description: "List, approve, or reject npm staged-publish records (RFC §13.6 — approve/reject need 2FA)",
     examples: [
@@ -16,49 +53,8 @@ const stage: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "stage",
-    options: [
-        {
-            defaultOption: true,
-            defaultValue: "list",
-            description: "Subcommand: list | approve | reject",
-            name: "action",
-            type: String,
-        },
-        {
-            description: "Stage IDs (positional args after the action)",
-            multiple: true,
-            name: "stage-ids",
-            type: String,
-        },
-        {
-            description: "Approve every pending stage tracked in .vis/release/staged.json",
-            name: "all",
-            type: Boolean,
-        },
-        {
-            description: "Package name filter for `list`",
-            name: "filter",
-            type: String,
-        },
-        {
-            description: "Emit machine-readable JSON",
-            name: "json",
-            type: Boolean,
-        },
-        {
-            defaultValue: true,
-            description: "Update .vis/release/staged.json but skip the auto-commit. Default: commit",
-            name: "commit",
-            type: Boolean,
-        },
-        {
-            defaultValue: true,
-            description: "Skip pushing the registry commit to the remote. Default: push",
-            name: "push",
-            type: Boolean,
-        },
-    ],
-};
+    options: stageOptionDefinitions,
+});
 
 export default stage;
 

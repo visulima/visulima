@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 import { negatable } from "../../util/negatable-option";
 
@@ -18,7 +19,53 @@ import { negatable } from "../../util/negatable-option";
  * already installed, uses CI-safe defaults, and picks up the base ref
  * from common CI provider environment variables.
  */
-const ci: Command = {
+const ciOptionDefinitions = {
+    ...negatable({
+        defaultValue: true,
+        description: "Install dependencies before running targets (use --no-install to skip)",
+        name: "install",
+        type: Boolean,
+    }),
+    base: {
+        description: "Git base ref for affected detection (default: auto-detected from CI env)",
+        type: String,
+    },
+    downstream: {
+        defaultValue: "deep",
+        description: "Downstream scope: none | direct | deep",
+        type: String,
+    },
+    head: {
+        description: "Git head ref for affected detection (default: HEAD)",
+        type: String,
+    },
+    parallel: {
+        defaultValue: 4,
+        description: "Maximum number of parallel tasks per target",
+        type: Number,
+    },
+    partition: {
+        description: "Partition tasks for distributed CI (e.g., \"1/4\")",
+        type: String,
+    },
+    query: {
+        description: "Filter affected projects by a query (e.g. 'language=typescript && tag=lib')",
+        type: String,
+    },
+    "skip-toolchain": {
+        defaultValue: false,
+        description:
+                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+        type: Boolean,
+    },
+    upstream: {
+        defaultValue: "none",
+        description: "Upstream scope: none | direct | deep",
+        type: String,
+    },
+} as const;
+
+const ci = defineCommand({
     argument: {
         description: "Comma-separated list of targets to run (e.g., lint,test,build)",
         name: "targets",
@@ -34,71 +81,9 @@ const ci: Command = {
     group: "Run & Execute",
     loader: () => import("./handler"),
     name: "ci",
-    options: [
-        ...negatable({
-            defaultValue: true,
-            description: "Install dependencies before running targets (use --no-install to skip)",
-            name: "install",
-            type: Boolean,
-        }),
-        {
-            defaultValue: false,
-            description:
-                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
-            name: "skip-toolchain",
-            type: Boolean,
-        },
-        {
-            description: "Git base ref for affected detection (default: auto-detected from CI env)",
-            name: "base",
-            type: String,
-        },
-        {
-            description: "Git head ref for affected detection (default: HEAD)",
-            name: "head",
-            type: String,
-        },
-        {
-            defaultValue: "none",
-            description: "Upstream scope: none | direct | deep",
-            name: "upstream",
-            type: String,
-        },
-        {
-            defaultValue: "deep",
-            description: "Downstream scope: none | direct | deep",
-            name: "downstream",
-            type: String,
-        },
-        {
-            defaultValue: 4,
-            description: "Maximum number of parallel tasks per target",
-            name: "parallel",
-            type: Number,
-        },
-        {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\")",
-            name: "partition",
-            type: String,
-        },
-        {
-            description: "Filter affected projects by a query (e.g. 'language=typescript && tag=lib')",
-            name: "query",
-            type: String,
-        },
-    ],
-};
+    options: ciOptionDefinitions,
+});
 
 export default ci;
 
-export type CiOptions = CreateOptions<{
-    base: string | undefined;
-    downstream: string | undefined;
-    head: string | undefined;
-    install: boolean | undefined;
-    parallel: number | undefined;
-    partition: string | undefined;
-    query: string | undefined;
-    "skip-toolchain": boolean | undefined;
-    upstream: string | undefined;
-}>;
+export type CiOptions = InferOptions<typeof ciOptionDefinitions>;

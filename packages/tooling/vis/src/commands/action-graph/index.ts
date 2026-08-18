@@ -1,11 +1,34 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis action-graph &lt;selector>` — shows the execution plan that would
  * be produced by `vis run &lt;selector>` without running anything. Matches
  * moon's `moon action-graph`.
  */
-const actionGraph: Command = {
+const actionGraphOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit JSON instead of ASCII",
+        type: Boolean,
+    },
+    projects: {
+        alias: "p",
+        description: "Comma-separated list of projects to plan (same semantics as `vis run --projects`)",
+        type: String,
+    },
+    query: {
+        description: "Filter matched projects by a query",
+        type: String,
+    },
+    tag: {
+        description: "Only plan projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
+        multiple: true,
+        type: String,
+    },
+} as const;
+
+const actionGraph = defineCommand({
     argument: {
         description: "Target selector (same syntax as `vis run`): `build`, `:build`, `~:test`, `#tag:lint`, …",
         name: "selector",
@@ -22,38 +45,9 @@ const actionGraph: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "action-graph",
-    options: [
-        {
-            defaultValue: false,
-            description: "Emit JSON instead of ASCII",
-            name: "json",
-            type: Boolean,
-        },
-        {
-            alias: "p",
-            description: "Comma-separated list of projects to plan (same semantics as `vis run --projects`)",
-            name: "projects",
-            type: String,
-        },
-        {
-            description: "Filter matched projects by a query",
-            name: "query",
-            type: String,
-        },
-        {
-            description: "Only plan projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
-            multiple: true,
-            name: "tag",
-            type: String,
-        },
-    ],
-};
+    options: actionGraphOptionDefinitions,
+});
 
 export default actionGraph;
 
-export type ActionGraphOptions = CreateOptions<{
-    json: boolean | undefined;
-    projects: string | undefined;
-    query: string | undefined;
-    tag: string[] | undefined;
-}>;
+export type ActionGraphOptions = InferOptions<typeof actionGraphOptionDefinitions>;

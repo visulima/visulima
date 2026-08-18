@@ -1,6 +1,16 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const unlink: Command = {
+const unlinkOptionDefinitions = {
+    recursive: {
+        alias: "r",
+        defaultValue: false,
+        description: "Unlink in all workspace packages",
+        type: Boolean,
+    },
+} as const;
+
+const unlink = defineCommand({
     argument: {
         description: "Packages to unlink (omit for current package)",
         name: "packages",
@@ -15,11 +25,9 @@ const unlink: Command = {
     group: "Dependencies",
     loader: () => import("./handler"),
     name: "unlink",
-    options: [{ alias: "r", defaultValue: false, description: "Unlink in all workspace packages", name: "recursive", type: Boolean }],
-};
+    options: unlinkOptionDefinitions,
+});
 
 export default unlink;
 
-export type UnlinkOptions = CreateOptions<{
-    recursive: boolean | undefined;
-}>;
+export type UnlinkOptions = InferOptions<typeof unlinkOptionDefinitions>;

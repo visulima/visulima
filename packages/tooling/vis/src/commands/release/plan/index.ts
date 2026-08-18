@@ -1,6 +1,31 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const plan: Command = {
+const planOptionDefinitions = {
+    channel: {
+        description: "Override channel (defaults to current branch lookup)",
+        type: String,
+    },
+    filter: {
+        description: "Filter packages by name glob",
+        type: String,
+    },
+    interactive: {
+        alias: "i",
+        description: "Walk through pending releases interactively and accept / override each bump level",
+        type: Boolean,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+    write: {
+        description: "When used with --interactive, write the chosen overrides to a new change file (.vis/release/<id>.md)",
+        type: Boolean,
+    },
+} as const;
+
+const plan = defineCommand({
     commandPath: ["release"],
     description: "Inspect the release plan; with --interactive, walk through and override bump levels",
     examples: [
@@ -11,35 +36,8 @@ const plan: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "plan",
-    options: [
-        {
-            description: "Filter packages by name glob",
-            name: "filter",
-            type: String,
-        },
-        {
-            description: "Override channel (defaults to current branch lookup)",
-            name: "channel",
-            type: String,
-        },
-        {
-            alias: "i",
-            description: "Walk through pending releases interactively and accept / override each bump level",
-            name: "interactive",
-            type: Boolean,
-        },
-        {
-            description: "When used with --interactive, write the chosen overrides to a new change file (.vis/release/<id>.md)",
-            name: "write",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-    ],
-};
+    options: planOptionDefinitions,
+});
 
 export default plan;
 

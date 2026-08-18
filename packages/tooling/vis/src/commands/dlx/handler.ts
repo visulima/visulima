@@ -26,9 +26,13 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     const gateTargets = options.shellMode ? additionalPackages : [pkg as string, ...additionalPackages];
 
     for (const target of gateTargets) {
-        // An explicit `--info` flag wins over `--no-info` / `VIS_DLX_NO_INFO`.
-        const forceInfo = options.info || false;
-        const noInfo = forceInfo ? false : options.noInfo || isTruthyEnv(process.env.VIS_DLX_NO_INFO);
+        // cerebro folds `--no-info` onto `info` and deletes the negated key, so
+        // `info` is the only signal that reaches here: `false` means the panel
+        // was explicitly suppressed, `true` means it was not. `--info` and the
+        // default are indistinguishable by design — both leave it `true` — so
+        // the env var stays the second way to suppress.
+        const noInfo = !options.info || isTruthyEnv(process.env.VIS_DLX_NO_INFO);
+        const forceInfo = !noInfo && options.info;
 
         const gate = await maybeGateFirstRun({
             forceInfo,

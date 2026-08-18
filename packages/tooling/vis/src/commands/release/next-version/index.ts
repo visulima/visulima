@@ -1,6 +1,31 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const nextVersion: Command = {
+const nextVersionOptionDefinitions = {
+    channel: {
+        description: "Override channel (defaults to current branch lookup)",
+        type: String,
+    },
+    "first-release": {
+        description:
+                "Bootstrap mode for greenfield monorepos: preview the plan without registry / tag lookups (matches `vis release version --first-release`).",
+        type: Boolean,
+    },
+    json: {
+        description: "Emit a JSON `{ name: { from, to } }` map instead of pretty lines",
+        type: Boolean,
+    },
+    package: {
+        description: "Limit output to a single package",
+        type: String,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+} as const;
+
+const nextVersion = defineCommand({
     commandPath: ["release"],
     description: "Print the next computed version for each package in the release plan. Read-only; no mutations.",
     examples: [
@@ -11,35 +36,8 @@ const nextVersion: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "next-version",
-    options: [
-        {
-            description: "Limit output to a single package",
-            name: "package",
-            type: String,
-        },
-        {
-            description: "Emit a JSON `{ name: { from, to } }` map instead of pretty lines",
-            name: "json",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-        {
-            description: "Override channel (defaults to current branch lookup)",
-            name: "channel",
-            type: String,
-        },
-        {
-            description:
-                "Bootstrap mode for greenfield monorepos: preview the plan without registry / tag lookups (matches `vis release version --first-release`).",
-            name: "first-release",
-            type: Boolean,
-        },
-    ],
-};
+    options: nextVersionOptionDefinitions,
+});
 
 export default nextVersion;
 

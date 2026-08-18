@@ -61,9 +61,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         Boolean(options.skipToolchain),
     );
 
-    if (options.install === false) {
-        logger.info("▸ Skipping install (--no-install)");
-    } else {
+    if (options.install) {
         logger.info("▸ Installing dependencies");
 
         await runtime.runCommand("install", {
@@ -75,6 +73,8 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
             // silently downgrade vis ci to a mutating install.
             argv: ["--ci", "--frozen-lockfile"],
         });
+    } else {
+        logger.info("▸ Skipping install (--no-install)");
     }
 
     for (const target of targets) {

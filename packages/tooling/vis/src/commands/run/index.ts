@@ -1,8 +1,212 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 import { negatable } from "../../util/negatable-option";
 
-const run: Command = {
+const runOptionDefinitions = {
+    filter: {
+        alias: "F",
+        description:
+                "pnpm-style package selector (repeatable). Supports name globs (@org/*), graph modifiers (...pkg dependents, pkg... dependencies, ...^pkg / pkg^... exclude self), changed-since ([main], ...[origin/main]), and path globs (./packages/*, {glob}).",
+        multiple: true,
+        type: String,
+    },
+    projects: {
+        alias: "p",
+        description: "Comma-separated list of projects to run",
+        type: String,
+    },
+    "skip-toolchain": {
+        defaultValue: false,
+        description:
+                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
+        type: Boolean,
+    },
+    ...negatable({
+        // No `defaultValue` — handler treats `undefined` as "fall
+        // back to config (default: enabled)" so `vis.config.ts`
+        // `preflight.lockfile` can opt out workspace-wide and
+        // `--no-preflight` opts out per-run without conflicting layers.
+        description: "Detect lockfile/node_modules drift before running (warns in TTY, fails in CI). Use --no-preflight to disable.",
+        name: "preflight",
+        type: Boolean,
+    }),
+    parallel: {
+        defaultValue: 3,
+        description: "Maximum number of parallel tasks (falls back to VIS_RUN_CONCURRENCY_LIMIT env var, then 3)",
+        type: Number,
+    },
+    ...negatable({
+        defaultValue: true,
+        description: "Enable caching (use --no-cache to disable)",
+        name: "cache",
+        type: Boolean,
+    }),
+    affected: {
+        defaultValue: false,
+        description: "Only run on projects affected by git changes. Honors --base/--head/--downstream/--upstream, same as `vis affected`.",
+        type: Boolean,
+    },
+    base: {
+        description:
+                "Git base ref for --affected. When omitted, vis auto-resolves it from the active CI provider (GitHub/GitLab/Buildkite/CircleCI) or falls back to `git merge-base HEAD origin/<defaultBase>` locally. Default base branch comes from `vis.config.ts#defaultBase` (or `main`). Requires --affected.",
+        type: String,
+    },
+    "cache-backend": {
+        description: "Remote cache wire backend: http (Turborepo-compatible) or reapi (Bazel Remote Execution API gRPC)",
+        type: String,
+    },
+    "cache-dir": {
+        description: "Custom cache directory",
+        type: String,
+    },
+    "cache-mode": {
+        description: "Remote cache mode: read | write | readwrite (defaults to readwrite when remoteCache is configured)",
+        type: String,
+    },
+    downstream: {
+        description:
+                "Downstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependents of changed projects (default \"deep\"). Requires --affected.",
+        type: String,
+    },
+    "dry-run": {
+        defaultValue: false,
+        description: "Show what would run without executing",
+        type: Boolean,
+    },
+    "hash-mode": {
+        description:
+                "Override how the requested target is hashed for this run: declared (hash listed inputs) or trace (hash the files the task actually reads). Overrides per-target hashMode config for the directly-run target.",
+        type: String,
+    },
+    head: {
+        description:
+                "Git head ref for --affected. When omitted, auto-resolves from CI env (e.g. `$GITHUB_SHA`) or defaults to `HEAD`. Requires --affected.",
+        type: String,
+    },
+    partition: {
+        description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
+        type: String,
+    },
+    query: {
+        description: "Filter matched projects by a query (e.g. 'language=typescript && tag=lib')",
+        type: String,
+    },
+    "skip-cache": {
+        description:
+                "Comma-separated selectors of tasks to bypass cache for (e.g. 'app:test', ':e2e', '#flaky:lint'). Other tasks in the run still cache normally. --no-cache wins when both are set.",
+        type: String,
+    },
+    "skip-constraints": {
+        defaultValue: false,
+        description: "Skip project constraint validation",
+        type: Boolean,
+    },
+    summarize: {
+        defaultValue: false,
+        description: "Generate a run summary after execution",
+        type: Boolean,
+    },
+    tag: {
+        description:
+                "Only run projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\"; combines with --query as AND.",
+        multiple: true,
+        type: String,
+    },
+    upstream: {
+        description:
+                "Upstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependencies of changed projects (default \"none\"). Requires --affected.",
+        type: String,
+    },
+    ...negatable({
+        // Mirrors `vis affected --uncommitted`. `undefined` means
+        // "auto": include working-tree changes for local interactive
+        // runs, ignore them in CI where the checkout is the truth.
+        description:
+                "Include uncommitted working-tree changes when computing --affected. Defaults to on for local runs and off in CI; use --no-uncommitted to force off.",
+        name: "uncommitted",
+        type: Boolean,
+    }),
+    "fail-fast": {
+        defaultValue: false,
+        description: "Stop all tasks on first failure",
+        type: Boolean,
+    },
+    "last-details": {
+        defaultValue: false,
+        description: "Render the most-recent run's saved summary (from .vis/last-summary.json) and exit without executing any tasks",
+        type: Boolean,
+    },
+    log: {
+        description: "Output mode: interleaved (pass-through), labeled (prefix each line with [pkg#task]), or grouped (vite-task-style block)",
+        type: String,
+    },
+    "output-style": {
+        description:
+                "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Defaults to normal; set run.quietOnSuccess in config to make quiet the default. Per-target options.outputStyle overrides this.",
+        type: String,
+    },
+    profile: {
+        description: "Write a Chrome Tracing JSON profile of the run to this path (open in chrome://tracing or Perfetto)",
+        type: String,
+    },
+    pty: {
+        defaultValue: false,
+        description: "Run every task through a pseudo-terminal so color-aware tools render as if attached to a TTY (disables caching)",
+        type: Boolean,
+    },
+    "retry-budget": {
+        description: "Global retry budget: cap on total task retries across the run (per-target retryCount is still honored up to the budget)",
+        type: Number,
+    },
+    reverse: {
+        defaultValue: false,
+        description:
+                "Run the dependency graph in reverse (leaves first, then their dependents). Useful for teardown targets like `destroy`/`undeploy` where dependents must run before the things they depend on.",
+        type: Boolean,
+    },
+    watch: {
+        defaultValue: false,
+        description: "Rerun affected tasks on file change. Ctrl+C to exit.",
+        type: Boolean,
+    },
+    ...negatable({
+        defaultValue: true,
+        description: "Show flaky task report on failure (use --no-flaky to suppress)",
+        name: "flaky",
+        type: Boolean,
+    }),
+    "fail-on-retry": {
+        defaultValue: false,
+        description:
+                "Treat any task that needed at least one retry as a run failure (exit non-zero), even when retries eventually succeeded. Use in CI to surface flakes that retries would otherwise mask.",
+        type: Boolean,
+    },
+    ...negatable({
+        // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
+        description:
+                "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
+        name: "strict-env",
+        type: Boolean,
+    }),
+    "runner-tags": {
+        description:
+                "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Tasks declaring `options.runnerTags` only run when at least one tag overlaps. Untagged tasks always run. Falls back to VIS_RUNNER_TAGS env var.",
+        type: String,
+    },
+    services: {
+        description: "Auto-start service deps. One of: auto | ephemeral | persistent | off. Defaults to `auto` in TTY, `off` in CI.",
+        type: String,
+    },
+    "stop-services": {
+        defaultValue: false,
+        description:
+                "Stop services this run auto-started in registry mode when the run exits (clean, q, or Ctrl+C). Ephemeral services already die with the run.",
+        type: Boolean,
+    },
+} as const;
+
+const run = defineCommand({
     argument: {
         description: "The target to run (e.g., build, test, lint)",
         name: "target",
@@ -29,295 +233,9 @@ const run: Command = {
     group: "Run & Execute",
     loader: () => import("./handler"),
     name: "run",
-    options: [
-        {
-            alias: "p",
-            description: "Comma-separated list of projects to run",
-            name: "projects",
-            type: String,
-        },
-        {
-            alias: "F",
-            description:
-                "pnpm-style package selector (repeatable). Supports name globs (@org/*), graph modifiers (...pkg dependents, pkg... dependencies, ...^pkg / pkg^... exclude self), changed-since ([main], ...[origin/main]), and path globs (./packages/*, {glob}).",
-            multiple: true,
-            name: "filter",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description:
-                "Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)",
-            name: "skip-toolchain",
-            type: Boolean,
-        },
-        ...negatable({
-            // No `defaultValue` — handler treats `undefined` as "fall
-            // back to config (default: enabled)" so `vis.config.ts`
-            // `preflight.lockfile` can opt out workspace-wide and
-            // `--no-preflight` opts out per-run without conflicting layers.
-            description: "Detect lockfile/node_modules drift before running (warns in TTY, fails in CI). Use --no-preflight to disable.",
-            name: "preflight",
-            type: Boolean,
-        }),
-        {
-            defaultValue: 3,
-            description: "Maximum number of parallel tasks (falls back to VIS_RUN_CONCURRENCY_LIMIT env var, then 3)",
-            name: "parallel",
-            type: Number,
-        },
-        ...negatable({
-            defaultValue: true,
-            description: "Enable caching (use --no-cache to disable)",
-            name: "cache",
-            type: Boolean,
-        }),
-        {
-            description:
-                "Comma-separated selectors of tasks to bypass cache for (e.g. 'app:test', ':e2e', '#flaky:lint'). Other tasks in the run still cache normally. --no-cache wins when both are set.",
-            name: "skip-cache",
-            type: String,
-        },
-        {
-            description: "Custom cache directory",
-            name: "cache-dir",
-            type: String,
-        },
-        {
-            description: "Remote cache mode: read | write | readwrite (defaults to readwrite when remoteCache is configured)",
-            name: "cache-mode",
-            type: String,
-        },
-        {
-            description: "Remote cache wire backend: http (Turborepo-compatible) or reapi (Bazel Remote Execution API gRPC)",
-            name: "cache-backend",
-            type: String,
-        },
-        {
-            description:
-                "Override how the requested target is hashed for this run: declared (hash listed inputs) or trace (hash the files the task actually reads). Overrides per-target hashMode config for the directly-run target.",
-            name: "hash-mode",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Show what would run without executing",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Generate a run summary after execution",
-            name: "summarize",
-            type: Boolean,
-        },
-        {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
-            name: "partition",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Skip project constraint validation",
-            name: "skip-constraints",
-            type: Boolean,
-        },
-        {
-            description: "Filter matched projects by a query (e.g. 'language=typescript && tag=lib')",
-            name: "query",
-            type: String,
-        },
-        {
-            description:
-                "Only run projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\"; combines with --query as AND.",
-            multiple: true,
-            name: "tag",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Only run on projects affected by git changes. Honors --base/--head/--downstream/--upstream, same as `vis affected`.",
-            name: "affected",
-            type: Boolean,
-        },
-        {
-            description:
-                "Git base ref for --affected. When omitted, vis auto-resolves it from the active CI provider (GitHub/GitLab/Buildkite/CircleCI) or falls back to `git merge-base HEAD origin/<defaultBase>` locally. Default base branch comes from `vis.config.ts#defaultBase` (or `main`). Requires --affected.",
-            name: "base",
-            type: String,
-        },
-        {
-            description:
-                "Git head ref for --affected. When omitted, auto-resolves from CI env (e.g. `$GITHUB_SHA`) or defaults to `HEAD`. Requires --affected.",
-            name: "head",
-            type: String,
-        },
-        {
-            description:
-                "Downstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependents of changed projects (default \"deep\"). Requires --affected.",
-            name: "downstream",
-            type: String,
-        },
-        {
-            description:
-                "Upstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependencies of changed projects (default \"none\"). Requires --affected.",
-            name: "upstream",
-            type: String,
-        },
-        ...negatable({
-            // Mirrors `vis affected --uncommitted`. `undefined` means
-            // "auto": include working-tree changes for local interactive
-            // runs, ignore them in CI where the checkout is the truth.
-            description:
-                "Include uncommitted working-tree changes when computing --affected. Defaults to on for local runs and off in CI; use --no-uncommitted to force off.",
-            name: "uncommitted",
-            type: Boolean,
-        }),
-        {
-            defaultValue: false,
-            description: "Rerun affected tasks on file change. Ctrl+C to exit.",
-            name: "watch",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Stop all tasks on first failure",
-            name: "fail-fast",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description:
-                "Run the dependency graph in reverse (leaves first, then their dependents). Useful for teardown targets like `destroy`/`undeploy` where dependents must run before the things they depend on.",
-            name: "reverse",
-            type: Boolean,
-        },
-        {
-            description: "Output mode: interleaved (pass-through), labeled (prefix each line with [pkg#task]), or grouped (vite-task-style block)",
-            name: "log",
-            type: String,
-        },
-        {
-            description:
-                "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Defaults to normal; set run.quietOnSuccess in config to make quiet the default. Per-target options.outputStyle overrides this.",
-            name: "output-style",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Run every task through a pseudo-terminal so color-aware tools render as if attached to a TTY (disables caching)",
-            name: "pty",
-            type: Boolean,
-        },
-        {
-            description: "Global retry budget: cap on total task retries across the run (per-target retryCount is still honored up to the budget)",
-            name: "retry-budget",
-            type: Number,
-        },
-        {
-            description: "Write a Chrome Tracing JSON profile of the run to this path (open in chrome://tracing or Perfetto)",
-            name: "profile",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Render the most-recent run's saved summary (from .vis/last-summary.json) and exit without executing any tasks",
-            name: "last-details",
-            type: Boolean,
-        },
-        ...negatable({
-            defaultValue: true,
-            description: "Show flaky task report on failure (use --no-flaky to suppress)",
-            name: "flaky",
-            type: Boolean,
-        }),
-        {
-            defaultValue: false,
-            description:
-                "Treat any task that needed at least one retry as a run failure (exit non-zero), even when retries eventually succeeded. Use in CI to surface flakes that retries would otherwise mask.",
-            name: "fail-on-retry",
-            type: Boolean,
-        },
-        ...negatable({
-            // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
-            description:
-                "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
-            name: "strict-env",
-            type: Boolean,
-        }),
-        {
-            description:
-                "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Tasks declaring `options.runnerTags` only run when at least one tag overlaps. Untagged tasks always run. Falls back to VIS_RUNNER_TAGS env var.",
-            name: "runner-tags",
-            type: String,
-        },
-        {
-            // One knob for the service-preflight feature. Falls back to
-            // `vis.config.ts → run.services` and finally to a TTY-aware
-            // default (auto-pick mode in a terminal, off in CI / pipes).
-            // Values:
-            //   auto       — pick by task: `dev` → ephemeral, others → persistent
-            //   ephemeral  — services die with the run (no registry entry)
-            //   persistent — services persist in the registry across runs
-            //   off        — skip auto-start; print today's diagnostic and abort
-            description: "Auto-start service deps. One of: auto | ephemeral | persistent | off. Defaults to `auto` in TTY, `off` in CI.",
-            name: "services",
-            type: String,
-        },
-        {
-            // Opt-in cleanup for registry-mode services this run started.
-            // Ephemeral services already die with the run; this only
-            // affects services that would otherwise persist (the ones
-            // surfaced by today's "N service(s) started in the background"
-            // hint). Applies on every exit path: clean finish, `q`, Ctrl+C.
-            defaultValue: false,
-            description:
-                "Stop services this run auto-started in registry mode when the run exits (clean, q, or Ctrl+C). Ephemeral services already die with the run.",
-            name: "stop-services",
-            type: Boolean,
-        },
-    ],
-};
+    options: runOptionDefinitions,
+});
 
 export default run;
 
-export type RunOptions = CreateOptions<{
-    affected: boolean | undefined;
-    base: string | undefined;
-    cache: boolean | undefined;
-    "cache-backend": string | undefined;
-    "cache-dir": string | undefined;
-    "cache-mode": string | undefined;
-    downstream: string | undefined;
-    "dry-run": boolean | undefined;
-    "fail-fast": boolean | undefined;
-    "fail-on-retry": boolean | undefined;
-    filter: string[] | undefined;
-    flaky: boolean | undefined;
-    "hash-mode": string | undefined;
-    head: string | undefined;
-    "last-details": boolean | undefined;
-    log: string | undefined;
-    "output-style": string | undefined;
-    parallel: number | undefined;
-    partition: string | undefined;
-    preflight: boolean | undefined;
-    profile: string | undefined;
-    projects: string | undefined;
-    pty: boolean | undefined;
-    query: string | undefined;
-    "retry-budget": number | undefined;
-    reverse: boolean | undefined;
-    "runner-tags": string | undefined;
-    services: string | undefined;
-    "skip-cache": string | undefined;
-    "skip-constraints": boolean | undefined;
-    "skip-toolchain": boolean | undefined;
-    "stop-services": boolean | undefined;
-    "strict-env": boolean | undefined;
-    summarize: boolean | undefined;
-    tag: string[] | undefined;
-    uncommitted: boolean | undefined;
-    upstream: string | undefined;
-    watch: boolean | undefined;
-}>;
+export type RunOptions = InferOptions<typeof runOptionDefinitions>;
