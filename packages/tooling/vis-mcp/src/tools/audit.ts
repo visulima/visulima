@@ -17,7 +17,7 @@ const resultEntrySchema = z.object({
     acceptedRisk: z.unknown().optional(),
     name: z.string(),
     socketAlerts: z.array(z.unknown()).optional(),
-    socketScore: z.number().nullable().optional(),
+    socketScore: z.number().nullish(),
     version: z.string(),
     vulnerabilities: z.array(vulnerabilitySchema),
 });
