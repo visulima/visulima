@@ -94,6 +94,7 @@ export { default as MissingArgumentError } from "./errors/missing-argument-error
 export { default as SurplusArgumentError } from "./errors/surplus-argument-error";
 export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
 export type {
+    AnyCommandInput,
     ArgumentDefinition,
     Command,
     CommandExecute,

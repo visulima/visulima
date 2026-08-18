@@ -11,7 +11,7 @@
  * `vis run`/`vis ci`/`vis audit` cold-start cost is unaffected.
  */
 
-import type { Command } from "@visulima/cerebro";
+import type { AnyCommandInput } from "@visulima/cerebro";
 
 import addCommand from "./add";
 import changelogCommand from "./changelog";
@@ -36,7 +36,7 @@ import stageCommand from "./stage";
 import statusCommand from "./status";
 import versionCommand from "./version";
 
-const releaseCommands: Command[] = [
+const releaseCommands: AnyCommandInput[] = [
     // Read-only / authoring
     addCommand,
     generateCommand,

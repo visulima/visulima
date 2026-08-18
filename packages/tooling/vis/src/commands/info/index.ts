@@ -1,6 +1,15 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const info: Command = {
+const infoOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Output as JSON",
+        type: Boolean,
+    },
+} as const;
+
+const info = defineCommand({
     alias: "view",
     argument: {
         description: "Package name followed by optional metadata fields (e.g. 'react version dependencies')",
@@ -19,11 +28,9 @@ const info: Command = {
     group: "Dependencies",
     loader: () => import("./handler"),
     name: "info",
-    options: [{ defaultValue: false, description: "Output as JSON", name: "json", type: Boolean }],
-};
+    options: infoOptionDefinitions,
+});
 
 export default info;
 
-export type InfoOptions = CreateOptions<{
-    json: boolean | undefined;
-}>;
+export type InfoOptions = InferOptions<typeof infoOptionDefinitions>;

@@ -1,6 +1,44 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const exec: Command = {
+const execOptionDefinitions = {
+    filter: {
+        alias: "F",
+        description: "Filter packages by name pattern",
+        multiple: true,
+        type: String,
+    },
+    parallel: {
+        defaultValue: false,
+        description: "Run concurrently without topological ordering",
+        type: Boolean,
+    },
+    recursive: {
+        alias: "r",
+        defaultValue: false,
+        description: "Run in every workspace package",
+        type: Boolean,
+    },
+    reverse: {
+        defaultValue: false,
+        description: "Reverse topological execution order",
+        type: Boolean,
+    },
+    "shell-mode": {
+        alias: "c",
+        defaultValue: false,
+        description: "Execute within shell environment",
+        type: Boolean,
+    },
+    "workspace-root": {
+        alias: "w",
+        defaultValue: false,
+        description: "Run on workspace root only",
+        type: Boolean,
+    },
+} as const;
+
+const exec = defineCommand({
     argument: {
         description: "Command to execute followed by arguments",
         name: "command",
@@ -16,23 +54,9 @@ const exec: Command = {
     group: "Run & Execute",
     loader: () => import("./handler"),
     name: "exec",
-    options: [
-        { alias: "c", defaultValue: false, description: "Execute within shell environment", name: "shell-mode", type: Boolean },
-        { alias: "r", defaultValue: false, description: "Run in every workspace package", name: "recursive", type: Boolean },
-        { alias: "w", defaultValue: false, description: "Run on workspace root only", name: "workspace-root", type: Boolean },
-        { alias: "F", description: "Filter packages by name pattern", multiple: true, name: "filter", type: String },
-        { defaultValue: false, description: "Run concurrently without topological ordering", name: "parallel", type: Boolean },
-        { defaultValue: false, description: "Reverse topological execution order", name: "reverse", type: Boolean },
-    ],
-};
+    options: execOptionDefinitions,
+});
 
 export default exec;
 
-export type ExecOptions = CreateOptions<{
-    filter: string[] | undefined;
-    parallel: boolean | undefined;
-    recursive: boolean | undefined;
-    reverse: boolean | undefined;
-    "shell-mode": boolean | undefined;
-    "workspace-root": boolean | undefined;
-}>;
+export type ExecOptions = InferOptions<typeof execOptionDefinitions>;

@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis ignore` — generate or merge an ignore file for a build/publish
@@ -12,7 +13,24 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * (The CI "Ignored Build Step" gate that used to live here now lives at
  * `vis ci ignore`.)
  */
-const ignore: Command = {
+const ignoreOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit the result as JSON",
+        type: Boolean,
+    },
+    target: {
+        description: "Ignore-file target: docker | vercel | npm | slug (default: docker)",
+        type: String,
+    },
+    write: {
+        defaultValue: false,
+        description: "Write the result to disk instead of printing to stdout",
+        type: Boolean,
+    },
+} as const;
+
+const ignore = defineCommand({
     description: "Generate or merge an ignore file (.dockerignore/.vercelignore/.npmignore/.slugignore) without duplicate entries",
     examples: [
         ["vis ignore", "Print a .dockerignore (deduped against an existing one)"],
@@ -23,17 +41,9 @@ const ignore: Command = {
     group: "Scaffold & Config",
     loader: () => import("./handler"),
     name: "ignore",
-    options: [
-        { description: "Ignore-file target: docker | vercel | npm | slug (default: docker)", name: "target", type: String },
-        { defaultValue: false, description: "Write the result to disk instead of printing to stdout", name: "write", type: Boolean },
-        { defaultValue: false, description: "Emit the result as JSON", name: "json", type: Boolean },
-    ],
-};
+    options: ignoreOptionDefinitions,
+});
 
 export default ignore;
 
-export type IgnoreOptions = CreateOptions<{
-    json: boolean | undefined;
-    target: string | undefined;
-    write: boolean | undefined;
-}>;
+export type IgnoreOptions = InferOptions<typeof ignoreOptionDefinitions>;

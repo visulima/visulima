@@ -1,6 +1,23 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const analyze: Command = {
+const analyzeOptionDefinitions = {
+    "ai-type": {
+        description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
+        type: String,
+    },
+    format: {
+        description: "Output format: table or json (default: table)",
+        type: String,
+    },
+    security: {
+        defaultValue: false,
+        description: "Check for known security vulnerabilities",
+        type: Boolean,
+    },
+} as const;
+
+const analyze = defineCommand({
     argument: {
         description: "Package name to analyze (e.g., react)",
         name: "package",
@@ -17,30 +34,9 @@ const analyze: Command = {
     group: "System",
     loader: () => import("./handler"),
     name: "analyze",
-    options: [
-        {
-            description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
-            name: "ai-type",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Check for known security vulnerabilities",
-            name: "security",
-            type: Boolean,
-        },
-        {
-            description: "Output format: table or json (default: table)",
-            name: "format",
-            type: String,
-        },
-    ],
-};
+    options: analyzeOptionDefinitions,
+});
 
 export default analyze;
 
-export type AnalyzeOptions = CreateOptions<{
-    "ai-type": string | undefined;
-    format: string | undefined;
-    security: boolean | undefined;
-}>;
+export type AnalyzeOptions = InferOptions<typeof analyzeOptionDefinitions>;

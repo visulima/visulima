@@ -1,6 +1,51 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const publish: Command = {
+const publishOptionDefinitions = {
+    channel: {
+        description: "Override channel (defaults to current branch lookup)",
+        type: String,
+    },
+    "check-only": {
+        description: "Run preflight checks (config + workspace + plan + auth) and exit. No mutations.",
+        type: Boolean,
+    },
+    "dry-run": {
+        description: "Skip uploads — print what would happen",
+        type: Boolean,
+    },
+    filter: {
+        description: "Limit to packages matching this glob (CSV)",
+        type: String,
+    },
+    "first-release": {
+        description:
+                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
+        type: Boolean,
+    },
+    "no-push": {
+        description: "Skip `git push --tags` after publish (lands in M5)",
+        type: Boolean,
+    },
+    otp: {
+        description: "2FA OTP token",
+        type: String,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+    resume: {
+        description: "Resume from a previous run's state file (skips already-published packages)",
+        type: Boolean,
+    },
+    tag: {
+        description: "Override npm dist-tag",
+        type: String,
+    },
+} as const;
+
+const publish = defineCommand({
     commandPath: ["release"],
     description: "Pack-then-publish unpublished packages, push tags, create GH releases",
     examples: [
@@ -12,60 +57,8 @@ const publish: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "publish",
-    options: [
-        {
-            description: "Skip uploads — print what would happen",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            description: "Override npm dist-tag",
-            name: "tag",
-            type: String,
-        },
-        {
-            description: "Limit to packages matching this glob (CSV)",
-            name: "filter",
-            type: String,
-        },
-        {
-            description: "Skip `git push --tags` after publish (lands in M5)",
-            name: "no-push",
-            type: Boolean,
-        },
-        {
-            description: "2FA OTP token",
-            name: "otp",
-            type: String,
-        },
-        {
-            description: "Override channel (defaults to current branch lookup)",
-            name: "channel",
-            type: String,
-        },
-        {
-            description: "Resume from a previous run's state file (skips already-published packages)",
-            name: "resume",
-            type: Boolean,
-        },
-        {
-            description: "Run preflight checks (config + workspace + plan + auth) and exit. No mutations.",
-            name: "check-only",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-        {
-            description:
-                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
-            name: "first-release",
-            type: Boolean,
-        },
-    ],
-};
+    options: publishOptionDefinitions,
+});
 
 export default publish;
 

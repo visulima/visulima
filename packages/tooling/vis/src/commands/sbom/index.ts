@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis sbom` — CycloneDX 1.7 Software Bill of Materials generator.
@@ -7,7 +8,28 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * list, walks the workspace graph, and writes the result to disk
  * (or stdout).
  */
-const sbom: Command = {
+const sbomOptionDefinitions = {
+    focus: {
+        description: "Project name(s) to focus on — comma-separated for multiple",
+        type: String,
+    },
+    format: {
+        defaultValue: "json",
+        description: "Output format: json (default) or xml",
+        type: String,
+    },
+    "include-dev": {
+        defaultValue: false,
+        description: "Include devDependencies (default: production only)",
+        type: Boolean,
+    },
+    output: {
+        description: "Output path (use '-' for stdout; default: sbom.cdx.json)",
+        type: String,
+    },
+} as const;
+
+const sbom = defineCommand({
     description: "Generate a CycloneDX 1.7 Software Bill of Materials for the workspace",
     examples: [
         ["vis sbom", "Write the full-workspace SBOM to sbom.cdx.json"],
@@ -20,37 +42,9 @@ const sbom: Command = {
     group: "Security & Health",
     loader: () => import("./handler"),
     name: "sbom",
-    options: [
-        {
-            description: "Project name(s) to focus on — comma-separated for multiple",
-            name: "focus",
-            type: String,
-        },
-        {
-            defaultValue: "json",
-            description: "Output format: json (default) or xml",
-            name: "format",
-            type: String,
-        },
-        {
-            description: "Output path (use '-' for stdout; default: sbom.cdx.json)",
-            name: "output",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Include devDependencies (default: production only)",
-            name: "include-dev",
-            type: Boolean,
-        },
-    ],
-};
+    options: sbomOptionDefinitions,
+});
 
 export default sbom;
 
-export type SbomOptions = CreateOptions<{
-    focus: string | undefined;
-    format: string | undefined;
-    "include-dev": boolean | undefined;
-    output: string | undefined;
-}>;
+export type SbomOptions = InferOptions<typeof sbomOptionDefinitions>;

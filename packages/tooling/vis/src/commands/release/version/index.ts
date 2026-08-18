@@ -1,6 +1,39 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { CreateOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const version: Command = {
+const versionOptionDefinitions = {
+    channel: {
+        description: "Override channel (defaults to current branch lookup)",
+        type: String,
+    },
+    "check-only": {
+        description: "Run preflight checks (config + workspace + plan) and exit. No mutations.",
+        type: Boolean,
+    },
+    commit: {
+        description: "Auto-commit after applying",
+        type: Boolean,
+    },
+    "dry-run": {
+        description: "Skip writes — print the diff and exit",
+        type: Boolean,
+    },
+    filter: {
+        description: "Limit to packages matching this glob (CSV)",
+        type: String,
+    },
+    "first-release": {
+        description:
+                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
+        type: Boolean,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+} as const;
+
+const version = defineCommand({
     commandPath: ["release"],
     description: "Apply pending change files to disk: bump versions + write CHANGELOG entries",
     examples: [
@@ -11,45 +44,8 @@ const version: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "version",
-    options: [
-        {
-            description: "Skip writes — print the diff and exit",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            description: "Override channel (defaults to current branch lookup)",
-            name: "channel",
-            type: String,
-        },
-        {
-            description: "Limit to packages matching this glob (CSV)",
-            name: "filter",
-            type: String,
-        },
-        {
-            description: "Auto-commit after applying",
-            name: "commit",
-            type: Boolean,
-        },
-        {
-            description: "Run preflight checks (config + workspace + plan) and exit. No mutations.",
-            name: "check-only",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-        {
-            description:
-                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
-            name: "first-release",
-            type: Boolean,
-        },
-    ],
-};
+    options: versionOptionDefinitions,
+});
 
 export default version;
 

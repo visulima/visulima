@@ -1,5 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
-import { lazyNamed } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
 /**
  * `vis toolchain` — inspect and delegate to the workspace's version
@@ -21,7 +21,20 @@ import { lazyNamed } from "@visulima/cerebro";
 
 const GROUP = "Workspace";
 
-const toolchainStatus: Command = {
+const toolchainStatusOptionDefinitions = {
+    "exit-code": {
+        defaultValue: false,
+        description: "Exit 1 if any tool mismatches",
+        type: Boolean,
+    },
+    json: {
+        defaultValue: false,
+        description: "Emit JSON",
+        type: Boolean,
+    },
+} as const;
+
+const toolchainStatus = defineCommand({
     commandPath: ["toolchain"],
     description: "Show every detected manager + expected vs actual tool versions",
     examples: [
@@ -32,11 +45,8 @@ const toolchainStatus: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "statusExecute"),
     name: "status",
-    options: [
-        { defaultValue: false, description: "Exit 1 if any tool mismatches", name: "exit-code", type: Boolean },
-        { defaultValue: false, description: "Emit JSON", name: "json", type: Boolean },
-    ],
-};
+    options: toolchainStatusOptionDefinitions,
+});
 
 const toolchainDetect: Command = {
     commandPath: ["toolchain"],
@@ -47,7 +57,15 @@ const toolchainDetect: Command = {
     name: "detect",
 };
 
-const toolchainInstall: Command = {
+const toolchainInstallOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Print the command that would run, but don't execute",
+        type: Boolean,
+    },
+} as const;
+
+const toolchainInstall = defineCommand({
     commandPath: ["toolchain"],
     description: "Install pinned versions — per-tool delegation to the right manager",
     examples: [
@@ -57,10 +75,23 @@ const toolchainInstall: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "installExecute"),
     name: "install",
-    options: [{ defaultValue: false, description: "Print the command that would run, but don't execute", name: "dry-run", type: Boolean }],
-};
+    options: toolchainInstallOptionDefinitions,
+});
 
-const toolchainUse: Command = {
+const toolchainUseOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Print the command that would run, but don't execute",
+        type: Boolean,
+    },
+    engines: {
+        defaultValue: true,
+        description: "Also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.",
+        type: Boolean,
+    },
+} as const;
+
+const toolchainUse = defineCommand({
     argument: { description: "Tool and version to pin, e.g. node@22.13.0 or pnpm@10.32.1", name: "spec", type: String },
     commandPath: ["toolchain"],
     description: "Pin a version via the best manager for that tool",
@@ -72,16 +103,8 @@ const toolchainUse: Command = {
     group: GROUP,
     loader: lazyNamed(() => import("./handler"), "useExecute"),
     name: "use",
-    options: [
-        { defaultValue: false, description: "Print the command that would run, but don't execute", name: "dry-run", type: Boolean },
-        {
-            defaultValue: true,
-            description: "Also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.",
-            name: "engines",
-            type: Boolean,
-        },
-    ],
-};
+    options: toolchainUseOptionDefinitions,
+});
 
 const toolchainWhich: Command = {
     argument: { description: "Tool to resolve, e.g. node", name: "tool", type: String },
@@ -93,7 +116,7 @@ const toolchainWhich: Command = {
     name: "which",
 };
 
-const toolchainCommands: Command[] = [toolchainStatus, toolchainDetect, toolchainInstall, toolchainUse, toolchainWhich];
+const toolchainCommands: AnyCommandInput[] = [toolchainStatus, toolchainDetect, toolchainInstall, toolchainUse, toolchainWhich];
 
 export default toolchainCommands;
 

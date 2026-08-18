@@ -1,6 +1,43 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const fmt: Command = {
+const fmtOptionDefinitions = {
+    check: {
+        defaultValue: false,
+        description: "Report files that would change without writing",
+        type: Boolean,
+    },
+    format: {
+        defaultValue: "human",
+        description: "Output format: human, json, minimal, sarif, junit, or github",
+        type: String,
+    },
+    output: {
+        description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)",
+        type: String,
+    },
+    quiet: {
+        defaultValue: false,
+        description: "Suppress per-file logs",
+        type: Boolean,
+    },
+    since: {
+        description: "Only format files changed vs the given git ref (branch, tag, sha)",
+        type: String,
+    },
+    staged: {
+        defaultValue: false,
+        description: "Only format files currently staged in the git index",
+        type: Boolean,
+    },
+    watch: {
+        defaultValue: false,
+        description: "Re-run formatters whenever watched files change",
+        type: Boolean,
+    },
+} as const;
+
+const fmt = defineCommand({
     description: "Orchestrate detected formatters (prettier, …) across the workspace",
     examples: [
         ["vis fmt", "Apply formatting in place using every detected formatter"],
@@ -19,25 +56,9 @@ const fmt: Command = {
     group: "Lint & Format",
     loader: () => import("./handler"),
     name: "fmt",
-    options: [
-        { defaultValue: false, description: "Report files that would change without writing", name: "check", type: Boolean },
-        { defaultValue: "human", description: "Output format: human, json, minimal, sarif, junit, or github", name: "format", type: String },
-        { defaultValue: false, description: "Suppress per-file logs", name: "quiet", type: Boolean },
-        { description: "Only format files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
-        { defaultValue: false, description: "Only format files currently staged in the git index", name: "staged", type: Boolean },
-        { description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)", name: "output", type: String },
-        { defaultValue: false, description: "Re-run formatters whenever watched files change", name: "watch", type: Boolean },
-    ],
-};
+    options: fmtOptionDefinitions,
+});
 
 export default fmt;
 
-export type FmtOptions = CreateOptions<{
-    check: boolean | undefined;
-    format: "github" | "human" | "json" | "junit" | "minimal" | "sarif";
-    output: string | undefined;
-    quiet: boolean | undefined;
-    since: string | undefined;
-    staged: boolean | undefined;
-    watch: boolean | undefined;
-}>;
+export type FmtOptions = InferOptions<typeof fmtOptionDefinitions>;
