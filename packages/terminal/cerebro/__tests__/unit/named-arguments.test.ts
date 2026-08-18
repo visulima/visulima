@@ -32,10 +32,13 @@ describe("named positional arguments", () => {
     it("maps positionals onto their declared names in order", async () => {
         expect.assertions(1);
 
-        const args = await runCopy(["copy", "a.txt", "b.txt"], [
-            { name: "source", type: String },
-            { name: "target", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "a.txt", "b.txt"],
+            [
+                { name: "source", type: String },
+                { name: "target", type: String },
+            ],
+        );
 
         expect(args).toStrictEqual({ source: "a.txt", target: "b.txt" });
     });
@@ -43,10 +46,13 @@ describe("named positional arguments", () => {
     it("collects the remaining positionals into a trailing multiple argument", async () => {
         expect.assertions(1);
 
-        const args = await runCopy(["copy", "a.txt", "b/", "c/"], [
-            { name: "source", type: String },
-            { multiple: true, name: "targets", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "a.txt", "b/", "c/"],
+            [
+                { name: "source", type: String },
+                { multiple: true, name: "targets", type: String },
+            ],
+        );
 
         expect(args).toStrictEqual({ source: "a.txt", targets: ["b/", "c/"] });
     });
@@ -54,10 +60,13 @@ describe("named positional arguments", () => {
     it("applies each argument's own type transform", async () => {
         expect.assertions(1);
 
-        const args = await runCopy(["copy", "file", "42"], [
-            { name: "source", type: String },
-            { name: "count", type: Number },
-        ]);
+        const args = await runCopy(
+            ["copy", "file", "42"],
+            [
+                { name: "source", type: String },
+                { name: "count", type: Number },
+            ],
+        );
 
         expect(args).toStrictEqual({ count: 42, source: "file" });
     });
@@ -65,10 +74,13 @@ describe("named positional arguments", () => {
     it("falls back to defaultValue for a missing argument", async () => {
         expect.assertions(1);
 
-        const args = await runCopy(["copy", "a.txt"], [
-            { name: "source", type: String },
-            { defaultValue: "./", name: "target", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "a.txt"],
+            [
+                { name: "source", type: String },
+                { defaultValue: "./", name: "target", type: String },
+            ],
+        );
 
         expect(args).toStrictEqual({ source: "a.txt", target: "./" });
     });
@@ -76,10 +88,13 @@ describe("named positional arguments", () => {
     it("leaves an unsupplied optional argument undefined", async () => {
         expect.assertions(1);
 
-        const args = await runCopy(["copy", "a.txt"], [
-            { name: "source", type: String },
-            { name: "target", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "a.txt"],
+            [
+                { name: "source", type: String },
+                { name: "target", type: String },
+            ],
+        );
 
         expect(args).toStrictEqual({ source: "a.txt", target: undefined });
     });
@@ -88,10 +103,13 @@ describe("named positional arguments", () => {
         expect.assertions(1);
 
         // Same rule the option parser uses, so `args` and `options` key alike.
-        const args = await runCopy(["copy", "a.txt", "b.txt"], [
-            { name: "source-file", type: String },
-            { name: "target_dir", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "a.txt", "b.txt"],
+            [
+                { name: "source-file", type: String },
+                { name: "target_dir", type: String },
+            ],
+        );
 
         expect(args).toStrictEqual({ sourceFile: "a.txt", target_dir: "b.txt" });
     });
@@ -255,11 +273,14 @@ describe("positional argument behaviour", () => {
 
         // Only a hyphen before an ASCII lowercase letter folds; `a_b` and `UPPER`
         // are left exactly as declared, matching `toolbox.options`.
-        const args = await runCopy(["copy", "1", "2", "3"], [
-            { name: "source-file", type: String },
-            { name: "a_b", type: String },
-            { name: "UPPER", type: String },
-        ]);
+        const args = await runCopy(
+            ["copy", "1", "2", "3"],
+            [
+                { name: "source-file", type: String },
+                { name: "a_b", type: String },
+                { name: "UPPER", type: String },
+            ],
+        );
 
         expect(Object.keys(args)).toStrictEqual(["sourceFile", "a_b", "UPPER"]);
     });
