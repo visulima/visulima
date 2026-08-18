@@ -229,7 +229,7 @@ const cacheDoctor: Command = {
     ],
 };
 
-const cacheCommands: Command[] = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheVerify, cacheDoctor];
+const cacheCommands = [cacheList, cacheClean, cachePrune, cacheSize, cacheWhy, cacheHash, cacheVerify, cacheDoctor];
 
 export default cacheCommands;
 

@@ -44,6 +44,6 @@ const shimStatus: Command = {
     name: "status",
 };
 
-const shimCommands: Command[] = [shimInstall, shimUninstall, shimStatus];
+const shimCommands = [shimInstall, shimUninstall, shimStatus];
 
 export default shimCommands;

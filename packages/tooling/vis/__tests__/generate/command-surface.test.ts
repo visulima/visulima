@@ -72,67 +72,57 @@ describe("vis generate — CLI surface", () => {
             ],
             "group": "Scaffold & Config",
             "name": "generate",
-            "options": [
-              {
-                "defaultValue": false,
-                "description": "List discovered templates",
-                "name": "list",
-                "type": [Function],
-              },
-              {
-                "defaultValue": false,
-                "description": "Print template metadata (about, destination, variables) without running produce",
-                "name": "describe",
-                "type": [Function],
-              },
-              {
-                "defaultValue": false,
-                "description": "Emit JSON output (with --list or --describe)",
-                "name": "json",
-                "type": [Function],
-              },
-              {
-                "description": "Destination directory",
-                "name": "to",
-                "type": [Function],
-              },
-              {
-                "defaultValue": false,
-                "description": "Print planned writes without touching disk",
-                "name": "dry-run",
-                "type": [Function],
-              },
-              {
-                "defaultValue": false,
-                "description": "Overwrite existing files without prompting",
-                "name": "force",
-                "type": [Function],
-              },
-              {
+            "options": {
+              "defaults": {
                 "defaultValue": false,
                 "description": "Skip prompts; use template defaults",
-                "name": "defaults",
                 "type": [Function],
               },
-              {
+              "describe": {
                 "defaultValue": false,
-                "description": "Skip running post-generation scripts",
-                "name": "skip-scripts",
+                "description": "Print template metadata (about, destination, variables) without running produce",
                 "type": [Function],
               },
-              {
+              "dry-run": {
+                "defaultValue": false,
+                "description": "Print planned writes without touching disk",
+                "type": [Function],
+              },
+              "force": {
+                "defaultValue": false,
+                "description": "Overwrite existing files without prompting",
+                "type": [Function],
+              },
+              "json": {
+                "defaultValue": false,
+                "description": "Emit JSON output (with --list or --describe)",
+                "type": [Function],
+              },
+              "list": {
+                "defaultValue": false,
+                "description": "List discovered templates",
+                "type": [Function],
+              },
+              "no-interactive": {
                 "defaultValue": false,
                 "description": "Skip interactive prompts (errors on missing required values)",
-                "name": "no-interactive",
                 "type": [Function],
               },
-              {
+              "prefer-offline": {
                 "defaultValue": false,
                 "description": "Prefer locally cached remote templates over re-downloading",
-                "name": "prefer-offline",
                 "type": [Function],
               },
-            ],
+              "skip-scripts": {
+                "defaultValue": false,
+                "description": "Skip running post-generation scripts",
+                "type": [Function],
+              },
+              "to": {
+                "description": "Destination directory",
+                "type": [Function],
+              },
+            },
           }
         `);
     });
@@ -140,7 +130,9 @@ describe("vis generate — CLI surface", () => {
     it("keeps each option name kebab-cased", () => {
         expect.hasAssertions();
 
-        const optionNames = (generateCommand as unknown as { options?: { name: string }[] }).options?.map((o) => o.name) ?? [];
+        // Options are declared as a record keyed by name, so the keys are the
+        // option names.
+        const optionNames = Object.keys((generateCommand as unknown as { options?: Record<string, unknown> }).options ?? {});
 
         for (const name of optionNames) {
             expect(name).toMatch(/^[a-z][a-z0-9-]*$/);

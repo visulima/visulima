@@ -6,9 +6,62 @@
  * template through prompts → produce → write.
  */
 
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const generate: Command = {
+const generateOptionDefinitions = {
+    defaults: {
+        defaultValue: false,
+        description: "Skip prompts; use template defaults",
+        type: Boolean,
+    },
+    describe: {
+        defaultValue: false,
+        description: "Print template metadata (about, destination, variables) without running produce",
+        type: Boolean,
+    },
+    "dry-run": {
+        defaultValue: false,
+        description: "Print planned writes without touching disk",
+        type: Boolean,
+    },
+    force: {
+        defaultValue: false,
+        description: "Overwrite existing files without prompting",
+        type: Boolean,
+    },
+    json: {
+        defaultValue: false,
+        description: "Emit JSON output (with --list or --describe)",
+        type: Boolean,
+    },
+    list: {
+        defaultValue: false,
+        description: "List discovered templates",
+        type: Boolean,
+    },
+    "no-interactive": {
+        defaultValue: false,
+        description: "Skip interactive prompts (errors on missing required values)",
+        type: Boolean,
+    },
+    "prefer-offline": {
+        defaultValue: false,
+        description: "Prefer locally cached remote templates over re-downloading",
+        type: Boolean,
+    },
+    "skip-scripts": {
+        defaultValue: false,
+        description: "Skip running post-generation scripts",
+        type: Boolean,
+    },
+    to: {
+        description: "Destination directory",
+        type: String,
+    },
+} as const;
+
+const generate = defineCommand({
     argument: {
         description: "Template name (or remote source like git://… or npm://…) — omit for interactive picker",
         name: "template",
@@ -29,36 +82,9 @@ const generate: Command = {
     group: "Scaffold & Config",
     loader: () => import("./handler"),
     name: "generate",
-    options: [
-        { defaultValue: false, description: "List discovered templates", name: "list", type: Boolean },
-        {
-            defaultValue: false,
-            description: "Print template metadata (about, destination, variables) without running produce",
-            name: "describe",
-            type: Boolean,
-        },
-        { defaultValue: false, description: "Emit JSON output (with --list or --describe)", name: "json", type: Boolean },
-        { description: "Destination directory", name: "to", type: String },
-        { defaultValue: false, description: "Print planned writes without touching disk", name: "dry-run", type: Boolean },
-        { defaultValue: false, description: "Overwrite existing files without prompting", name: "force", type: Boolean },
-        { defaultValue: false, description: "Skip prompts; use template defaults", name: "defaults", type: Boolean },
-        { defaultValue: false, description: "Skip running post-generation scripts", name: "skip-scripts", type: Boolean },
-        { defaultValue: false, description: "Skip interactive prompts (errors on missing required values)", name: "no-interactive", type: Boolean },
-        { defaultValue: false, description: "Prefer locally cached remote templates over re-downloading", name: "prefer-offline", type: Boolean },
-    ],
-};
+    options: generateOptionDefinitions,
+});
 
 export default generate;
 
-export type GenerateOptions = CreateOptions<{
-    defaults: boolean | undefined;
-    describe: boolean | undefined;
-    "dry-run": boolean | undefined;
-    force: boolean | undefined;
-    json: boolean | undefined;
-    list: boolean | undefined;
-    "no-interactive": boolean | undefined;
-    "prefer-offline": boolean | undefined;
-    "skip-scripts": boolean | undefined;
-    to: string | undefined;
-}>;
+export type GenerateOptions = InferOptions<typeof generateOptionDefinitions>;

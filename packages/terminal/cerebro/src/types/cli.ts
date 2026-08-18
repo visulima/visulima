@@ -1,6 +1,7 @@
 import type PluginManager from "../plugin-manager";
-import type { Command as ICommand, OptionDefinition } from "./command";
+import type { Command as ICommand, CommandInput as ICommandInput, OptionDefinition } from "./command";
 import type { Plugin } from "./plugin";
+import type { Toolbox as IToolbox } from "./toolbox";
 
 export type CommandSection = { footer?: string; header?: string };
 
@@ -39,7 +40,9 @@ export interface Cli<T extends Console> {
      * @param command The command to add.
      * @returns self
      */
-    addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>) => this;
+    addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>, TContext extends IToolbox<T> = IToolbox<T>>(
+        command: ICommandInput<OD, T, TContext>,
+    ) => this;
 
     /**
      * Add a global option available to all commands.

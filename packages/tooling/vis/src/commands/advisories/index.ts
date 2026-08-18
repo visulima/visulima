@@ -146,7 +146,7 @@ const advisoriesBloomStatus: Command = {
     options: [bloomCacheDirOption, formatOption],
 };
 
-const advisoriesCommands: Command[] = [advisoriesSync, advisoriesStatus, advisoriesPrune, advisoriesBloomSync, advisoriesBloomStatus];
+const advisoriesCommands = [advisoriesSync, advisoriesStatus, advisoriesPrune, advisoriesBloomSync, advisoriesBloomStatus];
 
 export default advisoriesCommands;
 

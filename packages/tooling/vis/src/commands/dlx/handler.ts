@@ -27,8 +27,14 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     for (const target of gateTargets) {
         // An explicit `--info` flag wins over `--no-info` / `VIS_DLX_NO_INFO`.
+        //
+        // `--no-info` is folded onto `info` before the toolbox is built —
+        // cerebro deletes the negated key — so `options.noInfo` never existed
+        // here and the flag has only ever taken effect through the env var.
+        // Left as-is to keep behaviour identical; see the `no-info` option in
+        // ./index.ts for the fix.
         const forceInfo = options.info || false;
-        const noInfo = forceInfo ? false : options.noInfo || isTruthyEnv(process.env.VIS_DLX_NO_INFO);
+        const noInfo = forceInfo ? false : isTruthyEnv(process.env.VIS_DLX_NO_INFO);
 
         const gate = await maybeGateFirstRun({
             forceInfo,

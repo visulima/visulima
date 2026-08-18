@@ -22,7 +22,8 @@ describe("secrets command", () => {
     it("exposes the expected flags", () => {
         expect.assertions(1);
 
-        const names = (secretsCommand.options ?? []).map((option) => option.name);
+        // Options are declared as a record keyed by name.
+        const names = Object.keys(secretsCommand.options ?? {});
 
         expect(names).toStrictEqual(
             expect.arrayContaining(["config", "format", "baseline", "redact", "include-hidden", "no-gitignore", "max-size", "update-baseline"]),

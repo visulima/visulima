@@ -158,7 +158,7 @@ const aiHealAccept: Command = {
     ],
 };
 
-const aiCommands: Command[] = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix, aiHeal, aiHealAccept];
+const aiCommands = [aiRoot, aiDiscoverHelp, aiProviders, aiTest, aiFix, aiHeal, aiHealAccept];
 
 export default aiCommands;
 

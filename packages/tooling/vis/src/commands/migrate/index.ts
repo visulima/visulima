@@ -232,7 +232,7 @@ const migrateAllCmd: Command = {
     options: [...sharedMigrateOptions],
 };
 
-const migrateCommands: Command[] = [
+const migrateCommands = [
     migrateAllCmd,
     migrateDepsCmd,
     migrateLintStagedCmd,

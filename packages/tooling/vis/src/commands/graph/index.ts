@@ -1,6 +1,26 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const graph: Command = {
+const graphOptionDefinitions = {
+    depth: {
+        alias: "d",
+        description: "Maximum dependency tree depth for ASCII output (default: unlimited)",
+        type: Number,
+    },
+    format: {
+        alias: "f",
+        defaultValue: undefined,
+        description: "Output format: tui, ascii, dot, json, html (default: tui in TTY, ascii otherwise)",
+        type: String,
+    },
+    output: {
+        alias: "o",
+        description: "Write output to file instead of stdout",
+        type: String,
+    },
+} as const;
+
+const graph = defineCommand({
     description: "Visualize the project dependency graph",
     examples: [
         ["vis graph", "Show colored dependency graph (TUI in TTY, ASCII otherwise)"],
@@ -12,33 +32,9 @@ const graph: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "graph",
-    options: [
-        {
-            alias: "f",
-            defaultValue: undefined,
-            description: "Output format: tui, ascii, dot, json, html (default: tui in TTY, ascii otherwise)",
-            name: "format",
-            type: String,
-        },
-        {
-            alias: "o",
-            description: "Write output to file instead of stdout",
-            name: "output",
-            type: String,
-        },
-        {
-            alias: "d",
-            description: "Maximum dependency tree depth for ASCII output (default: unlimited)",
-            name: "depth",
-            type: Number,
-        },
-    ],
-};
+    options: graphOptionDefinitions,
+});
 
 export default graph;
 
-export type GraphOptions = CreateOptions<{
-    depth: number | undefined;
-    format: string | undefined;
-    output: string | undefined;
-}>;
+export type GraphOptions = InferOptions<typeof graphOptionDefinitions>;

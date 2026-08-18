@@ -93,7 +93,7 @@ const attestEmit: Command = {
     ],
 };
 
-const attestCommands: Command[] = [attestEmit, attestVerify];
+const attestCommands = [attestEmit, attestVerify];
 
 export default attestCommands;
 

@@ -173,7 +173,7 @@ const hookAdd: Command = {
     options: [hooksDirectoryOption],
 };
 
-const hookCommands: Command[] = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
+const hookCommands = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
 
 export default hookCommands;
 

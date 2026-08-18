@@ -95,7 +95,7 @@ const dockerLint: Command = {
     ],
 };
 
-const dockerCommands: Command[] = [dockerScaffold, dockerPrune, dockerInit, dockerLint];
+const dockerCommands = [dockerScaffold, dockerPrune, dockerInit, dockerLint];
 
 export default dockerCommands;
 
