@@ -815,4 +815,34 @@ describe(wordWrap, () => {
             expect(wrapped.split("\n").every((line) => getStringWidth(line) <= 4)).toBe(true);
         });
     });
+
+    // Regression: tokenizing split on whitespace and on wide graphemes in the raw input, so a
+    // control sequence carrying either was cut in half and a line break could land inside it.
+    describe("control sequences are opaque to tokenizing", () => {
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("keeps an intermediate space byte in %s", (wrapMode) => {
+            expect.assertions(1);
+
+            // `CSI 1 SP q` sets the cursor style; the space is an intermediate byte, not a break point.
+            expect(wordWrap("\u001B[1 qhello world", { width: 8, wrapMode })).toBe("\u001B[1 qhello\nworld");
+        });
+
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("keeps a wide character inside an OSC 8 URL in %s", (wrapMode) => {
+            expect.assertions(1);
+
+            const link = "\u001B]8;;https://例え.test\u0007link\u001B]8;;\u0007";
+
+            expect(wordWrap(`${link} tail`, { width: 8, wrapMode })).toBe(`${link}\ntail`);
+        });
+    });
+
+    // Regression: the strict path copied only the introducer of an unterminated sequence and then
+    // wrapped its remaining bytes as visible text, splitting the sequence across rows.
+    it.each([WrapMode.STRICT_WIDTH, WrapMode.BREAK_AT_CHARACTERS, WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])(
+        "keeps a truncated sequence whole in %s",
+        (wrapMode) => {
+            expect.assertions(1);
+
+            expect(wordWrap("abc\u001B[38;5", { width: 4, wrapMode })).toBe("abc\u001B[38;5");
+        },
+    );
 });

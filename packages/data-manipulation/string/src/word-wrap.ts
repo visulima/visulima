@@ -10,6 +10,7 @@ const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
 const graphemeSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
 /** Matches the first character that could be wide, or could combine with the one before it. */
+// eslint-disable-next-line no-control-regex
 const RE_NEEDS_SEGMENTING = /[^\u0000-\u02FF]/;
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
@@ -89,11 +90,11 @@ const splitAtWideCharacters = (token: string): string[] => {
 };
 
 /**
- * Splits input into wrappable tokens: whitespace runs, words, and individual wide characters.
- * @param input The line to tokenize.
- * @returns The tokens, in order.
+ * Splits literal text into wrappable tokens: whitespace runs, words, and individual wide characters.
+ * @param input The text to split.
+ * @returns The tokens, in order. Their concatenation is `input`.
  */
-const tokenize = (input: string): string[] =>
+const splitLiteral = (input: string): string[] =>
     input.split(RE_SPLIT_WHITESPACE).flatMap((token) => {
         if (token === "" || RE_WHITESPACE_ONLY.test(token)) {
             return [token];
@@ -101,6 +102,67 @@ const tokenize = (input: string): string[] =>
 
         return splitAtWideCharacters(token);
     });
+
+/** Stands in for one unit of a control sequence: narrow, not whitespace, so it is never a break point. */
+const SEQUENCE_MASK = "x";
+
+/**
+ * Replaces every control sequence with an equal number of {@link SEQUENCE_MASK} units.
+ *
+ * A sequence is not text and must never be broken, but its bytes can look like break points to the
+ * splitter: an intermediate byte is a space (`CSI 1 SP q` sets the cursor style), and an OSC 8 URL
+ * can hold anything up to the bell, including a wide character. Masking keeps the offsets identical
+ * so the real substrings can be sliced back out afterwards.
+ * @param input The line to mask.
+ * @returns The line with sequence units replaced, same length.
+ */
+const maskControlSequences = (input: string): string => {
+    let masked = "";
+    let index = 0;
+
+    while (index < input.length) {
+        const sequence = ESCAPES.has(input[index] as string) ? readControlSequence(input, index) : undefined;
+
+        if (sequence === undefined) {
+            if (ESCAPES.has(input[index] as string)) {
+                // Truncated or malformed: the remainder is one opaque span, as processAnsiString treats it.
+                return masked + SEQUENCE_MASK.repeat(input.length - index);
+            }
+
+            masked += input[index] as string;
+            index += 1;
+
+            continue;
+        }
+
+        masked += SEQUENCE_MASK.repeat(sequence.length);
+        index += sequence.length;
+    }
+
+    return masked;
+};
+
+/**
+ * Splits input into wrappable tokens, treating control sequences as opaque.
+ * @param input The line to tokenize.
+ * @returns The tokens, in order.
+ */
+const tokenize = (input: string): string[] => {
+    if (![...ESCAPES].some((escape) => input.includes(escape))) {
+        return splitLiteral(input);
+    }
+
+    const tokens: string[] = [];
+
+    let offset = 0;
+
+    for (const token of splitLiteral(maskControlSequences(input))) {
+        tokens.push(input.slice(offset, offset + token.length));
+        offset += token.length;
+    }
+
+    return tokens;
+};
 
 /**
  * Trims spaces from a string's right side while preserving ANSI sequences.
@@ -164,8 +226,16 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         if (ESCAPES.has(char)) {
             const sequence = readControlSequence(string, index);
 
-            currentLine += sequence ?? char;
-            index += sequence?.length ?? 1;
+            if (sequence === undefined) {
+                // Truncated or malformed: keep the remainder whole, as processAnsiString does. Copying
+                // just the introducer would leave the sequence bytes to be wrapped as visible text.
+                currentLine += string.slice(index);
+
+                break;
+            }
+
+            currentLine += sequence;
+            index += sequence.length;
 
             continue;
         }
