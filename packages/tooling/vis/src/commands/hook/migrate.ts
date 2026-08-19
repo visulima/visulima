@@ -216,7 +216,11 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console,
         }
 
         if (installResult.message) {
-            logger.info(installResult.message);
+            if (installResult.isWarning) {
+                logger.warn(installResult.message);
+            } else {
+                logger.info(installResult.message);
+            }
         }
     }
 

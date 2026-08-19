@@ -63,7 +63,11 @@ const PREK_STAGES_WITH_GIT_ARGS: ReadonlySet<string> = new Set<string>([
 const PREK_TRANSLATABLE_LANGUAGES: ReadonlySet<string> = new Set<string>(["fail", "script", "system"]);
 
 interface InstallResult {
+    /** Hooks were actually written, so the caller should finish setting the workspace up. */
+    installed?: boolean;
     isError: boolean;
+    /** Surface `message` at warn level — the command succeeded but left something for the user to act on. */
+    isWarning?: boolean;
     message: string;
 }
 

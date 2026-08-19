@@ -578,7 +578,11 @@ const migrateFromPrek = (root: string, hooksDirectory: string, logger: MigrateLo
         }
 
         if (installResult.message) {
-            logger.info(installResult.message);
+            if (installResult.isWarning) {
+                logger.warn(installResult.message);
+            } else {
+                logger.info(installResult.message);
+            }
         }
     }
 
