@@ -70,6 +70,29 @@ describe("package", () => {
             expect(result).toBe(distribution);
         });
 
+        it("should find the root of a linked git worktree", async () => {
+            expect.assertions(1);
+
+            // `git worktree add` writes `.git` as a *file* holding a `gitdir:`
+            // pointer, so there is no `.git/config` beside it. Looking for the
+            // config walked straight past this root — and, with the worktree
+            // placed inside another repository, landed on that one instead.
+            const outerRepository = join(distribution, "outer");
+            const worktree = join(outerRepository, "linked");
+
+            writeFileSync(join(outerRepository, ".git", "config"), "[core]\n");
+            writeFileSync(join(worktree, ".git"), `gitdir: ${join(outerRepository, ".git", "worktrees", "linked")}\n`);
+
+            let result = function_(worktree);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageRoot") {
+                result = await result;
+            }
+
+            expect(result).toBe(worktree);
+        });
+
         it("should throw a error when the found package.json has no name", async () => {
             expect.assertions(1);
 
