@@ -1,6 +1,6 @@
 {
     "name": "@visulima/object",
-    "version": "3.1.2",
+    "version": "3.1.3",
     "description": "Helper functions for working with objects and arrays.",
     "keywords": [
         "access",
