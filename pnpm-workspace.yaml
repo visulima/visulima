@@ -204,7 +204,7 @@ catalogs:
     cli-table: ^0.3.11
     cli-table3: ^0.6.5
     commander: ^15.0.0
-    conventional-changelog-conventionalcommits: 10.3.0
+    conventional-changelog-conventionalcommits: 9.3.1
     core-js: 3.50.0
     cors: ^2.8.6
     cross-env: ^10.1.0

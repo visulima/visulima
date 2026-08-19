@@ -1,3 +1,13 @@
 {
     extends: ["github>anolilab/renovate-config"],
+    packageRules: [
+        {
+            // conventional-changelog-conventionalcommits v10 renders through
+            // conventional-changelog-writer v9 function templates. @semantic-release/
+            // release-notes-generator still bundles writer v8, which drops every commit
+            // group and emits a heading-only changelog. Stay on v9 until it ships writer v9.
+            matchPackageNames: ["conventional-changelog-conventionalcommits"],
+            allowedVersions: "<10",
+        },
+    ],
 }
