@@ -72,12 +72,17 @@ const runEnter = async (cwd: string, options: ReleasePreOptions, logger: Toolbox
         const runner = createShellRunner();
 
         try {
-            await stageAndCommitFile({ cwd, runner }, path, `chore(release): enter pre-mode (${tag}) [skip ci]`, {
+            // Report what the helper actually did: it returns `pushed: false`
+            // when there is no branch or the push fails, and claiming a push
+            // that did not happen tells the operator the release state reached
+            // the remote when it did not.
+            const result = await stageAndCommitFile({ cwd, runner }, path, `chore(release): enter pre-mode (${tag}) [skip ci]`, {
                 author: ctx.config.gitUser,
                 push: options.push,
                 sign: ctx.config.gitSignCommits === true,
             });
-            logger.info(`Committed ${path}${options.push ? " + pushed" : ""}.`);
+
+            logger.info(`${result.committed ? "Committed" : "No commit needed for"} ${path}${result.pushed ? " + pushed" : ""}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
         }
@@ -129,12 +134,17 @@ const runExit = async (cwd: string, options: ReleasePreOptions, logger: Toolbox<
         const runner = createShellRunner();
 
         try {
-            await stageAndCommitFile({ cwd, runner }, path, `chore(release): exit pre-mode (was ${existing.tag}) [skip ci]`, {
+            // Report what the helper actually did: it returns `pushed: false`
+            // when there is no branch or the push fails, and claiming a push
+            // that did not happen tells the operator the release state reached
+            // the remote when it did not.
+            const result = await stageAndCommitFile({ cwd, runner }, path, `chore(release): exit pre-mode (was ${existing.tag}) [skip ci]`, {
                 author: ctx.config.gitUser,
                 push: options.push,
                 sign: ctx.config.gitSignCommits === true,
             });
-            logger.info(`Committed ${path}${options.push ? " + pushed" : ""}.`);
+
+            logger.info(`${result.committed ? "Committed" : "No commit needed for"} ${path}${result.pushed ? " + pushed" : ""}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
         }
