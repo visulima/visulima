@@ -87,7 +87,7 @@ describe("defineCommand type inference", () => {
             preflight: boolean | undefined;
         }>();
 
-        expectTypeOf<InferOptions<{ "no-cache": { type: BooleanConstructor }; cache: { defaultValue: true; type: BooleanConstructor } }>>().toEqualTypeOf<{
+        expectTypeOf<InferOptions<{ cache: { defaultValue: true; type: BooleanConstructor }; "no-cache": { type: BooleanConstructor } }>>().toEqualTypeOf<{
             cache: boolean;
         }>();
     });

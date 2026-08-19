@@ -106,11 +106,11 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {};
  */
 type InferOptions<R extends OptionDefinitionRecord> = Simplify<
     {
-        [K in PositiveOptionKeys<R> & string as FoldName<K>]: IsOptionAlwaysPresent<R[K]> extends true ? Collected<R[K]> : Collected<R[K]> | undefined;
-    } & {
         // A generated counterpart always resolves to a value: `addNegatableOptions`
         // gives it a `defaultValue`.
         [K in NegatedOptionKeys<R> & string as FoldName<K>]: boolean;
+    } & {
+        [K in PositiveOptionKeys<R> & string as FoldName<K>]: IsOptionAlwaysPresent<R[K]> extends true ? Collected<R[K]> : Collected<R[K]> | undefined;
     }
 >;
 
