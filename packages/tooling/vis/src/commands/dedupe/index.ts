@@ -1,6 +1,15 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const dedupe: Command = {
+const dedupeOptionDefinitions = {
+    check: {
+        defaultValue: false,
+        description: "Preview changes without modifying files (dry-run)",
+        type: Boolean,
+    },
+} as const;
+
+const dedupe = defineCommand({
     description: "Deduplicate dependencies using the detected package manager",
     examples: [
         ["vis dedupe", "Run deduplication"],
@@ -9,11 +18,9 @@ const dedupe: Command = {
     group: "Dependencies",
     loader: () => import("./handler"),
     name: "dedupe",
-    options: [{ defaultValue: false, description: "Preview changes without modifying files (dry-run)", name: "check", type: Boolean }],
-};
+    options: dedupeOptionDefinitions,
+});
 
 export default dedupe;
 
-export type DedupeOptions = CreateOptions<{
-    check: boolean | undefined;
-}>;
+export type DedupeOptions = InferOptions<typeof dedupeOptionDefinitions>;

@@ -33,7 +33,7 @@ interface CapturedLog {
     level: "info" | "warn" | "error";
 }
 
-const makeToolbox = (cwd: string, options: { noFail?: boolean; strict?: boolean } = {}) => {
+const makeToolbox = (cwd: string, options: { fail?: boolean; strict?: boolean } = {}) => {
     const logs: CapturedLog[] = [];
 
     return {
@@ -46,7 +46,10 @@ const makeToolbox = (cwd: string, options: { noFail?: boolean; strict?: boolean 
                 warn: (...args: unknown[]) => logs.push({ args, level: "warn" }),
             } as never,
             options: {
-                noFail: options.noFail,
+                // cerebro folds `--no-fail` onto `fail` and generates the
+                // positive half with a default, so the handler always sees a
+                // boolean here — never `noFail`.
+                fail: options.fail ?? true,
                 strict: options.strict,
             } as never,
             workspaceRoot: cwd,

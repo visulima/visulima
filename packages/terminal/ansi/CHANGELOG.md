@@ -1,3 +1,5 @@
+## @visulima/ansi [4.2.0](https://github.com/visulima/visulima/compare/%40visulima%2Fansi%404.1.0...%40visulima%2Fansi%404.2.0) (2026-08-18)
+
 ## @visulima/ansi [4.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fansi%404.0.0...%40visulima%2Fansi%404.1.0) (2026-08-02)
 
 

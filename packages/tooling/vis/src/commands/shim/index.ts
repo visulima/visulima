@@ -1,4 +1,4 @@
-import type { Command } from "@visulima/cerebro";
+import type { AnyCommandInput, Command } from "@visulima/cerebro";
 
 /**
  * `vis shim` — manage the opt-in, project-local PM shim dir (`.vis/shims`). When
@@ -44,6 +44,6 @@ const shimStatus: Command = {
     name: "status",
 };
 
-const shimCommands: Command[] = [shimInstall, shimUninstall, shimStatus];
+const shimCommands: AnyCommandInput[] = [shimInstall, shimUninstall, shimStatus];
 
 export default shimCommands;

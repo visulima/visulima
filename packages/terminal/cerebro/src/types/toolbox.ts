@@ -8,13 +8,36 @@ import type { CerebroFs, CerebroProcess } from "./runtime";
  * @template TLogger - The logger type (defaults to Console)
  * @template TOptions - The options type (defaults to Options/Record&lt;string, unknown>)
  * @template TEnv - The environment variables type (defaults to Record&lt;string, unknown>)
+ * @template TArgs - The named positional arguments type (defaults to Record&lt;string, unknown>)
  */
 export interface Toolbox<
     TLogger extends Console = Console,
     TOptions extends Record<string, unknown> = Options,
     TEnv extends Record<string, unknown> = Record<string, unknown>,
+    TArgs extends Record<string, unknown> = Record<string, unknown>,
 >
     extends Cerebro.ExtensionOverrides {
+    /**
+     * Named positional arguments, keyed by the camelCased names declared in the
+     * command's `arguments`. Empty when the command declares none — the raw
+     * token list is always available as `argument`.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "copy",
+     *   arguments: [
+     *     { name: "source", required: true, type: String },
+     *     { multiple: true, name: "targets", required: true, type: String },
+     *   ],
+     *   execute: ({ args }) => {
+     *     // `copy a.txt b/ c/` → args.source === "a.txt", args.targets === ["b/", "c/"]
+     *     args.targets.forEach((target) => console.log(`${args.source} -> ${target}`));
+     *   },
+     * });
+     * ```
+     */
+    args: TArgs;
+
     /**
      * The argument passed to the command.
      * For example, if you run `cerebro foo bar baz`, then this will be `["foo", "bar", "baz"]`.

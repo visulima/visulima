@@ -28,6 +28,30 @@ Usage: `cli copy file1.txt file2.txt`
 - `argument[1]` - Second argument
 - `argument` - Array of all arguments
 
+### Named Arguments
+
+Declare `arguments` instead of `argument` to read each positional by name from
+`toolbox.args`:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    arguments: [
+        { name: "source", type: String, required: true },
+        { name: "targets", type: String, multiple: true, required: true },
+    ],
+    execute: ({ args, argument }) => {
+        // `cli copy a.txt b/ c/`
+        args.source; // "a.txt"
+        args.targets; // ["b/", "c/"]
+        argument; // ["a.txt", "b/", "c/"] — still the raw list
+    },
+});
+```
+
+Slot order follows array order, names are camelCased, and only the last entry may
+be `multiple`. See [Named Positional Arguments](/docs/cerebro/guides/options#named-positional-arguments).
+
 ## Options
 
 Parsed command-line options:
@@ -166,7 +190,30 @@ cli.addCommand({
 
 ## Type Safety
 
-With TypeScript, you get full type safety:
+The shortest path is `defineCommand`, which infers `options`, `env` and `args`
+from the definitions — no second declaration to keep in sync:
+
+```typescript
+import { defineCommand } from "@visulima/cerebro";
+
+const deploy = defineCommand({
+    name: "deploy",
+    options: {
+        env: { type: String, required: true },
+        force: { type: Boolean, defaultValue: false },
+        "dry-run": { type: Boolean },
+    },
+    execute: ({ options }) => {
+        options.env; // string
+        options.force; // boolean
+        options.dryRun; // boolean | undefined
+    },
+});
+
+cli.addCommand(deploy);
+```
+
+You can still annotate the toolbox by hand if you prefer:
 
 ```typescript
 interface DeployOptions {

@@ -249,7 +249,7 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
 
     const snapshot: ReadonlyArray<MarshallFinding> = findings.all();
 
-    if (options.json === true) {
+    if (options.json) {
         process.stdout.write(`${JSON.stringify(formatMarshallFindingsAsJson(snapshot), undefined, 2)}\n`);
     } else {
         const header = `${parsed.name}@${resolvedVersion}`;
@@ -272,7 +272,7 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
         }
     }
 
-    if (findings.hasErrors() || (options.strict === true && !findings.isEmpty())) {
+    if (findings.hasErrors() || (options.strict && !findings.isEmpty())) {
         process.exitCode = 1;
     }
 };

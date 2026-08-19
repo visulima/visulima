@@ -2,13 +2,15 @@ import type { CommandLineOptions } from "@visulima/command-line-args";
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled into dist by packem; kept a devDependency on purpose
 import camelCase from "@visulima/string/case/camel-case";
 
+import CerebroError from "../../errors/cerebro-error";
 import CommandValidationError from "../../errors/command-validation-error";
 import ConflictingOptionsError from "../../errors/conflicting-options-error";
 import InvalidChoiceError from "../../errors/invalid-choice-error";
-import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
+import type { ArgumentDefinition, Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import listMissingArguments from "../data-processing/list-missing-arguments";
 import findAlternatives from "../general/find-alternatives";
+import { foldName } from "./resolve-arguments";
 
 /**
  * Validates unknown options and provides helpful suggestions.
@@ -49,6 +51,54 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger ex
     }
 };
 
+const invalidPositional = (commandName: string, message: string): CerebroError =>
+    new CerebroError(`Command "${commandName}" ${message}`, "INVALID_COMMAND", { commandName });
+
+/**
+ * Validates the slot order a command's positional definitions describe.
+ * @param definitions The positional definitions, in slot order.
+ * @param commandName The command name, used in error messages.
+ * @throws {CerebroError} When the declarations cannot describe a usable slot order.
+ */
+const validatePositionalSlots = (definitions: ReadonlyArray<ArgumentDefinition>, commandName: string): void => {
+    const seen = new Set<string>();
+
+    for (const [index, definition] of definitions.entries()) {
+        if (typeof (definition as unknown) !== "object" || (definition as unknown) === null) {
+            throw invalidPositional(commandName, `has a positional argument at index ${String(index)} that is not an object`);
+        }
+
+        const { name } = definition;
+
+        if (typeof name !== "string" || name.length === 0) {
+            throw invalidPositional(commandName, `has a positional argument at index ${String(index)} without a name`);
+        }
+
+        // Dedupe on the key the slot actually lands on: `a-b` and `aB` are
+        // distinct names that collide on `args.aB`.
+        const key = foldName(name);
+
+        if (seen.has(key)) {
+            throw invalidPositional(commandName, `declares duplicate positional argument "${name}"`);
+        }
+
+        seen.add(key);
+
+        // A required slot behind an optional one can never be filled: positionals
+        // are matched by position, so there is no way to supply the second
+        // without the first.
+        const previous = index === 0 ? undefined : definitions[index - 1];
+
+        if (definition.required === true && previous !== undefined && previous.required !== true) {
+            throw invalidPositional(commandName, `declares required positional "${name}" after an optional one, which can never be satisfied`);
+        }
+
+        if (definition.multiple === true && index !== definitions.length - 1) {
+            throw invalidPositional(commandName, `declares a variadic positional "${name}" that is not the last one`);
+        }
+    }
+};
+
 /**
  * Validates that all required options are present.
  * Uses pre-computed required options metadata from command registration for performance.
@@ -72,7 +122,7 @@ export const validateRequiredOptions = <OD extends OptionDefinition<unknown>, TL
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    if (commandArguments._unknown && commandArguments._unknown.length > 0 && !command.argument) {
+    if (commandArguments._unknown && commandArguments._unknown.length > 0 && !command.argument && !command.arguments?.length) {
         validateUnknownOptions(commandArguments, command);
     }
 };
@@ -209,4 +259,37 @@ export const validateDuplicateOptions = <OD extends OptionDefinition<unknown>>(c
     if (errors.length > 0) {
         throw new Error(errors.join("\n"));
     }
+};
+
+/**
+ * Validates a command's positional `arguments` at registration time.
+ *
+ * Every failure here is a mistake in the command definition rather than in the
+ * user's invocation, so it is worth surfacing when the CLI is wired up instead
+ * of on the first run that happens to hit it.
+ * @param command The command being registered.
+ * @param command.argument The legacy single positional, if declared.
+ * @param command.arguments The named positionals, if declared.
+ * @param command.name The command name, used in error messages.
+ * @throws {CerebroError} When the declarations cannot describe a usable slot order.
+ */
+export const validateArgumentDefinitions = (command: { argument?: unknown; arguments?: unknown; name: string }): void => {
+    const { arguments: positionals } = command;
+
+    if (positionals === undefined) {
+        return;
+    }
+
+    // `validateObject` would accept a record here, and this package simultaneously
+    // teaches that `options` and `env` take one — so the array check has to be
+    // explicit, and has to say why.
+    if (!Array.isArray(positionals)) {
+        throw invalidPositional(command.name, "must declare \"arguments\" as an array — slot order is significant, so a record cannot express it");
+    }
+
+    if (command.argument !== undefined) {
+        throw invalidPositional(command.name, "cannot define both \"argument\" and \"arguments\" — choose one");
+    }
+
+    validatePositionalSlots(positionals as ReadonlyArray<ArgumentDefinition>, command.name);
 };

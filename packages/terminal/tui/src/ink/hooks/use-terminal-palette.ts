@@ -41,26 +41,29 @@ const useTerminalPalette = (): UseTerminalPaletteResult => {
             return;
         }
 
-        let cancelled = false;
+        // Stops this component waiting on unmount. The probe itself is shared per stdout and is
+        // deliberately not cancelled: another mounted component may still be waiting on the same
+        // round trip. Its listener and timer therefore outlive us by at most `timeout`.
+        const controller = new AbortController();
 
         void (async () => {
             try {
-                const result = await queryTerminalPalette(stdin, stdout, 200);
+                const result = await queryTerminalPalette(stdin, stdout, 200, controller.signal);
 
-                if (!cancelled) {
+                if (!controller.signal.aborted) {
                     setPalette(result);
                 }
             } catch {
                 // Query failed — leave palette as null
             } finally {
-                if (!cancelled) {
+                if (!controller.signal.aborted) {
                     setIsLoading(false);
                 }
             }
         })();
 
         return () => {
-            cancelled = true;
+            controller.abort();
         };
     }, [isSupported, stdin, stdout]);
 

@@ -1,6 +1,27 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const clean: Command = {
+const cleanOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Preview what would be removed without deleting",
+        type: Boolean,
+    },
+    "empty-packages": {
+        alias: "e",
+        defaultValue: false,
+        description: "Also remove stale workspace directories that match a workspace pattern but have no package.json",
+        type: Boolean,
+    },
+    lockfile: {
+        alias: "l",
+        defaultValue: false,
+        description: "Also remove lockfiles (pnpm-lock.yaml, package-lock.json, etc.)",
+        type: Boolean,
+    },
+} as const;
+
+const clean = defineCommand({
     description: "Remove node_modules from all workspace projects",
     examples: [
         ["vis clean", "Remove all node_modules directories"],
@@ -11,23 +32,9 @@ const clean: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "clean",
-    options: [
-        { alias: "l", defaultValue: false, description: "Also remove lockfiles (pnpm-lock.yaml, package-lock.json, etc.)", name: "lockfile", type: Boolean },
-        {
-            alias: "e",
-            defaultValue: false,
-            description: "Also remove stale workspace directories that match a workspace pattern but have no package.json",
-            name: "empty-packages",
-            type: Boolean,
-        },
-        { defaultValue: false, description: "Preview what would be removed without deleting", name: "dry-run", type: Boolean },
-    ],
-};
+    options: cleanOptionDefinitions,
+});
 
 export default clean;
 
-export type CleanOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    "empty-packages": boolean | undefined;
-    lockfile: boolean | undefined;
-}>;
+export type CleanOptions = InferOptions<typeof cleanOptionDefinitions>;

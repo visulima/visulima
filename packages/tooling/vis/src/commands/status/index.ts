@@ -1,6 +1,15 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const status: Command = {
+const statusOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit JSON output",
+        type: Boolean,
+    },
+} as const;
+
+const status = defineCommand({
     description: "Show a workspace health dashboard at a glance",
     examples: [
         ["vis status", "Full status overview"],
@@ -9,18 +18,9 @@ const status: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "status",
-    options: [
-        {
-            defaultValue: false,
-            description: "Emit JSON output",
-            name: "json",
-            type: Boolean,
-        },
-    ],
-};
+    options: statusOptionDefinitions,
+});
 
 export default status;
 
-export type StatusOptions = CreateOptions<{
-    json: boolean | undefined;
-}>;
+export type StatusOptions = InferOptions<typeof statusOptionDefinitions>;
