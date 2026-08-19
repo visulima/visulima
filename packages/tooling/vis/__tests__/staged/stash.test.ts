@@ -54,6 +54,11 @@ describe("staged stash", () => {
         git(["config", "user.email", "vis@example.com"], root);
         git(["config", "user.name", "vis"], root);
         git(["config", "commit.gpgsign", "false"], root);
+        // Keep the fixture byte-exact: with git's default `core.autocrlf` on
+        // Windows, content restored from a stash comes back CRLF-translated and
+        // no longer matches what the test wrote.
+        git(["config", "core.autocrlf", "false"], root);
+        git(["config", "core.eol", "lf"], root);
         writeFileSync(join(root, "tracked.txt"), "base\n");
         git(["add", "-A"], root);
         git(["commit", "-q", "-m", "init"], root);
