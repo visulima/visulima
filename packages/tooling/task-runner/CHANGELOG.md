@@ -1,3 +1,13 @@
+## @visulima/task-runner [1.0.5](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.4...@visulima/task-runner@1.0.5) (2026-08-19)
+
+### Bug Fixes
+
+* restore commit groups in generated changelogs ([#850](https://github.com/visulima/visulima/issues/850)) ([409ff00](https://github.com/visulima/visulima/commit/409ff0034963eb2ec9ac1b7e85d52916fc1a661f))
+
+### Build System
+
+* **deps:** refresh catalog and package manifests ([#832](https://github.com/visulima/visulima/issues/832)) ([9b7590d](https://github.com/visulima/visulima/commit/9b7590d6496e633ba2c0681484ae4497eeb824c9))
+
 ## @visulima/task-runner [1.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Ftask-runner%401.0.3...%40visulima%2Ftask-runner%401.0.4) (2026-08-08)
 
 
