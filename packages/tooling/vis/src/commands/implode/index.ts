@@ -1,6 +1,16 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const implode: Command = {
+const implodeOptionDefinitions = {
+    yes: {
+        alias: "y",
+        defaultValue: false,
+        description: "Skip confirmation prompt",
+        type: Boolean,
+    },
+} as const;
+
+const implode = defineCommand({
     description: "Remove vis from the system (self-uninstall)",
     examples: [
         ["vis implode", "Interactive uninstall"],
@@ -9,11 +19,9 @@ const implode: Command = {
     group: "System",
     loader: () => import("./handler"),
     name: "implode",
-    options: [{ alias: "y", defaultValue: false, description: "Skip confirmation prompt", name: "yes", type: Boolean }],
-};
+    options: implodeOptionDefinitions,
+});
 
 export default implode;
 
-export type ImplodeOptions = CreateOptions<{
-    yes: boolean | undefined;
-}>;
+export type ImplodeOptions = InferOptions<typeof implodeOptionDefinitions>;

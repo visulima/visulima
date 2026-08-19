@@ -6,6 +6,7 @@ import type { Section } from "../types/command-line-usage";
 import type { CerebroFs } from "../types/runtime";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
+import formatPositionalUsage from "../util/command-processing/format-positional-usage";
 import { getArch, getPlatform, getVersions } from "../util/general/runtime-process";
 
 /**
@@ -79,14 +80,7 @@ const formatCommandUsage = (command: ICommand, cliName: string): string => {
     const fullPath = command.commandPath ? [...command.commandPath, command.name] : [command.name];
     const commandId = fullPath.join(" ");
 
-    if (command.argument) {
-        const argumentName = command.argument.name.toUpperCase();
-        const argumentString = command.argument.required ? argumentName : `[${argumentName}]`;
-
-        return `${cliName} ${commandId} ${argumentString}`;
-    }
-
-    return `${cliName} ${commandId}`;
+    return `${cliName} ${commandId}${formatPositionalUsage(command, "readme")}`;
 };
 
 /**
@@ -115,11 +109,10 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
 
     const fullCommandPath = command.commandPath ? [...command.commandPath, command.name] : [command.name];
     const commandDisplay = fullCommandPath.join(" ");
-    const hasArgument = Boolean(command.argument);
     const hasOptions = Boolean(command.options);
 
     usageGroups.push({
-        content: `${cliName} ${commandDisplay}${hasArgument ? " [positional arguments]" : ""}${hasOptions ? " [options]" : ""}`,
+        content: `${cliName} ${commandDisplay}${formatPositionalUsage(command)}${hasOptions ? " [options]" : ""}`,
         header: " Usage ",
     });
 
@@ -127,8 +120,12 @@ const formatCommandHelp = (command: ICommand, cliName: string): string => {
         usageGroups.push({ content: command.description, header: " Description " });
     }
 
-    if (command.argument) {
-        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: [command.argument] });
+    // Filter before testing the length: a command whose positionals are all
+    // hidden must not render the header above an empty table.
+    const positionals = (command.argument ? [command.argument] : command.arguments ?? []).filter((positional) => !positional.hidden);
+
+    if (positionals.length > 0) {
+        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: positionals });
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {

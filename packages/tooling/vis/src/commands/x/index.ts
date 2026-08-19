@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis x &lt;file>` — run a TypeScript/JavaScript file directly under the selected
@@ -11,7 +12,11 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * surface + JSX with no second Node boot. On the 22.14.x floor (no `registerHooks`)
  * the loader falls back to transpiling the entry to a temp `.mjs`.
  */
-const x: Command = {
+const xOptionDefinitions = {
+
+} as const;
+
+const x = defineCommand({
     argument: {
         description: "File to run, with any args to forward to it",
         name: "file",
@@ -27,9 +32,9 @@ const x: Command = {
     group: "Run & Execute",
     loader: () => import("./handler"),
     name: "x",
-    options: [],
-};
+    options: xOptionDefinitions,
+});
 
 export default x;
 
-export type XOptions = CreateOptions<Record<string, never>>;
+export type XOptions = InferOptions<typeof xOptionDefinitions>;

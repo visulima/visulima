@@ -157,7 +157,7 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
     // silent lockfile rewrites. Greenfield workspaces (no lockfile) skip
     // the default — there's nothing to freeze yet.
     const explicitFrozen = options.frozenLockfile || ciMode;
-    const optedOutOfFrozen = options.frozenLockfile === false || options.force || options.lockfileOnly;
+    const optedOutOfFrozen = !options.frozenLockfile || options.force || options.lockfileOnly;
     const lockfilePresent = hasLockfile(cwd);
     const shouldFreeze = explicitFrozen || (!optedOutOfFrozen && lockfilePresent);
 

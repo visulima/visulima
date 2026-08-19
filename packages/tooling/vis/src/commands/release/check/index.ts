@@ -1,6 +1,26 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const check: Command = {
+const checkOptionDefinitions = {
+    hook: {
+        description: "Hook context (pre-commit, pre-push) — affects which file states are counted",
+        type: String,
+    },
+    "no-fail": {
+        description: "Always exit 0; warnings still print to stderr",
+        type: Boolean,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+    strict: {
+        description: "Require every changed package to have its own non-empty change file",
+        type: Boolean,
+    },
+} as const;
+
+const check = defineCommand({
     commandPath: ["release"],
     description: "Verify pending change files cover changed packages — CI / husky gate",
     examples: [
@@ -12,35 +32,9 @@ const check: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "check",
-    options: [
-        {
-            description: "Require every changed package to have its own non-empty change file",
-            name: "strict",
-            type: Boolean,
-        },
-        {
-            description: "Hook context (pre-commit, pre-push) — affects which file states are counted",
-            name: "hook",
-            type: String,
-        },
-        {
-            description: "Always exit 0; warnings still print to stderr",
-            name: "no-fail",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-    ],
-};
+    options: checkOptionDefinitions,
+});
 
 export default check;
 
-export type ReleaseCheckOptions = CreateOptions<{
-    hook: string | undefined;
-    "no-fail": boolean | undefined;
-    "print-config": string | undefined;
-    strict: boolean | undefined;
-}>;
+export type ReleaseCheckOptions = InferOptions<typeof checkOptionDefinitions>;

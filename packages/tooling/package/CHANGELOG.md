@@ -1,3 +1,26 @@
+## @visulima/package [5.0.16](https://github.com/visulima/visulima/compare/%40visulima%2Fpackage%405.0.15...%40visulima%2Fpackage%405.0.16) (2026-08-19)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.3
+
+## @visulima/package [5.0.15](https://github.com/visulima/visulima/compare/%40visulima%2Fpackage%405.0.14...%40visulima%2Fpackage%405.0.15) (2026-08-18)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.2
+
+## @visulima/package [5.0.14](https://github.com/visulima/visulima/compare/%40visulima%2Fpackage%405.0.13...%40visulima%2Fpackage%405.0.14) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.1
+
+## @visulima/package [5.0.13](https://github.com/visulima/visulima/compare/%40visulima%2Fpackage%405.0.12...%40visulima%2Fpackage%405.0.13) (2026-08-17)
+
 ## @visulima/package [5.0.12](https://github.com/visulima/visulima/compare/%40visulima%2Fpackage%405.0.11...%40visulima%2Fpackage%405.0.12) (2026-08-08)
 
 

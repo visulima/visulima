@@ -10,6 +10,7 @@ import { DEFAULT_MAX_TOKENS, DEFAULT_RUN_TIMEOUT, DETECTION_TIMEOUT, IS_WINDOWS,
 import PROVIDERS from "./providers";
 import type { AiDetectAsyncOptions, AiDetectOptions, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
 import { AiRunError } from "./types"; // used as a value inside runProvider
+import { resolveShimInterpreter, resolveWindowsShimTarget } from "./windows-shim";
 
 /** Promisified `execFile`, used by the async/parallel detection path. */
 const execFileAsync = promisify(execFile);
@@ -18,20 +19,77 @@ const execFileAsync = promisify(execFile);
 const WINDOWS_SHIM_REGEX = /\.(?:bat|cmd)$/i;
 
 /**
- * On Windows, npm-installed CLIs resolve to `.cmd`/`.bat` shims. Since the
- * CVE-2024-27980 fix (Node >= 18.20 / 20.12 / 22), spawning those without
- * `shell: true` throws `EINVAL`. We therefore run them through the shell on
- * Windows — which means we must quote arguments ourselves, since the shell
- * (not Node) parses the command line.
+ * Quote a single argument for `cmd.exe` so spaces and metacharacters are preserved literally.
+ *
+ * Only reached by the unresolvable-shim fallback. Since the CVE-2024-27980 fix
+ * (Node >= 18.20 / 20.12 / 22) a `.cmd`/`.bat` cannot be spawned without `shell: true`, and then
+ * the shell — not Node — parses the command line, so we have to quote it ourselves.
  */
-const needsShell = (commandPath: string): boolean => IS_WINDOWS && WINDOWS_SHIM_REGEX.test(commandPath);
-
-/** Quote a single argument for `cmd.exe` so spaces and metacharacters are preserved literally. */
 const quoteWindowsArgument = (argument: string): string => {
     // Escape embedded double quotes, then wrap the whole thing in double quotes.
     const escaped = argument.replaceAll("\"", "\"\"");
 
     return `"${escaped}"`;
+};
+
+/**
+ * How to spawn a resolved provider path.
+ *
+ * `direct` passes an argv array that nothing re-parses. `shell` is the fallback for a `.cmd` shim
+ * we could not resolve; it keeps its command path raw and defers quoting to `toSpawnArguments`, so
+ * no caller has to remember which of the two a `file` field was holding.
+ */
+type Invocation = { commandPath: string; mode: "shell" } | { file: string; mode: "direct"; prefixArguments: string[] };
+
+/**
+ * Decides how to spawn a provider executable.
+ *
+ * On Windows the provider path is usually an npm `.cmd` shim, which only `cmd.exe` can run — and a
+ * `cmd.exe` command line has no escape for `%`, so `%VAR%` anywhere in an argument is replaced with
+ * an environment value before the CLI sees it. Quoting cannot prevent this (see `windows-shim.ts`).
+ * Resolving the shim to the script it wraps lets us spawn the interpreter with a plain argv array
+ * instead, so nothing parses the prompt.
+ *
+ * Shims that do not follow the `cmd-shim` layout still fall back to the shell, since the
+ * alternative is not running at all — and that fallback still carries the `%` hole.
+ * @param commandPath The resolved provider executable.
+ * @param isWindows Whether to apply the Windows shim rules. Injected so the decision is testable
+ * off Windows, where it would otherwise be pinned by a module-level constant.
+ * @returns How to spawn it.
+ */
+const planInvocation = (commandPath: string, isWindows: boolean = IS_WINDOWS): Invocation => {
+    if (!isWindows || !WINDOWS_SHIM_REGEX.test(commandPath)) {
+        return { file: commandPath, mode: "direct", prefixArguments: [] };
+    }
+
+    const target = resolveWindowsShimTarget(commandPath);
+
+    if (target !== undefined) {
+        return { file: resolveShimInterpreter(commandPath), mode: "direct", prefixArguments: [target] };
+    }
+
+    return { commandPath, mode: "shell" };
+};
+
+/**
+ * Turns an invocation plus CLI arguments into the `spawn`/`execFile` call shape.
+ *
+ * Quoting lives here alone: in shell mode the shell parses the command line, so every token has to
+ * be quoted by us; in direct mode the argv array is passed through untouched.
+ * @param invocation The plan from {@link planInvocation}.
+ * @param commandArguments Arguments for the provider CLI.
+ * @returns The file to spawn, whether a shell is involved, and the arguments to pass.
+ */
+const toSpawnArguments = (invocation: Invocation, commandArguments: string[]): { file: string; shell: boolean; spawnArguments: string[] } => {
+    if (invocation.mode === "shell") {
+        return {
+            file: quoteWindowsArgument(invocation.commandPath),
+            shell: true,
+            spawnArguments: commandArguments.map((argument) => quoteWindowsArgument(argument)),
+        };
+    }
+
+    return { file: invocation.file, shell: false, spawnArguments: [...invocation.prefixArguments, ...commandArguments] };
 };
 
 /** Resolve `~` to the user's home directory. */
@@ -92,11 +150,11 @@ const getKnownPaths = (command: string): string[] => {
 /** Run `&lt;command> --version` and extract the semver version string. */
 const detectVersion = (commandPath: string): string | undefined => {
     try {
-        const useShell = needsShell(commandPath);
-        const result = execFileSync(useShell ? quoteWindowsArgument(commandPath) : commandPath, ["--version"], {
+        const { file, shell, spawnArguments } = toSpawnArguments(planInvocation(commandPath), ["--version"]);
+        const result = execFileSync(file, spawnArguments, {
             encoding: "utf8",
-            // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
-            shell: useShell,
+            // Only unresolvable Windows shims still need the shell (CVE-2024-27980 EINVAL fix).
+            shell,
             stdio: ["pipe", "pipe", "pipe"],
             timeout: VERSION_TIMEOUT,
         });
@@ -130,11 +188,11 @@ const whichCommandAsync = async (command: string): Promise<string | undefined> =
 /** Async variant of {@link detectVersion}: run `&lt;command> --version` without blocking the event loop. */
 const detectVersionAsync = async (commandPath: string): Promise<string | undefined> => {
     try {
-        const useShell = needsShell(commandPath);
-        const { stdout } = await execFileAsync(useShell ? quoteWindowsArgument(commandPath) : commandPath, ["--version"], {
+        const { file, shell, spawnArguments } = toSpawnArguments(planInvocation(commandPath), ["--version"]);
+        const { stdout } = await execFileAsync(file, spawnArguments, {
             encoding: "utf8",
-            // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
-            shell: useShell,
+            // Only unresolvable Windows shims still need the shell (CVE-2024-27980 EINVAL fix).
+            shell,
             timeout: VERSION_TIMEOUT,
         });
 
@@ -345,7 +403,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
     const cliArguments = buildCliArgs(provider.name, prompt, options);
     const timeoutMs = options.timeoutMs !== undefined && Number.isFinite(options.timeoutMs) ? options.timeoutMs : DEFAULT_RUN_TIMEOUT;
     const commandPath = provider.path;
-    const useShell = needsShell(commandPath);
+    const invocation = toSpawnArguments(planInvocation(commandPath), cliArguments);
     const startedAt = Date.now();
 
     // Already-aborted signal: fail fast without spawning.
@@ -357,14 +415,11 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
         const spawnOptions: SpawnOptions = {
             cwd: options.cwd,
             env: { ...process.env, ...options.env, FORCE_COLOR: "0", NO_COLOR: "1" },
-            shell: useShell,
+            shell: invocation.shell,
             stdio: ["pipe", "pipe", "pipe"],
         };
 
-        // On Windows shells we must quote args ourselves; on POSIX, spawn passes them verbatim.
-        const spawnArguments = useShell ? cliArguments.map((argument) => quoteWindowsArgument(argument)) : cliArguments;
-
-        const child = spawn(useShell ? quoteWindowsArgument(commandPath) : commandPath, spawnArguments, spawnOptions);
+        const child = spawn(invocation.file, invocation.spawnArguments, spawnOptions);
 
         child.stdin?.end();
 
@@ -545,3 +600,6 @@ export {
     type EnvCondition,
     type EnvConditionObject,
 } from "./types";
+
+// Exported for tests: this is the branch that decides whether a prompt ever reaches cmd.exe.
+export { planInvocation };

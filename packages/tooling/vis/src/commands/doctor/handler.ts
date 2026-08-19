@@ -856,7 +856,7 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
         throw new Error("Could not determine workspace root.");
     }
 
-    const isJson = options.format === "json" || options.json === true;
+    const isJson = options.format === "json" || options.json;
     const sections = resolveSections(options.only, options.skip);
     const quiet = Boolean(options.quiet);
     const noProgress = (options as Record<string, unknown>).progress === false;

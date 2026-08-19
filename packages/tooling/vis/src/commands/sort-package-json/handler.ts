@@ -481,17 +481,17 @@ const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbo
     const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as SortPackageJsonConfig | undefined;
     const checkMode = options.check || false;
 
-    const editorconfigEnabled = options.editorconfig === false ? false : (config?.editorconfig ?? true);
+    const editorconfigEnabled = options.editorconfig ? (config?.editorconfig ?? true) : false;
 
     const normalized: NormalizedConfig = {
         editorconfig: editorconfigEnabled,
         finalNewline: options.finalNewline ?? config?.finalNewline ?? true,
-        formatBugs: options.formatBugs === false ? false : (config?.formatBugs ?? true),
-        formatRepository: options.formatRepository === false ? false : (config?.formatRepository ?? true),
+        formatBugs: options.formatBugs ? (config?.formatBugs ?? true) : false,
+        formatRepository: options.formatRepository ? (config?.formatRepository ?? true) : false,
         ignore: [...splitList(options.ignore), ...(config?.ignore ?? [])],
         indent: resolveIndentOverride(options.indent ?? config?.indent),
         lineEnding: validateLineEnding(options.lineEnding ?? config?.lineEnding),
-        sortExports: options.sortExports === false ? false : (config?.sortExports ?? true),
+        sortExports: options.sortExports ? (config?.sortExports ?? true) : false,
         sortOrder: [...splitList(options.sortOrder), ...(config?.sortOrder ?? [])],
         sortScripts: options.sortScripts || config?.sortScripts || false,
         unsorted: [...splitList(options.unsorted), ...(config?.unsorted ?? [])],

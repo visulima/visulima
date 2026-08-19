@@ -1,11 +1,30 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis inspect &lt;pkg>` — dry-run every marshall against `&lt;pkg>[@&lt;spec>]`
  * without installing anything. Lets users pre-flight a dependency before
  * letting it touch the lockfile.
  */
-const inspect: Command = {
+const inspectOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit findings as a JSON document instead of the human-readable table.",
+        type: Boolean,
+    },
+    only: {
+        description:
+                "Comma-separated subset of marshalls to run. Known: author, archivedRepo, downloads, expiredDomains, metadata, newBin, provenance, signatures. Signatures only runs when explicitly requested here.",
+        type: String,
+    },
+    strict: {
+        defaultValue: false,
+        description: "Exit non-zero on any finding (warnings included). Default exits non-zero only on errors.",
+        type: Boolean,
+    },
+} as const;
+
+const inspect = defineCommand({
     argument: {
         description: "Package to inspect, optionally pinned: `<name>` or `<name>@<spec>`. `<spec>` may be a version, range, or dist-tag.",
         name: "package",
@@ -23,32 +42,9 @@ const inspect: Command = {
     group: "Security & Health",
     loader: () => import("./handler"),
     name: "inspect",
-    options: [
-        {
-            defaultValue: false,
-            description: "Emit findings as a JSON document instead of the human-readable table.",
-            name: "json",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Exit non-zero on any finding (warnings included). Default exits non-zero only on errors.",
-            name: "strict",
-            type: Boolean,
-        },
-        {
-            description:
-                "Comma-separated subset of marshalls to run. Known: author, archivedRepo, downloads, expiredDomains, metadata, newBin, provenance, signatures. Signatures only runs when explicitly requested here.",
-            name: "only",
-            type: String,
-        },
-    ],
-};
+    options: inspectOptionDefinitions,
+});
 
 export default inspect;
 
-export type InspectOptions = CreateOptions<{
-    json: boolean | undefined;
-    only: string | undefined;
-    strict: boolean | undefined;
-}>;
+export type InspectOptions = InferOptions<typeof inspectOptionDefinitions>;

@@ -1,6 +1,26 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const generate: Command = {
+const generateOptionDefinitions = {
+    "dry-run": {
+        description: "Print would-be content without writing",
+        type: Boolean,
+    },
+    from: {
+        description: "Git ref to compare against (default: merge-base with baseBranch)",
+        type: String,
+    },
+    name: {
+        description: "Slug for the generated filename (default: random animal name)",
+        type: String,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+} as const;
+
+const generate = defineCommand({
     commandPath: ["release"],
     description: "Auto-derive a change file from branch commits (conventional-commits + path heuristics)",
     examples: [
@@ -11,35 +31,9 @@ const generate: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "generate",
-    options: [
-        {
-            description: "Git ref to compare against (default: merge-base with baseBranch)",
-            name: "from",
-            type: String,
-        },
-        {
-            description: "Slug for the generated filename (default: random animal name)",
-            name: "name",
-            type: String,
-        },
-        {
-            description: "Print would-be content without writing",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-    ],
-};
+    options: generateOptionDefinitions,
+});
 
 export default generate;
 
-export type ReleaseGenerateOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    from: string | undefined;
-    name: string | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseGenerateOptions = InferOptions<typeof generateOptionDefinitions>;

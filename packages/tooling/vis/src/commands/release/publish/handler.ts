@@ -72,7 +72,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     try {
         result = await publishContext(ctx, {
             dryRun,
-            noPush: options.noPush === true,
+            noPush: !options.push,
             otp: options.otp,
             resume: options.resume === true,
             tag,

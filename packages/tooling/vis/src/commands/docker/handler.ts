@@ -44,7 +44,7 @@ export const scaffoldExecute: CommandExecute<Toolbox<Console, DockerScaffoldOpti
         },
         outDir,
         projectGraph,
-        pruneLockfile: options.pruneLockfile !== false,
+        pruneLockfile: options.pruneLockfile,
         workspace,
         workspaceRoot: wsRoot,
     });

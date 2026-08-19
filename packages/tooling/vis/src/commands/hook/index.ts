@@ -1,4 +1,4 @@
-import type { Command, CreateEnv, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateEnv, CreateOptions } from "@visulima/cerebro";
 
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 
@@ -28,6 +28,7 @@ const hookInstall: Command = {
     examples: [
         ["vis hook install", "Install git hooks in .vis/hooks/"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
+        ["vis hook install --force", "Take over core.hooksPath even when another tool set it"],
     ],
     group: "Git Hooks",
     loader: () =>
@@ -35,7 +36,15 @@ const hookInstall: Command = {
             return { default: m.hookInstallExecute };
         }),
     name: "install",
-    options: [hooksDirectoryOption],
+    options: [
+        hooksDirectoryOption,
+        {
+            defaultValue: false,
+            description: "Overwrite core.hooksPath even when it points somewhere unexpected",
+            name: "force",
+            type: Boolean,
+        },
+    ],
 };
 
 const hookUninstall: Command = {
@@ -173,7 +182,7 @@ const hookAdd: Command = {
     options: [hooksDirectoryOption],
 };
 
-const hookCommands: Command[] = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
+const hookCommands: AnyCommandInput[] = [hookInstall, hookUninstall, hookMigrate, hookList, hookValidate, hookRun, hookAdd];
 
 export default hookCommands;
 
@@ -182,6 +191,7 @@ export type HookEnv = CreateEnv<{
 }>;
 
 export type HookInstallOptions = CreateOptions<{
+    force: boolean | undefined;
     "hooks-dir": string | undefined;
 }>;
 

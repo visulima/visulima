@@ -11,6 +11,8 @@ class EmptyToolbox implements Partial<IToolbox> {
 
     public argument?: IToolbox["argument"];
 
+    public args?: IToolbox["args"];
+
     public command: IToolbox["command"];
 
     public commandName: IToolbox["commandName"];

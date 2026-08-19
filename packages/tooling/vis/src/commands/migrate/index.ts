@@ -1,172 +1,185 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, CreateOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
-const sharedMigrateOptions = [
-    { defaultValue: false, description: "Preview changes without applying", name: "dry-run", type: Boolean },
-    { alias: "y", defaultValue: false, description: "Skip the confirmation prompt", name: "yes", type: Boolean },
-] as const;
+const sharedMigrateOptions = {
+    "dry-run": { defaultValue: false, description: "Preview changes without applying", type: Boolean },
+    yes: { alias: "y", defaultValue: false, description: "Skip the confirmation prompt", type: Boolean },
+} as const;
 
-const migrateDepsCmd: Command = {
+const migrateDepsCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateDepsCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate dependencies and scripts to vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateDepsExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateDepsExecute"),
     name: "deps",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateDepsCmdOptionDefinitions,
+});
 
-const migrateLintStagedCmd: Command = {
+const migrateLintStagedCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateLintStagedCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Inline lint-staged configuration into vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateLintStagedExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateLintStagedExecute"),
     name: "lint-staged",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateLintStagedCmdOptionDefinitions,
+});
 
-const migrateNanoStagedCmd: Command = {
+const migrateNanoStagedCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateNanoStagedCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Inline nano-staged configuration into vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateNanoStagedExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateNanoStagedExecute"),
     name: "nano-staged",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateNanoStagedCmdOptionDefinitions,
+});
 
-const migrateTurborepoCmd: Command = {
+const migrateTurborepoCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateTurborepoCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate turborepo tasks/config to vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateTurborepoExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateTurborepoExecute"),
     name: "turborepo",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateTurborepoCmdOptionDefinitions,
+});
 
-const migrateNxCmd: Command = {
+const migrateNxCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+    aggressive: {
+        defaultValue: false,
+        description:
+                "Auto-apply the safe cleanup items the migrator would otherwise leave on the checklist: delete nx.json + ignore-files-for-nx-affected.yml, strip nx/@nx/*/@nrwl/* devDependencies, rewrite mechanical `nx run-many|run|affected` scripts. Implies --force.",
+        type: Boolean,
+    },
+    force: {
+        defaultValue: false,
+        description: "Overwrite an existing vis.config.ts (a .bak is taken first)",
+        type: Boolean,
+    },
+    "rewrite-sync-generators": {
+        defaultValue: false,
+        description: "For each project.json `syncGenerators`, add a `pre<target>` script to sibling package.json (with a TODO for the user to wire up)",
+        type: Boolean,
+    },
+} as const;
+
+const migrateNxCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate nx targets/config to vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateNxExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateNxExecute"),
     name: "nx",
-    options: [
-        ...sharedMigrateOptions,
-        { defaultValue: false, description: "Overwrite an existing vis.config.ts (a .bak is taken first)", name: "force", type: Boolean },
-        {
-            defaultValue: false,
-            description: "For each project.json `syncGenerators`, add a `pre<target>` script to sibling package.json (with a TODO for the user to wire up)",
-            name: "rewrite-sync-generators",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description:
-                "Auto-apply the safe cleanup items the migrator would otherwise leave on the checklist: delete nx.json + ignore-files-for-nx-affected.yml, strip nx/@nx/*/@nrwl/* devDependencies, rewrite mechanical `nx run-many|run|affected` scripts. Implies --force.",
-            name: "aggressive",
-            type: Boolean,
-        },
-    ],
-};
+    options: migrateNxCmdOptionDefinitions,
+});
 
-const migrateMoonCmd: Command = {
+const migrateMoonCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+    "copy-templates": {
+        defaultValue: false,
+        description: "Copy .moon/templates/* into .vis/templates/* so `vis generate` works without .moon/",
+        type: Boolean,
+    },
+} as const;
+
+const migrateMoonCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate moon tasks/templates to vis",
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateMoonExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateMoonExecute"),
     name: "moon",
-    options: [
-        ...sharedMigrateOptions,
-        {
-            defaultValue: false,
-            description: "Copy .moon/templates/* into .vis/templates/* so `vis generate` works without .moon/",
-            name: "copy-templates",
-            type: Boolean,
-        },
-    ],
-};
+    options: migrateMoonCmdOptionDefinitions,
+});
 
-const migrateGitleaksCmd: Command = {
+const migrateGitleaksCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateGitleaksCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate gitleaks config/baseline/hooks to `vis secrets`",
     examples: [["vis migrate gitleaks", "Migrate gitleaks config/baseline/hooks to `vis secrets`"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateGitleaksExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateGitleaksExecute"),
     name: "gitleaks",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateGitleaksCmdOptionDefinitions,
+});
 
-const migrateKingfisherCmd: Command = {
+const migrateKingfisherCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateKingfisherCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Migrate Kingfisher baseline/hooks/scripts to `vis secrets`",
     examples: [["vis migrate kingfisher", "Migrate Kingfisher baseline/hooks/scripts to `vis secrets`"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateKingfisherExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateKingfisherExecute"),
     name: "kingfisher",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateKingfisherCmdOptionDefinitions,
+});
 
-const migrateSecretlintCmd: Command = {
+const migrateSecretlintCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateSecretlintCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Replace secretlint with `vis secrets`",
     examples: [["vis migrate secretlint", "Replace secretlint with `vis secrets`"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateSecretlintExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateSecretlintExecute"),
     name: "secretlint",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateSecretlintCmdOptionDefinitions,
+});
 
-const migrateSyncpackCmd: Command = {
+const migrateSyncpackCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateSyncpackCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Translate syncpack customTypes into vis policy and strip the syncpack dep/scripts",
     examples: [["vis migrate syncpack", "Translate syncpack customTypes into vis policy and strip the syncpack dep/scripts"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateSyncpackExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateSyncpackExecute"),
     name: "syncpack",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateSyncpackCmdOptionDefinitions,
+});
 
-const migrateSherifCmd: Command = {
+const migrateSherifCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateSherifCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Strip sherif config/dep/scripts and surface ignore-rules as a positive `vis lint --<rule>` command",
     examples: [["vis migrate sherif", "Strip sherif config/dep/scripts and surface ignore-rules as a positive `vis lint --<rule>` command"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateSherifExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateSherifExecute"),
     name: "sherif",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateSherifCmdOptionDefinitions,
+});
 
-const migrateSelfCmd: Command = {
+const migrateSelfCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateSelfCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Auto-rewrite vis.config.ts to use renamed fields (targetDefaults → tasks, taskDefaults → scopedTasks, taskRunnerOptions → taskRunner)",
     examples: [
@@ -174,28 +187,41 @@ const migrateSelfCmd: Command = {
         ["vis migrate self --dry-run", "Preview the rewrite without writing"],
     ],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateSelfExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateSelfExecute"),
     name: "self",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateSelfCmdOptionDefinitions,
+});
 
-const migrateVerify: Command = {
+const migrateVerifyOptionDefinitions = {
+
+} as const;
+
+const migrateVerify = defineCommand({
     commandPath: ["migrate"],
     description: "Audit the workspace for stray gitleaks/secretlint/sherif/syncpack references (exit 1 on issues)",
     examples: [["vis migrate verify", "Audit the workspace for stray gitleaks/secretlint/sherif/syncpack references (exit 1 on issues)"]],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateVerifyExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateVerifyExecute"),
     name: "verify",
-    options: [],
-};
+    options: migrateVerifyOptionDefinitions,
+});
 
-const migrateVerifyGraphCmd: Command = {
+const migrateVerifyGraphCmdOptionDefinitions = {
+    "fail-on": {
+        description: "Exit non-zero on: error (default) | warning",
+        type: String,
+    },
+    format: {
+        description: "Output format: table | json | ndjson (default: table)",
+        type: String,
+    },
+    from: {
+        description: "Source tool to compare against (turbo|nx|moon). Auto-detected when omitted.",
+        type: String,
+    },
+} as const;
+
+const migrateVerifyGraphCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Prove a turbo/nx/moon → vis migration preserved the task graph + cache-key surface (exit 1 on divergence)",
     examples: [
@@ -204,19 +230,16 @@ const migrateVerifyGraphCmd: Command = {
         ["vis migrate verify-graph --fail-on warning", "Also gate CI on additive/extra-target warnings"],
     ],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateVerifyGraphExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateVerifyGraphExecute"),
     name: "verify-graph",
-    options: [
-        { description: "Source tool to compare against (turbo|nx|moon). Auto-detected when omitted.", name: "from", type: String },
-        { description: "Output format: table | json | ndjson (default: table)", name: "format", type: String },
-        { description: "Exit non-zero on: error (default) | warning", name: "fail-on", type: String },
-    ],
-};
+    options: migrateVerifyGraphCmdOptionDefinitions,
+});
 
-const migrateAllCmd: Command = {
+const migrateAllCmdOptionDefinitions = {
+    ...sharedMigrateOptions,
+} as const;
+
+const migrateAllCmd = defineCommand({
     commandPath: ["migrate"],
     description: "Run every applicable migration non-interactively (autodetected)",
     examples: [
@@ -224,15 +247,12 @@ const migrateAllCmd: Command = {
         ["vis migrate all --dry-run", "Preview every detected migration without writing files"],
     ],
     group: "Migrate",
-    loader: () =>
-        import("./handler").then((m) => {
-            return { default: m.migrateAllExecute };
-        }),
+    loader: lazyNamed(() => import("./handler"), "migrateAllExecute"),
     name: "all",
-    options: [...sharedMigrateOptions],
-};
+    options: migrateAllCmdOptionDefinitions,
+});
 
-const migrateCommands: Command[] = [
+const migrateCommands: AnyCommandInput[] = [
     migrateAllCmd,
     migrateDepsCmd,
     migrateLintStagedCmd,

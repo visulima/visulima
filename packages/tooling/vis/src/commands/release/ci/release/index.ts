@@ -1,6 +1,31 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const ciRelease: Command = {
+const ciReleaseOptionDefinitions = {
+    "auto-publish": {
+        description: "Skip version-PR; version + publish inline",
+        type: Boolean,
+    },
+    branch: {
+        description: "Override version-PR branch (default: vis-release/version-packages)",
+        type: String,
+    },
+    channel: {
+        description: "Override channel (defaults to current branch lookup)",
+        type: String,
+    },
+    "first-release": {
+        description:
+                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
+        type: Boolean,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+} as const;
+
+const ciRelease = defineCommand({
     commandPath: ["release", "ci"],
     description: "CI: maintain a rolling version-PR (default) or version+publish inline (--auto-publish)",
     examples: [
@@ -10,42 +35,9 @@ const ciRelease: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "release",
-    options: [
-        {
-            description: "Skip version-PR; version + publish inline",
-            name: "auto-publish",
-            type: Boolean,
-        },
-        {
-            description: "Override version-PR branch (default: vis-release/version-packages)",
-            name: "branch",
-            type: String,
-        },
-        {
-            description: "Override channel (defaults to current branch lookup)",
-            name: "channel",
-            type: String,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-        {
-            description:
-                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
-            name: "first-release",
-            type: Boolean,
-        },
-    ],
-};
+    options: ciReleaseOptionDefinitions,
+});
 
 export default ciRelease;
 
-export type ReleaseCiReleaseOptions = CreateOptions<{
-    "auto-publish": boolean | undefined;
-    branch: string | undefined;
-    channel: string | undefined;
-    "first-release": boolean | undefined;
-    "print-config": string | undefined;
-}>;
+export type ReleaseCiReleaseOptions = InferOptions<typeof ciReleaseOptionDefinitions>;

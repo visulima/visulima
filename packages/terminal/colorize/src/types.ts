@@ -176,6 +176,18 @@ export interface ColorizeType {
     /** U̲n̲d̲e̲r̲l̲i̲n̲e̲ style. (Not widely supported) */
     readonly underline: this;
 
+    /** Curly (wavy) underline. Falls back to a plain underline. */
+    readonly underlineCurly: this;
+
+    /** Dashed underline. Falls back to a plain underline. */
+    readonly underlineDashed: this;
+
+    /** Dotted underline. Falls back to a plain underline. */
+    readonly underlineDotted: this;
+
+    /** Double underline. Falls back to a plain underline. */
+    readonly underlineDouble: this;
+
     /** Print visible text without ANSI styling. */
     readonly visible: this;
     readonly white: this;
@@ -189,7 +201,22 @@ export type ColorData = { close: string; open: string };
 /**
  * Base ANSI Styles
  */
-export type AnsiStyles = "bold" | "dim" | "hidden" | "inverse" | "italic" | "overline" | "reset" | "strike" | "strikethrough" | "underline" | "visible";
+export type AnsiStyles
+    = | "bold"
+        | "dim"
+        | "hidden"
+        | "inverse"
+        | "italic"
+        | "overline"
+        | "reset"
+        | "strike"
+        | "strikethrough"
+        | "underline"
+        | "underlineCurly"
+        | "underlineDashed"
+        | "underlineDotted"
+        | "underlineDouble"
+        | "visible";
 
 /**
  * Base ANSI Colors

@@ -223,6 +223,19 @@ describe("alias tests", () => {
         vi.unstubAllGlobals();
     });
 
+    it.each([
+        ["underlineDouble", "4:2"],
+        ["underlineCurly", "4:3"],
+        ["underlineDotted", "4:4"],
+        ["underlineDashed", "4:5"],
+    ] as const)("should emit the %s sub-parameter and close it with 24", (style, parameter) => {
+        expect.assertions(1);
+
+        // The sub-parameter form is what carries the style; a terminal that does not know it
+        // drops the `:n` and still underlines, so these must not be emitted as plain `4`.
+        expect(colorize[style]("foo")).toBe(`\u001B[${parameter}mfoo\u001B[24m`);
+    });
+
     it(`should be the same strike == strikethrough`, () => {
         expect.assertions(1);
 

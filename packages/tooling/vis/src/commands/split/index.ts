@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis split` — extract a package out of the monorepo into a new
@@ -6,7 +7,49 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * (built-in `git subtree split`). Optionally wires up a remote, pushes,
  * and removes the package from the monorepo.
  */
-const split: Command = {
+const splitOptionDefinitions = {
+    annotate: {
+        defaultValue: false,
+        description: "Prefix the rewritten commit messages with the package name",
+        type: Boolean,
+    },
+    branch: {
+        alias: "b",
+        description: "Default branch name in the new repo (default: vis.config defaultBase or \"main\")",
+        type: String,
+    },
+    "dry-run": {
+        defaultValue: false,
+        description: "Print the git plan instead of executing it",
+        type: Boolean,
+    },
+    force: {
+        defaultValue: false,
+        description: "Use a non-empty --output directory anyway",
+        type: Boolean,
+    },
+    output: {
+        alias: "o",
+        description: "Destination directory for the new repo (required unless --dry-run)",
+        type: String,
+    },
+    push: {
+        defaultValue: false,
+        description: "Push the new repo to origin (requires --remote)",
+        type: Boolean,
+    },
+    remote: {
+        description: "Git remote URL to set as origin on the new repo",
+        type: String,
+    },
+    remove: {
+        defaultValue: false,
+        description: "Delete the package from the monorepo after extracting and commit the removal",
+        type: Boolean,
+    },
+} as const;
+
+const split = defineCommand({
     argument: { description: "Project name or workspace-relative path of the package to extract", name: "package", type: String },
     description: "Extract a package into a standalone git repo, preserving its history",
     examples: [
@@ -18,27 +61,9 @@ const split: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "split",
-    options: [
-        { alias: "o", description: "Destination directory for the new repo (required unless --dry-run)", name: "output", type: String },
-        { alias: "b", description: "Default branch name in the new repo (default: vis.config defaultBase or \"main\")", name: "branch", type: String },
-        { description: "Git remote URL to set as origin on the new repo", name: "remote", type: String },
-        { defaultValue: false, description: "Push the new repo to origin (requires --remote)", name: "push", type: Boolean },
-        { defaultValue: false, description: "Delete the package from the monorepo after extracting and commit the removal", name: "remove", type: Boolean },
-        { defaultValue: false, description: "Prefix the rewritten commit messages with the package name", name: "annotate", type: Boolean },
-        { defaultValue: false, description: "Use a non-empty --output directory anyway", name: "force", type: Boolean },
-        { defaultValue: false, description: "Print the git plan instead of executing it", name: "dry-run", type: Boolean },
-    ],
-};
+    options: splitOptionDefinitions,
+});
 
 export default split;
 
-export type SplitOptions = CreateOptions<{
-    annotate: boolean | undefined;
-    branch: string | undefined;
-    "dry-run": boolean | undefined;
-    force: boolean | undefined;
-    output: string | undefined;
-    push: boolean | undefined;
-    remote: string | undefined;
-    remove: boolean | undefined;
-}>;
+export type SplitOptions = InferOptions<typeof splitOptionDefinitions>;

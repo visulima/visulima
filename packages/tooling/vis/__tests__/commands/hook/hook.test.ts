@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -23,12 +23,38 @@ const countDirnameCalls = (script: string): number => {
 };
 
 /**
+ * Git exports `GIT_DIR`, `GIT_INDEX_FILE` and friends into hook processes, so
+ * these tests retarget the outer repo when the suite runs from a pre-commit
+ * hook. Clear them for the duration so every git call resolves from cwd.
+ */
+const INHERITED_GIT_VARS = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_PREFIX", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"];
+
+const detachGitEnvironment = (): (() => void) => {
+    const saved = new Map(INHERITED_GIT_VARS.map((name) => [name, process.env[name]]));
+
+    for (const name of INHERITED_GIT_VARS) {
+        Reflect.deleteProperty(process.env, name);
+    }
+
+    return () => {
+        for (const [name, value] of saved) {
+            if (value === undefined) {
+                Reflect.deleteProperty(process.env, name);
+            } else {
+                process.env[name] = value;
+            }
+        }
+    };
+};
+
+/**
  * Creates a temp directory with `git init` and returns cleanup helpers.
  * execSync used with hardcoded "git init" — no user input, safe for test setup.
  */
 const createTemporaryGitRepo = (): { cleanup: () => void; restore: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-hook-test-"));
     const originalCwd = process.cwd();
+    const restoreEnvironment = detachGitEnvironment();
 
     execSync("git init", { cwd: root, stdio: "ignore" });
     process.chdir(root);
@@ -36,10 +62,12 @@ const createTemporaryGitRepo = (): { cleanup: () => void; restore: () => void; r
     return {
         cleanup: () => {
             process.chdir(originalCwd);
+            restoreEnvironment();
             rmSync(root, { force: true, recursive: true });
         },
         restore: () => {
             process.chdir(originalCwd);
+            restoreEnvironment();
         },
         root,
     };
@@ -54,6 +82,13 @@ const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
         },
         root,
     };
+};
+
+const commitEmpty = (root: string): void => {
+    execSync("git config user.email vis@example.com", { cwd: root, stdio: "ignore" });
+    execSync("git config user.name vis", { cwd: root, stdio: "ignore" });
+    execSync("git config commit.gpgsign false", { cwd: root, stdio: "ignore" });
+    execSync("git commit -q --allow-empty -m init", { cwd: root, stdio: "ignore" });
 };
 
 describe(hookScript, () => {
@@ -259,34 +294,175 @@ describe(installHooks, () => {
         }
     });
 
-    it.skipIf(process.platform === "win32")("should skip when core.hooksPath is already set to a different path", () => {
-        expect.assertions(2);
+    it.skipIf(process.platform === "win32")("should skip with a warning when core.hooksPath points at another tool's populated hooks", () => {
+        expect.assertions(4);
 
-        const { cleanup } = createTemporaryGitRepo();
+        const { cleanup, root } = createTemporaryGitRepo();
 
         try {
+            mkdirSync(join(root, ".other-hooks"), { recursive: true });
+            writeFileSync(join(root, ".other-hooks", "pre-commit"), "#!/usr/bin/env sh\n", { mode: 0o755 });
             execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
 
             const result = installHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
+            expect(result.isWarning).toBe(true);
             expect(result.message).toContain("already set");
+            // The message has to name the way out, or the repo stays stuck here forever.
+            expect(result.message).toContain("--force");
         } finally {
             cleanup();
         }
     });
 
-    it.skipIf(process.platform === "win32")("should work with custom directory name", () => {
+    it.skipIf(process.platform === "win32")("should fail when core.hooksPath points at a directory with no hooks", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            // What `.git/hooks` looks like: samples only, so git runs nothing.
+            mkdirSync(join(root, ".empty-hooks"), { recursive: true });
+            writeFileSync(join(root, ".empty-hooks", "pre-commit.sample"), "#!/usr/bin/env sh\n");
+            execSync("git config core.hooksPath .empty-hooks", { stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks");
+
+            expect(result.isError).toBe(true);
+            expect(result.message).toContain("no hooks");
+            expect(result.message).toContain("--force");
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should take over an unexpected core.hooksPath with force", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            mkdirSync(join(root, ".other-hooks"), { recursive: true });
+            writeFileSync(join(root, ".other-hooks", "pre-commit"), "#!/usr/bin/env sh\n", { mode: 0o755 });
+            execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks", { force: true });
+
+            expect(result.isError).toBe(false);
+            expect(execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim()).toBe(".vis/hooks/_");
+            expect(existsSync(join(root, ".vis", "hooks", "_", "pre-commit"))).toBe(true);
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should install a dispatcher into every linked worktree", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+        const { cleanup: cleanupWorktree, root: worktreeParent } = createTemporaryDirectory();
+        const worktree = join(worktreeParent, "wt");
+
+        try {
+            commitEmpty(root);
+            execFileSync("git", ["worktree", "add", "-q", worktree, "-b", "wt"], { cwd: root, stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks");
+
+            expect(result.isError).toBe(false);
+            expect(existsSync(join(root, ".vis", "hooks", "_", "pre-commit"))).toBe(true);
+            // `core.hooksPath` is shared but resolved per checkout — without a
+            // dispatcher here the worktree commits with no hooks at all.
+            expect(existsSync(join(worktree, ".vis", "hooks", "_", "pre-commit"))).toBe(true);
+        } finally {
+            execFileSync("git", ["worktree", "remove", "--force", worktree], { cwd: root, stdio: "ignore" });
+            cleanupWorktree();
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should adopt an existing vis hooksPath anchored at another checkout prefix", () => {
+        expect.assertions(3);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            // What a repo installed from `packages/app` looks like from the
+            // root of a freshly added worktree: same hooks dir, different
+            // prefix. Treating it as a foreign path made install refuse to
+            // create the very dispatcher it exists to create.
+            execSync("git config core.hooksPath packages/app/.vis/hooks/_", { cwd: root, stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks");
+
+            expect(result.isError).toBe(false);
+            expect(existsSync(join(root, "packages", "app", ".vis", "hooks", "_", "pre-commit"))).toBe(true);
+            // The repo-wide path must not move just because cwd differs.
+            expect(execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim()).toBe("packages/app/.vis/hooks/_");
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should not error when core.hooksPath is the git-native /dev/null disable", () => {
+        expect.assertions(2);
+
+        const { cleanup } = createTemporaryGitRepo();
+
+        try {
+            execSync("git config core.hooksPath /dev/null", { stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks");
+
+            // Deliberate, not broken — failing here would break `pnpm install`
+            // through the `prepare` script.
+            expect(result.isError).toBe(false);
+            expect(result.isWarning).toBe(true);
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should treat a hooks directory of unsupported stages as populated", () => {
         expect.assertions(2);
 
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
-            const result = installHooks(".my-hooks");
+            // `reference-transaction` is a real git hook vis writes no shim
+            // for. Calling that "no hooks" would block install on a working setup.
+            mkdirSync(join(root, ".other-hooks"), { recursive: true });
+            writeFileSync(join(root, ".other-hooks", "reference-transaction"), "#!/usr/bin/env sh\n", { mode: 0o755 });
+            execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
+
+            const result = installHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
-            expect(existsSync(join(root, ".my-hooks", "_", "pre-commit"))).toBe(true);
+            expect(result.isWarning).toBe(true);
         } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should not resurrect a deleted worktree directory", () => {
+        expect.assertions(2);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+        const { cleanup: cleanupWorktree, root: worktreeParent } = createTemporaryDirectory();
+        const worktree = join(worktreeParent, "gone");
+
+        try {
+            commitEmpty(root);
+            execFileSync("git", ["worktree", "add", "-q", worktree, "-b", "gone"], { cwd: root, stdio: "ignore" });
+            rmSync(worktree, { force: true, recursive: true });
+
+            const result = installHooks(".vis/hooks");
+
+            expect(result.isError).toBe(false);
+            expect(existsSync(worktree)).toBe(false);
+        } finally {
+            cleanupWorktree();
             cleanup();
         }
     });

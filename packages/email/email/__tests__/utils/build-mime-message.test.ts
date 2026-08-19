@@ -614,6 +614,27 @@ describe(buildMimeMessage, () => {
             expect(message).toContain("plain buffer body");
         });
 
+        it("should CRLF-terminate every line of an unencoded attachment", async () => {
+            expect.assertions(2);
+
+            const options: EmailOptions = {
+                attachments: [
+                    { content: "first\nsecond\rthird", contentType: "text/plain", encoding: "8bit", filename: "notes.txt" },
+                    { content: Buffer.from("buffered\nlines"), contentType: "text/plain", encoding: "7bit", filename: "buffered.txt" },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options);
+
+            // Attachment content is pushed verbatim, so its own line breaks never met the CRLF join.
+            expect(message).toContain("first\r\nsecond\r\nthird");
+            expect(message).toContain("buffered\r\nlines");
+        });
+
         it("should inline a Uint8Array attachment with 8bit encoding", async () => {
             expect.assertions(2);
 

@@ -698,18 +698,16 @@ describe("smtp provider (extended)", () => {
             expect(lastMessage()).not.toContain("DKIM-Signature:");
         });
 
-        it("recovers and logs when DKIM signing throws", async () => {
-            expect.assertions(3);
+        it("fails the send when DKIM signing throws", async () => {
+            expect.assertions(2);
 
-            const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+            // Sending unsigned would look like success while the message fails DMARC alignment at
+            // the recipient — the caller asked for DKIM, so a signing failure has to surface.
             const provider = smtpProvider(plainConfig({ dkim: { domainName: "example.com", keySelector: "default", privateKey: "not-a-valid-key" } }));
             const result = await provider.sendEmail(baseEmail);
 
-            expect(result.success).toBe(true);
-            expect(lastMessage()).not.toContain("DKIM-Signature:");
-            expect(errorSpy).toHaveBeenCalledWith("[smtp] DKIM signing error:", expect.any(Error));
-
-            errorSpy.mockRestore();
+            expect(result.success).toBe(false);
+            expect((result.error as Error).message).toContain("DKIM signing failed");
         });
 
         it("preserves the full multipart body and closing boundary when DKIM-signing", async () => {

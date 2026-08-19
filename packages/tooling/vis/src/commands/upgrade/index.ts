@@ -1,6 +1,25 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const upgrade: Command = {
+const upgradeOptionDefinitions = {
+    check: {
+        defaultValue: false,
+        description: "Check for updates without installing",
+        type: Boolean,
+    },
+    force: {
+        defaultValue: false,
+        description: "Reinstall even if already current",
+        type: Boolean,
+    },
+    silent: {
+        defaultValue: false,
+        description: "Suppress output (CI mode)",
+        type: Boolean,
+    },
+} as const;
+
+const upgrade = defineCommand({
     argument: {
         description: "Target version (defaults to latest)",
         name: "version",
@@ -15,17 +34,9 @@ const upgrade: Command = {
     group: "System",
     loader: () => import("./handler"),
     name: "self-update",
-    options: [
-        { defaultValue: false, description: "Check for updates without installing", name: "check", type: Boolean },
-        { defaultValue: false, description: "Reinstall even if already current", name: "force", type: Boolean },
-        { defaultValue: false, description: "Suppress output (CI mode)", name: "silent", type: Boolean },
-    ],
-};
+    options: upgradeOptionDefinitions,
+});
 
 export default upgrade;
 
-export type UpgradeOptions = CreateOptions<{
-    check: boolean | undefined;
-    force: boolean | undefined;
-    silent: boolean | undefined;
-}>;
+export type UpgradeOptions = InferOptions<typeof upgradeOptionDefinitions>;

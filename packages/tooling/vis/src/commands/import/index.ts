@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis import` — pull an external repo into the monorepo under a target
@@ -6,7 +7,40 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * add`). Auto-registers the package into the workspace config unless
  * `--no-register` is passed.
  */
-const importCommand: Command = {
+const importCommandOptionDefinitions = {
+    "dry-run": {
+        defaultValue: false,
+        description: "Print the git plan instead of executing it",
+        type: Boolean,
+    },
+    message: {
+        alias: "m",
+        description: "Commit message for the subtree merge",
+        type: String,
+    },
+    "no-register": {
+        defaultValue: false,
+        description: "Do not register the package into the workspace config",
+        type: Boolean,
+    },
+    prefix: {
+        alias: "p",
+        description: "Target directory in the monorepo (e.g. packages/tooling/foo)",
+        type: String,
+    },
+    ref: {
+        alias: "r",
+        description: "Branch, tag, or commit to import (default: HEAD)",
+        type: String,
+    },
+    squash: {
+        defaultValue: false,
+        description: "Collapse the incoming history into a single merge commit",
+        type: Boolean,
+    },
+} as const;
+
+const importCommand = defineCommand({
     argument: { description: "Source git repository URL or local path to import", name: "source", type: String },
     description: "Import an external repo into the monorepo under a prefix, preserving history",
     examples: [
@@ -18,23 +52,9 @@ const importCommand: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "import",
-    options: [
-        { alias: "p", description: "Target directory in the monorepo (e.g. packages/tooling/foo)", name: "prefix", type: String },
-        { alias: "r", description: "Branch, tag, or commit to import (default: HEAD)", name: "ref", type: String },
-        { defaultValue: false, description: "Collapse the incoming history into a single merge commit", name: "squash", type: Boolean },
-        { alias: "m", description: "Commit message for the subtree merge", name: "message", type: String },
-        { defaultValue: false, description: "Do not register the package into the workspace config", name: "no-register", type: Boolean },
-        { defaultValue: false, description: "Print the git plan instead of executing it", name: "dry-run", type: Boolean },
-    ],
-};
+    options: importCommandOptionDefinitions,
+});
 
 export default importCommand;
 
-export type ImportOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    message: string | undefined;
-    "no-register": boolean | undefined;
-    prefix: string | undefined;
-    ref: string | undefined;
-    squash: boolean | undefined;
-}>;
+export type ImportOptions = InferOptions<typeof importCommandOptionDefinitions>;

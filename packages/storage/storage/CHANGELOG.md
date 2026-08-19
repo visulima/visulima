@@ -1,3 +1,31 @@
+## @visulima/storage [2.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%402.0.3...%40visulima%2Fstorage%402.0.4) (2026-08-19)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.3
+
+## @visulima/storage [2.0.3](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%402.0.2...%40visulima%2Fstorage%402.0.3) (2026-08-18)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.2
+
+## @visulima/storage [2.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%402.0.1...%40visulima%2Fstorage%402.0.2) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.1
+
+## @visulima/storage [2.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%402.0.0...%40visulima%2Fstorage%402.0.1) (2026-08-17)
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 7.0.1
+
 ## @visulima/storage [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage%401.0.11...%40visulima%2Fstorage%402.0.0) (2026-08-08)
 
 

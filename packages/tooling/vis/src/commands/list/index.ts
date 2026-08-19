@@ -1,6 +1,68 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const list: Command = {
+const listOptionDefinitions = {
+    "dep-type": {
+        description: "Restrict --deps to specific dep blocks (repeatable)",
+        multiple: true,
+        type: String,
+    },
+    deps: {
+        defaultValue: false,
+        description: "Render a dep-instance view (table by default; use --format=ndjson|json for jq-friendly streams)",
+        type: Boolean,
+    },
+    exclude: {
+        description: "With --deps: glob of declaring package names to drop (repeatable)",
+        multiple: true,
+        type: String,
+    },
+    "external-only": {
+        defaultValue: false,
+        description: "With --deps: only show external/registry deps",
+        type: Boolean,
+    },
+    format: {
+        description: "Output format: table (default), json (single document), or ndjson (one record per line; --deps only)",
+        type: String,
+    },
+    include: {
+        description: "With --deps: glob of declaring package names to keep (repeatable)",
+        multiple: true,
+        type: String,
+    },
+    inferred: {
+        defaultValue: false,
+        description: "Filter target rows to only inferred targets (implies --targets)",
+        type: Boolean,
+    },
+    "internal-only": {
+        defaultValue: false,
+        description: "With --deps: only show internal/workspace deps",
+        type: Boolean,
+    },
+    pretty: {
+        defaultValue: false,
+        description: "Pretty-print with 2-space indent (only meaningful with --format=json)",
+        type: Boolean,
+    },
+    query: {
+        description: "Filter projects by query",
+        type: String,
+    },
+    tag: {
+        description: "Only list projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
+        multiple: true,
+        type: String,
+    },
+    targets: {
+        defaultValue: false,
+        description: "Show per-target rows (type, cache, description)",
+        type: Boolean,
+    },
+} as const;
+
+const list = defineCommand({
     description: "List all workspace projects with metadata",
     examples: [
         ["vis list", "Show all projects"],
@@ -17,93 +79,9 @@ const list: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "list",
-    options: [
-        {
-            defaultValue: false,
-            description: "Filter target rows to only inferred targets (implies --targets)",
-            name: "inferred",
-            type: Boolean,
-        },
-        {
-            description: "Output format: table (default), json (single document), or ndjson (one record per line; --deps only)",
-            name: "format",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Pretty-print with 2-space indent (only meaningful with --format=json)",
-            name: "pretty",
-            type: Boolean,
-        },
-        {
-            description: "Filter projects by query",
-            name: "query",
-            type: String,
-        },
-        {
-            description: "Only list projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
-            multiple: true,
-            name: "tag",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Show per-target rows (type, cache, description)",
-            name: "targets",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Render a dep-instance view (table by default; use --format=ndjson|json for jq-friendly streams)",
-            name: "deps",
-            type: Boolean,
-        },
-        {
-            description: "Restrict --deps to specific dep blocks (repeatable)",
-            multiple: true,
-            name: "dep-type",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "With --deps: only show internal/workspace deps",
-            name: "internal-only",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "With --deps: only show external/registry deps",
-            name: "external-only",
-            type: Boolean,
-        },
-        {
-            description: "With --deps: glob of declaring package names to keep (repeatable)",
-            multiple: true,
-            name: "include",
-            type: String,
-        },
-        {
-            description: "With --deps: glob of declaring package names to drop (repeatable)",
-            multiple: true,
-            name: "exclude",
-            type: String,
-        },
-    ],
-};
+    options: listOptionDefinitions,
+});
 
 export default list;
 
-export type ListOptions = CreateOptions<{
-    "dep-type": string[] | undefined;
-    deps: boolean | undefined;
-    exclude: string[] | undefined;
-    "external-only": boolean | undefined;
-    format: string | undefined;
-    include: string[] | undefined;
-    inferred: boolean | undefined;
-    "internal-only": boolean | undefined;
-    pretty: boolean | undefined;
-    query: string | undefined;
-    tag: string[] | undefined;
-    targets: boolean | undefined;
-}>;
+export type ListOptions = InferOptions<typeof listOptionDefinitions>;
