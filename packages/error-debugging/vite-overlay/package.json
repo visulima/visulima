@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vite-overlay",
-    "version": "2.0.17",
+    "version": "2.0.18",
     "description": "Improved vite overlay",
     "keywords": [
         "error-handling",
