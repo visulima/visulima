@@ -71,6 +71,16 @@ describe("record-shaped option definitions", () => {
         expect(options).toMatchObject({ clean: false });
     });
 
+    it("gives a negated-only option its generated default when the flag is absent", async () => {
+        expect.assertions(2);
+
+        // `addNegatableOptions` generates the positive half with a
+        // `defaultValue`, so a handler reading `options.fail` never sees
+        // `undefined` — which is what lets `!options.fail` mean "--no-fail".
+        expect(await runBuild(["build"], { "no-fail": { description: "Do not fail", type: Boolean } })).toMatchObject({ fail: true });
+        expect(await runBuild(["build", "--no-fail"], { "no-fail": { description: "Do not fail", type: Boolean } })).toMatchObject({ fail: false });
+    });
+
     it("reads environment variables declared as a record", async () => {
         expect.assertions(1);
 
