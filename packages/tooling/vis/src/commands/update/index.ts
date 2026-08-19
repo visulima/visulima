@@ -1,6 +1,8 @@
 import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 const updateOptionDefinitions = {
     "actions-token": {
         description: "GitHub token for actions resolution (overrides GITHUB_TOKEN / GH_TOKEN env)",
@@ -82,10 +84,13 @@ const updateOptionDefinitions = {
         description: "Include packages with pinned/exact versions (no ^ or ~ prefix; catalog mode)",
         type: Boolean,
     },
-    install: {
+    ...negatable({
+        // No `defaultValue`: the handler falls back to config when neither
+        // flag is passed, so collapsing it to a boolean here would erase that.
         description: "Run install after catalog update, --no-install to skip (default: true)",
+        name: "install",
         type: Boolean,
-    },
+    }),
     interactive: {
         alias: "i",
         defaultValue: false,
@@ -174,10 +179,13 @@ const updateOptionDefinitions = {
         description: "Restore catalog file from the last backup",
         type: Boolean,
     },
-    security: {
+    ...negatable({
+        // No `defaultValue`: the handler falls back to config when neither
+        // flag is passed, so collapsing it to a boolean here would erase that.
         description: "Check for known security vulnerabilities via OSV.dev (default: true; --no-security to skip)",
+        name: "security",
         type: Boolean,
-    },
+    }),
     style: {
         description: "Reference style for GitHub Actions updates: sha (default, pin to commit SHA + version comment) or preserve",
         type: String,

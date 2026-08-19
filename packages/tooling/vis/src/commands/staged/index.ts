@@ -1,6 +1,8 @@
 import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 const stagedOptionDefinitions = {
     "allow-empty": {
         defaultValue: false,
@@ -73,11 +75,12 @@ const stagedOptionDefinitions = {
         description: "Revert to original state in case of errors",
         type: Boolean,
     },
-    stash: {
+    ...negatable({
         defaultValue: true,
         description: "Enable backup stash",
+        name: "stash",
         type: Boolean,
-    },
+    }),
     verbose: {
         defaultValue: false,
         description: "Show task output even when tasks succeed",

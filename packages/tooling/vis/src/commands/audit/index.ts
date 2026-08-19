@@ -1,6 +1,8 @@
 import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 /**
  * `vis audit` — vulnerability and supply-chain scan over installed packages.
  *
@@ -57,11 +59,6 @@ const auditOptionDefinitions = {
         description: "Output format: table, json, sarif, csaf, cyclonedx-vex, gitlab, or junit (default: table)",
         type: String,
     },
-    "no-usage": {
-        defaultValue: false,
-        description: "Disable the reachability filter even if enabled in config.",
-        type: Boolean,
-    },
     offline: {
         defaultValue: false,
         description: "Query the local OSV advisory cache only — no network calls. Errors if the cache is missing.",
@@ -100,11 +97,13 @@ const auditOptionDefinitions = {
         description: "Sync vis accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)",
         type: Boolean,
     },
-    usage: {
-        defaultValue: false,
+    ...negatable({
+        // No `defaultValue` on either half: `undefined` has to survive so
+        // `policies.vulnerability.usage.enabled` can decide.
         description: "Only report vulnerabilities in statically-imported packages (reachability filter).",
+        name: "usage",
         type: Boolean,
-    },
+    }),
     yes: {
         defaultValue: false,
         description: "Skip confirmation prompt for --fix / --fix-transitive (required in CI)",

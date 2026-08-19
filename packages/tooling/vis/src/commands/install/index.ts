@@ -32,7 +32,9 @@ const installOptionDefinitions = {
         type: Boolean,
     },
     "frozen-lockfile": {
-        defaultValue: false,
+        // No `defaultValue`: `no-frozen-lockfile` is declared too, and the
+        // negation mapping overwrites this half, so a default here is dead
+        // weight that reads as if the option started out false.
         description: "Use frozen lockfile (CI mode, maps to npm ci)",
         type: Boolean,
     },
