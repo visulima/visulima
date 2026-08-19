@@ -6,6 +6,23 @@ import { dirname, join } from "@visulima/path";
 import { findLockFile, findLockFileSync } from "./package-manager";
 import type { PackageJson } from "./types";
 
+/**
+ * Matches a directory that holds a `.git` entry of either kind.
+ *
+ * A linked worktree (`git worktree add`) has `.git` as a *file* containing a
+ * `gitdir:` pointer, with no `.git/config` beside it — so looking for the
+ * config file walks straight past the worktree root and can land on an
+ * unrelated repository further up. The same is true inside a submodule.
+ * Returning the directory itself keeps the match anchored on the checkout root.
+ */
+const gitRootMatcher = (directory: string): string | undefined => {
+    if (existsSync(join(directory, ".git"))) {
+        return directory;
+    }
+
+    return undefined;
+};
+
 const packageJsonMatcher = (directory: string): string | undefined => {
     if (existsSync(join(directory, "package.json"))) {
         const packageJson = readJsonSync(join(directory, "package.json")) as PackageJson;
@@ -36,13 +53,13 @@ export const findPackageRoot = async (cwd?: URL | string): Promise<string> => {
         /* empty */
     }
 
-    const gitConfig: string | undefined = await findUp(".git/config", {
+    const gitRoot: string | undefined = await findUp(gitRootMatcher, {
         ...cwd && { cwd },
-        type: "file",
+        type: "directory",
     });
 
-    if (gitConfig) {
-        return dirname(dirname(gitConfig));
+    if (gitRoot) {
+        return gitRoot;
     }
 
     const filePath: string | undefined = await findUp(packageJsonMatcher, {
@@ -66,13 +83,13 @@ export const findPackageRootSync = (cwd?: URL | string): string => {
         /* empty */
     }
 
-    const gitConfig: string | undefined = findUpSync(".git/config", {
+    const gitRoot: string | undefined = findUpSync(gitRootMatcher, {
         ...cwd && { cwd },
-        type: "file",
+        type: "directory",
     });
 
-    if (gitConfig) {
-        return dirname(dirname(gitConfig));
+    if (gitRoot) {
+        return gitRoot;
     }
 
     const filePath: string | undefined = findUpSync(packageJsonMatcher, {
