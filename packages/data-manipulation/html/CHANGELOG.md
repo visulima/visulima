@@ -1,3 +1,5 @@
+## @visulima/html [1.0.6](https://github.com/visulima/visulima/compare/%40visulima%2Fhtml%401.0.5...%40visulima%2Fhtml%401.0.6) (2026-08-19)
+
 ## @visulima/html [1.0.5](https://github.com/visulima/visulima/compare/%40visulima%2Fhtml%401.0.4...%40visulima%2Fhtml%401.0.5) (2026-08-18)
 
 ## @visulima/html [1.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Fhtml%401.0.3...%40visulima%2Fhtml%401.0.4) (2026-08-17)
