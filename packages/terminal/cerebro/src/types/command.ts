@@ -73,7 +73,72 @@ export type PossibleOptionDefinition<OD>
         | OptionDefinition<string[]>
         | OptionDefinition<string>;
 
-export type ArgumentDefinition<T = unknown> = Omit<OptionDefinition<T>, "multiple|lazyMultiple|defaultOption|alias|group|defaultValue">;
+/**
+ * A positional argument definition.
+ *
+ * Spelled out rather than derived from {@link OptionDefinition} via `Omit`: the
+ * fields a positional actually uses (`multiple`, `defaultValue`) are the ones a
+ * subtractive definition would be most tempted to remove, and the fields it has
+ * no meaning for (`alias`, `group`, `defaultOption`, `conflicts`, `implies`) are
+ * exactly what an inherited shape would drag in — they would then be handed
+ * straight to the help renderer's `optionList`.
+ */
+export interface ArgumentDefinition<T = unknown> {
+    /** Restricts the accepted values to a fixed set, validated at parse time. */
+    choices?: ReadonlyArray<string>;
+
+    /** Value used when the slot is not supplied. */
+    defaultValue?: T;
+
+    /** A string describing the argument. */
+    description?: string;
+
+    /** Argument is hidden from help. */
+    hidden?: boolean;
+
+    /**
+     * Collects every remaining positional into an array. Only valid on the last
+     * argument of a command.
+     */
+    multiple?: boolean;
+
+    /** The name of the argument; camelCased for `toolbox.args`. */
+    name: string;
+
+    /** Fails the command before `execute` runs when the slot is not supplied. */
+    required?: boolean;
+
+    /**
+     * A setter function enabling you to be specific about the type and value
+     * received. Typical values are `String`, `Number` and `Boolean`, but you can
+     * use a custom function.
+     */
+    type?: TypeConstructor<T>;
+
+    /** A string to replace the default type string (e.g. &lt;string>). */
+    typeLabel?: string;
+}
+
+/**
+ * Record form of `options`, keyed by option name.
+ *
+ * The key *is* the option name, so `name` is neither needed nor accepted — which
+ * also makes duplicate names impossible to express. `addCommand` normalizes this
+ * shape into the array form that the parser, help, readme and completion
+ * consumers read, so both forms behave identically at runtime.
+ * @example
+ * ```typescript
+ * cli.addCommand({
+ *   name: "build",
+ *   options: {
+ *     "output-dir": { type: String, required: true },
+ *     verbose: { alias: "v", type: Boolean },
+ *   },
+ *   execute: ({ options }) => console.log(options.outputDir),
+ * });
+ * ```
+ */
+export type OptionDefinitionRecord = Record<string, Omit<OptionDefinition<unknown>, "name">>;
 
 /**
  * Environment variable definition for commands.
@@ -103,6 +168,23 @@ export interface EnvDefinition<T = string> {
     /** A string to replace the default type string (e.g. &lt;string>). Useful for more descriptive type labels. */
     typeLabel?: string;
 }
+
+/**
+ * Record form of `env`, keyed by environment variable name.
+ *
+ * The key *is* the variable name, so `name` is neither needed nor accepted.
+ * `addCommand` normalizes this shape into the array form `processEnvVariables`
+ * reads, so both forms behave identically at runtime.
+ * @example
+ * ```typescript
+ * cli.addCommand({
+ *   name: "build",
+ *   env: { API_KEY: { type: String }, DEBUG: { type: Boolean } },
+ *   execute: ({ env }) => console.log(env.apiKey, env.debug),
+ * });
+ * ```
+ */
+export type EnvDefinitionRecord = Record<string, Omit<EnvDefinition<unknown>, "name">>;
 
 /**
  * Command interface with type-safe options and environment variables.
@@ -180,6 +262,27 @@ export interface Command<
     /** Positional argument */
     argument?: ArgumentDefinition;
 
+    /**
+     * Named positional arguments in slot order, surfaced on `toolbox.args`.
+     *
+     * An array rather than a record, because slot order is load-bearing: an
+     * alphabetical object-key sorter would silently renumber the positionals.
+     * Only the last entry may set `multiple: true`. Mutually exclusive with
+     * `argument`.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "copy",
+     *   arguments: [
+     *     { name: "source", required: true, type: String },
+     *     { name: "targets", multiple: true, required: true, type: String },
+     *   ],
+     *   execute: ({ args }) => console.log(args.source, args.targets),
+     * });
+     * ```
+     */
+    arguments?: ReadonlyArray<ArgumentDefinition>;
+
     /** The command path, an array that describes how to get to this command */
     commandPath?: string[];
 
@@ -239,3 +342,41 @@ export interface Command<
 
     usage?: Content[];
 }
+
+/**
+ * The shape `Cli.addCommand` accepts.
+ *
+ * Identical to {@link Command} except that `options` and `env` may additionally be
+ * given as records keyed by name. `addCommand` normalizes those into the array
+ * form before any other code sees the command, so everything downstream — and
+ * `toolbox.command` — keeps working with {@link Command}.
+ */
+export type CommandInput<
+    O extends OptionDefinition<unknown> = OptionDefinition<unknown>,
+    TLogger extends Console = Console,
+    TContext extends IToolbox<TLogger> = IToolbox<TLogger>,
+> = Omit<Command<O, TLogger, TContext>, "env" | "options"> & {
+    /** Environment variables supported by this command, as an array or keyed by name. */
+    env?: Command<O, TLogger, TContext>["env"] | EnvDefinitionRecord;
+
+    /** Options supported by this command, as an array or keyed by option name. */
+    options?: Command<O, TLogger, TContext>["options"] | OptionDefinitionRecord;
+};
+
+/**
+ * A command of any shape, for collections.
+ *
+ * Handlers are contravariant in their toolbox, so a `CommandInput[]` annotated
+ * with the default toolbox rejects every command whose handler was typed against
+ * the narrower toolbox `defineCommand` infers — which is all of them. Pinning
+ * `TContext` to `never` accepts any handler, because `never` is assignable to
+ * whatever toolbox that handler asked for.
+ *
+ * Use it for arrays and registries that carry commands from different sources.
+ * It says nothing about the toolbox, so it is not useful for declaring one.
+ * @example
+ * ```typescript
+ * const releaseCommands: AnyCommandInput[] = [addCommand, generateCommand, doctorCommand];
+ * ```
+ */
+export type AnyCommandInput<TLogger extends Console = Console> = CommandInput<OptionDefinition<unknown>, TLogger, never>;

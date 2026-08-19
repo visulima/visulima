@@ -87,7 +87,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
 
     const format = resolveFormat(options.format);
 
-    if (options.deps === true) {
+    if (options.deps) {
         if (options.internalOnly && options.externalOnly) {
             throw new Error("--internal-only and --external-only are mutually exclusive");
         }
@@ -131,7 +131,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         if (format === "json") {
             const records = sorted.map((instance) => toDepRecord(instance, wsRoot));
 
-            logger.info(JSON.stringify(records, null, options.pretty === true ? 2 : undefined));
+            logger.info(JSON.stringify(records, null, options.pretty ? 2 : undefined));
 
             return;
         }
@@ -187,8 +187,8 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         return;
     }
 
-    const inferredOnly = options.inferred === true;
-    const showTargets = options.targets === true || inferredOnly;
+    const inferredOnly = options.inferred;
+    const showTargets = options.targets || inferredOnly;
 
     if (format === "json") {
         const data = projectNames.map((name) => {

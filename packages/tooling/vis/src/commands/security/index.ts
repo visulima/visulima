@@ -1,6 +1,15 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const securityList: Command = {
+const securityListOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit the report as JSON instead of human-readable text",
+        type: Boolean,
+    },
+} as const;
+
+const securityList = defineCommand({
     commandPath: ["security"],
     description: "List build-script status — allowed, unapproved, and stale allowlist entries",
     examples: [
@@ -10,10 +19,23 @@ const securityList: Command = {
     group: "Security & Health",
     loader: () => import("./list"),
     name: "list",
-    options: [{ defaultValue: false, description: "Emit the report as JSON instead of human-readable text", name: "json", type: Boolean }],
-};
+    options: securityListOptionDefinitions,
+});
 
-const securitySync: Command = {
+const securitySyncOptionDefinitions = {
+    "skip-allow-builds": {
+        defaultValue: false,
+        description: "Skip syncing allowBuilds (trustedDependencies, onlyBuiltDependencies)",
+        type: Boolean,
+    },
+    "skip-min-release-age": {
+        defaultValue: false,
+        description: "Skip syncing minimumReleaseAge and its excludes",
+        type: Boolean,
+    },
+} as const;
+
+const securitySync = defineCommand({
     commandPath: ["security"],
     description: "Push vis.config security settings to the package manager's native config",
     examples: [
@@ -24,23 +46,23 @@ const securitySync: Command = {
     group: "Security & Health",
     loader: () => import("./sync"),
     name: "sync",
-    options: [
-        {
-            defaultValue: false,
-            description: "Skip syncing allowBuilds (trustedDependencies, onlyBuiltDependencies)",
-            name: "skip-allow-builds",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Skip syncing minimumReleaseAge and its excludes",
-            name: "skip-min-release-age",
-            type: Boolean,
-        },
-    ],
-};
+    options: securitySyncOptionDefinitions,
+});
 
-const securityRun: Command = {
+const securityRunOptionDefinitions = {
+    "root-only": {
+        defaultValue: false,
+        description: "Skip dependency scripts and only run the workspace root's prepublish + prepare hooks",
+        type: Boolean,
+    },
+    "with-root": {
+        defaultValue: false,
+        description: "Also run the workspace root's prepublish + prepare hooks after dependencies",
+        type: Boolean,
+    },
+} as const;
+
+const securityRun = defineCommand({
     commandPath: ["security"],
     description: "Run lifecycle scripts for packages in security.policies.installScripts.allow (LavaMoat 'run' parity)",
     examples: [
@@ -51,18 +73,23 @@ const securityRun: Command = {
     group: "Security & Health",
     loader: () => import("./run"),
     name: "run",
-    options: [
-        { defaultValue: false, description: "Also run the workspace root's prepublish + prepare hooks after dependencies", name: "with-root", type: Boolean },
-        {
-            defaultValue: false,
-            description: "Skip dependency scripts and only run the workspace root's prepublish + prepare hooks",
-            name: "root-only",
-            type: Boolean,
-        },
-    ],
-};
+    options: securityRunOptionDefinitions,
+});
 
-const securityTripwire: Command = {
+const securityTripwireOptionDefinitions = {
+    remove: {
+        defaultValue: false,
+        description: "Remove @lavamoat/preinstall-always-fail from package.json",
+        type: Boolean,
+    },
+    status: {
+        defaultValue: false,
+        description: "Report whether @lavamoat/preinstall-always-fail is installed",
+        type: Boolean,
+    },
+} as const;
+
+const securityTripwire = defineCommand({
     commandPath: ["security"],
     description: "Install @lavamoat/preinstall-always-fail as a devDep so a missing ignore-scripts setting fails loudly",
     examples: [
@@ -73,13 +100,23 @@ const securityTripwire: Command = {
     group: "Security & Health",
     loader: () => import("./tripwire"),
     name: "tripwire",
-    options: [
-        { defaultValue: false, description: "Report whether @lavamoat/preinstall-always-fail is installed", name: "status", type: Boolean },
-        { defaultValue: false, description: "Remove @lavamoat/preinstall-always-fail from package.json", name: "remove", type: Boolean },
-    ],
-};
+    options: securityTripwireOptionDefinitions,
+});
 
-const securityKeysRefresh: Command = {
+const securityKeysRefreshOptionDefinitions = {
+    clear: {
+        defaultValue: false,
+        description: "Only clear the cache, do not refetch",
+        type: Boolean,
+    },
+    json: {
+        defaultValue: false,
+        description: "Emit the result as JSON instead of human-readable text",
+        type: Boolean,
+    },
+} as const;
+
+const securityKeysRefresh = defineCommand({
     commandPath: ["security"],
     description: "Force-refresh the cached npm signing keys used by the signatures marshall",
     examples: [
@@ -90,13 +127,23 @@ const securityKeysRefresh: Command = {
     group: "Security & Health",
     loader: () => import("./keys-refresh"),
     name: "keys-refresh",
-    options: [
-        { defaultValue: false, description: "Only clear the cache, do not refetch", name: "clear", type: Boolean },
-        { defaultValue: false, description: "Emit the result as JSON instead of human-readable text", name: "json", type: Boolean },
-    ],
-};
+    options: securityKeysRefreshOptionDefinitions,
+});
 
-const securityVerifyLockfile: Command = {
+const securityVerifyLockfileOptionDefinitions = {
+    json: {
+        defaultValue: false,
+        description: "Emit the result as JSON instead of human-readable text",
+        type: Boolean,
+    },
+    offline: {
+        defaultValue: false,
+        description: "Skip network-bound policies (firstSeen, publisherChange)",
+        type: Boolean,
+    },
+} as const;
+
+const securityVerifyLockfile = defineCommand({
     commandPath: ["security"],
     description: "Verify the entire lockfile closure against supply-chain policies (firstSeen, publisherChange, blockExoticSubdeps)",
     examples: [
@@ -107,41 +154,21 @@ const securityVerifyLockfile: Command = {
     group: "Security & Health",
     loader: () => import("./verify-lockfile"),
     name: "verify-lockfile",
-    options: [
-        { defaultValue: false, description: "Emit the result as JSON instead of human-readable text", name: "json", type: Boolean },
-        { defaultValue: false, description: "Skip network-bound policies (firstSeen, publisherChange)", name: "offline", type: Boolean },
-    ],
-};
+    options: securityVerifyLockfileOptionDefinitions,
+});
 
-const securityCommands: Command[] = [securityList, securitySync, securityRun, securityTripwire, securityKeysRefresh, securityVerifyLockfile];
+const securityCommands: AnyCommandInput[] = [securityList, securitySync, securityRun, securityTripwire, securityKeysRefresh, securityVerifyLockfile];
 
 export default securityCommands;
 
-export type SecurityListOptions = CreateOptions<{
-    json: boolean | undefined;
-}>;
+export type SecurityListOptions = InferOptions<typeof securityListOptionDefinitions>;
 
-export type SecuritySyncOptions = CreateOptions<{
-    "skip-allow-builds": boolean | undefined;
-    "skip-min-release-age": boolean | undefined;
-}>;
+export type SecuritySyncOptions = InferOptions<typeof securitySyncOptionDefinitions>;
 
-export type SecurityRunOptions = CreateOptions<{
-    "root-only": boolean | undefined;
-    "with-root": boolean | undefined;
-}>;
+export type SecurityRunOptions = InferOptions<typeof securityRunOptionDefinitions>;
 
-export type SecurityTripwireOptions = CreateOptions<{
-    remove: boolean | undefined;
-    status: boolean | undefined;
-}>;
+export type SecurityTripwireOptions = InferOptions<typeof securityTripwireOptionDefinitions>;
 
-export type SecurityKeysRefreshOptions = CreateOptions<{
-    clear: boolean | undefined;
-    json: boolean | undefined;
-}>;
+export type SecurityKeysRefreshOptions = InferOptions<typeof securityKeysRefreshOptionDefinitions>;
 
-export type SecurityVerifyLockfileOptions = CreateOptions<{
-    json: boolean | undefined;
-    offline: boolean | undefined;
-}>;
+export type SecurityVerifyLockfileOptions = InferOptions<typeof securityVerifyLockfileOptionDefinitions>;

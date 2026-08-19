@@ -231,7 +231,7 @@ export const serviceStopExecute = async ({ argument, options, visConfig, workspa
     const targetId = argument[0]?.trim();
     const hookSink = await loadServiceHooks(visConfig);
 
-    if (options.all === true) {
+    if (options.all) {
         if (targetId) {
             // Reject the ambiguity rather than silently picking one. A
             // user typing `vis service stop foo --all` clearly meant
@@ -631,7 +631,7 @@ export const serviceLogsExecute = async ({ argument, options, workspaceRoot: wsR
         return;
     }
 
-    if (options.follow === true) {
+    if (options.follow) {
         await tailLog(entry.logFile);
 
         return;

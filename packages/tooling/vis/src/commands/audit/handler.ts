@@ -308,9 +308,10 @@ const executeAudit = async (
     const showFixes = Boolean(options.showFixes);
     const showAccepted = Boolean(options.showAccepted);
     const acceptedRisks = visConfig?.security?.acceptedRisks;
-    // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
+    // `--no-usage` is folded onto `usage` before the toolbox is built, so
+    // `usage === false` is the opt-out and `undefined` means "ask the config".
     const usageConfig = policies?.vulnerability?.usage;
-    const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
+    const usageEnabled = options.usage === undefined ? Boolean(usageConfig?.enabled) : options.usage;
     const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex || isGitlab || isJunit;
 
     // `--explain` opts in. command-line-args yields `null` for a bare flag

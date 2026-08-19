@@ -1,6 +1,67 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const sortPackageJson: Command = {
+const sortPackageJsonOptionDefinitions = {
+    check: {
+        alias: "c",
+        defaultValue: false,
+        description: "Check if package.json files are sorted without writing (exits 1 if unsorted)",
+        type: Boolean,
+    },
+    ignore: {
+        description: "Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.",
+        multiple: true,
+        type: String,
+    },
+    indent: {
+        description:
+                "Indent override: a number of spaces, the literal `tab`, or a literal whitespace string. When unset, the original file's indent is preserved.",
+        type: String,
+    },
+    "line-ending": {
+        defaultValue: "auto",
+        description: "Line ending to write: auto (per-file detection, default), lf, or crlf.",
+        type: String,
+    },
+    "no-editorconfig": {
+        description: "Disable .editorconfig discovery for indent / line-ending defaults (default: enabled).",
+        type: Boolean,
+    },
+    "no-final-newline": {
+        defaultValue: false,
+        description: "Do not append a trailing newline to the output (default: append one).",
+        type: Boolean,
+    },
+    "no-format-bugs": {
+        description: "Disable collapsing `bugs: { url }` to the bare string form (default: enabled).",
+        type: Boolean,
+    },
+    "no-format-repository": {
+        description: "Disable collapsing `repository: { type, url }` to the GitHub `owner/repo` shorthand (default: enabled).",
+        type: Boolean,
+    },
+    "no-sort-exports": {
+        description: "Disable canonical sorting of `exports` condition keys (default: enabled).",
+        type: Boolean,
+    },
+    "sort-order": {
+        description: "Comma-separated list of top-level keys to place first, before the default field order. Repeatable.",
+        multiple: true,
+        type: String,
+    },
+    "sort-scripts": {
+        defaultValue: false,
+        description: "Also sort the scripts field alphabetically",
+        type: Boolean,
+    },
+    unsorted: {
+        description: "Comma-separated list of top-level sections whose key order should be preserved (e.g. dependencies,devDependencies). Repeatable.",
+        multiple: true,
+        type: String,
+    },
+} as const;
+
+const sortPackageJson = defineCommand({
     description: "Sort package.json files across the workspace using the sort-package-json Rust crate",
     examples: [
         ["vis sort-package-json", "Sort all package.json files in the workspace"],
@@ -17,92 +78,9 @@ const sortPackageJson: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "sort-package-json",
-    options: [
-        {
-            alias: "c",
-            defaultValue: false,
-            description: "Check if package.json files are sorted without writing (exits 1 if unsorted)",
-            name: "check",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Also sort the scripts field alphabetically",
-            name: "sort-scripts",
-            type: Boolean,
-        },
-        {
-            description:
-                "Indent override: a number of spaces, the literal `tab`, or a literal whitespace string. When unset, the original file's indent is preserved.",
-            name: "indent",
-            type: String,
-        },
-        {
-            description: "Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.",
-            multiple: true,
-            name: "ignore",
-            type: String,
-        },
-        {
-            description: "Comma-separated list of top-level keys to place first, before the default field order. Repeatable.",
-            multiple: true,
-            name: "sort-order",
-            type: String,
-        },
-        {
-            description: "Comma-separated list of top-level sections whose key order should be preserved (e.g. dependencies,devDependencies). Repeatable.",
-            multiple: true,
-            name: "unsorted",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Do not append a trailing newline to the output (default: append one).",
-            name: "no-final-newline",
-            type: Boolean,
-        },
-        {
-            defaultValue: "auto",
-            description: "Line ending to write: auto (per-file detection, default), lf, or crlf.",
-            name: "line-ending",
-            type: String,
-        },
-        {
-            description: "Disable collapsing `bugs: { url }` to the bare string form (default: enabled).",
-            name: "no-format-bugs",
-            type: Boolean,
-        },
-        {
-            description: "Disable collapsing `repository: { type, url }` to the GitHub `owner/repo` shorthand (default: enabled).",
-            name: "no-format-repository",
-            type: Boolean,
-        },
-        {
-            description: "Disable canonical sorting of `exports` condition keys (default: enabled).",
-            name: "no-sort-exports",
-            type: Boolean,
-        },
-        {
-            description: "Disable .editorconfig discovery for indent / line-ending defaults (default: enabled).",
-            name: "no-editorconfig",
-            type: Boolean,
-        },
-    ],
-};
+    options: sortPackageJsonOptionDefinitions,
+});
 
 export default sortPackageJson;
 
-export type SortPackageJsonOptions = CreateOptions<{
-    check: boolean | undefined;
-    editorconfig: boolean | undefined;
-    "final-newline": boolean | undefined;
-    "format-bugs": boolean | undefined;
-    "format-repository": boolean | undefined;
-    ignore: string[] | undefined;
-    indent: string | undefined;
-    "line-ending": string | undefined;
-    "sort-exports": boolean | undefined;
-    "sort-order": string[] | undefined;
-    "sort-scripts": boolean | undefined;
-    unsorted: string[] | undefined;
-}>;
+export type SortPackageJsonOptions = InferOptions<typeof sortPackageJsonOptionDefinitions>;

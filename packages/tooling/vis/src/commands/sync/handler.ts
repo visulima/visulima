@@ -161,13 +161,13 @@ const runCodeowners = async ({ fs, logger, options, visConfig, workspaceRoot: ws
     const { workspace } = discoverWorkspace(root, visConfig);
     const codeownersConfig = visConfig?.codeowners;
 
-    if (options.writeGuard === true) {
-        await handleWriteGuard(fs, logger, root, workspace, options.check === true);
+    if (options.writeGuard) {
+        await handleWriteGuard(fs, logger, root, workspace, options.check);
     }
 
     const sources = parseCsvOption<CodeownersSource>(options.from, codeownersConfig?.sources ?? ["project-json"], isCodeownersSource);
     const regenerationCommand = options.regenerationCommand ?? codeownersConfig?.regenerationCommand;
-    const preserveBlock = options.preserveBlock === true || codeownersConfig?.preserveBlock === true;
+    const preserveBlock = options.preserveBlock || codeownersConfig?.preserveBlock === true;
     const marker = codeownersConfig?.blockMarker ?? DEFAULT_BLOCK_MARKER;
     const nestedIncludes = options.nestedIncludes ?? codeownersConfig?.nestedIncludes;
     const outRelative = options.out ?? "CODEOWNERS";
@@ -248,9 +248,9 @@ const runPackageJsonFields = ({ logger, options, visConfig, workspaceRoot: wsRoo
 
     const fields = parseCsvOption(options.fields, DEFAULT_SYNCED_FIELDS);
     const ignoreGlobs = options.ignorePackageName ?? [];
-    const checkMode = options.check === true;
+    const checkMode = options.check;
     const format = (options.format ?? "human").toLowerCase();
-    const quiet = options.quiet === true;
+    const { quiet } = options;
 
     const packageDirs = collectWorkspaceDirectories(root).filter((dir) => dir !== ".");
     const writes: PackageWrite[] = [];

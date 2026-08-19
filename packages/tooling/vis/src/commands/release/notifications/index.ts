@@ -15,9 +15,31 @@
  *      succeeded.
  */
 
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const notifications: Command = {
+const notificationsOptionDefinitions = {
+    action: {
+        defaultOption: true,
+        defaultValue: "test",
+        description: "Subcommand: test",
+        type: String,
+    },
+    channel: {
+        description: "Restrict dispatch to a single channel kind (`slack`, `discord`, `webhook`) or an id'd channel (`slack:eng`)",
+        type: String,
+    },
+    "custom-context": {
+        description: "Path to a JSON file containing a NotificationContext to use instead of the synthetic default",
+        type: String,
+    },
+    json: {
+        description: "Emit machine-readable JSON instead of a per-channel report",
+        type: Boolean,
+    },
+} as const;
+
+const notifications = defineCommand({
     commandPath: ["release"],
     description: "Dry-run the configured notification channels (slack / discord / webhook / plugins) with a synthetic release",
     examples: [
@@ -30,37 +52,9 @@ const notifications: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "notifications",
-    options: [
-        {
-            defaultOption: true,
-            defaultValue: "test",
-            description: "Subcommand: test",
-            name: "action",
-            type: String,
-        },
-        {
-            description: "Restrict dispatch to a single channel kind (`slack`, `discord`, `webhook`) or an id'd channel (`slack:eng`)",
-            name: "channel",
-            type: String,
-        },
-        {
-            description: "Path to a JSON file containing a NotificationContext to use instead of the synthetic default",
-            name: "custom-context",
-            type: String,
-        },
-        {
-            description: "Emit machine-readable JSON instead of a per-channel report",
-            name: "json",
-            type: Boolean,
-        },
-    ],
-};
+    options: notificationsOptionDefinitions,
+});
 
 export default notifications;
 
-export type ReleaseNotificationsOptions = CreateOptions<{
-    action: string;
-    channel: string | undefined;
-    "custom-context": string | undefined;
-    json: boolean | undefined;
-}>;
+export type ReleaseNotificationsOptions = InferOptions<typeof notificationsOptionDefinitions>;

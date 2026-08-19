@@ -1,5 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
-import { lazyNamed } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions, InferOptions } from "@visulima/cerebro";
+import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
 const targetIdArgument = {
     description: "Target id, e.g. @my/api:db",
@@ -13,7 +13,19 @@ const formatOption = {
     type: String,
 } as const;
 
-const serviceStart: Command = {
+const serviceStartOptionDefinitions = {
+    "no-readiness": {
+        defaultValue: false,
+        description: "Skip the readiness probe",
+        type: Boolean,
+    },
+    timeout: {
+        description: "Readiness probe timeout in milliseconds",
+        type: Number,
+    },
+} as const;
+
+const serviceStart = defineCommand({
     argument: targetIdArgument,
     commandPath: ["service"],
     description: "Start a service target detached so it survives across `vis run` invocations",
@@ -25,22 +37,22 @@ const serviceStart: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "serviceStartExecute"),
     name: "start",
-    options: [
-        {
-            description: "Readiness probe timeout in milliseconds",
-            name: "timeout",
-            type: Number,
-        },
-        {
-            defaultValue: false,
-            description: "Skip the readiness probe",
-            name: "no-readiness",
-            type: Boolean,
-        },
-    ],
-};
+    options: serviceStartOptionDefinitions,
+});
 
-const serviceStop: Command = {
+const serviceStopOptionDefinitions = {
+    all: {
+        defaultValue: false,
+        description: "Stop every service registered for this workspace",
+        type: Boolean,
+    },
+    "grace-ms": {
+        description: "Override the SIGTERM→SIGKILL grace period in milliseconds",
+        type: Number,
+    },
+} as const;
+
+const serviceStop = defineCommand({
     argument: {
         description: "Target id to stop, or omit when using --all",
         name: "targetId",
@@ -56,20 +68,8 @@ const serviceStop: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "serviceStopExecute"),
     name: "stop",
-    options: [
-        {
-            defaultValue: false,
-            description: "Stop every service registered for this workspace",
-            name: "all",
-            type: Boolean,
-        },
-        {
-            description: "Override the SIGTERM→SIGKILL grace period in milliseconds",
-            name: "grace-ms",
-            type: Number,
-        },
-    ],
-};
+    options: serviceStopOptionDefinitions,
+});
 
 const serviceList: Command = {
     commandPath: ["service"],
@@ -84,7 +84,14 @@ const serviceList: Command = {
     options: [formatOption],
 };
 
-const serviceStatus: Command = {
+const serviceStatusOptionDefinitions = {
+    timeout: {
+        description: "Probe timeout in milliseconds",
+        type: Number,
+    },
+} as const;
+
+const serviceStatus = defineCommand({
     argument: targetIdArgument,
     commandPath: ["service"],
     description: "Re-run the readiness probe and report a service's health",
@@ -92,16 +99,26 @@ const serviceStatus: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "serviceStatusExecute"),
     name: "status",
-    options: [
-        {
-            description: "Probe timeout in milliseconds",
-            name: "timeout",
-            type: Number,
-        },
-    ],
-};
+    options: serviceStatusOptionDefinitions,
+});
 
-const serviceRestart: Command = {
+const serviceRestartOptionDefinitions = {
+    "grace-ms": {
+        description: "Override the SIGTERM→SIGKILL grace period in milliseconds",
+        type: Number,
+    },
+    "no-readiness": {
+        defaultValue: false,
+        description: "Skip the readiness probe after restart",
+        type: Boolean,
+    },
+    timeout: {
+        description: "Readiness probe timeout in milliseconds",
+        type: Number,
+    },
+} as const;
+
+const serviceRestart = defineCommand({
     argument: targetIdArgument,
     commandPath: ["service"],
     description: "Stop and re-start a running service",
@@ -112,27 +129,19 @@ const serviceRestart: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "serviceRestartExecute"),
     name: "restart",
-    options: [
-        {
-            description: "Readiness probe timeout in milliseconds",
-            name: "timeout",
-            type: Number,
-        },
-        {
-            description: "Override the SIGTERM→SIGKILL grace period in milliseconds",
-            name: "grace-ms",
-            type: Number,
-        },
-        {
-            defaultValue: false,
-            description: "Skip the readiness probe after restart",
-            name: "no-readiness",
-            type: Boolean,
-        },
-    ],
-};
+    options: serviceRestartOptionDefinitions,
+});
 
-const serviceLogs: Command = {
+const serviceLogsOptionDefinitions = {
+    follow: {
+        alias: "f",
+        defaultValue: false,
+        description: "Follow the log file (like `tail -f`)",
+        type: Boolean,
+    },
+} as const;
+
+const serviceLogs = defineCommand({
     argument: targetIdArgument,
     commandPath: ["service"],
     description: "Print or tail a service's captured stdout/stderr",
@@ -143,45 +152,23 @@ const serviceLogs: Command = {
     group: "Workspace",
     loader: lazyNamed(() => import("./handler"), "serviceLogsExecute"),
     name: "logs",
-    options: [
-        {
-            alias: "f",
-            defaultValue: false,
-            description: "Follow the log file (like `tail -f`)",
-            name: "follow",
-            type: Boolean,
-        },
-    ],
-};
+    options: serviceLogsOptionDefinitions,
+});
 
-const serviceCommands: Command[] = [serviceStart, serviceStop, serviceList, serviceStatus, serviceRestart, serviceLogs];
+const serviceCommands: AnyCommandInput[] = [serviceStart, serviceStop, serviceList, serviceStatus, serviceRestart, serviceLogs];
 
 export default serviceCommands;
 
-export type ServiceStartOptions = CreateOptions<{
-    "no-readiness": boolean | undefined;
-    timeout: number | undefined;
-}>;
+export type ServiceStartOptions = InferOptions<typeof serviceStartOptionDefinitions>;
 
-export type ServiceStopOptions = CreateOptions<{
-    all: boolean | undefined;
-    "grace-ms": number | undefined;
-}>;
+export type ServiceStopOptions = InferOptions<typeof serviceStopOptionDefinitions>;
 
 export type ServiceListOptions = CreateOptions<{
     format: string | undefined;
 }>;
 
-export type ServiceStatusOptions = CreateOptions<{
-    timeout: number | undefined;
-}>;
+export type ServiceStatusOptions = InferOptions<typeof serviceStatusOptionDefinitions>;
 
-export type ServiceRestartOptions = CreateOptions<{
-    "grace-ms": number | undefined;
-    "no-readiness": boolean | undefined;
-    timeout: number | undefined;
-}>;
+export type ServiceRestartOptions = InferOptions<typeof serviceRestartOptionDefinitions>;
 
-export type ServiceLogsOptions = CreateOptions<{
-    follow: boolean | undefined;
-}>;
+export type ServiceLogsOptions = InferOptions<typeof serviceLogsOptionDefinitions>;

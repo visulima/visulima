@@ -1,4 +1,5 @@
 import type { CommandExecute, LazyCommandModule } from "../types/command";
+import type { Toolbox as IToolbox } from "../types/toolbox";
 
 /**
  * Builds a `loader` for commands whose handler lives as a named export in a
@@ -19,10 +20,15 @@ import type { CommandExecute, LazyCommandModule } from "../types/command";
  */
 // eslint-disable-next-line import/prefer-default-export -- re-exported by name from src/index.ts as public API
 export const lazyNamed
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- K constrains `key` to be a valid key of M, used by the caller
-    = <M extends Record<string, unknown>, K extends keyof M, TContext>(load: () => Promise<M>, key: K): () => Promise<LazyCommandModule<TContext>> =>
+    // No `TContext` parameter on purpose. It appeared only in the return type, so
+    // TypeScript resolved it from whatever context the loader was assigned into —
+    // and inside `defineCommand`, that context is `NoInfer`-wrapped and still has
+    // unresolved type parameters, which collapsed it to `never`. Pinning the wide
+    // toolbox instead is always assignable to a narrower one, because the handler
+    // parameter is contravariant.
+    = <M extends Record<string, unknown>>(load: () => Promise<M>, key: keyof M): () => Promise<LazyCommandModule<IToolbox>> =>
         async () => {
             const loaded = await load();
 
-            return { default: loaded[key] as CommandExecute<TContext> };
+            return { default: loaded[key] as CommandExecute<IToolbox> };
         };

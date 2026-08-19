@@ -1,6 +1,18 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const ciRebasePr: Command = {
+const ciRebasePrOptionDefinitions = {
+    base: {
+        description: "Override the base branch (default: release.baseBranch)",
+        type: String,
+    },
+    branch: {
+        description: "Override the version-PR branch (default: vis-release/version-packages)",
+        type: String,
+    },
+} as const;
+
+const ciRebasePr = defineCommand({
     commandPath: ["release", "ci"],
     description: "CI: rebase the open version-PR onto the base branch and force-push",
     examples: [
@@ -10,23 +22,9 @@ const ciRebasePr: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "rebase-pr",
-    options: [
-        {
-            description: "Override the version-PR branch (default: vis-release/version-packages)",
-            name: "branch",
-            type: String,
-        },
-        {
-            description: "Override the base branch (default: release.baseBranch)",
-            name: "base",
-            type: String,
-        },
-    ],
-};
+    options: ciRebasePrOptionDefinitions,
+});
 
 export default ciRebasePr;
 
-export type ReleaseCiRebasePrOptions = CreateOptions<{
-    base: string | undefined;
-    branch: string | undefined;
-}>;
+export type ReleaseCiRebasePrOptions = InferOptions<typeof ciRebasePrOptionDefinitions>;

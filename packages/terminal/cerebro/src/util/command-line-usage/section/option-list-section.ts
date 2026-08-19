@@ -73,7 +73,10 @@ class OptionListSection extends BaseSection {
 
         const typeName = definition.type ? definition.type.name.toLowerCase() : "string";
 
-        const multiple = definition.multiple || definition.lazyMultiple ? "[]" : "";
+        // `lazyMultiple` and `alias` are option-only; a positional definition has
+        // neither, so both are read defensively rather than assumed present.
+        const { lazyMultiple } = definition as IOptionDefinition<unknown>;
+        const multiple = definition.multiple || lazyMultiple ? "[]" : "";
 
         // `typeLabel` is documented as accepting template syntax, so it keeps going
         // through the parser. Names and aliases are plain data — styling them
@@ -83,8 +86,10 @@ class OptionListSection extends BaseSection {
 
         const name = isArgument ? bold(definition.name) : bold.yellow(`--${definition.name}`);
 
-        if (definition.alias) {
-            const alias = bold(`-${definition.alias}`);
+        const definitionAlias = (definition as IOptionDefinition<unknown>).alias;
+
+        if (definitionAlias) {
+            const alias = bold(`-${definitionAlias}`);
 
             return reverseNameOrder ? `${name}, ${alias} ${type}` : `${alias}, ${name} ${type}`;
         }

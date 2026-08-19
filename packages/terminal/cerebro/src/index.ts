@@ -87,8 +87,25 @@ declare namespace NodeJS {
 export type { CliOptions } from "./cli";
 export { Cli as Cerebro } from "./cli";
 export { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
+export type { DefinedCommand, InferredToolbox } from "./define-command";
+export { default as defineCommand } from "./define-command";
+export { default as InvalidArgumentChoiceError } from "./errors/invalid-argument-choice-error";
+export { default as MissingArgumentError } from "./errors/missing-argument-error";
+export { default as SurplusArgumentError } from "./errors/surplus-argument-error";
 export type { Cli, CliRunOptions, OutputType, RunCommandOptions, VERBOSITY_LEVEL } from "./types/cli";
-export type { ArgumentDefinition, Command, CommandExecute, EnvDefinition, LazyCommandModule, OptionDefinition } from "./types/command";
+export type {
+    AnyCommandInput,
+    ArgumentDefinition,
+    Command,
+    CommandExecute,
+    CommandInput,
+    EnvDefinition,
+    EnvDefinitionRecord,
+    LazyCommandModule,
+    OptionDefinition,
+    OptionDefinitionRecord,
+} from "./types/command";
+export type { InferArguments, InferEnv, InferOptions } from "./types/infer";
 export type { CreateEnv, CreateOptions, OptionNameToCamelCase } from "./types/option-types";
 export type { Plugin, PluginContext } from "./types/plugin";
 export type { CerebroFs, CerebroProcess } from "./types/runtime";

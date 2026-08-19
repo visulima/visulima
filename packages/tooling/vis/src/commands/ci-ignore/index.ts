@@ -13,9 +13,47 @@
  * `../ci-ignore-helpers` for test isolation.
  */
 
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const ignore: Command = {
+const ignoreOptionDefinitions = {
+    base: {
+        description: "Git base ref for comparison. Defaults to CI provider env vars, then HEAD~1.",
+        type: String,
+    },
+    downstream: {
+        defaultValue: "deep",
+        description: "Downstream scope: \"none\", \"direct\", or \"deep\"",
+        type: String,
+    },
+    "exit-zero-on-build": {
+        defaultValue: false,
+        description: "Exit 0 on build (normal semantics) instead of 1 (inverted Vercel/Netlify semantics)",
+        type: Boolean,
+    },
+    head: {
+        defaultValue: "HEAD",
+        description: "Git head ref for comparison",
+        type: String,
+    },
+    json: {
+        defaultValue: false,
+        description: "Emit the decision as JSON on stdout instead of human text",
+        type: Boolean,
+    },
+    upstream: {
+        defaultValue: "none",
+        description: "Upstream scope: \"none\", \"direct\", or \"deep\"",
+        type: String,
+    },
+    verbose: {
+        defaultValue: false,
+        description: "Enable verbose debug output",
+        type: Boolean,
+    },
+} as const;
+
+const ignore = defineCommand({
     argument: {
         description: "Project name to check (required)",
         name: "project",
@@ -33,59 +71,9 @@ const ignore: Command = {
     group: "Run & Execute",
     loader: () => import("./handler"),
     name: "ignore",
-    options: [
-        {
-            description: "Git base ref for comparison. Defaults to CI provider env vars, then HEAD~1.",
-            name: "base",
-            type: String,
-        },
-        {
-            defaultValue: "HEAD",
-            description: "Git head ref for comparison",
-            name: "head",
-            type: String,
-        },
-        {
-            defaultValue: "deep",
-            description: "Downstream scope: \"none\", \"direct\", or \"deep\"",
-            name: "downstream",
-            type: String,
-        },
-        {
-            defaultValue: "none",
-            description: "Upstream scope: \"none\", \"direct\", or \"deep\"",
-            name: "upstream",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Emit the decision as JSON on stdout instead of human text",
-            name: "json",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Exit 0 on build (normal semantics) instead of 1 (inverted Vercel/Netlify semantics)",
-            name: "exit-zero-on-build",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Enable verbose debug output",
-            name: "verbose",
-            type: Boolean,
-        },
-    ],
-};
+    options: ignoreOptionDefinitions,
+});
 
 export default ignore;
 
-export type IgnoreOptions = CreateOptions<{
-    base: string | undefined;
-    downstream: string | undefined;
-    "exit-zero-on-build": boolean | undefined;
-    head: string | undefined;
-    json: boolean | undefined;
-    upstream: string | undefined;
-    verbose: boolean | undefined;
-}>;
+export type IgnoreOptions = InferOptions<typeof ignoreOptionDefinitions>;

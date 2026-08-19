@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis optimize` — two-phase dependency optimization with interactive TUI.
@@ -13,7 +14,35 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * In TTY mode, presents an interactive TUI (like `vis update`) where users select
  * which optimizations to apply. In non-TTY/CI mode, outputs a static report.
  */
-const optimize: Command = {
+const optimizeOptionDefinitions = {
+    "dry-run": {
+        alias: "d",
+        defaultValue: false,
+        description: "Preview available optimizations without applying",
+        type: Boolean,
+    },
+    format: {
+        description: "Output format: table or json (default: table)",
+        type: String,
+    },
+    "no-install": {
+        defaultValue: false,
+        description: "Skip running install after applying overrides",
+        type: Boolean,
+    },
+    pin: {
+        defaultValue: false,
+        description: "Pin Socket.dev overrides to exact versions",
+        type: Boolean,
+    },
+    prod: {
+        defaultValue: false,
+        description: "Only optimize production dependencies",
+        type: Boolean,
+    },
+} as const;
+
+const optimize = defineCommand({
     description: "Analyze and optimize dependencies using e18e replacements and @socketregistry overrides",
     examples: [
         ["vis optimize", "Interactive TUI to select and apply optimizations"],
@@ -24,21 +53,9 @@ const optimize: Command = {
     group: "Workspace",
     loader: () => import("./handler"),
     name: "optimize",
-    options: [
-        { alias: "d", defaultValue: false, description: "Preview available optimizations without applying", name: "dry-run", type: Boolean },
-        { defaultValue: false, description: "Pin Socket.dev overrides to exact versions", name: "pin", type: Boolean },
-        { defaultValue: false, description: "Only optimize production dependencies", name: "prod", type: Boolean },
-        { defaultValue: false, description: "Skip running install after applying overrides", name: "no-install", type: Boolean },
-        { description: "Output format: table or json (default: table)", name: "format", type: String },
-    ],
-};
+    options: optimizeOptionDefinitions,
+});
 
 export default optimize;
 
-export type OptimizeOptions = CreateOptions<{
-    "dry-run": boolean | undefined;
-    format: string | undefined;
-    "no-install": boolean | undefined;
-    pin: boolean | undefined;
-    prod: boolean | undefined;
-}>;
+export type OptimizeOptions = InferOptions<typeof optimizeOptionDefinitions>;

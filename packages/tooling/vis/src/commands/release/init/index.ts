@@ -1,6 +1,51 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const init: Command = {
+const initOptionDefinitions = {
+    agent: {
+        description: "Append a 'Releasing with vis' section to AGENTS.md so AI agents know how to drive the release flow",
+        type: Boolean,
+    },
+    apply: {
+        description: "Actually perform the migration writes (not dry-run)",
+        type: Boolean,
+    },
+    "dry-run": {
+        description: "Print what would happen without writing files",
+        type: Boolean,
+    },
+    fresh: {
+        description: "Skip migration; start clean",
+        type: Boolean,
+    },
+    "from-bumpy": {
+        description: "Force migration from bumpy",
+        type: Boolean,
+    },
+    "from-changesets": {
+        description: "Force migration from changesets",
+        type: Boolean,
+    },
+    "from-semantic-release": {
+        description: "Force migration from semantic-release / multi-semantic-release",
+        type: Boolean,
+    },
+    "package-manager": {
+        description: "Override package manager when generating workflows (npm | pnpm | yarn | bun). Default: auto-detect",
+        type: String,
+    },
+    workflows: {
+        description: "Generate CI workflow files. GitHub → `.github/workflows/vis-release{,-check,-snapshot}.yml`. GitLab → `.gitlab-ci.yml`.",
+        type: Boolean,
+    },
+    yes: {
+        alias: "y",
+        description: "Auto-confirm prompts (CI-safe)",
+        type: Boolean,
+    },
+} as const;
+
+const init = defineCommand({
     commandPath: ["release"],
     description: "Scaffold .vis/release; migrate from changesets / bumpy / semantic-release",
     examples: [
@@ -14,72 +59,9 @@ const init: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "init",
-    options: [
-        {
-            description: "Force migration from semantic-release / multi-semantic-release",
-            name: "from-semantic-release",
-            type: Boolean,
-        },
-        {
-            description: "Force migration from changesets",
-            name: "from-changesets",
-            type: Boolean,
-        },
-        {
-            description: "Force migration from bumpy",
-            name: "from-bumpy",
-            type: Boolean,
-        },
-        {
-            description: "Skip migration; start clean",
-            name: "fresh",
-            type: Boolean,
-        },
-        {
-            description: "Print what would happen without writing files",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            alias: "y",
-            description: "Auto-confirm prompts (CI-safe)",
-            name: "yes",
-            type: Boolean,
-        },
-        {
-            description: "Generate CI workflow files. GitHub → `.github/workflows/vis-release{,-check,-snapshot}.yml`. GitLab → `.gitlab-ci.yml`.",
-            name: "workflows",
-            type: Boolean,
-        },
-        {
-            description: "Override package manager when generating workflows (npm | pnpm | yarn | bun). Default: auto-detect",
-            name: "package-manager",
-            type: String,
-        },
-        {
-            description: "Actually perform the migration writes (not dry-run)",
-            name: "apply",
-            type: Boolean,
-        },
-        {
-            description: "Append a 'Releasing with vis' section to AGENTS.md so AI agents know how to drive the release flow",
-            name: "agent",
-            type: Boolean,
-        },
-    ],
-};
+    options: initOptionDefinitions,
+});
 
 export default init;
 
-export type ReleaseInitOptions = CreateOptions<{
-    agent: boolean | undefined;
-    apply: boolean | undefined;
-    "dry-run": boolean | undefined;
-    fresh: boolean | undefined;
-    "from-bumpy": boolean | undefined;
-    "from-changesets": boolean | undefined;
-    "from-semantic-release": boolean | undefined;
-    "package-manager": string | undefined;
-    workflows: boolean | undefined;
-    yes: boolean | undefined;
-}>;
+export type ReleaseInitOptions = InferOptions<typeof initOptionDefinitions>;

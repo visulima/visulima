@@ -6,6 +6,7 @@ import type { ArgumentDefinition, Command as ICommand, OptionDefinition } from "
 import type { Section } from "../types/command-line-usage";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
+import formatPositionalUsage from "../util/command-processing/format-positional-usage";
 import templateFormat from "../util/text-processing/template-format";
 
 const EMPTY_GROUP_KEY = "__Other";
@@ -202,9 +203,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
     const commandDisplay = fullCommandPath.join(" ");
 
     usageGroups.push({
-        content: `${cyan(runtime.getCliName())} ${green(commandDisplay)}${command.argument ? " [positional arguments]" : ""}${
-            command.options ? " [options]" : ""
-        }`,
+        content: `${cyan(runtime.getCliName())} ${green(commandDisplay)}${formatPositionalUsage(command)}${command.options ? " [options]" : ""}`,
         header: inverse.cyan(" Usage "),
     });
 
@@ -212,8 +211,12 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         usageGroups.push({ content: command.description, header: inverse.green(" Description ") });
     }
 
-    if (command.argument) {
-        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: [command.argument] });
+    // Filter before testing the length: a command whose positionals are all
+    // hidden must not render the header above an empty table.
+    const positionals = (command.argument ? [command.argument] : command.arguments ?? []).filter((positional) => !positional.hidden);
+
+    if (positionals.length > 0) {
+        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: positionals });
     }
 
     if (Array.isArray(command.options) && command.options.length > 0) {

@@ -1,6 +1,29 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const create: Command = {
+const createOptionDefinitions = {
+    editor: {
+        description: "Generate editor configs (vscode)",
+        type: String,
+    },
+    "git-init": {
+        defaultValue: false,
+        description: "Initialize a git repository",
+        type: Boolean,
+    },
+    list: {
+        defaultValue: false,
+        description: "Show available templates",
+        type: Boolean,
+    },
+    "no-interactive": {
+        defaultValue: false,
+        description: "Skip interactive prompts",
+        type: Boolean,
+    },
+} as const;
+
+const create = defineCommand({
     argument: {
         description: "Template to use (e.g., vis:app, create-vite, user/repo) — omit for interactive mode",
         name: "template",
@@ -19,19 +42,9 @@ const create: Command = {
     group: "Scaffold & Config",
     loader: () => import("./handler"),
     name: "create",
-    options: [
-        { defaultValue: false, description: "Show available templates", name: "list", type: Boolean },
-        { description: "Generate editor configs (vscode)", name: "editor", type: String },
-        { defaultValue: false, description: "Initialize a git repository", name: "git-init", type: Boolean },
-        { defaultValue: false, description: "Skip interactive prompts", name: "no-interactive", type: Boolean },
-    ],
-};
+    options: createOptionDefinitions,
+});
 
 export default create;
 
-export type CreateCommandOptions = CreateOptions<{
-    editor: string | undefined;
-    "git-init": boolean | undefined;
-    list: boolean | undefined;
-    "no-interactive": boolean | undefined;
-}>;
+export type CreateCommandOptions = InferOptions<typeof createOptionDefinitions>;
