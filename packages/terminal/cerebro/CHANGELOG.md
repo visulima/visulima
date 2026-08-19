@@ -1,3 +1,5 @@
+## @visulima/cerebro [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fcerebro%403.0.6...%40visulima%2Fcerebro%403.1.0) (2026-08-19)
+
 ## @visulima/cerebro [3.0.6](https://github.com/visulima/visulima/compare/%40visulima%2Fcerebro%403.0.5...%40visulima%2Fcerebro%403.0.6) (2026-08-08)
 
 
