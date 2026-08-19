@@ -6,7 +6,7 @@ import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/co
 import { isTruthyEnv } from "../../util/env";
 import type { DlxOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DlxOptions>): Promise<void> => {
+const execute = async ({ argument, logger, options, process: proc, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, DlxOptions>): Promise<void> => {
     const args = argument;
 
     if (!args || args.length === 0) {
@@ -14,7 +14,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     const [pkg, ...rest] = args;
-    const cwd = wsRoot ?? process.cwd();
+    const cwd = wsRoot ?? proc.cwd;
 
     const additionalPackages = options.package ? (Array.isArray(options.package) ? options.package : [options.package as unknown as string]) : [];
 
@@ -31,7 +31,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         // was explicitly suppressed, `true` means it was not. `--info` and the
         // default are indistinguishable by design — both leave it `true` — so
         // the env var stays the second way to suppress.
-        const noInfo = !options.info || isTruthyEnv(process.env.VIS_DLX_NO_INFO);
+        const noInfo = !options.info || isTruthyEnv(proc.env.VIS_DLX_NO_INFO);
         const forceInfo = !noInfo && options.info;
 
         const gate = await maybeGateFirstRun({
@@ -39,13 +39,16 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             noInfo,
             offline: options.offline || false,
             pkg: target,
-            socketToken: visConfig?.security?.socket?.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+            socketToken: visConfig?.security?.socket?.apiToken ?? proc.env.VIS_SOCKET_TOKEN,
             workspaceRoot: cwd,
-            yes: options.yes || isTruthyEnv(process.env.VIS_DLX_YES),
+            yes: options.yes || isTruthyEnv(proc.env.VIS_DLX_YES),
         });
 
         if (!gate.proceed) {
             logger.info("Aborted.");
+            // `CerebroProcess.exit` terminates; this path has to return so the
+            // rest of the command lifecycle still runs, and the adapter has no
+            // non-terminating equivalent of `exitCode`.
             process.exitCode = 1;
 
             return;

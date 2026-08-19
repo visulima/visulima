@@ -26,6 +26,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     const workspaceRoot = wsRoot;
 
+    // `--sync` only means anything alongside `--security-config`. Accepting it
+    // on its own is how a command "succeeds" without doing what was asked.
+    if (options.sync && !options.securityConfig) {
+        throw new Error("--sync requires --security-config. Run `vis check --security-config --sync`.");
+    }
+
     if (options.securityConfig) {
         const pm = detectPm(workspaceRoot);
 
