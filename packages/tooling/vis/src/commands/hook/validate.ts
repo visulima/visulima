@@ -7,6 +7,7 @@ import { join } from "@visulima/path";
 
 import { HOOK_CONFIG_FILENAME, loadHookConfig } from "./config";
 import { HOOKS } from "./constants";
+import { dispatcherDirectories } from "./install";
 
 /* eslint-disable no-bitwise -- Unix mode bits need bit-level masking. */
 interface ValidationIssue {
@@ -42,21 +43,38 @@ const validateHooks = (root: string, hooksDirectory: string): ValidationResult =
 
     // core.hooksPath sanity
     const configResult = spawnSync("git", ["config", "--local", "core.hooksPath"], { cwd: root, encoding: "utf8" });
+    const expectedSuffix = `${hooksDirectory}/_`;
+    const configured = configResult.status === 0 ? configResult.stdout.trim() : "";
 
-    if (configResult.status === 0) {
-        const current = configResult.stdout.trim();
-        const expected = `${hooksDirectory}/_`;
-
-        if (current && current !== expected) {
-            issues.push({ kind: "warning", message: `core.hooksPath is "${current}" — expected "${expected}". Re-run \`vis hook install\` to fix.` });
-        }
-    } else {
+    if (!configured) {
         issues.push({ kind: "warning", message: "core.hooksPath is not set — run `vis hook install`." });
+    } else if (configured !== expectedSuffix && !configured.endsWith(`/${expectedSuffix}`)) {
+        // A leading checkout prefix is expected — `core.hooksPath` is relative
+        // to a checkout root, and install anchors it wherever it was run from.
+        issues.push({ kind: "warning", message: `core.hooksPath is "${configured}" — expected "${expectedSuffix}". Re-run \`vis hook install\` to fix.` });
     }
 
-    // dispatcher directory
-    if (!isAccessibleSync(join(directory, "_"))) {
-        issues.push({ kind: "error", message: `Dispatcher directory ${hooksDirectory}/_ is missing. Run \`vis hook install\`.` });
+    // The dispatcher is generated and gitignored, so every checkout needs its
+    // own. A linked worktree without one runs no hooks — silently, exit 0 —
+    // and nothing else in the toolchain reports it. Resolved through the same
+    // helper install writes with, so the two cannot disagree about the path.
+    const target = configured || expectedSuffix;
+    const topLevelResult = spawnSync("git", ["rev-parse", "--show-toplevel"], { cwd: root, encoding: "utf8" });
+    const topLevel = topLevelResult.status === 0 && topLevelResult.stdout.trim() ? topLevelResult.stdout.trim() : root;
+    const currentDispatcher = join(topLevel, target);
+
+    for (const dispatcher of dispatcherDirectories(target, topLevel)) {
+        if (isAccessibleSync(dispatcher)) {
+            continue;
+        }
+
+        if (dispatcher === currentDispatcher) {
+            issues.push({ kind: "error", message: `Dispatcher directory ${target} is missing. Run \`vis hook install\`.` });
+        } else {
+            // Only a warning: transient worktrees are normal, and a repo-wide
+            // non-zero exit for one of them would make validate useless as a gate.
+            issues.push({ kind: "warning", message: `Worktree ${dispatcher} is missing — git runs no hooks there. Run \`vis hook install\` in that worktree.` });
+        }
     }
 
     if (!isAccessibleSync(directory)) {
