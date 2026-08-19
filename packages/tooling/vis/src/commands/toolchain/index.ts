@@ -1,6 +1,8 @@
 import type { AnyCommandInput, Command, CreateOptions } from "@visulima/cerebro";
 import { defineCommand, lazyNamed } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 /**
  * `vis toolchain` — inspect and delegate to the workspace's version
  * managers. Unlike vite+ (which ships a managed runtime in `~/.vite-plus`),
@@ -84,11 +86,12 @@ const toolchainUseOptionDefinitions = {
         description: "Print the command that would run, but don't execute",
         type: Boolean,
     },
-    engines: {
+    ...negatable({
         defaultValue: true,
         description: "Also mirror the version into engines.<tool> when that field already exists. --no-engines to skip.",
+        name: "engines",
         type: Boolean,
-    },
+    }),
 } as const;
 
 const toolchainUse = defineCommand({

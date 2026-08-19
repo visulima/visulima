@@ -1,6 +1,8 @@
 import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
+import { negatable } from "../../../util/negatable-option";
+
 const stageOptionDefinitions = {
     action: {
         defaultOption: true,
@@ -12,11 +14,12 @@ const stageOptionDefinitions = {
         description: "Approve every pending stage tracked in .vis/release/staged.json",
         type: Boolean,
     },
-    commit: {
+    ...negatable({
         defaultValue: true,
         description: "Update .vis/release/staged.json but skip the auto-commit. Default: commit",
+        name: "commit",
         type: Boolean,
-    },
+    }),
     filter: {
         description: "Package name filter for `list`",
         type: String,
@@ -25,11 +28,12 @@ const stageOptionDefinitions = {
         description: "Emit machine-readable JSON",
         type: Boolean,
     },
-    push: {
+    ...negatable({
         defaultValue: true,
         description: "Skip pushing the registry commit to the remote. Default: push",
+        name: "push",
         type: Boolean,
-    },
+    }),
     "stage-ids": {
         description: "Stage IDs (positional args after the action)",
         multiple: true,

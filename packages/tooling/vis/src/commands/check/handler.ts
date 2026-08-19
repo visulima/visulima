@@ -6,6 +6,7 @@ import isInCi from "is-in-ci";
 import React from "react";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../../ai/ai-analysis";
+import { VisUserError } from "../../errors/vis-user-error";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
@@ -29,7 +30,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // `--sync` only means anything alongside `--security-config`. Accepting it
     // on its own is how a command "succeeds" without doing what was asked.
     if (options.sync && !options.securityConfig) {
-        throw new Error("--sync requires --security-config. Run `vis check --security-config --sync`.");
+        throw new VisUserError("--sync requires --security-config. Run `vis check --security-config --sync`.");
     }
 
     if (options.securityConfig) {
