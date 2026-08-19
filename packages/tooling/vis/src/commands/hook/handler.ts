@@ -6,6 +6,7 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { VisUserError } from "../../errors/vis-user-error";
 import { DEFAULT_HOOKS_DIRECTORY } from "./constants";
 import type {
     HookAddOptions,
@@ -44,7 +45,7 @@ const confirmPrompt = (question: string): Promise<boolean> =>
         });
     });
 
-const executeInstall = async (hooksDirectory: string, logger: HookLogger, useEditorconfig?: boolean): Promise<void> => {
+const executeInstall = async (hooksDirectory: string, logger: HookLogger, options: { force?: boolean; useEditorconfig?: boolean } = {}): Promise<void> => {
     const root = cwd();
     const huskyDirectory = detectHuskyDirectory(root);
     const prekConfig = detectPrekConfig(root);
@@ -59,7 +60,7 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger, useEdi
         const shouldMigrate = await confirmPrompt("Would you like to migrate your husky hooks to vis?");
 
         if (shouldMigrate) {
-            const migrateResult = migrateFromHusky(root, hooksDirectory, logger as Console, { useEditorconfig });
+            const migrateResult = migrateFromHusky(root, hooksDirectory, logger as Console, { useEditorconfig: options.useEditorconfig });
 
             if (migrateResult.isError) {
                 throw new Error(migrateResult.message);
@@ -83,7 +84,7 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger, useEdi
         const shouldMigrate = await confirmPrompt("Would you like to migrate your prek hooks to vis?");
 
         if (shouldMigrate) {
-            const migrateResult = migrateFromPrek(root, hooksDirectory, logger, { useEditorconfig });
+            const migrateResult = migrateFromPrek(root, hooksDirectory, logger, { useEditorconfig: options.useEditorconfig });
 
             if (migrateResult.isError) {
                 throw new Error(migrateResult.message);
@@ -103,15 +104,24 @@ const executeInstall = async (hooksDirectory: string, logger: HookLogger, useEdi
 
     logger.info(`Installing git hooks in ${hooksDirectory}/...`);
 
-    const result = installHooks(hooksDirectory);
+    const result = installHooks(hooksDirectory, { force: options.force });
+
+    if (result.isError) {
+        // The message alone says what to do (`--force`, unset the config,
+        // VIS_GIT_HOOKS=0); a stack into minified bundle internals would push
+        // it off screen.
+        throw new VisUserError(result.message);
+    }
 
     if (result.message) {
-        if (result.isError) {
-            throw new Error(result.message);
+        if (result.isWarning) {
+            logger.warn(result.message);
+        } else {
+            logger.info(result.message);
         }
+    }
 
-        logger.info(result.message);
-
+    if (!result.installed) {
         return;
     }
 
@@ -204,12 +214,16 @@ const executeUninstall = (hooksDirectory: string, logger: HookLogger): void => {
 
     const result = uninstallHooks(hooksDirectory);
 
-    if (result.message) {
-        if (result.isError) {
-            throw new Error(result.message);
-        }
+    if (result.isError) {
+        throw new VisUserError(result.message);
+    }
 
-        logger.info(result.message);
+    if (result.message) {
+        if (result.isWarning) {
+            logger.warn(result.message);
+        } else {
+            logger.info(result.message);
+        }
 
         return;
     }
@@ -218,7 +232,7 @@ const executeUninstall = (hooksDirectory: string, logger: HookLogger): void => {
 };
 
 const hookInstallImpl = async ({ logger, options, visConfig }: Toolbox<Console, HookInstallOptions, HookEnv>): Promise<void> => {
-    await executeInstall(resolveHooksDirectory(options), logger, visConfig?.editorconfig ?? true);
+    await executeInstall(resolveHooksDirectory(options), logger, { force: Boolean(options.force), useEditorconfig: visConfig?.editorconfig ?? true });
 };
 
 const hookUninstallImpl = ({ logger, options }: Toolbox<Console, HookUninstallOptions, HookEnv>): void => {

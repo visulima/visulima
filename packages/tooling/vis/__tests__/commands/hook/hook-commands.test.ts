@@ -11,9 +11,35 @@ import { formatListResult, listHooks, parseStageScript } from "../../../src/comm
 import { runHookStage } from "../../../src/commands/hook/run";
 import { validateHooks } from "../../../src/commands/hook/validate";
 
+/**
+ * Git exports `GIT_DIR`, `GIT_INDEX_FILE` and friends into hook processes, so
+ * these tests retarget the outer repo when the suite runs from a pre-commit
+ * hook. Clear them for the duration so every git call resolves from cwd.
+ */
+const INHERITED_GIT_VARS = ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_PREFIX", "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"];
+
+const detachGitEnvironment = (): (() => void) => {
+    const saved = new Map(INHERITED_GIT_VARS.map((name) => [name, process.env[name]]));
+
+    for (const name of INHERITED_GIT_VARS) {
+        Reflect.deleteProperty(process.env, name);
+    }
+
+    return () => {
+        for (const [name, value] of saved) {
+            if (value === undefined) {
+                Reflect.deleteProperty(process.env, name);
+            } else {
+                process.env[name] = value;
+            }
+        }
+    };
+};
+
 const createTemporaryGitRepo = (): { cleanup: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-hook-cmd-test-"));
     const originalCwd = process.cwd();
+    const restoreEnvironment = detachGitEnvironment();
 
     spawnSync("git", ["init"], { cwd: root, stdio: "ignore" });
     spawnSync("git", ["config", "user.email", "test@test.test"], { cwd: root });
@@ -24,6 +50,7 @@ const createTemporaryGitRepo = (): { cleanup: () => void; root: string } => {
     return {
         cleanup: () => {
             process.chdir(originalCwd);
+            restoreEnvironment();
             rmSync(root, { force: true, recursive: true });
         },
         root,
@@ -141,6 +168,56 @@ describe(validateHooks, () => {
 
         expect(result.ok).toBe(true);
         expect(result.issues.every((i) => i.kind !== "error")).toBe(true);
+    });
+
+    it.skipIf(process.platform === "win32")("accepts an install anchored at a subdirectory prefix", () => {
+        expect.assertions(2);
+
+        // `core.hooksPath` carries the prefix install ran from. Validate has to
+        // resolve the dispatcher the same way install writes it, or it reports
+        // a missing dispatcher for a repo that is correctly installed.
+        mkdirSync(join(temporary.root, "packages/app/.vis/hooks/_"), { recursive: true });
+        writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\necho hi\n");
+        writeHookConfig(temporary.root, ".vis/hooks", {
+            stages: { "pre-commit": [{ entry: "echo hi", id: "noop" }] },
+            version: HOOK_CONFIG_VERSION,
+        });
+        spawnSync("git", ["config", "core.hooksPath", "packages/app/.vis/hooks/_"], { cwd: temporary.root });
+
+        const result = validateHooks(temporary.root, ".vis/hooks");
+
+        expect(result.issues.filter((i) => i.kind === "error")).toStrictEqual([]);
+        expect(result.ok).toBe(true);
+    });
+
+    it.skipIf(process.platform === "win32")("reports a worktree without a dispatcher as a warning, not a repo-wide failure", () => {
+        expect.assertions(3);
+
+        const worktreeParent = mkdtempSync(join(tmpdir(), "vis-hook-wt-"));
+        const worktree = join(worktreeParent, "wt");
+
+        try {
+            mkdirSync(join(temporary.root, ".vis/hooks/_"), { recursive: true });
+            writeHookScript(temporary.root, "pre-commit", "#!/usr/bin/env sh\necho hi\n");
+            writeHookConfig(temporary.root, ".vis/hooks", {
+                stages: { "pre-commit": [{ entry: "echo hi", id: "noop" }] },
+                version: HOOK_CONFIG_VERSION,
+            });
+            spawnSync("git", ["config", "core.hooksPath", ".vis/hooks/_"], { cwd: temporary.root });
+            spawnSync("git", ["commit", "-q", "--allow-empty", "-m", "init"], { cwd: temporary.root });
+            spawnSync("git", ["worktree", "add", "-q", worktree, "-b", "wt"], { cwd: temporary.root });
+
+            const result = validateHooks(temporary.root, ".vis/hooks");
+
+            expect(result.issues.some((i) => i.kind === "warning" && i.message.includes("runs no hooks there"))).toBe(true);
+            expect(result.issues.filter((i) => i.kind === "error")).toStrictEqual([]);
+            // Transient worktrees are normal here; a non-zero exit for one of
+            // them would make validate useless as a CI gate.
+            expect(result.ok).toBe(true);
+        } finally {
+            spawnSync("git", ["worktree", "remove", "--force", worktree], { cwd: temporary.root });
+            rmSync(worktreeParent, { force: true, recursive: true });
+        }
     });
 
     it.skipIf(process.platform === "win32")("detects shell syntax errors in a stage script", () => {

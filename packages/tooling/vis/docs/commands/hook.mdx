@@ -25,6 +25,33 @@ vis hook install
 
 > **Migrating from `.vis-hooks`.** The hooks directory moved from `.vis-hooks` to `.vis/hooks`. `vis hook install` performs the move automatically: an existing `.vis-hooks` is renamed to `.vis/hooks` (your stage scripts and `config.json` come along) and `core.hooksPath` is re-pointed. Re-run `vis hook install` once after upgrading.
 
+#### When `core.hooksPath` is already set
+
+If another tool owns `core.hooksPath`, install yields to it and warns instead of taking over. Take it over with:
+
+```bash
+vis hook install --force
+```
+
+If that path is a directory holding no hooks at all — `.git/hooks` with only `*.sample` files, say — install **fails** instead of yielding, because git would silently run nothing. Set `VIS_GIT_HOOKS=0` to skip installing hooks entirely.
+
+A `core.hooksPath` that is not a directory at all (`/dev/null`, the git-native way to disable hooks for a clone) is treated as deliberate: install warns and exits 0.
+
+#### Git worktrees
+
+`core.hooksPath` lives in the shared git config, but its value is relative, so git resolves it inside whichever checkout you commit from. The `_` dispatcher is generated and gitignored, so a worktree without one makes git find no hooks — silently.
+
+`vis hook install` writes the dispatcher into **every** linked worktree, so one run repairs them all. Worktrees that are bare, prunable, locked, or not currently on disk are skipped, and a worktree that cannot be written (ejected volume, another user's checkout) is reported as a warning rather than failing the install. A worktree added afterwards needs its own run:
+
+```bash
+git worktree add ../feature -b feature
+cd ../feature && vis hook install   # or any `pnpm install`, via the `prepare` script
+```
+
+`vis hook validate` reports linked worktrees that are missing a dispatcher — as warnings, so one transient worktree does not fail the whole check. A missing dispatcher in the current checkout is still an error.
+
+`vis hook uninstall` clears the dispatcher from every checkout, matching install.
+
 ### uninstall
 
 Remove git hooks and reset `core.hooksPath`:
@@ -43,7 +70,7 @@ vis hook list
 
 ### validate
 
-Sanity-check the hooks directory: verifies `core.hooksPath`, the dispatcher scripts, each stage script's shell syntax (`sh -n`), executable permissions, and — if any stage references the bundled `prek-runner.mjs` — that the runner exists and parses with `node --check`. Exits non-zero on any error.
+Sanity-check the hooks directory: verifies `core.hooksPath`, the dispatcher scripts (in this checkout and in every linked worktree), each stage script's shell syntax (`sh -n`), executable permissions, and — if any stage references the bundled `prek-runner.mjs` — that the runner exists and parses with `node --check`. Exits non-zero on any error.
 
 ```bash
 vis hook validate
