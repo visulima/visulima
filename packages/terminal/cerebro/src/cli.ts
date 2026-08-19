@@ -10,15 +10,22 @@ import ConflictingOptionsError from "./errors/conflicting-options-error";
 import UnknownOptionError from "./errors/unknown-option-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
-import type { Command as ICommand, CommandExecute, OptionDefinition } from "./types/command";
+import type { Command as ICommand, CommandExecute, CommandInput as ICommandInput, OptionDefinition } from "./types/command";
 import type { Plugin } from "./types/plugin";
 import type { CerebroFs, CerebroProcess } from "./types/runtime";
 import type { Toolbox as IToolbox } from "./types/toolbox";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
-import { executeCommand, loadLazyHandler, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
-import { validateChoices, validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
+import { applyNamedArguments, executeCommand, loadLazyHandler, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
+import {
+    validateArgumentDefinitions,
+    validateChoices,
+    validateConflictingOptions,
+    validateDuplicateOptions,
+    validateRequiredOptions,
+} from "./util/command-processing/command-validation";
 import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./util/command-processing/nested-command-parser";
+import normalizeCommandDefinitions from "./util/command-processing/normalize-command";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
 import parseRawCommand from "./util/general/parse-raw-command";
@@ -431,6 +438,10 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         // a custom logger plugin reassigns logger.
         toolbox.console = this.#logger;
 
+        // Positionals are resolved after `rawUnknown` is populated, so the `--`
+        // passthrough segment can be excluded from the declared slots.
+        applyNamedArguments(command, toolbox);
+
         const hasOptions = command.options && command.options.length > 0;
 
         // Check for conflicts between negated and non-negated options before mapping
@@ -725,7 +736,8 @@ export class Cli<T extends Console = Console> implements ICli<T> {
      * Commands define the available operations that users can execute.
      * Each command can have options, arguments, aliases, and custom execution logic.
      * @template OD - The option definition type for the command
-     * @param command The command configuration object
+     * @template TContext - The toolbox shape the command's handler receives
+     * @param commandInput The command configuration object
      * @returns The CLI instance for method chaining
      * @throws {CerebroError} If the command name already exists or validation fails
      * @example
@@ -748,10 +760,34 @@ export class Cli<T extends Console = Console> implements ICli<T> {
      * ```
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>): this {
+    public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>, TContext extends IToolbox<T> = IToolbox<T>>(
+        commandInput: ICommandInput<OD, T, TContext>,
+    ): this {
         // Validate command input
-        validateObject(command, "Command");
-        validateCommandName(command.name);
+        validateObject(commandInput, "Command");
+        validateCommandName(commandInput.name);
+
+        // Shape checks run against what the caller wrote, before any conversion —
+        // otherwise `options: null` dies inside `Object.entries` with a raw
+        // TypeError instead of the intended "must be an object".
+        if (commandInput.options !== undefined) {
+            validateObject(commandInput.options, "Command options");
+        }
+
+        if (commandInput.env !== undefined) {
+            validateObject(commandInput.env, "Command env");
+        }
+
+        validateArgumentDefinitions(commandInput);
+
+        // The record forms of `options`/`env` are folded into the array form here,
+        // before anything else reads them, so every downstream consumer keeps
+        // working with a single shape. Returns a copy only when something needed
+        // converting, leaving the caller's object alone.
+        // Internals only ever read the default toolbox shape; `TContext` exists
+        // purely so a caller-supplied narrower toolbox (from `defineCommand`) is
+        // accepted without an annotation on `execute`.
+        const command = normalizeCommandDefinitions(commandInput) as unknown as ICommand<OD, T>;
 
         const hasExecute = typeof command.execute === "function";
         const hasLoader = typeof command.loader === "function";
@@ -776,10 +812,6 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         if (command.argument) {
             validateObject(command.argument, "Command argument");
-        }
-
-        if (command.options) {
-            validateObject(command.options, "Command options");
         }
 
         if (command.commandPath) {
@@ -821,9 +853,9 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         processOptionNames(command);
 
         if (command.options) {
-            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle
             command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined);
-            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle
             command.__requiredOptions__ = command.options.filter((option) => option.required === true);
         }
 

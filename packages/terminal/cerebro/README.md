@@ -158,6 +158,46 @@ You should see help output and command execution based on the options provided:
 
 ![Cli Output](./__assets__/cli_output.png)
 
+### Typed commands with `defineCommand`
+
+`options` and `env` can also be given as records keyed by name. Wrap the command in
+`defineCommand` and the toolbox types are inferred from those definitions — no separate
+options interface to keep in sync, and a renamed option becomes a compile error rather
+than a silent `undefined`. `arguments` stays an array, because slot order is
+load-bearing, and its names stay typed without an `as const`:
+
+```ts
+import { Cerebro, defineCommand } from "@visulima/cerebro";
+
+const build = defineCommand({
+    name: "build",
+    description: "Build the project",
+    arguments: [{ name: "target", type: String, required: true, description: "Build target" }],
+    options: {
+        "output-dir": { alias: "o", type: String, defaultValue: "dist" },
+        production: { alias: "p", type: Boolean },
+        tags: { type: String, multiple: true },
+    },
+    env: {
+        NODE_ENV: { type: String },
+    },
+    execute: ({ args, env, logger, options }) => {
+        args.target; // string                — required
+        options.outputDir; // string                — has a defaultValue
+        options.production; // boolean | undefined
+        options.tags; // string[] | undefined
+        env.nodeEnv; // string | undefined
+
+        logger.info(`Building ${args.target} into ${options.outputDir}`);
+    },
+});
+
+new Cerebro("my-cli").addCommand(build);
+```
+
+The array form of `options`/`env` and the single `argument` field keep working unchanged —
+`defineCommand`, the record forms, and `arguments` are all purely additive.
+
 ## Lazy commands
 
 For CLIs with many subcommands or heavy per-command dependencies, you can defer importing each handler until the command is actually invoked. Declare the metadata inline and point `loader` at a dynamic `import()`:
@@ -194,6 +234,7 @@ When your command's `execute` function is called, it receives a toolbox object w
 - **`console`**: Alias for `logger`. Use it when porting goke-style code or when a `console`-named parameter reads more naturally.
 - **`options`**: Parsed command-line options (camelCase keys)
 - **`argument`**: Array of positional arguments
+- **`args`**: Named positional arguments (camelCase keys) from the command's `arguments: [ ... ]` definitions; empty when none are declared
 - **`env`**: Environment variables (camelCase keys) processed from the command's `env: [...]` definitions
 - **`fs`**: Injected filesystem adapter (subset of `node:fs/promises`). Swap via `CliOptions.fs` for tests or sandboxed runtimes.
 - **`process`**: Runtime snapshot — `cwd`, `env`, `argv`, `stdin`, `exit`, `platform`, `arch`. Prefer this over the global `process` so commands stay portable across Node, Deno, Bun, and mocked test runtimes.

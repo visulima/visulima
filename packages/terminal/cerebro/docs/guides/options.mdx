@@ -31,6 +31,28 @@ cli build --production  # options.production = true
 cli build              # options.production = false
 ```
 
+### Keyed by Name
+
+`options` also accepts a record keyed by option name. The key _is_ the name, so
+`name` disappears and duplicate names become impossible to write:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: {
+        production: { type: Boolean, description: "Build for production" },
+        "output-dir": { type: String, alias: "o" },
+    },
+    execute: ({ options }) => {
+        console.log(options.production, options.outputDir);
+    },
+});
+```
+
+Both forms are normalized to the same thing at registration time and behave
+identically — parsing, validation, help, completion. The record form is what
+[`defineCommand`](#type-inference-with-definecommand) infers types from.
+
 ### Option Types
 
 #### Boolean Options
@@ -337,6 +359,53 @@ Arguments support the same types as options:
 - `Number` - Numeric values
 - `Boolean` - Boolean values (rare for arguments)
 
+### Named Positional Arguments
+
+`argument` gives you one definition covering every positional, all of them landing
+in `toolbox.argument` as a flat array. When each slot means something different,
+declare `arguments` instead and read them by name from `toolbox.args`:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    arguments: [
+        { name: "source", type: String, required: true, description: "File to copy" },
+        { name: "targets", type: String, multiple: true, required: true, description: "Destinations" },
+    ],
+    execute: ({ args }) => {
+        // `cli copy a.txt b/ c/`
+        args.targets.forEach((target) => console.log(`${args.source} -> ${target}`));
+    },
+});
+```
+
+Array order is slot order. Names are camelCased (`source-file` → `args.sourceFile`),
+`required: true` fails the command up front when the slot is missing, `defaultValue`
+fills an empty optional slot, and each slot applies its own `type`.
+
+Because a command using `arguments` knows its exact arity, supplying **more**
+positionals than it declares is an error rather than a silent discard. Declare a
+trailing `multiple: true` argument if you want to collect the remainder.
+
+Tokens after a `--` separator belong to [`toolbox.rawUnknown`](/docs/cerebro/toolbox/parameters),
+not to the declared slots, so `mycli run vite -- --template react` fills `tool` with
+`vite` and leaves the passthrough alone.
+
+Declarations are validated when the command is registered: duplicate names, a
+variadic that is not last, and a `required` slot behind an optional one are all
+rejected up front, since none of them can describe a usable slot order.
+
+Only the **last** argument may set `multiple: true`, which collects every remaining
+positional; declaring it earlier is a registration error. `argument` and `arguments`
+are mutually exclusive.
+
+`arguments` is an array rather than a record precisely because order carries meaning —
+an alphabetical object-key lint rule (`perfectionist/sort-objects`, `sort-keys`) would
+silently renumber the slots of a record. An array cannot be reordered by accident.
+
+`toolbox.argument` still holds the raw token list either way, so nothing that reads
+it needs to change.
+
 ## Accessing Options and Arguments
 
 In your command's `execute` function:
@@ -424,6 +493,82 @@ cli deploy --env production --force
 cli deploy --env production --dry-run
 ```
 
+## Type Inference with defineCommand
+
+Annotating `execute` with a hand-written options type means maintaining the same
+names twice, with nothing linking them: rename an option and the annotation keeps
+type-checking while the value is `undefined` at runtime.
+
+`defineCommand` closes that gap. It infers `toolbox.options`, `toolbox.env` and
+`toolbox.args` from the definitions themselves:
+
+```typescript
+import { defineCommand } from "@visulima/cerebro";
+
+const build = defineCommand({
+    name: "build",
+    arguments: [{ name: "entry", type: String, required: true }],
+    options: {
+        "output-dir": { type: String, required: true },
+        verbose: { type: Boolean, defaultValue: false },
+        tags: { type: String, multiple: true },
+    },
+    env: {
+        API_KEY: { type: String },
+    },
+    execute: ({ args, env, options }) => {
+        args.entry; // string        — required
+        options.outputDir; // string        — required
+        options.verbose; // boolean       — has a defaultValue
+        options.tags; // string[] | undefined
+        env.apiKey; // string | undefined
+        options.typo; // compile error
+    },
+});
+
+cli.addCommand(build);
+```
+
+What drives the inferred type:
+
+| Declaration                              | Inferred                |
+| ---------------------------------------- | ----------------------- |
+| `{ type: String }`                       | `string \| undefined`   |
+| `{ type: Number, required: true }`       | `number`                |
+| `{ type: Boolean, defaultValue: false }` | `boolean`               |
+| `{ type: String, multiple: true }`       | `string[] \| undefined` |
+| `{ type: (v) => new Date(String(v)) }`   | `Date \| undefined`     |
+| no `type`                                | `string \| undefined`   |
+
+Names are folded exactly the way the runtime folds them, and the three surfaces do
+**not** agree — the inferred types reproduce each one rather than papering over it:
+
+| declared                 | toolbox key         | why                                               |
+| ------------------------ | ------------------- | ------------------------------------------------- |
+| option `output-dir`      | `options.outputDir` | the parser folds hyphens                          |
+| option `api_key`         | `options.api_key`   | the parser does **not** fold underscores          |
+| option `outputDir`       | `options.outputDir` | already-camelCase names are left alone            |
+| env `API_KEY`            | `env.apiKey`        | the env reader lowercases, then folds underscores |
+| env `apiKey`             | `env.apikey`        | …which also lowercases an already-camelCase name  |
+| positional `source-file` | `args.sourceFile`   | positionals fold both separators                  |
+
+Prefer kebab-case option names: they are the only form that folds the way most
+people expect.
+
+All three infer from the declarations themselves and need nothing extra at the call
+site — `arguments` is captured by a `const` type parameter, so no `as const` is
+required even though it is an array.
+
+A `no-` prefixed boolean appears under its **non-negated** name, because that is
+what the runtime puts on the toolbox — declaring `"no-clean"` yields `options.clean:
+boolean`, never `options.noClean`. See [Negatable Options](#negatable-options).
+
+`defineCommand` is the identity function at runtime; it exists only to capture the
+literal types of the definitions, so it costs nothing beyond the call.
+
+> Values injected via `implies` are not modelled — `implies` is an untyped
+> `Record<string, unknown>` that can name any option.
+
 ## Environment Variables
 
 Environment variables provide a way to configure commands without passing values on the command line. They're useful for:
@@ -463,6 +608,23 @@ cli.addCommand({
         const apiKey = env.apiKey; // camelCase: API_KEY → apiKey
         const timeout = env.timeout; // 5000 if not set
         const verbose = env.verbose; // false if not set
+    },
+});
+```
+
+### Keyed by Name
+
+Like `options`, `env` accepts a record keyed by variable name:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: {
+        API_KEY: { type: String, description: "API key" },
+        PORT: { type: Number, defaultValue: 3000 },
+    },
+    execute: ({ env }) => {
+        console.log(env.apiKey, env.port);
     },
 });
 ```

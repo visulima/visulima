@@ -273,7 +273,7 @@ const replayExecute = async ({ logger, options, process: proc, workspaceRoot: ws
         return;
     }
 
-    if (options.list === true) {
+    if (options.list) {
         const entries = await listRunSummaries(workspaceRoot);
 
         if (format === "json") {
@@ -289,7 +289,7 @@ const replayExecute = async ({ logger, options, process: proc, workspaceRoot: ws
 
     await runReplay(
         {
-            failed: options.failed === true,
+            failed: options.failed,
             format: format as "json" | "table",
             runId: options.run,
             task: options.task,

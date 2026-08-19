@@ -1,6 +1,47 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const lint: Command = {
+const lintOptionDefinitions = {
+    fix: {
+        defaultValue: false,
+        description: "Apply auto-fixes in place",
+        type: Boolean,
+    },
+    format: {
+        defaultValue: "human",
+        description: "Output format: human, json, minimal, sarif, junit, or github",
+        type: String,
+    },
+    "max-warnings": {
+        description: "Fail the run if more than N warnings are reported",
+        type: Number,
+    },
+    output: {
+        description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)",
+        type: String,
+    },
+    quiet: {
+        defaultValue: false,
+        description: "Suppress warnings — report errors only",
+        type: Boolean,
+    },
+    since: {
+        description: "Only lint files changed vs the given git ref (branch, tag, sha)",
+        type: String,
+    },
+    staged: {
+        defaultValue: false,
+        description: "Only lint files currently staged in the git index",
+        type: Boolean,
+    },
+    watch: {
+        defaultValue: false,
+        description: "Re-run linters whenever watched files change",
+        type: Boolean,
+    },
+} as const;
+
+const lint = defineCommand({
     description: "Orchestrate detected source-code linters (eslint, …) across the workspace",
     examples: [
         ["vis lint", "Run every detected linter against the workspace"],
@@ -20,27 +61,9 @@ const lint: Command = {
     group: "Lint & Format",
     loader: () => import("./handler"),
     name: "lint",
-    options: [
-        { defaultValue: false, description: "Apply auto-fixes in place", name: "fix", type: Boolean },
-        { defaultValue: "human", description: "Output format: human, json, minimal, sarif, junit, or github", name: "format", type: String },
-        { defaultValue: false, description: "Suppress warnings — report errors only", name: "quiet", type: Boolean },
-        { description: "Fail the run if more than N warnings are reported", name: "max-warnings", type: Number },
-        { description: "Only lint files changed vs the given git ref (branch, tag, sha)", name: "since", type: String },
-        { defaultValue: false, description: "Only lint files currently staged in the git index", name: "staged", type: Boolean },
-        { description: "Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`)", name: "output", type: String },
-        { defaultValue: false, description: "Re-run linters whenever watched files change", name: "watch", type: Boolean },
-    ],
-};
+    options: lintOptionDefinitions,
+});
 
 export default lint;
 
-export type LintOptions = CreateOptions<{
-    fix: boolean | undefined;
-    format: "github" | "human" | "json" | "junit" | "minimal" | "sarif";
-    "max-warnings": number | undefined;
-    output: string | undefined;
-    quiet: boolean | undefined;
-    since: string | undefined;
-    staged: boolean | undefined;
-    watch: boolean | undefined;
-}>;
+export type LintOptions = InferOptions<typeof lintOptionDefinitions>;

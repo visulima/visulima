@@ -1,6 +1,85 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const check: Command = {
+const checkOptionDefinitions = {
+    ai: {
+        defaultValue: false,
+        description: "Run AI analysis on outdated packages",
+        type: Boolean,
+    },
+    "ai-type": {
+        description: "AI analysis type: impact, security, compatibility, or recommend",
+        type: String,
+    },
+    dev: {
+        alias: "D",
+        conflicts: "prod",
+        description: "Check only devDependencies (npm/yarn mode)",
+        type: Boolean,
+    },
+    exclude: {
+        description: "Glob pattern to exclude packages (repeatable)",
+        lazyMultiple: true,
+        type: String,
+    },
+    "exit-code": {
+        defaultValue: false,
+        description: "Exit with code 1 if outdated dependencies found (for CI)",
+        type: Boolean,
+    },
+    format: {
+        description: "Output format: table, json, or minimal (default: table)",
+        type: String,
+    },
+    include: {
+        description: "Glob pattern to include packages (repeatable)",
+        lazyMultiple: true,
+        type: String,
+    },
+    "include-internal": {
+        defaultValue: false,
+        description: "Also check workspace-owned package names against the registry",
+        type: Boolean,
+    },
+    "no-security": {
+        defaultValue: false,
+        description: "Skip security vulnerability scanning",
+        type: Boolean,
+    },
+    peer: {
+        defaultValue: false,
+        description: "Include peerDependencies in outdated checks",
+        type: Boolean,
+    },
+    prerelease: {
+        defaultValue: false,
+        description: "Include prerelease versions",
+        type: Boolean,
+    },
+    prod: {
+        alias: "P",
+        conflicts: "dev",
+        description: "Check only dependencies (npm/yarn mode)",
+        type: Boolean,
+    },
+    "security-config": {
+        defaultValue: false,
+        description: "Audit supply chain security settings",
+        type: Boolean,
+    },
+    sync: {
+        defaultValue: false,
+        description: "Sync security settings to pnpm-workspace.yaml (pnpm only, requires --security-config)",
+        type: Boolean,
+    },
+    target: {
+        alias: "t",
+        description: "Update target: latest, minor, or patch (default: latest)",
+        type: String,
+    },
+} as const;
+
+const check = defineCommand({
     alias: ["c", "outdated"],
     argument: {
         description: "Specific packages to check (checks all if omitted)",
@@ -20,116 +99,9 @@ const check: Command = {
     group: "Security & Health",
     loader: () => import("./handler"),
     name: "check",
-    options: [
-        {
-            alias: "t",
-            description: "Update target: latest, minor, or patch (default: latest)",
-            name: "target",
-            type: String,
-        },
-        {
-            description: "Glob pattern to include packages (repeatable)",
-            lazyMultiple: true,
-            name: "include",
-            type: String,
-        },
-        {
-            description: "Glob pattern to exclude packages (repeatable)",
-            lazyMultiple: true,
-            name: "exclude",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Include prerelease versions",
-            name: "prerelease",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Skip security vulnerability scanning",
-            name: "no-security",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Audit supply chain security settings",
-            name: "security-config",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Sync security settings to pnpm-workspace.yaml (pnpm only, requires --security-config)",
-            name: "sync",
-            type: Boolean,
-        },
-        {
-            description: "Output format: table, json, or minimal (default: table)",
-            name: "format",
-            type: String,
-        },
-        {
-            defaultValue: false,
-            description: "Exit with code 1 if outdated dependencies found (for CI)",
-            name: "exit-code",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Run AI analysis on outdated packages",
-            name: "ai",
-            type: Boolean,
-        },
-        {
-            description: "AI analysis type: impact, security, compatibility, or recommend",
-            name: "ai-type",
-            type: String,
-        },
-        {
-            alias: "D",
-            conflicts: "prod",
-            description: "Check only devDependencies (npm/yarn mode)",
-            name: "dev",
-            type: Boolean,
-        },
-        {
-            alias: "P",
-            conflicts: "dev",
-            description: "Check only dependencies (npm/yarn mode)",
-            name: "prod",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Include peerDependencies in outdated checks",
-            name: "peer",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Also check workspace-owned package names against the registry",
-            name: "include-internal",
-            type: Boolean,
-        },
-    ],
-};
+    options: checkOptionDefinitions,
+});
 
 export default check;
 
-export type CheckOptions = CreateOptions<{
-    ai: boolean | undefined;
-    "ai-type": string | undefined;
-    dev: boolean | undefined;
-    exclude: string[] | undefined;
-    "exit-code": boolean | undefined;
-    format: string | undefined;
-    include: string[] | undefined;
-    "include-internal": boolean | undefined;
-    "no-security": boolean | undefined;
-    peer: boolean | undefined;
-    prerelease: boolean | undefined;
-    prod: boolean | undefined;
-    "security-config": boolean | undefined;
-    sync: boolean | undefined;
-    target: string | undefined;
-}>;
+export type CheckOptions = InferOptions<typeof checkOptionDefinitions>;

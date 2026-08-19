@@ -1,6 +1,34 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const add: Command = {
+const addOptionDefinitions = {
+    empty: {
+        description: "Author an empty change file (no bumps; satisfies non-strict `check`)",
+        type: Boolean,
+    },
+    "from-bot-pr": {
+        description: "Inspect the current PR (via `gh pr view`) and author a change file from its Dependabot / Renovate title (changesets #647)",
+        type: Boolean,
+    },
+    message: {
+        description: "Changelog body for the change file",
+        type: String,
+    },
+    name: {
+        description: "Slug for the filename (default: random animal name)",
+        type: String,
+    },
+    none: {
+        description: "Author a `none` change file (acknowledged but no direct bump)",
+        type: Boolean,
+    },
+    packages: {
+        description: "Comma-separated package:level pairs (e.g. '@scope/a:minor,@scope/b:patch')",
+        type: String,
+    },
+} as const;
+
+const add = defineCommand({
     commandPath: ["release"],
     description: "Author a new change file (interactive, or non-interactive via --packages)",
     examples: [
@@ -13,47 +41,9 @@ const add: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "add",
-    options: [
-        {
-            description: "Comma-separated package:level pairs (e.g. '@scope/a:minor,@scope/b:patch')",
-            name: "packages",
-            type: String,
-        },
-        {
-            description: "Changelog body for the change file",
-            name: "message",
-            type: String,
-        },
-        {
-            description: "Slug for the filename (default: random animal name)",
-            name: "name",
-            type: String,
-        },
-        {
-            description: "Author an empty change file (no bumps; satisfies non-strict `check`)",
-            name: "empty",
-            type: Boolean,
-        },
-        {
-            description: "Author a `none` change file (acknowledged but no direct bump)",
-            name: "none",
-            type: Boolean,
-        },
-        {
-            description: "Inspect the current PR (via `gh pr view`) and author a change file from its Dependabot / Renovate title (changesets #647)",
-            name: "from-bot-pr",
-            type: Boolean,
-        },
-    ],
-};
+    options: addOptionDefinitions,
+});
 
 export default add;
 
-export type ReleaseAddOptions = CreateOptions<{
-    empty: boolean | undefined;
-    "from-bot-pr": boolean | undefined;
-    message: string | undefined;
-    name: string | undefined;
-    none: boolean | undefined;
-    packages: string | undefined;
-}>;
+export type ReleaseAddOptions = InferOptions<typeof addOptionDefinitions>;

@@ -1,6 +1,88 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const add: Command = {
+const addOptionDefinitions = {
+    "auto-install-peers": {
+        defaultValue: false,
+        description:
+                "After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's installPeerDependencies)",
+        type: Boolean,
+    },
+    exact: {
+        alias: "E",
+        defaultValue: false,
+        description: "Save exact version",
+        type: Boolean,
+    },
+    filter: {
+        alias: "F",
+        description: "Filter by workspace package name",
+        multiple: true,
+        type: String,
+    },
+    global: {
+        alias: "g",
+        defaultValue: false,
+        description: "Install globally (uses npm)",
+        type: Boolean,
+    },
+    "no-marshall-check": {
+        defaultValue: false,
+        description: "Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, signatures, archived-repo)",
+        type: Boolean,
+    },
+    "no-socket-check": {
+        defaultValue: false,
+        description: "Skip Socket.dev security check before adding",
+        type: Boolean,
+    },
+    "no-typosquat-check": {
+        defaultValue: false,
+        description: "Skip typosquat name check before adding",
+        type: Boolean,
+    },
+    "run-scripts": {
+        defaultValue: false,
+        description:
+                "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.installScripts.allow)",
+        type: Boolean,
+    },
+    "save-dev": {
+        alias: "D",
+        defaultValue: false,
+        description: "Add as dev dependency",
+        type: Boolean,
+    },
+    "save-optional": {
+        alias: "O",
+        defaultValue: false,
+        description: "Add as optional dependency",
+        type: Boolean,
+    },
+    "save-peer": {
+        alias: "P",
+        defaultValue: false,
+        description: "Add as peer dependency",
+        type: Boolean,
+    },
+    to: {
+        description: "Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)",
+        type: String,
+    },
+    workspace: {
+        defaultValue: false,
+        description: "Use workspace protocol (pnpm)",
+        type: Boolean,
+    },
+    "workspace-root": {
+        alias: "w",
+        defaultValue: false,
+        description: "Add to workspace root",
+        type: Boolean,
+    },
+} as const;
+
+const add = defineCommand({
     argument: {
         description: "Packages to add (e.g., react react-dom)",
         name: "packages",
@@ -22,60 +104,9 @@ const add: Command = {
     group: "Dependencies",
     loader: () => import("./handler"),
     name: "add",
-    options: [
-        { alias: "D", defaultValue: false, description: "Add as dev dependency", name: "save-dev", type: Boolean },
-        { alias: "E", defaultValue: false, description: "Save exact version", name: "exact", type: Boolean },
-        { alias: "P", defaultValue: false, description: "Add as peer dependency", name: "save-peer", type: Boolean },
-        { alias: "O", defaultValue: false, description: "Add as optional dependency", name: "save-optional", type: Boolean },
-        { alias: "g", defaultValue: false, description: "Install globally (uses npm)", name: "global", type: Boolean },
-        { alias: "w", defaultValue: false, description: "Add to workspace root", name: "workspace-root", type: Boolean },
-        { defaultValue: false, description: "Use workspace protocol (pnpm)", name: "workspace", type: Boolean },
-        { alias: "F", description: "Filter by workspace package name", multiple: true, name: "filter", type: String },
-        {
-            description: "Target a single workspace package and auto-conform the version to existing catalogs / sibling deps (syncpack#285)",
-            name: "to",
-            type: String,
-        },
-        { defaultValue: false, description: "Skip typosquat name check before adding", name: "no-typosquat-check", type: Boolean },
-        { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
-        {
-            defaultValue: false,
-            description: "Skip the offline marshall pipeline (author, provenance, metadata, downloads, expired-domains, new-bin, signatures, archived-repo)",
-            name: "no-marshall-check",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description:
-                "Run lifecycle scripts during add (opts out of vis's default block-by-default policy; allowlisted packages run via security.policies.installScripts.allow)",
-            name: "run-scripts",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description:
-                "After adding, recursively install non-optional peer dependencies that aren't already in the workspace (matches nypm's installPeerDependencies)",
-            name: "auto-install-peers",
-            type: Boolean,
-        },
-    ],
-};
+    options: addOptionDefinitions,
+});
 
 export default add;
 
-export type AddOptions = CreateOptions<{
-    "auto-install-peers": boolean | undefined;
-    exact: boolean | undefined;
-    filter: string[] | undefined;
-    global: boolean | undefined;
-    "no-marshall-check": boolean | undefined;
-    "no-socket-check": boolean | undefined;
-    "no-typosquat-check": boolean | undefined;
-    "run-scripts": boolean | undefined;
-    "save-dev": boolean | undefined;
-    "save-optional": boolean | undefined;
-    "save-peer": boolean | undefined;
-    to: string | undefined;
-    workspace: boolean | undefined;
-    "workspace-root": boolean | undefined;
-}>;
+export type AddOptions = InferOptions<typeof addOptionDefinitions>;

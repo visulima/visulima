@@ -14,7 +14,7 @@
  * into the native crate.
  */
 
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { AnyCommandInput, Command, CreateOptions } from "@visulima/cerebro";
 import { lazyNamed } from "@visulima/cerebro";
 
 const dbPathOption = {
@@ -146,7 +146,7 @@ const advisoriesBloomStatus: Command = {
     options: [bloomCacheDirOption, formatOption],
 };
 
-const advisoriesCommands: Command[] = [advisoriesSync, advisoriesStatus, advisoriesPrune, advisoriesBloomSync, advisoriesBloomStatus];
+const advisoriesCommands: AnyCommandInput[] = [advisoriesSync, advisoriesStatus, advisoriesPrune, advisoriesBloomSync, advisoriesBloomStatus];
 
 export default advisoriesCommands;
 

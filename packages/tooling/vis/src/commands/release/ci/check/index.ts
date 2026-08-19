@@ -1,6 +1,22 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const ciCheck: Command = {
+const ciCheckOptionDefinitions = {
+    "no-fail": {
+        description: "Always exit 0 (warnings still print)",
+        type: Boolean,
+    },
+    "print-config": {
+        description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
+        type: String,
+    },
+    strict: {
+        description: "Require every changed package to be covered by a change file",
+        type: Boolean,
+    },
+} as const;
+
+const ciCheck = defineCommand({
     commandPath: ["release", "ci"],
     description: "CI: post or update a sticky PR comment with the pending release plan",
     examples: [
@@ -10,29 +26,9 @@ const ciCheck: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "check",
-    options: [
-        {
-            description: "Require every changed package to be covered by a change file",
-            name: "strict",
-            type: Boolean,
-        },
-        {
-            description: "Always exit 0 (warnings still print)",
-            name: "no-fail",
-            type: Boolean,
-        },
-        {
-            description: "Print the resolved release config and exit (--print-config=debug for runtime-resolved fields)",
-            name: "print-config",
-            type: String,
-        },
-    ],
-};
+    options: ciCheckOptionDefinitions,
+});
 
 export default ciCheck;
 
-export type ReleaseCiCheckOptions = CreateOptions<{
-    "no-fail": boolean | undefined;
-    "print-config": string | undefined;
-    strict: boolean | undefined;
-}>;
+export type ReleaseCiCheckOptions = InferOptions<typeof ciCheckOptionDefinitions>;

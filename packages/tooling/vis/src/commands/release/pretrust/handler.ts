@@ -59,7 +59,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             registry: options.registry,
             repo: options.repo,
             tag: options.tag,
-            trust: options.noTrust !== true,
+            trust: options.trust,
             version: options.version,
             workflow: options.workflow,
         });

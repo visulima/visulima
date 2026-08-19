@@ -1,4 +1,5 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
 /**
  * `vis init` — initialize vis configuration with secure defaults.
@@ -11,7 +12,30 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  *
  * In non-interactive mode (CI, piped), creates a minimal config with secure defaults.
  */
-const init: Command = {
+const initOptionDefinitions = {
+    force: {
+        defaultValue: false,
+        description: "Overwrite existing config file",
+        type: Boolean,
+    },
+    "no-interactive": {
+        defaultValue: false,
+        description: "Skip interactive prompts",
+        type: Boolean,
+    },
+    schema: {
+        defaultValue: false,
+        description: "Print workspace-relative $schema paths for project.json and vis.config.ts, then exit",
+        type: Boolean,
+    },
+    "sync-native": {
+        defaultValue: false,
+        description: "Sync settings to native PM config files",
+        type: Boolean,
+    },
+} as const;
+
+const init = defineCommand({
     description: "Initialize vis.config.ts with best-practice security defaults",
     examples: [
         ["vis init", "Interactive setup wizard"],
@@ -23,24 +47,9 @@ const init: Command = {
     group: "Scaffold & Config",
     loader: () => import("./handler"),
     name: "init",
-    options: [
-        { defaultValue: false, description: "Overwrite existing config file", name: "force", type: Boolean },
-        { defaultValue: false, description: "Skip interactive prompts", name: "no-interactive", type: Boolean },
-        { defaultValue: false, description: "Sync settings to native PM config files", name: "sync-native", type: Boolean },
-        {
-            defaultValue: false,
-            description: "Print workspace-relative $schema paths for project.json and vis.config.ts, then exit",
-            name: "schema",
-            type: Boolean,
-        },
-    ],
-};
+    options: initOptionDefinitions,
+});
 
 export default init;
 
-export type InitOptions = CreateOptions<{
-    force: boolean | undefined;
-    "no-interactive": boolean | undefined;
-    schema: boolean | undefined;
-    "sync-native": boolean | undefined;
-}>;
+export type InitOptions = InferOptions<typeof initOptionDefinitions>;

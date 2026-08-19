@@ -1,6 +1,35 @@
-import type { Command, CreateOptions } from "@visulima/cerebro";
+import type { InferOptions } from "@visulima/cerebro";
+import { defineCommand } from "@visulima/cerebro";
 
-const pre: Command = {
+import { negatable } from "../../../util/negatable-option";
+
+const preOptionDefinitions = {
+    action: {
+        defaultOption: true,
+        defaultValue: "status",
+        description: "Subcommand: enter | exit | status",
+        type: String,
+    },
+    ...negatable({
+        defaultValue: true,
+        description: "Commit pre.json after writing. Default: commit",
+        name: "commit",
+        type: Boolean,
+    }),
+    ...negatable({
+        defaultValue: true,
+        description: "Push the commit. Default: push",
+        name: "push",
+        type: Boolean,
+    }),
+    tag: {
+        description: "Prerelease tag (e.g. alpha, beta, rc). Required for `enter`",
+        multiple: true,
+        type: String,
+    },
+} as const;
+
+const pre = defineCommand({
     commandPath: ["release"],
     description: "Enter / exit pre-release mode (changesets-compatible — every `version` produces a prerelease until exit)",
     examples: [
@@ -12,40 +41,9 @@ const pre: Command = {
     group: "Release",
     loader: () => import("./handler"),
     name: "pre",
-    options: [
-        {
-            defaultOption: true,
-            defaultValue: "status",
-            description: "Subcommand: enter | exit | status",
-            name: "action",
-            type: String,
-        },
-        {
-            description: "Prerelease tag (e.g. alpha, beta, rc). Required for `enter`",
-            multiple: true,
-            name: "tag",
-            type: String,
-        },
-        {
-            defaultValue: true,
-            description: "Commit pre.json after writing. Default: commit",
-            name: "commit",
-            type: Boolean,
-        },
-        {
-            defaultValue: true,
-            description: "Push the commit. Default: push",
-            name: "push",
-            type: Boolean,
-        },
-    ],
-};
+    options: preOptionDefinitions,
+});
 
 export default pre;
 
-export type ReleasePreOptions = CreateOptions<{
-    action: string;
-    commit: boolean | undefined;
-    push: boolean | undefined;
-    tag: string[] | undefined;
-}>;
+export type ReleasePreOptions = InferOptions<typeof preOptionDefinitions>;

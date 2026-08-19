@@ -38,7 +38,7 @@ const fakeToolbox = (
         commandName: "accept",
         env: {},
         logger: console,
-        options: baseOptions as unknown as AiHealAcceptOptions,
+        options: baseOptions,
         projectRoot: undefined,
         runtimeFlags: {},
         visConfig: overrides.visConfig ?? { ai: { heal: { allowedActors: ["alice"] } } },
