@@ -1,6 +1,8 @@
 import type { InferOptions } from "@visulima/cerebro";
 import { defineCommand } from "@visulima/cerebro";
 
+import { negatable } from "../../../util/negatable-option";
+
 const preOptionDefinitions = {
     action: {
         defaultOption: true,
@@ -8,16 +10,18 @@ const preOptionDefinitions = {
         description: "Subcommand: enter | exit | status",
         type: String,
     },
-    commit: {
+    ...negatable({
         defaultValue: true,
         description: "Commit pre.json after writing. Default: commit",
+        name: "commit",
         type: Boolean,
-    },
-    push: {
+    }),
+    ...negatable({
         defaultValue: true,
         description: "Push the commit. Default: push",
+        name: "push",
         type: Boolean,
-    },
+    }),
     tag: {
         description: "Prerelease tag (e.g. alpha, beta, rc). Required for `enter`",
         multiple: true,
