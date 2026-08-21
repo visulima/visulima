@@ -27,55 +27,10 @@ export const ANSI_SGR_TERMINATOR: string = "m";
 export const ANSI_ESCAPE_LINK: string = `]8;;`;
 
 /**
- * Default foreground color code
- */
-export const END_CODE: number = 39;
-
-/**
  * Regular expression to match zero-width characters, excluding the zero-width joiner used in emoji sequences.
  * Zero-width characters to remove, EXCLUDING zero-width joiner used in emoji
  */
 export const RE_ZERO_WIDTH: RegExp = /[\u200B\uFEFF\u2060-\u2064]/g;
-
-/**
- * RegExp pattern for ANSI escape sequences
- * Compiled once for better performance
- */
-export const RE_ESCAPE_PATTERN: RegExp = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`);
-
-/**
- * Map of ANSI style codes to their reset codes
- * Used to properly reset styles when needed
- */
-export const ANSI_RESET_CODES: Map<number, number> = Object.freeze(
-    new Map([
-        [0, 0], // Reset all
-        [1, 22], // Bold → Not bold
-        [2, 22], // Dim → Not bold
-        [3, 23], // Italic → Not italic
-        [4, 24], // Underline → Not underline
-        [7, 27], // Inverse → Not inverse
-        [8, 28], // Hidden → Not hidden
-        [9, 29], // Strikethrough → Not strikethrough
-        [30, 39], // Foreground colors → Default foreground
-        [31, 39],
-        [32, 39],
-        [33, 39],
-        [34, 39],
-        [35, 39],
-        [36, 39],
-        [37, 39],
-        [40, 49], // Background colors → Default background
-        [41, 49],
-        [42, 49],
-        [43, 49],
-        [44, 49],
-        [45, 49],
-        [46, 49],
-        [47, 49],
-        [90, 39], // Bright foreground → Default foreground
-    ]),
-);
 
 /** Regular expression to match leading newlines and surrounding whitespace. */
 export const RE_LEADING_NEWLINE: RegExp = /^[ \t]*(?:\r\n|\r|\n)/;
@@ -107,9 +62,26 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
  * It is **not** the only ANSI pattern in the package, and that is intentional.
  * `src/utils/strip-vt-control-characters.ts` carries `RE_VT_CONTROL`, whose sole
  * contract is byte-compatibility with `node:util.stripVTControlCharacters`. The
- * two genuinely disagree — `ESC[s`, `ESC[u`, `ESC[~` and generic OSC are stripped
- * by `RE_VT_CONTROL` and left alone here — so neither can be folded into the
- * other without changing observable behaviour somewhere.
+ * two genuinely disagree — `ESC[s`, `ESC[u` and `ESC[~` are stripped by
+ * `RE_VT_CONTROL` and left alone here — so neither can be folded into the other
+ * without changing observable behaviour somewhere. `RE_VT_CONTROL` also mangles a
+ * non-ASCII OSC payload, because its allow-list is ASCII; that is Node's
+ * behaviour and this package reproduces it deliberately, which is another reason
+ * the two must stay apart.
+ *
+ * The third branch matches OSC generally, not just OSC 8. Every OSC the terminal
+ * consumes — a title, a working directory, a notification, a clipboard write —
+ * occupies no columns, and counting its payload as text inflated the measured
+ * width of any string carrying one.
+ *
+ * Its payload is bounded, like the OSC 8 branch beside it. The bound is not what
+ * makes it safe — the class and the terminator are disjoint, so the quantifier
+ * has nothing to backtrack into, and an unbounded version measured linear and
+ * sub-millisecond over 320 KB of adversarial input. It is here because a static
+ * scanner reads `[^x]*` before a required terminator as polynomial regardless,
+ * and because an unbounded quantifier would contradict the note above. A payload
+ * past the bound falls back to being treated as text, which is exactly what
+ * happened before this branch existed.
  *
  * Change this pattern for bugs in this package's own ANSI handling (width,
  * slicing, wrapping, `stripAnsi`). Change `RE_VT_CONTROL` only to restore parity
@@ -117,7 +89,7 @@ export const RE_MATCH_NEWLINES: RegExp = /\r\n|\n|\r/g;
  * pattern, so the question does not need re-opening here.
  */
 // eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
-export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\))/g;
+export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{0,4})*)?[0-9A-ORZcf-nqry=><]|\]8;;[^\u0007\u001B]{0,100}(?:\u0007|\u001B\\)|\][^\u0007\u001B]{0,1000}(?:\u0007|\u001B\\))/g;
 
 /**
  * Regular expression for valid ANSI color/style sequences with proper open/close pairs
