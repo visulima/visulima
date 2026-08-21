@@ -1,0 +1,176 @@
+---
+title: Inbound
+description: Receive and normalise inbound messages from chat and SMS channels — the two-way half for bots and AI agents
+---
+
+# Inbound
+
+A channel is two-way. The rest of this package covers the **outbound** half — sending a
+`NotificationPayload` through a provider. `@visulima/notification/inbound` covers the
+**inbound** half: verifying and normalising incoming webhooks (a Slack mention, a Discord
+slash command, a Telegram message, an inbound SMS/WhatsApp) into a single `InboundMessage`
+shape you can hand to a bot or an AI agent — which can then reply through the matching
+outbound provider.
+
+Like the [webhook verifiers](/docs/webhooks), every receiver uses Web Crypto only, so it runs
+on Cloudflare Workers, Deno, Bun and other edge runtimes. Receivers are framework-agnostic:
+each exposes a single `handle(request: Request) => Promise<Response>` built on the web
+standard `Request`/`Response`.
+
+## Quick start
+
+```typescript
+import { createSlackReceiver } from "@visulima/notification/providers/slack";
+
+const slack = createSlackReceiver({
+    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    onMessage: async (message, context) => {
+        // `message` is normalised across every channel.
+        if (message.type === "message") {
+            const answer = await runAgent(message.text ?? "");
+
+            // Slash commands / interactions can reply in the HTTP response…
+            return { text: answer };
+        }
+
+        // …Events API deliveries are acknowledged with 200; reply out-of-band
+        // through the outbound Slack provider instead.
+        return undefined;
+    },
+});
+
+// Any web-standard server: Cloudflare Workers, Deno, Bun, Hono, Next.js route handlers…
+export default { fetch: (request: Request) => slack.handle(request) };
+```
+
+The `handle` method performs the full pipeline: **verify signature → answer platform
+handshakes → parse → dispatch to `onMessage` → serialise the reply**. Invalid signatures get
+`401`, malformed bodies `400` (override via `onError`), and unrecognised payloads a `204`
+acknowledgement without invoking your handler.
+
+## The normalised message
+
+```typescript
+interface InboundMessage {
+    channel: ChannelType; // "chat" | "sms"
+    provider: string; // "slack" | "discord" | "telegram" | "twilio"
+    type: "message" | "command" | "callback" | "event" | "unknown";
+    id: string;
+    text?: string;
+    from: { id: string; name?: string; username?: string; isBot?: boolean };
+    conversationId?: string; // channel / chat / room id
+    threadId?: string; // thread anchor, for threaded replies
+    command?: { name: string; args?: string };
+    attachments?: { url?: string; contentType?: string }[];
+    timestamp: Date;
+    raw: unknown; // the untouched provider payload
+    metadata?: Record<string, unknown>;
+}
+```
+
+A handler returns one of:
+
+- an **`InboundReply`** (`{ text?, blocks?, threadId?, raw? }`) — serialised into the correct
+  provider response (Slack message JSON, Discord interaction response, Telegram `sendMessage`
+  method call, Twilio TwiML);
+- a raw **`Response`** — passed through unchanged;
+- **nothing** — the channel sends its default acknowledgement.
+
+### `context.reply` — the one-call loop
+
+Returning an `InboundReply` only works where the channel can answer synchronously in the HTTP
+response. For everything else (Slack Events API, Discord deferred replies), pass the matching
+**outbound provider** to the receiver and answer with `context.reply()` — it maps the inbound
+message to the right outbound payload (recipient, thread, WhatsApp prefix) and sends it:
+
+```typescript
+// The inbound receiver and the outbound provider ship from the same channel subpath.
+import { createSlackReceiver, createSlackProvider } from "@visulima/notification/providers/slack";
+
+const slack = createSlackReceiver({
+    signingSecret,
+    provider: createSlackProvider({ token }), // enables context.reply()
+    onMessage: async (message, context) => {
+        await context.reply(await runAgent(message.text ?? "")); // string shorthand for { text }
+    },
+});
+```
+
+`reply()` accepts a string or a full `InboundReply` and resolves to the provider's send
+`Result`. It rejects if no `provider` was configured.
+
+## Channels
+
+A channel's two halves ship together: each `@visulima/notification/providers/<name>` subpath
+exports both the outbound provider (`create<Name>Provider`) and the inbound receiver
+(`create<Name>Receiver`). The `@visulima/notification/inbound` barrel holds only the shared types,
+`createInboundRouter` and the verification/reply helpers.
+
+| Import                                         | Receiver                    | Verification                                                      | Synchronous reply              |
+| ---------------------------------------------- | --------------------------- | ----------------------------------------------------------------- | ------------------------------ |
+| `@visulima/notification/providers/slack`       | `createSlackReceiver`       | v0 signature + 5-min replay; `url_verification` handled           | Slash commands & interactions  |
+| `@visulima/notification/providers/discord`     | `createDiscordReceiver`     | Ed25519 over `timestamp+body`; `PING` → `PONG` handled            | Interaction response           |
+| `@visulima/notification/providers/telegram`    | `createTelegramReceiver`    | `X-Telegram-Bot-Api-Secret-Token` (when set)                      | `sendMessage` method           |
+| `@visulima/notification/providers/twilio`      | `createTwilioReceiver`      | `X-Twilio-Signature` HMAC-SHA1 of URL + sorted params             | TwiML message element          |
+| `@visulima/notification/providers/msteams`     | `createMsTeamsReceiver`     | `Authorization: HMAC` — base64 HMAC-SHA256 of raw body            | Bot Framework message activity |
+| `@visulima/notification/providers/telnyx`      | `createTelnyxReceiver`      | Ed25519 over `{timestamp}\|{body}` + 5-min replay                 | via `context.reply()` (async)  |
+| `@visulima/notification/providers/messagebird` | `createMessageBirdReceiver` | `messagebird-signature-jwt` HS256 JWT + `url_hash`/`payload_hash` | via `context.reply()` (async)  |
+| `@visulima/notification/providers/vonage`      | `createVonageReceiver`      | `Authorization: Bearer` HS256 JWT + `payload_hash`                | via `context.reply()` (async)  |
+
+Slack receivers cover the Events API, slash commands and interactive components; Twilio, Telnyx,
+MessageBird and Vonage cover SMS (Twilio also WhatsApp — flagged in `metadata.transport`, with
+the `whatsapp:` prefix stripped from ids); Microsoft Teams covers outgoing-webhook message
+activities. The MessageBird and Vonage receivers verify the full signed-JWT scheme (HS256
+signature plus the `payload_hash` — and, for MessageBird, `url_hash` — claims that bind the JWT
+to this exact request body and URL).
+
+### Not yet built in
+
+- **Plivo** — `X-Plivo-Signature-V3` (HMAC-SHA256 with a nonce and multiple comma-separated
+  signatures). The exact canonicalisation isn't pinned down from a verifiable source, so it is
+  intentionally left out rather than guessed. Verify with the Plivo SDK's own validator, then
+  normalise the body yourself — the `InboundMessage` shape and `context.reply()` mapping are the
+  same for any channel.
+
+AWS SNS is a signature _verifier_, not an inbound-message receiver: `snsWebhook.verify` now
+implements the full RSA certificate-chain scheme (see the [webhooks docs](/docs/webhooks)).
+
+## Routing several channels
+
+`createInboundRouter` mounts multiple receivers behind one fetch handler, dispatching by path:
+
+```typescript
+import { createInboundRouter } from "@visulima/notification/inbound";
+import { createSlackReceiver } from "@visulima/notification/providers/slack";
+import { createTelegramReceiver } from "@visulima/notification/providers/telegram";
+
+const handler = createInboundRouter({
+    "/webhooks/slack": createSlackReceiver({ signingSecret, onMessage }),
+    "/webhooks/telegram": createTelegramReceiver({ secretToken, onMessage }),
+});
+
+export default { fetch: handler };
+```
+
+## Closing the loop with an AI agent
+
+Inbound + outbound together give you a receive → think → reply loop in a single call — pass
+the outbound provider once and answer with `context.reply()`:
+
+```typescript
+import { createSlackReceiver, createSlackProvider } from "@visulima/notification/providers/slack";
+
+const slack = createSlackReceiver({
+    signingSecret,
+    provider: createSlackProvider({ token }),
+    onMessage: async (message, context) => {
+        if (message.type === "message") {
+            await context.reply(await runAgent(message.text ?? ""));
+        }
+    },
+});
+```
+
+The Twilio receiver works the same way with an SMS provider — `context.reply("…")` addresses
+the response back to the sender (re-applying the `whatsapp:` prefix for WhatsApp) with no
+manual payload wiring.
