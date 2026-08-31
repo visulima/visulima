@@ -14,10 +14,10 @@ This file provides guidance to AI coding agents when working with code in this d
     - **Adds** anything listed in `scripts/config/blacklist.json` — extra disposable domains the upstream sources miss. These survive even if the domain is whitelisted.
     - **Removes** anything listed in `scripts/config/allowlist.json` — legitimate provider domains that upstream lists keep mis-reporting as disposable (Yahoo's regional `yahoo.co.in`, Microsoft's `hotmail.fr`, …). This is the file to extend when triaging a false positive; it beats every source, including `blacklist.json`. Verify a domain is genuine before adding it — its MX records should point at the provider's infrastructure (e.g. `*.yahoodns.net`), which is how the current entries were vetted; typosquats like `yahoo.cu.uk` must stay on the list.
     - Also removes the ~345 well-known providers from `email-providers/common.json`. Note `email-providers/all.json` is **not** usable as a whitelist: it contains thousands of genuinely disposable domains.
-    - Renders the per-source stats table with `@visulima/tabular` and rewrites the `START_PLACEHOLDER_CONTRIBUTING` block in `README.md`. The "disposable-domain stats" the root AGENTS.md references are produced here.
+    - Rewrites the `START_PLACEHOLDER_CONTRIBUTING` block in `README.md`. Progress tables go to the console via `console.table` — the script must stay runnable on a bare `pnpm install`, so it may not import an unbuilt workspace package. The "disposable-domain stats" the root AGENTS.md references are produced here.
 - The script is wired into `build` / `build:prod` (`packem build … && pnpm run generate:domains`), so a normal package build also refreshes the JSON and README table. Run `pnpm --filter @visulima/disposable-email-domains run generate:domains` to refresh without a full build.
 - Subpath export `./domains` re-exports the raw `dist/domains.json` for consumers who want the array directly.
-- `@visulima/tabular` is a `devDependency` (script-only); keep it out of `dependencies` — the published runtime is zero-dependency.
+- The package has no runtime dependencies; keep it that way — the published runtime is zero-dependency.
 
 ## Related
 

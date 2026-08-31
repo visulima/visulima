@@ -2,8 +2,6 @@ import { promises as fs } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { createTable } from "@visulima/tabular";
-
 import DisposableEmailSyncManager from "./disposable-email-sync-manager.js";
 
 const filename = fileURLToPath(import.meta.url);
@@ -202,56 +200,42 @@ const main = async () => {
         // eslint-disable-next-line no-console
         console.log("\n✅ Synchronization completed!\n");
 
-        // Summary table
-        const summaryTable = createTable({
-            showHeader: true,
-            wordWrap: true,
-        });
-
-        summaryTable.setHeaders(["Metric", "Value"]);
-        summaryTable.addRows(
-            ["Total Domains", result.stats.totalDomains.toLocaleString()],
-            ["New Domains", result.stats.newDomains.toLocaleString()],
-            ["Removed Domains", result.stats.removedDomains.toLocaleString()],
-            ["Duplicates Found", result.stats.duplicates.toLocaleString()],
-            ["Blacklist Domains", result.stats.blacklistDomains.toLocaleString()],
-            ["Allowlist Domains", result.stats.allowlistDomains.toLocaleString()],
-            ["Processing Time", `${(result.stats.processingTime / 1000).toFixed(2)}s`],
-            ["Output Directory", syncManager.syncOptions.outputPath],
-        );
-
         // eslint-disable-next-line no-console
         console.log("📊 Summary");
         // eslint-disable-next-line no-console
-        console.log(summaryTable.toString());
+        console.table({
+            "Allowlist Domains": result.stats.allowlistDomains.toLocaleString(),
+            "Blacklist Domains": result.stats.blacklistDomains.toLocaleString(),
+            "Duplicates Found": result.stats.duplicates.toLocaleString(),
+            "New Domains": result.stats.newDomains.toLocaleString(),
+            "Output Directory": syncManager.syncOptions.outputPath,
+            "Processing Time": `${(result.stats.processingTime / 1000).toFixed(2)}s`,
+            "Removed Domains": result.stats.removedDomains.toLocaleString(),
+            "Total Domains": result.stats.totalDomains.toLocaleString(),
+        });
 
         // Repository results table
         const repoStats = [...result.stats.repositoryStats.values()];
 
         if (repoStats.length > 0) {
-            const repoTable = createTable({
-                showHeader: true,
-                wordWrap: true,
-            });
-
-            repoTable.setHeaders(["Status", "Domains", "Time", "Size", "URL"]);
-
-            repoStats.forEach((repo) => {
+            const repoRows = repoStats.map((repo) => {
                 /** @type {{success: boolean, domainsCount: number, downloadTime: number, fileSize: number, url: string, error?: string}} */
                 // @ts-expect-error - repoStats comes from Map.values() which TypeScript sees as unknown
                 const repoData = repo;
-                const status = repoData.success ? "✅ Success" : "❌ Failed";
-                const domains = repoData.domainsCount.toLocaleString();
-                const time = `${repoData.downloadTime}ms`;
-                const size = `${(repoData.fileSize / 1024).toFixed(2)} KB`;
 
-                repoTable.addRow([status, domains, time, size, repoData.url]);
+                return {
+                    Domains: repoData.domainsCount.toLocaleString(),
+                    Size: `${(repoData.fileSize / 1024).toFixed(2)} KB`,
+                    Status: repoData.success ? "✅ Success" : "❌ Failed",
+                    Time: `${repoData.downloadTime}ms`,
+                    URL: repoData.url,
+                };
             });
 
             // eslint-disable-next-line no-console
             console.log("\n📦 Repository Results");
             // eslint-disable-next-line no-console
-            console.log(repoTable.toString());
+            console.table(repoRows, ["Status", "Domains", "Time", "Size", "URL"]);
         }
 
         // Generate and update contributing sources table in README

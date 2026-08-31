@@ -3760,9 +3760,6 @@ importers:
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0(8912033f1652dabfbd5c3071336c62b0)
-      '@visulima/tabular':
-        specifier: 4.1.0
-        version: link:../../terminal/tabular
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.10(@vitest/browser@4.1.10)(vitest@4.1.10)
