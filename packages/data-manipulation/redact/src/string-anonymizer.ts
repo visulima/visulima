@@ -33,10 +33,38 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
 const replaceWithMasks = (documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
-    let outputResult = output;
+    let result = "";
+    let cursor = 0;
 
+    // Terms arrive sorted by start (longest first on ties). Masking is applied AT each recorded
+    // offset by slicing, rather than by `String.replace(text, mask)`: a string needle rewrites
+    // the FIRST occurrence of the text, which is not necessarily the one that was matched. With
+    // "Doe met John Doe", the surname match would rewrite the leading "Doe" and leave the real
+    // one exposed. Slicing also means a mask containing `$&` or `` $` `` is inserted literally
+    // instead of being re-expanded as a replacement pattern.
     for (const documentTerm of documentTerms) {
-        const { replacement, tag, text } = documentTerm;
+        const { replacement, start, tag, text } = documentTerm;
+
+        // A span that begins inside the text already masked is an overlapping match for the
+        // same value (e.g. `email` and `url` both matching an address). The first one wins —
+        // which is why rule order decides — and the rest are dropped rather than allowed to
+        // re-match some later, unrelated occurrence.
+        if (start < cursor) {
+            continue;
+        }
+
+        let at = start;
+
+        // `nlp` scanners are caller-supplied, so the offset is not trusted: if it does not line
+        // up with the text it claims, fall back to the next occurrence at or after the cursor.
+        // Skipping instead would silently drop the redaction.
+        if (output.slice(at, at + text.length) !== text) {
+            at = output.indexOf(text, cursor);
+
+            if (at === -1) {
+                continue;
+            }
+        }
 
         let mask: string;
 
@@ -48,14 +76,11 @@ const replaceWithMasks = (documentTerms: IDocumentTerm[], output: string): strin
             mask = maskText(maskMaps, text, tag);
         }
 
-        // `text` is a plain string needle, but `mask` sits in the REPLACEMENT position, where
-        // `$&`, `` $` `` and `$'` are substitution patterns — a tag containing one would splice
-        // the surrounding text back in, echoing the very value being masked. Escaping `$` keeps
-        // the mask literal for both scanner-supplied tags and rule keys.
-        outputResult = outputResult.replace(text, mask.replaceAll("$", "$$$$"));
+        result += output.slice(cursor, at) + mask;
+        cursor = at + text.length;
     }
 
-    return outputResult;
+    return result + output.slice(cursor);
 };
 
 const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentTerm[] => {

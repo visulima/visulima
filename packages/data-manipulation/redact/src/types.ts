@@ -87,9 +87,10 @@ export type NlpMatch = {
  * them — the core masks whatever it is handed, so an out-of-contract tag would redact under a
  * label the caller never asked for.
  * @param logger Optional debug logger forwarded from {@link RedactOptions}.
- * @returns Every entity found, in any order. `start` orders and de-duplicates matches; it does
- * NOT position the replacement, which is applied to the first occurrence of `text`. Where the
- * same text appears more than once, every occurrence collapses onto one mask.
+ * @returns Every entity found, in any order. `start` must be the index of `text` within
+ * `input`: the mask is applied at that offset, so a match reported at the wrong position would
+ * redact the wrong occurrence. Overlapping matches are resolved in favour of the first by
+ * `start` (longest wins on a tie), and the rest are dropped.
  */
 export type NlpScanner = (input: string, types: string[], logger?: { debug: (message?: unknown, ...optionalParameters: unknown[]) => void }) => NlpMatch[];
 

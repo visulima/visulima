@@ -1,3 +1,4 @@
+import { compromiseScanner } from "@visulima/redact/nlp";
 import { describe, expect, it } from "vitest";
 
 import RedactProcessor from "../../../src/processor/redact-processor";
@@ -13,6 +14,21 @@ describe("redactProcessor", () => {
         const meta = { message: "John Doe will be 30 on 2024-06-10" } as Meta<string>;
         const result = processor.process(meta);
 
+        // The date is a pattern rule, so it is masked by default. A person's name has no regex
+        // shape: @visulima/redact finds it only when an `nlp` scanner is supplied, which the
+        // processor does not do on its own — see the opt-in test below.
+        expect(result.message).toBe("John Doe will be 30 on <DATE>");
+    });
+
+    it("should redact names in meta.message when an nlp scanner is supplied", () => {
+        expect.assertions(1);
+
+        // Proves the processor forwards `options` to redact, which is the whole opt-in path
+        // for consumers who install `compromise` and want prose entity detection back.
+        const processor = new RedactProcessor(undefined, { nlp: compromiseScanner });
+        const meta = { message: "John Doe will be 30 on 2024-06-10" } as Meta<string>;
+        const result = processor.process(meta);
+
         expect(result.message).toBe("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
     });
 
@@ -20,6 +36,17 @@ describe("redactProcessor", () => {
         expect.assertions(1);
 
         const processor = new RedactProcessor();
+        const meta = { context: ["John Doe will be 30 on 2024-06-10"] } as Meta<string>;
+
+        const result = processor.process(meta);
+
+        expect(result.context).toStrictEqual(["John Doe will be 30 on <DATE>"]);
+    });
+
+    it("should redact sensitive information in meta.context with an nlp scanner", () => {
+        expect.assertions(1);
+
+        const processor = new RedactProcessor(undefined, { nlp: compromiseScanner });
         const meta = { context: ["John Doe will be 30 on 2024-06-10"] } as Meta<string>;
 
         const result = processor.process(meta);
@@ -32,7 +59,7 @@ describe("redactProcessor", () => {
     it.skip("should redact sensitive information in meta.error", () => {
         expect.assertions(1);
 
-        const processor = new RedactProcessor();
+        const processor = new RedactProcessor(undefined, { nlp: compromiseScanner });
         const meta = { error: new Error("John Doe will be 30 on 2024-06-10") } as Meta<string>;
         const result = processor.process(meta);
 

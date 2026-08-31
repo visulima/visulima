@@ -283,9 +283,10 @@ the core cannot know which types a given engine handles.
   `compromiseScanner` does exactly this.
 - `logger` - the `logger` from `RedactOptions`, forwarded
 
-`start` orders and de-duplicates matches; it does **not** position the replacement, which is
-applied to the first occurrence of `text`. Where the same text appears twice, both occurrences
-collapse onto one mask.
+`start` must be the index of `text` within `input` — the mask is applied at that offset, so a
+match reported at the wrong position redacts the wrong occurrence. Where two matches overlap,
+the one starting earlier wins (the longer one on a tie) and the other is dropped, which is why
+rule order decides between `email` and `url` on the same address.
 
 Any engine works, including your own:
 

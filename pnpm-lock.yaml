@@ -5384,6 +5384,9 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.10(vitest@4.1.10)
+      compromise:
+        specifier: catalog:prod
+        version: 14.15.1
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1

@@ -59,7 +59,10 @@ const piiRules: Rules = [
     {
         deep: true,
         key: "email",
-        pattern: String.raw`[A-Za-z0-9._%+-]+@((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}\b`,
+        // The terminal label allows the full 63-character DNS limit, not the 6 that `domain` and
+        // `url` use: a long TLD (`.technology`, `.international`) would otherwise leave the whole
+        // address unredacted for callers who dropped those two rules.
+        pattern: String.raw`[A-Za-z0-9._%+-]+@((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,63}\b`,
     },
     { deep: true, key: "id", pattern: String.raw`\b\d{3}-\d{3}-\d{3}\b` },
     // Linearized credit-card pattern: the original `(?:\d[ -]*?){13,16}` combined a

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { redact, stringAnonymize } from "../../src";
+import { compromiseScanner } from "../../src/nlp";
 import standardModifierRules from "../../src/rules";
 
 describe("redos resistance", () => {
@@ -60,7 +61,11 @@ describe("zero-width match guard", () => {
         const result = redact("abc 123 def", [{ deep: true, key: "num", pattern: String.raw`\d*`, replacement: "<N>" }]);
 
         expect(Date.now() - start).toBeLessThan(5000);
-        expect(result).toContain("abc");
+
+        // A zero-width pattern necessarily peppers the output with masks — it matches between
+        // every character. What matters is that it terminates, and that the digits it did
+        // legitimately match are gone.
+        expect(result).not.toContain("123");
     });
 });
 
@@ -98,5 +103,45 @@ describe("untrusted scanner", () => {
                 },
             }),
         ).toThrow("scanner blew up");
+    });
+});
+
+describe("masking is applied at the matched offset", () => {
+    it("masks the occurrence that was matched, not the first one that looks like it", () => {
+        expect.assertions(2);
+
+        // Regression: replacement used to search for the first occurrence of the matched text.
+        // compromise tags only the surname inside "John Doe" here, so the match had to land on
+        // the SECOND "Doe" — the first-occurrence search rewrote the leading word instead and
+        // left the real surname in the clear.
+        const result = stringAnonymize("Doe met John Doe yesterday", ["firstname", "lastname"], { nlp: compromiseScanner });
+
+        expect(result).toBe("Doe met <FIRSTNAME> <LASTNAME> yesterday");
+        expect(result.slice(result.indexOf("met"))).not.toContain("Doe");
+    });
+
+    it("honours a scanner's per-match offsets over an earlier identical string", () => {
+        expect.assertions(1);
+
+        // Same property without compromise: the scanner reports the SECOND "secret" only, so the
+        // first must survive and the second must be masked.
+        const result = stringAnonymize("secret and secret", ["x"], {
+            nlp: () => [{ start: 11, tag: "x", text: "secret" }],
+        });
+
+        expect(result).toBe("secret and <X>");
+    });
+
+    it("drops an overlapping match instead of letting it rewrite a later occurrence", () => {
+        expect.assertions(1);
+
+        // `email` and `url` both match an address at the same offset. The first rule wins; the
+        // loser must not go hunting for some other occurrence of the same text.
+        const result = stringAnonymize("mail bob@example.com or bob@example.com", [
+            { deep: true, key: "email", pattern: String.raw`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}` },
+            { deep: true, key: "url", pattern: String.raw`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}` },
+        ]);
+
+        expect(result).toBe("mail <EMAIL> or <EMAIL>");
     });
 });

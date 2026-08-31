@@ -2,10 +2,14 @@ import nlp from "compromise";
 
 import type { NlpMatch, NlpScanner } from "./types";
 
-/** Shape of `compromise`'s `.out("offset")` result. */
+/**
+ * Shape of `compromise`'s `.out("offset")` result. Note that BOTH the match and each of its
+ * terms carry an offset: the match's is the start of the whole entity, so using it for a term
+ * would mis-report every term after the first (in "John Doe", "Doe" would claim John's offset).
+ */
 interface CompromiseOffset {
     offset: { start: number };
-    terms: { tags: string[]; text: string }[];
+    terms: { offset: { start: number }; tags: string[]; text: string }[];
 }
 
 // Maps an NLP type (as a rule key) to the compromise extractor that detects it.
@@ -67,7 +71,8 @@ export const compromiseScanner: NlpScanner = (input, types, logger): NlpMatch[] 
                 logger?.debug(`foundTag: ${String(foundTag)}`);
 
                 if (foundTag) {
-                    matches.push({ start: documentObject.offset.start, tag: foundTag, text: term.text });
+                    // The TERM's own offset, not the entity's — see CompromiseOffset above.
+                    matches.push({ start: term.offset.start, tag: foundTag, text: term.text });
                 }
             }
         }
