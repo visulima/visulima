@@ -39,8 +39,9 @@ const credentialRules: Rules = [
 
 /**
  * Personally-identifiable-information rules: bank accounts, credit cards, IDs/UUIDs,
- * IPs, MACs, phone numbers, SSNs, NINs, ISBNs, zip codes, URLs/domains, plus the
- * NLP-powered name/organization/email/money rules.
+ * IPs, MACs, phone numbers, SSNs, NINs, ISBNs, zip codes, URLs/domains, emails, plus the
+ * name/organization/money rules, which have no regex shape and are only found in prose when an
+ * `nlp` scanner is supplied (see `RedactOptions.nlp`).
  *
  * WARNING: several of these intentionally match plain numeric data and will overmatch on
  * ordinary values. For example `bankacc` (`\b\d{10,12}\b`), `id`/`routing` (`\b\d{9}\b`) and
@@ -50,6 +51,16 @@ const credentialRules: Rules = [
  */
 const piiRules: Rules = [
     { deep: true, key: "bankacc", pattern: String.raw`\b\d{10,12}\b` },
+    // Declared ahead of `domain`/`url` on purpose: all three match an address at the same
+    // offset with the same length, and equal matches are resolved by rule order, so this must
+    // come first for an address to be masked `<EMAIL>` rather than `<URL>`.
+    // The host part reuses the `domain` shape, whose per-label class excludes `.` so it cannot
+    // overlap the literal separator — no nested-quantifier backtracking (ReDoS).
+    {
+        deep: true,
+        key: "email",
+        pattern: String.raw`[A-Za-z0-9._%+-]+@((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,6}\b`,
+    },
     { deep: true, key: "id", pattern: String.raw`\b\d{3}-\d{3}-\d{3}\b` },
     // Linearized credit-card pattern: the original `(?:\d[ -]*?){13,16}` combined a
     // counted group with an unbounded lazy inner quantifier, a polynomial-backtracking
@@ -88,7 +99,6 @@ const piiRules: Rules = [
     { deep: true, key: "organization" },
     { deep: true, key: "money" },
     { deep: true, key: "bankcc" },
-    { deep: true, key: "email" },
     { deep: true, key: "passport" },
     { deep: true, key: "username" },
 ];

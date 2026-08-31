@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createRedactor, credentialRules, piiRules, redact, standardRules, stringAnonymize } from "../../src/index";
+import { compromiseScanner } from "../../src/nlp";
 
 /**
  * The behavioural assertions live in `__tests__/unit/**`, which
@@ -9,8 +10,9 @@ import { createRedactor, credentialRules, piiRules, redact, standardRules, strin
  * against workerd by their single definition.
  *
  * What is left here is what only workerd can answer: that the module graph
- * (including the sizeable `compromise` NLP dependency) loads in an isolate with
- * no `node:*` I/O, and that the walker copes with workerd's own host objects.
+ * loads in an isolate with no `node:*` I/O — including the optional
+ * `@visulima/redact/nlp` entry and the sizeable `compromise` library behind it —
+ * and that the walker copes with workerd's own host objects.
  */
 describe("@visulima/redact on workerd", () => {
     describe("module graph", () => {
@@ -21,13 +23,13 @@ describe("@visulima/redact on workerd", () => {
             expect([credentialRules, piiRules, standardRules].every((rules) => Array.isArray(rules) && rules.length > 0)).toBe(true);
         });
 
-        it("should load the compromise NLP dependency inside the isolate", () => {
+        it("should load the optional compromise scanner inside the isolate", () => {
             expect.assertions(2);
 
-            // `compromise` is a real runtime dependency pulled in lazily for NLP rules.
-            // It is by far the largest thing in the graph, so a bundling or
-            // `node:*`-resolution failure would surface here first.
-            const output = stringAnonymize("write to alice@example.com today", [{ deep: true, key: "email" }]);
+            // `compromise` reaches the graph only through `@visulima/redact/nlp`, and is by far
+            // the largest thing in it, so a bundling or `node:*`-resolution failure in that
+            // entry point would surface here first.
+            const output = stringAnonymize("write to alice@example.com today", [{ deep: true, key: "email" }], { nlp: compromiseScanner });
 
             expect(output).not.toContain("alice@example.com");
             expect(output).toContain("<EMAIL>");

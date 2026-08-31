@@ -7,15 +7,23 @@
 
 import { describe, expect, it } from "vitest";
 
-import standardModifierRules from "../../src/rules";
+import { compromiseScanner } from "../../src/nlp";
+import standardModifierRules, { piiRules } from "../../src/rules";
 import stringAnonymize from "../../src/string-anonymizer";
+import type { RedactOptions, Rules } from "../../src/types";
+
+// Natural-language detection is opt-in, so every test below that asserts on a
+// name/organization/money mask injects the compromise scanner explicitly. Tests that assert on
+// the DEFAULT (no-scanner) behaviour call `stringAnonymize` directly instead.
+const anonymizeWithNlp = (input: string, rules: Rules, options?: RedactOptions): string =>
+    stringAnonymize(input, rules, { nlp: compromiseScanner, ...options });
 
 describe(stringAnonymize, () => {
     it("should anonymize a string", () => {
         expect.assertions(1);
 
         const input = "John Doe will be 30 on 2024-06-10.";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
     });
@@ -24,7 +32,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John Doe and Jane Smith will meet on 2024-06-10.";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toMatch("<FIRSTNAME> <LASTNAME> and <FIRSTNAME1> <LASTNAME1> will meet on <DATE>");
     });
@@ -33,7 +41,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John Doe works at Google.";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toMatch("<FIRSTNAME> <LASTNAME> works at <ORGANIZATION>");
     });
@@ -42,7 +50,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John's email is john.doe@gmail.com";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> email is <EMAIL>");
     });
@@ -51,7 +59,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John's phone number is 123-456-7890";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> phone number is <PHONENUMBER>");
     });
@@ -60,16 +68,55 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John has $1000 in his account.";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> has <MONEY> in his account.");
+    });
+
+    describe("without a scanner", () => {
+        it("should still apply every pattern rule", () => {
+            expect.assertions(1);
+
+            // The positive half of the v5 default: dropping the NLP import must not weaken
+            // regex-backed redaction. Cards, SSNs, emails and dates all still go.
+            const input = "card 4111-1111-1111-1111, ssn 123-45-6789, mail bob@example.com on 2024-06-10";
+            const result = stringAnonymize(input, standardModifierRules);
+
+            expect(result).toBe("card <CREDITCARD>, ssn <SSN>, mail <EMAIL> on <DATE>");
+        });
+
+        it("should leave the four pattern-less entity keys unmatched in prose", () => {
+            expect.assertions(2);
+
+            // The negative half: these four have no regex shape, so without a scanner they find
+            // nothing inside prose. They still match object keys — covered in index.test.ts.
+            const input = "John Doe works at Google earning $50,000";
+            const entityKeys = ["firstname", "lastname", "organization", "money"];
+
+            expect(stringAnonymize(input, entityKeys)).toBe(input);
+            expect(anonymizeWithNlp(input, entityKeys)).toBe("<FIRSTNAME> <LASTNAME> works at <ORGANIZATION> earning <MONEY>");
+        });
+
+        it("should mask an email as <EMAIL> rather than under a neighbouring pattern's tag", () => {
+            expect.assertions(2);
+
+            // Regression: `email` was a key-only rule, so with no scanner an address in prose
+            // escaped a narrowed rule set entirely, and under standardRules was caught only
+            // incidentally by the `url` pattern and mislabelled <URL>. The `email` rule is
+            // declared ahead of `domain`/`url` precisely so it wins that tie.
+            expect(stringAnonymize("write to alice@example.com today", piiRules)).toBe("write to <EMAIL> today");
+
+            // ...and still wins with the patterns that used to shadow it explicitly dropped,
+            // which is the rule set a caller following the piiRules warnings would build.
+            expect(stringAnonymize("write to alice@example.com today", piiRules, { exclude: ["url", "domain"] })).toBe("write to <EMAIL> today");
+        });
     });
 
     it("should handle empty input string", () => {
         expect.assertions(1);
 
         const input = "";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("");
     });
@@ -78,7 +125,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John Doe has phone numbers 123-456-7890 and 098-765-4321";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> <LASTNAME> has phone numbers <PHONENUMBER> and <PHONENUMBER1>");
     });
@@ -87,7 +134,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John's meeting is at 3pm.";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toMatch("<FIRSTNAME> meeting is at <TIME>");
     });
@@ -96,7 +143,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John's credit card number is 4111-1111-1111-1111";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> credit card number is <CREDITCARD>");
     });
@@ -105,7 +152,7 @@ describe(stringAnonymize, () => {
         expect.assertions(1);
 
         const input = "John's credit card numbers are 4111-1111-1111-1111 and 5500-0000-0000-0004";
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe("<FIRSTNAME> credit card numbers are <CREDITCARD> and <CREDITCARD1>");
     });
@@ -118,7 +165,7 @@ If you'd like to reach me, you can email me at johndoe1985@example.com or give m
 Please note that the credit card number provided, 4916 2899 5678 1234, is purely fictional and should not be used for any actual transactions or financial purposes.
 In my free time, I enjoy hiking, painting, and playing the guitar. I'm also an avid traveler and have visited over 20 countries, each leaving a unique mark on my adventurous soul.
 Please remember that all the information provided, including the credit card number, email address, and phone number, is entirely fictional and randomly generated. It does not represent any real individuals or their personal experiences.`;
-        const result = stringAnonymize(input, standardModifierRules, {
+        const result = anonymizeWithNlp(input, standardModifierRules, {
             exclude: ["organization"],
         });
 
@@ -135,7 +182,7 @@ Please remember that all the information provided, including the credit card num
         expect.assertions(1);
 
         const input = `Hi i'm John Doe, my email is john@example.com and my phone number is +1-234-567-8900.`;
-        const result = stringAnonymize(input, standardModifierRules);
+        const result = anonymizeWithNlp(input, standardModifierRules);
 
         expect(result).toBe(`Hi i'm <FIRSTNAME> <LASTNAME>, my email is <EMAIL> and my phone number is <PHONENUMBER>.`);
     });
@@ -144,7 +191,7 @@ Please remember that all the information provided, including the credit card num
         expect.assertions(1);
 
         const input = "John Doe will be 30 on 2024-06-10.";
-        const result = stringAnonymize(input, standardModifierRules, { exclude: ["firstname"] });
+        const result = anonymizeWithNlp(input, standardModifierRules, { exclude: ["firstname"] });
 
         expect(result).toMatch("John <LASTNAME> will be 30 on <DATE>");
     });
@@ -171,7 +218,7 @@ Please remember that all the information provided, including the credit card num
         expect.assertions(1);
 
         const input = "John Doe will be 30 on 2024-06-10.";
-        const result = stringAnonymize(input, ["firstname"], { exclude: ["password"] });
+        const result = anonymizeWithNlp(input, ["firstname"], { exclude: ["password"] });
 
         expect(result).toMatch("<FIRSTNAME> Doe will be 30 on 2024-06-10.");
     });

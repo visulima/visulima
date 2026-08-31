@@ -63,3 +63,40 @@ describe("zero-width match guard", () => {
         expect(result).toContain("abc");
     });
 });
+
+describe("mask substitution safety", () => {
+    it("does not let a `$` sequence in a tag splice the redacted value back into the output", () => {
+        expect.assertions(3);
+
+        // `String.prototype.replace` expands `$&`, `` $` `` and `$'` in the REPLACEMENT string.
+        // Masks are built from the tag, so an unescaped one would echo the surrounding text —
+        // including the very value being masked — straight back into "redacted" output.
+        const scan = (tag: string) => stringAnonymize("AAA SECRET BBB", ["x"], { nlp: () => [{ start: 4, tag, text: "SECRET" }] });
+
+        expect(scan("$&")).toBe("AAA <$&> BBB");
+        expect(scan("$'")).toBe("AAA <$'> BBB");
+        expect(scan("$`")).toBe("AAA <$`> BBB");
+    });
+
+    it("does not let a `$` sequence in a rule key splice the value back either", () => {
+        expect.assertions(1);
+
+        expect(stringAnonymize("AAA SECRET BBB", [{ key: "$&", pattern: "SECRET" }])).toBe("AAA <$&> BBB");
+    });
+});
+
+describe("untrusted scanner", () => {
+    it("propagates a throwing scanner rather than emitting the unredacted string", () => {
+        expect.assertions(1);
+
+        // Failing closed is the point: swallowing the error here would return `input` verbatim
+        // to whatever sink the caller is about to write to.
+        expect(() =>
+            redact({ note: "sensitive" }, ["firstname"], {
+                nlp: () => {
+                    throw new Error("scanner blew up");
+                },
+            }),
+        ).toThrow("scanner blew up");
+    });
+});

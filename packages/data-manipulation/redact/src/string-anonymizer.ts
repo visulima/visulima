@@ -1,18 +1,10 @@
-import nlp from "compromise";
+import type { Censor, NlpMatch, RedactOptions, Rules, StringAnonymize } from "./types";
 
-import type { Censor, RedactOptions, Rules, StringAnonymize } from "./types";
-
-interface IDocumentTerm {
+// Extends NlpMatch rather than restating it: a scanner's matches are spread straight into this
+// array, so the compiler — not a comment — is what keeps the two shapes compatible.
+interface IDocumentTerm extends NlpMatch {
     /** Optional explicit replacement (static string or {@link Censor}) from the matching rule. */
     replacement?: Censor | string;
-    start: number;
-    tag: string;
-    text: string;
-}
-
-interface CompromiseOffset {
-    offset: { start: number };
-    terms: { tags: string[]; text: string }[];
 }
 
 const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, tag: string): string => {
@@ -38,12 +30,8 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
     return maskedValue;
 };
 
-const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
+const replaceWithMasks = (documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
-
-    for (const element of typesToAnonymize) {
-        maskMaps[element] = new Map<string, string>();
-    }
 
     let outputResult = output;
 
@@ -60,33 +48,14 @@ const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTe
             mask = maskText(maskMaps, text, tag);
         }
 
-        outputResult = outputResult.replace(text, mask);
+        // `text` is a plain string needle, but `mask` sits in the REPLACEMENT position, where
+        // `$&`, `` $` `` and `$'` are substitution patterns — a tag containing one would splice
+        // the surrounding text back in, echoing the very value being masked. Escaping `$` keeps
+        // the mask literal for both scanner-supplied tags and rule keys.
+        outputResult = outputResult.replace(text, mask.replaceAll("$", "$$$$"));
     }
 
     return outputResult;
-};
-
-const createDocumentTermsFromTerms = (
-    typesToAnonymize: string[],
-    processedTerms: IDocumentTerm[],
-    documentObject: CompromiseOffset,
-    term: { tags: string[]; text: string },
-
-    logger?: { debug: (...arguments_: unknown[]) => void },
-): IDocumentTerm[] => {
-    const reversedTags = term.tags.toReversed();
-
-    logger?.debug(`reversedTags: ${JSON.stringify(reversedTags)}`);
-
-    const foundTag = reversedTags.find((tag: string) => typesToAnonymize.includes(tag.toLowerCase()));
-
-    logger?.debug(`foundTag: ${String(foundTag)}`);
-
-    if (foundTag) {
-        processedTerms.push({ start: documentObject.offset.start, tag: foundTag, text: term.text });
-    }
-
-    return processedTerms;
 };
 
 const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
@@ -106,7 +75,9 @@ const createUniqueAndSortedTerms = (processedTerms: IDocumentTerm[]): IDocumentT
     });
 };
 
-const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: string, processedTerms: IDocumentTerm[]): IDocumentTerm[] => {
+const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: string): IDocumentTerm[] => {
+    const processedTerms: IDocumentTerm[] = [];
+
     for (const modifier of stringAnonymizeModifiers) {
         const { key, pattern } = modifier;
 
@@ -142,66 +113,11 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
     return processedTerms;
 };
 
-// Maps an NLP type (as a `typesToAnonymize` entry) to the compromise extractor that detects it.
-// `people` covers both firstname and lastname tags.
-const nlpExtractors: { method: "emails" | "money" | "organizations" | "people" | "phoneNumbers" | "urls"; types: string[] }[] = [
-    { method: "emails", types: ["email"] },
-    { method: "money", types: ["money"] },
-    { method: "organizations", types: ["organization"] },
-    { method: "people", types: ["firstname", "lastname"] },
-    { method: "phoneNumbers", types: ["phonenumber"] },
-    { method: "urls", types: ["url"] },
-];
-
-const processTerms = (
-    typesToAnonymize: string[],
-    input: string,
-    processedTerms: IDocumentTerm[],
-
-    logger?: { debug: (...arguments_: unknown[]) => void },
-): IDocumentTerm[] => {
-    const requested = nlpExtractors.filter((extractor) => extractor.types.some((type) => typesToAnonymize.includes(type)));
-
-    // Skip the (expensive) compromise parse entirely when no NLP-backed rule was requested.
-    if (requested.length === 0) {
-        return processedTerms;
-    }
-
-    const nlpDocument = nlp(input);
-
-    const processedDocument: CompromiseOffset[] = [];
-
-    // Only run the extractors whose tags were actually requested, instead of all six.
-    for (const extractor of requested) {
-        processedDocument.push(...(nlpDocument[extractor.method]().out("offset") as unknown as CompromiseOffset[]));
-    }
-
-    for (const documentObject of processedDocument) {
-        const { terms } = documentObject;
-
-        for (const term of terms) {
-            // eslint-disable-next-line no-param-reassign
-            processedTerms = createDocumentTermsFromTerms(typesToAnonymize, processedTerms, documentObject, term, logger);
-        }
-    }
-
-    return processedTerms;
-};
-
-const processDocument = (
-    input: string,
-    typesToAnonymize: string[],
-    stringAnonymizeModifiers: StringAnonymize[],
-
-    logger?: { debug: (...arguments_: unknown[]) => void },
-): IDocumentTerm[] => {
-    let processedTerms: IDocumentTerm[] = [];
-
-    processedTerms = processTerms(typesToAnonymize, input, processedTerms, logger);
-    processedTerms = processWithRegex(stringAnonymizeModifiers, input, processedTerms);
-
-    return createUniqueAndSortedTerms(processedTerms);
-};
+const processDocument = (input: string, typesToAnonymize: string[], stringAnonymizeModifiers: StringAnonymize[], options?: RedactOptions): IDocumentTerm[] =>
+    // No scanner injected means no NLP pass — and no natural-language library in the bundle.
+    // NLP matches are collected before the regex ones so that, where both find the same span,
+    // the sort (stable, start-ascending) keeps the entity label.
+    createUniqueAndSortedTerms([...options?.nlp?.(input, typesToAnonymize, options.logger) ?? [], ...processWithRegex(stringAnonymizeModifiers, input)]);
 
 const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOptions): string => {
     const patternModifiers: StringAnonymize[] = [];
@@ -221,18 +137,16 @@ const stringAnonymize = (input: string, modifiers: Rules, options?: RedactOption
             patternModifiers.push(modifier as StringAnonymize);
         }
 
-        if (typeof modifier === "string" || typeof modifier === "number") {
-            typesToAnonymize.push(modifier.toString());
-        } else {
-            typesToAnonymize.push(modifier.key);
-        }
+        // Lowercased here, once, so every scanner receives the casing its contract promises and
+        // none of them has to normalise defensively.
+        typesToAnonymize.push((typeof modifier === "object" ? modifier.key : String(modifier)).toLowerCase());
     }
 
     let output = input;
 
-    const documentTerms = processDocument(input, typesToAnonymize, patternModifiers, options?.logger);
+    const documentTerms = processDocument(input, typesToAnonymize, patternModifiers, options);
 
-    output = replaceWithMasks(typesToAnonymize, documentTerms, output);
+    output = replaceWithMasks(documentTerms, output);
 
     return output;
 };
