@@ -22,7 +22,7 @@ import { pail } from "../io/logger";
 import { isMarshallDisabled } from "./marshalls/registry";
 import { generateVariants } from "./typosquat-variants";
 
-export { generateVariants };
+export { generateVariants } from "./typosquat-variants";
 
 export type Blocklist = Record<string, string[]>;
 
