@@ -132,6 +132,29 @@ describe("masking is applied at the matched offset", () => {
         expect(result).toBe("secret and <X>");
     });
 
+    it("masks every occurrence when a scanner reports a span that does not line up", () => {
+        expect.assertions(3);
+
+        // A scanner aiming at the SECOND duplicate but reporting a bogus offset used to fall back
+        // to the first textual occurrence, masking the wrong one and leaving the intended value
+        // exposed. There is no way to recover which was meant, so every remaining occurrence is
+        // masked — over-masking is the only safe direction here.
+        const bogus = (start: number) => stringAnonymize("secret and secret", ["x"], { nlp: () => [{ start, tag: "x", text: "secret" }] });
+
+        expect(bogus(999)).toBe("<X> and <X>");
+        expect(bogus(-1)).toBe("<X> and <X>");
+        expect(bogus(Number.NaN)).not.toContain("secret");
+    });
+
+    it("still masks exactly one occurrence when the span is valid", () => {
+        expect.assertions(2);
+
+        // The counterpart: a correct offset must NOT trigger the over-masking path, or every
+        // duplicate would collapse and the distinction above would be meaningless.
+        expect(stringAnonymize("secret and secret", ["x"], { nlp: () => [{ start: 11, tag: "x", text: "secret" }] })).toBe("secret and <X>");
+        expect(stringAnonymize("secret and secret", ["x"], { nlp: () => [{ start: 0, tag: "x", text: "secret" }] })).toBe("<X> and secret");
+    });
+
     it("drops an overlapping match instead of letting it rewrite a later occurrence", () => {
         expect.assertions(1);
 

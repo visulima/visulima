@@ -30,6 +30,25 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
     return maskedValue;
 };
 
+/**
+ * The text to put in place of a match: an explicit user replacement if the rule carried one,
+ * otherwise the numbered `&lt;TAG>` mask. Resolved lazily by the caller, because allocating a
+ * numbered mask for a term that is then dropped would burn a number and shift every later one.
+ */
+const resolveMask = (maskMaps: Record<string, Map<string, string>>, documentTerm: IDocumentTerm): string => {
+    const { replacement, tag, text } = documentTerm;
+
+    if (typeof replacement === "function") {
+        return String(replacement(text, undefined));
+    }
+
+    if (typeof replacement === "string") {
+        return replacement;
+    }
+
+    return maskText(maskMaps, text, tag);
+};
+
 const replaceWithMasks = (documentTerms: IDocumentTerm[], output: string): string => {
     const maskMaps: Record<string, Map<string, string>> = {};
 
@@ -43,41 +62,49 @@ const replaceWithMasks = (documentTerms: IDocumentTerm[], output: string): strin
     // one exposed. Slicing also means a mask containing `$&` or `` $` `` is inserted literally
     // instead of being re-expanded as a replacement pattern.
     for (const documentTerm of documentTerms) {
-        const { replacement, start, tag, text } = documentTerm;
+        const { start, text } = documentTerm;
 
-        // A span that begins inside the text already masked is an overlapping match for the
-        // same value (e.g. `email` and `url` both matching an address). The first one wins —
-        // which is why rule order decides — and the rest are dropped rather than allowed to
-        // re-match some later, unrelated occurrence.
-        if (start < cursor) {
+        // Nothing to mask, and an empty needle would make the rescan below loop forever.
+        if (text === "") {
             continue;
         }
 
-        let at = start;
-
-        // `nlp` scanners are caller-supplied, so the offset is not trusted: if it does not line
-        // up with the text it claims, fall back to the next occurrence at or after the cursor.
-        // Skipping instead would silently drop the redaction.
-        if (output.slice(at, at + text.length) !== text) {
-            at = output.indexOf(text, cursor);
-
-            if (at === -1) {
+        // Does the reported span actually point at the text it claims? Pattern rules always
+        // produce one that does; an `nlp` scanner is caller-supplied, so this is checked before
+        // the span is trusted for anything — including the overlap test below, which would
+        // otherwise silently drop a match carrying a negative offset.
+        if (Number.isInteger(start) && start >= 0 && output.slice(start, start + text.length) === text) {
+            // A span beginning inside text already masked is an overlapping match for the same
+            // value (e.g. `email` and `url` both matching an address). The first one wins —
+            // which is why rule order decides — and the rest are dropped rather than allowed to
+            // re-match some later, unrelated occurrence.
+            if (start < cursor) {
                 continue;
             }
+
+            result += output.slice(cursor, start) + resolveMask(maskMaps, documentTerm);
+            cursor = start + text.length;
+
+            continue;
         }
 
-        let mask: string;
+        // The span is unusable, so there is no way to know WHICH occurrence was meant. Masking
+        // the first would leave a later one — possibly the intended one — in the clear, and
+        // skipping would leave them all. Mask every remaining occurrence instead: over-masking
+        // is the only safe direction for a redaction library.
+        let at = output.indexOf(text, cursor);
 
-        if (typeof replacement === "function") {
-            mask = String(replacement(text, undefined));
-        } else if (typeof replacement === "string") {
-            mask = replacement;
-        } else {
-            mask = maskText(maskMaps, text, tag);
+        if (at === -1) {
+            continue;
         }
 
-        result += output.slice(cursor, at) + mask;
-        cursor = at + text.length;
+        const mask = resolveMask(maskMaps, documentTerm);
+
+        while (at !== -1) {
+            result += output.slice(cursor, at) + mask;
+            cursor = at + text.length;
+            at = output.indexOf(text, cursor);
+        }
     }
 
     return result + output.slice(cursor);
