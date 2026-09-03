@@ -56,6 +56,13 @@
             },
             "browser": "./dist/index.js"
         },
+        "./nlp": {
+            "import": {
+                "types": "./dist/nlp.d.ts",
+                "default": "./dist/nlp.js"
+            },
+            "browser": "./dist/nlp.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -85,9 +92,6 @@
         "test:watch": "vitest",
         "test:workerd": "vitest run --config vitest.workerd.config.ts"
     },
-    "dependencies": {
-        "compromise": "catalog:prod"
-    },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
@@ -101,6 +105,7 @@
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
+        "compromise": "catalog:prod",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "dot-prop": "catalog:dev",
         "esbuild": "catalog:build",
@@ -113,6 +118,14 @@
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "compromise": "catalog:peer"
+    },
+    "peerDependenciesMeta": {
+        "compromise": {
+            "optional": true
+        }
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
