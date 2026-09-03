@@ -1,3 +1,22 @@
+## @visulima/pail [5.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@4.1.1...@visulima/pail@5.0.0) (2026-09-03)
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** make nlp detection opt-in via injection (#852)
+
+### Features
+
+* **redact:** make nlp detection opt-in via injection ([#852](https://github.com/visulima/visulima/issues/852)) ([78e60fd](https://github.com/visulima/visulima/commit/78e60fd3821dbe8c267c6ec71d90659ab4e4b2e1))
+
+### Bug Fixes
+
+* stop vis ci, cache, preflight and inference failing silently ([#854](https://github.com/visulima/visulima/issues/854)) ([45a97b0](https://github.com/visulima/visulima/commit/45a97b02684c8336662f23a3f2cd2f7227c14692))
+
+
+### Dependencies
+
+* **@visulima/redact:** upgraded to 5.0.0
+
 ## @visulima/pail [4.1.1](https://github.com/visulima/visulima/compare/%40visulima%2Fpail%404.1.0...%40visulima%2Fpail%404.1.1) (2026-08-08)
 
 
