@@ -1,3 +1,15 @@
+## @visulima/cerebro [3.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.1.0...@visulima/cerebro@3.1.1) (2026-09-03)
+
+### Bug Fixes
+
+* stop vis ci, cache, preflight and inference failing silently ([#854](https://github.com/visulima/visulima/issues/854)) ([45a97b0](https://github.com/visulima/visulima/commit/45a97b02684c8336662f23a3f2cd2f7227c14692))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 5.0.0
+* **@visulima/pail:** upgraded to 5.0.0
+
 ## @visulima/cerebro [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fcerebro%403.0.6...%40visulima%2Fcerebro%403.1.0) (2026-08-19)
 
 ## @visulima/cerebro [3.0.6](https://github.com/visulima/visulima/compare/%40visulima%2Fcerebro%403.0.5...%40visulima%2Fcerebro%403.0.6) (2026-08-08)
