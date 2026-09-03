@@ -7,10 +7,10 @@ import { telemetryMiddleware } from "../src/middleware/telemetry";
 import type { SendContext } from "../src/middleware/types";
 import { createNotification } from "../src/notification";
 import { MemoryPreferenceStore, preferencesGate } from "../src/preferences";
-import { failoverProvider } from "../src/providers/failover";
-import { mockProvider } from "../src/providers/mock";
+import { createFailoverProvider } from "../src/providers/failover";
+import { createMockProvider } from "../src/providers/mock";
 import type { Provider } from "../src/providers/provider";
-import { roundRobinProvider } from "../src/providers/roundrobin";
+import { createRoundRobinProvider } from "../src/providers/roundrobin";
 import { isRetryableStatus, makeRequest, requestWithRetry } from "../src/providers/utils/http";
 import generateMessageId from "../src/providers/utils/id";
 import { route } from "../src/routing";
@@ -31,7 +31,7 @@ describe("notification facade branches", () => {
     it("throws when send() is called with an empty message", async () => {
         expect.assertions(1);
 
-        const notify = createNotification({ sms: mockProvider({ channel: "sms" }) });
+        const notify = createNotification({ sms: createMockProvider({ channel: "sms" }) });
 
         await expect(notify.send({})).rejects.toThrow("empty message");
     });
@@ -39,7 +39,7 @@ describe("notification facade branches", () => {
     it("getProvider returns the registered provider or undefined", () => {
         expect.assertions(2);
 
-        const sms = mockProvider({ channel: "sms", id: "sms-1" });
+        const sms = createMockProvider({ channel: "sms", id: "sms-1" });
         const notify = createNotification({ sms });
 
         expect(notify.getProvider("sms")).toBe(sms);
@@ -49,8 +49,8 @@ describe("notification facade branches", () => {
     it("initialize() initializes every registered provider once", async () => {
         expect.assertions(2);
 
-        const sms = mockProvider({ channel: "sms", id: "sms-init" });
-        const push = mockProvider({ channel: "push", id: "push-init" });
+        const sms = createMockProvider({ channel: "sms", id: "sms-init" });
+        const push = createMockProvider({ channel: "push", id: "push-init" });
         const smsInit = vi.spyOn(sms, "initialize");
         const pushInit = vi.spyOn(push, "initialize");
 
@@ -66,8 +66,8 @@ describe("notification facade branches", () => {
         expect.assertions(2);
 
         const shutdown = vi.fn();
-        const sms = mockProvider({ channel: "sms", id: "sms-shut" });
-        const push = { ...mockProvider({ channel: "push", id: "push-shut" }), shutdown } as Provider;
+        const sms = createMockProvider({ channel: "sms", id: "sms-shut" });
+        const push = { ...createMockProvider({ channel: "push", id: "push-shut" }), shutdown } as Provider;
 
         const notify = createNotification({ push, sms });
 
@@ -79,7 +79,7 @@ describe("notification facade branches", () => {
         expect.assertions(2);
 
         const provider = {
-            ...mockProvider({ channel: "sms", id: "init-throws" }),
+            ...createMockProvider({ channel: "sms", id: "init-throws" }),
             initialize: () => {
                 throw new Error("init blew up");
             },
@@ -96,7 +96,7 @@ describe("notification facade branches", () => {
     it("sendMany processes multiple messages across batches", async () => {
         expect.assertions(2);
 
-        const provider = mockProvider({ channel: "sms", id: "many" });
+        const provider = createMockProvider({ channel: "sms", id: "many" });
         const notify = createNotification({ sms: provider });
 
         const messages = [
@@ -122,7 +122,7 @@ describe("failover provider branches", () => {
     it("aggregates messages when all providers fail", async () => {
         expect.assertions(2);
 
-        const provider = failoverProvider([mockProvider({ failWith: "a", id: "p1" }), mockProvider({ failWith: "b", id: "p2" })]);
+        const provider = createFailoverProvider([createMockProvider({ failWith: "a", id: "p1" }), createMockProvider({ failWith: "b", id: "p2" })]);
         const result = await provider.send({ text: "hi", to: "+1" } as never);
 
         expect(result.success).toBe(false);
@@ -132,10 +132,10 @@ describe("failover provider branches", () => {
     it("isAvailable is true when any provider is available", async () => {
         expect.assertions(1);
 
-        const down = { ...mockProvider({ id: "down" }), isAvailable: () => false } as Provider;
-        const up = mockProvider({ id: "up" });
+        const down = { ...createMockProvider({ id: "down" }), isAvailable: () => false } as Provider;
+        const up = createMockProvider({ id: "up" });
 
-        const provider = failoverProvider([down, up]);
+        const provider = createFailoverProvider([down, up]);
 
         await expect(provider.isAvailable()).resolves.toBe(true);
     });
@@ -143,7 +143,7 @@ describe("failover provider branches", () => {
     it("throws when constructed with an empty provider array", () => {
         expect.assertions(1);
 
-        expect(() => failoverProvider([])).toThrow("At least one provider is required");
+        expect(() => createFailoverProvider([])).toThrow("At least one provider is required");
     });
 });
 
@@ -151,9 +151,9 @@ describe("roundrobin provider branches", () => {
     it("rotation wraps back to the first provider", async () => {
         expect.assertions(3);
 
-        const a = mockProvider({ channel: "sms", id: "a" });
-        const b = mockProvider({ channel: "sms", id: "b" });
-        const provider = roundRobinProvider([a, b]);
+        const a = createMockProvider({ channel: "sms", id: "a" });
+        const b = createMockProvider({ channel: "sms", id: "b" });
+        const provider = createRoundRobinProvider([a, b]);
 
         const first = await provider.send({ text: "1", to: "+1" } as never);
         const second = await provider.send({ text: "2", to: "+2" } as never);
@@ -167,11 +167,11 @@ describe("roundrobin provider branches", () => {
     it("with failover:false only tries one provider", async () => {
         expect.assertions(2);
 
-        const failing = mockProvider({ channel: "sms", failWith: "down", id: "first" });
-        const healthy = mockProvider({ channel: "sms", id: "second" });
+        const failing = createMockProvider({ channel: "sms", failWith: "down", id: "first" });
+        const healthy = createMockProvider({ channel: "sms", id: "second" });
         const healthySend = vi.spyOn(healthy, "send");
 
-        const provider = roundRobinProvider([failing, healthy], { failover: false });
+        const provider = createRoundRobinProvider([failing, healthy], { failover: false });
         const result = await provider.send({ text: "x", to: "+1" } as never);
 
         expect(result.success).toBe(false);
@@ -181,7 +181,7 @@ describe("roundrobin provider branches", () => {
     it("fails when all providers fail with failover", async () => {
         expect.assertions(2);
 
-        const provider = roundRobinProvider([mockProvider({ failWith: "a", id: "p1" }), mockProvider({ failWith: "b", id: "p2" })]);
+        const provider = createRoundRobinProvider([createMockProvider({ failWith: "a", id: "p1" }), createMockProvider({ failWith: "b", id: "p2" })]);
         const result = await provider.send({ text: "x", to: "+1" } as never);
 
         expect(result.success).toBe(false);
@@ -191,16 +191,16 @@ describe("roundrobin provider branches", () => {
     it("isAvailable is true when any provider is available", async () => {
         expect.assertions(1);
 
-        const down = { ...mockProvider({ id: "rr-down" }), isAvailable: () => false } as Provider;
-        const up = mockProvider({ id: "rr-up" });
+        const down = { ...createMockProvider({ id: "rr-down" }), isAvailable: () => false } as Provider;
+        const up = createMockProvider({ id: "rr-up" });
 
-        await expect(roundRobinProvider([down, up]).isAvailable()).resolves.toBe(true);
+        await expect(createRoundRobinProvider([down, up]).isAvailable()).resolves.toBe(true);
     });
 
     it("throws when constructed with an empty provider array", () => {
         expect.assertions(1);
 
-        expect(() => roundRobinProvider([])).toThrow("At least one provider is required");
+        expect(() => createRoundRobinProvider([])).toThrow("At least one provider is required");
     });
 });
 
@@ -364,8 +364,8 @@ describe("routing branches", () => {
     it("skips channels whose gate returns false", async () => {
         expect.assertions(1);
 
-        const sms = mockProvider({ channel: "sms", id: "sms" });
-        const push = mockProvider({ channel: "push", id: "push" });
+        const sms = createMockProvider({ channel: "sms", id: "sms" });
+        const push = createMockProvider({ channel: "push", id: "push" });
         const notify = createNotification({ push, sms });
 
         const receipts = await route(notify, { push: { body: "hi", to: "tok" }, sms: { text: "hi", to: "+1" } }, { gate: (channel) => channel === "push" });
@@ -376,8 +376,8 @@ describe("routing branches", () => {
     it("mode:all broadcasts to every allowed channel", async () => {
         expect.assertions(2);
 
-        const sms = mockProvider({ channel: "sms", id: "sms" });
-        const push = mockProvider({ channel: "push", id: "push" });
+        const sms = createMockProvider({ channel: "sms", id: "sms" });
+        const push = createMockProvider({ channel: "push", id: "push" });
         const notify = createNotification({ push, sms });
 
         const receipts = await route(notify, { push: { body: "hi", to: "tok" }, sms: { text: "hi", to: "+1" } }, { mode: "all" });
@@ -389,8 +389,8 @@ describe("routing branches", () => {
     it("best-of continues past a failure and stops at the first success", async () => {
         expect.assertions(3);
 
-        const sms = mockProvider({ channel: "sms", failWith: "down", id: "sms" });
-        const push = mockProvider({ channel: "push", id: "push" });
+        const sms = createMockProvider({ channel: "sms", failWith: "down", id: "sms" });
+        const push = createMockProvider({ channel: "push", id: "push" });
         const notify = createNotification({ push, sms });
 
         const receipts = await route(notify, { push: { body: "hi", to: "tok" }, sms: { text: "hi", to: "+1" } }, { order: ["sms", "push"] });

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RequiredOptionError from "../src/errors/required-option-error";
-import { messageBirdProvider } from "../src/providers/sms/messagebird";
-import { plivoProvider } from "../src/providers/sms/plivo";
-import { snsProvider } from "../src/providers/sms/sns";
-import { telnyxProvider } from "../src/providers/sms/telnyx";
-import { twilioProvider } from "../src/providers/sms/twilio";
-import { vonageProvider } from "../src/providers/sms/vonage";
+import { createMessageBirdProvider } from "../src/providers/sms/messagebird";
+import { createPlivoProvider } from "../src/providers/sms/plivo";
+import { createSnsProvider } from "../src/providers/sms/sns";
+import { createTelnyxProvider } from "../src/providers/sms/telnyx";
+import { createTwilioProvider } from "../src/providers/sms/twilio";
+import { createVonageProvider } from "../src/providers/sms/vonage";
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
@@ -33,7 +33,7 @@ describe("sms provider branch coverage", () => {
         it("vonage fails without a sender", async () => {
             expect.assertions(2);
 
-            const provider = vonageProvider({ apiKey: "k", apiSecret: "s" });
+            const provider = createVonageProvider({ apiKey: "k", apiSecret: "s" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -43,7 +43,7 @@ describe("sms provider branch coverage", () => {
         it("plivo fails without a sender", async () => {
             expect.assertions(2);
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok" });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -53,7 +53,7 @@ describe("sms provider branch coverage", () => {
         it("messagebird fails without an originator", async () => {
             expect.assertions(2);
 
-            const provider = messageBirdProvider({ accessKey: "key" });
+            const provider = createMessageBirdProvider({ accessKey: "key" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -63,7 +63,7 @@ describe("sms provider branch coverage", () => {
         it("telnyx fails without a sender or messaging profile", async () => {
             expect.assertions(2);
 
-            const provider = telnyxProvider({ apiKey: "key" });
+            const provider = createTelnyxProvider({ apiKey: "key" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -75,7 +75,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ sid: "SM-msg" }, 201));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", messagingServiceSid: "MG1" });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", messagingServiceSid: "MG1" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -92,7 +92,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ messages: [{ "error-text": "Invalid Credentials", status: "4" }] }, 401));
 
-            const provider = vonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 0 });
+            const provider = createVonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -104,7 +104,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ error: "invalid destination" }, 400));
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 0 });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -116,7 +116,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ errors: [{ detail: "Invalid phone number" }] }, 422));
 
-            const provider = telnyxProvider({ apiKey: "key", from: "+15550000000", retries: 0 });
+            const provider = createTelnyxProvider({ apiKey: "key", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -128,7 +128,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(textResponse("<ErrorResponse><Error><Message>Invalid parameter</Message></Error></ErrorResponse>", 400));
 
-            const provider = snsProvider({ accessKeyId: "AKIA", retries: 0, secretAccessKey: "secret" });
+            const provider = createSnsProvider({ accessKeyId: "AKIA", retries: 0, secretAccessKey: "secret" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -140,7 +140,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ status: 400 }, 400));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -154,7 +154,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("socket hang up"));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -166,7 +166,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("ECONNRESET"));
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 0 });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -178,7 +178,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("dns failure"));
 
-            const provider = telnyxProvider({ apiKey: "key", from: "+15550000000", retries: 0 });
+            const provider = createTelnyxProvider({ apiKey: "key", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -190,7 +190,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("aborted"));
 
-            const provider = vonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 0 });
+            const provider = createVonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -202,7 +202,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("timeout"));
 
-            const provider = messageBirdProvider({ accessKey: "key", from: "App", retries: 0 });
+            const provider = createMessageBirdProvider({ accessKey: "key", from: "App", retries: 0 });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -214,7 +214,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockRejectedValue(new Error("connection refused"));
 
-            const provider = snsProvider({ accessKeyId: "AKIA", retries: 0, secretAccessKey: "secret" });
+            const provider = createSnsProvider({ accessKeyId: "AKIA", retries: 0, secretAccessKey: "secret" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -233,7 +233,7 @@ describe("sms provider branch coverage", () => {
             fetchMock.mockResolvedValueOnce(jsonResponse({ error_message: "busy" }, 503));
             fetchMock.mockResolvedValueOnce(jsonResponse({ sid: "SM-retry" }, 201));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 1 });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 1 });
             const promise = provider.send({ text: "hi", to: "+1" });
 
             await vi.runAllTimersAsync();
@@ -250,7 +250,7 @@ describe("sms provider branch coverage", () => {
             fetchMock.mockResolvedValueOnce(jsonResponse({}, 503));
             fetchMock.mockResolvedValueOnce(jsonResponse({ messages: [{ "message-id": "v-retry", status: "0" }] }));
 
-            const provider = vonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 1 });
+            const provider = createVonageProvider({ apiKey: "k", apiSecret: "s", from: "App", retries: 1 });
             const promise = provider.send({ text: "hi", to: "+1" });
 
             await vi.runAllTimersAsync();
@@ -267,7 +267,7 @@ describe("sms provider branch coverage", () => {
             fetchMock.mockResolvedValueOnce(jsonResponse({}, 503));
             fetchMock.mockResolvedValueOnce(jsonResponse({ message_uuid: ["p-retry"] }, 202));
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 1 });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000", retries: 1 });
             const promise = provider.send({ text: "hi", to: "+1" });
 
             await vi.runAllTimersAsync();
@@ -284,7 +284,7 @@ describe("sms provider branch coverage", () => {
             fetchMock.mockResolvedValueOnce(jsonResponse({}, 503));
             fetchMock.mockResolvedValueOnce(jsonResponse({ id: "mb-retry" }, 201));
 
-            const provider = messageBirdProvider({ accessKey: "key", from: "App", retries: 1 });
+            const provider = createMessageBirdProvider({ accessKey: "key", from: "App", retries: 1 });
             const promise = provider.send({ text: "hi", to: "+1" });
 
             await vi.runAllTimersAsync();
@@ -305,7 +305,7 @@ describe("sms provider branch coverage", () => {
             fetchMock.mockResolvedValueOnce(textResponse("unavailable", 503));
             fetchMock.mockResolvedValueOnce(textResponse("<PublishResponse><PublishResult><MessageId>sns-retry</MessageId></PublishResult></PublishResponse>"));
 
-            const provider = snsProvider({ accessKeyId: "AKIA", retries: 1, secretAccessKey: "secret" });
+            const provider = createSnsProvider({ accessKeyId: "AKIA", retries: 1, secretAccessKey: "secret" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -319,7 +319,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({}, 201));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000" });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -331,7 +331,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({}));
 
-            const provider = vonageProvider({ apiKey: "k", apiSecret: "s", from: "App" });
+            const provider = createVonageProvider({ apiKey: "k", apiSecret: "s", from: "App" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(false);
@@ -342,7 +342,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({}));
 
-            const provider = telnyxProvider({ apiKey: "key", from: "+15550000000" });
+            const provider = createTelnyxProvider({ apiKey: "key", from: "+15550000000" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -354,7 +354,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(textResponse("<PublishResponse></PublishResponse>"));
 
-            const provider = snsProvider({ accessKeyId: "AKIA", secretAccessKey: "secret" });
+            const provider = createSnsProvider({ accessKeyId: "AKIA", secretAccessKey: "secret" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -366,7 +366,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ message_uuid: [] }, 202));
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
             const result = await provider.send({ text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
@@ -378,55 +378,55 @@ describe("sms provider branch coverage", () => {
         it("twilio throws without accountSid", () => {
             expect.assertions(1);
 
-            expect(() => twilioProvider({ authToken: "tok" } as never)).toThrow(RequiredOptionError);
+            expect(() => createTwilioProvider({ authToken: "tok" } as never)).toThrow(RequiredOptionError);
         });
 
         it("twilio throws without authToken", () => {
             expect.assertions(1);
 
-            expect(() => twilioProvider({ accountSid: "AC1" } as never)).toThrow(RequiredOptionError);
+            expect(() => createTwilioProvider({ accountSid: "AC1" } as never)).toThrow(RequiredOptionError);
         });
 
         it("vonage throws without apiKey", () => {
             expect.assertions(1);
 
-            expect(() => vonageProvider({ apiSecret: "s" } as never)).toThrow(RequiredOptionError);
+            expect(() => createVonageProvider({ apiSecret: "s" } as never)).toThrow(RequiredOptionError);
         });
 
         it("vonage throws without apiSecret", () => {
             expect.assertions(1);
 
-            expect(() => vonageProvider({ apiKey: "k" } as never)).toThrow(RequiredOptionError);
+            expect(() => createVonageProvider({ apiKey: "k" } as never)).toThrow(RequiredOptionError);
         });
 
         it("plivo throws without authId", () => {
             expect.assertions(1);
 
-            expect(() => plivoProvider({ authToken: "tok" } as never)).toThrow(RequiredOptionError);
+            expect(() => createPlivoProvider({ authToken: "tok" } as never)).toThrow(RequiredOptionError);
         });
 
         it("plivo throws without authToken", () => {
             expect.assertions(1);
 
-            expect(() => plivoProvider({ authId: "id" } as never)).toThrow(RequiredOptionError);
+            expect(() => createPlivoProvider({ authId: "id" } as never)).toThrow(RequiredOptionError);
         });
 
         it("messagebird throws without accessKey", () => {
             expect.assertions(1);
 
-            expect(() => messageBirdProvider({} as never)).toThrow(RequiredOptionError);
+            expect(() => createMessageBirdProvider({} as never)).toThrow(RequiredOptionError);
         });
 
         it("telnyx throws without apiKey", () => {
             expect.assertions(1);
 
-            expect(() => telnyxProvider({} as never)).toThrow(RequiredOptionError);
+            expect(() => createTelnyxProvider({} as never)).toThrow(RequiredOptionError);
         });
 
         it("sns throws without accessKeyId and secretAccessKey", () => {
             expect.assertions(1);
 
-            expect(() => snsProvider({} as never)).toThrow(RequiredOptionError);
+            expect(() => createSnsProvider({} as never)).toThrow(RequiredOptionError);
         });
     });
 
@@ -436,7 +436,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ error_message: "blocked" }, 400));
 
-            const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
+            const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
             const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
             expect(result.success).toBe(false);
@@ -448,7 +448,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ message_uuid: ["u1", "u2"] }, 202));
 
-            const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
+            const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
             const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
             expect(result.success).toBe(true);
@@ -464,7 +464,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ id: "mb-batch" }, 201));
 
-            const provider = messageBirdProvider({ accessKey: "key", from: "App" });
+            const provider = createMessageBirdProvider({ accessKey: "key", from: "App" });
             const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
             expect(result.success).toBe(true);
@@ -482,7 +482,7 @@ describe("sms provider branch coverage", () => {
 
             fetchMock.mockResolvedValue(textResponse("<PublishResponse><PublishResult><MessageId>m-1</MessageId></PublishResult></PublishResponse>"));
 
-            const provider = snsProvider({ accessKeyId: "AKIDEXAMPLE", region: "eu-west-1", secretAccessKey: "secret" });
+            const provider = createSnsProvider({ accessKeyId: "AKIDEXAMPLE", region: "eu-west-1", secretAccessKey: "secret" });
             const result = await provider.send({ from: "Sender", text: "hi", to: "+1" });
 
             expect(result.success).toBe(true);
