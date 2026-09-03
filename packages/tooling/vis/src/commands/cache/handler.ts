@@ -20,6 +20,12 @@ import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
 
 /**
+ * Subdirectory `applyBranchScope` nests per-branch caches under. Reserved:
+ * it is a container, not a cache entry.
+ */
+const BRANCH_SCOPE_DIRECTORY = "branches";
+
+/**
  * Shape returned by `collectCacheEntries`. Kept close to what `removeOldEntries`
  * uses internally so we can render the list identically.
  */
@@ -66,7 +72,11 @@ export const collectCacheEntries = async (cacheDirectory: string): Promise<Cache
     }
 
     for (const name of dirents) {
-        if (name.startsWith(".")) {
+        // `branches` is the branch-scoping container, never a cache entry:
+        // its children are cache roots in their own right. Counting it as one
+        // entry reported N branches' worth of hashes as a single row, and
+        // listing it alongside those roots would double-count them.
+        if (name.startsWith(".") || name === BRANCH_SCOPE_DIRECTORY) {
             continue;
         }
 
@@ -159,14 +169,22 @@ const printStatsBlock = (label: string, stats: AuxStats): void => {
  *
  * With branch scoping on, entries live in `&lt;base>/branches/&lt;slug>`; every
  * such subtree counts against retention, including branches this checkout
- * has never been on. Returns `[base]` when the layout isn't branch-scoped.
+ * has never been on.
+ *
+ * `base` itself is always included, never replaced. A workspace that ran
+ * unscoped before turning `branchScopedCache` on still has entries sitting
+ * directly under it, and returning only the branch subtrees made those
+ * unreachable to `--max-age-days` / `--max-size` while `clean` still
+ * deleted them — retention silently stopped covering part of the store.
+ * `collectCacheEntries` skips the `branches` container, so listing `base`
+ * cannot double-count what the subtrees already report.
  */
 const evictionDirectories = (base: string, branchScoped: boolean): string[] => {
     if (!branchScoped) {
         return [base];
     }
 
-    const branchesRoot = join(base, "branches");
+    const branchesRoot = join(base, BRANCH_SCOPE_DIRECTORY);
 
     if (!isAccessibleSync(branchesRoot)) {
         return [base];
@@ -177,7 +195,7 @@ const evictionDirectories = (base: string, branchScoped: boolean): string[] => {
             .filter((entry) => entry.isDirectory())
             .map((entry) => join(branchesRoot, entry.name));
 
-        return slugs.length > 0 ? slugs : [base];
+        return [base, ...slugs];
     } catch {
         return [base];
     }

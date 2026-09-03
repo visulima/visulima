@@ -23,7 +23,7 @@ This page is the narrative companion to [Configuration](/configuration). The ref
 
 Before the precedence stack below decides *how* a target is configured,
 something has to decide that the target **exists** for a project at all.
-Three things create one, and nothing else does:
+Three things declare one explicitly:
 
 1. **A `package.json` script.** Every script is a target of the same name,
    with the script body as its command. This is the usual source — you do
@@ -45,6 +45,14 @@ Three things create one, and nothing else does:
        },
    });
    ```
+
+There is a fourth, non-explicit source: **detector inference**
+(`inferTargets`). Detectors run after the explicit sources above and can add
+a target none of them declared — but only for a project that declares no
+task surface of its own, unless you set `inferTargets` explicitly, in which
+case they add missing targets everywhere. See
+[Inferred Targets](/configuration#inferred-targets); `vis list --inferred`
+shows exactly which targets came from a detector.
 
 A `tasks` entry that carries only *settings* — `cache`, `inputs`,
 `outputs`, `dependsOn` — creates nothing. It is a default **for** the

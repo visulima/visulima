@@ -43,7 +43,15 @@ export const forwardedArgv = (rawArgv: ReadonlyArray<string>, argv: ReadonlyArra
     return commandIndex === -1 ? [] : argv.slice(commandIndex + 1);
 };
 
-const execute = async ({ argument, options, rawArgv, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {
+const execute = async ({
+    argument,
+    options,
+    process: toolboxProcess,
+    rawArgv,
+    runtime,
+    visConfig,
+    workspaceRoot: wsRoot,
+}: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {
     const target = argument[0];
 
     if (!target) {
@@ -91,9 +99,13 @@ const execute = async ({ argument, options, rawArgv, runtime, visConfig, workspa
         return;
     }
 
-    const argv = forwardedArgv(rawArgv ?? [], process.argv);
+    // `toolboxProcess.argv`, not the global: the toolbox adapter is what
+    // makes commands runnable under MCP and non-Node hosts, where a global
+    // `process` may not exist at all.
+    const argv = forwardedArgv(rawArgv ?? [], toolboxProcess?.argv ?? []);
 
-    // Belt-and-braces: handing `vis run` an empty argv makes it print its
+    // Fires when `rawArgv` is absent (an older cerebro) *and* the argv scan
+    // found nothing — handing `vis run` an empty argv makes it print its
     // target list and return 0, which reads as a passing job.
     if (argv.length === 0) {
         throw new VisUserError("Missing target. Usage: vis affected <target>");

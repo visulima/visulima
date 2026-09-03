@@ -393,6 +393,40 @@ describe("cache --scope CLI dispatch", () => {
         expect(existsSync(join(base, "branches/main", "other-branch-hash"))).toBe(false);
     });
 
+    it("prune still reaches entries left directly under the base by earlier unscoped runs", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "legacy-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        // Written before `branchScopedCache` was turned on.
+        seedEntry(base, "legacy-unscoped-hash");
+        seedEntry(join(base, "branches/feat-x"), "branch-hash");
+
+        await cachePruneExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, keepLast: 0 },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        // Returning only the branch subtrees left these unreachable to
+        // --max-age-days / --max-size, while `clean` still deleted them.
+        expect(existsSync(join(base, "legacy-unscoped-hash"))).toBe(false);
+        expect(existsSync(join(base, "branches/feat-x", "branch-hash"))).toBe(false);
+    });
+
     it("falls back to 'shared' when an unknown --scope value is passed", async () => {
         expect.assertions(2);
 

@@ -111,12 +111,17 @@ describe("vis affected → run delegation", () => {
     const runAffected = async (argv: string[], options: Record<string, unknown>): Promise<RunCommandCall[]> => {
         const calls: RunCommandCall[] = [];
 
-        process.argv = ["node", "vis", "affected", ...argv];
+        const fullArgv = ["node", "vis", "affected", ...argv];
+
+        process.argv = fullArgv;
 
         await affectedExecute({
             argument: [argv[0]],
             logger: makeLogger(),
             options,
+            // The handler reads the injected adapter, not the global — that is
+            // what keeps commands runnable under MCP and non-Node hosts.
+            process: { argv: fullArgv },
             runtime: makeRuntime(calls) as never,
             visConfig: undefined,
             workspaceRoot,
