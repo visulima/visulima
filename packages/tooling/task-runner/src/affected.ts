@@ -240,6 +240,32 @@ const getMergeBase = (workspaceRoot: string, base: string, head: string): Promis
     });
 
 /**
+ * Re-labels a "the `git` binary is not on PATH" failure, and passes
+ * anything else through untouched.
+ *
+ * The bare `spawn git ENOENT` this replaces named neither git nor affected
+ * detection nor what to install — and the usual CI base images (alpine
+ * node) ship without git, so it is a common first encounter.
+ */
+const withGitMissingHint = (error: unknown): unknown => {
+    const failure = error as NodeJS.ErrnoException & { path?: string };
+
+    // `path`/`syscall`, not `code` alone: `execFile` also raises ENOENT for a
+    // missing `cwd`, and telling someone to `apk add git` when git is right
+    // there just sends them the wrong way.
+    if (failure?.code !== "ENOENT" || (failure.path !== "git" && failure.syscall !== "spawn git")) {
+        return error;
+    }
+
+    return new Error(
+        "Affected detection needs the `git` binary, which was not found on PATH. "
+            + "Install it (`apk add git` on alpine, `apt-get install -y git` on debian) "
+            + "or run the target without `--affected`.",
+        { cause: error },
+    );
+};
+
+/**
  * Gets the list of files changed between two git refs.
  * Uses execFile with argument arrays to prevent command injection.
  */
@@ -260,12 +286,21 @@ const getChangedFiles = async (workspaceRoot: string, base: string, head: string
                 }
             });
         });
-    } catch {
+    } catch (error) {
+        // A missing binary is not a diverged-branch problem, and the
+        // fallback below cannot succeed either — both paths shell out to
+        // the same missing executable. Fail here with the real reason.
+        const relabelled = withGitMissingHint(error);
+
+        if (relabelled !== error) {
+            throw relabelled;
+        }
+
         // Fallback: direct diff with ... syntax (for shallow clones)
         return new Promise((resolve, reject) => {
-            execFile("git", ["diff", "--name-only", `${base}...${head}`], { cwd: workspaceRoot }, (error, stdout) => {
-                if (error) {
-                    reject(error);
+            execFile("git", ["diff", "--name-only", `${base}...${head}`], { cwd: workspaceRoot }, (diffError, stdout) => {
+                if (diffError) {
+                    reject(withGitMissingHint(diffError));
                 } else {
                     resolve(stdout.trim().split("\n").filter(Boolean));
                 }
