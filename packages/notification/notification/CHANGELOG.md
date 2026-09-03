@@ -1,3 +1,14 @@
+## @visulima/notification [1.1.0](https://github.com/visulima/visulima/compare/@visulima/notification@1.0.17...@visulima/notification@1.1.0) (2026-09-03)
+
+### Features
+
+* **notification:** add inbound channel receivers with one-call replies ([#826](https://github.com/visulima/visulima/issues/826)) ([3bd0c6f](https://github.com/visulima/visulima/commit/3bd0c6fffd8b23067fbd5a5356c74e5da4af834c))
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.4
+
 ## @visulima/notification [1.0.17](https://github.com/visulima/visulima/compare/@visulima/notification@1.0.16...@visulima/notification@1.0.17) (2026-08-19)
 
 
