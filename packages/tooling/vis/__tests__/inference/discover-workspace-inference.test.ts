@@ -53,6 +53,60 @@ describe("discoverWorkspace target inference", () => {
         expect(workspace.projects["@fix/alpha"]?.targets?.["build"]?.command).toBe("vite build");
     });
 
+    it("does not synthesize a new target for a project that declares its own scripts", () => {
+        expect.assertions(2);
+
+        // The shared-eslint-config case: the package ships an eslint config
+        // but deliberately has no `lint` script, because linting its own
+        // flat-config export crashes eslint. `pnpm -r run lint` skipped it
+        // for years; a synthesized `lint` target turned that into a failure.
+        writeProject(scratch, "eslint-config", {
+            configFile: { contents: "export default []", path: "eslint.config.js" },
+            packageJson: { scripts: { build: "tsc" } },
+        });
+
+        const { workspace } = discoverWorkspace(scratch, {});
+        const targets = workspace.projects["@fix/eslint-config"]?.targets ?? {};
+
+        expect(targets["lint"]).toBeUndefined();
+        expect(targets["build"]?.command).toBe("tsc");
+    });
+
+    it("materialises a target from a workspace default that carries a command", () => {
+        expect.assertions(2);
+
+        // The only way to declare an aggregate in config alone. Without it,
+        // `command` in a root `tasks` entry parsed happily and then
+        // `vis run check` answered "No projects have the check target", so
+        // the workaround was a fake `"check": "exit 0"` script somewhere.
+        writeProject(scratch, "alpha", { packageJson: { scripts: { build: "tsc" } } });
+
+        const { workspace } = discoverWorkspace(scratch, {
+            inferTargets: false,
+            tasks: { check: { command: "true" } },
+        });
+
+        expect(workspace.projects["@fix/alpha"]?.targets?.["check"]?.command).toBe("true");
+        expect(workspace.projects["@fix/alpha"]?.targets?.["build"]?.command).toBe("tsc");
+    });
+
+    it("does not materialise a target from a settings-only workspace default", () => {
+        expect.assertions(2);
+
+        // A settings-only entry is a default *for* a target, not a
+        // declaration of one — otherwise every project gained a commandless
+        // task that printed "No command configured" and counted as a success.
+        writeProject(scratch, "alpha", { packageJson: { scripts: { build: "tsc" } } });
+
+        const { workspace } = discoverWorkspace(scratch, {
+            inferTargets: false,
+            tasks: { "lint:types": { cache: true } },
+        });
+
+        expect(workspace.projects["@fix/alpha"]?.targets?.["lint:types"]).toBeUndefined();
+        expect(workspace.projects["@fix/alpha"]?.targets?.["build"]?.command).toBe("tsc");
+    });
+
     it("does nothing when inferTargets is explicitly false", () => {
         expect.assertions(1);
 

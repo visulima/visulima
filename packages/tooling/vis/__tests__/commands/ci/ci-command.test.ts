@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import affectedExecute from "../../../src/commands/affected/handler";
 import ciExecute from "../../../src/commands/ci/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
@@ -276,6 +277,50 @@ describe("vis ci", () => {
                 process.env["GITLAB_CI"] = originalGitlabCi;
             }
         }
+    });
+
+    it("reaches `vis run` with the target when ci delegates through the real affected handler", async () => {
+        expect.assertions(2);
+
+        // Regression: `ci` calls `affected` via `runCommand`, so the real
+        // process argv holds no `affected` token. `affected` used to
+        // recover its arguments by scanning that argv, found nothing, and
+        // handed `vis run` an empty argv — which printed a target list and
+        // returned 0. The CI job went green having run no tasks at all.
+        const runCalls: RuntimeCall[] = [];
+        const runtime = {
+            runCommand: async (name: string, options: { argv: string[] }): Promise<void> => {
+                if (name !== "affected") {
+                    runCalls.push({ argv: options.argv, name });
+
+                    return;
+                }
+
+                await affectedExecute({
+                    argument: [options.argv[0]],
+                    logger: makeLogger().logger,
+                    options: {},
+                    rawArgv: options.argv,
+                    runtime: runtime as never,
+                    visConfig: {},
+                    workspaceRoot,
+                } as never);
+            },
+        };
+
+        await ciExecute({
+            argument: ["build"],
+            logger: makeLogger().logger,
+            options: { base: "main", head: "HEAD", install: false },
+            runtime: runtime as never,
+            visConfig: {},
+            workspaceRoot,
+        } as never);
+
+        const runCall = runCalls.find((call) => call.name === "run");
+
+        expect(runCall).toBeDefined();
+        expect(runCall?.argv).toContain("build");
     });
 
     it("forwards --upstream / --downstream / --parallel / --partition / --query when set", async () => {

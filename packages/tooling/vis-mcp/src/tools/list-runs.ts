@@ -48,7 +48,7 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
         {
             annotations: { readOnlyHint: true },
             description:
-                "List recorded vis runs from `.task-runner/runs/`, most recent first. Each entry includes the run ID, start "
+                "List recorded vis runs from `.vis/runs/`, most recent first. Each entry includes the run ID, start "
                 + "timestamp, derived status, task count, and failed-task count — use it to discover run IDs for `get_run_logs`, "
                 + '`cache_hash`, or `cache_why` (e.g. "compare this run to the previous one").',
             inputSchema: {
@@ -56,7 +56,7 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
             },
         },
         async ({ limit }: { limit?: number }) => {
-            const runsDirectory = join(context.workspaceRoot, ".task-runner", "runs");
+            const runsDirectory = join(context.workspaceRoot, ".vis", "runs");
 
             let files: string[];
 

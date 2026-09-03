@@ -18,7 +18,7 @@ The MCP server deliberately does NOT execute targets or scaffold templates — N
 | `list_targets`      | Per-target rows across the workspace, optionally narrowed to a single project                                                     |
 | `list_templates`    | Scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates`              |
 | `describe_template` | Variable schema, default destination, and description for a single template — required before suggesting a `vis generate` command |
-| `get_run_logs`      | Most recent run summary from `.task-runner/`, or a specific `runId`, optionally filtered to one task                              |
+| `get_run_logs`      | Most recent run summary from `.vis/`, or a specific `runId`, optionally filtered to one task                              |
 | `cache_why`         | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps)               |
 | `cache_hash`        | Recorded hash and per-input hash details for a task                                                                               |
 

@@ -288,7 +288,12 @@ export class PrettyReporter<T extends string = string, L extends string = string
                 + wordWrap(formattedMessage, {
                     trim: false,
                     width: size - 3,
-                    wrapMode: WrapMode.STRICT_WIDTH,
+                    // Words stay intact and overflow rather than being cut at
+                    // the column. STRICT_WIDTH split mid-token, so a path in a
+                    // log line came out as `…/corify-fro\nntend/.vis/cache` —
+                    // unreadable, and no longer selectable as one string,
+                    // which is usually the only reason the line was printed.
+                    wrapMode: WrapMode.PRESERVE_WORDS,
                 }),
             );
         }

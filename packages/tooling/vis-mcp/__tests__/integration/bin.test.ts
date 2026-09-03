@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,13 @@ const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, "..", "..");
 
 const TRAILING_NEWLINE_RE = /\n$/;
+
+/**
+ * These exercise the built artifact, so they only mean anything once
+ * `pnpm build` has produced it. CI builds before testing; a fresh clone has
+ * not, and failing there reports a missing build as a broken bin.
+ */
+const hasBuild = existsSync(join(packageRoot, "dist/bin.js"));
 
 const runBin = (binPath: string, args: string[], cwd: string): { code: number; stderr: string; stdout: string } => {
     const result = spawnSync(process.execPath, [binPath, ...args], {
@@ -34,7 +41,7 @@ afterEach(() => {
     }
 });
 
-describe("usage `@visulima/vis-mcp` bin entry", () => {
+describe.skipIf(!hasBuild)("usage `@visulima/vis-mcp` bin entry", () => {
     it(`should boot the MCP server and exit on EOF`, () => {
         expect.assertions(2);
 

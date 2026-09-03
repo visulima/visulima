@@ -219,6 +219,7 @@ When aube is the installer, `vis doctor` surfaces aube's effective hardening pos
 | `vis init`              |        | Initialize vis.config.ts with security defaults                                        |
 | `vis run <target>`      |        | Run a target across workspace projects with caching                                    |
 | `vis affected <target>` |        | Run tasks only on projects affected by git changes                                     |
+| `vis ci <targets>`      |        | One-shot CI entry point: toolchain, install, then affected runs for each comma-separated target |
 | `vis ignore <project>`  |        | CI build gating for Vercel / Netlify "Ignored Build Step"                              |
 | `vis graph`             |        | Visualize the project dependency graph                                                 |
 | `vis check [packages]`  | `c`    | Check for outdated dependencies in workspace catalogs                                  |
@@ -249,7 +250,7 @@ vis cache why @myorg/app:build --json    # stable shape for CI
 vis cache hash @myorg/app:build          # just print the hash + per-bucket inputs
 ```
 
-`vis cache why` reads `.task-runner/last-summary.json` and diffs the task's `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run, so you can pinpoint exactly which bucket rotated. Past runs only land in `.task-runner/runs/` when you pass `--summarize`, so use `vis run :build --summarize` (or set it as a default in CI) for diffs you'll want to inspect later.
+`vis cache why` reads `.vis/last-summary.json` and diffs the task's `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run, so you can pinpoint exactly which bucket rotated. Past runs only land in `.vis/runs/` when you pass `--summarize`, so use `vis run :build --summarize` (or set it as a default in CI) for diffs you'll want to inspect later.
 
 ### Cache retention
 
@@ -266,7 +267,7 @@ vis cache prune --keep-last=30 --max-age-days=14   # combine: 30-newest floor, t
 
 ### Sharing the cache across git worktrees
 
-When the workspace is a linked worktree (created with `git worktree add`), vis stores the cache at `<mainWorktreeRoot>/.task-runner-cache` so sibling worktrees driven by parallel agents share one cache instead of rebuilding the same hash N times. Set `sharedWorktreeCache: false` in `vis.config.ts` to opt out, or use `--scope=worktree|shared|all` on `vis cache list/size/prune` to inspect or operate on a specific store.
+When the workspace is a linked worktree (created with `git worktree add`), vis stores the cache at `<mainWorktreeRoot>/node_modules/.cache/vis` so sibling worktrees driven by parallel agents share one cache instead of rebuilding the same hash N times. Set `sharedWorktreeCache: false` in `vis.config.ts` to opt out, or use `--scope=worktree|shared|all` on `vis cache list/size/prune` to inspect or operate on a specific store.
 
 ### Quieting successful runs
 

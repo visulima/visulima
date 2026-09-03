@@ -7,7 +7,7 @@ import { resolve } from "@visulima/path";
 import { resetWorktreeCache } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { cacheListExecute, cacheSizeExecute } from "../../../src/commands/cache/handler";
+import { cacheCleanExecute, cacheListExecute, cachePruneExecute, cacheSizeExecute } from "../../../src/commands/cache/handler";
 
 // On Windows, `realpathSync` may leave 8.3 short names (e.g. `RUNNER~1`)
 // in place while Rust's `fs::canonicalize` (used by the native worktree
@@ -292,6 +292,176 @@ describe("cache --scope CLI dispatch", () => {
         // so only one task entry — no double-count.
         expect(payload.task).toHaveLength(1);
         expect(payload.task[0]?.directory).toBe(sharedCache);
+    });
+
+    it("reads the branch-scoped directory `vis run` writes to when branchScopedCache is on", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        // `vis run` applies `applyBranchScope`, so entries land under
+        // `branches/<slug>` — not the base directory.
+        seedEntry(resolve(root, "node_modules/.cache/vis/branches/feat-x"), "branch-hash");
+
+        const logger = createMockLogger();
+
+        await cacheSizeExecute({
+            argument: [],
+            logger: logger as unknown as Console,
+            options: { "cache-dir": undefined, format: "json", type: "task" },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const payload = JSON.parse(written) as { task: { directory: string; entries: number }[] };
+
+        expect(payload.task[0]?.directory).toBe(resolve(root, "node_modules/.cache/vis/branches/feat-x"));
+        expect(payload.task[0]?.entries).toBe(1);
+    });
+
+    it("clean removes every branch's entries, not just the checked-out branch's", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "clean-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        seedEntry(join(base, "branches/feat-x"), "current-branch-hash");
+        seedEntry(join(base, "branches/main"), "other-branch-hash");
+
+        await cacheCleanExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, force: true, type: "task" },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        expect(existsSync(join(base, "branches/feat-x"))).toBe(false);
+        expect(existsSync(join(base, "branches/main"))).toBe(false);
+    });
+
+    it("prune evicts from every branch's subtree, not just the checked-out branch's", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "prune-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        seedEntry(join(base, "branches/feat-x"), "current-branch-hash");
+        seedEntry(join(base, "branches/main"), "other-branch-hash");
+
+        await cachePruneExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, keepLast: 0 },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        // Scoped to the checked-out branch, `main`'s subtree could never be
+        // reclaimed and would grow past --max-size forever.
+        expect(existsSync(join(base, "branches/feat-x", "current-branch-hash"))).toBe(false);
+        expect(existsSync(join(base, "branches/main", "other-branch-hash"))).toBe(false);
+    });
+
+    it("prune still reaches entries left directly under the base by earlier unscoped runs", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "legacy-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        // Written before `branchScopedCache` was turned on.
+        seedEntry(base, "legacy-unscoped-hash");
+        seedEntry(join(base, "branches/feat-x"), "branch-hash");
+
+        await cachePruneExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, keepLast: 0 },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        // Returning only the branch subtrees left these unreachable to
+        // --max-age-days / --max-size, while `clean` still deleted them.
+        expect(existsSync(join(base, "legacy-unscoped-hash"))).toBe(false);
+        expect(existsSync(join(base, "branches/feat-x", "branch-hash"))).toBe(false);
+    });
+
+    it("size accounts for the pre-scoping entries prune will reclaim", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "report-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        seedEntry(base, "legacy-unscoped-hash");
+        seedEntry(join(base, "branches/feat-x"), "branch-hash");
+
+        await cacheSizeExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, format: "json", type: "task" },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const payload = JSON.parse(written) as { task: { directory: string; entries: number }[] };
+        const reported = new Set(payload.task.map((store) => store.directory));
+
+        // Reporting only the branch subtree made the store look smaller than
+        // what `prune` then went on to free.
+        expect(reported).toContain(resolve(base, "branches/feat-x"));
+        expect(reported).toContain(base);
     });
 
     it("falls back to 'shared' when an unknown --scope value is passed", async () => {

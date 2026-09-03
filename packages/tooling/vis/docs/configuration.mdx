@@ -214,6 +214,9 @@ If you find yourself writing `@inherit` in two or more projects with the same ad
 
 ### Scoped Tasks
 
+**`scopedTasks` scopes by _project_, not by task name.** `match` narrows which projects a block applies to; the keys inside `tasks` are still matched exactly against target names. There is no glob form for target names, so a rule covering `e2e:setup`, `e2e:run` and `e2e:teardown` has to name all three — or tag the projects and scope the block that way.
+
+
 Apply target defaults conditionally based on project metadata:
 
 ```typescript
@@ -253,7 +256,19 @@ Match fields (all optional, must all match):
 
 ### Inferred Targets
 
-Project Crystal-style inference: vis can synthesize default targets (`build`, `test`, `dev`, `lint`, `format`, …) for each project by sniffing config files and `package.json` dependencies. Off by default.
+Project Crystal-style inference: vis can synthesize default targets (`build`, `test`, `dev`, `lint`, `format`, …) for each project by sniffing config files and `package.json` dependencies.
+
+Detectors are on by default, but what they are allowed to do depends on whether you set `inferTargets` explicitly:
+
+| `inferTargets`                  | Enrich existing targets | Synthesize new target names                          |
+| ------------------------------- | ----------------------- | ---------------------------------------------------- |
+| unset (default)                 | Yes                     | Only for projects that declare no scripts or targets  |
+| `true` / object form            | Yes                     | Yes, for every project                                |
+| `false`                         | No                      | No                                                    |
+
+**Enrichment** adopts the detector's `type`, `inputs`, and `outputs` for a target the project already has — a caching aid that never changes what runs. **Synthesis** creates a target that did not exist, which does change what runs, so on the default it is limited to projects that have declared nothing of their own.
+
+That distinction exists because a package can deliberately omit a script: a shared eslint-config package ships an `eslint.config.js` but no `lint` script, because linting its own flat-config export crashes eslint. Synthesizing `lint` there would turn a package `pnpm -r run lint` had always skipped into a failing task, on a workspace that never asked for inference.
 
 ```typescript
 export default defineConfig({

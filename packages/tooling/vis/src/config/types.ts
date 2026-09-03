@@ -499,12 +499,13 @@ export interface VisConfig {
 
     /**
      * Auto-create targets from detected config files (Project Crystal-style).
-     * On by default; set `false` to disable entirely, or use the object
-     * form to disable individual detectors.
+     * Detectors run by default; set `false` to disable them entirely, or use
+     * the object form to disable individual ones. See the note at the bottom
+     * of this block for what "unset" allows versus an explicit `true`.
      *
      * Inferred targets sit *below* explicit ones — the command from
      * `package.json#scripts`, `project.json#targets`, or `vis.task.ts`
-     * always wins per-key, so opting in never changes what runs. As a
+     * always wins per-key, so enrichment never changes what runs. As a
      * caching aid, when a `package.json` script's command *is* a
      * detector's command (optionally with extra flags, no shell
      * chaining) and the script declares no `inputs`/`outputs`, the
@@ -564,7 +565,26 @@ export interface VisConfig {
      * opt individual detectors in or out by name. Detectors omitted from
      * the object run at their default (enabled). Useful when one
      * detector misfires for a given workspace without disabling the rest.
-     * @default true
+     *
+     * **Leaving this unset is not the same as setting `true`.** Detectors
+     * always *enrich* the targets a project already has — adopting their
+     * `type`, `inputs` and `outputs`, which is the caching aid and changes
+     * nothing about what runs. *Synthesizing* a target the project never
+     * had does change what runs, so on the unset default it is limited to
+     * projects that declare no scripts and no targets of their own.
+     * Setting this to `true` (or the object form) opts in to synthesis
+     * everywhere.
+     *
+     * The distinction exists because a package can deliberately omit a
+     * script: a shared eslint-config ships an `eslint.config.js` but no
+     * `lint` script, because linting its own flat-config export crashes
+     * eslint. Synthesizing `lint` there turned a package `pnpm -r run lint`
+     * had always skipped into a failing task, on a workspace that had never
+     * asked for inference.
+     *
+     * Deliberately no `@default` tag: there is no single value that
+     * describes the unset behaviour, and advertising `true` would invite
+     * tooling to write it into a config and silently widen synthesis.
      */
     inferTargets?: Record<string, boolean> | boolean;
 

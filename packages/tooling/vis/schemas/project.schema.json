@@ -227,7 +227,7 @@
                                                 }
                                             }
                                         ],
-                                        "description": "The project name (if different from the current project)"
+                                        "description": "Which projects to depend on, as exact names or `*`/`?` globs over project names (`\"@scope/*\"`, `\"*\"`). Unlike path globbing, `*` crosses `/`, so `\"*\"` really does mean every project. The declaring project is excluded from a glob's matches when the dependency names the same target, since that would be a cycle of one.\n\nA selector matching nothing produces no edge; `createTaskGraph` reports it through `onUnmatchedProjectSelector` rather than dropping it silently."
                                     },
                                     "target": {
                                         "type": "string",
@@ -379,7 +379,7 @@
                                 "additionalProperties": false
                             }
                         ],
-                        "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern relative to the   workspace root. Prefix with `!` to exclude files the positive   patterns would otherwise include (e.g. `\"!dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
+                        "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern, always resolved   against the **workspace root**, never the project root. A bare   `\"dist/**\"` therefore means `&lt;workspaceRoot>/dist/**` and will match   nothing for a package in `packages/foo`; write   `\"{projectRoot}/dist/**\"` for per-project outputs. `{projectRoot}`   and `{projectName}` are substituted before matching. Prefix with `!`   to exclude files the positive patterns would otherwise include   (e.g. `\"!{projectRoot}/dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
                     },
                     "description": "Output patterns produced by this target. Each entry is a literal path, a glob (`\"dist/**\"`), a negative glob (`\"!dist/cache/**\"`), or `{ auto: true }` to cache whatever files the task actually wrote during execution (resolved from the file-access tracker). `{ auto: true }` lets a build script cache zero-config without the author enumerating its output layout; it contributes nothing — and the runner declines to seed the cache — when write tracking isn't available for the task, so a hit can never restore a missing artifact."
                 },

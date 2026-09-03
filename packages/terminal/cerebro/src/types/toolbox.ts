@@ -153,6 +153,19 @@ export interface Toolbox<
     process: CerebroProcess;
 
     /**
+     * The argument tokens this command was invoked with, exactly as the
+     * caller supplied them — the argv tail for a CLI run, or the `argv`
+     * array for a programmatic `runtime.runCommand()` call.
+     *
+     * Use this, never `process.argv`, when a command forwards its own
+     * arguments on to another command. Scanning `process.argv` for the
+     * command's own name works only for a direct CLI invocation: called
+     * programmatically the token isn't there, the scan yields nothing, and
+     * the inner command silently runs with no arguments at all.
+     */
+    rawArgv: ReadonlyArray<string>;
+
+    /**
      * Raw tokens that command-line-args could not assign to a defined
      * option — typically everything after a `--` separator, since
      * cerebro runs the parser with `stopAtFirstUnknown: true`.

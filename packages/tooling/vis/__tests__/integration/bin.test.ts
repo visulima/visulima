@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,6 +11,13 @@ const packageRoot = join(here, "..", "..");
 const packageJson = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { version: string };
 
 const TRAILING_NEWLINE_RE = /\n$/;
+
+/**
+ * These exercise the built artifacts, so they only mean anything once
+ * `pnpm build` has produced them. CI builds before testing; a fresh clone
+ * has not, and failing there reports a missing build as a broken bin.
+ */
+const hasBuild = existsSync(join(packageRoot, "dist/bin.js")) && existsSync(join(packageRoot, "dist/binx.js"));
 
 const runBin = (binPath: string, args: string[], cwd: string): { code: number; stderr: string; stdout: string } => {
     const result = spawnSync(process.execPath, [binPath, ...args], {
@@ -27,7 +34,7 @@ const runBin = (binPath: string, args: string[], cwd: string): { code: number; s
     };
 };
 
-describe("usage `@visulima/vis` bin entries", () => {
+describe.skipIf(!hasBuild)("usage `@visulima/vis` bin entries", () => {
     let cleanCwd: string;
 
     beforeAll(() => {

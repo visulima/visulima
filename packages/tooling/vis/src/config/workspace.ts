@@ -657,6 +657,9 @@ const warnedUnknownDetectorKeys = new Set<string>();
  * or out by name (`{ vite: false }` keeps vitest/packem on, drops vite).
  * Detectors omitted from the object run at their default (enabled).
  *
+ * What "enabled" *does* depends on whether the project declares a task
+ * surface of its own — see the inference block in `discoverWorkspace`.
+ *
  * Emits a once-per-process Node warning when the object form references
  * a detector name that doesn't exist in `BUILT_IN_DETECTORS` (typo
  * insurance — `{ vit: false }` would otherwise silently no-op).
@@ -729,6 +732,19 @@ const mergeTarget = (
 /**
  * Creates script-based targets from package.json scripts, merging any
  * matching project.json target declaration + scoped defaults + file groups.
+ *
+ * A workspace-level default that carries its own `command`/`executor` also
+ * materialises as a target. That is the only way to declare an aggregate
+ * ("run every check as one graph") in config alone — without it, `command`
+ * in a root `tasks` entry parsed happily and then `vis run check` answered
+ * "No projects have the check target", so the documented field did nothing
+ * and the workaround was a fake `"check": "exit 0"` script in some package.
+ *
+ * Settings-only defaults (`cache`, `inputs`, `dependsOn`) deliberately do
+ * NOT materialise — they are defaults *for* a target, not declarations of
+ * one. Giving every project a commandless task is the phantom-target bug;
+ * see `projectHasTarget` in the task-runner's graph builder, which applies
+ * the same rule one layer down.
  */
 const createTargetsFromScripts = (
     scripts: Record<string, string> | undefined,
@@ -749,7 +765,16 @@ const createTargetsFromScripts = (
             continue;
         }
 
+        seen.add(name);
         targets[name] = mergeTarget(name, undefined, projectTarget, defaults[name], fileGroups);
+    }
+
+    for (const [name, defaultTarget] of Object.entries(defaults)) {
+        if (seen.has(name) || (defaultTarget.command === undefined && defaultTarget.executor === undefined)) {
+            continue;
+        }
+
+        targets[name] = mergeTarget(name, undefined, undefined, defaultTarget, fileGroups);
     }
 
     return targets;
@@ -896,10 +921,35 @@ const discoverWorkspace = (
             const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
             const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
 
+            // Synthesizing a target the project never had is the one part of
+            // inference that changes what runs, so it needs an explicit
+            // `inferTargets` in the config — anything but the unset default.
+            //
+            // A project that declares a task surface of its own (scripts,
+            // project.json targets, a vis.task.ts overlay) has already said
+            // what it runs, and the omissions are deliberate. A shared eslint
+            // config package ships an eslint config but no `lint` script
+            // precisely because linting its own flat-config export crashes
+            // eslint; synthesizing that target on the unset default turned a
+            // package `pnpm -r run lint` had always skipped into a hard
+            // failure, on a workspace that had not asked for inference at all.
+            //
+            // Left on the default, detectors still enrich the targets that do
+            // exist (type/inputs/outputs — the caching aid the docs describe,
+            // and the part that genuinely never changes what runs), and still
+            // synthesize freely for a project that declares nothing, where
+            // there is no prior behaviour to change.
+            const declaresOwnTargets = Object.keys(pkg.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
+            const synthesizeNewTargets = config.inferTargets !== undefined || !declaresOwnTargets;
+
             for (const [name, inferredTarget] of Object.entries(inference.targets)) {
                 const existing = visTargets[name];
 
                 if (existing === undefined) {
+                    if (!synthesizeNewTargets) {
+                        continue;
+                    }
+
                     visTargets[name] = {
                         ...mergeTarget(name, inferredTarget.command, inferredTarget, defaults[name], config.fileGroups),
                         inferred: true,

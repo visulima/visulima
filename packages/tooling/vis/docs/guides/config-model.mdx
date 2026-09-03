@@ -19,6 +19,66 @@ This page is the narrative companion to [Configuration](/configuration). The ref
 
 `package.json#scripts` is the fourth, implicit layer: any script vis doesn't find a target for is still runnable as a fallback. You almost never need to edit it for vis's sake — leave it for `npm run` ergonomics.
 
+## Where targets come from
+
+Before the precedence stack below decides *how* a target is configured,
+something has to decide that the target **exists** for a project at all.
+Three things declare one explicitly:
+
+1. **A `package.json` script.** Every script is a target of the same name,
+   with the script body as its command. This is the usual source — you do
+   not declare targets anywhere to run them.
+2. **A `project.json#targets` or `vis.task.ts#tasks` entry.** Declares a
+   target for that one project, script or no script.
+3. **A `tasks` / `scopedTasks` entry that supplies a `command` or
+   `executor`.** Declares that target for every project the block applies
+   to. This is how you write an aggregate target that no package has a
+   script for:
+
+   ```typescript
+   export default defineConfig({
+       tasks: {
+           check: {
+               command: "true",
+               dependsOn: ["lint", "lint:types", "test"],
+           },
+       },
+   });
+   ```
+
+There is a fourth, non-explicit source: **detector inference**
+(`inferTargets`). Detectors run after the explicit sources above and can add
+a target none of them declared — but only for a project that declares no
+task surface of its own, unless you set `inferTargets` explicitly, in which
+case they add missing targets everywhere. See
+[Inferred Targets](/configuration#inferred-targets); `vis list --inferred`
+shows exactly which targets came from a detector.
+
+A `tasks` entry that carries only *settings* — `cache`, `inputs`,
+`outputs`, `dependsOn` — creates nothing. It is a default **for** the
+target, applied to the projects that already have it:
+
+```typescript
+tasks: {
+    // Projects with a `build` script get these settings.
+    // Projects without one still have no `build` target.
+    build: { cache: true, outputs: ["{projectRoot}/dist/**"] },
+}
+```
+
+So a package that deliberately has no `lint` script keeps having no `lint`
+target, no matter what the root `tasks` block says about `lint` — and
+`vis run lint` skips it, exactly as `pnpm -r run lint` did.
+
+Target names are matched **exactly**. There is no glob form: `tasks` keyed
+`"e2e:*"` matches a target literally called `e2e:*`, not every `e2e:`
+script. To apply one rule across a family of scripts, name them
+individually, or give them a shared tag and use a `scopedTasks` block —
+but note `scopedTasks#match` narrows *projects*, never target names.
+
+Run [`vis list --targets`](/commands/list) to see exactly which targets
+each project ended up with.
+
 ## What goes where — a decision flow
 
 Start at the top. The first match wins.
@@ -205,7 +265,7 @@ Entries resolve left-to-right (later wins) and the consumer's own values overrid
 
 ## Inferred targets — the layer underneath
 
-`inferTargets` (off by default) auto-generates targets from detected config files: a `vite.config.ts` synthesizes `build` / `dev` / `preview`; a `vitest.config.ts` synthesizes `test` / `test:watch`; and so on across ~36 tools. See the [`inferTargets` reference](/configuration#inferred-targets) for the full detector list.
+`inferTargets` auto-generates targets from detected config files: a `vite.config.ts` synthesizes `build` / `dev` / `preview`; a `vitest.config.ts` synthesizes `test` / `test:watch`; and so on across ~36 tools. Left unset it only enriches targets a project already has (plus full synthesis for projects that declare nothing); set it explicitly to synthesize everywhere. See the [`inferTargets` reference](/configuration#inferred-targets) for the rules and the full detector list.
 
 Inferred targets sit **below** everything in the precedence stack — anything explicit in `package.json#scripts`, `project.json#targets`, or `vis.task.ts` wins per-key. Turning inference on never overrides existing setups; it only fills gaps.
 

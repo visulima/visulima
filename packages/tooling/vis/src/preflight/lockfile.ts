@@ -1,4 +1,4 @@
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
@@ -53,6 +53,12 @@ export interface LockfilePreflightResult {
      * to materialise an absolute path.
      */
     detail?: {
+        /**
+         * How the verdict was reached: `content` when the lockfile matched
+         * the copy `node_modules` was installed from byte-for-byte, `mtime`
+         * when it fell back to timestamps.
+         */
+        comparedBy: "content" | "mtime";
         installMarkerMtimeMs?: number;
         lockfileMtimeMs: number;
         lockfilePath: string;
@@ -87,6 +93,35 @@ const INSTALL_MARKERS: Record<LockfilePackageManager, string[]> = {
     npm: ["node_modules/.package-lock.json"],
     pnpm: ["node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml"],
     yarn: ["node_modules/.yarn-integrity", "node_modules/.yarn-state.yml", ".yarn/install-state.gz"],
+};
+
+/**
+ * Copies of the lockfile a package manager writes into `node_modules` on a
+ * successful install. Byte-equality with one proves the tree was installed
+ * from exactly this lockfile, whatever the mtimes say.
+ *
+ * Read only as a *positive* signal — see `checkLockfileFreshness`. The copy
+ * records what is actually linked, so a partial install (`--prod`,
+ * `--filter`) legitimately writes a pruned one.
+ *
+ * This is what makes the check survive a CI cache restore. A fresh
+ * `git clone` stamps the lockfile with the checkout time, which is by
+ * construction newer than an install marker inside a restored
+ * `node_modules` — the standard "install once in a prepare job, restore
+ * everywhere else" layout. On mtimes alone the preflight fired on every
+ * job in the exact setup it exists to protect, so every invocation ended
+ * up carrying `--no-preflight` and the check was off everywhere.
+ *
+ * Only managers that write a byte-identical copy are listed. The rest
+ * fall back to the mtime comparison below.
+ */
+const INSTALL_LOCKFILE_COPIES: Partial<Record<LockfilePackageManager, string>> = {
+    // aube is deliberately absent: its lockfile is `aube-lock.yaml`, and
+    // nothing shows aube writing a copy of *that* under `node_modules`. In
+    // the mixed pnpm/aube tree `INSTALL_MARKERS` already anticipates, the
+    // comparison would be aube's lockfile against a pnpm-format file — a
+    // guaranteed mismatch, forever.
+    pnpm: "node_modules/.pnpm/lock.yaml",
 };
 
 /**
@@ -132,6 +167,45 @@ export const detectPackageManager = (workspaceRoot: string): { lockfileFile: str
     return undefined;
 };
 
+/**
+ * Compares the workspace lockfile with the copy the package manager
+ * stashed in `node_modules` at install time.
+ *
+ * Returns `undefined` when this manager writes no such copy (or it is
+ * missing). Only `true` is acted on: `false` and `undefined` both fall
+ * through to the mtime comparison.
+ */
+const compareLockfileWithInstalledCopy = (workspaceRoot: string, lockfileFile: string, manager: LockfilePackageManager): boolean | undefined => {
+    const copyRelative = INSTALL_LOCKFILE_COPIES[manager];
+
+    if (!copyRelative) {
+        return undefined;
+    }
+
+    const copyPath = join(workspaceRoot, copyRelative);
+
+    if (!existsSync(copyPath)) {
+        return undefined;
+    }
+
+    const lockfilePath = join(workspaceRoot, lockfileFile);
+
+    try {
+        if (statSync(lockfilePath).size !== statSync(copyPath).size) {
+            return false;
+        }
+
+        // Byte comparison rather than two sha256 passes: same answer, exits
+        // at the first differing byte, and this runs on every `vis run`.
+        return readFileSync(lockfilePath).equals(readFileSync(copyPath));
+    } catch {
+        // Unreadable copy (permissions, a concurrent install rewriting
+        // it) tells us nothing — fall back to mtimes rather than
+        // inventing a failure.
+        return undefined;
+    }
+};
+
 const findFreshestMarker = (workspaceRoot: string, manager: LockfilePackageManager): { mtimeMs: number; path: string } | undefined => {
     let freshest: { mtimeMs: number; path: string } | undefined;
 
@@ -157,13 +231,13 @@ const findFreshestMarker = (workspaceRoot: string, manager: LockfilePackageManag
  * missing" before any task subprocess starts. Cheap (a handful of
  * `stat` calls) and silent on the happy path.
  *
- * Pragmatically scoped: we compare lockfile mtime to install-marker
- * mtime instead of parsing every PM's lockfile/state file. That misses
- * the edge case of `git checkout` rewriting the lockfile to its prior
- * contents but a fresh mtime — the resulting "stale install" warning
- * is harmless (one redundant `pnpm install`) and the alternative
- * (full lockfile parse + content hash) costs orders of magnitude more
- * for a check that runs on every `vis run`.
+ * When the package manager stashed a verbatim copy of the lockfile in
+ * `node_modules` (see {@link INSTALL_LOCKFILE_COPIES}) the two are
+ * compared by content, which is durable across CI cache and artifact
+ * restores. Managers that write no such copy fall back to comparing the
+ * lockfile mtime against the freshest install marker; that fallback
+ * reports drift whenever a checkout re-stamps the lockfile, so it can
+ * warn once too often on a restored `node_modules`.
  */
 export const checkLockfileFreshness = (workspaceRoot: string, options: { inCi?: boolean } = {}): LockfilePreflightResult => {
     const detected = detectPackageManager(workspaceRoot);
@@ -178,6 +252,9 @@ export const checkLockfileFreshness = (workspaceRoot: string, options: { inCi?: 
     const command = INSTALL_COMMAND[options.inCi ? "ci" : "tty"][manager];
 
     const detail = {
+        // Overwritten to "content" on the byte-equality path below; every
+        // other outcome is decided on timestamps.
+        comparedBy: "mtime" as const,
         installMarkerMtimeMs: marker?.mtimeMs,
         lockfileMtimeMs,
         lockfilePath: lockfileFile,
@@ -192,6 +269,19 @@ export const checkLockfileFreshness = (workspaceRoot: string, options: { inCi?: 
             failure: "missing-install",
             message: `lockfile detected but node_modules looks uninitialised — run \`${command}\` before \`vis run\`.`,
         };
+    }
+
+    // Positive-only, deliberately. Byte-equal proves the tree was installed
+    // from exactly this lockfile, which is the signal that survives a CI
+    // cache restore. A *mismatch* proves nothing: the copy pnpm keeps is the
+    // set of packages actually linked, so a `--prod` or `--filter` install
+    // legitimately writes a pruned one, and a concurrent install rewrites it
+    // before the workspace lockfile. Treating any of those as drift would
+    // hard-fail CI and tell the user to re-run the very install that produced
+    // it — so an inconclusive comparison falls through to the mtime check
+    // that governed this before.
+    if (compareLockfileWithInstalledCopy(workspaceRoot, lockfileFile, manager) === true) {
+        return { checked: true, detail: { ...detail, comparedBy: "content" } };
     }
 
     if (lockfileMtimeMs > marker.mtimeMs + MTIME_SKEW_MS) {

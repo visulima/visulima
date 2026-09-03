@@ -11,13 +11,19 @@ import { join } from "@visulima/path";
  * drops a contributor's release note and hides vendored templates and
  * git hooks from git.
  *
+ * `runs/` is the per-run summary archive written whenever
+ * `taskRunner.summarize` is on — which the docs recommend. It is the
+ * bulkiest thing vis writes into `.vis/` (megabytes after a handful of
+ * runs) and nothing reads it back from another machine, so leaving it
+ * unignored just filled `git status` with noise.
+ *
  * The task cache is *not* here: it lives in `node_modules/.cache/vis`
  * (see `util/vis-paths.ts`) precisely so that caching it in CI cannot
  * sweep tracked files into the cache, and it is gitignored for free
  * under `node_modules`. Anything claiming `.vis/cache` needs ignoring is
  * describing a layout vis no longer uses.
  */
-export const VIS_IGNORE_ENTRIES = [".vis/last-summary.json", ".vis/last-failures/"] as const;
+export const VIS_IGNORE_ENTRIES = [".vis/last-summary.json", ".vis/last-failures/", ".vis/runs/"] as const;
 
 export interface EnsureGitignoreResult {
     /** Entries appended. */

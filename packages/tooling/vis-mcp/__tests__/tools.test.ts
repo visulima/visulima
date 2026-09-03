@@ -268,9 +268,9 @@ describe(registerGetRunLogs, () => {
     it("should return the latest summary when present", async () => {
         expect.assertions(1);
 
-        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
         writeFileSync(
-            join(workspaceRoot, ".task-runner", "last-summary.json"),
+            join(workspaceRoot, ".vis", "last-summary.json"),
             JSON.stringify({ runId: "run-1", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }),
         );
 
@@ -286,9 +286,9 @@ describe(registerGetRunLogs, () => {
     it("should filter to a single task with `taskId`", async () => {
         expect.assertions(1);
 
-        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
         writeFileSync(
-            join(workspaceRoot, ".task-runner", "last-summary.json"),
+            join(workspaceRoot, ".vis", "last-summary.json"),
             JSON.stringify({
                 runId: "run-1",
                 tasks: [
@@ -310,8 +310,8 @@ describe(registerGetRunLogs, () => {
     it("should error when the requested task is not in the summary", async () => {
         expect.assertions(1);
 
-        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
-        writeFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), JSON.stringify({ runId: "run-1", tasks: [{ taskId: "@scope/alpha:build" }] }));
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
+        writeFileSync(join(workspaceRoot, ".vis", "last-summary.json"), JSON.stringify({ runId: "run-1", tasks: [{ taskId: "@scope/alpha:build" }] }));
 
         const { calls, server } = makeFakeServer();
 
@@ -322,12 +322,12 @@ describe(registerGetRunLogs, () => {
         expect(error.error).toContain("@scope/missing:build");
     });
 
-    it("should read a specific run by id from .task-runner/runs", async () => {
+    it("should read a specific run by id from .vis/runs", async () => {
         expect.assertions(1);
 
-        mkdirSync(join(workspaceRoot, ".task-runner", "runs"), { recursive: true });
+        mkdirSync(join(workspaceRoot, ".vis", "runs"), { recursive: true });
         writeFileSync(
-            join(workspaceRoot, ".task-runner", "runs", "run-7.json"),
+            join(workspaceRoot, ".vis", "runs", "run-7.json"),
             JSON.stringify({ runId: "run-7", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }),
         );
 
@@ -345,9 +345,9 @@ describe(registerGetRunLogs, () => {
     it("should label the run as (unknown) when the summary omits runId for a missing task", async () => {
         expect.assertions(1);
 
-        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
         // No `runId` field — the not-found message falls back to "(unknown)".
-        writeFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), JSON.stringify({ tasks: [{ taskId: "@scope/alpha:build" }] }));
+        writeFileSync(join(workspaceRoot, ".vis", "last-summary.json"), JSON.stringify({ tasks: [{ taskId: "@scope/alpha:build" }] }));
 
         const { calls, server } = makeFakeServer();
 
@@ -361,10 +361,10 @@ describe(registerGetRunLogs, () => {
     it("should surface a non-ENOENT read failure (malformed JSON) via errorResponse", async () => {
         expect.assertions(2);
 
-        mkdirSync(join(workspaceRoot, ".task-runner"), { recursive: true });
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
         // Valid file, invalid JSON — readFile succeeds, JSON.parse throws a
         // SyntaxError, so the catch falls through past the ENOENT guard.
-        writeFileSync(join(workspaceRoot, ".task-runner", "last-summary.json"), "{not valid json");
+        writeFileSync(join(workspaceRoot, ".vis", "last-summary.json"), "{not valid json");
 
         const { calls, server } = makeFakeServer();
 
@@ -1007,7 +1007,7 @@ describe(registerListRuns, () => {
     it("should list runs newest-first with derived status and task counts", async () => {
         expect.assertions(4);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+        const runsDir = join(workspaceRoot, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
         writeFileSync(join(runsDir, "run-old.json"), JSON.stringify({ runId: "run-old", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }));
@@ -1045,7 +1045,7 @@ describe(registerListRuns, () => {
     it("should honour the `limit` argument", async () => {
         expect.assertions(1);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+        const runsDir = join(workspaceRoot, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 
@@ -1065,7 +1065,7 @@ describe(registerListRuns, () => {
     it("should return the newest `limit` runs by mtime, in order", async () => {
         expect.assertions(3);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+        const runsDir = join(workspaceRoot, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
 
@@ -1095,7 +1095,7 @@ describe(registerListRuns, () => {
     it("should skip malformed run files instead of failing the listing", async () => {
         expect.assertions(2);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+        const runsDir = join(workspaceRoot, ".vis", "runs");
 
         mkdirSync(runsDir, { recursive: true });
         writeFileSync(join(runsDir, "good.json"), JSON.stringify({ runId: "good", tasks: [] }));

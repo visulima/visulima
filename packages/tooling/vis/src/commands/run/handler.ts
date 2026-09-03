@@ -1301,13 +1301,16 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             // skipped on Windows / unrecognized shell.
             await appendToShellHistory(`vis run ${picked}`);
         } else {
+            // Non-interactive and no target: there is nothing to pick and
+            // nothing to run. Returning 0 here made the missing target a
+            // *passing* CI job that printed a target list where its task
+            // output should have been.
             logger.info("Available targets:");
             logger.info("");
             logger.info(formatTargetList(available));
             logger.info("");
-            logger.info("Usage: vis run <target>");
 
-            return;
+            throw new VisUserError("Missing target. Usage: vis run <target>");
         }
     }
 
@@ -1740,6 +1743,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             // is tolerated (pnpm does the same) — we break it and warn rather
             // than deadlocking. Cycles with a real (static) edge stay fatal.
             logger.warn(`Ignoring dev-only dependency cycle (build order is ambiguous): ${cycle.join(" → ")}`);
+        },
+        onUnmatchedProjectSelector: (selector) => {
+            // An unmatched `dependsOn.projects` entry produces no edge, so
+            // the declared ordering just isn't there. Silence made a typo
+            // and a working config indistinguishable.
+            logger.warn(`dependsOn.projects entry "${selector}" matched no project — that dependency edge was not created.`);
         },
         projectGraph,
         targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,

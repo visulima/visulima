@@ -72,6 +72,7 @@
                 "guides/why-vis",
                 "guides/config-model",
                 "guides/best-practices",
+                "guides/caching",
                 "guides/ci-cd",
                 "guides/conditional-and-finally-tasks",
                 "guides/git-hooks",
