@@ -89,6 +89,27 @@ const generateConfigContent = (_pm: string, options: ConfigInitOptions): string 
         securityBlock += `\n        depsDev: { enabled: true },`;
     }
 
+    // The task graph is why anyone installs a task runner, but a fresh
+    // config said nothing about it — only a security policy the user had
+    // not asked about yet. A commented block costs nothing at runtime and
+    // shows the shape (and the docs link) at the moment it is needed.
+    sections.push(`    // Workspace-wide task defaults. Keys are target names, matched
+    // exactly against your package.json scripts. Everything here is
+    // optional — vis runs your scripts without any of it.
+    //
+    // tasks: {
+    //     build: {
+    //         // Build the packages this one depends on first.
+    //         dependsOn: ["^build"],
+    //         outputs: ["{projectRoot}/dist/**"],
+    //     },
+    //     test: {
+    //         dependsOn: ["build"],
+    //     },
+    // },
+    //
+    // Docs: https://visulima.com/docs/packages/vis/configuration`);
+
     sections.push(`    security: {\n${securityBlock}\n    },`);
 
     // Staged section

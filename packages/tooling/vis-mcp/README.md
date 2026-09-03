@@ -94,8 +94,8 @@ All tools are read-only (each is annotated `readOnlyHint: true`). The agent prep
 | `list_targets`      | Flatten projects into per-target rows; optionally narrow to one project.                                     |
 | `list_templates`    | List scaffolding templates discovered in the workspace, with source and one-line description.                |
 | `describe_template` | Return template metadata: description, default destination, and the variable schema for `vis generate`.      |
-| `get_run_logs`      | Read a run summary from `.task-runner/`; optionally filter to one task.                                      |
-| `list_runs`         | List recorded runs from `.task-runner/runs/` (newest first) with status and task counts to discover run IDs. |
+| `get_run_logs`      | Read a run summary from `.vis/`; optionally filter to one task.                                      |
+| `list_runs`         | List recorded runs from `.vis/runs/` (newest first) with status and task counts to discover run IDs. |
 | `cache_why`         | Diff a task's hash inputs against the previous run to explain a rotation.                                    |
 | `cache_hash`        | Print the recorded hash and per-input hash details for a task.                                               |
 | `audit`             | Audit installed packages for known vulnerabilities and supply-chain risk (`vis audit`).                      |

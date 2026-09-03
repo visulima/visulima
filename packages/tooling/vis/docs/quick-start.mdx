@@ -49,6 +49,29 @@ Compare specific git refs:
 vis affected lint --base=HEAD~5 --head=HEAD
 ```
 
+## Running in CI
+
+`vis ci` is the one-shot CI entry point: it runs the toolchain pre-flight,
+installs dependencies, then runs each comma-separated target against the
+affected projects. The base and head refs are derived from the CI
+provider's own environment variables, so no `--base` flag is needed on
+GitHub Actions, GitLab CI, or Buildkite.
+
+```bash
+vis ci lint,test,build
+```
+
+Skip the install step when the pipeline already handled it:
+
+```bash
+vis ci lint,test,build --no-install
+```
+
+Running the targets as one graph lets vis overlap independent work, and
+pays the runner's fixed start-up cost once instead of once per job. See the
+[CI/CD guide](/guides/ci-cd) and [Caching](/guides/caching) for per-provider
+pipelines and cache configuration.
+
 ## Checking for Outdated Dependencies
 
 For pnpm or bun workspaces with catalogs, check which dependencies are outdated:

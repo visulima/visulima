@@ -7,28 +7,51 @@ import { filterProjectsByQuery, filterProjectsByTags } from "../../task/selector
 import type { AffectedCommandOptions } from "./index";
 
 /**
- * Everything after the `affected` token in the real argv.
+ * The tokens this invocation was given, to forward verbatim to `vis run`.
  *
- * Forwarded verbatim to `vis run` rather than re-enumerated flag by flag.
- * The enumerate-and-forward approach is exactly the bug this command's own
- * PR set out to kill: it forwarded six of `vis run`'s ~40 options, so
+ * Forwarded rather than re-enumerated flag by flag. The
+ * enumerate-and-forward approach is exactly the bug this command's own PR
+ * set out to kill: it forwarded six of `vis run`'s ~40 options, so
  * `vis affected build --fail-fast` (or `--summarize`, `--log`,
  * `--strict-env`, `--output-style`, …) parsed fine and silently did
  * nothing. Passing the tokens through means the list can never drift as
  * `run` grows.
  *
- * Located by scanning for the command token instead of a fixed offset so
- * global options placed before it (`vis --cwd=… affected build`) survive.
- * @param argv Full process argv.
+ * `rawArgv` is authoritative: it is what the caller supplied, whether that
+ * caller was the shell or `runtime.runCommand()`. The argv scan is only a
+ * fallback for hosts predating `rawArgv`, and it locates the tokens by
+ * command name rather than a fixed offset so global options placed before
+ * it survive.
+ *
+ * The scan used to be the only path, and it silently broke every
+ * programmatic caller — `vis ci lint` reaches this command through
+ * `runCommand`, where the real argv holds no `affected` token at all. The
+ * scan returned `[]`, `vis run` was handed no target, printed its usage
+ * text, and `vis ci` reported success: a CI job that verified nothing and
+ * went green.
+ * @param rawArgv Tokens this command was invoked with.
+ * @param argv Full process argv, used only as a fallback.
  * @returns The user's tokens for this invocation.
  */
-export const forwardedArgv = (argv: ReadonlyArray<string>): string[] => {
+export const forwardedArgv = (rawArgv: ReadonlyArray<string>, argv: ReadonlyArray<string>): string[] => {
+    if (rawArgv.length > 0) {
+        return [...rawArgv];
+    }
+
     const commandIndex = argv.indexOf("affected", 2);
 
     return commandIndex === -1 ? [] : argv.slice(commandIndex + 1);
 };
 
-const execute = async ({ argument, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {
+const execute = async ({
+    argument,
+    options,
+    process: toolboxProcess,
+    rawArgv,
+    runtime,
+    visConfig,
+    workspaceRoot: wsRoot,
+}: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {
     const target = argument[0];
 
     if (!target) {
@@ -76,7 +99,17 @@ const execute = async ({ argument, options, runtime, visConfig, workspaceRoot: w
         return;
     }
 
-    const argv = forwardedArgv(process.argv);
+    // `toolboxProcess.argv`, not the global: the toolbox adapter is what
+    // makes commands runnable under MCP and non-Node hosts, where a global
+    // `process` may not exist at all.
+    const argv = forwardedArgv(rawArgv ?? [], toolboxProcess?.argv ?? []);
+
+    // Fires when `rawArgv` is absent (an older cerebro) *and* the argv scan
+    // found nothing — handing `vis run` an empty argv makes it print its
+    // target list and return 0, which reads as a passing job.
+    if (argv.length === 0) {
+        throw new VisUserError("Missing target. Usage: vis affected <target>");
+    }
 
     await runtime.runCommand("run", { argv: argv.includes("--affected") ? argv : [...argv, "--affected"] });
 };

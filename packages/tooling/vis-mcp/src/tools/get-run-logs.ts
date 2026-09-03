@@ -20,7 +20,7 @@ export const registerGetRunLogs = ({ server }: ToolDeps, context: ToolContext): 
         {
             annotations: { readOnlyHint: true },
             description:
-                "Read a vis run summary from .task-runner/. Returns the most recent run by default, or a specific run when `runId` is set. Optionally filter to a single task with `taskId`.",
+                "Read a vis run summary from .vis/. Returns the most recent run by default, or a specific run when `runId` is set. Optionally filter to a single task with `taskId`.",
             inputSchema: {
                 runId: z.string().optional().describe("Run ID (default: latest)"),
                 taskId: z.string().optional().describe('Filter to a single task ID like "@my/app:build"'),
@@ -31,9 +31,12 @@ export const registerGetRunLogs = ({ server }: ToolDeps, context: ToolContext): 
                 return errorResponse(new Error(`Invalid runId "${runId}". Expected filesystem-safe slug ([A-Za-z0-9_.-]).`));
             }
 
+            // `.vis/`, not the pre-cutover `.task-runner/` — vis stopped
+            // writing there and now deletes it on startup, so the old paths
+            // resolved to nothing on every workspace.
             const path = runId
-                ? join(context.workspaceRoot, ".task-runner", "runs", `${runId}.json`)
-                : join(context.workspaceRoot, ".task-runner", "last-summary.json");
+                ? join(context.workspaceRoot, ".vis", "runs", `${runId}.json`)
+                : join(context.workspaceRoot, ".vis", "last-summary.json");
 
             try {
                 const raw = await readFile(path, "utf8");

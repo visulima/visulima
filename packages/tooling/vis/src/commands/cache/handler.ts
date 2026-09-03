@@ -1,3 +1,4 @@
+import { readdirSync } from "node:fs";
 import { mkdtemp, readdir, realpath, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { createInterface } from "node:readline";
@@ -9,7 +10,7 @@ import { join, relative } from "@visulima/path";
 import { Cache, digestFile, getLastRunSummaryPath, parseCacheSize, readLastRunSummary } from "@visulima/task-runner";
 
 import { clearCache as clearAiResponseCache, getCacheStats as getAiCacheStats } from "../../ai/ai-cache";
-import { isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
+import { applyBranchScope, isCacheDirectoryInsideWorkspace, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { pail } from "../../io/logger";
 import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSummaryById } from "../../report/run-summary-utils";
 import { clearDepsDevCache, getDepsDevCacheStats } from "../../security/deps-dev-security";
@@ -17,6 +18,12 @@ import { clearSnykCache, getSnykCacheStats } from "../../security/snyk-security"
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
 import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
+
+/**
+ * Subdirectory `applyBranchScope` nests per-branch caches under. Reserved:
+ * it is a container, not a cache entry.
+ */
+const BRANCH_SCOPE_DIRECTORY = "branches";
 
 /**
  * Shape returned by `collectCacheEntries`. Kept close to what `removeOldEntries`
@@ -65,7 +72,11 @@ export const collectCacheEntries = async (cacheDirectory: string): Promise<Cache
     }
 
     for (const name of dirents) {
-        if (name.startsWith(".")) {
+        // `branches` is the branch-scoping container, never a cache entry:
+        // its children are cache roots in their own right. Counting it as one
+        // entry reported N branches' worth of hashes as a single row, and
+        // listing it alongside those roots would double-count them.
+        if (name.startsWith(".") || name === BRANCH_SCOPE_DIRECTORY) {
             continue;
         }
 
@@ -114,6 +125,104 @@ export const formatAge = (mtimeMs: number, now: number = Date.now()): string => 
     }
 
     return `${String(Math.floor(seconds / 86_400))}d`;
+};
+
+const isoOrNull = (value: number | undefined): string | null => (value === undefined ? null : new Date(value).toISOString());
+
+/**
+ * Writes one line of report output verbatim.
+ *
+ * Deliberately not `pail.info`: the pretty reporter frames every call in a
+ * full-width timestamped rule plus a blank line, so a five-field stats
+ * block rendered as ~20 terminal lines and the numbers scrolled the
+ * directory path off screen. These lines are tabular data, not log events.
+ */
+const printLine = (line: string): void => {
+    process.stdout.write(`${line}\n`);
+};
+
+interface AuxStats {
+    /** Only the task cache has a configurable location worth printing. */
+    directory?: string;
+    entries: number;
+    newestEntry: number | undefined;
+    oldestEntry: number | undefined;
+    totalSizeBytes: number;
+}
+
+/** Renders one labelled cache-store block. Shared by every store `vis cache size` reports. */
+const printStatsBlock = (label: string, stats: AuxStats): void => {
+    printLine(`${label}:`);
+
+    if (stats.directory !== undefined) {
+        printLine(`  Directory:  ${stats.directory}`);
+    }
+
+    printLine(`  Entries:    ${String(stats.entries)}`);
+    printLine(`  Total size: ${formatBytes(stats.totalSizeBytes, { decimals: 1, space: false })}`);
+    printLine(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
+    printLine(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
+};
+
+/**
+ * Expands a cache root into the directories an eviction pass must walk.
+ *
+ * With branch scoping on, entries live in `&lt;base>/branches/&lt;slug>`; every
+ * such subtree counts against retention, including branches this checkout
+ * has never been on.
+ *
+ * `base` itself is always included, never replaced. A workspace that ran
+ * unscoped before turning `branchScopedCache` on still has entries sitting
+ * directly under it, and returning only the branch subtrees made those
+ * unreachable to `--max-age-days` / `--max-size` while `clean` still
+ * deleted them — retention silently stopped covering part of the store.
+ * `collectCacheEntries` skips the `branches` container, so listing `base`
+ * cannot double-count what the subtrees already report.
+ */
+const evictionDirectories = (base: string, branchScoped: boolean): string[] => {
+    if (!branchScoped) {
+        return [base];
+    }
+
+    const branchesRoot = join(base, BRANCH_SCOPE_DIRECTORY);
+
+    if (!isAccessibleSync(branchesRoot)) {
+        return [base];
+    }
+
+    try {
+        const slugs = readdirSync(branchesRoot, { withFileTypes: true })
+            .filter((entry) => entry.isDirectory())
+            .map((entry) => join(branchesRoot, entry.name));
+
+        return [base, ...slugs];
+    } catch {
+        return [base];
+    }
+};
+
+/**
+ * True when cache entries sit directly under `base`, outside any branch
+ * subtree — the layout a workspace has if it ran before `branchScopedCache`
+ * was turned on.
+ *
+ * Those entries are never *hit* once scoping is on, since `vis run` resolves
+ * to a branch subtree. But they are still on disk and still reclaimed by
+ * `prune`, so the reporting commands have to see them: `size` counting only
+ * the branch subtree made the store look smaller than what `prune` went on to
+ * free, which is the "reports less than it holds" discrepancy this command
+ * family exists to avoid.
+ */
+const hasUnscopedEntries = (base: string): boolean => {
+    if (!isAccessibleSync(base)) {
+        return false;
+    }
+
+    try {
+        return readdirSync(base, { withFileTypes: true }).some((entry) => entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== BRANCH_SCOPE_DIRECTORY);
+    } catch {
+        return false;
+    }
 };
 
 const confirmPrompt = (question: string): Promise<boolean> =>
@@ -183,8 +292,8 @@ export const runList = async (cacheDirectory: string, format: string, logger: Co
         return;
     }
 
-    pail.info(`Cache directory: ${cacheDirectory}`);
-    pail.info(`Entries: ${String(entries.length)} (${formatBytes(totalBytes, { decimals: 1, space: false })})`);
+    printLine(`Cache directory: ${cacheDirectory}`);
+    printLine(`Entries: ${String(entries.length)} (${formatBytes(totalBytes, { decimals: 1, space: false })})`);
     logger.info("");
 
     const renderedAt = Date.now();
@@ -267,7 +376,13 @@ export const runClean = async (cacheDirectory: string, workspaceRoot: string, op
     }
 
     if (options.dryRun) {
-        const entries = await collectCacheEntries(cacheDirectory);
+        // Count across every branch subtree, not just the top level. Under
+        // branch scoping the entries live one level down, so a plain read of
+        // the base saw the single `branches` directory and announced
+        // "Would remove 1 cache entry" for N branches' worth. The byte total
+        // was right all along, which made the count look plausible.
+        const perDirectory = await Promise.all(evictionDirectories(cacheDirectory, true).map(async (directory) => collectCacheEntries(directory)));
+        const entries = perDirectory.flat();
         const totalBytes = entries.reduce((sum, entry) => sum + entry.sizeBytes, 0);
 
         pail.info(
@@ -704,9 +819,13 @@ export const runSize = async (cacheDirectory: string, format: string): Promise<v
         return;
     }
 
-    pail.info(`Cache directory: ${cacheDirectory}`);
-    pail.info(`Entries:         ${String(entries.length)}`);
-    pail.info(`Total size:      ${formatBytes(totalBytes, { decimals: 1, space: false })}`);
+    printStatsBlock("Task cache", {
+        directory: cacheDirectory,
+        entries: entries.length,
+        newestEntry: entries[0]?.mtimeMs,
+        oldestEntry: entries.at(-1)?.mtimeMs,
+        totalSizeBytes: totalBytes,
+    });
 };
 
 interface RunVerifyOptions {
@@ -1010,23 +1129,6 @@ const parseCacheTarget = (raw: string | undefined): CacheTarget => {
 
 const includesTarget = (selected: CacheTarget, kind: Exclude<CacheTarget, "all">): boolean => selected === "all" || selected === kind;
 
-interface AuxStats {
-    entries: number;
-    newestEntry: number | undefined;
-    oldestEntry: number | undefined;
-    totalSizeBytes: number;
-}
-
-const isoOrNull = (value: number | undefined): string | null => (value === undefined ? null : new Date(value).toISOString());
-
-const printAuxStatsBlock = (label: string, stats: AuxStats): void => {
-    pail.info(`${label}:`);
-    pail.info(`  Entries:    ${String(stats.entries)}`);
-    pail.info(`  Total size: ${formatBytes(stats.totalSizeBytes, { decimals: 1, space: false })}`);
-    pail.info(`  Oldest:     ${stats.oldestEntry ? new Date(stats.oldestEntry).toISOString() : "N/A"}`);
-    pail.info(`  Newest:     ${stats.newestEntry ? new Date(stats.newestEntry).toISOString() : "N/A"}`);
-};
-
 type CacheScope = "all" | "shared" | "worktree";
 
 const parseScope = (raw: string | undefined): CacheScope => {
@@ -1041,11 +1143,30 @@ const parseScope = (raw: string | undefined): CacheScope => {
     return "shared";
 };
 
+/**
+ * What a `vis cache` subcommand intends to do, which decides how branch
+ * scoping applies:
+ *
+ * - `read` — inspect what the current checkout would hit. Scoped to this
+ *   branch, because that is where `vis run` writes.
+ * - `evict` — enforce retention. Must see *every* branch's entries: a
+ *   branch-scoped `prune --max-size` would leave every other branch's
+ *   subtree growing forever, with only the nuclear `clean` able to touch
+ *   them.
+ * - `wipe` — remove everything. Clearing the cache means clearing the
+ *   cache, not just the checked-out branch's slice of it.
+ */
+type CacheOperation = "evict" | "read" | "wipe";
+
 interface ResolvedCacheContext {
-    /** All paths the operation should touch (deduplicated). */
-    cacheDirectories: string[];
-    /** Primary directory selected by the chosen scope (shared by default). */
-    cacheDirectory: string;
+    /**
+     * Directories this operation should act on, deduplicated.
+     *
+     * Prefer this over the raw fields below — it is the one place the
+     * branch-scoping decision is made, so a new subcommand cannot pick the
+     * wrong one by reaching for a sibling field.
+     */
+    directoriesFor: (operation: CacheOperation) => string[];
     scope: CacheScope;
     sharedWorktreeCache: boolean | undefined;
     workspaceRoot: string;
@@ -1057,7 +1178,7 @@ const resolveCacheDirectoryFromContext = (
     visConfig: Record<string, unknown> | undefined,
 ): ResolvedCacheContext => {
     const resolvedWorkspaceRoot = workspaceRoot ?? process.cwd();
-    const cfg = (visConfig ?? {}) as { sharedWorktreeCache?: boolean; taskRunner?: { cacheDirectory?: string } };
+    const cfg = (visConfig ?? {}) as { branchScopedCache?: boolean; sharedWorktreeCache?: boolean; taskRunner?: { cacheDirectory?: string } };
     const taskRunner = cfg.taskRunner ?? {};
     const scope = parseScope(options.scope as string | undefined);
     const optionsCacheDir = options.cacheDir as string | undefined;
@@ -1065,34 +1186,66 @@ const resolveCacheDirectoryFromContext = (
     // Worktree-local: this checkout's `node_modules/.cache/vis`. Disable
     // worktree-share by passing `sharedWorktreeCache: false` so the
     // resolver returns the literal workspace_root path.
-    const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, false);
+    const worktreeBase = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, false);
 
     // Shared: the main worktree's cache (or workspace_root for primary checkouts).
-    const sharedDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, cfg.sharedWorktreeCache);
+    const sharedBase = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, cfg.sharedWorktreeCache);
 
-    let primary: string;
-    let directories: string[];
+    // `vis run` writes into `<base>/branches/<slug>` when branch scoping is
+    // on (see `applyBranchScope`). Without the same hop here every `vis
+    // cache` subcommand inspected the empty base directory and reported a
+    // full cache as 0 entries. No-op when `branchScopedCache` isn't `true`.
+    const worktreeDirectory = applyBranchScope(worktreeBase, resolvedWorkspaceRoot, cfg.branchScopedCache);
+    const sharedDirectory = applyBranchScope(sharedBase, resolvedWorkspaceRoot, cfg.branchScopedCache);
+
+    // Pair each selected root with its branch-scoped read location, so
+    // every operation can pick the form it needs from the same selection.
+    let selected: { base: string; scoped: string }[];
 
     switch (scope) {
         case "all": {
-            primary = sharedDirectory;
-            directories = sharedDirectory === worktreeDirectory ? [sharedDirectory] : [sharedDirectory, worktreeDirectory];
+            selected
+                = sharedDirectory === worktreeDirectory
+                    ? [{ base: sharedBase, scoped: sharedDirectory }]
+                    : [
+                        { base: sharedBase, scoped: sharedDirectory },
+                        { base: worktreeBase, scoped: worktreeDirectory },
+                    ];
             break;
         }
         case "worktree": {
-            primary = worktreeDirectory;
-            directories = [worktreeDirectory];
+            selected = [{ base: worktreeBase, scoped: worktreeDirectory }];
             break;
         }
         default: {
-            primary = sharedDirectory;
-            directories = [sharedDirectory];
+            selected = [{ base: sharedBase, scoped: sharedDirectory }];
         }
     }
 
+    const branchScoped = cfg.branchScopedCache === true;
+
     return {
-        cacheDirectories: directories,
-        cacheDirectory: primary,
+        directoriesFor: (operation: CacheOperation): string[] => {
+            if (operation === "read") {
+                // The branch subtree is where `vis run` reads and writes, so it
+                // leads. A base still holding pre-scoping entries is appended so
+                // the reporting commands account for every byte `prune` can
+                // reclaim — they are dead weight, but they are not invisible.
+                return [
+                    ...new Set(
+                        selected.flatMap((entry) =>
+                            (entry.scoped !== entry.base && hasUnscopedEntries(entry.base) ? [entry.scoped, entry.base] : [entry.scoped]),
+                        ),
+                    ),
+                ];
+            }
+
+            if (operation === "wipe") {
+                return [...new Set(selected.map((entry) => entry.base))];
+            }
+
+            return [...new Set(selected.flatMap((entry) => evictionDirectories(entry.base, branchScoped)))];
+        },
         scope,
         sharedWorktreeCache: cfg.sharedWorktreeCache,
         workspaceRoot: resolvedWorkspaceRoot,
@@ -1100,7 +1253,8 @@ const resolveCacheDirectoryFromContext = (
 };
 
 export const cacheListExecute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CacheListOptions>): Promise<void> => {
-    const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { directoriesFor } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const cacheDirectories = directoriesFor("read");
     const format = options.format ?? "table";
 
     for (const directory of cacheDirectories) {
@@ -1117,7 +1271,7 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
     const dryRun = Boolean(options.dryRun);
 
     if (includesTarget(target, "task")) {
-        const { cacheDirectory, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+        const { directoriesFor, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
 
         // `runClean` already invokes `isCacheDirectoryInsideWorkspace` and
         // prompts for out-of-workspace targets — when the user is in a linked
@@ -1125,10 +1279,12 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
         // that path lives outside the current `workspaceRoot`, so the
         // existing prompt naturally requires `--force` (or interactive
         // confirmation) before nuking the shared store.
-        await runClean(cacheDirectory, workspaceRoot, {
-            dryRun,
-            force: Boolean(options.force),
-        });
+        for (const directory of directoriesFor("wipe")) {
+            await runClean(directory, workspaceRoot, {
+                dryRun,
+                force: Boolean(options.force),
+            });
+        }
     }
 
     if (includesTarget(target, "ai")) {
@@ -1174,7 +1330,12 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
 
 // fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const cachePruneExecute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CachePruneOptions>): Promise<void> => {
-    const { cacheDirectories, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { directoriesFor, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    // "evict": retention has to see every branch's entries. Scoped to the
+    // checked-out branch, `--max-size` could never reclaim another branch's
+    // subtree, so the store grew one subtree per branch ever checked out and
+    // only the nuclear `clean` could touch them.
+    const cacheDirectories = directoriesFor("evict");
 
     for (const directory of cacheDirectories) {
         if (cacheDirectories.length > 1) {
@@ -1241,7 +1402,8 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
         const payload: Record<string, unknown> = {};
 
         if (includesTarget(target, "task")) {
-            const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+            const { directoriesFor } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+            const cacheDirectories = directoriesFor("read");
 
             payload.task = await Promise.all(
                 cacheDirectories.map(async (directory) => {
@@ -1311,7 +1473,8 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
     }
 
     if (includesTarget(target, "task")) {
-        const { cacheDirectories } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+        const { directoriesFor } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+        const cacheDirectories = directoriesFor("read");
 
         for (const directory of cacheDirectories) {
             if (cacheDirectories.length > 1) {
@@ -1323,19 +1486,19 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
     }
 
     if (includesTarget(target, "ai")) {
-        printAuxStatsBlock("AI response cache", getAiCacheStats());
+        printStatsBlock("AI response cache", getAiCacheStats());
     }
 
     if (includesTarget(target, "socket")) {
-        printAuxStatsBlock("Socket.dev report cache", getSocketCacheStats());
+        printStatsBlock("Socket.dev report cache", getSocketCacheStats());
     }
 
     if (includesTarget(target, "deps-dev")) {
-        printAuxStatsBlock("deps.dev cache", getDepsDevCacheStats());
+        printStatsBlock("deps.dev cache", getDepsDevCacheStats());
     }
 
     if (includesTarget(target, "snyk")) {
-        printAuxStatsBlock("Snyk issue cache", getSnykCacheStats());
+        printStatsBlock("Snyk issue cache", getSnykCacheStats());
     }
 };
 
@@ -1359,7 +1522,8 @@ export const cacheVerifyExecute = async ({
     // `--scope=all`, that's [shared, worktree]; verify will look up the
     // task hash in each, in order, and use the first match. Other
     // scopes resolve to a single-element list.
-    const { cacheDirectories, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const { directoriesFor, workspaceRoot } = resolveCacheDirectoryFromContext(wsRoot, options, visConfig as Record<string, unknown> | undefined);
+    const cacheDirectories = directoriesFor("read");
 
     await runVerify(
         taskId,
