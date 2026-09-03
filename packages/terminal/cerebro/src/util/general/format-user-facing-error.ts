@@ -6,7 +6,7 @@ import { isUserFacingCerebroError } from "../../errors/error-codes";
  *
  * Shared by `errorHandlerPlugin` and by `Cli.run`'s pre-lifecycle catch.
  * They are two separate code paths and the input errors go through the
- * *second* one: `UNKNOWN_OPTION`, `MISSING_ARGUMENT`, `CONFLICTING_OPTIONS`
+ * second one: `UNKNOWN_OPTION`, `MISSING_ARGUMENT`, `CONFLICTING_OPTIONS`
  * and friends are all raised inside `#executeCommandInternal`, before the
  * plugin manager's lifecycle try/catch exists to see them. Classifying them
  * only in the plugin left the case the classification was written for —
@@ -14,7 +14,7 @@ import { isUserFacingCerebroError } from "../../errors/error-codes";
  * @param error The thrown value.
  * @returns The text to log, or `undefined` to fall through to normal rendering.
  */
-export const formatUserFacingError = (error: unknown): string | undefined => {
+const formatUserFacingError = (error: unknown): string | undefined => {
     if (!isUserFacingCerebroError(error)) {
         return undefined;
     }
@@ -26,3 +26,5 @@ export const formatUserFacingError = (error: unknown): string | undefined => {
 
     return hintLines.length > 0 ? [message, ...hintLines].join("\n") : message;
 };
+
+export default formatUserFacingError;

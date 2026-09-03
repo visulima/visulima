@@ -57,7 +57,7 @@ describe("dependsOn.projects selectors", () => {
 
         // "after everyone else's check" is a natural thing to write, but the
         // glob necessarily matches the declaring project too. That edge is
-        // hard, so `breakSoftOnlyCycles` leaves it and the orchestrator
+        // hard, so the soft-cycle breaker leaves it and the orchestrator
         // deadlocks on a cycle of one.
         const graph = createTaskGraph([checkTask], {
             projectGraph,

@@ -1738,17 +1738,17 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // stripped from the graph again after preflight injection so the
     // regular runner doesn't execute them — they run via `runPersistentTasks`.
     let taskGraph = createTaskGraph([...initialTasks, ...persistentTasks], {
-        onUnmatchedProjectSelector: (selector) => {
-            // An unmatched `dependsOn.projects` entry produces no edge, so
-            // the declared ordering just isn't there. Silence made a typo
-            // and a working config indistinguishable.
-            logger.warn(`dependsOn.projects entry "${selector}" matched no project — that dependency edge was not created.`);
-        },
         onCycleBroken: (cycle) => {
             // A dependency cycle that runs only through devDependency edges
             // is tolerated (pnpm does the same) — we break it and warn rather
             // than deadlocking. Cycles with a real (static) edge stay fatal.
             logger.warn(`Ignoring dev-only dependency cycle (build order is ambiguous): ${cycle.join(" → ")}`);
+        },
+        onUnmatchedProjectSelector: (selector) => {
+            // An unmatched `dependsOn.projects` entry produces no edge, so
+            // the declared ordering just isn't there. Silence made a typo
+            // and a working config indistinguishable.
+            logger.warn(`dependsOn.projects entry "${selector}" matched no project — that dependency edge was not created.`);
         },
         projectGraph,
         targetDefaults: config.tasks as unknown as Record<string, Partial<TargetConfiguration>>,

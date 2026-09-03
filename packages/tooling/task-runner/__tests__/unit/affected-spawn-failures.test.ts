@@ -21,10 +21,10 @@ describe("affected detection — spawn failures", () => {
         const error = await getAffectedProjects({
             base: "main",
             head: "HEAD",
-            projectGraph: emptyGraph as never,
+            projectGraph: emptyGraph,
             projects: {},
             workspaceRoot: missingRoot,
-        }).catch((caught: unknown) => caught);
+        }).catch((error_: unknown) => error_);
 
         expect((error as Error).message).toContain(missingRoot);
         expect((error as Error).message).not.toContain("apk add git");
@@ -41,10 +41,10 @@ describe("affected detection — spawn failures", () => {
             const error = await getAffectedProjects({
                 base: "main",
                 head: "HEAD",
-                projectGraph: emptyGraph as never,
+                projectGraph: emptyGraph,
                 projects: {},
                 workspaceRoot: scratch,
-            }).catch((caught: unknown) => caught);
+            }).catch((error_: unknown) => error_);
 
             expect((error as Error | undefined)?.message ?? "").not.toContain("does not exist");
         } finally {

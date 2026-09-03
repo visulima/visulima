@@ -34,7 +34,7 @@ const runBin = (binPath: string, args: string[], cwd: string): { code: number; s
     };
 };
 
-describe("usage `@visulima/vis` bin entries", () => {
+describe.skipIf(!hasBuild)("usage `@visulima/vis` bin entries", () => {
     let cleanCwd: string;
 
     beforeAll(() => {
@@ -47,7 +47,7 @@ describe("usage `@visulima/vis` bin entries", () => {
 
     // 30s test timeout matches the spawnSync timeout — vis bin startup
     // (node + the bundled CLI) can exceed the 5s default on cold CI runners.
-    it.skipIf(!hasBuild)(`should expose working \`vis\` bin via --version`, { timeout: 30_000 }, () => {
+    it(`should expose working \`vis\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/bin.js"), ["--version"], cleanCwd);
@@ -56,7 +56,7 @@ describe("usage `@visulima/vis` bin entries", () => {
         expect(result.stdout).toBe(packageJson.version);
     });
 
-    it.skipIf(!hasBuild)(`should expose working \`visx\` bin via --version`, { timeout: 30_000 }, () => {
+    it(`should expose working \`visx\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/binx.js"), ["--version"], cleanCwd);

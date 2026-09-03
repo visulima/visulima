@@ -23,7 +23,7 @@ describe("generated positive twin for a declared --no-x", () => {
             description: "Skip interactive prompts",
             name: "no-interactive",
             type: Boolean,
-        } as OptionDefinition<unknown>);
+        });
 
         expect(twin?.description).not.toBe("Skip interactive prompts");
         expect(twin?.description).toBe("Inverse of --no-interactive.");
@@ -39,9 +39,9 @@ describe("generated positive twin for a declared --no-x", () => {
             description: "Skip interactive prompts",
             name: "no-interactive",
             type: Boolean,
-        } as OptionDefinition<unknown>);
+        });
 
-        expect(twin?.hidden).toBeFalsy();
+        expect(twin?.hidden).not.toBe(true);
     });
 
     it("does not copy the alias onto the twin", () => {
@@ -53,7 +53,7 @@ describe("generated positive twin for a declared --no-x", () => {
             description: "Skip interactive prompts",
             name: "no-interactive",
             type: Boolean,
-        } as OptionDefinition<unknown>);
+        });
 
         expect(twin?.alias).toBeUndefined();
     });

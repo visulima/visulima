@@ -267,8 +267,8 @@ const withSpawnFailureHint = (error: unknown, workspaceRoot: string): unknown =>
 
     return new Error(
         "Affected detection needs the `git` binary, which was not found on PATH. "
-            + "Install it (`apk add git` on alpine, `apt-get install -y git` on debian) "
-            + "or run the target without `--affected`.",
+        + "Install it (`apk add git` on alpine, `apt-get install -y git` on debian) "
+        + "or run the target without `--affected`.",
         { cause: error },
     );
 };

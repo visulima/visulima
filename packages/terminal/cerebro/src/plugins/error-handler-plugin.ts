@@ -4,7 +4,7 @@ import { renderError } from "@visulima/error";
 
 import type { Plugin } from "../types/plugin";
 import type { Toolbox } from "../types/toolbox";
-import { formatUserFacingError } from "../util/general/format-user-facing-error";
+import formatUserFacingError from "../util/general/format-user-facing-error";
 import { exitProcess } from "../util/general/runtime-process";
 
 export type ErrorHandlerOptions = {

@@ -397,7 +397,7 @@ const resolveConfigDependency = (
                 // "check" }]` reads as "after everyone else's check" and is a
                 // natural thing to write, but a glob necessarily includes the
                 // declaring project itself. The edge is *hard*, so
-                // `breakSoftOnlyCycles` won't touch it and the orchestrator
+                // the soft-cycle breaker won't touch it and the orchestrator
                 // deadlocks. `getDependencyProjectTasks` skips self-edges for
                 // the same reason.
                 tasks.push(...asHardDependencies(resolved.filter((candidate) => candidate.id !== task.id)));

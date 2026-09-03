@@ -1,11 +1,12 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
 import { ErrorCodes } from "../../../src/errors/error-codes";
 
-const ERRORS_DIRECTORY = join(import.meta.dirname, "../../../src/errors");
+const ERRORS_DIRECTORY = join(dirname(fileURLToPath(import.meta.url)), "../../../src/errors");
 
 /**
  * Every code an error class actually passes to `CerebroError`.
@@ -36,12 +37,12 @@ const codesUsedByErrorClasses = (): Set<string> => {
     return used;
 };
 
-describe("ErrorCodes", () => {
+describe("errorCodes", () => {
     it("declares every code the error classes pass to CerebroError", () => {
         expect.assertions(1);
 
         const declared = new Set<string>(Object.values(ErrorCodes));
-        const undeclared = [...codesUsedByErrorClasses()].filter((code) => !declared.has(code)).sort();
+        const undeclared = [...codesUsedByErrorClasses()].filter((code) => !declared.has(code)).toSorted((a, b) => a.localeCompare(b));
 
         expect(undeclared).toStrictEqual([]);
     });

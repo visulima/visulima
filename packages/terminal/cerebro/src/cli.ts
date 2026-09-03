@@ -28,7 +28,7 @@ import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./uti
 import normalizeCommandDefinitions from "./util/command-processing/normalize-command";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
-import { formatUserFacingError } from "./util/general/format-user-facing-error";
+import formatUserFacingError from "./util/general/format-user-facing-error";
 import parseRawCommand from "./util/general/parse-raw-command";
 import registerExceptionHandler from "./util/general/register-exception-handler";
 import {

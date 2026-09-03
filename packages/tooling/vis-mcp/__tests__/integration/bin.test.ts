@@ -41,8 +41,8 @@ afterEach(() => {
     }
 });
 
-describe("usage `@visulima/vis-mcp` bin entry", () => {
-    it.skipIf(!hasBuild)(`should boot the MCP server and exit on EOF`, () => {
+describe.skipIf(!hasBuild)("usage `@visulima/vis-mcp` bin entry", () => {
+    it(`should boot the MCP server and exit on EOF`, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/bin.js"), [], packageRoot);
@@ -51,7 +51,7 @@ describe("usage `@visulima/vis-mcp` bin entry", () => {
         expect(result.stderr).toContain("[vis-mcp] ready");
     });
 
-    it.skipIf(!hasBuild)(`should boot the MCP server when launched through a symlink (the .bin shim / npx path)`, () => {
+    it(`should boot the MCP server when launched through a symlink (the .bin shim / npx path)`, () => {
         expect.assertions(2);
 
         // The published binary is installed as a symlink in `node_modules/.bin`,

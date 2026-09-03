@@ -1208,9 +1208,9 @@ const resolveCacheDirectoryFromContext = (
                 = sharedDirectory === worktreeDirectory
                     ? [{ base: sharedBase, scoped: sharedDirectory }]
                     : [
-                          { base: sharedBase, scoped: sharedDirectory },
-                          { base: worktreeBase, scoped: worktreeDirectory },
-                      ];
+                        { base: sharedBase, scoped: sharedDirectory },
+                        { base: worktreeBase, scoped: worktreeDirectory },
+                    ];
             break;
         }
         case "worktree": {
@@ -1234,7 +1234,7 @@ const resolveCacheDirectoryFromContext = (
                 return [
                     ...new Set(
                         selected.flatMap((entry) =>
-                            entry.scoped !== entry.base && hasUnscopedEntries(entry.base) ? [entry.scoped, entry.base] : [entry.scoped],
+                            (entry.scoped !== entry.base && hasUnscopedEntries(entry.base) ? [entry.scoped, entry.base] : [entry.scoped]),
                         ),
                     ),
                 ];
@@ -1280,7 +1280,6 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
         // existing prompt naturally requires `--force` (or interactive
         // confirmation) before nuking the shared store.
         for (const directory of directoriesFor("wipe")) {
-            // eslint-disable-next-line no-await-in-loop -- each directory prompts independently; parallel prompts would interleave
             await runClean(directory, workspaceRoot, {
                 dryRun,
                 force: Boolean(options.force),

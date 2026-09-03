@@ -539,6 +539,7 @@ export interface TargetDependencyConfig {
     dependencies?: boolean;
     /** Params to pass through */
     params?: "forward" | "ignore";
+
     /**
      * Which projects to depend on, as exact names or `*`/`?` globs over
      * project names (`"@scope/*"`, `"*"`). Unlike path globbing, `*` crosses

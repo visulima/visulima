@@ -4,8 +4,8 @@ import camelCase from "@visulima/string/case/camel-case";
 
 import CerebroError from "../../errors/cerebro-error";
 import CommandValidationError from "../../errors/command-validation-error";
-import { ErrorCodes } from "../../errors/error-codes";
 import ConflictingOptionsError from "../../errors/conflicting-options-error";
+import { ErrorCodes } from "../../errors/error-codes";
 import InvalidChoiceError from "../../errors/invalid-choice-error";
 import type { ArgumentDefinition, Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
@@ -55,7 +55,7 @@ const validateUnknownOptions = <OD extends OptionDefinition<unknown>, TLogger ex
         // unchanged — only its classification is new.
         throw new CerebroError(errors.join("\n"), ErrorCodes.UNKNOWN_OPTION, {
             // eslint-disable-next-line no-underscore-dangle
-            unknownOptions: [...(commandArguments._unknown ?? [])],
+            unknownOptions: [...commandArguments._unknown ?? []],
         });
     }
 };

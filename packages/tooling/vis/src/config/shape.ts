@@ -16,7 +16,7 @@ const describe = (value: unknown): string => {
     }
 
     if (typeof value === "object") {
-        const keys = Object.keys(value as Record<string, unknown>);
+        const keys = Object.keys(value);
 
         return keys.length > 0 ? `an object with { ${keys.join(", ")} }` : "an empty object";
     }

@@ -2,12 +2,12 @@ import { VisConfigError } from "./vis-config-error";
 
 /** One malformed value found in a loaded config. */
 export interface ShapeViolation {
+    /** What the loader requires there (e.g. `an array of { match?, tasks } blocks`). */
+    expected: string;
     /** What was found instead, rendered for the message (e.g. `object`, `{ pattern, config }`). */
     found: string;
     /** JSON path of the offending value (e.g. `scopedTasks[0]`). */
     location: string;
-    /** What the loader requires there (e.g. `an array of { match?, tasks } blocks`). */
-    expected: string;
 }
 
 /**
