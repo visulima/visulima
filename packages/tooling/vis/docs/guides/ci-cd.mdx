@@ -79,17 +79,26 @@ jobs:
 
 ### Task Caching
 
-Cache task runner artifacts between CI runs:
+Cache task results between CI runs. The path is the task cache directory —
+`node_modules/.cache/vis` by default, or whatever
+`taskRunner.cacheDirectory` is set to. It is **not** `.vis/`, which holds
+run state and tracked files; see [Caching](/guides/caching) for the
+distinction.
 
 ```yaml
-- name: Cache vis task runner
+- name: Cache vis task results
   uses: actions/cache@v4
   with:
-      path: .vis/cache
-      key: vis-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      path: node_modules/.cache/vis
+      key: vis-${{ runner.os }}-${{ github.job }}-${{ github.sha }}
       restore-keys: |
-          vis-cache-${{ runner.os }}-
+          vis-${{ runner.os }}-${{ github.job }}-
+          vis-${{ runner.os }}-
 ```
+
+Keying by job keeps parallel jobs from overwriting each other's archive;
+the `restore-keys` prefixes let a cold job start from the most recent
+compatible archive instead of from nothing.
 
 ### Collapsible Task Output
 
@@ -145,6 +154,35 @@ ci:
 ```
 
 `vis ci` runs `pnpm install --frozen-lockfile`, then `vis affected` for each comma-separated target. Pass `--no-install` if the install step is already handled elsewhere.
+
+### Task Caching
+
+GitLab's cache is per-key and last-writer-wins, so give each job its own key
+and fall back to the default branch's archive. Without a per-job key,
+concurrent jobs overwrite each other and every job starts cold.
+
+```yaml
+cache:
+    - key: "$CI_JOB_NAME_SLUG-$CI_COMMIT_REF_SLUG-vis"
+      fallback_keys: ["$CI_JOB_NAME_SLUG-$CI_DEFAULT_BRANCH-vis"]
+      paths: [.vis-cache]
+      policy: pull-push
+```
+
+This assumes the cache has been pointed somewhere the job can write:
+
+```ts
+export default defineConfig({
+    taskRunner: {
+        cacheDirectory: ".vis-cache",
+    },
+});
+```
+
+That matters when `node_modules` is restored from a `policy: pull` cache —
+the default cache directory lives inside it, so everything vis writes there
+is discarded at job end and the cache never hits. See
+[Caching](/guides/caching).
 
 ### vis ai heal on merge requests
 

@@ -51,7 +51,7 @@ Drop-in for Turbo and Vite Task; the breadth of Nx without the platform lock-in.
 - Affected detection with `${affected.files}` / `$AFFECTED_FILES` token forwarding
 - Conditional (`when:`) and finally (`always:`) tasks
 - Per-package `vis.task.ts` overlay + root `extends` chain
-- Inferred targets (Project Crystal-style) for 36 tools — opt-in via `inferTargets: true`
+- Inferred targets (Project Crystal-style) for 36 tools — enriches existing targets by default; `inferTargets: true` also synthesizes new ones
 - Plugin / fingerprint hooks via `definePlugin`
 - Strict env mode + lockfile preflight
 - Project graph in ASCII / DOT / JSON / HTML

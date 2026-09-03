@@ -85,7 +85,10 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
         throw new Error("Could not determine workspace root.");
     }
 
-    const format = resolveFormat(options.format);
+    // `--json` is accepted alongside `--format=json` because roughly half
+    // of vis's commands spell machine-readable output that way; reaching
+    // for the wrong one is the common mistake, not a rare one.
+    const format = resolveFormat(options.json === true && options.format === undefined ? "json" : options.format);
 
     if (options.deps) {
         if (options.internalOnly && options.externalOnly) {

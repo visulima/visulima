@@ -63,7 +63,7 @@ describe(forwardedArgv, () => {
         // Forwarding the raw tokens is the whole point: the previous
         // enumerate-each-flag approach forwarded six of `vis run`'s ~40
         // options, so `vis affected build --fail-fast` silently did nothing.
-        expect(forwardedArgv(["node", "vis", "affected", "destroy", "--reverse", "--fail-fast"])).toStrictEqual([
+        expect(forwardedArgv([], ["node", "vis", "affected", "destroy", "--reverse", "--fail-fast"])).toStrictEqual([
             "destroy",
             "--reverse",
             "--fail-fast",
@@ -73,13 +73,23 @@ describe(forwardedArgv, () => {
     it("survives global options placed before the command", () => {
         expect.assertions(1);
 
-        expect(forwardedArgv(["node", "vis", "--cwd=/repo", "affected", "build"])).toStrictEqual(["build"]);
+        expect(forwardedArgv([], ["node", "vis", "--cwd=/repo", "affected", "build"])).toStrictEqual(["build"]);
     });
 
     it("returns nothing when the command token is absent", () => {
         expect.assertions(1);
 
-        expect(forwardedArgv(["node", "vis"])).toStrictEqual([]);
+        expect(forwardedArgv([], ["node", "vis"])).toStrictEqual([]);
+    });
+
+    it("prefers the tokens the caller supplied over the process argv", () => {
+        expect.assertions(1);
+
+        // `vis ci lint` reaches this command through `runCommand`, so the
+        // real argv holds no `affected` token. Scanning it returned `[]`,
+        // `vis run` got no target, and the CI job went green having run
+        // nothing.
+        expect(forwardedArgv(["lint", "--base=master"], ["node", "vis", "ci", "lint"])).toStrictEqual(["lint", "--base=master"]);
     });
 });
 

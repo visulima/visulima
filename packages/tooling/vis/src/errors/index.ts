@@ -11,4 +11,6 @@ export { VisConfigDeprecatedKeyError } from "./vis-config-deprecated-key-error";
 export { VisConfigError } from "./vis-config-error";
 export { VisConfigLoadError } from "./vis-config-load-error";
 export { VisConfigNotFoundError } from "./vis-config-not-found-error";
+export type { ShapeViolation } from "./vis-config-shape-error";
+export { VisConfigShapeError } from "./vis-config-shape-error";
 export { isUserError, VisUserError } from "./vis-user-error";

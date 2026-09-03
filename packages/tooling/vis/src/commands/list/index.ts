@@ -41,6 +41,11 @@ const listOptionDefinitions = {
         description: "With --deps: only show internal/workspace deps",
         type: Boolean,
     },
+    json: {
+        defaultValue: false,
+        description: "Shorthand for --format=json",
+        type: Boolean,
+    },
     pretty: {
         defaultValue: false,
         description: "Pretty-print with 2-space indent (only meaningful with --format=json)",
@@ -73,6 +78,7 @@ const list = defineCommand({
         ["vis list --deps --format=ndjson", "Stream every dep-instance as NDJSON for jq pipelines"],
         ["vis list --deps --format=json --pretty", "Single pretty-printed JSON array of dep-instances"],
         ["vis list --format=json", "Machine-readable project listing"],
+        ["vis list --json", "Same, shorthand"],
         ["vis list --query \"tag=frontend\"", "Filter by query"],
         ["vis list --tag=type:package", "Filter by tag (shorthand for the query above)"],
     ],

@@ -1,0 +1,166 @@
+---
+title: Caching
+description: "How vis caches task results, where the cache and run state live on disk, and how to make caching work in CI"
+---
+
+# Caching
+
+vis caches the result of every task whose target is marked cacheable. On a
+hit it restores the task's declared outputs and replays its recorded stdout
+instead of running the command, so a warm run costs process startup and
+little else.
+
+## Where things live on disk
+
+Two separate directories, with two separate lifecycles. You need both to
+write a CI cache block, and only one of them should ever be cached.
+
+| What                     | Default location            | Config key                | Cache it in CI? |
+| ------------------------ | --------------------------- | ------------------------- | --------------- |
+| Task cache               | `node_modules/.cache/vis`   | `taskRunner.cacheDirectory` | **Yes**       |
+| Run state (`.vis/`)      | `<workspaceRoot>/.vis`      | `taskRunner.dataDirectory`  | No            |
+
+### Task cache — `node_modules/.cache/vis`
+
+Cached task outputs and replayed logs. Safe to delete at any time; the next
+run just repopulates it.
+
+It sits under `node_modules/` deliberately: `.vis/` is **source-bearing and
+tracked** (see below), so caching `.vis/` wholesale in CI would sweep
+tracked files into the cache archive, and a later restore could resurrect
+templates or hooks a contributor had deleted. Living under `node_modules/`
+also means it is gitignored for free.
+
+Override it with any of, in precedence order:
+
+1. `--cache-dir` on the command line
+2. `taskRunner.cacheDirectory` in `vis.config.ts` (relative paths resolve
+   against the workspace root)
+3. the `VIS_CACHE_DIRECTORY` environment variable
+
+```ts
+export default defineConfig({
+    taskRunner: {
+        cacheDirectory: ".vis-cache",
+    },
+});
+```
+
+`vis cache size` prints the resolved path, which is the quickest way to
+confirm what is actually in effect:
+
+```bash
+$ vis cache size --type=task
+Task cache:
+  Directory:  /repo/node_modules/.cache/vis
+  Entries:    13
+  Total size: 8.5MB
+```
+
+### Run state — `.vis/`
+
+Run summaries, failure logs, and the release/template/hook files vis reads
+back. **Do not ignore or cache `.vis/` wholesale** — parts of it are meant
+to be committed:
+
+| Path                     | Tracked? | Written when                            |
+| ------------------------ | -------- | --------------------------------------- |
+| `.vis/templates/`        | Yes      | `vis generate` scaffolding you commit   |
+| `.vis/hooks/`            | Yes      | `vis hook` git hooks you commit         |
+| `.vis/release/`          | Yes      | `vis release add` change files          |
+| `.vis/runs/`             | No       | every run, when `taskRunner.summarize`  |
+| `.vis/last-summary.json` | No       | every run                               |
+| `.vis/last-failures/`    | No       | on failure                              |
+
+`vis init` appends exactly the ephemeral three to `.gitignore`.
+
+## Making the cache work in CI
+
+The task cache only pays off if the CI job can both **read and write** it.
+Two things go wrong most often.
+
+### The cache directory must be writable
+
+If the job restores `node_modules` from a read-only or pull-only cache, the
+default cache directory lives inside it and everything vis writes is
+discarded when the job ends — caching appears to work locally and never hits
+in CI. Point the cache somewhere the job owns:
+
+```ts
+export default defineConfig({
+    taskRunner: {
+        cacheDirectory: ".vis-cache",
+    },
+});
+```
+
+then cache that directory instead.
+
+### The cache must be keyed so parallel jobs don't clobber each other
+
+#### GitHub Actions
+
+```yaml
+- name: Cache vis task results
+  uses: actions/cache@v4
+  with:
+      path: node_modules/.cache/vis
+      key: vis-${{ runner.os }}-${{ github.job }}-${{ github.sha }}
+      restore-keys: |
+          vis-${{ runner.os }}-${{ github.job }}-
+          vis-${{ runner.os }}-
+```
+
+#### GitLab CI
+
+GitLab's cache is per-key and last-writer-wins, so give each job its own key
+and fall back to the default branch's archive. Without a per-job key,
+concurrent jobs overwrite each other's archive and every job starts cold.
+
+```yaml
+cache:
+    - key: "$CI_JOB_NAME_SLUG-$CI_COMMIT_REF_SLUG-vis"
+      fallback_keys: ["$CI_JOB_NAME_SLUG-$CI_DEFAULT_BRANCH-vis"]
+      paths: [.vis-cache]
+      policy: pull-push
+```
+
+This pairs with `taskRunner.cacheDirectory: ".vis-cache"` above. If you keep
+the default cache directory, cache `node_modules/.cache/vis` instead — but
+only when the job actually pushes its `node_modules` cache back.
+
+## Collapsing jobs is usually the bigger win
+
+Caching removes the task work; it does not remove the per-job scaffolding
+(runner start-up, checkout, dependency restore) that a matrix of separate
+jobs pays once each. A single job running one graph lets vis overlap
+independent targets, and pays that fixed cost once:
+
+```yaml
+script:
+    - pnpm vis ci lint,test,build
+```
+
+See [`vis ci`](/commands/ci) and the [CI/CD guide](/guides/ci-cd).
+
+## Inspecting and debugging the cache
+
+| Command                   | Use it to                                                      |
+| ------------------------- | -------------------------------------------------------------- |
+| `vis cache size`          | Confirm the resolved directory and on-disk footprint            |
+| `vis cache list`          | See individual entries with age and size                        |
+| `vis cache why <task>`    | Explain a miss by diffing hash inputs against the previous run  |
+| `vis cache hash <task>`   | Print the recorded hash and its per-bucket breakdown            |
+| `vis cache verify <task>` | Detect drift between the cached entry and the live workspace    |
+| `vis cache prune`         | Evict by age, size, or count                                    |
+| `vis cache clean`         | Clear everything                                                |
+
+`vis cache why` needs a recorded run summary, so enable
+`taskRunner.summarize` (which writes `.vis/runs/`) if you want to diff runs
+after the fact.
+
+## Related
+
+- [`vis cache`](/commands/cache) — full command reference
+- [Configuration](/configuration) — `taskRunner`, `tasks`, `outputs`
+- [CI/CD Integration](/guides/ci-cd) — per-provider pipelines
