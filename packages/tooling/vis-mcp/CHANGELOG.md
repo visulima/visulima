@@ -1,3 +1,15 @@
+## @visulima/vis-mcp [1.0.19](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.18...@visulima/vis-mcp@1.0.19) (2026-09-03)
+
+### Bug Fixes
+
+* stop vis ci, cache, preflight and inference failing silently ([#854](https://github.com/visulima/visulima/issues/854)) ([45a97b0](https://github.com/visulima/visulima/commit/45a97b02684c8336662f23a3f2cd2f7227c14692))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.6
+* **@visulima/vis:** upgraded to 4.0.0
+
 ## @visulima/vis-mcp [1.0.18](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.17...@visulima/vis-mcp@1.0.18) (2026-08-19)
 
 
