@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 
 // path utilities not needed - git returns workspace-relative paths
 import type { AffectedScope, ProjectConfiguration, ProjectGraph } from "./types";
@@ -240,21 +241,28 @@ const getMergeBase = (workspaceRoot: string, base: string, head: string): Promis
     });
 
 /**
- * Re-labels a "the `git` binary is not on PATH" failure, and passes
+ * Re-labels a spawn failure with the reason it actually happened, and passes
  * anything else through untouched.
  *
  * The bare `spawn git ENOENT` this replaces named neither git nor affected
- * detection nor what to install — and the usual CI base images (alpine
- * node) ship without git, so it is a common first encounter.
+ * detection nor what to install — and the usual CI base images (alpine node)
+ * ship without git, so it is a common first encounter.
+ *
+ * `code`/`path`/`syscall` cannot tell the two ENOENT causes apart: spawning
+ * into a directory that does not exist reports `path: "git"` and
+ * `syscall: "spawn git"` exactly as a missing binary does. The workspace
+ * root is therefore checked directly, so a bad `--cwd` is never answered
+ * with "install git" when git is sitting right there.
  */
-const withGitMissingHint = (error: unknown): unknown => {
+const withSpawnFailureHint = (error: unknown, workspaceRoot: string): unknown => {
     const failure = error as NodeJS.ErrnoException & { path?: string };
 
-    // `path`/`syscall`, not `code` alone: `execFile` also raises ENOENT for a
-    // missing `cwd`, and telling someone to `apk add git` when git is right
-    // there just sends them the wrong way.
     if (failure?.code !== "ENOENT" || (failure.path !== "git" && failure.syscall !== "spawn git")) {
         return error;
+    }
+
+    if (!existsSync(workspaceRoot)) {
+        return new Error(`Affected detection could not enter the workspace root: ${workspaceRoot} does not exist.`, { cause: error });
     }
 
     return new Error(
@@ -290,7 +298,7 @@ const getChangedFiles = async (workspaceRoot: string, base: string, head: string
         // A missing binary is not a diverged-branch problem, and the
         // fallback below cannot succeed either — both paths shell out to
         // the same missing executable. Fail here with the real reason.
-        const relabelled = withGitMissingHint(error);
+        const relabelled = withSpawnFailureHint(error, workspaceRoot);
 
         if (relabelled !== error) {
             throw relabelled;
@@ -300,7 +308,7 @@ const getChangedFiles = async (workspaceRoot: string, base: string, head: string
         return new Promise((resolve, reject) => {
             execFile("git", ["diff", "--name-only", `${base}...${head}`], { cwd: workspaceRoot }, (diffError, stdout) => {
                 if (diffError) {
-                    reject(withGitMissingHint(diffError));
+                    reject(withSpawnFailureHint(diffError, workspaceRoot));
                 } else {
                     resolve(stdout.trim().split("\n").filter(Boolean));
                 }
