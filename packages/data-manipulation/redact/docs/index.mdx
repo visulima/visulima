@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: "GDPR-compliant data redaction and anonymization with deep object traversal and NLP-powered text masking"
+description: "GDPR-compliant data redaction and anonymization with deep object traversal and optional NLP-powered text masking"
 ---
 
 # @visulima/redact
 
-Powerful library for redacting and masking sensitive data. Protect user privacy with automatic detection of passwords, emails, credit cards, SSNs, and more—plus NLP-powered text anonymization for GDPR compliance.
+Powerful library for redacting and masking sensitive data. Protect user privacy with detection of passwords, emails, credit cards, SSNs, and more — plus opt-in NLP text anonymization for GDPR compliance, without paying for a language model you do not use.
 
 ## Key Features
 
@@ -22,14 +22,14 @@ Powerful library for redacting and masking sensitive data. Protect user privacy 
 - Passwords, tokens, API keys
 - Credit cards, SSN, bank accounts
 - Emails, phone numbers, IPs
-- Personal names (NLP-powered)
+- Personal names (via the opt-in `@visulima/redact/nlp` scanner)
 
 **Text Anonymization**
 
-- Natural Language Processing
-- Detect people, organizations
-- Money, dates, locations
-- Customizable entity types
+- Regex rules for cards, tokens, IPs, SSNs
+- Dates and times
+- People, organizations and money via the opt-in NLP scanner
+- Bring your own scanner, or compose your own rules
 
 **Production-Ready**
 
@@ -61,16 +61,20 @@ console.log(safe);
 // { name: "Alice", email: "alice@example.com", password: "<PASSWORD>", creditCard: "<CREDITCARD>" }
 ```
 
-Anonymize text with NLP:
+Anonymize text, opting in to NLP entity detection for the names:
 
 ```typescript
-import { stringAnonymize } from "@visulima/redact";
+import { standardRules, stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
 
-const text = "Contact John Doe at john@example.com or call (555) 123-4567";
-const anonymized = stringAnonymize(text);
+const text = "Contact John Doe at john@example.com or 555-123-4567";
+const anonymized = stringAnonymize(text, standardRules, { nlp: compromiseScanner });
 console.log(anonymized);
-// "Contact <PERSON> at <EMAIL> or call <PHONENUMBER>"
+// "Contact <FIRSTNAME> <LASTNAME> at <EMAIL> or <PHONENUMBER>"
 ```
+
+The `nlp` option is what pulls in `compromise`; without it, key-name and pattern rules still
+apply and nothing natural-language-sized reaches your bundle.
 
 ## Use Cases
 
@@ -104,11 +108,12 @@ app.use((req, res, next) => {
 
 ```typescript
 import { stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
+
+const reviewRules = ["firstname", "lastname", "organization", "phonenumber", "email"];
 
 function anonymizeUserReview(review: string) {
-    return stringAnonymize(review, {
-        include: ["Person", "Organization", "PhoneNumber", "Email"],
-    });
+    return stringAnonymize(review, reviewRules, { nlp: compromiseScanner });
 }
 ```
 

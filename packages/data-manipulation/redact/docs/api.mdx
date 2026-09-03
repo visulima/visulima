@@ -3,163 +3,328 @@ title: "API Reference"
 description: "Complete API for @visulima/redact"
 ---
 
+import { Callout } from "fumadocs-ui/components/callout";
+
 # API Reference
+
+## Entry points
+
+| Import                 | Contains                                                                | Cost                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `@visulima/redact`     | `redact`, `createRedactor`, `stringAnonymize`, the rule sets, the types | ~4.5 KB gzipped                                                      |
+| `@visulima/redact/nlp` | `compromiseScanner`                                                     | pulls in `compromise`, an optional peer dependency (~140 KB gzipped) |
+
+---
 
 ## Functions
 
 ### redact
 
 ```typescript
-function redact<T>(input: T, rules?: string[], options?: RedactOptions): T;
+function redact<V>(input: V, rules: Rules, options?: RedactOptions): V;
 ```
 
-Redact sensitive properties from objects.
+Deep-copies `input` and masks the values matched by `rules`. Objects, arrays, `Error`s, `Map`s,
+`Set`s, JSON strings and URL query strings are all traversed. The input is never mutated —
+frozen and sealed inputs are safe — and circular references are preserved in the copy.
 
 **Parameters:**
 
-- `input` - Object to redact
-- `rules` - Array of property paths to redact
-- `options` - Redaction options
+- `input` - The value to redact. Returned unchanged for `null`, `undefined`, numbers and booleans.
+- `rules` - The rules to apply. Required.
+- `options` - See [RedactOptions](#redactoptions).
 
-**Returns:** New object with redacted values
+**Returns:** A redacted deep copy of `input`, typed as `V`.
+
+```typescript
+import { redact } from "@visulima/redact";
+
+redact({ id: 123, name: "Alice", password: "secret123" }, ["password"]);
+// { id: 123, name: "Alice", password: "<PASSWORD>" }
+```
+
+---
+
+### createRedactor
+
+```typescript
+function createRedactor(rules: Rules, options?: RedactOptions): <V>(input: V) => V;
+```
+
+Compiles `rules` once and returns a reusable redactor. Prefer this over calling `redact`
+repeatedly with the same rule set — in a logger, for example — since it avoids re-lowercasing
+keys and re-compiling patterns on every call.
+
+```typescript
+import { createRedactor, standardRules } from "@visulima/redact";
+
+const scrub = createRedactor(standardRules);
+
+logger.info(scrub(payload));
+logger.info(scrub(anotherPayload));
+```
 
 ---
 
 ### stringAnonymize
 
 ```typescript
-function stringAnonymize(text: string, options?: AnonymizeOptions): string;
+function stringAnonymize(input: string, rules: Rules, options?: RedactOptions): string;
 ```
 
-Anonymize sensitive information in text using NLP.
+Masks sensitive information in a single string, using the `pattern` rules and — when an
+[`nlp`](#nlp) scanner is supplied — natural-language entity detection. This is the leaf-string
+scanner `redact` falls back to; call it directly when you already know you hold a string.
 
-**Parameters:**
+```typescript
+import { standardRules, stringAnonymize } from "@visulima/redact";
 
-- `text` - Text to anonymize
-- `options` - Anonymization options
+stringAnonymize("card 4111 1111 1111 1111 on file", standardRules);
+// "card <CREDITCARD> on file"
+```
 
-**Returns:** Anonymized text
+Repeated occurrences of one value share a mask, and distinct values of the same type are
+numbered:
+
+```typescript
+stringAnonymize("call 111-11-1111 then 111-11-1111 then 222-22-2222", [{ key: "ssn", pattern: String.raw`\d{3}-\d{2}-\d{4}` }]);
+// "call <SSN> then <SSN> then <SSN1>"
+```
 
 ---
 
-## Options
+## Rule sets
+
+Four rule sets ship with the package. All are plain `Rules` arrays, so they compose with `...`
+and with your own rules.
+
+| Export            | Covers                                                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `credentialRules` | API keys, AWS keys, bearer/JWT/Slack tokens, crypto wallets, basic-auth strings, and the `auth`/`password`/`secret` key names                                       |
+| `piiRules`        | Bank accounts, credit cards, IDs/UUIDs, IPs, MACs, phone numbers, SSNs, NINs, ISBNs, zip codes, URLs/domains, plus the entity keys (`firstname`, `organization`, …) |
+| `dateTimeRules`   | Dates, times, weekday and relative-date words                                                                                                                       |
+| `standardRules`   | All three of the above                                                                                                                                              |
+
+<Callout type="warn" title="standardRules is deliberately aggressive">
+    Several `piiRules` entries match plain numeric data — `bankacc` (`\b\d{10,12}\b`), `id`/`routing` (`\b\d{9}\b`), `zip_code`
+    (`\b[0-9]{5}\b`) — and `dateTimeRules` matches bare weekday and relative-date words, so both will mangle ordinary prose. For
+    most logging, compose only what you need: `redact(input, [...credentialRules, ...piiRules])`, or drop groups with
+    [`exclude`](#exclude).
+</Callout>
+
+```typescript
+import { credentialRules, piiRules, redact } from "@visulima/redact";
+
+redact({ apiKey: "sk_live_abc", ip: "10.0.0.1", note: "monday" }, [...credentialRules, ...piiRules]);
+// { apiKey: "<APIKEY>", ip: "<IP>", note: "monday" }  <- "monday" survives, no dateTimeRules
+```
+
+### Built-in rule keys
+
+**Credentials** — `apikey`, `awsid`, `awskey`, `basic_auth`, `token`, `crypto`, `auth`, `bearer`,
+`credit`, `CVD`, `CVV`, `encrypt`, `PAN`, `pass`, `password`, `secret`
+
+**Financial** — `bankacc`, `bankcc`, `creditcard`, `routing`, `money`
+
+**Personal** — `email`, `firstname`, `lastname`, `username`, `passport`, `phonenumber`, `ssn`,
+`us_social_security`, `uk_nin`, `dl`, `id`, `zip_code`
+
+**Technical** — `ip`, `mac_address`, `url`, `domain`, `isbn`, `organization`
+
+**Date/time** — `date`, `time`
+
+Each key matches an object key of that name, case-insensitively, and — where the rule carries a
+`pattern` — also matches inside strings.
+
+Seventeen keys carry no pattern, so on their own they match an object key and nothing else:
+`auth`, `bearer`, `credit`, `CVD`, `CVV`, `encrypt`, `PAN`, `pass`, `password`, `secret`,
+`bankcc`, `passport`, `username`, `firstname`, `lastname`, `organization` and `money`. For most
+of them that is the whole point — a `password` is whatever sits under a key called `password`,
+not a recognisable string. The last four are different: they name entities that do occur in
+prose, and an [`nlp`](#nlp) scanner is what finds them there.
+
+---
+
+## Types
+
+### Rules
+
+```typescript
+type Rules = (Anonymize | StringAnonymize | number | string)[];
+```
+
+A rule is one of:
+
+- **a string** — an object key to match, case-insensitively (`"password"`), or a wildcard pattern
+  (`"*token*"`, `"*.password"`)
+- **a number** — an array index to match (`0`)
+- **an object** — an [`Anonymize`](#anonymize) rule, for patterns, censors, removal and deep matching
+
+### Anonymize
+
+```typescript
+interface Anonymize {
+    deep?: boolean;
+    key: string;
+    pattern?: RegExp | string;
+    remove?: boolean;
+    replacement?: unknown;
+}
+```
+
+**Properties:**
+
+- `key` - The key, wildcard pattern or entity type to match. Case-insensitive.
+- `pattern` - Regular expression matched against nested string values. Always recompiled as
+  global/case-insensitive/unicode, so a caller's `lastIndex` is never mutated.
+- `deep` - Apply the rule to nested string values, not only to matching object keys.
+- `remove` - Delete the matching key instead of replacing it. Ignored for array elements and
+  string matches.
+- `replacement` - The value, or a [`Censor`](#censor), to put in place of a match. Defaults to
+  `<KEY>`, built from the rule's own key.
+
+<Callout type="info" title="Default masks restate the whole key">
+    The default replacement uppercases the entire rule key, so `{ key: "user.ssn" }` masks to `<USER.SSN>` and
+    `{ key: "*.password" }` masks to `<*.PASSWORD>`. Supply an explicit `replacement` whenever the key is a path or a wildcard.
+</Callout>
+
+```typescript
+redact({ user: { ssn: "123-45-6789" } }, ["user.ssn"]);
+// { user: { ssn: "<USER.SSN>" } }
+
+redact({ user: { ssn: "123-45-6789" } }, [{ key: "user.ssn", replacement: "<SSN>" }]);
+// { user: { ssn: "<SSN>" } }
+```
+
+### StringAnonymize
+
+```typescript
+interface StringAnonymize {
+    key: string;
+    pattern: RegExp | string;
+    replacement?: Censor | string;
+}
+```
+
+A pattern rule — the same shape as `Anonymize`, with `pattern` required.
+
+### Censor
+
+```typescript
+type Censor = (value: unknown, path: string | undefined) => unknown;
+```
+
+Called with the matched value and the dot-path it was found at, returning what to store in its
+place. Use it for partial masking. `path` is `undefined` for matches that have no key path —
+string and array-index matches.
+
+```typescript
+redact({ user: { card: "4111111111111111" } }, [{ deep: true, key: "card", replacement: (value, path) => `${path}:****${String(value).slice(-4)}` }]);
+// { user: { card: "user.card:****1111" } }
+```
 
 ### RedactOptions
 
 ```typescript
 interface RedactOptions {
-    replacement?: string;
-    caseSensitive?: boolean;
+    exclude?: (number | string)[];
+    logger?: { debug: (message?: unknown, ...optionalParameters: unknown[]) => void };
+    nlp?: NlpScanner;
 }
 ```
 
-**Properties:**
+#### exclude
 
-- `replacement` - Custom replacement text. Default: `"<FIELD_NAME>"`
-- `caseSensitive` - Case-sensitive matching. Default: `true`
+Rule keys to drop from `rules` before applying them. Useful for shedding the noisier
+`standardRules` entries.
 
----
+<Callout type="warn" title="exclude drops the whole rule">
+    Excluding a key removes its key-name matching too, not just its pattern: `exclude: ["email"]` also stops `{ email: "..." }`
+    from being matched by key. Where you only want to shed a rule's pattern, compose the rule sets you want instead, or re-add the
+    key rule as a wildcard (`"*email*"` — the `*` is what makes it one).
+</Callout>
 
-### AnonymizeOptions
+Overlapping patterns also mean an excluded rule's value may still be caught by another rule under
+a different tag: with `exclude: ["zip_code"]`, `"12345"` still matches the driver's-licence
+pattern and masks to `<DL>`.
+
+#### logger
+
+An object with a `debug` method, called with tracing information while scanning.
+
+#### nlp
+
+An [`NlpScanner`](#nlpscanner). Opt-in: pass `compromiseScanner` from `@visulima/redact/nlp`, or
+your own implementation. Without it, the pattern-less entity rules (`firstname`, `lastname`,
+`organization`, `money`) match nothing inside prose and `compromise` stays out of your bundle.
+Every key-name and `pattern` rule behaves identically either way.
+
+### NlpScanner
 
 ```typescript
-interface AnonymizeOptions {
-    include?: string[];
-    exclude?: string[];
-    replacement?: string;
+type NlpScanner = (input: string, types: string[], logger?: RedactOptions["logger"]) => NlpMatch[];
+
+interface NlpMatch {
+    start: number;
+    tag: string;
+    text: string;
 }
 ```
 
-**Properties:**
+Locates named entities that no regular expression can describe. It is called at most once per
+scanned string — but for **every** scanned string, not only the ones whose rules it can serve:
+the core cannot know which types a given engine handles.
 
-- `include` - Entity types to anonymize
-- `exclude` - Entity types to skip
-- `replacement` - Custom replacement pattern
+- `input` - the string being redacted
+- `types` - the rule keys in play, lowercased. Return only matches whose `tag` is one of them —
+  the core masks whatever it is handed, so an out-of-contract tag redacts under a label the
+  caller never asked for. Check this list first and return `[]` cheaply when none of it applies
+  to you; that early exit is what keeps a pure key/pattern rule set from paying for a scan.
+  `compromiseScanner` does exactly this.
+- `logger` - the `logger` from `RedactOptions`, forwarded
 
----
+`start` must be the index of `text` within `input` — the mask is applied at that offset, so a
+match reported at the wrong position redacts the wrong occurrence. Where two matches overlap,
+the one starting earlier wins (the longer one on a tie) and the other is dropped, which is why
+rule order decides between `email` and `url` on the same address.
 
-## Built-in Rules
-
-### Credentials
-
-- `password` - Password fields
-- `apikey` - API keys
-- `token` - Auth tokens
-- `bearer` - Bearer tokens
-- `auth` - Auth headers
-- `secret` - Secret values
-
-### Financial
-
-- `creditcard` - Credit card numbers
-- `cvv` / `cvd` - Card security codes
-- `bankacc` - Bank account numbers
-- `routing` - Routing numbers
-- `PAN` - Primary account numbers
-- `money` - Monetary values
-
-### Personal
-
-- `email` - Email addresses
-- `ssn` / `us_social_security` - Social Security Numbers
-- `firstname` / `lastname` - Names
-- `phonenumber` - Phone numbers
-- `passport` - Passport numbers
-- `dl` - Driver's license
-- `uk_nin` - UK National Insurance
-
-### Technical
-
-- `ip` - IP addresses
-- `mac_address` - MAC addresses
-- `url` - URLs
-- `domain` - Domain names
-- `crypto` - Cryptocurrency addresses
-
-### Other
-
-- `date` - Dates
-- `time` - Times
-- `zip_code` - Postal codes
-- `isbn` - ISBN numbers
-- `organization` - Organization names
-
----
-
-## Text Anonymization Categories
-
-### NLP-Detected Entities
-
-- `Person` - People's names
-- `Organization` - Company/org names
-- `Place` - Locations
-- `Date` - Date expressions
-- `Money` - Monetary amounts
-- `PhoneNumber` - Phone numbers
-- `Email` - Email addresses
-
----
-
-## Examples
-
-### All Options
+Any engine works, including your own:
 
 ```typescript
-import { redact, stringAnonymize } from "@visulima/redact";
+import { stringAnonymize } from "@visulima/redact";
 
-// Object redaction with options
-const safe = redact(data, ["password", "ssn"], {
-    replacement: "[REDACTED]",
-    caseSensitive: false,
+stringAnonymize("agent 007 reporting", [{ deep: true, key: "codename" }], {
+    nlp: (input, types) => (types.includes("codename") ? [{ start: 6, tag: "codename", text: "007" }] : []),
 });
-
-// Text anonymization with options
-const anonymous = stringAnonymize(text, {
-    include: ["Person", "Email"],
-    exclude: ["Organization"],
-    replacement: "<HIDDEN>",
-});
+// "agent <CODENAME> reporting"
 ```
+
+---
+
+## compromiseScanner
+
+```typescript
+import { compromiseScanner } from "@visulima/redact/nlp";
+```
+
+An `NlpScanner` backed by [compromise](https://www.npmjs.com/package/compromise), detecting
+people, organizations, money amounts, emails, phone numbers and urls. `compromise` is an optional
+peer dependency of this entry point — install it alongside `@visulima/redact`.
+
+```typescript
+import { createRedactor, standardRules } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
+
+const scrub = createRedactor(standardRules, { nlp: compromiseScanner });
+
+scrub({ note: "John Doe works at Google" });
+// { note: "<FIRSTNAME> <LASTNAME> works at <ORGANIZATION>" }
+```
+
+The entities it detects, each mapped to the rule key of the same name: `firstname`, `lastname`,
+`organization`, `money`, `email`, `phonenumber`, `url`. The last three are also covered by
+patterns in `piiRules`, so they are found with or without the scanner — the scanner mainly
+improves their boundaries. Only the first four genuinely depend on it.
 
 ## Next Steps
 

@@ -149,7 +149,7 @@ const filterUrl = (input: string, rules: InternalAnonymize[], options?: RedactOp
             // through the string anonymizer so pattern/NLP rules (credit cards, SSNs, tokens, ...)
             // still redact secrets that merely happen to sit next to a URL, instead of the whole
             // string being routed away from `stringAnonymize` by the presence of "http://".
-            filtered.push(foundModifier ? String(resolveReplacement(foundModifier, value, undefined)) : stringAnonymize(value, rules, { logger: options?.logger }));
+            filtered.push(foundModifier ? String(resolveReplacement(foundModifier, value, undefined)) : stringAnonymize(value, rules, options));
         } else {
             const foundModifier = findUrlModifier(rules, key);
 
@@ -326,7 +326,10 @@ const recursiveFilter = (
             return filterUrl(stringInput, rules, options);
         }
 
-        return stringAnonymize(stringInput, rules, { logger: options?.logger });
+        // `options` is forwarded whole rather than field-by-field, so a new option never has to be
+        // remembered at two call sites. `rules` here is already `prepareModifiers`-filtered, so
+        // stringAnonymize re-applying `options.exclude` to it is a no-op.
+        return stringAnonymize(stringInput, rules, options);
     }
 
     if (Array.isArray(input)) {
@@ -494,4 +497,4 @@ export const createRedactor = (rules: Rules, options?: RedactOptions): <V>(input
 
 export { credentialRules, dateTimeRules, piiRules, default as standardRules } from "./rules";
 export { default as stringAnonymize } from "./string-anonymizer";
-export type { Anonymize, Censor, RedactOptions, Rules, StringAnonymize } from "./types";
+export type { Anonymize, Censor, NlpMatch, NlpScanner, RedactOptions, Rules, StringAnonymize } from "./types";

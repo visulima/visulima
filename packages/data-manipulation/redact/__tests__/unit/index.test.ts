@@ -10,6 +10,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { redact } from "../../src";
+import { compromiseScanner } from "../../src/nlp";
 import standardModifierRules from "../../src/rules";
 
 const RE_SENSITIVE = /sensitive/;
@@ -270,7 +271,7 @@ describe(redact, () => {
             let output = input;
 
             beforeEach(() => {
-                output = redact(input, ["authorization", "PrIvAtE-Data", "credit_card", ...standardModifierRules]);
+                output = redact(input, ["authorization", "PrIvAtE-Data", "credit_card", ...standardModifierRules], { nlp: compromiseScanner });
             });
 
             it("does not modify the original object", () => {
@@ -816,7 +817,7 @@ describe(redact, () => {
             expect.assertions(1);
 
             const input = "John Doe will be 30 on 2024-06-10.";
-            const result = redact(input, standardModifierRules);
+            const result = redact(input, standardModifierRules, { nlp: compromiseScanner });
 
             expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
         });
@@ -830,7 +831,7 @@ describe(redact, () => {
 
             // eslint-disable-next-line unicorn/new-for-builtins, no-new-wrappers, sonarjs/no-primitive-wrappers -- intentionally exercising the boxed-String path
             const input = new String("John Doe will be 30 on 2024-06-10.");
-            const result = redact(input, standardModifierRules);
+            const result = redact(input, standardModifierRules, { nlp: compromiseScanner });
 
             expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
         });
@@ -993,7 +994,7 @@ describe(redact, () => {
         expect.assertions(1);
 
         const input = "John Doe will be 30 on 2024-06-10.";
-        const result = redact(input, standardModifierRules, { exclude: ["firstname"] });
+        const result = redact(input, standardModifierRules, { exclude: ["firstname"], nlp: compromiseScanner });
 
         expect(result).toMatch("John <LASTNAME> will be 30 on <DATE>");
     });

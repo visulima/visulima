@@ -16,10 +16,28 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
     <Tab value="bun">```bash bun add @visulima/redact ```</Tab>
 </Tabs>
 
+### Optional: natural-language detection
+
+Masking people's names, organizations and money amounts inside free-form prose needs a
+natural-language engine. It is not bundled — `compromise` carries a ~140 KB (gzipped) English
+lexicon and costs a parse per scanned string, so it is an optional peer dependency of the
+`@visulima/redact/nlp` entry point, and a bundle that never imports that entry contains none
+of it.
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install compromise ```</Tab>
+    <Tab value="pnpm">```bash pnpm add compromise ```</Tab>
+    <Tab value="yarn">```bash yarn add compromise ```</Tab>
+    <Tab value="bun">```bash bun add compromise ```</Tab>
+</Tabs>
+
 ## Import
 
 ```typescript
 import { redact, stringAnonymize } from "@visulima/redact";
+
+// only if you installed compromise for prose entity detection
+import { compromiseScanner } from "@visulima/redact/nlp";
 ```
 
 ## Quick Examples
@@ -42,11 +60,24 @@ const safe = redact(data, ["password"]);
 ### Anonymize Text
 
 ```typescript
-import { stringAnonymize } from "@visulima/redact";
+import { standardRules, stringAnonymize } from "@visulima/redact";
 
-const text = "My email is john@example.com";
-const anonymous = stringAnonymize(text);
-// "My email is <EMAIL>"
+const text = "card 4111 1111 1111 1111 on file";
+const anonymous = stringAnonymize(text, standardRules);
+// "card <CREDITCARD> on file"
+```
+
+### Anonymize Names in Prose
+
+Names, organizations and money amounts have no regular-expression shape, so they need the
+opt-in scanner:
+
+```typescript
+import { standardRules, stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
+
+const result = stringAnonymize("John Doe works at Google", standardRules, { nlp: compromiseScanner });
+// "<FIRSTNAME> <LASTNAME> works at <ORGANIZATION>"
 ```
 
 ### Custom Replacement

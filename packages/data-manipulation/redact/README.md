@@ -39,7 +39,7 @@
 - Easy to use
 - Anonymize specific categories in a text, including emails, monetary values, organizations, people, and phone numbers and more.
 - Customizable anonymization: Specify which categories to anonymize and which to exclude.
-- Built-in compatibility with nlp NER - compromise.
+- Optional NLP NER via `@visulima/redact/nlp` — names, organizations and money, opt-in so the core stays small
 - Never mutates the input (circular references are tracked with a `WeakMap`, not by stamping marker keys onto your objects), so frozen/sealed inputs are safe
 - Performs a deep copy of the input object
 - Partial masking via censor functions (e.g. keep the last 4 digits of a card)
@@ -128,6 +128,35 @@ yarn add @visulima/redact
 pnpm add @visulima/redact
 ```
 
+### Optional: natural-language detection
+
+The core package carries no natural-language engine. To also mask people's names,
+organizations and money amounts inside free-form prose, install `compromise` alongside it and
+pass the scanner from `@visulima/redact/nlp`:
+
+```sh
+npm install @visulima/redact compromise
+```
+
+```typescript
+import { createRedactor, standardRules } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
+
+const scrub = createRedactor(standardRules, { nlp: compromiseScanner });
+
+scrub({ note: "John Doe works at Google" });
+// => { note: "<FIRSTNAME> <LASTNAME> works at <ORGANIZATION>" }
+```
+
+`compromise` ships a ~140 KB (gzipped) English lexicon and costs a parse per scanned string,
+which is why it is not wired in by default — a bundle that never imports
+`@visulima/redact/nlp` contains none of it. Key-name and `pattern` rules (passwords, tokens,
+credit cards, IPs, SSNs, emails, ...) work exactly the same either way; only the four rule keys
+that have no regex shape — `firstname`, `lastname`, `organization`, `money` — go unmatched
+inside prose without a scanner. They still match object keys of the same name.
+
+Any other engine works too: `NlpScanner` is `(input, types) => { start, tag, text }[]`.
+
 ## Usage
 
 - redact(input, rules, options)
@@ -212,19 +241,20 @@ logger.info(scrub(anotherPayload));
 
 > [!NOTE]
 > The traversal is a single pass: every object node and nested string is visited exactly once
-> and evaluated against all rules together, rather than re-walking the tree once per rule. The
-> compromise NLP engine is only invoked when at least one NLP-backed rule (`firstname`,
-> `lastname`, `organization`, `email`, `money`, `phonenumber`, `url`) is requested — pure
-> key/pattern redaction never pays the NLP cost.
+> and evaluated against all rules together, rather than re-walking the tree once per rule. An
+> injected NLP scanner is invoked at most once per string; it is handed the rule keys in play and
+> returns early when none of them are its own, so `compromiseScanner` charges nothing for a
+> rule set of pure key/pattern rules.
 
 - stringAnonymize(input, rules, options)
-    > It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
+    > Uses Regular Expressions — and, when a scanner is injected, Natural Language Processing — to identify and mask sensitive information in a string.
 
 ```typescript
-import { stringAnonymize } from "@visulima/redact";
+import { standardRules, stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
 
 const input = "John Doe will be 30 on 2024-06-10.";
-const result = stringAnonymize(input, defaultModifiers);
+const result = stringAnonymize(input, standardRules, { nlp: compromiseScanner });
 
 console.log(result);
 
@@ -267,6 +297,14 @@ Type: `(message?: any, ...optionalParameters: any[]) => void`
 
 A function to log debug messages.
 
+##### nlp
+
+Type: `NlpScanner`
+
+Opt in to natural-language entity detection. Import `compromiseScanner` from
+`@visulima/redact/nlp`, or supply your own function of the same shape. Omitted, the
+NLP-only rule keys simply find nothing in prose and `compromise` never enters your bundle.
+
 ### stringAnonymize(input, rules, options?)
 
 #### input
@@ -300,6 +338,14 @@ Type: `object`
 Type: `(message?: any, ...optionalParameters: any[]) => void`
 
 A function to log debug messages.
+
+##### nlp
+
+Type: `NlpScanner`
+
+Opt in to natural-language entity detection. Import `compromiseScanner` from
+`@visulima/redact/nlp`, or supply your own function of the same shape. Omitted, the
+NLP-only rule keys simply find nothing in prose and `compromise` never enters your bundle.
 
 ## Related
 

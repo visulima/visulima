@@ -434,6 +434,7 @@ catalogs:
     axe-core: '>=4.13.0'
     chalk: '>=6.0.0'
     commander: '>=15.0.0'
+    compromise: '>=14.15.1'
     cors: '>=2.8.6'
     github-slugger: '>=2.0.0'
     handlebars: '>=4.7.9'

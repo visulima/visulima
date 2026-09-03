@@ -10,6 +10,7 @@
         "@codspeed/vitest-plugin": "catalog:test",
         "@visulima/boxen": "workspace:*",
         "boxen": "catalog:dev",
+        "terminal-size": "catalog:dev",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     }
