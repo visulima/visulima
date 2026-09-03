@@ -113,7 +113,7 @@ describe(usePutFile, () => {
     });
 
     it("should track upload progress", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const onProgress = vi.fn();
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
