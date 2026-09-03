@@ -1,3 +1,17 @@
+## @visulima/boxen [5.0.0](https://github.com/visulima/visulima/compare/@visulima/boxen@4.0.0...@visulima/boxen@5.0.0) (2026-09-03)
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** make nlp detection opt-in via injection (#852)
+
+### Features
+
+* **redact:** make nlp detection opt-in via injection ([#852](https://github.com/visulima/visulima/issues/852)) ([78e60fd](https://github.com/visulima/visulima/commit/78e60fd3821dbe8c267c6ec71d90659ab4e4b2e1))
+
+### Bug Fixes
+
+* unbreak the nightly Data Sync job ([#851](https://github.com/visulima/visulima/issues/851)) ([4f94b42](https://github.com/visulima/visulima/commit/4f94b429596b7047cd9b3a2ec2bd9c49caac4a82))
+
 ## @visulima/boxen [4.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fboxen%403.1.0...%40visulima%2Fboxen%404.0.0) (2026-08-08)
 
 

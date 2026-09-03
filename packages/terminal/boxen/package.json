@@ -1,6 +1,6 @@
 {
     "name": "@visulima/boxen",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "description": "Create beautiful boxes in the terminal with customizable borders, padding, and alignment.",
     "keywords": [
         "anolilab",
