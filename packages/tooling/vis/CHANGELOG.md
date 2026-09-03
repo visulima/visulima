@@ -1,3 +1,31 @@
+## @visulima/vis [4.0.0](https://github.com/visulima/visulima/compare/@visulima/vis@3.0.6...@visulima/vis@4.0.0) (2026-09-03)
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** make nlp detection opt-in via injection (#852)
+
+### Features
+
+* **redact:** make nlp detection opt-in via injection ([#852](https://github.com/visulima/visulima/issues/852)) ([78e60fd](https://github.com/visulima/visulima/commit/78e60fd3821dbe8c267c6ec71d90659ab4e4b2e1))
+
+### Bug Fixes
+
+* stop vis ci, cache, preflight and inference failing silently ([#854](https://github.com/visulima/visulima/issues/854)) ([45a97b0](https://github.com/visulima/visulima/commit/45a97b02684c8336662f23a3f2cd2f7227c14692))
+* unbreak the nightly Data Sync job ([#851](https://github.com/visulima/visulima/issues/851)) ([4f94b42](https://github.com/visulima/visulima/commit/4f94b429596b7047cd9b3a2ec2bd9c49caac4a82))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.6
+* **@visulima/tui:** upgraded to 4.0.6
+* **@visulima/tui-kit:** upgraded to 1.0.9
+* **@visulima/cerebro:** upgraded to 3.1.1
+* **@visulima/fs:** upgraded to 6.0.6
+* **@visulima/package:** upgraded to 5.0.19
+* **@visulima/pail:** upgraded to 5.0.0
+* **@visulima/redact:** upgraded to 5.0.0
+* **@visulima/tsconfig:** upgraded to 3.2.13
+
 ## @visulima/vis [3.0.6](https://github.com/visulima/visulima/compare/@visulima/vis@3.0.5...@visulima/vis@3.0.6) (2026-08-19)
 
 ### Bug Fixes
