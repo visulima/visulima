@@ -6,11 +6,19 @@ import { createDiscordReceiver } from "../src/providers/chat/discord";
 import { createMsTeamsReceiver } from "../src/providers/chat/msteams";
 import { createSlackReceiver } from "../src/providers/chat/slack";
 import { createTelegramReceiver } from "../src/providers/chat/telegram";
-import { mockProvider } from "../src/providers/mock/provider";
+import { createMockProvider } from "../src/providers/mock";
 import { createMessageBirdReceiver } from "../src/providers/sms/messagebird";
 import { createTelnyxReceiver } from "../src/providers/sms/telnyx";
 import { createTwilioReceiver } from "../src/providers/sms/twilio";
 import { createVonageReceiver } from "../src/providers/sms/vonage";
+
+/**
+ * The control characters TwiML must never carry. Matching them is the
+ * assertion, so `no-control-regex` is suppressed rather than satisfied — and
+ * it lives at module scope so the pattern is compiled once.
+ */
+// eslint-disable-next-line no-control-regex -- the control characters are what this asserts against
+const CONTROL_CHARACTERS_RE = /[\u0000-\u0008\v\f\u000E-\u001F]/u;
 
 const encoder = new TextEncoder();
 
@@ -115,7 +123,7 @@ describe(createSlackReceiver, () => {
     it("replies to an Events API message out-of-band through the provider", async () => {
         expect.assertions(3);
 
-        const provider = mockProvider({ channel: "chat", id: "slack" });
+        const provider = createMockProvider({ channel: "chat", id: "slack" });
         const channel = createSlackReceiver({
             onMessage: async (_message, context) => {
                 await context.reply("hello back");
@@ -282,7 +290,12 @@ describe(createTelegramReceiver, () => {
     it("sends a topic reply as message_thread_id, not as a quoted message", async () => {
         expect.assertions(2);
 
-        const channel = createTelegramReceiver({ onMessage: (message) => ({ text: "pong", threadId: message.threadId }), secretToken });
+        const channel = createTelegramReceiver({
+            onMessage: (message) => {
+                return { text: "pong", threadId: message.threadId };
+            },
+            secretToken,
+        });
         const response = await channel.handle(
             request(
                 { message: { chat: { id: 42, type: "supergroup" }, date: 1_700_000_000, from: { id: 7 }, message_id: 5, message_thread_id: 99, text: "ping" }, update_id: 1 },
@@ -357,12 +370,17 @@ describe(createTwilioReceiver, () => {
 
         // A handler echoing the inbound Body can carry anything the sender typed; a control
         // character reaches TwiML and Twilio answers with a document-parse error instead.
-        const channel = createTwilioReceiver({ authToken, onMessage: (message) => ({ text: message.text }) });
+        const channel = createTwilioReceiver({
+            authToken,
+            onMessage: (message) => {
+                return { text: message.text };
+            },
+        });
         const response = await channel.handle(await signedRequest({ Body: "ok\u0000 <bad>\u0007", From: "+15555550100", MessageSid: "SM9", To: "+15555550111" }));
         const document = await response.text();
 
         expect(document).toContain("<Message>ok &lt;bad&gt;</Message>");
-        expect(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/u.test(document)).toBe(false);
+        expect(CONTROL_CHARACTERS_RE.test(document)).toBe(false);
     });
 
     it("flags WhatsApp transport and strips the prefix", async () => {
@@ -385,7 +403,7 @@ describe(createTwilioReceiver, () => {
     it("replies to the sender through the provider, re-applying the WhatsApp prefix", async () => {
         expect.assertions(1);
 
-        const provider = mockProvider({ channel: "sms", id: "twilio" });
+        const provider = createMockProvider({ channel: "sms", id: "twilio" });
         const channel = createTwilioReceiver({
             authToken,
             onMessage: async (_message, context) => {
@@ -503,7 +521,7 @@ describe(createTelnyxReceiver, () => {
         expect.assertions(3);
 
         const keyPair = await generateKey();
-        const provider = mockProvider({ channel: "sms", id: "telnyx" });
+        const provider = createMockProvider({ channel: "sms", id: "telnyx" });
         let received: InboundMessage | undefined;
         const channel = createTelnyxReceiver({
             onMessage: async (message, context) => {
@@ -546,7 +564,7 @@ describe(createMessageBirdReceiver, () => {
 
         const body = JSON.stringify({ body: "hey there", createdDatetime: "2026-01-01T00:00:00+00:00", id: "mb1", originator: "+15551230001", recipient: "+15551230009" });
         const token = await signJwt(signingKey, { exp: inFiveMinutes(), iss: "MessageBird", jti: "j1", payload_hash: await sha256Hex(body), url_hash: await sha256Hex(url) });
-        const provider = mockProvider({ channel: "sms", id: "messagebird" });
+        const provider = createMockProvider({ channel: "sms", id: "messagebird" });
         let received: InboundMessage | undefined;
         const channel = createMessageBirdReceiver({
             onMessage: async (message, context) => {
@@ -607,7 +625,7 @@ describe(createVonageReceiver, () => {
 
         const body = JSON.stringify({ channel: "sms", from: "15551230001", message_type: "text", message_uuid: "v1", text: "hi vonage", timestamp: "2026-01-01T00:00:00Z", to: "15551230009" });
         const token = await signJwt(signatureSecret, { exp: inFiveMinutes(), payload_hash: await sha256Hex(body) });
-        const provider = mockProvider({ channel: "sms", id: "vonage" });
+        const provider = createMockProvider({ channel: "sms", id: "vonage" });
         let received: InboundMessage | undefined;
         const channel = createVonageReceiver({
             onMessage: async (message, context) => {
@@ -674,7 +692,7 @@ describe(createInboundRouter, () => {
                 },
             });
         // The short route is declared first; an unordered scan would let it swallow the request.
-        const router = createInboundRouter({ "/telegram": receiver("short"), "/inbound/telegram": receiver("specific") });
+        const router = createInboundRouter({ "/inbound/telegram": receiver("specific"), "/telegram": receiver("short") });
 
         await router(
             new Request("https://example.com/inbound/telegram", {

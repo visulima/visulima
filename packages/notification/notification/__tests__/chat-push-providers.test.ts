@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { discordProvider } from "../src/providers/chat/discord";
-import { msTeamsProvider } from "../src/providers/chat/msteams";
-import { slackProvider } from "../src/providers/chat/slack";
-import { telegramProvider } from "../src/providers/chat/telegram";
-import { expoProvider } from "../src/providers/push/expo";
-import { fcmProvider } from "../src/providers/push/fcm";
+import { createDiscordProvider } from "../src/providers/chat/discord";
+import { createMsTeamsProvider } from "../src/providers/chat/msteams";
+import { createSlackProvider } from "../src/providers/chat/slack";
+import { createTelegramProvider } from "../src/providers/chat/telegram";
+import { createExpoProvider } from "../src/providers/push/expo";
+import { createFcmProvider } from "../src/providers/push/fcm";
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
@@ -28,7 +28,7 @@ describe("chat + push providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ ok: true, ts: "1700000000.0001" }));
 
-        const provider = slackProvider({ defaultChannel: "C1", token: "xoxb-1" });
+        const provider = createSlackProvider({ defaultChannel: "C1", token: "xoxb-1" });
         const result = await provider.send({ text: "hi" });
 
         expect(result.success).toBe(true);
@@ -40,7 +40,7 @@ describe("chat + push providers", () => {
 
         fetchMock.mockResolvedValue(textResponse("ok"));
 
-        const provider = slackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
+        const provider = createSlackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
         const result = await provider.send({ text: "hi" });
 
         expect(result.success).toBe(true);
@@ -51,7 +51,7 @@ describe("chat + push providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ id: "d1" }));
 
-        const provider = discordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
+        const provider = createDiscordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
         const result = await provider.send({ text: "hi" });
 
         expect(result.data?.messageId).toBe("d1");
@@ -63,7 +63,7 @@ describe("chat + push providers", () => {
 
         fetchMock.mockResolvedValue(textResponse("1"));
 
-        const provider = msTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
+        const provider = createMsTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
         const result = await provider.send({ text: "hi" });
 
         expect(result.success).toBe(true);
@@ -78,12 +78,12 @@ describe("chat + push providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ ok: true, result: { message_id: 42 } }));
 
-        const provider = telegramProvider({ botToken: "1:abc", defaultChatId: 99 });
+        const provider = createTelegramProvider({ botToken: "1:abc", defaultChatId: 99 });
         const result = await provider.send({ text: "hi" });
 
         expect(result.data?.messageId).toBe("42");
 
-        const noChat = telegramProvider({ botToken: "1:abc" });
+        const noChat = createTelegramProvider({ botToken: "1:abc" });
         const failed = await noChat.send({ text: "hi" });
 
         expect(failed.success).toBe(false);
@@ -101,7 +101,7 @@ describe("chat + push providers", () => {
             }),
         );
 
-        const provider = expoProvider({});
+        const provider = createExpoProvider({});
         const result = await provider.send({ body: "hi", title: "T", to: ["ExpoTok1", "ExpoTok2"] });
 
         expect(result.success).toBe(true);
@@ -114,7 +114,7 @@ describe("chat + push providers", () => {
         fetchMock.mockResolvedValue(jsonResponse({ name: "projects/p/messages/0:1" }));
 
         const getAccessToken = vi.fn().mockResolvedValue("ya29.token");
-        const provider = fcmProvider({ getAccessToken, projectId: "p" });
+        const provider = createFcmProvider({ getAccessToken, projectId: "p" });
         const result = await provider.send({ body: "hi", title: "T", to: "devtoken" });
 
         expect(result.success).toBe(true);

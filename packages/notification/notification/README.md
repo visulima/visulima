@@ -298,8 +298,12 @@ barrel holds the shared types, `createInboundRouter` and verification/reply help
 ```typescript
 import { createSlackReceiver } from "@visulima/notification/providers/slack";
 
+// Read the secret however your runtime exposes it: an `env` binding on
+// Cloudflare Workers, `Deno.env.get`, `process.env` on Node.
+declare const signingSecret: string;
+
 const slack = createSlackReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET!,
+    signingSecret,
     onMessage: async (message) => {
         if (message.type === "message") {
             return { text: await runAgent(message.text ?? "") };

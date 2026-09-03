@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { messageBirdProvider } from "../src/providers/sms/messagebird";
-import { twilioProvider } from "../src/providers/sms/twilio";
+import { createMessageBirdProvider } from "../src/providers/sms/messagebird";
+import { createTwilioProvider } from "../src/providers/sms/twilio";
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
@@ -22,7 +22,7 @@ describe("sms provider failure branches", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ error_message: "The 'To' number is invalid", status: 400 }, 400));
 
-        const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
+        const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(false);
@@ -36,7 +36,7 @@ describe("sms provider failure branches", () => {
         fetchMock.mockResolvedValueOnce(jsonResponse({ sid: "SM-ok" }, 201));
         fetchMock.mockResolvedValueOnce(jsonResponse({ error_message: "blocked", status: 400 }, 400));
 
-        const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
+        const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000", retries: 0 });
         const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
         expect(result.success).toBe(true);
@@ -54,7 +54,7 @@ describe("sms provider failure branches", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ errors: [{ description: "request not allowed" }] }, 401));
 
-        const provider = messageBirdProvider({ accessKey: "key", from: "App", retries: 0 });
+        const provider = createMessageBirdProvider({ accessKey: "key", from: "App", retries: 0 });
         const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
         expect(result.success).toBe(false);

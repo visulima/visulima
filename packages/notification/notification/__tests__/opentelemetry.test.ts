@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { otelProvider } from "../src/providers/opentelemetry";
+import { createOtelProvider } from "../src/providers/opentelemetry";
 import type { Provider } from "../src/providers/provider";
 import type { NotificationResult, PushPayload, Result } from "../src/types";
 
@@ -10,7 +10,7 @@ const successResult: Result<NotificationResult> = {
 };
 
 /** Builds a minimal mock push provider whose `send` returns the supplied result. */
-const mockProvider = (result: Result<NotificationResult>, sendImpl?: () => Promise<Result<NotificationResult>>): Provider<unknown, PushPayload> => {
+const createMockProvider = (result: Result<NotificationResult>, sendImpl?: () => Promise<Result<NotificationResult>>): Provider<unknown, PushPayload> => {
     return {
         channel: "push",
         id: "mock",
@@ -33,7 +33,7 @@ describe("otel provider wrapper", () => {
     it("delegates send and returns the inner result without a tracer", async () => {
         expect.assertions(1);
 
-        const wrapped = otelProvider(mockProvider(successResult));
+        const wrapped = createOtelProvider(createMockProvider(successResult));
         const result = await wrapped.send({ body: "x", to: "tok" });
 
         expect(result).toStrictEqual(successResult);
@@ -45,7 +45,7 @@ describe("otel provider wrapper", () => {
         const span = createSpan();
         const startSpan = vi.fn(() => span);
 
-        const wrapped = otelProvider(mockProvider(successResult), { tracer: { startSpan } as never });
+        const wrapped = createOtelProvider(createMockProvider(successResult), { tracer: { startSpan } as never });
         const result = await wrapped.send({ body: "x", to: "tok" });
 
         expect(result.success).toBe(true);
@@ -61,7 +61,7 @@ describe("otel provider wrapper", () => {
         const span = createSpan();
         const failure: Result<NotificationResult> = { error: new Error("boom"), success: false };
 
-        const wrapped = otelProvider(mockProvider(failure), { tracer: { startSpan: () => span } as never });
+        const wrapped = createOtelProvider(createMockProvider(failure), { tracer: { startSpan: () => span } as never });
         const result = await wrapped.send({ body: "x", to: "tok" });
 
         expect(result.success).toBe(false);
@@ -72,9 +72,9 @@ describe("otel provider wrapper", () => {
         expect.assertions(2);
 
         const span = createSpan();
-        const thrower = mockProvider(successResult, () => Promise.reject(new Error("kaboom")));
+        const thrower = createMockProvider(successResult, () => Promise.reject(new Error("kaboom")));
 
-        const wrapped = otelProvider(thrower, { tracer: { startSpan: () => span } as never });
+        const wrapped = createOtelProvider(thrower, { tracer: { startSpan: () => span } as never });
 
         await expect(wrapped.send({ body: "x", to: "tok" })).rejects.toThrow("kaboom");
         expect(span.recordException).toHaveBeenCalledTimes(1);

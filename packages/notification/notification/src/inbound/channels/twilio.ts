@@ -14,7 +14,7 @@ const WHATSAPP_PREFIX = "whatsapp:";
  * U+000E–U+001F. Tab, LF and CR are legal and are deliberately absent.
  */
 // eslint-disable-next-line no-control-regex -- matching the control characters is the point
-const XML_ILLEGAL_CONTROLS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/gu;
+const XML_ILLEGAL_CONTROLS = /[\u0000-\u0008\v\f\u000E-\u001F]/gu;
 
 /**
  * Escapes the five XML predefined entities and drops the control characters XML forbids, so

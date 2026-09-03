@@ -28,7 +28,8 @@ export const createInboundRouter = (routes: Record<string, Receiver>): FetchHand
     // without a signature secret would accept them.
     const entries = Object.entries(routes)
         .map(([path, receiver]): [string, Receiver] => [path.startsWith("/") ? path : `/${path}`, receiver])
-        .sort(([a], [b]) => b.length - a.length);
+        // Longest path first, so `/inbound/telegram` is matched before `/inbound`.
+        .toSorted(([a], [b]) => b.length - a.length);
 
     return async (request: Request): Promise<Response> => {
         const { pathname } = new URL(request.url);

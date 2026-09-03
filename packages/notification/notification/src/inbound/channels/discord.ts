@@ -32,7 +32,7 @@ const DEFER = Symbol("defer");
  */
 const deferAfter = async (milliseconds: number): Promise<typeof DEFER> =>
     new Promise((resolve) => {
-        const timer = setTimeout(() => resolve(DEFER), milliseconds);
+        const timer = setTimeout(resolve, milliseconds, DEFER);
 
         // Node keeps the process alive for a pending timer; nothing waits on this one once the
         // handler wins the race.
