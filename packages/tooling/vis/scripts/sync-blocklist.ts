@@ -16,8 +16,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { generateVariants } from "../src/typosquats";
-import type { Blocklist } from "../src/typosquats";
+import type { Blocklist } from "../src/security/typosquats";
+import { generateVariants } from "../src/security/typosquat-variants";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = resolve(__dirname, "../data/typosquats.json");
