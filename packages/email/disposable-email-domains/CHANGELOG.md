@@ -1,3 +1,9 @@
+## @visulima/disposable-email-domains [1.1.1](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.1.0...@visulima/disposable-email-domains@1.1.1) (2026-09-03)
+
+### Bug Fixes
+
+* unbreak the nightly Data Sync job ([#851](https://github.com/visulima/visulima/issues/851)) ([4f94b42](https://github.com/visulima/visulima/commit/4f94b429596b7047cd9b3a2ec2bd9c49caac4a82))
+
 ## @visulima/disposable-email-domains [1.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fdisposable-email-domains%401.0.1...%40visulima%2Fdisposable-email-domains%401.1.0) (2026-08-02)
 
 
