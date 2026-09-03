@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,6 +11,13 @@ const packageRoot = join(here, "..", "..");
 const packageJson = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8")) as { version: string };
 
 const TRAILING_NEWLINE_RE = /\n$/;
+
+/**
+ * These exercise the built artifacts, so they only mean anything once
+ * `pnpm build` has produced them. CI builds before testing; a fresh clone
+ * has not, and failing there reports a missing build as a broken bin.
+ */
+const hasBuild = existsSync(join(packageRoot, "dist/bin.js")) && existsSync(join(packageRoot, "dist/binx.js"));
 
 const runBin = (binPath: string, args: string[], cwd: string): { code: number; stderr: string; stdout: string } => {
     const result = spawnSync(process.execPath, [binPath, ...args], {
@@ -40,7 +47,7 @@ describe("usage `@visulima/vis` bin entries", () => {
 
     // 30s test timeout matches the spawnSync timeout — vis bin startup
     // (node + the bundled CLI) can exceed the 5s default on cold CI runners.
-    it(`should expose working \`vis\` bin via --version`, { timeout: 30_000 }, () => {
+    it.skipIf(!hasBuild)(`should expose working \`vis\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/bin.js"), ["--version"], cleanCwd);
@@ -49,7 +56,7 @@ describe("usage `@visulima/vis` bin entries", () => {
         expect(result.stdout).toBe(packageJson.version);
     });
 
-    it(`should expose working \`visx\` bin via --version`, { timeout: 30_000 }, () => {
+    it.skipIf(!hasBuild)(`should expose working \`visx\` bin via --version`, { timeout: 30_000 }, () => {
         expect.assertions(2);
 
         const result = runBin(join(packageRoot, "dist/binx.js"), ["--version"], cleanCwd);

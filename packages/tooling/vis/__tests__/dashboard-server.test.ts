@@ -44,7 +44,12 @@ describe("dashboard server", () => {
         const response = await fetch(`${server.url}/`);
 
         expect(response.headers.get("content-type")).toContain("text/html");
-        await expect(response.text()).resolves.toContain("vis · dashboard");
+
+        // Asserts routing, not build state. `vis · dashboard` is the *built*
+        // bundle's title, so requiring it made this fail for anyone who had
+        // not run the dashboard build first — the server correctly serves a
+        // fallback shell in that case, and both are valid responses here.
+        await expect(response.text()).resolves.toMatch(/<title>vis[^<]*dashboard<\/title>/);
     });
 
     it("returns an empty runs list when no runs are recorded", async () => {
