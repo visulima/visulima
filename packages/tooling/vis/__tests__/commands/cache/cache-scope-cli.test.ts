@@ -427,6 +427,43 @@ describe("cache --scope CLI dispatch", () => {
         expect(existsSync(join(base, "branches/feat-x", "branch-hash"))).toBe(false);
     });
 
+    it("size accounts for the pre-scoping entries prune will reclaim", async () => {
+        expect.assertions(2);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test -- skip when git is missing
+        if (!hasGit) {
+            return;
+        }
+
+        const root = join(canonical(scratch), "report-repo");
+
+        mkdirSync(root);
+        initRepo(root);
+        execFileSync("git", ["checkout", "-b", "feat/x"], { cwd: root, stdio: "ignore" });
+
+        const base = resolve(root, "node_modules/.cache/vis");
+
+        seedEntry(base, "legacy-unscoped-hash");
+        seedEntry(join(base, "branches/feat-x"), "branch-hash");
+
+        await cacheSizeExecute({
+            argument: [],
+            logger: createMockLogger() as unknown as Console,
+            options: { "cache-dir": undefined, format: "json", type: "task" },
+            visConfig: { branchScopedCache: true },
+            workspaceRoot: root,
+        } as never);
+
+        const written = (stdoutSpy.mock.calls.at(-1)?.[0] ?? "") as string;
+        const payload = JSON.parse(written) as { task: { directory: string; entries: number }[] };
+        const reported = new Set(payload.task.map((store) => store.directory));
+
+        // Reporting only the branch subtree made the store look smaller than
+        // what `prune` then went on to free.
+        expect(reported).toContain(resolve(base, "branches/feat-x"));
+        expect(reported).toContain(base);
+    });
+
     it("falls back to 'shared' when an unknown --scope value is passed", async () => {
         expect.assertions(2);
 

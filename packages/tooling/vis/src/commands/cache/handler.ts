@@ -201,6 +201,30 @@ const evictionDirectories = (base: string, branchScoped: boolean): string[] => {
     }
 };
 
+/**
+ * True when cache entries sit directly under `base`, outside any branch
+ * subtree — the layout a workspace has if it ran before `branchScopedCache`
+ * was turned on.
+ *
+ * Those entries are never *hit* once scoping is on, since `vis run` resolves
+ * to a branch subtree. But they are still on disk and still reclaimed by
+ * `prune`, so the reporting commands have to see them: `size` counting only
+ * the branch subtree made the store look smaller than what `prune` went on to
+ * free, which is the "reports less than it holds" discrepancy this command
+ * family exists to avoid.
+ */
+const hasUnscopedEntries = (base: string): boolean => {
+    if (!isAccessibleSync(base)) {
+        return false;
+    }
+
+    try {
+        return readdirSync(base, { withFileTypes: true }).some((entry) => entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== BRANCH_SCOPE_DIRECTORY);
+    } catch {
+        return false;
+    }
+};
+
 const confirmPrompt = (question: string): Promise<boolean> =>
     new Promise((resolve) => {
         const rl = createInterface({ input: process.stdin, output: process.stderr });
@@ -1203,7 +1227,17 @@ const resolveCacheDirectoryFromContext = (
     return {
         directoriesFor: (operation: CacheOperation): string[] => {
             if (operation === "read") {
-                return [...new Set(selected.map((entry) => entry.scoped))];
+                // The branch subtree is where `vis run` reads and writes, so it
+                // leads. A base still holding pre-scoping entries is appended so
+                // the reporting commands account for every byte `prune` can
+                // reclaim — they are dead weight, but they are not invisible.
+                return [
+                    ...new Set(
+                        selected.flatMap((entry) =>
+                            entry.scoped !== entry.base && hasUnscopedEntries(entry.base) ? [entry.scoped, entry.base] : [entry.scoped],
+                        ),
+                    ),
+                ];
             }
 
             if (operation === "wipe") {
