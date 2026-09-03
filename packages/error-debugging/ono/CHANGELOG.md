@@ -1,3 +1,11 @@
+## @visulima/ono [2.1.5](https://github.com/visulima/visulima/compare/@visulima/ono@2.1.4...@visulima/ono@2.1.5) (2026-08-19)
+
+### Bug Fixes
+
+* restore commit groups in generated changelogs ([#850](https://github.com/visulima/visulima/issues/850)) ([409ff00](https://github.com/visulima/visulima/commit/409ff0034963eb2ec9ac1b7e85d52916fc1a661f))
+
+## @visulima/ono [2.1.4](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.1.3...%40visulima%2Fono%402.1.4) (2026-08-19)
+
 ## @visulima/ono [2.1.3](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.1.2...%40visulima%2Fono%402.1.3) (2026-08-19)
 
 ## @visulima/ono [2.1.2](https://github.com/visulima/visulima/compare/%40visulima%2Fono%402.1.1...%40visulima%2Fono%402.1.2) (2026-08-18)

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { snsProvider } from "../src/providers/sms/sns";
+import { createSnsProvider } from "../src/providers/sms/sns";
 
 const SIGV4_PREFIX = /^AWS4-HMAC-SHA256 /;
 const ACCESS_KEY_ID = /accessKeyId/;
@@ -31,7 +31,7 @@ describe("aws sns provider", () => {
 
         fetchMock.mockResolvedValue(xmlResponse(PUBLISH_OK, 200));
 
-        const provider = snsProvider({ accessKeyId: "AKIAEXAMPLE", region: "eu-central-1", secretAccessKey: "secret" });
+        const provider = createSnsProvider({ accessKeyId: "AKIAEXAMPLE", region: "eu-central-1", secretAccessKey: "secret" });
         const result = await provider.send({ text: "hello", to: "+15555550100" });
 
         expect(result.success).toBe(true);
@@ -49,7 +49,7 @@ describe("aws sns provider", () => {
 
         fetchMock.mockResolvedValue(xmlResponse(PUBLISH_OK, 200));
 
-        const provider = snsProvider({ accessKeyId: "AKIAEXAMPLE", secretAccessKey: "secret" });
+        const provider = createSnsProvider({ accessKeyId: "AKIAEXAMPLE", secretAccessKey: "secret" });
 
         await provider.send({ from: "MyApp", text: "hi", to: "+1" });
 
@@ -63,7 +63,7 @@ describe("aws sns provider", () => {
 
         fetchMock.mockResolvedValue(xmlResponse(`<ErrorResponse><Error><Message>Invalid parameter</Message></Error></ErrorResponse>`, 400));
 
-        const provider = snsProvider({ accessKeyId: "AKIAEXAMPLE", secretAccessKey: "secret" });
+        const provider = createSnsProvider({ accessKeyId: "AKIAEXAMPLE", secretAccessKey: "secret" });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(false);
@@ -73,6 +73,6 @@ describe("aws sns provider", () => {
     it("throws when credentials are missing", () => {
         expect.assertions(1);
 
-        expect(() => snsProvider({ accessKeyId: "", secretAccessKey: "" })).toThrow(ACCESS_KEY_ID);
+        expect(() => createSnsProvider({ accessKeyId: "", secretAccessKey: "" })).toThrow(ACCESS_KEY_ID);
     });
 });

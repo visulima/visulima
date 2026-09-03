@@ -25,6 +25,17 @@ import type { Meta, Processor } from "../types";
  *   apiKey: "sk-123456"    // Will be redacted
  * });
  * ```
+ *
+ * Key names, credit cards, tokens, IPs, SSNs and emails are matched out of the box. Detecting
+ * people's names, organizations and money amounts inside free-form prose additionally needs a
+ * natural-language scanner, which `@visulima/redact` no longer bundles — install `compromise`
+ * and pass it through, and only then does the lexicon enter your bundle:
+ * @example
+ * ```typescript
+ * import { compromiseScanner } from "@visulima/redact/nlp";
+ *
+ * new RedactProcessor(undefined, { nlp: compromiseScanner });
+ * ```
  */
 class RedactProcessor<L extends string = string> implements Processor<L> {
     /** The redact function configured with custom rules and options */

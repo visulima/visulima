@@ -1,3 +1,11 @@
+## @visulima/tui [4.0.5](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.4...@visulima/tui@4.0.5) (2026-08-19)
+
+### Bug Fixes
+
+* restore commit groups in generated changelogs ([#850](https://github.com/visulima/visulima/issues/850)) ([409ff00](https://github.com/visulima/visulima/commit/409ff0034963eb2ec9ac1b7e85d52916fc1a661f))
+
+## @visulima/tui [4.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%404.0.3...%40visulima%2Ftui%404.0.4) (2026-08-19)
+
 ## @visulima/tui [4.0.3](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%404.0.2...%40visulima%2Ftui%404.0.3) (2026-08-19)
 
 ## @visulima/tui [4.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Ftui%404.0.1...%40visulima%2Ftui%404.0.2) (2026-08-18)

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { webPushProvider } from "../src/providers/push/web-push";
+import { createWebPushProvider } from "../src/providers/push/web-push";
 
 const VAPID_HEADER = /^vapid t=.+,k=.+/;
 const MISSING_PUBLIC_KEY = /vapidPublicKey/;
@@ -67,7 +67,7 @@ describe("web-push provider", () => {
         const keys = await generateVapidKeys();
         const subscription = await generateSubscription("https://push.example.com/sub/abc");
 
-        const provider = webPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+        const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
         const result = await provider.send({ body: "hi there", title: "Hello", to: subscription });
 
         expect(result.success).toBe(true);
@@ -89,7 +89,7 @@ describe("web-push provider", () => {
         const keys = await generateVapidKeys();
         const subscription = await generateSubscription("https://push.example.com/sub/dead");
 
-        const provider = webPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+        const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
         const result = await provider.send({ body: "hi", to: subscription });
 
         expect(result.success).toBe(false);
@@ -100,7 +100,7 @@ describe("web-push provider", () => {
         expect.assertions(2);
 
         const keys = await generateVapidKeys();
-        const provider = webPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+        const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
         const result = await provider.send({ body: "hi", to: "not-json" });
 
         expect(result.success).toBe(false);
@@ -110,6 +110,6 @@ describe("web-push provider", () => {
     it("throws when VAPID config is missing", () => {
         expect.assertions(1);
 
-        expect(() => webPushProvider({ vapidPrivateKey: "", vapidPublicKey: "", vapidSubject: "" })).toThrow(MISSING_PUBLIC_KEY);
+        expect(() => createWebPushProvider({ vapidPrivateKey: "", vapidPublicKey: "", vapidSubject: "" })).toThrow(MISSING_PUBLIC_KEY);
     });
 });

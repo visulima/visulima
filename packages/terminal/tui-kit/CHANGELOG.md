@@ -1,3 +1,17 @@
+## @visulima/tui-kit [1.0.8](https://github.com/visulima/visulima/compare/@visulima/tui-kit@1.0.7...@visulima/tui-kit@1.0.8) (2026-08-19)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.5
+
+## @visulima/tui-kit [1.0.7](https://github.com/visulima/visulima/compare/%40visulima%2Ftui-kit%401.0.6...%40visulima%2Ftui-kit%401.0.7) (2026-08-19)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.4
+
 ## @visulima/tui-kit [1.0.6](https://github.com/visulima/visulima/compare/%40visulima%2Ftui-kit%401.0.5...%40visulima%2Ftui-kit%401.0.6) (2026-08-19)
 
 

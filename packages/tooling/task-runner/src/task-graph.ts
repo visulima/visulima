@@ -11,6 +11,14 @@ interface CreateTaskGraphOptions {
      * reported here.
      */
     onCycleBroken?: (cycle: string[]) => void;
+
+    /**
+     * Invoked once per `dependsOn.projects` entry that matched no project
+     * in the workspace. A selector that resolves to nothing produces no
+     * edge at all, so without this the task simply runs alone and the
+     * declared ordering is silently absent.
+     */
+    onUnmatchedProjectSelector?: (selector: string) => void;
     /** The project graph */
     projectGraph: ProjectGraph;
     /** Target default configurations */
@@ -107,6 +115,34 @@ const getTaskOutputs = (
 };
 
 /**
+ * True when `projectName` actually implements `targetName`.
+ *
+ * A `targetDefaults` entry is a default *for* a target, not a declaration
+ * of one. Treating its mere presence as "this project has the target"
+ * gave every project in the workspace a task for every key in the root
+ * `tasks` config — including projects with no matching script. Those
+ * tasks ran nothing, printed "No command configured for …", and were
+ * still reported as successes, so the run summary's task count stopped
+ * matching reality.
+ *
+ * A default that supplies its own `command`/`executor` *is* runnable
+ * everywhere, so it still counts as a declaration.
+ */
+const projectHasTarget = (
+    project: WorkspaceConfiguration["projects"][string] | undefined,
+    targetName: string,
+    targetDefaults?: Record<string, Partial<TargetConfiguration>>,
+): boolean => {
+    if (project?.targets?.[targetName] !== undefined) {
+        return true;
+    }
+
+    const defaults = targetDefaults?.[targetName];
+
+    return defaults?.command !== undefined || defaults?.executor !== undefined;
+};
+
+/**
  * Gets a task for a target on the same project.
  */
 const getSameProjectTask = (
@@ -122,9 +158,7 @@ const getSameProjectTask = (
         return [];
     }
 
-    const hasTarget = project.targets?.[targetName] !== undefined || targetDefaults?.[targetName] !== undefined;
-
-    if (!hasTarget) {
+    if (!projectHasTarget(project, targetName, targetDefaults)) {
         return [];
     }
 
@@ -200,9 +234,7 @@ const getDependencyProjectTasks = (
             continue;
         }
 
-        const hasTarget = depProject.targets?.[targetName] !== undefined || targetDefaults?.[targetName] !== undefined;
-
-        if (hasTarget) {
+        if (projectHasTarget(depProject, targetName, targetDefaults)) {
             const target: TaskTarget = {
                 project: dep.target,
                 target: targetName,
@@ -275,6 +307,53 @@ const resolveStringDependency = (
     return asHardDependencies(getSameProjectTask(task.target.project, dep, {}, workspace, targetDefaults));
 };
 
+const GLOB_CHARACTERS = /[*?]/;
+const compiledGlobs = new Map<string, RegExp>();
+const REGEXP_SPECIALS = /[.+^${}()|[\]\\]/g;
+
+/**
+ * Expands one `dependsOn.projects` entry into concrete project names.
+ *
+ * Exact names win outright. Anything containing `*` or `?` is treated as a
+ * glob over the workspace's project names: `projects: ["*"]` and
+ * `projects: ["@scope/*"]` read like "every project" and "every project in
+ * this scope", and previously matched nothing at all because the entry was
+ * only ever used as a literal object key.
+ *
+ * Hand-rolled rather than `path.matchesGlob` on purpose: project names are
+ * not paths, and `matchesGlob`'s `*` refuses to cross `/`, which would make
+ * `["*"]` miss every `@scope/name` in the workspace — the exact case this
+ * exists to serve. Here `*` crosses everything.
+ * @param selector One entry from `dependsOn.projects`.
+ * @param workspace The workspace whose project names are matched against.
+ * @returns Every matching project name; empty when nothing matched.
+ */
+const expandProjectSelector = (selector: string, workspace: WorkspaceConfiguration): string[] => {
+    // `Object.hasOwn`, not a bare lookup: `projects["constructor"]` resolves
+    // through the prototype and is never `undefined`, so a selector named
+    // after an `Object.prototype` member would be accepted as an exact
+    // project name, produce no task, and skip the unmatched-selector
+    // warning below — the exact silent no-op this expansion exists to end.
+    if (Object.hasOwn(workspace.projects, selector)) {
+        return [selector];
+    }
+
+    if (!GLOB_CHARACTERS.test(selector)) {
+        return [];
+    }
+
+    // Memoised: a selector is re-expanded for every task that declares it,
+    // so an un-cached compile is O(tasks x deps) `new RegExp` calls.
+    let pattern = compiledGlobs.get(selector);
+
+    if (!pattern) {
+        pattern = new RegExp(`^${selector.replaceAll(REGEXP_SPECIALS, String.raw`\$&`).replaceAll("*", ".*").replaceAll("?", ".")}$`);
+        compiledGlobs.set(selector, pattern);
+    }
+
+    return Object.keys(workspace.projects).filter((name) => pattern.test(name));
+};
+
 /**
  * Resolves a config-format dependency.
  */
@@ -284,6 +363,7 @@ const resolveConfigDependency = (
     workspace: WorkspaceConfiguration,
     projectGraph: ProjectGraph,
     targetDefaults?: Record<string, Partial<TargetConfiguration>>,
+    onUnmatchedProjectSelector?: (selector: string) => void,
 ): ResolvedDependency[] => {
     const tasks: ResolvedDependency[] = [];
 
@@ -299,12 +379,29 @@ const resolveConfigDependency = (
             ),
         );
     } else if (dep.projects) {
-        const projects = Array.isArray(dep.projects) ? dep.projects : [dep.projects];
+        const selectors = Array.isArray(dep.projects) ? dep.projects : [dep.projects];
 
-        for (const projectName of projects) {
-            tasks.push(
-                ...asHardDependencies(getSameProjectTask(projectName, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults)),
-            );
+        for (const selector of selectors) {
+            const matched = expandProjectSelector(selector, workspace);
+
+            if (matched.length === 0) {
+                onUnmatchedProjectSelector?.(selector);
+
+                continue;
+            }
+
+            for (const projectName of matched) {
+                const resolved = getSameProjectTask(projectName, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults);
+
+                // Drop the self-edge. `dependsOn: [{ projects: ["*"], target:
+                // "check" }]` reads as "after everyone else's check" and is a
+                // natural thing to write, but a glob necessarily includes the
+                // declaring project itself. The edge is *hard*, so
+                // the soft-cycle breaker won't touch it and the orchestrator
+                // deadlocks. `getDependencyProjectTasks` skips self-edges for
+                // the same reason.
+                tasks.push(...asHardDependencies(resolved.filter((candidate) => candidate.id !== task.id)));
+            }
         }
     } else {
         tasks.push(
@@ -326,19 +423,20 @@ const resolveDependency = (
     workspace: WorkspaceConfiguration,
     projectGraph: ProjectGraph,
     targetDefaults?: Record<string, Partial<TargetConfiguration>>,
+    onUnmatchedProjectSelector?: (selector: string) => void,
 ): ResolvedDependency[] => {
     if (typeof dep === "string") {
         return resolveStringDependency(task, dep, workspace, projectGraph, targetDefaults);
     }
 
-    return resolveConfigDependency(task, dep, workspace, projectGraph, targetDefaults);
+    return resolveConfigDependency(task, dep, workspace, projectGraph, targetDefaults, onUnmatchedProjectSelector);
 };
 
 /**
  * Resolves the dependencies of a task based on target configuration.
  */
 const resolveTaskDependencies = (task: Task, options: CreateTaskGraphOptions): ResolvedDependency[] => {
-    const { projectGraph, targetDefaults, workspace } = options;
+    const { onUnmatchedProjectSelector, projectGraph, targetDefaults, workspace } = options;
     const project = workspace.projects[task.target.project];
 
     if (!project) {
@@ -352,7 +450,7 @@ const resolveTaskDependencies = (task: Task, options: CreateTaskGraphOptions): R
     const depTasks: ResolvedDependency[] = [];
 
     for (const dep of dependsOn) {
-        const resolved = resolveDependency(task, dep, workspace, projectGraph, targetDefaults);
+        const resolved = resolveDependency(task, dep, workspace, projectGraph, targetDefaults, onUnmatchedProjectSelector);
 
         depTasks.push(...resolved);
     }

@@ -69,6 +69,12 @@ const setupRepo = (packageVersion: string = "0.0.1"): string => {
     execFileSync("git", ["init", "-q", "--initial-branch", "main"], { cwd });
     execFileSync("git", ["config", "user.email", "test@test"], { cwd });
     execFileSync("git", ["config", "user.name", "Test"], { cwd });
+    // Fixture repos must not inherit the developer's signing config: with
+    // `tag.gpgSign` on, the lightweight `git tag <name>` below becomes a
+    // signed annotated tag and fails with "no tag message?".
+    execFileSync("git", ["config", "commit.gpgsign", "false"], { cwd });
+    execFileSync("git", ["config", "tag.gpgSign", "false"], { cwd });
+    execFileSync("git", ["config", "tag.forceSignAnnotated", "false"], { cwd });
     execFileSync("git", ["add", "."], { cwd });
     execFileSync("git", ["commit", "-q", "-m", "initial"], { cwd });
 

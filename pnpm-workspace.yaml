@@ -204,7 +204,7 @@ catalogs:
     cli-table: ^0.3.11
     cli-table3: ^0.6.5
     commander: ^15.0.0
-    conventional-changelog-conventionalcommits: 10.3.0
+    conventional-changelog-conventionalcommits: 9.3.1
     core-js: 3.50.0
     cors: ^2.8.6
     cross-env: ^10.1.0
@@ -434,6 +434,7 @@ catalogs:
     axe-core: '>=4.13.0'
     chalk: '>=6.0.0'
     commander: '>=15.0.0'
+    compromise: '>=14.15.1'
     cors: '>=2.8.6'
     github-slugger: '>=2.0.0'
     handlebars: '>=4.7.9'
@@ -630,7 +631,7 @@ catalogs:
     roarr: ^7.21.7
     rslog: 2.3.0
     sanitize-filename: 1.6.4
-    sanitize-html: 2.17.6
+    sanitize-html: 2.17.7
     scheduler: ^0.27.0
     schema-dts: ^2.0.0
     scule: 1.3.0
@@ -1142,7 +1143,8 @@ overrides:
   deepmerge-ts@7: '>=8.0.1 <9'
   deepmerge-ts@8: '>=8.0.1 <9'
   dompurify@3: '>=3.4.13 <4'
-  fast-uri@3: '>=3.1.5 <4'
+  fast-uri@3: '>=3.1.6 <4'
+  fast-uri@4: '>=4.1.3 <5'
   fast-xml-parser@5: '>=5.10.1 <6'
   find-my-way@9: '>=9.6.1 <10'
   hono@4: '>=4.12.34 <5'
@@ -1171,6 +1173,14 @@ overrides:
   '@modelcontextprotocol/sdk>@hono/node-server': '>=2.0.10 <3'
   minimatch>brace-expansion: '>=5.0.9 <6'
   'minimizer-webpack-plugin>postcss': '>=8.5.18 <9'
+  # Advisories published after the previous audit sweep; same major-line floor
+  # convention as the block above.
+  '@humanfs/node@0': '>=0.16.8 <1'
+  '@tiptap/core@3': '>=3.30.4 <4'
+  browserslist@4: '>=4.28.7 <5'
+  fastify@5: '>=5.12.1 <6'
+  qs@6: '>=6.16.0 <7'
+  sanitize-html@2: '>=2.17.7 <3'
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
   # pnpm applies patches strictly (no fuzz), so the key must name the exact version the

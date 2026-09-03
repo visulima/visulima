@@ -1,3 +1,31 @@
+## @visulima/vis [3.0.6](https://github.com/visulima/visulima/compare/@visulima/vis@3.0.5...@visulima/vis@3.0.6) (2026-08-19)
+
+### Bug Fixes
+
+* restore commit groups in generated changelogs ([#850](https://github.com/visulima/visulima/issues/850)) ([409ff00](https://github.com/visulima/visulima/commit/409ff0034963eb2ec9ac1b7e85d52916fc1a661f))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 2.0.1
+* **@visulima/task-runner:** upgraded to 1.0.5
+* **@visulima/tui:** upgraded to 4.0.5
+* **@visulima/tui-kit:** upgraded to 1.0.8
+* **@visulima/fs:** upgraded to 6.0.5
+* **@visulima/package:** upgraded to 5.0.18
+* **@visulima/tsconfig:** upgraded to 3.2.12
+
+## @visulima/vis [3.0.5](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%403.0.4...%40visulima%2Fvis%403.0.5) (2026-08-19)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.4
+* **@visulima/tui-kit:** upgraded to 1.0.7
+* **@visulima/fs:** upgraded to 6.0.4
+* **@visulima/package:** upgraded to 5.0.17
+* **@visulima/tsconfig:** upgraded to 3.2.11
+
 ## @visulima/vis [3.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%403.0.3...%40visulima%2Fvis%403.0.4) (2026-08-19)
 
 

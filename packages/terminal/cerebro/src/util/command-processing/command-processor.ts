@@ -99,6 +99,7 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     booleanValues: Record<string, unknown>,
     extraOptions: Record<string, unknown>,
     env?: Record<string, string | undefined>,
+    rawArgv: ReadonlyArray<string> = [],
 ): IToolbox<TLogger> => {
     const toolbox = new EmptyToolbox(command.name, command as unknown as ICommand) as unknown as IToolbox<TLogger>;
 
@@ -126,6 +127,11 @@ export const prepareToolbox = <OD extends OptionDefinition<unknown>, TLogger ext
     // inner tools without peeking at `process.argv`. `stopAtFirstUnknown`
     // is set above, so this is the authoritative passthrough buffer.
     toolbox.rawUnknown = [..._unknown ?? []];
+
+    // The caller's own tokens, so a command that forwards its arguments to
+    // another command has a source of truth that works both from the CLI
+    // and from `runtime.runCommand()`.
+    toolbox.rawArgv = [...rawArgv];
 
     const hasExtraOptions = Object.keys(extraOptions).length > 0;
 

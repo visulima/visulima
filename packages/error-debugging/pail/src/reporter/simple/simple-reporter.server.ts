@@ -221,7 +221,10 @@ export class SimpleReporter<T extends string = string, L extends string = string
                 + wordWrap(formattedMessage, {
                     trim: false,
                     width: size - 3,
-                    wrapMode: WrapMode.STRICT_WIDTH,
+                    // See the pretty reporter: breaking mid-token mangles
+                    // paths and URLs, the parts of a log line a reader is
+                    // most likely to want to copy.
+                    wrapMode: WrapMode.PRESERVE_WORDS,
                 }),
             );
         }

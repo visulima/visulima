@@ -42,9 +42,14 @@ export type ConcurrencyGroups = Record<string, number>;
 /**
  * A single entry in a task's `outputs` list.
  *
- * - `string` — a literal path *or* a glob pattern relative to the
- *   workspace root. Prefix with `!` to exclude files the positive
- *   patterns would otherwise include (e.g. `"!dist/cache/**"`).
+ * - `string` — a literal path *or* a glob pattern, always resolved
+ *   against the **workspace root**, never the project root. A bare
+ *   `"dist/**"` therefore means `&lt;workspaceRoot>/dist/**` and will match
+ *   nothing for a package in `packages/foo`; write
+ *   `"{projectRoot}/dist/**"` for per-project outputs. `{projectRoot}`
+ *   and `{projectName}` are substituted before matching. Prefix with `!`
+ *   to exclude files the positive patterns would otherwise include
+ *   (e.g. `"!{projectRoot}/dist/cache/**"`).
  * - `{ auto: true }` — use whatever files the task actually wrote
  *   during execution (resolved from the file-access tracker). Lets
  *   authors who don't know their exact output layout cache results
@@ -534,7 +539,18 @@ export interface TargetDependencyConfig {
     dependencies?: boolean;
     /** Params to pass through */
     params?: "forward" | "ignore";
-    /** The project name (if different from the current project) */
+
+    /**
+     * Which projects to depend on, as exact names or `*`/`?` globs over
+     * project names (`"@scope/*"`, `"*"`). Unlike path globbing, `*` crosses
+     * `/`, so `"*"` really does mean every project. The declaring project is
+     * excluded from a glob's matches when the dependency names the same
+     * target, since that would be a cycle of one.
+     *
+     * A selector matching nothing produces no edge; `createTaskGraph` reports
+     * it through `onUnmatchedProjectSelector` rather than dropping it
+     * silently.
+     */
     projects?: string | string[];
     /** The target name */
     target: string;
@@ -966,8 +982,9 @@ export interface TaskRunnerOptions {
 
     /**
      * Generate a detailed JSON run summary after execution.
-     * When true, writes a summary file to `.task-runner/runs/` containing
-     * all task inputs, outputs, hashes, timings, and cache status.
+     * When true, writes a summary file to `&lt;dataDirectory>/runs/` —
+     * `.vis/runs/` under vis — containing all task inputs, outputs,
+     * hashes, timings, and cache status.
      *
      * Useful for debugging cache misses and comparing runs.
      * Matches Turborepo's `--summarize` flag.

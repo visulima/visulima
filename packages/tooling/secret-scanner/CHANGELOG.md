@@ -1,3 +1,19 @@
+## @visulima/secret-scanner [2.0.1](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@2.0.0...@visulima/secret-scanner@2.0.1) (2026-08-19)
+
+### Bug Fixes
+
+* restore commit groups in generated changelogs ([#850](https://github.com/visulima/visulima/issues/850)) ([409ff00](https://github.com/visulima/visulima/commit/409ff0034963eb2ec9ac1b7e85d52916fc1a661f))
+
+### Build System
+
+* **deps:** bump packem to 2.0.0 ([ba535eb](https://github.com/visulima/visulima/commit/ba535ebb9249e27ac1727278919a183fd3a0d853))
+* **deps:** refresh catalog and package manifests ([#832](https://github.com/visulima/visulima/issues/832)) ([9b7590d](https://github.com/visulima/visulima/commit/9b7590d6496e633ba2c0681484ae4497eeb824c9))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.5
+
 ## @visulima/secret-scanner [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fsecret-scanner%401.1.0...%40visulima%2Fsecret-scanner%402.0.0) (2026-08-08)
 
 

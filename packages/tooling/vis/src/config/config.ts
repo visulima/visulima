@@ -10,6 +10,7 @@ import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from 
 import { importTs } from "../runtime/ts-loader";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import { assertNoDeprecatedConfigKeys, assertNoDeprecatedTaskKeys } from "./deprecation";
+import { assertValidConfigShape } from "./shape";
 import type { VisConfig, VisTaskConfig } from "./types";
 
 /** Supported config file names, checked in priority order. */
@@ -406,6 +407,7 @@ const resolveConfigChain = async (
         const raw = await loadRawConfig(configPath, chain);
 
         assertNoDeprecatedConfigKeys(configPath, chain, raw);
+        assertValidConfigShape(configPath, chain, raw);
 
         const extendsList = normalizeExtends(raw.extends);
 

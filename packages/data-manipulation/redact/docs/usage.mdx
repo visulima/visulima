@@ -3,6 +3,8 @@ title: "Usage Guide"
 description: "Complete guide to data redaction and anonymization"
 ---
 
+import { Callout } from "fumadocs-ui/components/callout";
+
 # Usage Guide
 
 ## Object Redaction
@@ -24,7 +26,12 @@ console.log(safe);
 // { id: 123, name: "Alice", password: "<PASSWORD>", apiKey: "<APIKEY>" }
 ```
 
+Key matching is case-insensitive, so `"password"` also matches `Password` and `PASSWORD`.
+
 ### Nested Properties
+
+A dotted rule targets one exact path. The default mask is built from the rule key, so a dotted
+rule produces a dotted mask unless you supply a `replacement`:
 
 ```typescript
 import { redact } from "@visulima/redact";
@@ -41,7 +48,18 @@ const data = {
     },
 };
 
-const safe = redact(data, ["user.profile.ssn", "user.credentials.password"]);
+redact(data, ["user.profile.ssn"]);
+// { user: { profile: { email: "alice@example.com", ssn: "<USER.PROFILE.SSN>" }, ... } }
+
+redact(data, [{ key: "user.profile.ssn", replacement: "<SSN>" }]);
+// { user: { profile: { email: "alice@example.com", ssn: "<SSN>" }, ... } }
+```
+
+To match a key at any depth instead of one path, use `deep`:
+
+```typescript
+redact(data, [{ deep: true, key: "password" }]);
+// every `password` key, however deeply nested, becomes "<PASSWORD>"
 ```
 
 ### Array Elements
@@ -54,70 +72,150 @@ const users = [
     { name: "Bob", password: "pass2" },
 ];
 
-const safe = redact(users, ["*.password"]);
+redact(users, [{ key: "*.password", replacement: "<PASSWORD>" }]);
+// [{ name: "Alice", password: "<PASSWORD>" }, { name: "Bob", password: "<PASSWORD>" }]
 ```
+
+A plain number rule targets an array index (`redact(list, [0])`).
+
+### Removing Keys
+
+```typescript
+import { redact } from "@visulima/redact";
+
+redact({ secret: "x", keep: 1 }, [{ key: "secret", remove: true }]);
+// { keep: 1 }
+```
+
+### Partial Masking
+
+A function `replacement` — a `Censor` — receives the matched value and its dot-path, and returns
+what to store:
+
+```typescript
+import { redact } from "@visulima/redact";
+
+redact({ card: "4111111111111111" }, [{ key: "card", replacement: (value) => `****${String(value).slice(-4)}` }]);
+// { card: "****1111" }
+```
+
+### What Gets Traversed
+
+`redact` walks objects, arrays, `Error`s, `Map`s, `Set`s, JSON strings and URL query strings:
+
+```typescript
+redact('{"password":"p","keep":1}', ["password"]);
+// '{"password":"<PASSWORD>","keep":1}'
+
+redact("https://api.example.com/v1?access_token=abc&page=2", ["access_token"]);
+// "https://api.example.com/v1?access_token=<ACCESS_TOKEN>&page=2"
+```
+
+Inputs are never mutated, so frozen and sealed objects are safe, and circular references are
+preserved in the copy rather than throwing.
 
 ## Text Anonymization
 
-### Automatic Detection
+### Pattern-Based Detection
+
+`stringAnonymize` masks a single string using the `pattern` rules:
 
 ```typescript
-import { stringAnonymize } from "@visulima/redact";
+import { standardRules, stringAnonymize } from "@visulima/redact";
 
-const text = "Contact John Doe at john@example.com or 555-1234";
-const result = stringAnonymize(text);
-// "Contact <PERSON> at <EMAIL> or <PHONENUMBER>"
+stringAnonymize("card 4111 1111 1111 1111 on file", standardRules);
+// "card <CREDITCARD> on file"
 ```
 
-### Select Categories
+<Callout type="info" title="Patterns overlap, and rule order breaks the tie">
+    Several built-in patterns match the same shapes — an address matches `email`, `domain` and `url` at the same offset. Equal matches are resolved by the order
+    the rules appear in, which is why `piiRules` declares `email` first. If you build a rule set by hand and the tag matters to whoever reads the output, put
+    the most specific rule first.
+</Callout>
+
+### Names, Organizations and Money
+
+These have no regular-expression shape, so they need the opt-in scanner from
+`@visulima/redact/nlp` (see [Installation](/installation)):
 
 ```typescript
-import { stringAnonymize } from "@visulima/redact";
+import { standardRules, stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
 
-const text = "John works at Acme Corp earning $50,000";
+stringAnonymize("Contact John Doe at john@example.com or 555-123-4567", standardRules, { nlp: compromiseScanner });
+// "Contact <FIRSTNAME> <LASTNAME> at <EMAIL> or <PHONENUMBER>"
+```
 
-// Only anonymize people and money
-const result = stringAnonymize(text, {
-    include: ["Person", "Money"],
+The same option works on `redact` and `createRedactor`, and applies to every string the walk
+reaches.
+
+### Choosing Categories
+
+There is no `include` list — you choose categories by composing rules. Pass only the sets or keys
+you want:
+
+```typescript
+import { piiRules, stringAnonymize } from "@visulima/redact";
+import { compromiseScanner } from "@visulima/redact/nlp";
+
+// only people and money
+stringAnonymize("John works at Acme Corp earning $50,000", ["firstname", "lastname", "money"], { nlp: compromiseScanner });
+// "<FIRSTNAME> works at Acme Corp earning <MONEY>"
+
+// everything in piiRules
+stringAnonymize("John Doe works at Google", piiRules, { nlp: compromiseScanner });
+// "<FIRSTNAME> <LASTNAME> works at <ORGANIZATION>"
+```
+
+Or start from a full set and drop keys with `exclude`:
+
+```typescript
+stringAnonymize("John works at Acme Corp earning $50,000", standardRules, {
+    exclude: ["organization"],
+    nlp: compromiseScanner,
 });
-// "John works at Acme Corp earning <MONEY>"
+// "<FIRSTNAME> works at Acme Corp earning <MONEY>"
 ```
 
-### Exclude Categories
-
-```typescript
-import { stringAnonymize } from "@visulima/redact";
-
-const text = "Email john@example.com about the project";
-
-// Anonymize everything except emails
-const result = stringAnonymize(text, {
-    exclude: ["Email"],
-});
-```
+<Callout type="warn" title="exclude removes the whole rule">
+    Excluding a key drops its key-name matching as well as its pattern, so `exclude: ["email"]` also stops `{ email: "..." }` from
+    being masked by key. Prefer composing the rule sets you actually want.
+</Callout>
 
 ## Built-in Rules
 
 ### Sensitive Data Patterns
 
-The library includes 40+ detection patterns:
+`standardRules` bundles 60+ rules. Pass it explicitly — there is no implicit default:
 
 ```typescript
-import { redact } from "@visulima/redact";
+import { redact, standardRules } from "@visulima/redact";
 
 const data = {
-    email: "user@example.com", // Detected
-    password: "myPassword123", // Detected
-    creditCard: "4532123456789010", // Detected
-    ssn: "123-45-6789", // Detected
-    apiKey: "sk_live_abc123", // Detected
-    token: "Bearer eyJ...", // Detected
-    ip: "192.168.1.1", // Detected
-    phone: "+1-555-123-4567", // Detected
+    apiKey: "sk_live_abc123",
+    creditCard: "4532123456789010",
+    email: "user@example.com",
+    ip: "192.168.1.1",
+    password: "myPassword123",
+    ssn: "123-45-6789",
+    token: "Bearer eyJhbGciOiJIUzI1NiJ9.e30.abc",
 };
 
-// Auto-detect all sensitive fields
-const safe = redact(data);
+redact(data, standardRules);
+// every value above becomes its "<KEY>" mask
+```
+
+### Composing Subsets
+
+`standardRules` is `[...credentialRules, ...piiRules, ...dateTimeRules]`. The date/time rules
+match bare weekday and relative-date words, and several PII rules match plain numbers, so most
+logging is better served by a subset:
+
+```typescript
+import { credentialRules, piiRules, redact } from "@visulima/redact";
+
+redact({ apiKey: "sk_live_abc", ip: "10.0.0.1", note: "monday" }, [...credentialRules, ...piiRules]);
+// { apiKey: "<APIKEY>", ip: "<IP>", note: "monday" }
 ```
 
 ### Financial Data
@@ -132,53 +230,59 @@ const payment = {
     account: "123456789",
 };
 
-const safe = redact(payment, ["cardNumber", "cvv", "routing", "account"]);
+redact(payment, ["cardNumber", "cvv", "routing", "account"]);
 ```
 
 ## Custom Options
 
 ### Custom Replacement
 
+`replacement` is set per rule, not globally:
+
 ```typescript
 import { redact } from "@visulima/redact";
 
-const safe = redact(data, ["password"], {
-    replacement: "[REDACTED]",
-});
+redact(data, [{ key: "password", replacement: "[REDACTED]" }]);
 // password: "[REDACTED]"
 ```
 
 ### Case Sensitivity
 
-```typescript
-import { redact } from "@visulima/redact";
+Key matching is always case-insensitive; there is nothing to configure. `["password"]` matches
+`password`, `Password` and `PASSWORD` alike.
 
-const safe = redact(data, ["Password"], {
-    caseSensitive: false,
-});
-// Matches "password", "PASSWORD", "Password"
+### Reusing a Rule Set
+
+```typescript
+import { createRedactor, standardRules } from "@visulima/redact";
+
+const scrub = createRedactor(standardRules);
+
+scrub(payload);
+scrub(anotherPayload);
 ```
+
+`createRedactor` compiles the rules once — lowercasing keys and building the regexes — so hot
+paths such as a logger transport do not repeat that work per call.
 
 ## Real-World Examples
 
 ### Express Middleware
 
 ```typescript
-import { redact } from "@visulima/redact";
+import { createRedactor } from "@visulima/redact";
 import type { Request, Response, NextFunction } from "express";
 
+const scrub = createRedactor(["password", "token", "apiKey", "secret"]);
+
 function redactMiddleware(req: Request, res: Response, next: NextFunction) {
-    // Redact request body
     if (req.body) {
-        req.body = redact(req.body, ["password", "token", "apiKey"]);
+        req.body = scrub(req.body);
     }
 
-    // Redact response
     const originalJson = res.json.bind(res);
-    res.json = (data: any) => {
-        const safe = redact(data, ["password", "secret", "token"]);
-        return originalJson(safe);
-    };
+
+    res.json = (data: unknown) => originalJson(scrub(data));
 
     next();
 }
@@ -189,40 +293,28 @@ app.use(redactMiddleware);
 ### Logger Integration
 
 ```typescript
-import { redact } from "@visulima/redact";
+import { createRedactor } from "@visulima/redact";
 import winston from "winston";
 
+const scrub = createRedactor(["password", "token", "apiKey"]);
+
 const logger = winston.createLogger({
-    format: winston.format.combine(
-        winston.format((info) => {
-            return {
-                ...info,
-                ...redact(info, ["password", "token", "apiKey"]),
-            };
-        })(),
-        winston.format.json(),
-    ),
+    format: winston.format.combine(winston.format((info) => scrub(info))(), winston.format.json()),
 });
 ```
 
 ### Database Query Sanitization
 
 ```typescript
-import { redact } from "@visulima/redact";
+import { createRedactor } from "@visulima/redact";
+
+const scrubUser = createRedactor([{ key: "password", remove: true }, { key: "passwordHash", remove: true }, "resetToken", "twoFactorSecret"]);
 
 class UserRepository {
     async findById(id: string) {
         const user = await this.db.users.findOne({ id });
 
-        // Remove sensitive fields before returning
-        return redact(user, ["password", "passwordHash", "resetToken", "twoFactorSecret"]);
-    }
-
-    async logQuery(query: any) {
-        // Redact sensitive data in logs
-        const safe = redact(query, ["password", "token", "secret"]);
-
-        logger.debug("Query executed", safe);
+        return scrubUser(user);
     }
 }
 ```
