@@ -1,3 +1,13 @@
+## @visulima/redact [5.0.0](https://github.com/visulima/visulima/compare/@visulima/redact@4.0.0...@visulima/redact@5.0.0) (2026-09-03)
+
+### ⚠ BREAKING CHANGES
+
+* **redact:** make nlp detection opt-in via injection (#852)
+
+### Features
+
+* **redact:** make nlp detection opt-in via injection ([#852](https://github.com/visulima/visulima/issues/852)) ([78e60fd](https://github.com/visulima/visulima/commit/78e60fd3821dbe8c267c6ec71d90659ab4e4b2e1))
+
 ## @visulima/redact [4.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fredact%403.1.0...%40visulima%2Fredact%404.0.0) (2026-08-08)
 
 ## @visulima/redact [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fredact%403.0.0...%40visulima%2Fredact%403.1.0) (2026-08-02)
