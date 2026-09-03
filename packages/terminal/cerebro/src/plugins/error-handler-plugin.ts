@@ -4,6 +4,7 @@ import { renderError } from "@visulima/error";
 
 import type { Plugin } from "../types/plugin";
 import type { Toolbox } from "../types/toolbox";
+import { formatUserFacingError } from "../util/general/format-user-facing-error";
 import { exitProcess } from "../util/general/runtime-process";
 
 export type ErrorHandlerOptions = {
@@ -47,10 +48,14 @@ export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin =>
             if (formatter) {
                 // Use custom formatter
                 logger.error(formatter(error));
-            } else if (!detailed && concise?.(error)) {
+            } else if (!detailed && (concise?.(error) || formatUserFacingError(error) !== undefined)) {
                 // Expected failure: the message is the whole diagnostic, and
-                // a stack would only bury it under CLI-internal frames.
-                logger.error(error.message);
+                // a stack would only bury it under CLI-internal frames. Bad
+                // input (an unknown flag, a missing positional) qualifies
+                // whether or not the host CLI supplied a `concise` predicate —
+                // it can't classify errors Cerebro raises before the command
+                // is even reached.
+                logger.error(formatUserFacingError(error) ?? error.message);
             } else if (detailed) {
                 const cwd = runtime.getCwd();
                 const renderedError = renderError(error, {

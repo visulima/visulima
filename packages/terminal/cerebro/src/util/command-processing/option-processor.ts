@@ -53,7 +53,22 @@ export const addNegatableOptions = (command: { name: string; options?: OptionDef
 
                 const negatedOption: OptionDefinition<unknown> = {
                     ...option,
+                    // An alias belongs to the flag its author declared. Copying
+                    // it onto the generated twin registers the same short flag
+                    // twice.
+                    alias: undefined,
                     defaultValue: option.defaultValue === undefined ? true : !option.defaultValue,
+                    // The author wrote the description for `--no-x` ("Skip
+                    // interactive prompts"); copying it verbatim onto the
+                    // generated `--x` printed the same line twice in help, the
+                    // second one meaning the opposite of what it said.
+                    //
+                    // Described rather than hidden: `hidden` is filtered out of
+                    // help, README generation *and* shell completion, so hiding
+                    // these would silently drop `--interactive`, `--optional`,
+                    // `--push` and friends from completion for flags that still
+                    // work.
+                    description: `Inverse of --${option.name}.`,
                     name: nonNegatedName,
                 };
 

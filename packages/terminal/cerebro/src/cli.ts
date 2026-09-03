@@ -28,6 +28,7 @@ import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./uti
 import normalizeCommandDefinitions from "./util/command-processing/normalize-command";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
+import { formatUserFacingError } from "./util/general/format-user-facing-error";
 import parseRawCommand from "./util/general/parse-raw-command";
 import registerExceptionHandler from "./util/general/register-exception-handler";
 import {
@@ -425,7 +426,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
         validateRequiredOptions(arguments_, commandArgs, command);
 
-        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions, this.#getInstanceEnv());
+        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions, this.#getInstanceEnv(), commandArguments);
 
         toolbox.runtime = this;
         toolbox.argv = this.#getArgv();
@@ -1236,11 +1237,16 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         try {
             ({ commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey));
         } catch (error) {
-            // Conflict / required-option / negation errors are thrown from
-            // #executeCommandInternal before the plugin manager's try/catch
-            // below can pick them up. Render them through the logger and
-            // re-throw so the caller sees a non-zero exit code.
-            this.#logger.error(error);
+            // Conflict / required-option / negation / unknown-option errors
+            // are thrown from #executeCommandInternal, before the plugin
+            // manager's try/catch below exists to see them — so the
+            // error-handler plugin never gets a say, and logging the raw
+            // Error here printed eight frames of bundle internals for what
+            // is only ever a typo. Bad input renders as its message and
+            // hints; everything else keeps its stack.
+            const userFacing = formatUserFacingError(error);
+
+            this.#logger.error(userFacing ?? error);
 
             if (shouldExitProcess) {
                 return exitProcess(1);

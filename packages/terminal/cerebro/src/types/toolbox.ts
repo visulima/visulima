@@ -178,6 +178,19 @@ export interface Toolbox<
     rawUnknown: ReadonlyArray<string>;
 
     /**
+     * The argument tokens this command was invoked with, exactly as the
+     * caller supplied them — the argv tail for a CLI run, or the `argv`
+     * array for a programmatic `runtime.runCommand()` call.
+     *
+     * Use this, never `process.argv`, when a command forwards its own
+     * arguments on to another command. Scanning `process.argv` for the
+     * command's own name works only for a direct CLI invocation: called
+     * programmatically the token isn't there, the scan yields nothing, and
+     * the inner command silently runs with no arguments at all.
+     */
+    rawArgv: ReadonlyArray<string>;
+
+    /**
      * This is the instance of the CLI that is running the command.
      */
     runtime: ICli<TLogger>;
