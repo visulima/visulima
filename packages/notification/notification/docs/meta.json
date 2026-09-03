@@ -12,6 +12,7 @@
         "queue",
         "events",
         "webhooks",
+        "inbound",
         "templates",
         "workflow",
         "digest",

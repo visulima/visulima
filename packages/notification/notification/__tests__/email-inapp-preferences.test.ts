@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { emailChannel } from "../src/channels/email";
 import type { InAppStore } from "../src/channels/inapp";
-import { inAppProvider } from "../src/channels/inapp";
+import { createInAppProvider } from "../src/channels/inapp";
 import { createNotification } from "../src/notification";
 import { MemoryPreferenceStore, preferencesGate } from "../src/preferences";
 import { route } from "../src/routing";
@@ -38,7 +38,7 @@ describe("in-app channel", () => {
     it("persists notifications to the store and exposes unread count", async () => {
         expect.assertions(3);
 
-        const provider = inAppProvider();
+        const provider = createInAppProvider();
         const notify = createNotification({ inapp: provider });
 
         await notify.sendToChannel("inapp", { body: "Welcome", title: "Hi", to: "user-1" });
@@ -66,7 +66,7 @@ describe("preferences", () => {
 
         prefs.set("+1", { channels: { sms: false } });
 
-        const notify = createNotification({ sms: inAppProvider() as never });
+        const notify = createNotification({ sms: createInAppProvider() as never });
 
         const blocked = await route(notify, { sms: { text: "hi", to: "+1" } }, { gate: preferencesGate(prefs) });
 

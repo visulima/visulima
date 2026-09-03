@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 import { isOk } from "../src/utils/result";
 
-describe(mockProvider, () => {
+describe(createMockProvider, () => {
     it("records sent payloads and returns a successful result", async () => {
         expect.assertions(4);
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
 
         await provider.initialize();
 
@@ -25,7 +25,7 @@ describe(mockProvider, () => {
     it("fails deterministically when configured", async () => {
         expect.assertions(2);
 
-        const provider = mockProvider({ failWith: "boom" });
+        const provider = createMockProvider({ failWith: "boom" });
         const result = await provider.send({ text: "x", to: "+15555550100" } as never);
 
         expect(result.success).toBe(false);

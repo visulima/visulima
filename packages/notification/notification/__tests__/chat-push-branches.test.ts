@@ -2,13 +2,13 @@ import { generateKeyPairSync } from "node:crypto";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { discordProvider } from "../src/providers/chat/discord";
-import { msTeamsProvider } from "../src/providers/chat/msteams";
-import { slackProvider } from "../src/providers/chat/slack";
-import { telegramProvider } from "../src/providers/chat/telegram";
-import { expoProvider } from "../src/providers/push/expo";
-import { fcmProvider } from "../src/providers/push/fcm";
-import { webPushProvider } from "../src/providers/push/web-push";
+import { createDiscordProvider } from "../src/providers/chat/discord";
+import { createMsTeamsProvider } from "../src/providers/chat/msteams";
+import { createSlackProvider } from "../src/providers/chat/slack";
+import { createTelegramProvider } from "../src/providers/chat/telegram";
+import { createExpoProvider } from "../src/providers/push/expo";
+import { createFcmProvider } from "../src/providers/push/fcm";
+import { createWebPushProvider } from "../src/providers/push/web-push";
 
 const SLACK_CONFIG_RE = /token.*webhookUrl/;
 const VAPID_CONFIG_RE = /vapidPublicKey/;
@@ -21,7 +21,7 @@ vi.mock(import("node:http2"), () => {
     };
 });
 
-const { apnsProvider } = await import("../src/providers/push/apns");
+const { createApnsProvider } = await import("../src/providers/push/apns");
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
@@ -82,7 +82,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(textResponse("ok"));
 
-            const provider = slackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
+            const provider = createSlackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(true);
@@ -94,7 +94,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(textResponse("invalid_payload", 400));
 
-            const provider = slackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
+            const provider = createSlackProvider({ webhookUrl: "https://hooks.slack.com/services/x" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -104,7 +104,7 @@ describe("chat + push provider branches", () => {
         it("web API fails when no channel is provided", async () => {
             expect.assertions(2);
 
-            const provider = slackProvider({ token: "xoxb-1" });
+            const provider = createSlackProvider({ token: "xoxb-1" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -116,7 +116,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ error: "channel_not_found", ok: false }));
 
-            const provider = slackProvider({ defaultChannel: "C1", token: "xoxb-1" });
+            const provider = createSlackProvider({ defaultChannel: "C1", token: "xoxb-1" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -126,7 +126,7 @@ describe("chat + push provider branches", () => {
         it("factory throws when neither token nor webhookUrl is given", () => {
             expect.assertions(1);
 
-            expect(() => slackProvider({})).toThrow(SLACK_CONFIG_RE);
+            expect(() => createSlackProvider({})).toThrow(SLACK_CONFIG_RE);
         });
     });
 
@@ -136,7 +136,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ message: "Unknown Webhook" }, 404));
 
-            const provider = discordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
+            const provider = createDiscordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -148,7 +148,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({}));
 
-            const provider = discordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
+            const provider = createDiscordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(true);
@@ -160,7 +160,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ id: "d2" }));
 
-            const provider = discordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
+            const provider = createDiscordProvider({ webhookUrl: "https://discord.com/api/webhooks/1/abc" });
             const result = await provider.send({ text: "hi", threadId: "thread-9" });
 
             expect(result.success).toBe(true);
@@ -177,7 +177,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(textResponse("nope", 400));
 
-            const provider = msTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
+            const provider = createMsTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -189,7 +189,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(textResponse("1"));
 
-            const provider = msTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
+            const provider = createMsTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/x" });
             const result = await provider.send({ blocks: { custom: "card" }, text: "hi" });
 
             expect(result.success).toBe(true);
@@ -204,7 +204,7 @@ describe("chat + push provider branches", () => {
         it("fails when no chat id is available", async () => {
             expect.assertions(2);
 
-            const provider = telegramProvider({ botToken: "1:abc" });
+            const provider = createTelegramProvider({ botToken: "1:abc" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -216,7 +216,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ description: "chat not found", ok: false }));
 
-            const provider = telegramProvider({ botToken: "1:abc", defaultChatId: 99, parseMode: "Markdown" });
+            const provider = createTelegramProvider({ botToken: "1:abc", defaultChatId: 99, parseMode: "Markdown" });
             const result = await provider.send({ text: "hi" });
 
             expect(result.success).toBe(false);
@@ -229,7 +229,7 @@ describe("chat + push provider branches", () => {
             expect.assertions(2);
 
             const getAccessToken = vi.fn().mockRejectedValue(new Error("boom"));
-            const provider = fcmProvider({ getAccessToken, projectId: "p" });
+            const provider = createFcmProvider({ getAccessToken, projectId: "p" });
             const result = await provider.send({ body: "hi", title: "T", to: "tok" });
 
             expect(result.success).toBe(false);
@@ -241,7 +241,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ name: "projects/p/messages/0:1" }));
 
-            const provider = fcmProvider({ accessToken: "ya29.static", projectId: "p" });
+            const provider = createFcmProvider({ accessToken: "ya29.static", projectId: "p" });
             const result = await provider.send({ body: "hi", data: { count: 3, nested: { a: 1 } }, title: "T", to: "tok" });
 
             expect(result.success).toBe(true);
@@ -258,7 +258,7 @@ describe("chat + push provider branches", () => {
                 .mockResolvedValueOnce(jsonResponse({ name: "projects/p/messages/ok" }))
                 .mockResolvedValueOnce(jsonResponse({ error: { message: "Invalid token" } }, 400));
 
-            const provider = fcmProvider({ accessToken: "ya29.static", projectId: "p" });
+            const provider = createFcmProvider({ accessToken: "ya29.static", projectId: "p" });
             const result = await provider.send({ body: "hi", title: "T", to: ["good", "bad"] });
 
             expect(result.success).toBe(true);
@@ -271,7 +271,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ error: { message: "Invalid token" } }, 400));
 
-            const provider = fcmProvider({ accessToken: "ya29.static", projectId: "p" });
+            const provider = createFcmProvider({ accessToken: "ya29.static", projectId: "p" });
             const result = await provider.send({ body: "hi", title: "T", to: "bad" });
 
             expect(result.success).toBe(false);
@@ -292,7 +292,7 @@ describe("chat + push provider branches", () => {
                 }),
             );
 
-            const provider = expoProvider({ accessToken: "expo-token" });
+            const provider = createExpoProvider({ accessToken: "expo-token" });
             const result = await provider.send({ body: "hi", title: "T", to: ["ExpoTok1", "ExpoTok2"] });
 
             expect(result.success).toBe(true);
@@ -304,7 +304,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({ data: [{ message: "bad token", status: "error" }] }));
 
-            const provider = expoProvider({});
+            const provider = createExpoProvider({});
             const result = await provider.send({ body: "hi", to: "ExpoTok1" });
 
             expect(result.success).toBe(false);
@@ -316,7 +316,7 @@ describe("chat + push provider branches", () => {
 
             fetchMock.mockResolvedValue(jsonResponse({}, 400));
 
-            const provider = expoProvider({});
+            const provider = createExpoProvider({});
             const result = await provider.send({ body: "hi", to: "ExpoTok1" });
 
             expect(result.success).toBe(false);
@@ -329,7 +329,7 @@ describe("chat + push provider branches", () => {
             expect.assertions(2);
 
             const keys = await generateVapidKeys();
-            const provider = webPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+            const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
             const result = await provider.send({ body: "hi", to: JSON.stringify({ endpoint: "https://push.example.com/x" }) });
 
             expect(result.success).toBe(false);
@@ -343,7 +343,7 @@ describe("chat + push provider branches", () => {
 
             const keys = await generateVapidKeys();
             const subscription = await generateSubscription("https://push.example.com/sub/dead");
-            const provider = webPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+            const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
             const result = await provider.send({ body: "hi", to: subscription });
 
             expect(result.success).toBe(false);
@@ -353,7 +353,7 @@ describe("chat + push provider branches", () => {
         it("throws when the vapid config is missing", () => {
             expect.assertions(1);
 
-            expect(() => webPushProvider({ vapidPrivateKey: "", vapidPublicKey: "", vapidSubject: "" })).toThrow(VAPID_CONFIG_RE);
+            expect(() => createWebPushProvider({ vapidPrivateKey: "", vapidPublicKey: "", vapidSubject: "" })).toThrow(VAPID_CONFIG_RE);
         });
     });
 
@@ -449,7 +449,7 @@ describe("chat + push provider branches", () => {
 
             connectMock.mockReturnValue(session);
 
-            const provider = apnsProvider(baseConfig);
+            const provider = createApnsProvider(baseConfig);
             const result = await provider.send({ body: "x", to: "tok" });
 
             expect(result.success).toBe(false);
@@ -463,7 +463,7 @@ describe("chat + push provider branches", () => {
 
             connectMock.mockReturnValue(session);
 
-            const provider = apnsProvider(baseConfig);
+            const provider = createApnsProvider(baseConfig);
             const result = await provider.send({ body: "x", to: ["a", "b", "c"] });
 
             expect(result.success).toBe(true);
@@ -478,7 +478,7 @@ describe("chat + push provider branches", () => {
 
             connectMock.mockReturnValue(session);
 
-            const provider = apnsProvider(baseConfig);
+            const provider = createApnsProvider(baseConfig);
 
             await provider.send({ body: "1", to: "a" });
             await provider.send({ body: "2", to: "b" });

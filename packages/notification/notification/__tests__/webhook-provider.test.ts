@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RequiredOptionError from "../src/errors/required-option-error";
-import { webhookProvider } from "../src/providers/webhook";
+import { createWebhookProvider } from "../src/providers/webhook";
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
-describe(webhookProvider, () => {
+describe(createWebhookProvider, () => {
     const fetchMock = vi.fn();
 
     beforeEach(() => {
@@ -22,7 +22,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ ok: true }, 200));
 
-        const provider = webhookProvider({ url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ url: "https://example.com/hook" });
         const result = await provider.send({ body: { hello: "world" } });
 
         expect(result.success).toBe(true);
@@ -40,7 +40,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({}, 200));
 
-        const provider = webhookProvider({ url: "https://config.example/hook" });
+        const provider = createWebhookProvider({ url: "https://config.example/hook" });
         const result = await provider.send({ body: {}, url: "https://payload.example/hook" });
 
         expect(result.success).toBe(true);
@@ -52,7 +52,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({}, 200));
 
-        const provider = webhookProvider({ headers: { "X-Config": "c", "X-Shared": "from-config" }, url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ headers: { "X-Config": "c", "X-Shared": "from-config" }, url: "https://example.com/hook" });
 
         await provider.send({ body: {}, headers: { "X-Payload": "p", "X-Shared": "from-payload" } });
 
@@ -68,7 +68,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({}, 200));
 
-        const provider = webhookProvider({ method: "PUT", url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ method: "PUT", url: "https://example.com/hook" });
 
         await provider.send({ body: {}, method: "PATCH" });
 
@@ -80,7 +80,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({}, 200));
 
-        const provider = webhookProvider({ url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ url: "https://example.com/hook" });
 
         await provider.send({ body: { a: 1, b: "two" } });
 
@@ -92,7 +92,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({}, 200));
 
-        const provider = webhookProvider({ url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ url: "https://example.com/hook" });
 
         await provider.send({ body: "raw-string-body" });
 
@@ -104,7 +104,7 @@ describe(webhookProvider, () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ error: "nope" }, 500));
 
-        const provider = webhookProvider({ retries: 0, url: "https://example.com/hook" });
+        const provider = createWebhookProvider({ retries: 0, url: "https://example.com/hook" });
         const result = await provider.send({ body: {} });
 
         expect(result.success).toBe(false);
@@ -114,7 +114,7 @@ describe(webhookProvider, () => {
     it("returns a RequiredOptionError failure when no url is configured", async () => {
         expect.assertions(2);
 
-        const provider = webhookProvider();
+        const provider = createWebhookProvider();
 
         const result = await provider.send({ body: {} });
 

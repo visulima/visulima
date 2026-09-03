@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createNotification } from "../src/notification";
 import { createNotificationMessage, NotificationMessageBuilder } from "../src/notification-message";
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 
 describe("notificationMessageBuilder", () => {
     it("builds a multi-channel message with the expected shape", () => {
@@ -45,8 +45,8 @@ describe("notificationMessageBuilder", () => {
     it("round-trips through createNotification().send()", async () => {
         expect.assertions(3);
 
-        const sms = mockProvider({ channel: "sms", id: "sms-mock" });
-        const chat = mockProvider({ channel: "chat", id: "chat-mock" });
+        const sms = createMockProvider({ channel: "sms", id: "sms-mock" });
+        const chat = createMockProvider({ channel: "chat", id: "chat-mock" });
 
         const builder = createNotificationMessage().sms({ text: "your code is 123", to: "+15555550100" }).chat({ text: "deploy finished", to: "C123" });
 

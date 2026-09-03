@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { messageBirdProvider } from "../src/providers/sms/messagebird";
-import { plivoProvider } from "../src/providers/sms/plivo";
-import { telnyxProvider } from "../src/providers/sms/telnyx";
-import { twilioProvider } from "../src/providers/sms/twilio";
-import { vonageProvider } from "../src/providers/sms/vonage";
+import { createMessageBirdProvider } from "../src/providers/sms/messagebird";
+import { createPlivoProvider } from "../src/providers/sms/plivo";
+import { createTelnyxProvider } from "../src/providers/sms/telnyx";
+import { createTwilioProvider } from "../src/providers/sms/twilio";
+import { createVonageProvider } from "../src/providers/sms/vonage";
 
 const jsonResponse = (body: unknown, status = 200): Response => Response.json(body, { headers: { "Content-Type": "application/json" }, status });
 
@@ -25,7 +25,7 @@ describe("sms providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ sid: "SM123" }, 201));
 
-        const provider = twilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000" });
+        const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok", from: "+15550000000" });
         const result = await provider.send({ text: "hi", to: "+15555550100" });
 
         expect(result.success).toBe(true);
@@ -40,7 +40,7 @@ describe("sms providers", () => {
     it("twilio fails when no sender is configured", async () => {
         expect.assertions(1);
 
-        const provider = twilioProvider({ accountSid: "AC1", authToken: "tok" });
+        const provider = createTwilioProvider({ accountSid: "AC1", authToken: "tok" });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(false);
@@ -51,7 +51,7 @@ describe("sms providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ messages: [{ "error-text": "bad", status: "2" }] }));
 
-        const provider = vonageProvider({ apiKey: "k", apiSecret: "s", from: "App" });
+        const provider = createVonageProvider({ apiKey: "k", apiSecret: "s", from: "App" });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(false);
@@ -63,7 +63,7 @@ describe("sms providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ message_uuid: ["u1", "u2"] }, 202));
 
-        const provider = plivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
+        const provider = createPlivoProvider({ authId: "id", authToken: "tok", from: "+15550000000" });
         const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
         expect(result.success).toBe(true);
@@ -79,7 +79,7 @@ describe("sms providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ id: "mb1" }, 201));
 
-        const provider = messageBirdProvider({ accessKey: "key", from: "App" });
+        const provider = createMessageBirdProvider({ accessKey: "key", from: "App" });
         const result = await provider.send({ text: "hi", to: ["+1", "+2"] });
 
         expect(result.success).toBe(true);
@@ -91,7 +91,7 @@ describe("sms providers", () => {
 
         fetchMock.mockResolvedValue(jsonResponse({ data: { id: "tx1" } }, 200));
 
-        const provider = telnyxProvider({ apiKey: "key", from: "+15550000000" });
+        const provider = createTelnyxProvider({ apiKey: "key", from: "+15550000000" });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(true);
@@ -104,7 +104,7 @@ describe("sms providers", () => {
         fetchMock.mockResolvedValueOnce(jsonResponse({ errors: [{ detail: "unavailable" }] }, 503));
         fetchMock.mockResolvedValueOnce(jsonResponse({ data: { id: "tx-retry" } }, 200));
 
-        const provider = telnyxProvider({ apiKey: "key", from: "+15550000000", retries: 1 });
+        const provider = createTelnyxProvider({ apiKey: "key", from: "+15550000000", retries: 1 });
         const result = await provider.send({ text: "hi", to: "+1" });
 
         expect(result.success).toBe(true);

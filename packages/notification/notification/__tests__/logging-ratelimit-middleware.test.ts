@@ -3,14 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { loggingMiddleware } from "../src/middleware/logging";
 import { rateLimitMiddleware } from "../src/middleware/rate-limit";
 import { createNotification } from "../src/notification";
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 
 describe(loggingMiddleware, () => {
     it("logs the attempt and the success outcome", async () => {
         expect.assertions(3);
 
         const logger = { debug: vi.fn(), warn: vi.fn() } as unknown as Console;
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider }).use(loggingMiddleware({ logger }));
 
         const receipt = await notify.sendToChannel("sms", { text: "x", to: "+1" });
@@ -24,7 +24,7 @@ describe(loggingMiddleware, () => {
         expect.assertions(3);
 
         const logger = { debug: vi.fn(), warn: vi.fn() } as unknown as Console;
-        const provider = mockProvider({ channel: "sms", failWith: "down" });
+        const provider = createMockProvider({ channel: "sms", failWith: "down" });
         const notify = createNotification({ sms: provider }).use(loggingMiddleware({ logger }));
 
         const receipt = await notify.sendToChannel("sms", { text: "x", to: "+1" });
@@ -43,7 +43,7 @@ describe(rateLimitMiddleware, () => {
     it("passes sends within the rate through immediately", async () => {
         expect.assertions(1);
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider }).use(rateLimitMiddleware({ interval: 1000, rate: 3 }));
 
         await notify.sendToChannel("sms", { text: "1", to: "+1" });
@@ -58,7 +58,7 @@ describe(rateLimitMiddleware, () => {
 
         vi.useFakeTimers();
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider }).use(rateLimitMiddleware({ interval: 1000, rate: 1 }));
 
         await notify.sendToChannel("sms", { text: "1", to: "+1" });

@@ -10,7 +10,7 @@ vi.mock(import("node:http2"), () => {
     };
 });
 
-const { apnsProvider } = await import("../src/providers/push/apns");
+const { createApnsProvider } = await import("../src/providers/push/apns");
 
 const BEARER_JWT_RE = /^bearer eyJ/;
 const FAILED_TOKEN_RE = /BadDeviceToken/;
@@ -118,7 +118,7 @@ describe("apns provider", () => {
 
         connectMock.mockReturnValue(session);
 
-        const provider = apnsProvider(baseConfig);
+        const provider = createApnsProvider(baseConfig);
         const result = await provider.send({ body: "hello", title: "Hi", to: "device-token-1" });
 
         expect(connectMock).toHaveBeenCalledWith("https://api.sandbox.push.apple.com");
@@ -142,7 +142,7 @@ describe("apns provider", () => {
 
         connectMock.mockReturnValue(session);
 
-        const provider = apnsProvider({ ...baseConfig, production: true });
+        const provider = createApnsProvider({ ...baseConfig, production: true });
         const result = await provider.send({ badge: 3, body: "b", data: { custom: "x" }, sound: "ping", title: "t", to: "tok" });
 
         expect(connectMock).toHaveBeenCalledWith("https://api.push.apple.com");
@@ -160,7 +160,7 @@ describe("apns provider", () => {
 
         connectMock.mockReturnValue(session);
 
-        const provider = apnsProvider(baseConfig);
+        const provider = createApnsProvider(baseConfig);
         const result = await provider.send({ body: "x", to: "tok" });
 
         expect(result.success).toBe(false);
@@ -174,7 +174,7 @@ describe("apns provider", () => {
 
         connectMock.mockReturnValue(session);
 
-        const provider = apnsProvider(baseConfig);
+        const provider = createApnsProvider(baseConfig);
         const result = await provider.send({ body: "x", to: ["good", "bad"] });
 
         expect(result.success).toBe(true);
@@ -190,7 +190,7 @@ describe("apns provider", () => {
 
         connectMock.mockReturnValue(session);
 
-        const provider = apnsProvider(baseConfig);
+        const provider = createApnsProvider(baseConfig);
 
         await provider.send({ body: "1", to: "a" });
         await provider.send({ body: "2", to: "b" });
@@ -206,6 +206,6 @@ describe("apns provider", () => {
     it("throws when required options are missing", () => {
         expect.assertions(1);
 
-        expect(() => apnsProvider({ ...baseConfig, teamId: "" })).toThrow(TEAM_ID_RE);
+        expect(() => createApnsProvider({ ...baseConfig, teamId: "" })).toThrow(TEAM_ID_RE);
     });
 });

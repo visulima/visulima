@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createNotification } from "../src/notification";
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 import { createQueueWorker, MemoryQueue } from "../src/queue";
 
 describe(createQueueWorker, () => {
@@ -12,7 +12,7 @@ describe(createQueueWorker, () => {
     it("drain processes all due jobs then resolves", async () => {
         expect.assertions(2);
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider });
         const queue = new MemoryQueue();
 
@@ -31,7 +31,7 @@ describe(createQueueWorker, () => {
         vi.useFakeTimers();
         vi.setSystemTime(0);
 
-        const provider = mockProvider({ channel: "sms", failWith: "boom" });
+        const provider = createMockProvider({ channel: "sms", failWith: "boom" });
         const notify = createNotification({ sms: provider });
         const queue = new MemoryQueue();
         const onDrop = vi.fn();
@@ -64,7 +64,7 @@ describe(createQueueWorker, () => {
 
         vi.useFakeTimers();
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider });
         const onError = vi.fn();
 
@@ -136,7 +136,7 @@ describe(createQueueWorker, () => {
 
         vi.useFakeTimers();
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const notify = createNotification({ sms: provider });
         const queue = new MemoryQueue();
 

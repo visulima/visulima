@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 
 import { createNotification } from "../src/notification";
 import type { MockProviderInstance } from "../src/providers/mock";
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 import createNotificationWorkflow from "../src/workflow/create-notification-workflow";
 
 const buildNotify = () => {
     const notification = createNotification({
-        email: mockProvider({ channel: "email", id: "email-mock" }),
-        sms: mockProvider({ channel: "sms", id: "sms-mock" }),
+        email: createMockProvider({ channel: "email", id: "email-mock" }),
+        sms: createMockProvider({ channel: "sms", id: "sms-mock" }),
     });
 
     const sent = (channel: "email" | "sms") => (notification.getProvider(channel)?.getInstance() as MockProviderInstance).sent;
@@ -93,7 +93,7 @@ describe(createNotificationWorkflow, () => {
     it("records a failed send as completed by default (failure does not throw)", async () => {
         expect.assertions(1);
 
-        const notification = createNotification({ sms: mockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
+        const notification = createNotification({ sms: createMockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
         const workflow = createNotificationWorkflow<{ to: string }>(notification, {
             id: "best-effort",
             run: async ({ payload, step }) => {
@@ -112,7 +112,7 @@ describe(createNotificationWorkflow, () => {
     it("fails the run when a send fails and throwOnFailure is set", async () => {
         expect.assertions(2);
 
-        const notification = createNotification({ sms: mockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
+        const notification = createNotification({ sms: createMockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
         const workflow = createNotificationWorkflow<{ to: string }>(notification, {
             id: "must-deliver",
             run: async ({ payload, step }) => {

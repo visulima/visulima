@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { Middleware } from "../src/middleware/types";
 import { createNotification } from "../src/notification";
-import { mockProvider } from "../src/providers/mock";
+import { createMockProvider } from "../src/providers/mock";
 import type { Provider } from "../src/providers/provider";
 
 describe(createNotification, () => {
     it("dispatches a multi-channel message to the matching providers", async () => {
         expect.assertions(4);
 
-        const sms = mockProvider({ channel: "sms", id: "sms-mock" });
-        const chat = mockProvider({ channel: "chat", id: "chat-mock" });
+        const sms = createMockProvider({ channel: "sms", id: "sms-mock" });
+        const chat = createMockProvider({ channel: "chat", id: "chat-mock" });
 
         const notify = createNotification({ chat, sms });
 
@@ -28,7 +28,7 @@ describe(createNotification, () => {
     it("returns a failed receipt when no provider is registered for a channel", async () => {
         expect.assertions(2);
 
-        const notify = createNotification({ sms: mockProvider({ channel: "sms" }) });
+        const notify = createNotification({ sms: createMockProvider({ channel: "sms" }) });
 
         const receipt = await notify.sendToChannel("push", { body: "hi", to: "tok" });
 
@@ -61,7 +61,7 @@ describe(createNotification, () => {
             return result;
         };
 
-        const notify = createNotification({ sms: mockProvider({ channel: "sms" }) })
+        const notify = createNotification({ sms: createMockProvider({ channel: "sms" }) })
             .use(first)
             .use(second);
 
@@ -74,7 +74,7 @@ describe(createNotification, () => {
     it("turns a throwing provider into a failed receipt while sibling channels still deliver", async () => {
         expect.assertions(4);
 
-        const sms = mockProvider({ channel: "sms", id: "sms-mock" });
+        const sms = createMockProvider({ channel: "sms", id: "sms-mock" });
         const throwing: Provider = {
             channel: "webhook",
             id: "boom-webhook",
@@ -104,7 +104,7 @@ describe(createNotification, () => {
     it("initializes a provider once under concurrent first sends", async () => {
         expect.assertions(1);
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const initSpy = vi.spyOn(provider, "initialize");
 
         const notify = createNotification({ sms: provider });
@@ -121,7 +121,7 @@ describe(createNotification, () => {
     it("only initializes a provider once across sends", async () => {
         expect.assertions(1);
 
-        const provider = mockProvider({ channel: "sms" });
+        const provider = createMockProvider({ channel: "sms" });
         const initSpy = vi.spyOn(provider, "initialize");
 
         const notify = createNotification({ sms: provider });
@@ -135,7 +135,7 @@ describe(createNotification, () => {
     it("sendMany yields receipts for every message", async () => {
         expect.assertions(2);
 
-        const notify = createNotification({ sms: mockProvider({ channel: "sms" }) });
+        const notify = createNotification({ sms: createMockProvider({ channel: "sms" }) });
 
         const messages = [{ sms: { text: "1", to: "+1" } }, { sms: { text: "2", to: "+2" } }, { sms: { text: "3", to: "+3" } }];
 
