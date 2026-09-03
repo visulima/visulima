@@ -630,7 +630,7 @@ catalogs:
     roarr: ^7.21.7
     rslog: 2.3.0
     sanitize-filename: 1.6.4
-    sanitize-html: 2.17.6
+    sanitize-html: 2.17.7
     scheduler: ^0.27.0
     schema-dts: ^2.0.0
     scule: 1.3.0
@@ -1142,7 +1142,8 @@ overrides:
   deepmerge-ts@7: '>=8.0.1 <9'
   deepmerge-ts@8: '>=8.0.1 <9'
   dompurify@3: '>=3.4.13 <4'
-  fast-uri@3: '>=3.1.5 <4'
+  fast-uri@3: '>=3.1.6 <4'
+  fast-uri@4: '>=4.1.3 <5'
   fast-xml-parser@5: '>=5.10.1 <6'
   find-my-way@9: '>=9.6.1 <10'
   hono@4: '>=4.12.34 <5'
@@ -1171,6 +1172,14 @@ overrides:
   '@modelcontextprotocol/sdk>@hono/node-server': '>=2.0.10 <3'
   minimatch>brace-expansion: '>=5.0.9 <6'
   'minimizer-webpack-plugin>postcss': '>=8.5.18 <9'
+  # Advisories published after the previous audit sweep; same major-line floor
+  # convention as the block above.
+  '@humanfs/node@0': '>=0.16.8 <1'
+  '@tiptap/core@3': '>=3.30.4 <4'
+  browserslist@4: '>=4.28.7 <5'
+  fastify@5: '>=5.12.1 <6'
+  qs@6: '>=6.16.0 <7'
+  sanitize-html@2: '>=2.17.7 <3'
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
   # pnpm applies patches strictly (no fuzz), so the key must name the exact version the
