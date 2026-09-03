@@ -1,3 +1,5 @@
+## @visulima/error-handler [2.0.7](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.6...@visulima/error-handler@2.0.7) (2026-09-03)
+
 ## @visulima/error-handler [2.0.6](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.5...@visulima/error-handler@2.0.6) (2026-08-19)
 
 ## @visulima/error-handler [2.0.5](https://github.com/visulima/visulima/compare/%40visulima%2Ferror-handler%402.0.4...%40visulima%2Ferror-handler%402.0.5) (2026-08-19)
