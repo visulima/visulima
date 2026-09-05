@@ -303,4 +303,18 @@ describe("getStringWidth OSC 8 hyperlinks", () => {
         // Expected width is still just the width of "Example"
         expect(getStringWidth(osc8String)).toBe(7);
     });
+
+    it("gives non-SGR OSC sequences no width", () => {
+        expect.assertions(4);
+
+        const escape = String.fromCodePoint(0x1B);
+        const bell = String.fromCodePoint(0x07);
+
+        // A title, a working directory or a notification is consumed by the terminal and occupies
+        // no columns; only OSC 8 used to be recognised, so the rest counted as visible text.
+        expect(getStringWidth(`${escape}]0;hello${bell}after`)).toBe(5);
+        expect(getStringWidth(`${escape}]7;file:///tmp/x${bell}after`)).toBe(5);
+        expect(getStringWidth(`${escape}]0;t\u00EDtl\u00E9 \u2733${bell}after`)).toBe(5);
+        expect(getStringWidth(`${escape}]8;;https://x.com${bell}link${escape}]8;;${bell}`)).toBe(4);
+    });
 });

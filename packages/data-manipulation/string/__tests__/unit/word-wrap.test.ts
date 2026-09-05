@@ -4,6 +4,7 @@ import { bgGreen, black, green, red } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
 import { RE_FAST_ANSI } from "../../src/constants";
+import { getStringWidth } from "../../src/get-string-width";
 import { toEqualAnsi } from "../../src/test/vitest";
 import { wordWrap, WrapMode } from "../../src/word-wrap";
 
@@ -14,6 +15,10 @@ const fixture4 = "12345678\n ";
 
 // Helper function for testing
 const hasAnsi = (string_: string): boolean => RE_FAST_ANSI.test(string_);
+
+/** A wrapped line must end by closing whatever styling it opened: reset, or a specific off-code. */
+// eslint-disable-next-line no-control-regex
+const RE_CLOSES_STYLING = /\u001B\[(?:0|22|39|49)m$/;
 
 describe(wordWrap, () => {
     expect.extend({ toEqualAnsi });
@@ -697,4 +702,147 @@ describe(wordWrap, () => {
             expect(wordWrap(" abc def", { trim: false, width: 5, wrapMode: WrapMode.BREAK_WORDS })).toBe(" abc \ndef");
         });
     });
+
+    // Regression: every wrap strategy used to share a single-parameter SGR pattern that could not
+    // see compound, 256-colour or truecolour sequences. Anything it failed to parse was neither
+    // closed at a line break nor reopened on the next line, so continuation lines lost the style
+    // and the colour bled past the end of the block. `slice()` handled the same input correctly,
+    // which is how the divergence stayed hidden.
+    describe("sGR preservation across line breaks", () => {
+        const MODES = [WrapMode.PRESERVE_WORDS, WrapMode.BREAK_AT_CHARACTERS, WrapMode.STRICT_WIDTH, WrapMode.BREAK_WORDS] as const;
+
+        const STYLES = {
+            "256-colour": "\u001B[38;5;196m",
+            basic: "\u001B[31m",
+            compound: "\u001B[1;31m",
+            truecolour: "\u001B[38;2;255;0;0m",
+        } as const;
+
+        const CASES = Object.entries(STYLES).flatMap(([styleName, open]) => MODES.map((mode) => [styleName, mode, open] as const));
+
+        it.each(CASES)("closes and reopens a %s style on every line in %s", (_styleName, mode, open) => {
+            expect.assertions(3);
+
+            const wrapped = wordWrap(`${open}${"word ".repeat(9)}\u001B[0m`, { width: 12, wrapMode: mode });
+            const lines = wrapped.split("\n");
+
+            expect(lines.length).toBeGreaterThan(1);
+            // Every continuation line must carry the styling itself, not inherit it.
+            expect(lines.slice(1).every((line) => hasAnsi(line))).toBe(true);
+            // ...and no line may leave styling open past its own end.
+            expect(lines.slice(0, -1).every((line) => RE_CLOSES_STYLING.test(line))).toBe(true);
+        });
+
+        it("keeps the visible text identical to the unstyled wrap", () => {
+            expect.assertions(1);
+
+            const text = "the quick brown fox jumped over the lazy dog";
+            const styled = wordWrap(`\u001B[38;2;9;8;7m${text}\u001B[39m`, { width: 12 });
+
+            expect(stripVTControlCharacters(styled)).toBe(wordWrap(text, { width: 12 }));
+        });
+
+        it("reopens a background colour that outlives a foreground reset", () => {
+            expect.assertions(2);
+
+            const wrapped = wordWrap(`\u001B[41m\u001B[38;5;226mwarn warn warn warn\u001B[39m tail tail tail\u001B[49m`, { width: 10 });
+            const lines = wrapped.split("\n");
+
+            // The background is still open once the foreground has been reset, so later lines must
+            // reopen the background alone.
+            expect(lines.at(-1)).toContain("\u001B[41m");
+            expect(lines.at(-1)).not.toContain("\u001B[38;5;226m");
+        });
+    });
+
+    // Regression: the character-level strategies scanned for "m" to find the end of an escape, so
+    // a non-SGR sequence such as CSI 1 D never terminated and the rest of the line was appended to
+    // the current line with no width accounting — the input came back unwrapped.
+    it.each([WrapMode.STRICT_WIDTH, WrapMode.BREAK_AT_CHARACTERS, WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])(
+        "wraps around a non-SGR escape in %s",
+        (wrapMode) => {
+            expect.assertions(2);
+
+            const wrapped = wordWrap("Hello, \u001B[1D World!", { width: 8, wrapMode });
+
+            expect(wrapped.split("\n")).toHaveLength(2);
+            expect(stripVTControlCharacters(wrapped).split("\n")).toStrictEqual(["Hello,", "World!"]);
+        },
+    );
+
+    it("does not re-emit a truncated extended-colour introducer", () => {
+        expect.assertions(1);
+
+        // `CSI 38 m` names no colour. Storing it and reopening it on every continuation line
+        // writes a malformed sequence into the output.
+        const wrapped = wordWrap("\u001B[38mword word word word", { width: 9 });
+
+        expect(wrapped.split("\n").slice(1).join("")).not.toContain("\u001B[38m");
+    });
+
+    // Regression: word wrapping looks for whitespace, which CJK does not use, so a run of
+    // ideographs was one unbreakable token and overflowed the container at any width.
+    describe("wide characters as break points", () => {
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("breaks a CJK run in %s", (wrapMode) => {
+            expect.assertions(2);
+
+            const wrapped = wordWrap("你好世界你好世界", { width: 8, wrapMode });
+            const lines = wrapped.split("\n");
+
+            expect(lines).toStrictEqual(["你好世界", "你好世界"]);
+            expect(Math.max(...lines.map((line) => getStringWidth(line)))).toBeLessThanOrEqual(8);
+        });
+
+        it("keeps narrow words whole around a wide run", () => {
+            expect.assertions(1);
+
+            expect(wordWrap("hello 世界 bye", { width: 6 }).split("\n")).toStrictEqual(["hello", "世界", "bye"]);
+        });
+
+        it("never splits a ZWJ emoji cluster", () => {
+            expect.assertions(2);
+
+            // The family sequence is several wide code points joined by ZWJ; it is one grapheme.
+            expect(wordWrap("👨‍👩‍👧‍👦 family", { width: 4 })).toBe("👨‍👩‍👧‍👦\nfamily");
+            expect(wordWrap("🏴‍☠️ flag", { width: 4 })).toBe("🏴‍☠️\nflag");
+        });
+
+        it("respects the width for mixed narrow and wide text", () => {
+            expect.assertions(1);
+
+            const wrapped = wordWrap("ab你好cd世界ef", { width: 4 });
+
+            expect(wrapped.split("\n").every((line) => getStringWidth(line) <= 4)).toBe(true);
+        });
+    });
+
+    // Regression: tokenizing split on whitespace and on wide graphemes in the raw input, so a
+    // control sequence carrying either was cut in half and a line break could land inside it.
+    describe("control sequences are opaque to tokenizing", () => {
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("keeps an intermediate space byte in %s", (wrapMode) => {
+            expect.assertions(1);
+
+            // `CSI 1 SP q` sets the cursor style; the space is an intermediate byte, not a break point.
+            expect(wordWrap("\u001B[1 qhello world", { width: 8, wrapMode })).toBe("\u001B[1 qhello\nworld");
+        });
+
+        it.each([WrapMode.PRESERVE_WORDS, WrapMode.BREAK_WORDS])("keeps a wide character inside an OSC 8 URL in %s", (wrapMode) => {
+            expect.assertions(1);
+
+            const link = "\u001B]8;;https://例え.test\u0007link\u001B]8;;\u0007";
+
+            expect(wordWrap(`${link} tail`, { width: 8, wrapMode })).toBe(`${link}\ntail`);
+        });
+    });
+
+    // Regression: the strict path copied only the introducer of an unterminated sequence and then
+    // wrapped its remaining bytes as visible text, splitting the sequence across rows.
+    it.each([WrapMode.STRICT_WIDTH, WrapMode.BREAK_AT_CHARACTERS, WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])(
+        "keeps a truncated sequence whole in %s",
+        (wrapMode) => {
+            expect.assertions(1);
+
+            expect(wordWrap("abc\u001B[38;5", { width: 4, wrapMode })).toBe("abc\u001B[38;5");
+        },
+    );
 });
