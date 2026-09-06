@@ -1,3 +1,5 @@
+## @visulima/email-verifier [1.0.9](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.8...@visulima/email-verifier@1.0.9) (2026-09-06)
+
 ## @visulima/email-verifier [1.0.8](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.7...@visulima/email-verifier@1.0.8) (2026-09-03)
 
 
