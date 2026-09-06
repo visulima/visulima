@@ -229,8 +229,8 @@ Once you've filed the PR:
 This project has a standing policy for tests, and it applies to maintainers and outside contributors alike:
 
 -   **Every change that adds or alters behaviour must ship with tests in the same pull request.** That covers new features, new public API surface, new options and bug fixes — a bug fix adds the regression test that fails without the fix.
--   Tests live next to the package they cover (`packages/<group>/<name>/__tests__`) and run with `pnpm test`. A change is not reviewable until `pnpm test` passes in CI.
--   The only exemptions are changes that cannot meaningfully be tested — documentation, comments, formatting, dependency bumps and release chores. A maintainer may also waive the requirement when a test would be impossible or wildly disproportionate to the change; when that happens the reason is written into the pull request.
+-   Tests live next to the package they cover (`packages/<group>/<name>/__tests__`). Locally, `pnpm test` runs the whole workspace and `pnpm run test:affected` runs only what your change touches. CI runs `pnpm run test:affected:coverage` (or `pnpm run test:affected` where coverage is not collected), and a change is not reviewable until that passes.
+-   The only exemptions are changes that cannot meaningfully be tested — documentation, comments, formatting, release chores, and dependency updates that cannot affect behaviour (a lockfile refresh, a tooling-only devDependency bump). An upgrade that changes runtime behaviour is a behaviour change and needs tests like any other. A maintainer may also waive the requirement when a test would be impossible or wildly disproportionate to the change; when that happens the reason is written into the pull request.
 -   Pull requests that add behaviour without tests are labelled `needs-tests` and held until tests arrive.
 
 Coverage is reported to [Codecov](https://app.codecov.io/gh/visulima/visulima) on every pull request, and a drop in coverage on changed lines is treated as a review finding.
