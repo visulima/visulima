@@ -19,6 +19,7 @@
 [![mit licence][license-badge]][license]
 [![Chat][chat-badge]][chat]
 [![PRs Welcome][prs-welcome-badge]][prs-welcome]
+[![OpenSSF Scorecard][scorecard-badge]][scorecard]
 
 </div>
 
@@ -244,6 +245,8 @@ We have a list of [good first issues](https://github.com/visulima/visulima/label
 
 <!-- badges -->
 
+[scorecard-badge]: https://api.scorecard.dev/projects/github.com/visulima/visulima/badge?style=for-the-badge
+[scorecard]: https://scorecard.dev/viewer/?uri=github.com/visulima/visulima
 [license-badge]: https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
