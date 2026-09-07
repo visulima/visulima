@@ -1,3 +1,5 @@
+## @visulima/fs [6.0.8](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.7...@visulima/fs@6.0.8) (2026-09-07)
+
 ## @visulima/fs [6.0.7](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.6...@visulima/fs@6.0.7) (2026-09-06)
 
 ## @visulima/fs [6.0.6](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.5...@visulima/fs@6.0.6) (2026-09-03)
