@@ -422,7 +422,7 @@ The visulima error-handler is open-sourced software licensed under the [MIT][lic
 [npm-downloads]: https://www.npmjs.com/package/@visulima/error-handler
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
-[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
-[chat]: https://discord.gg/TtFJY8xkFK
+[chat-badge]: https://img.shields.io/discord/902465130518949899.svg?style=for-the-badge
+[chat]: https://discord.gg/eajEZvk2PG
 [typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: https://www.typescriptlang.org/
