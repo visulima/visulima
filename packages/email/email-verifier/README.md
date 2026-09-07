@@ -145,6 +145,6 @@ The visulima email-verifier is open-sourced software licensed under the [MIT][li
 [npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/email-verifier?logo=npm&style=for-the-badge&labelColor=333333&color=476ad3 "npm downloads"
 [npm-downloads]: https://www.npmjs.com/package/@visulima/email-verifier "npm downloads"
 [chat-badge]: https://img.shields.io/discord/677851225179ita68409?color=7289da&label=Discord&logo=discord&logoColor=ffffff&style=for-the-badge "chat"
-[chat]: https://discord.gg/J8GxgQ7Xv5 "chat"
+[chat]: https://discord.gg/eajEZvk2PG "chat"
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge "PRs welcome"
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md "PRs welcome"

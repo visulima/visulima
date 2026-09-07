@@ -154,7 +154,7 @@ const menu = [
                 navItems: [
                     {
                         description: "Join developers building with Visulima",
-                        href: "https://discord.gg/TtFJY8xkFK",
+                        href: "https://discord.gg/eajEZvk2PG",
                         icon: <Handshake className="size-6" />,
                         title: "The Visulima Community",
                     },
@@ -171,7 +171,7 @@ const menu = [
         navItems: [
             {
                 description: "Community Support, Q&A, General Chat, Networking",
-                href: "https://discord.gg/TtFJY8xkFK",
+                href: "https://discord.gg/eajEZvk2PG",
                 icon: <DiscordLogoIcon className="size-6" />,
                 title: "Discord",
             },
@@ -462,7 +462,7 @@ const Navbar = () => {
                 <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
                     <GitHubLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Star us on GitHub" />
                 </a>
-                <a className="text-white transition-colors hover:text-white/80" href="https://discord.gg/TtFJY8xkFK" rel="noreferrer" target="_blank">
+                <a className="text-white transition-colors hover:text-white/80" href="https://discord.gg/eajEZvk2PG" rel="noreferrer" target="_blank">
                     <DiscordLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Join our Discord" />
                 </a>
                 {!pathname.startsWith("/docs") && (
