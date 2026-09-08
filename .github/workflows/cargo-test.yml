@@ -62,6 +62,7 @@ jobs:
                       task-runner:
                         - 'packages/tooling/task-runner/native/src/**'
                         - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/benches/**'
                         - 'packages/tooling/task-runner/native/Cargo.toml'
                         - 'packages/tooling/task-runner/native/Cargo.lock'
                       tui:
@@ -72,6 +73,7 @@ jobs:
                         - 'packages/tooling/vis/native/src/**'
                         - 'packages/tooling/vis/native/cli/**'
                         - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/benches/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -90,6 +92,7 @@ jobs:
                       task-runner:
                         - 'packages/tooling/task-runner/native/src/**'
                         - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/benches/**'
                         - 'packages/tooling/task-runner/native/Cargo.toml'
                         - 'packages/tooling/task-runner/native/Cargo.lock'
                       tui:
@@ -100,6 +103,7 @@ jobs:
                         - 'packages/tooling/vis/native/src/**'
                         - 'packages/tooling/vis/native/cli/**'
                         - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/benches/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -277,6 +281,18 @@ jobs:
                   mode: "instrumentation"
                   working-directory: "${{ matrix.package.dir }}"
                   run: "cargo codspeed run"
+
+            # Same trusted-ref rule as the test job: PRs restore but never save,
+            # so a fork can't poison the bench cache for downstream runs.
+            - name: "Save Cargo cache"
+              if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "${{ steps.cargo-cache.outputs.cache-primary-key }}"
 
     cargo-test-required-check:
         name: "Cargo Test Status"
