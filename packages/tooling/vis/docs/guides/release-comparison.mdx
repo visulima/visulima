@@ -195,7 +195,9 @@ vis release init                                  # Auto-detect; preview only
 vis release init --from-changesets                # Force changesets migration; preview
 vis release init --from-semantic-release          # Force semantic-release migration; preview
 vis release init --from-bumpy                     # Force bumpy migration; preview
-vis release init --from-semantic-release --apply  # Actually perform the writes
+vis release init --from-semantic-release --apply  # Scaffold + write the config (leaves .releaserc.* alone)
+vis release init --from-semantic-release --apply --packages '@scope/a'  # Opt one package in
+vis release init --from-semantic-release --apply --cutover  # Phase 6: all packages, delete every .releaserc.* (confirms first; --yes in CI)
 vis release init --fresh                          # Skip migration; start clean
 vis release init --dry-run                        # Print what would happen and exit
 vis release init --workflows                      # Scaffold CI workflows too
