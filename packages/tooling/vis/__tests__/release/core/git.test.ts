@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { defaultTagFor, getCurrentBranch, getCurrentSha, getShortSha, tagExists, tagExistsRemote } from "../../../src/release/core/git";
+import { afterAll, describe, expect, it } from "vitest";
+
+import { defaultTagFor, getCurrentBranch, getCurrentSha, getShortSha, tagExists, tagExistsRemote, toRepoRelativePath } from "../../../src/release/core/git";
 import { MockRunner } from "../../../src/release/core/shell-runner";
 
 describe("git: defaultTagFor", () => {
@@ -150,5 +154,86 @@ describe("git: tagExistsRemote", () => {
         });
 
         await expect(tagExistsRemote({ cwd: "/r", runner }, "missing")).resolves.toBe(false);
+    });
+});
+
+describe("git: toRepoRelativePath", () => {
+    const created: string[] = [];
+
+    afterAll(() => {
+        for (const dir of created) {
+            rmSync(dir, { force: true, recursive: true });
+        }
+    });
+
+    const mkRoot = (): string => {
+        const dir = realpathSync(mkdtempSync(join(tmpdir(), "vis-reporel-")));
+
+        created.push(dir);
+
+        return dir;
+    };
+
+    it("returns a plain repo-relative POSIX path", async () => {
+        expect.hasAssertions();
+
+        const root = mkRoot();
+        const runner = new MockRunner();
+
+        runner.on("git", ["rev-parse", "--show-toplevel"], () => {
+            return { exitCode: 0, stderr: "", stdout: `${root}\n` };
+        });
+
+        await expect(toRepoRelativePath({ cwd: root, runner }, join(root, ".vis", "release", "ci-abc.md"))).resolves.toBe(".vis/release/ci-abc.md");
+    });
+
+    it("does not escape the tree when git spells the toplevel differently", async () => {
+        expect.hasAssertions();
+
+        // Reproduces the shape of two real platform bugs with one mechanism:
+        // on Windows `git rev-parse --show-toplevel` reports the long name
+        // while `os.tmpdir()` yields the 8.3 short form (`RUNNER~1`), and on
+        // macOS `/var` is a symlink to `/private/var`. Both make git's
+        // toplevel and the caller's absolute path different spellings of the
+        // same directory. A symlinked alias reproduces that portably.
+        const root = mkRoot();
+        const alias = join(root, "alias");
+        const real = join(root, "real");
+
+        mkdirSync(join(real, ".vis", "release"), { recursive: true });
+        writeFileSync(join(real, ".vis", "release", "ci-abc.md"), "x");
+        symlinkSync(real, alias, "dir");
+
+        const runner = new MockRunner();
+
+        // git reports the REAL path; the caller holds the ALIAS path.
+        runner.on("git", ["rev-parse", "--show-toplevel"], () => {
+            return { exitCode: 0, stderr: "", stdout: `${real}\n` };
+        });
+
+        const result = await toRepoRelativePath({ cwd: real, runner }, join(alias, ".vis", "release", "ci-abc.md"));
+
+        expect(result).toBe(".vis/release/ci-abc.md");
+        expect(result.startsWith("..")).toBe(false);
+    });
+
+    it("still resolves a path whose file does not exist yet", async () => {
+        expect.hasAssertions();
+
+        // `--generate` builds the change-file path before writing it.
+        const root = mkRoot();
+        const alias = join(root, "alias");
+        const real = join(root, "real");
+
+        mkdirSync(real, { recursive: true });
+        symlinkSync(real, alias, "dir");
+
+        const runner = new MockRunner();
+
+        runner.on("git", ["rev-parse", "--show-toplevel"], () => {
+            return { exitCode: 0, stderr: "", stdout: `${real}\n` };
+        });
+
+        await expect(toRepoRelativePath({ cwd: real, runner }, join(alias, ".vis", "release", "ci-notyet.md"))).resolves.toBe(".vis/release/ci-notyet.md");
     });
 });

@@ -6,7 +6,8 @@
  * `VisReleaseError` with `TAG_PUSH_FAILED` / `TAG_COLLISION` codes.
  */
 
-import { relative } from "node:path";
+import { realpathSync } from "node:fs";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 import { VisReleaseError } from "../errors";
 import type { CommandRunner } from "./package-managers/interface";
@@ -127,7 +128,50 @@ export const toRepoRelativePath = async (ctx: GitContext, absolutePath: string):
     const toplevel = await run(ctx, ["rev-parse", "--show-toplevel"]);
     const root = toplevel.exitCode === 0 && toplevel.stdout.trim() ? toplevel.stdout.trim() : ctx.cwd;
 
-    return relative(root, absolutePath).replaceAll("\\", "/");
+    const direct = relative(root, absolutePath);
+
+    // `git rev-parse --show-toplevel` and the caller's absolute path can spell
+    // the SAME directory differently: on Windows git reports the long name
+    // while `os.tmpdir()` yields the 8.3 short form (`RUNNER~1`), and on macOS
+    // `/var` is a symlink to `/private/var`. `relative()` then walks up out of
+    // the tree and returns something like `../../../../../RUNNER~1/AppData/…`,
+    // which no longer matches `git status --porcelain` output.
+    //
+    // Only pay for the syscalls when the cheap answer already escaped.
+    if (!direct.startsWith("..")) {
+        return direct.replaceAll("\\", "/");
+    }
+
+    return relative(canonicalisePath(root), canonicalisePath(absolutePath)).replaceAll("\\", "/");
+};
+
+/**
+ * Resolve a path to its canonical on-disk spelling, tolerating a target that
+ * does not exist yet: walk up to the deepest ancestor that does, canonicalise
+ * that, and re-append the rest. Returns the input resolved when nothing can be
+ * canonicalised (in-memory adapters, permission errors).
+ */
+const canonicalisePath = (target: string): string => {
+    const absolute = isAbsolute(target) ? target : resolve(target);
+    const missing: string[] = [];
+    let current = absolute;
+
+    for (;;) {
+        try {
+            const real = realpathSync.native(current);
+
+            return missing.length === 0 ? real : join(real, ...missing.toReversed());
+        } catch {
+            const parent = dirname(current);
+
+            if (parent === current) {
+                return absolute;
+            }
+
+            missing.push(basename(current));
+            current = parent;
+        }
+    }
 };
 
 // ── Mutating ───────────────────────────────────────────────────────
