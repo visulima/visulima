@@ -6,6 +6,8 @@
  * `VisReleaseError` with `TAG_PUSH_FAILED` / `TAG_COLLISION` codes.
  */
 
+import { relative } from "node:path";
+
 import { VisReleaseError } from "../errors";
 import type { CommandRunner } from "./package-managers/interface";
 
@@ -43,10 +45,59 @@ export const getShortSha = async (ctx: GitContext): Promise<string | undefined> 
     return result.exitCode === 0 ? result.stdout.trim() : undefined;
 };
 
-export const hasUncommittedChanges = async (ctx: GitContext): Promise<boolean> => {
-    const result = await run(ctx, ["status", "--porcelain"]);
+/**
+ * List every path git reports as dirty (modified, staged, untracked,
+ * renamed, deleted), as repo-relative POSIX paths.
+ *
+ * Superseded the old `hasUncommittedChanges` boolean: `ci release
+ * --generate` needs to name the offending paths, and to tell its own
+ * generated change file apart from unrelated dirt (issue #864). An
+ * empty array is the "clean tree" answer.
+ *
+ * Porcelain v1 line shapes handled:
+ *   `?? path`            — untracked
+ *   ` M path`            — worktree modification
+ *   `R  old -> new`      — rename (we report the destination)
+ *   `A  "quoted path"`   — paths with specials are C-quoted by git.
+ */
+export const listUncommittedPaths = async (ctx: GitContext): Promise<string[]> => {
+    // `--untracked-files=all` disables git's directory rollup (`?? .vis/`),
+    // which would otherwise hide sibling junk behind the same entry the
+    // generated change file lives in.
+    const result = await run(ctx, ["status", "--porcelain", "--untracked-files=all"]);
 
-    return result.exitCode === 0 && result.stdout.trim() !== "";
+    if (result.exitCode !== 0) {
+        return [];
+    }
+
+    const unquote = (value: string): string => {
+        if (!value.startsWith(String.raw`"`) || !value.endsWith(String.raw`"`) || value.length < 2) {
+            return value;
+        }
+
+        const inner = value.slice(1, -1);
+
+        try {
+            return JSON.parse(`"${inner}"`) as string;
+        } catch {
+            return inner;
+        }
+    };
+
+    return result.stdout
+        .split("\n")
+        .map((line) => line.replace(/\r$/, ""))
+        .filter((line) => line.trim() !== "")
+        .map((line) => {
+            // Status codes occupy the first two columns; the path starts at column 3.
+            const rest = line.length > 3 ? line.slice(3) : line.trim();
+            // Renames/copies are reported as `old -> new`; the destination is what's dirty.
+            const arrow = rest.lastIndexOf(" -> ");
+            const raw = arrow === -1 ? rest : rest.slice(arrow + 4);
+
+            return unquote(raw.trim());
+        })
+        .filter(Boolean);
 };
 
 export const tagExists = async (ctx: GitContext, tag: string): Promise<boolean> => {
@@ -59,6 +110,24 @@ export const tagExistsRemote = async (ctx: GitContext, tag: string, remote = "or
     const result = await run(ctx, ["ls-remote", "--tags", remote, tag]);
 
     return result.exitCode === 0 && result.stdout.trim() !== "";
+};
+
+/**
+ * Repo-relative POSIX path for an absolute file, as `git status
+ * --porcelain` would report it — so a path can be compared against
+ * {@link listUncommittedPaths} output.
+ *
+ * `ctx.cwd` is the workspace root, which is not necessarily the git
+ * toplevel (a workspace nested in a larger repo), hence the probe.
+ * Falls back to `ctx.cwd`-relative when the probe fails — that only
+ * happens outside a git repo, where the caller fails for other reasons
+ * anyway.
+ */
+export const toRepoRelativePath = async (ctx: GitContext, absolutePath: string): Promise<string> => {
+    const toplevel = await run(ctx, ["rev-parse", "--show-toplevel"]);
+    const root = toplevel.exitCode === 0 && toplevel.stdout.trim() ? toplevel.stdout.trim() : ctx.cwd;
+
+    return relative(root, absolutePath).replaceAll("\\", "/");
 };
 
 // ── Mutating ───────────────────────────────────────────────────────

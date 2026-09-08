@@ -127,17 +127,75 @@ Auto-derive a change file from branch commits.
 ```bash
 vis release generate
 vis release generate --from origin/main
+vis release generate --since-last-release
 vis release generate --dry-run
 ```
 
 **Options**
 
-| Option                   | Type    | Description                                                                |
-| ------------------------ | ------- | -------------------------------------------------------------------------- |
-| `--from <ref>`           | string  | Git ref to compare against (default: merge-base with `release.baseBranch`) |
-| `--name <slug>`          | string  | Filename slug (default: random animal name)                                |
-| `--dry-run`              | boolean | Print the would-be content without writing                                 |
-| `--print-config[=debug]` | string  | Print the resolved release config and exit                                 |
+| Option                   | Type    | Description                                                                           |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------- |
+| `--from <ref>`           | string  | Git ref to compare against (default: merge-base with `release.baseBranch`)            |
+| `--since-last-release`   | boolean | Start the range at the most recent release tag reachable from `HEAD` (see below)      |
+| `--allow-full-history`   | boolean | With `--since-last-release`: walk everything when no tag matches (first release only) |
+| `--name <slug>`          | string  | Filename slug (default: random animal name)                                           |
+| `--dry-run`              | boolean | Print the would-be content without writing                                            |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                            |
+
+### Range resolution
+
+Precedence: `--from` → `--since-last-release` → merge-base with `release.baseBranch`.
+
+The merge-base default is right on a feature branch and useless on the release branch
+itself — there the merge-base with `baseBranch` _is_ `HEAD`, so the range is empty.
+`--since-last-release` is the flag for that case.
+
+**What "last release" means.** `generate` emits **one** change file for **one** commit
+range, so the boundary is workspace-wide, not per-package: the most recent tag matching
+`release.releaseTagPattern` that is reachable from `HEAD`, whichever package it belongs
+to. In the wave-based flow this flag exists for, every package that released did so at
+that wave's commit, so everything after it is genuinely unreleased. It resolves through
+the same tag machinery as `currentVersionResolver: "git-tag"` — the configured
+`releaseTagPattern` (per-package overrides included) drives both the tag glob and the
+strict matcher, so a tag like `@scope/a@nightly` is rejected.
+
+**No matching tag?** The command **fails**:
+
+```text
+--since-last-release: no git tag matching the configured releaseTagPattern is reachable from HEAD;
+the only remaining boundary is the repository root commit (a1b2c3d) — the whole history.
+Refusing to walk it: every package touched anywhere in that history would be bumped
+(major, for any breaking-change marker in it) and, on the auto-publish path, published.
+Pass --allow-full-history if this really is a first release, or pin the start of the
+range explicitly.
+```
+
+This is the common shape of the mistake: a repo tagged `v1.2.3` while `releaseTagPattern`
+is still the default `{name}@{version}` matches nothing, and the old fallback to the
+repository root commit turned that into "release every package in the workspace".
+
+`--allow-full-history` restores the root-commit range for the case it is actually right
+for — the very first release, before any tag exists. Pin the range with `--from <ref>`
+otherwise.
+
+### Machine release commits are skipped
+
+Commits written by release tooling never contribute a bump or a changelog line. The
+built-in heuristic covers `chore(release): …`, `chore(main): release …`,
+`chore: release v…` and vis's own `release(alpha): …` — so a package whose only commits
+in the range are its own release commits is **not** bumped.
+
+A bare `[skip ci]` / `[ci skip]` marker is **not** part of the heuristic: it means "don't
+run CI", not "don't release", and matching it would silently swallow a real
+`fix: … [skip ci]` along with its patch bump. Opt in with
+`ignoreCommitPattern: ["\\[skip ci\\]"]` if your repo wants the blunt rule.
+
+Subjects are also trimmed to their first line, which matters for multi-semantic-release:
+it writes a literal `\n\n`-joined changelog header into the commit subject, and without
+the trim that header would be transcribed verbatim into the new changelog entry.
+
+Extend the list with [`release.ignoreCommitPattern`](../guides/release.mdx#full-reference),
+or turn the built-ins off with `release.ignoreReleaseCommits: false`.
 
 ---
 
@@ -573,17 +631,53 @@ Force the auto-publish path with `--auto-publish` regardless of channel config.
 ```bash
 vis release ci release
 vis release ci release --auto-publish
+vis release ci release --auto-publish --generate
 ```
 
 **Options**
 
-| Option                   | Type    | Description                                                                    |
-| ------------------------ | ------- | ------------------------------------------------------------------------------ |
-| `--auto-publish`         | boolean | Skip the version-PR; version + publish inline                                  |
-| `--branch <name>`        | string  | Override the version-PR branch (default: `vis-release/version-packages`)       |
-| `--channel <name>`       | string  | Override branch-detected channel                                               |
-| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag checks |
-| `--print-config[=debug]` | string  | Print the resolved release config and exit                                     |
+| Option                   | Type    | Description                                                                          |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------ |
+| `--auto-publish`         | boolean | Skip the version-PR; version + publish inline                                        |
+| `--generate`             | boolean | Derive the change file from commits first (commit-driven repos)                      |
+| `--generate-from <ref>`  | string  | Start ref for `--generate` (e.g. `github.event.before`); default: since last release |
+| `--allow-full-history`   | boolean | With `--generate`: walk everything when no release tag matches (first release only)  |
+| `--branch <name>`        | string  | Override the version-PR branch (default: `vis-release/version-packages`)             |
+| `--channel <name>`       | string  | Override branch-detected channel                                                     |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag checks       |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                           |
+
+### Commit-driven repos: `--generate`
+
+If nobody on your team writes change files and conventional commits are the only source
+of truth, `--generate` turns the whole release into one step:
+
+```yaml
+- run: pnpm exec vis release ci release --auto-publish --generate
+```
+
+It runs [`generate`](#vis-release-generate) in-process before the pending-change-file
+check, using the [`--since-last-release`](#range-resolution) range by default (the
+merge-base default yields an empty range on the release branch itself). Pass
+`--generate-from "${{ github.event.before }}"` to pin the range to the previous CI run
+instead.
+
+If no tag matches `releaseTagPattern`, the command **fails** rather than walking the whole
+history and publishing everything in it — see [Range resolution](#range-resolution).
+`--allow-full-history` is the opt-in for a genuine first release.
+
+The generated file is **staged, never committed on its own** — no throwaway
+`chore(release): record pending vis change file` commit. Staging is what lets the version
+commit later record its deletion (`git add` refuses a path that was never in the index).
+
+The clean-tree guard runs **before** anything is generated, so an aborted run cannot leave
+a file behind that blocks the next one. Under `--generate` it forgives exactly one thing:
+a leftover `ci-<sha>.md` in the change dir from an interrupted earlier run, which is a
+real pending change file and gets released with the rest. Everything else — including a
+hand-written change file that was never committed — still fails, by name.
+
+When the range derives no bumps, the command reports it and falls through to the normal
+"nothing to release" path.
 
 **Tokens**
 

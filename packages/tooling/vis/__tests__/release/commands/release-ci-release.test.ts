@@ -96,7 +96,9 @@ vi.mock(import("../../../src/release/core/git"), async (importOriginal) => {
     return {
         ...actual,
         getCurrentBranch: vi.fn(async () => "main"),
-        hasUncommittedChanges: vi.fn(async () => false),
+        // The fixture writes `vis.config.cjs` after the initial commit, so the
+        // real probe would report a dirty tree and short-circuit the handler.
+        listUncommittedPaths: vi.fn(async () => [] as string[]),
         pushBranch: vi.fn(async () => undefined),
     };
 });

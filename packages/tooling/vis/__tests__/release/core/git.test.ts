@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { defaultTagFor, getCurrentBranch, getCurrentSha, getShortSha, hasUncommittedChanges, tagExists, tagExistsRemote } from "../../../src/release/core/git";
+import { defaultTagFor, getCurrentBranch, getCurrentSha, getShortSha, tagExists, tagExistsRemote } from "../../../src/release/core/git";
 import { MockRunner } from "../../../src/release/core/shell-runner";
 
 describe("git: defaultTagFor", () => {
@@ -94,32 +94,6 @@ describe("git: getCurrentSha + getShortSha", () => {
         });
 
         await expect(getCurrentSha({ cwd: "/r", runner })).resolves.toBeUndefined();
-    });
-});
-
-describe("git: hasUncommittedChanges", () => {
-    it("returns true when porcelain output is non-empty", async () => {
-        expect.hasAssertions();
-
-        const runner = new MockRunner();
-
-        runner.on("git", ["status", "--porcelain"], () => {
-            return { exitCode: 0, stderr: "", stdout: " M foo.ts\n" };
-        });
-
-        await expect(hasUncommittedChanges({ cwd: "/r", runner })).resolves.toBe(true);
-    });
-
-    it("returns false when working tree is clean", async () => {
-        expect.hasAssertions();
-
-        const runner = new MockRunner();
-
-        runner.on("git", ["status", "--porcelain"], () => {
-            return { exitCode: 0, stderr: "", stdout: "" };
-        });
-
-        await expect(hasUncommittedChanges({ cwd: "/r", runner })).resolves.toBe(false);
     });
 });
 
