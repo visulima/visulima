@@ -21,6 +21,7 @@ The release subsystem ships package versions, changelogs, git tags, and registry
 | Override individual bumps before shipping              | [`vis release plan -i`](#vis-release-plan)                |
 | Preview changelog entries without writing              | [`vis release changelog`](#vis-release-changelog)         |
 | Gate that every changed package has a change file      | [`vis release check`](#vis-release-check)                 |
+| See the whole subcommand tree                          | `vis release`                                             |
 | Diagnose a broken setup                                | [`vis release doctor`](#vis-release-doctor)               |
 | Apply pending bumps to disk (run locally — rare)       | [`vis release version`](#vis-release-version)             |
 | Publish to npm (run locally — rare)                    | [`vis release publish`](#vis-release-publish)             |
@@ -287,7 +288,16 @@ vis release check --no-fail            # Warnings only, exit 0
 vis release doctor [flags]
 ```
 
-Run read-only preflight diagnostics: `config-loads`, `workspace-discovered`, `pm-version`, `branch-channel`, `gh-cli-available`, `oidc-available`, and per-package `napi-*` checks (sidecar platforms + version alignment + optionalDependencies wiring).
+Run read-only preflight diagnostics: `config-loads`, `workspace-discovered`, `release-managed-packages`, `pm-version`, `branch-channel`, `gh-cli-available`, `oidc-available`, and per-package `napi-*` checks (sidecar platforms + version alignment + optionalDependencies wiring).
+
+`workspace-discovered` and `release-managed-packages` answer two different questions, and the fix differs:
+
+| Finding                                                       | Severity | What it means                                                                                                                                                                                                              |
+| ------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workspace-discovered: No packages discovered.`               | error    | The package manager's workspace block resolves to nothing — check `pnpm-workspace.yaml` / `package.json#workspaces`.                                                                                                       |
+| `release-managed-packages: No release-managed packages (N …)` | warn     | The workspace resolves fine, but nothing has opted in. Set `release.defaultManaged: true`, or add `"vis-release": { "managed": true }` to a package. Private packages additionally need `release.privatePackages.version`. |
+
+The second is a warning, not an error: adopting `vis release` one package at a time is a supported path, so `doctor` still exits 0 while the workspace is mid-migration.
 
 **When to use.** First port of call when something looks broken. Each check is tagged `error` / `warn` / `info`; exits non-zero on any error.
 
