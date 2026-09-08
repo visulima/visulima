@@ -1,3 +1,13 @@
+## @visulima/storage-client [1.0.3](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.2...@visulima/storage-client@1.0.3) (2026-09-03)
+
+### Bug Fixes
+
+* unbreak the nightly Data Sync job ([#851](https://github.com/visulima/visulima/issues/851)) ([4f94b42](https://github.com/visulima/visulima/commit/4f94b429596b7047cd9b3a2ec2bd9c49caac4a82))
+
+### Build System
+
+* **deps:** refresh catalog and package manifests ([#832](https://github.com/visulima/visulima/issues/832)) ([9b7590d](https://github.com/visulima/visulima/commit/9b7590d6496e633ba2c0681484ae4497eeb824c9))
+
 ## @visulima/storage-client [1.0.2](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage-client%401.0.1...%40visulima%2Fstorage-client%401.0.2) (2026-08-02)
 
 ## @visulima/storage-client [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fstorage-client%401.0.0...%40visulima%2Fstorage-client%401.0.1) (2026-07-26)

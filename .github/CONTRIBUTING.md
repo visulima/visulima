@@ -16,6 +16,7 @@ Here are a few guidelines that will help you along the way.
     -   [Project Setup](#project-setup)
     -   [Contribute Documentation](#contribute-documentation)
     -   [Contribute Code](#contribute-code)
+        -   [Testing policy](#testing-policy)
         -   [Deprecation workflow](#deprecation-workflow)
         -   [Documenting changes for new major versions](#major-version-docs)
         -   [JSDocs](#js-docs)
@@ -222,6 +223,17 @@ Once you've filed the PR:
 -   If the maintainer decides to pass on your PR, they will thank you for the contribution and explain why they won't be accepting the changes. That's ok! We still really appreciate you taking the time to do it, and we don't take that lightly. 💚
 -   If your PR gets accepted, it will be marked as such, and merged into the `main` branch soon after.
     Your contribution will be distributed to the masses with our [release process](#release-process).
+
+### <a name="testing-policy"></a> Testing policy
+
+This project has a standing policy for tests, and it applies to maintainers and outside contributors alike:
+
+-   **Every change that adds or alters behaviour must ship with tests in the same pull request.** That covers new features, new public API surface, new options and bug fixes — a bug fix adds the regression test that fails without the fix.
+-   Tests live next to the package they cover (`packages/<group>/<name>/__tests__`). Locally, `pnpm test` runs the whole workspace and `pnpm run test:affected` runs only what your change touches. CI runs `pnpm run test:affected:coverage` (or `pnpm run test:affected` where coverage is not collected), and a change is not reviewable until that passes.
+-   The only exemptions are changes that cannot meaningfully be tested — documentation, comments, formatting, release chores, and dependency updates that cannot affect behaviour (a lockfile refresh, a tooling-only devDependency bump). An upgrade that changes runtime behaviour is a behaviour change and needs tests like any other. A maintainer may also waive the requirement when a test would be impossible or wildly disproportionate to the change; when that happens the reason is written into the pull request.
+-   Pull requests that add behaviour without tests are labelled `needs-tests` and held until tests arrive.
+
+Coverage is reported to [Codecov](https://app.codecov.io/gh/visulima/visulima) on every pull request, and a drop in coverage on changed lines is treated as a review finding.
 
 ### <a name="deprecation-workflow"></a> Deprecation Workflow
 

@@ -3,7 +3,7 @@
 // @ts-check
 import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { exit } from "node:process";
 
@@ -39,18 +39,29 @@ const affectedProjects = JSON.parse(sliceJson(rawJson));
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootPath = join(__dirname, "..");
 
-const packages = affectedProjects.map((projectName) => {
-    // Ask NX for the actual project root, since project names may not match directory paths
-    const projectJson = JSON.parse(sliceJson(execFileSync("pnpm", ["exec", "nx", "show", "project", projectName, "--json"], { encoding: "utf8" })));
-    const projectRoot = join(rootPath, projectJson.root);
-    const packageJsonPath = join(projectRoot, "package.json");
+const packages = affectedProjects
+    .map((projectName) => {
+        // Ask NX for the actual project root, since project names may not match directory paths
+        const projectJson = JSON.parse(sliceJson(execFileSync("pnpm", ["exec", "nx", "show", "project", projectName, "--json"], { encoding: "utf8" })));
+        const projectRoot = join(rootPath, projectJson.root);
+        const packageJsonPath = join(projectRoot, "package.json");
 
-    if (!existsSync(packageJsonPath)) {
-        throw new Error(`package.json not found at ${packageJsonPath} (project: ${projectName})`);
-    }
+        if (!existsSync(packageJsonPath)) {
+            throw new Error(`package.json not found at ${packageJsonPath} (project: ${projectName})`);
+        }
 
-    return projectRoot;
-});
+        // pkg-pr-new silently skips private packages, so a run whose affected set
+        // is only private ones reaches the registry with nothing to publish and
+        // fails with `No packages` (400). Drop them here instead.
+        if (JSON.parse(readFileSync(packageJsonPath, "utf8")).private === true) {
+            console.log(`Skipping ${projectName}: the package is private`);
+
+            return undefined;
+        }
+
+        return projectRoot;
+    })
+    .filter((projectRoot) => projectRoot !== undefined);
 
 if (packages.length > 0) {
     execFileSync("pnpm", ["exec", "pkg-pr-new", "publish", "--comment=update", "--pnpm", ...packages], { stdio: "inherit" });
