@@ -198,6 +198,24 @@
             },
             "description": "Globs of packages to exclude from release entirely."
         },
+        "ignoreCommitPattern": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "Extra regex source(s) matched against each commit subject by `vis release generate`. A matching commit contributes neither a bump nor a changelog line.\n\nAccepts a single regex source or an array of them (plain strings, not `/…/` literals — the config file is also expressed as JSON in `schemas/vis-release-config.schema.json`). Invalid sources are skipped with a warning rather than failing the release.\n\nThese EXTEND the built-in machine-release-commit heuristic (`chore(release): …`, `chore(main): release …`, `chore: release v…`, `release(alpha): …`). Set `ignoreReleaseCommits: false` to drop the built-ins and match only your own patterns.\n\nA bare `[skip ci]` marker is deliberately not built in — it means \"don't run CI\", not \"don't release\", so matching it would swallow a real `fix: … [skip ci]` and its bump. Opt in with `ignoreCommitPattern: [\"\\\\[skip ci\\\\]\"]` if you want that."
+        },
+        "ignoreReleaseCommits": {
+            "type": "boolean",
+            "description": "Skip machine-authored release commits in `vis release generate`. Default `true`.\n\nWith the default, a package whose only commits in the range are its own `chore(release): pkg@1.2.3 [skip ci]` commits is not bumped, and the previous changelog header those commits carry is never transcribed into the new entry. Set to `false` for the historical (verbatim) behaviour — `ignoreCommitPattern` then becomes the only filter."
+        },
         "include": {
             "type": "array",
             "items": {
