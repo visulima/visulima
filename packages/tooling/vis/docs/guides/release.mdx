@@ -753,7 +753,7 @@ Run it locally before pushing release config changes, or wire it into your pre-m
 | `fixed` / `linked`                                                                                                | `[]`                             | Group rules (locked versions / locked bump levels). Object form opts into a shared changelog                                                                                                  |
 | `ignore` / `include`                                                                                              | `[]`                             | Globs that opt-out / force-include packages                                                                                                                                                   |
 | `privatePackages`                                                                                                 | `{ version: false, tag: false }` | Whether to version / tag `private: true` packages                                                                                                                                             |
-| `changelog`                                                                                                       | `"default"`                      | `false` / `"default"` / `"github"` / `"keep-a-changelog"` / `[path, options]` / `[builtin, options]`                                                                                          |
+| `changelog`                                                                                                       | `"default"`                      | `false` / `"default"` / `"github"` / `"keep-a-changelog"` / `"conventional"` / `[path, options]` / `[builtin, options]` — see [Changelog formatters](#changelog-formatters)                   |
 | `publish.cleanPackageJson`                                                                                        | `true`                           | Strip `scripts`, `devDependencies`, etc. from the published manifest                                                                                                                          |
 | `publish.guards`                                                                                                  | conservative defaults            | Pre-publish gates — see [security audit](./security-audit.mdx)                                                                                                                                |
 | `publish.releaseAssets`                                                                                           | `{}`                             | Post-publish: stamp tarball hashes into the release body and/or upload the tarball                                                                                                            |
@@ -787,6 +787,116 @@ Run it locally before pushing release config changes, or wire it into your pre-m
 | `acknowledgeUnstable`                                                                                             | `false`                          | Suppress the unstable-subsystem warning                                                                                                                                                       |
 
 </details>
+
+### Changelog formatters
+
+`release.changelog` picks how each entry is rendered. Four built-ins ship in the box; every one also takes an options object through the tuple form (`["github", { … }]`).
+
+| Value                | Shape                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| `false`              | No changelog output at all                                                                     |
+| `"default"`          | Plain Markdown — `## <version>` + `<sub><date></sub>`, then a flat bullet list                 |
+| `"github"`           | The same, plus PR / commit / author links and a `Thanks @user!` footer                         |
+| `"keep-a-changelog"` | The [keepachangelog.com](https://keepachangelog.com) 1.1.0 `Added` / `Changed` / … layout      |
+| `"conventional"`     | The `conventional-changelog` / `semantic-release` shape — grouped by commit type, scope bolded |
+
+#### `conventional` — grouping, scopes, and a templated heading
+
+Pick this one when you are migrating a package off `multi-semantic-release` and want the existing `CHANGELOG.md` to keep its shape instead of visibly changing hands mid-file.
+
+```typescript
+export default {
+    release: {
+        changelog: [
+            "conventional",
+            {
+                // owner/name — auto-detected from the git remote when omitted.
+                repo: "acme/monorepo",
+                // Should match `releaseTagPattern` so `{compareUrl}` points at real tags.
+                tagPattern: "{name}@{version}",
+            },
+        ],
+    },
+};
+```
+
+Given `fix(client,react): encode SSR payloads`, `feat(browser): add pdf()` and `chore: bump linter`, it writes:
+
+```text
+## @acme/browser [1.1.0](https://github.com/acme/monorepo/compare/@acme/browser@1.0.0...@acme/browser@1.1.0) (2026-09-08)
+
+### Features
+
+* **browser:** add pdf()
+
+### Bug Fixes
+
+* **client,react:** encode SSR payloads
+```
+
+Note what happened to each part:
+
+- **Grouping.** Entries are bucketed by conventional-commit type and emitted in the order of the `types` table (below). `chore:` is hidden by default, so it is gone.
+- **Scope lifting.** `fix(client,react):` became `**client,react:**`; the type prefix is dropped. A scope-less commit renders as the bare subject.
+- **Heading.** `heading` defaults to `"## {name} [{version}]({compareUrl}) ({date})"`.
+
+#### `types` — section headings per commit type
+
+Same shape as `conventional-changelog-conventionalcommits`' `presetConfig.types`, so a table lifted out of a `.versionrc` works unchanged:
+
+```typescript
+changelog: [
+    "conventional",
+    {
+        types: [
+            { section: "Features", type: "feat" },
+            { section: "Bug Fixes", type: "fix" },
+            { hidden: true, section: "Internal", type: "refactor" },
+        ],
+    },
+];
+```
+
+The default table is the conventional preset plus this repo's extra commit types:
+
+| Type                                        | Section                  | Hidden |
+| ------------------------------------------- | ------------------------ | ------ |
+| `feat`, `feature`                           | Features                 | no     |
+| `fix`                                       | Bug Fixes                | no     |
+| `perf`                                      | Performance Improvements | no     |
+| `revert`                                    | Reverts                  | no     |
+| `deps`                                      | Dependencies             | no     |
+| `docs`                                      | Documentation            | yes    |
+| `style`                                     | Styles                   | yes    |
+| `refactor`                                  | Code Refactoring         | yes    |
+| `test`                                      | Tests                    | yes    |
+| `build`                                     | Build System             | yes    |
+| `ci`                                        | Continuous Integration   | yes    |
+| `chore`                                     | Miscellaneous Chores     | yes    |
+| `dx`, `types`, `wip`, `release`, `workflow` | (per-type)               | yes    |
+| `other`                                     | Other Changes            | no     |
+
+`deps` is the one non-Angular type left **visible**: `multi-semantic-release` already writes a `### Dependencies` section, and hiding it would lose the upgrade trail an adopter reads to answer "which version of X did this release pull in?". Dependency, cascade and group bumps are synthesized as `deps(<pkg>):` entries, so they land there as `* **@acme/fs:** upgraded to 6.0.8`.
+
+**Nothing is silently dropped.** A line that does not parse as conventional — and a line whose type has no rule in the table — lands verbatim under `### Other Changes`. That holds for a table of your own too: leave `feat` and `fix` as the only rules and a `chore:` commit, a plain prose line and a dependency bump still all show up under `### Other Changes` rather than vanishing. Place or rename the bucket with a `{ type: "other", section: "…" }` rule of your own, or hide it explicitly with `{ type: "other", section: "Other Changes", hidden: true }` if you would rather lose them. Breaking changes (`feat!:`, or an inline `BREAKING CHANGE`) are additionally listed under `### ⚠ BREAKING CHANGES`, **even when their own type is hidden** — hiding `chore` never hides a `chore!:`. Set `breakingSection: false` to fold them back into their type section.
+
+#### `heading` — a template for the release heading
+
+Tokens: `{name}`, `{version}`, `{date}`, `{compareUrl}` — the same substitution style as `releaseTagPattern`, and unknown `{tokens}` are left intact so a typo is visible rather than silently empty.
+
+`{compareUrl}` is built from `repo` (or `compareUrlPrefix`, for self-hosted GitLab / Gitea) plus `tagPattern`. When there is nothing to compare against — no remote detected, or a first release with no previous version — the surrounding `[…]({compareUrl})` link syntax is **unwrapped**, so the heading degrades to `## @acme/browser 1.0.0 (2026-09-08)` rather than emitting a dangling `[1.0.0]()`.
+
+Every link — the compare URL, `#123` issue refs, and the `github` formatter's PR / commit refs — is shaped by the **detected remote provider**, not by the formatter's name. On a GitLab remote the same config emits `https://gitlab.com/<group>/<project>/-/compare/…`, `/-/issues/123` and `/-/merge_requests/42`. When the remote can't be detected at all (no `git`, no remote, a failing `gh`), the changelog is rendered as plain text without links rather than guessing.
+
+`heading` also works on `"default"` and `"github"`, and `types` also works on `"github"` — so you can keep the PR / commit / author links and still get grouped, scope-bolded sections:
+
+```typescript
+changelog: ["github", { heading: "## {name} [{version}]({compareUrl}) ({date})", types: [] }];
+```
+
+`types: []` means "use the default table". Both options default to **off** on `default` and `github`: leave them out and those formatters emit exactly what they always did.
+
+`default` spells the same idea `sections` rather than `types`. The rule shape is identical (`{ type, section, hidden? }`) and both run through the same renderer; only the presentation differs, because `sections` predates `types` and its output is pinned: entries keep their `type:` prefix instead of lifting the scope, `feat!:` gets its own `Breaking Changes` section instead of being listed twice, and the catch-all is called `Miscellaneous`. Use `types` on `conventional` / `github` for the conventional-changelog look; keep `sections` if a changelog already written by `default` should carry on unchanged.
 
 ## What's next
 
