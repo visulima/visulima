@@ -665,6 +665,54 @@ Skips the GitHub / GitLab release-creation step while still pushing the git tag,
 
 Both forms parse identically. The gitmoji is stripped from the changelog entry; type/scope/subject parsing is unchanged.
 
+### Fully commit-driven repos
+
+If nobody authors change files and conventional commits alone decide the bumps, wire the
+whole release into one CI step:
+
+```yaml
+# push to the release branch
+- run: pnpm exec vis release ci release --auto-publish --generate
+```
+
+`--generate` derives the change file in-process (defaulting to the range since the last
+release tag), stages it without an extra commit, and publishes. Two behaviours make it
+safe to run over any range:
+
+- **`--since-last-release`** resolves the start ref to the most recent
+  `releaseTagPattern` tag reachable from `HEAD` — workspace-wide, because `generate`
+  produces one change file for one range. If **no** tag matches, the command fails
+  instead of quietly walking the entire history: "no release tag found" is not the same
+  statement as "nothing has ever been released", and treating it as such would bump every
+  package that has ever been touched — `major` for any historical `!` commit — and, on
+  this path, publish them. Pass `--allow-full-history` when that really is what you want
+  (a genuine first release), or pin the range with `--generate-from <ref>`.
+- **Machine release commits are skipped.** `chore(release): pkg@1.2.3 [skip ci]`,
+  `chore(main): release 1.2.3`, `chore: release v1.2.3` and vis's own `release(alpha): …`
+  contribute neither a bump nor a changelog line — so a package whose only commits in the
+  range are its own release commits is not bumped, and the previous changelog header those
+  commits carry is never pasted into the new entry. A bare `[skip ci]` marker is not part
+  of the heuristic (it would swallow a real `fix: … [skip ci]`); opt in with
+  `ignoreCommitPattern: ["\\[skip ci\\]"]`.
+
+Add your own patterns with `release.ignoreCommitPattern` (a regex source, or an array of
+them). They **extend** the built-ins:
+
+```ts
+release: {
+    ignoreCommitPattern: ["^chore\\(deps\\):", "^wip:"],
+}
+```
+
+Set `release.ignoreReleaseCommits: false` to drop the built-in heuristic entirely and
+match only your own patterns.
+
+> **`ignoreCommitPattern` vs `changelog.types[].hidden`.** Both hide commits, at different
+> layers: `ignoreCommitPattern` drops a commit from bump computation entirely (no version
+> bump, no changelog line), while a `hidden: true` entry in the changelog `types` table
+> only omits it from the rendered changelog — the commit still counts towards the bump.
+> Reach for `ignoreCommitPattern` when the commit should not cause a release at all.
+
 ### Bootstrapping the first release
 
 For brand-new packages with no published history, vis doesn't know what "previous" looks like. Use `--first-release` to bootstrap:
@@ -741,6 +789,8 @@ Run it locally before pushing release config changes, or wire it into your pre-m
 | Option                                                                                                            | Default                          | What it controls                                                                                                                                                                              |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `baseBranch`                                                                                                      | `"main"`                         | Baseline ref for `status` / `generate` / merge-base detection                                                                                                                                 |
+| `ignoreCommitPattern`                                                                                             | —                                | Extra regex source(s) whose matching commit subjects `generate` skips. Extends the built-in release-commit heuristic                                                                          |
+| `ignoreReleaseCommits`                                                                                            | `true`                           | Skip machine-authored release commits (`chore(release): …`, `chore(main): release …`, `release(…): …`) in `generate`. Set `false` to opt out                                                  |
 | `changesDir`                                                                                                      | `".vis/release"`                 | Where change files live                                                                                                                                                                       |
 | `access`                                                                                                          | `"public"`                       | Default npm `--access`                                                                                                                                                                        |
 | `defaultManaged`                                                                                                  | `false`                          | Whether unconfigured packages are released by default                                                                                                                                         |
