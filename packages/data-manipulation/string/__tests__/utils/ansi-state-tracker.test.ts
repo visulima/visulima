@@ -110,4 +110,145 @@ describe(AnsiStateTracker, () => {
 
         expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[39m${ESC}[49m`);
     });
+
+    it("tracks a compound sequence as separate attributes", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        // chalk and friends collapse styles into one sequence; a single-parameter pattern sees
+        // nothing here and drops the styling entirely.
+        tracker.processEscape(`${ESC}[1;31m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[31m${ESC}[1m`);
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[22m${ESC}[39m`);
+    });
+
+    it("tracks 256-colour foreground and background", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(`${ESC}[38;5;196m`);
+        tracker.processEscape(`${ESC}[48;5;21m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[48;5;21m${ESC}[38;5;196m`);
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[39m${ESC}[49m`);
+    });
+
+    it("tracks truecolour foreground without mistaking its parameters for attributes", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        // Splitting on ";" alone would read 2, 255, 0 and 0 as four separate attributes.
+        tracker.processEscape(`${ESC}[38;2;255;0;0m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[38;2;255;0;0m`);
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[39m`);
+    });
+
+    it("tracks a truecolour run mixed with attributes in one sequence", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(`${ESC}[1;38;2;10;20;30;48;5;9;4m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[48;5;9m${ESC}[38;2;10;20;30m${ESC}[1m${ESC}[4m`);
+    });
+
+    it("accepts the sub-parameter colour spelling", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(`${ESC}[38:2::10:20:30m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[38:2::10:20:30m`);
+    });
+
+    it("replaces rather than stacks a repeated attribute", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(BOLD);
+        tracker.processEscape(BOLD);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(BOLD);
+        // One 22 closes bold once — a duplicate would leave a stray reset behind.
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[22m`);
+    });
+
+    it("clears bold and dim with the single reset they share", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(BOLD);
+        tracker.processEscape(`${ESC}[2m`);
+        tracker.processEscape(`${ESC}[22m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe("");
+    });
+
+    it("ignores a non-SGR CSI sequence", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(RED);
+        tracker.processEscape(`${ESC}[1D`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(RED);
+    });
+
+    it("treats an empty parameter list as a full reset", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(RED);
+        // ECMA-48: an omitted parameter defaults to 0.
+        tracker.processEscape(`${ESC}[m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe("");
+    });
+
+    it("tracks the underline colour separately from the foreground", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        tracker.processEscape(RED);
+        tracker.processEscape(`${ESC}[58;5;42m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[31m${ESC}[58;5;42m`);
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[59m${ESC}[39m`);
+    });
+
+    it("reads the mixed `38;2:r:g:b` spelling as one colour", () => {
+        expect.assertions(2);
+
+        const tracker = new AnsiStateTracker();
+
+        // The selector arrives inside the colon token, so nothing after `38` is a separate
+        // attribute. Consuming none of it stored a bare `CSI 38 m` and read the leading 2 as dim.
+        tracker.processEscape(`${ESC}[38;2:255:0:0m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe(`${ESC}[38;2:255:0:0m`);
+        expect(tracker.getEndEscapesForAllActiveAttributes()).toBe(`${ESC}[39m`);
+    });
+
+    it("ignores a bare extended-colour introducer", () => {
+        expect.assertions(1);
+
+        const tracker = new AnsiStateTracker();
+
+        // `CSI 38 m` names no colour; reopening it on the next line writes a malformed sequence.
+        tracker.processEscape(`${ESC}[38m`);
+
+        expect(tracker.getStartEscapesForAllActiveAttributes()).toBe("");
+    });
 });

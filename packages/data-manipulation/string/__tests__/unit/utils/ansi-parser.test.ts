@@ -200,6 +200,33 @@ describe(processAnsiString, () => {
                 expect(segment.isGrapheme).toBe(true);
             });
         });
+
+        it("should keep reading sequences after an astral character", () => {
+            expect.assertions(2);
+
+            const segments: (AnsiSegment | HyperlinkSegment)[] = [];
+            // The emoji is one code point but two UTF-16 units. Reading the SGR sequence at the
+            // code-point offset lands mid-emoji, the sequence reads as truncated, and everything
+            // after it becomes a single zero-width escape segment that width accounting skips.
+            const text = "😀\u001B[31mred\u001B[39m";
+
+            processAnsiString(text, {
+                getWidth: (string_) => string_.length,
+                onSegment: (segment) => {
+                    segments.push(segment);
+
+                    return true;
+                },
+            });
+
+            expect(
+                segments
+                    .filter((segment) => !segment.isEscapeSequence)
+                    .map((segment) => (segment as AnsiSegment).text)
+                    .join(""),
+            ).toBe("😀red");
+            expect(segments.filter((segment) => segment.isEscapeSequence).map((segment) => (segment as AnsiSegment).text)).toStrictEqual(["\u001B[31m", "\u001B[39m"]);
+        });
     });
 
     describe("error handling", () => {
