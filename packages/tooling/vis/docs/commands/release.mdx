@@ -57,6 +57,8 @@ vis release init --from-changesets
 vis release init --fresh
 vis release init --dry-run
 vis release init --from-semantic-release --apply
+vis release init --from-semantic-release --apply --packages '@scope/a,@scope/b'
+vis release init --from-semantic-release --apply --cutover --yes
 vis release init --workflows
 ```
 
@@ -66,6 +68,38 @@ vis release init --workflows
 2. Creates `.vis/release/` with a sample change file and `.gitignore` entries.
 3. With `--workflows`, generates a GitHub Actions or GitLab CI workflow for the active provider.
 
+**A semantic-release migration previews by default.** Without `--apply` the run writes nothing at all — not the scaffold, not the ignore
+files, not the config — it only prints what `--apply` would do. (`--fresh` and the changesets / bumpy lanes still scaffold straight away;
+only the semantic-release lane waits for `--apply`.)
+
+**And `--apply` itself is incremental.** It scaffolds `.vis/release/`, writes the ignore-file entries and the `vis.config.ts` `release`
+block — and stops there. It never deletes a `.releaserc.*` and never marks a `package.json` managed on its own:
+
+| Flag               | What `--apply` additionally writes                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| _(none)_           | Nothing. `.releaserc.*` files and manifests stay exactly as they are (RFC §17.1 per-package transition) |
+| `--packages <csv>` | `"vis-release": { "managed": true }` on the listed packages only; their `.releaserc.*` stay in place    |
+| `--cutover`        | Marks **every** detected package managed and deletes **every** migrated `.releaserc.*` (RFC Phase 6)    |
+
+`--cutover` also flips the generated config to `defaultManaged: true`, since after a cutover every package is managed by vis. `--dry-run`
+previews exactly the run the same flags would perform, listing each deletion and manifest edit up front.
+
+Because `--cutover` deletes files, it asks before it does: an interactive shell gets a confirm prompt (defaulting to no), and a
+non-interactive one is **refused** unless you pass `--yes`. Two things stop it outright rather than half-migrating the repo:
+
+- the `vis.config.ts` `release` block could not be written (no `defineConfig({` or `export default {` to inject into, or its object literal
+  never closes) — deleting every `.releaserc.*` then would leave the repo with no release config at all, so the run exits non-zero and
+  touches nothing. A config that already declares a root `release` property is fine and the cutover proceeds; that property is looked for
+  structurally, so a commented-out `release:`, one inside a string, and one nested under another key do **not** count as configuration;
+- a `package.json` marked `private: true` is never opted into `vis-release.managed` — a private root or app is not publishable. Its
+  `.releaserc.*` is still removed by the cutover.
+
+Manifest edits keep the file's own indentation and trailing-newline style, so opting a 2-space `package.json` in is a one-line diff.
+
+Discovery stays inside the workspace: the walk over `packages/` and `apps/` never descends through a symlinked directory, so a cutover
+cannot delete a `.releaserc.*` that lives outside the repo. A file the command cannot read (a permissions failure, a directory in a file's
+place) aborts the run rather than being treated as absent and overwritten, and no write follows a symlink planted at its target.
+
 **Options**
 
 | Option                     | Type    | Description                                                                                                               |
@@ -74,8 +108,10 @@ vis release init --workflows
 | `--from-changesets`        | boolean | Force migration from changesets                                                                                           |
 | `--from-bumpy`             | boolean | Force migration from bumpy                                                                                                |
 | `--fresh`                  | boolean | Skip migration; start clean                                                                                               |
-| `--dry-run`                | boolean | Print what would happen without writing files (default for migration runs)                                                |
-| `--apply`                  | boolean | Actually perform the migration writes (opt out of the implicit dry-run)                                                   |
+| `--dry-run`                | boolean | Print what would happen without writing files (implicit for a semantic-release migration)                                 |
+| `--apply`                  | boolean | Actually perform the writes (opt out of the implicit dry-run). Non-destructive on its own                                 |
+| `--cutover`                | boolean | Full cutover (Phase 6): mark every detected package managed and delete every migrated `.releaserc.*`                      |
+| `--packages <csv>`         | string  | Opt only these packages into `vis-release.managed` — names or workspace-relative dirs (`@scope/a,packages/b`)             |
 | `--yes`, `-y`              | boolean | Auto-confirm prompts (CI-safe)                                                                                            |
 | `--workflows`              | boolean | Generate CI workflow files for the active provider                                                                        |
 | `--package-manager <name>` | string  | Override the package manager used in generated workflows (npm / pnpm / yarn / bun)                                        |

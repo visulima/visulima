@@ -15,229 +15,173 @@
  *     pending staged-publish ids across CI runs (see RFC §13.6 + the
  *     staged-publishing guide).
  *     Print snippet for vis.config.ts release block
- *   - Semantic-release reader: walk root + per-package .releaserc.json,
- *     map branches → channels, print TODO list
- *   - `--apply` (semantic-release path only, for now): write the
- *     suggested `vis.config.ts` block, opt every detected package into
- *     `vis-release.managed = true`, and delete migrated `.releaserc.*`
- *     files. `--dry-run` takes precedence and short-circuits the writes.
+ *   - Semantic-release reader + migration (see `./semantic-release.ts`):
+ *     `--apply` is deliberately NON-destructive — no `package.json` is marked
+ *     managed and no `.releaserc.*` is deleted unless the operator opts in
+ *     with `--packages &lt;a,b>` (per-package, RFC §17.1) or `--cutover` (all of
+ *     them, Phase 6, behind a confirmation). `--dry-run` takes precedence and
+ *     short-circuits the writes (issue #862).
+ *
+ * A semantic-release migration previews by default: without `--apply` the
+ * whole run — scaffold, ignore files, husky, workflows and the migration
+ * itself — only describes what it would do. The alternative is a run whose
+ * output says "would" while half of it has already happened.
  *
  * Future (M10 follow-on):
  *   - Changesets reader: copy .changeset/*.md verbatim, map config.json
  *   - Husky integration prompt
- *   - --remove-releaserc flag (Phase 6)
  */
 
-import { access, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import { fileExists, isNotFoundError, readTextFile, writeFileNoFollow } from "./fs-helpers";
 import type { ReleaseInitOptions } from "./index";
+import type { InitLogger } from "./semantic-release";
+import { hasSemanticReleaseConfig, migrateFromSemanticRelease } from "./semantic-release";
 
 type Source = "semantic-release" | "changesets" | "bumpy" | "fresh";
 
-const fileExists = async (path: string): Promise<boolean> => {
-    try {
-        await access(path);
-
-        return true;
-    } catch {
-        return false;
-    }
-};
-
-const detectSource = async (cwd: string): Promise<Source> => {
-    if (await fileExists(join(cwd, ".changeset"))) {
+const detectSource = async (fs: CerebroFs, cwd: string): Promise<Source> => {
+    if (await fileExists(fs, join(cwd, ".changeset"))) {
         return "changesets";
     }
 
-    if (await fileExists(join(cwd, ".bumpy"))) {
+    if (await fileExists(fs, join(cwd, ".bumpy"))) {
         return "bumpy";
     }
 
-    // Find any .releaserc.* at the repo root or under packages/ + apps/.
-    const hasSemanticRelease = async (): Promise<boolean> => {
-        for (const name of [".releaserc.json", ".releaserc.cjs", ".releaserc.js"]) {
-            if (await fileExists(join(cwd, name))) {
-                return true;
-            }
-        }
-
-        const queue: string[] = [join(cwd, "packages"), join(cwd, "apps")];
-
-        while (queue.length > 0) {
-            const dir = queue.shift()!;
-
-            let entries;
-
-            try {
-                entries = await readdir(dir, { withFileTypes: true });
-            } catch {
-                continue;
-            }
-
-            for (const entry of entries) {
-                if (entry.isDirectory()) {
-                    // Match findReleaseRcFiles' guards: node_modules + dotfile
-                    // dirs are huge attractors for the queue-size bail.
-                    if (entry.name === "node_modules" || entry.name.startsWith(".")) {
-                        continue;
-                    }
-
-                    queue.push(join(dir, entry.name));
-                } else if (entry.name === ".releaserc.json" || entry.name === ".releaserc.cjs" || entry.name === ".releaserc.js") {
-                    return true;
-                }
-            }
-
-            if (queue.length > 200) {
-                // safety: bail if we're walking a huge tree
-                break;
-            }
-        }
-
-        return false;
-    };
-
-    if (await hasSemanticRelease()) {
+    if (await hasSemanticReleaseConfig(fs, cwd)) {
         return "semantic-release";
     }
 
     return "fresh";
 };
 
-const findReleaseRcFiles = async (cwd: string): Promise<string[]> => {
-    const out: string[] = [];
-
-    for (const name of [".releaserc.json", ".releaserc.cjs", ".releaserc.js"]) {
-        const root = join(cwd, name);
-
-        if (await fileExists(root)) {
-            out.push(root);
-        }
-    }
-
-    const queue: string[] = [join(cwd, "packages"), join(cwd, "apps")];
-    let count = 0;
-
-    while (queue.length > 0 && count < 5000) {
-        const dir = queue.shift()!;
-
-        count += 1;
-
-        let entries;
-
-        try {
-            entries = await readdir(dir, { withFileTypes: true });
-        } catch {
-            continue;
-        }
-
-        for (const entry of entries) {
-            const path = join(dir, entry.name);
-
-            if (entry.isDirectory()) {
-                // Skip node_modules + dotfile dirs only — never skip the
-                // `.releaserc.*` files themselves (they start with a dot too).
-                if (entry.name === "node_modules" || entry.name.startsWith(".")) {
-                    continue;
-                }
-
-                queue.push(path);
-            } else if (entry.name === ".releaserc.json" || entry.name === ".releaserc.cjs" || entry.name === ".releaserc.js") {
-                out.push(path);
-            }
-        }
-    }
-
-    return out;
-};
-
-interface ReleaseRcFile {
-    branches?: unknown;
-    extends?: string;
-    path: string;
-    plugins?: unknown[];
-}
-
-const readReleaseRc = async (path: string): Promise<ReleaseRcFile | undefined> => {
-    if (!path.endsWith(".json")) {
-        // Skip .cjs/.js — would need to require/import; out of scope for M10 first cut.
-        return { path };
-    }
-
-    try {
-        const content = await readFile(path, "utf8");
-        const parsed = JSON.parse(content) as { branches?: unknown; extends?: unknown; plugins?: unknown };
-
-        return {
-            branches: parsed.branches,
-            extends: typeof parsed.extends === "string" ? parsed.extends : undefined,
-            path,
-            plugins: Array.isArray(parsed.plugins) ? parsed.plugins : undefined,
-        };
-    } catch {
+/**
+ * Comma-separated `--packages` value → trimmed entry list. Entries are
+ * matched against a manifest `name` OR its workspace-relative directory,
+ * so a scoped package name and `packages/b` both work.
+ */
+const parsePackageSelection = (raw: string | undefined): string[] | undefined => {
+    if (typeof raw !== "string") {
         return undefined;
     }
+
+    const entries = raw
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0);
+
+    return entries.length > 0 ? entries : undefined;
 };
 
-interface BranchEntry {
-    channel?: string;
-    name: string;
-    prerelease?: boolean | string;
+/** An ignore file `init` keeps a managed block of entries in. */
+interface IgnoreFileScaffold {
+    entries: string[];
+    /** Comment written above the entries so the block explains itself. */
+    header: string;
+    /** Display name used in the log lines. */
+    label: string;
+    path: string;
 }
 
-const normaliseBranches = (raw: unknown): BranchEntry[] => {
-    if (!Array.isArray(raw)) {
-        return [];
+/**
+ * The rules an ignore file already declares, one normalised line each.
+ *
+ * Whole lines, not substrings: `existing.includes(".vis/release/.lock")` is
+ * also satisfied by a commented-out `# .vis/release/.lock` and by a longer
+ * path that merely contains it, and either one suppresses the real rule —
+ * leaving the state and lock files tracked, and letting secretlint walk
+ * `.vis/release/**`.
+ */
+const ignoreFileRules = (source: string): Set<string> =>
+    new Set(
+        source
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0),
+    );
+
+/** Append the missing `entries` to an ignore file, creating it when absent. */
+const upsertIgnoreEntries = async (fs: CerebroFs, dryRun: boolean, scaffold: IgnoreFileScaffold, logger: InitLogger): Promise<void> => {
+    const { entries, header, label, path } = scaffold;
+    const existing = await readTextFile(fs, path);
+    const declared = existing === undefined ? undefined : ignoreFileRules(existing);
+    const missing = declared === undefined ? entries : entries.filter((entry) => !declared.has(entry.trim()));
+
+    if (missing.length === 0) {
+        return;
     }
 
-    return raw
-        .map((entry): BranchEntry | undefined => {
-            if (typeof entry === "string") {
-                return { name: entry };
-            }
+    if (dryRun) {
+        logger.info(`[dry-run] would add to ${label}:\n${missing.map((entry) => `    ${entry}`).join("\n")}`);
 
-            if (typeof entry === "object" && entry !== null && typeof (entry as { name?: unknown }).name === "string") {
-                const e = entry as { channel?: string; name: string; prerelease?: boolean | string };
+        return;
+    }
 
-                return { channel: e.channel, name: e.name, prerelease: e.prerelease };
-            }
+    if (existing === undefined) {
+        await writeFileNoFollow(fs, path, `${header}\n${missing.join("\n")}\n`);
+        logger.info(`Created ${label}.`);
 
-            return undefined;
-        })
-        .filter((b): b is BranchEntry => b !== undefined);
+        return;
+    }
+
+    await writeFileNoFollow(fs, path, `${existing.replace(/\n*$/, "\n")}\n${header}\n${missing.join("\n")}\n`);
+    logger.info(`Updated ${label}.`);
 };
 
-const renderChannelsFromBranches = (branches: BranchEntry[]): Record<string, { mode?: string; prerelease?: string; tag: string }> => {
-    const channels: Record<string, { mode?: string; prerelease?: string; tag: string }> = {};
+/**
+ * `--agent`: scaffold the AGENTS.md guidance so AI agents author change files
+ * instead of hand-bumping versions.
+ */
+const scaffoldAgentsSection = async (fs: CerebroFs, cwd: string, dryRun: boolean, logger: InitLogger): Promise<void> => {
+    const { upsertAgentSection } = await import("../../../release/core/agent-instructions");
+    const agentsPath = join(cwd, "AGENTS.md");
+    let existing: string | undefined;
 
-    for (const branch of branches) {
-        const cfg: { mode?: string; prerelease?: string; tag: string } = { tag: "latest" };
-
-        if (typeof branch.prerelease === "string") {
-            cfg.prerelease = branch.prerelease;
-            cfg.tag = branch.prerelease;
-            cfg.mode = "auto-publish";
-        } else if (branch.prerelease === true) {
-            cfg.prerelease = branch.name;
-            cfg.tag = branch.name;
-            cfg.mode = "auto-publish";
-        } else {
-            cfg.tag = branch.channel ?? (branch.name === "main" || branch.name === "master" ? "latest" : branch.name);
-            cfg.mode = "version-pr";
+    try {
+        existing = await fs.readFile(agentsPath, "utf8");
+    } catch (error) {
+        // Only a missing file is a "create from scratch" signal. Any other
+        // read failure (EACCES, EISDIR, …) must surface — otherwise the
+        // write below would clobber an existing-but-unreadable AGENTS.md,
+        // dropping content outside the managed block.
+        if (!isNotFoundError(error)) {
+            throw error;
         }
 
-        channels[branch.name] = cfg;
+        existing = undefined;
     }
 
-    return channels;
+    const { changed, content } = upsertAgentSection(existing);
+
+    if (!changed) {
+        logger.info("AGENTS.md already up to date.");
+    } else if (dryRun) {
+        logger.info(`[dry-run] would ${existing ? "update" : "create"} AGENTS.md with the 'Releasing with vis' section`);
+    } else {
+        await writeFileNoFollow(fs, agentsPath, content);
+        logger.info(`${existing ? "Updated" : "Created"} AGENTS.md.`);
+    }
 };
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseInitOptions>): Promise<void> => {
+const printNextSteps = (logger: InitLogger): void => {
+    logger.info("");
+    logger.info("Next steps:");
+    logger.info("  1. Add the `release: { ... }` block above to your vis.config.ts");
+    logger.info("  2. Author your first change file: vis release add");
+    logger.info("  3. Preview the plan: vis release status");
+    logger.info("  4. Apply: vis release version --dry-run");
+};
+
+const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, ReleaseInitOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const dryRun = options.dryRun === true;
+    const cutover = options.cutover === true;
+    const autoYes = options.yes === true;
+    const selection = parsePackageSelection(options.packages);
     let apply = options.apply === true;
 
     // Dry-run takes precedence over --apply; warn the operator so they don't
@@ -245,6 +189,13 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     if (dryRun && apply) {
         logger.warn("--apply is ignored because --dry-run is set (dry-run takes precedence).");
         apply = false;
+    }
+
+    // `--cutover` already opts every detected package in, so a narrower
+    // `--packages` list can only be a mistake — say so instead of silently
+    // widening the operator's selection.
+    if (cutover && selection !== undefined) {
+        logger.warn("--packages is ignored because --cutover opts every detected package in.");
     }
 
     let source: Source;
@@ -258,120 +209,86 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     } else if (options.fresh) {
         source = "fresh";
     } else {
-        source = await detectSource(cwd);
+        source = await detectSource(fs, cwd);
     }
 
     logger.info(`Detected source: ${source}`);
+
+    if ((cutover || selection !== undefined) && source !== "semantic-release") {
+        logger.warn("`--cutover` / `--packages` only affect the semantic-release migration path.");
+    }
+
+    // The semantic-release lane previews by default — without `--apply` it
+    // describes its writes instead of performing them. Every other write in
+    // this run has to make the same call, or a plain
+    // `vis release init --from-semantic-release` half-migrates: it really
+    // creates `.vis/release/` and rewrites the ignore files while the lane
+    // below only says what it *would* do. One decision, one run (issue #862).
+    const previewOnly = dryRun || (source === "semantic-release" && !apply);
+
+    if (previewOnly && !dryRun) {
+        logger.info("Preview only — a semantic-release migration writes nothing without `--apply`.");
+    }
+
     logger.info("");
 
     // 1) Always: scaffold .vis/release/ + .gitignore line
     const changesDir = join(cwd, ".vis", "release");
-    const stateEntry = ".vis/release/.state.json";
-    const lockEntry = ".vis/release/.lock";
-    const gitignorePath = join(cwd, ".gitignore");
 
-    if (dryRun) {
+    if (previewOnly) {
         logger.info(`[dry-run] would create directory: ${changesDir}`);
-        logger.info(`[dry-run] would append to .gitignore:\n    ${stateEntry}\n    ${lockEntry}`);
     } else {
-        await mkdir(changesDir, { recursive: true });
+        await fs.mkdir(changesDir, { recursive: true });
         logger.info(`Created ${relative(cwd, changesDir)}/`);
-
-        try {
-            const existing = await readFile(gitignorePath, "utf8");
-            const missing: string[] = [];
-
-            if (!existing.includes(stateEntry)) {
-                missing.push(stateEntry);
-            }
-
-            if (!existing.includes(lockEntry)) {
-                missing.push(lockEntry);
-            }
-
-            if (missing.length > 0) {
-                await writeFile(gitignorePath, `${existing.replace(/\n*$/, "\n")}\n# vis release subsystem\n${missing.join("\n")}\n`);
-                logger.info("Updated .gitignore.");
-            }
-        } catch {
-            await writeFile(gitignorePath, `# vis release subsystem\n${stateEntry}\n${lockEntry}\n`);
-            logger.info("Created .gitignore.");
-        }
     }
 
-    // 1a) Optional: scaffold AGENTS.md guidance (`--agent`) so AI agents know
-    // how to author change files instead of hand-bumping versions.
+    await upsertIgnoreEntries(
+        fs,
+        previewOnly,
+        {
+            entries: [".vis/release/.state.json", ".vis/release/.lock"],
+            header: "# vis release subsystem",
+            label: ".gitignore",
+            path: join(cwd, ".gitignore"),
+        },
+        logger,
+    );
+
+    // 1a) Optional: AGENTS.md guidance (`--agent`).
     if (options.agent) {
-        const { upsertAgentSection } = await import("../../../release/core/agent-instructions");
-        const agentsPath = join(cwd, "AGENTS.md");
-        let existing: string | undefined;
-
-        try {
-            existing = await readFile(agentsPath, "utf8");
-        } catch (error) {
-            // Only a missing file is a "create from scratch" signal. Any other
-            // read failure (EACCES, EISDIR, …) must surface — otherwise the
-            // write below would clobber an existing-but-unreadable AGENTS.md,
-            // dropping content outside the managed block.
-            if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-                throw error;
-            }
-
-            existing = undefined;
-        }
-
-        const { changed, content } = upsertAgentSection(existing);
-
-        if (!changed) {
-            logger.info("AGENTS.md already up to date.");
-        } else if (dryRun) {
-            logger.info(`[dry-run] would ${existing ? "update" : "create"} AGENTS.md with the 'Releasing with vis' section`);
-        } else {
-            await writeFile(agentsPath, content);
-            logger.info(`${existing ? "Updated" : "Created"} AGENTS.md.`);
-        }
+        await scaffoldAgentsSection(fs, cwd, previewOnly, logger);
     }
 
     // 1b) secretlintignore for change files (RFC §20.3). Author-handle
     // patterns (`@danielbannert`) in change-file bodies false-positive on some
     // secretlint rules; ignore the directory so the pre-commit hook stays
     // green.
-    const secretlintEntry = ".vis/release/**";
-    const secretlintignorePath = join(cwd, ".secretlintignore");
-
-    if (dryRun) {
-        logger.info(`[dry-run] would add to .secretlintignore:\n    ${secretlintEntry}`);
-    } else {
-        try {
-            const existing = await readFile(secretlintignorePath, "utf8");
-
-            if (!existing.includes(secretlintEntry)) {
-                await writeFile(
-                    secretlintignorePath,
-                    `${existing.replace(/\n*$/, "\n")}\n# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`,
-                );
-                logger.info("Updated .secretlintignore.");
-            }
-        } catch {
-            await writeFile(secretlintignorePath, `# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`);
-            logger.info("Created .secretlintignore.");
-        }
-    }
+    await upsertIgnoreEntries(
+        fs,
+        previewOnly,
+        {
+            entries: [".vis/release/**"],
+            header: "# vis release change files (author handles false-positive secretlint)",
+            label: ".secretlintignore",
+            path: join(cwd, ".secretlintignore"),
+        },
+        logger,
+    );
 
     // 2) Source-specific migration
     switch (source) {
         case "bumpy": {
-            await migrateFromBumpy(cwd, dryRun, logger);
+            await migrateFromBumpy(fs, cwd, previewOnly, logger);
 
             break;
         }
         case "changesets": {
-            await migrateFromChangesets(cwd, dryRun, logger);
+            await migrateFromChangesets(fs, cwd, previewOnly, logger);
 
             break;
         }
         case "semantic-release": {
-            await migrateFromSemanticRelease(cwd, dryRun, apply, logger);
+            await migrateFromSemanticRelease(fs, cwd, { apply, autoYes, cutover, dryRun: previewOnly, selection }, logger);
 
             break;
         }
@@ -381,270 +298,84 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     }
 
     // 3) Optional husky integration (RFC §22.5)
-    await offerHuskyWiring(cwd, dryRun, options.yes === true, logger);
+    await offerHuskyWiring(fs, cwd, previewOnly, autoYes, logger);
 
     // 4) Optional CI workflow generation
-    await offerWorkflowGeneration(cwd, dryRun, options, logger);
+    await offerWorkflowGeneration(fs, cwd, previewOnly, options, logger);
 
-    logger.info("");
-    logger.info("Next steps:");
-    logger.info("  1. Add the `release: { ... }` block above to your vis.config.ts");
-    logger.info("  2. Author your first change file: vis release add");
-    logger.info("  3. Preview the plan: vis release status");
-    logger.info("  4. Apply: vis release version --dry-run");
-};
-
-const migrateFromSemanticRelease = async (
-    cwd: string,
-    _dryRun: boolean,
-    apply: boolean,
-    logger: Toolbox<Console, ReleaseInitOptions>["logger"],
-): Promise<void> => {
-    const rcFiles = await findReleaseRcFiles(cwd);
-
-    logger.info(`Found ${rcFiles.length} .releaserc file(s).`);
-
-    if (rcFiles.length === 0) {
-        return;
-    }
-
-    let mergedBranches: BranchEntry[] = [];
-    let nativeAddonCount = 0;
-
-    for (const path of rcFiles) {
-        const rc = await readReleaseRc(path);
-
-        if (!rc) {
-            continue;
-        }
-
-        if (rc.branches) {
-            mergedBranches = [...mergedBranches, ...normaliseBranches(rc.branches)];
-        }
-
-        if (rc.plugins?.some((p) => typeof p === "string" && p.includes("native-addons"))) {
-            nativeAddonCount += 1;
-        }
-
-        if (rc.plugins?.some((p) => Array.isArray(p) && typeof p[0] === "string" && p[0].includes("native-addons"))) {
-            nativeAddonCount += 1;
-        }
-    }
-
-    // Deduplicate branches by name (keep first-seen)
-    const seen = new Set<string>();
-    const dedupedBranches = mergedBranches.filter((b) => {
-        if (seen.has(b.name)) {
-            return false;
-        }
-
-        seen.add(b.name);
-
-        return true;
-    });
-
-    const channels
-        = dedupedBranches.length > 0
-            ? renderChannelsFromBranches(dedupedBranches)
-            : { alpha: { mode: "auto-publish", prerelease: "alpha", tag: "alpha" }, main: { mode: "version-pr", tag: "latest" } };
-
-    logger.info("");
-    logger.info("Suggested vis.config.ts release block (paste into your existing config):");
-    logger.info("");
-
-    const channelsRendered = Object.entries(channels)
-        .map(([name, cfg]) => `        ${JSON.stringify(name)}: ${JSON.stringify(cfg)},`)
-        .join("\n");
-
-    const block = `    release: {
-        baseBranch: "main",
-        defaultManaged: false, // flip to true after Phase 6
-        channels: {
-${channelsRendered}
-        },
-        publish: {
-            packManager: "auto",
-            publishStrategy: "npm-publish-tarball",
-            publishArgs: ["--provenance"],
-            protocolResolution: "pack",
-            catalogResolution: "auto",
-            cleanPackageJson: true,
-        },
-        gitUser: { name: "release-bot", email: "release-bot@example.com" },
-    },`;
-
-    logger.info(block);
-    logger.info("");
-
-    if (nativeAddonCount > 0) {
-        logger.info(`Found ${nativeAddonCount} package(s) using a NAPI native-addons plugin.`);
-        logger.info("These will auto-detect via the `napi` field in package.json — no config needed.");
-        logger.info("");
-    }
-
-    logger.info("Migration is per-package opt-in (RFC §17.1). For each package you want to migrate:");
-    logger.info("  1. Add to its package.json:  \"vis-release\": { \"managed\": true }");
-    logger.info("  2. Backfill any missing git tags so already-published detection works.");
-    logger.info("  3. Add to multi-semantic-release's --ignore-packages list in your release workflow.");
-    logger.info("");
-
-    if (!apply) {
-        logger.info("Existing .releaserc.json files are kept in place during transition (deleted in Phase 6).");
-        logger.info("Re-run with `--apply` to perform the writes automatically.");
-
-        return;
-    }
-
-    // --apply path: actually perform the migration writes.
-    logger.info("");
-    logger.info("Applying migration writes (--apply set)…");
-
-    await applySemanticReleaseMigration(cwd, rcFiles, block, logger);
-
-    logger.info("");
-    logger.info("Migration writes complete. Follow-up steps you still need to do manually:");
-    logger.info(
-        "  - Update your CI workflow: remove `multi-semantic-release` step, add `vis release ci/release` step (see `.github/workflows/vis-release.yml` example in the vis package)",
-    );
-    logger.info("  - Run `pnpm install` to drop semantic-release deps once you remove them from root package.json");
-    logger.info("  - Run `vis release doctor` to verify the migration");
+    printNextSteps(logger);
 };
 
 /**
- * Execute the migration writes for `--apply`:
- *   1. Write/merge `vis.config.ts` at the repo root with the suggested
- *      `release: { … }` block.
- *   2. Add `"vis-release": { "managed": true }` to each detected
- *      package's `package.json` (a package counts as "detected" iff it
- *      has a sibling `.releaserc.*` file).
- *   3. Delete the migrated `.releaserc.*` files.
- *
- * Uses `node:fs/promises` only (no extra deps). JSON writes preserve a
- * 4-space indent + trailing newline to match the rest of the monorepo's
- * package.json style. `vis.config.ts` generation uses a template literal
- * rather than a TS-AST library (see lane constraints).
+ * Copy the pending `*.md` change files out of a legacy tool's directory into
+ * `.vis/release/`. The frontmatter format is compatible, so this is a verbatim
+ * copy that never clobbers a file the operator already authored.
  */
-const applySemanticReleaseMigration = async (
+const copyPendingChangeFiles = async (
+    fs: CerebroFs,
     cwd: string,
-    rcFiles: string[],
-    releaseBlock: string,
-    logger: Toolbox<Console, ReleaseInitOptions>["logger"],
-): Promise<void> => {
-    // 1) vis.config.ts at the repo root — create or merge.
-    const visConfigPath = join(cwd, "vis.config.ts");
-    const existingVisConfig = await readFile(visConfigPath, "utf8").catch(() => undefined);
+    sourceDir: string,
+    dryRun: boolean,
+    logger: InitLogger,
+): Promise<{ found: number; preserved: number }> => {
+    const mdFiles: string[] = [];
 
-    if (existingVisConfig === undefined) {
-        const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n${releaseBlock}\n});\n`;
-
-        await writeFile(visConfigPath, content);
-        logger.info(`  wrote ${relative(cwd, visConfigPath)}`);
-    } else if (/\brelease\s*:/.test(existingVisConfig)) {
-        // Existing config already has a `release` key — leave it alone so we
-        // don't clobber the operator's tuning. They can paste the suggested
-        // block (already printed above) themselves.
-        logger.warn(`  skipped ${relative(cwd, visConfigPath)} — already has a \`release\` key; merge the suggested block manually.`);
-    } else {
-        // Inject the release block as the first child of defineConfig({ … }).
-        const injected = injectReleaseBlock(existingVisConfig, releaseBlock);
-
-        if (injected === undefined) {
-            logger.warn(
-                `  skipped ${relative(cwd, visConfigPath)} — could not locate \`defineConfig({\` or \`export default {\` to inject into; merge the suggested block manually.`,
-            );
-        } else {
-            await writeFile(visConfigPath, injected);
-            logger.info(`  updated ${relative(cwd, visConfigPath)} (injected release block)`);
+    try {
+        for (const name of await fs.readdir(sourceDir)) {
+            if (name.endsWith(".md") && name !== "README.md") {
+                mdFiles.push(name);
+            }
+        }
+    } catch (error) {
+        // A missing directory means nothing is pending. An unreadable one
+        // means the copy would silently drop the operator's change files.
+        if (!isNotFoundError(error)) {
+            throw error;
         }
     }
 
-    // 2) Add `"vis-release": { "managed": true }` to each detected
-    //    package's package.json. "Detected" = has a sibling .releaserc.*.
-    for (const rcPath of rcFiles) {
-        const pkgDir = dirname(rcPath);
-        const pkgJsonPath = join(pkgDir, "package.json");
+    const targetDir = join(cwd, ".vis", "release");
+    let preserved = 0;
+    let skipped = 0;
 
-        if (!(await fileExists(pkgJsonPath))) {
-            // Root .releaserc.* with no sibling package.json is uncommon but
-            // possible — skip silently so we don't fabricate one.
-            continue;
-        }
+    for (const name of mdFiles) {
+        const source = join(sourceDir, name);
+        const destination = join(targetDir, name);
 
-        const raw = await readFile(pkgJsonPath, "utf8");
-
-        let parsed: Record<string, unknown>;
-
-        try {
-            parsed = JSON.parse(raw) as Record<string, unknown>;
-        } catch {
-            logger.warn(`  skipped ${relative(cwd, pkgJsonPath)} — invalid JSON.`);
+        if (dryRun) {
+            logger.info(`[dry-run] would copy ${source} → ${destination}`);
 
             continue;
         }
 
-        const existing = parsed["vis-release"];
+        if (await fileExists(fs, destination)) {
+            logger.info(`Skipping existing ${relative(cwd, destination)}.`);
+            skipped += 1;
 
-        if (existing !== null && typeof existing === "object" && (existing as { managed?: unknown }).managed === true) {
-            // Already opted-in — leave it alone.
             continue;
         }
 
-        const merged = existing !== null && typeof existing === "object" ? { ...(existing as Record<string, unknown>), managed: true } : { managed: true };
-
-        parsed["vis-release"] = merged;
-
-        await writeFile(pkgJsonPath, `${JSON.stringify(parsed, undefined, 4)}\n`);
-        logger.info(`  updated ${relative(cwd, pkgJsonPath)} (added vis-release.managed = true)`);
+        await writeFileNoFollow(fs, destination, await fs.readFile(source, "utf8"));
+        preserved += 1;
     }
 
-    // 3) Delete .releaserc.* files for migrated packages.
-    for (const rcPath of rcFiles) {
-        await rm(rcPath, { force: true });
-        logger.info(`  deleted ${relative(cwd, rcPath)}`);
-    }
-};
-
-/**
- * Inject `releaseBlock` as the first child of `defineConfig({ … })` or
- * `export default { … }` in an existing vis.config.ts source. Returns
- * `undefined` if neither anchor is found.
- *
- * Template-literal injection (not a TS-AST rewrite) — sufficient for the
- * generated configs vis init emits and the canonical `defineConfig(`
- * pattern used across the visulima monorepo.
- */
-const injectReleaseBlock = (source: string, releaseBlock: string): string | undefined => {
-    const defineConfigMatch = /defineConfig\s*\(\s*\{/.exec(source);
-
-    if (defineConfigMatch !== null) {
-        const insertAt = defineConfigMatch.index + defineConfigMatch[0].length;
-
-        return `${source.slice(0, insertAt)}\n${releaseBlock}\n${source.slice(insertAt)}`;
+    if (skipped > 0) {
+        logger.info(`Skipped ${skipped} file(s) that already exist in .vis/release/.`);
     }
 
-    const exportDefaultMatch = /export\s+default\s+\{/.exec(source);
-
-    if (exportDefaultMatch !== null) {
-        const insertAt = exportDefaultMatch.index + exportDefaultMatch[0].length;
-
-        return `${source.slice(0, insertAt)}\n${releaseBlock}\n${source.slice(insertAt)}`;
-    }
-
-    return undefined;
+    return { found: mdFiles.length, preserved };
 };
 
 /**
  * Migrate `.changeset/config.json` + `.changeset/*.md` to `.vis/release/`.
  * RFC §17.2.
  */
-const migrateFromChangesets = async (cwd: string, dryRun: boolean, logger: Toolbox<Console, ReleaseInitOptions>["logger"]): Promise<void> => {
+const migrateFromChangesets = async (fs: CerebroFs, cwd: string, dryRun: boolean, logger: InitLogger): Promise<void> => {
     const changesetDir = join(cwd, ".changeset");
     const configPath = join(changesetDir, "config.json");
 
     // Check pre-release mode — abort if active.
-    const preJsonPath = join(changesetDir, "pre.json");
-
-    if (await fileExists(preJsonPath)) {
+    if (await fileExists(fs, join(changesetDir, "pre.json"))) {
         logger.error("Pre-release mode is active in changesets (.changeset/pre.json exists).");
         logger.error("Run `changeset pre exit && changeset version` to consume pending changes, then re-run `vis release init`.");
         process.exitCode = 1;
@@ -655,7 +386,7 @@ const migrateFromChangesets = async (cwd: string, dryRun: boolean, logger: Toolb
     let cfg: Record<string, unknown> = {};
 
     try {
-        cfg = JSON.parse(await readFile(configPath, "utf8")) as Record<string, unknown>;
+        cfg = JSON.parse(await fs.readFile(configPath, "utf8")) as Record<string, unknown>;
     } catch {
         logger.warn(".changeset/config.json missing or unreadable; using defaults.");
     }
@@ -688,61 +419,9 @@ const migrateFromChangesets = async (cwd: string, dryRun: boolean, logger: Toolb
         changelog = "\"default\"";
     }
 
-    // Walk + copy change files (frontmatter is compatible)
-    const mdFiles: string[] = [];
-    let preserved = 0;
+    const { found, preserved } = await copyPendingChangeFiles(fs, cwd, changesetDir, dryRun, logger);
 
-    try {
-        const entries = await readdir(changesetDir);
-
-        for (const name of entries) {
-            if (!name.endsWith(".md") || name === "README.md") {
-                continue;
-            }
-
-            mdFiles.push(name);
-        }
-    } catch {
-        // ignore
-    }
-
-    if (mdFiles.length > 0) {
-        const targetDir = join(cwd, ".vis", "release");
-        let skipped = 0;
-
-        for (const name of mdFiles) {
-            const src = join(changesetDir, name);
-            const dst = join(targetDir, name);
-
-            if (dryRun) {
-                logger.info(`[dry-run] would copy ${src} → ${dst}`);
-
-                continue;
-            }
-
-            // Don't clobber an existing change file with the same name —
-            // operators may have already authored a .vis/release/<x>.md.
-            if (await fileExists(dst)) {
-                logger.info(`Skipping existing ${relative(cwd, dst)}.`);
-                skipped += 1;
-
-                continue;
-            }
-
-            const content = await readFile(src, "utf8");
-
-            await writeFile(dst, content);
-            preserved += 1;
-        }
-
-        if (skipped > 0) {
-            logger.info(`Skipped ${skipped} file(s) that already exist in .vis/release/.`);
-        }
-    }
-
-    logger.info(
-        `Found ${mdFiles.length} pending .changeset/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run — would copy)"}.`,
-    );
+    logger.info(`Found ${found} pending .changeset/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run — would copy)"}.`);
     logger.info("");
     logger.info("Suggested vis.config.ts release block:");
     logger.info("");
@@ -770,14 +449,14 @@ const migrateFromChangesets = async (cwd: string, dryRun: boolean, logger: Toolb
  * Migrate `.bumpy/_config.json` + `.bumpy/*.md` to `.vis/release/`.
  * Format is essentially identical — just a directory rename + config translation.
  */
-const migrateFromBumpy = async (cwd: string, dryRun: boolean, logger: Toolbox<Console, ReleaseInitOptions>["logger"]): Promise<void> => {
+const migrateFromBumpy = async (fs: CerebroFs, cwd: string, dryRun: boolean, logger: InitLogger): Promise<void> => {
     const bumpyDir = join(cwd, ".bumpy");
     const configPath = join(bumpyDir, "_config.json");
 
     let cfg: Record<string, unknown> = {};
 
     try {
-        cfg = JSON.parse(await readFile(configPath, "utf8")) as Record<string, unknown>;
+        cfg = JSON.parse(await fs.readFile(configPath, "utf8")) as Record<string, unknown>;
     } catch {
         logger.warn(".bumpy/_config.json missing or unreadable; using defaults.");
     }
@@ -788,57 +467,9 @@ const migrateFromBumpy = async (cwd: string, dryRun: boolean, logger: Toolbox<Co
         .map((line) => `    ${line}`)
         .join("\n");
 
-    // Walk + copy change files
-    const mdFiles: string[] = [];
-    let preserved = 0;
+    const { found, preserved } = await copyPendingChangeFiles(fs, cwd, bumpyDir, dryRun, logger);
 
-    try {
-        const entries = await readdir(bumpyDir);
-
-        for (const name of entries) {
-            if (!name.endsWith(".md") || name === "README.md") {
-                continue;
-            }
-
-            mdFiles.push(name);
-        }
-    } catch {
-        // ignore
-    }
-
-    if (mdFiles.length > 0) {
-        const targetDir = join(cwd, ".vis", "release");
-        let skipped = 0;
-
-        for (const name of mdFiles) {
-            const src = join(bumpyDir, name);
-            const dst = join(targetDir, name);
-
-            if (dryRun) {
-                logger.info(`[dry-run] would copy ${src} → ${dst}`);
-
-                continue;
-            }
-
-            if (await fileExists(dst)) {
-                logger.info(`Skipping existing ${relative(cwd, dst)}.`);
-                skipped += 1;
-
-                continue;
-            }
-
-            const content = await readFile(src, "utf8");
-
-            await writeFile(dst, content);
-            preserved += 1;
-        }
-
-        if (skipped > 0) {
-            logger.info(`Skipped ${skipped} file(s) that already exist in .vis/release/.`);
-        }
-    }
-
-    logger.info(`Found ${mdFiles.length} pending .bumpy/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run)"}.`);
+    logger.info(`Found ${found} pending .bumpy/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run)"}.`);
     logger.info("");
     logger.info("Suggested vis.config.ts release block (bumpy config translates 1:1):");
     logger.info("");
@@ -855,14 +486,14 @@ const migrateFromBumpy = async (cwd: string, dryRun: boolean, logger: Toolbox<Co
  * modifies. `--yes` auto-wires; `--no-husky` skips entirely (handled
  * upstream by not calling this function).
  */
-const offerHuskyWiring = async (cwd: string, dryRun: boolean, autoYes: boolean, logger: Toolbox<Console, ReleaseInitOptions>["logger"]): Promise<void> => {
+const offerHuskyWiring = async (fs: CerebroFs, cwd: string, dryRun: boolean, autoYes: boolean, logger: InitLogger): Promise<void> => {
     const huskyHook = join(cwd, ".husky", "pre-commit");
 
-    if (!(await fileExists(huskyHook))) {
+    if (!(await fileExists(fs, huskyHook))) {
         return;
     }
 
-    const existing = await readFile(huskyHook, "utf8").catch(() => "");
+    const existing = (await readTextFile(fs, huskyHook)) ?? "";
 
     if (existing.includes("vis release check")) {
         return; // already wired
@@ -905,9 +536,7 @@ const offerHuskyWiring = async (cwd: string, dryRun: boolean, autoYes: boolean, 
         return;
     }
 
-    const updated = `${existing.replace(/\n*$/, "\n")}${snippet}\n`;
-
-    await writeFile(huskyHook, updated);
+    await writeFileNoFollow(fs, huskyHook, `${existing.replace(/\n*$/, "\n")}${snippet}\n`);
 
     logger.info("Wired vis release check into .husky/pre-commit.");
 };
@@ -921,12 +550,7 @@ const offerHuskyWiring = async (cwd: string, dryRun: boolean, autoYes: boolean, 
  * Skipped silently when target files already exist UNLESS user confirms
  * overwrite.
  */
-const offerWorkflowGeneration = async (
-    cwd: string,
-    dryRun: boolean,
-    options: ReleaseInitOptions,
-    logger: Toolbox<Console, ReleaseInitOptions>["logger"],
-): Promise<void> => {
+const offerWorkflowGeneration = async (fs: CerebroFs, cwd: string, dryRun: boolean, options: ReleaseInitOptions, logger: InitLogger): Promise<void> => {
     const explicit = options.workflows === true;
     const autoYes = options.yes === true;
 
@@ -988,7 +612,7 @@ const offerWorkflowGeneration = async (
     for (const file of files) {
         const target = join(cwd, file.path);
 
-        if (await fileExists(target)) {
+        if (await fileExists(fs, target)) {
             logger.warn(`  ${file.path} — already exists, skipping`);
             continue;
         }
@@ -998,16 +622,14 @@ const offerWorkflowGeneration = async (
             continue;
         }
 
-        const path = await import("node:path");
-
-        await mkdir(path.dirname(target), { recursive: true });
-        await writeFile(target, file.content);
+        await fs.mkdir(dirname(target), { recursive: true });
+        await writeFileNoFollow(fs, target, file.content);
 
         logger.info(`  ${file.path} — wrote ${file.content.length} bytes`);
     }
 };
 
-const printFreshConfig = (logger: Toolbox<Console, ReleaseInitOptions>["logger"]): void => {
+const printFreshConfig = (logger: InitLogger): void => {
     logger.info("");
     logger.info("Suggested vis.config.ts release block:");
     logger.info("");
