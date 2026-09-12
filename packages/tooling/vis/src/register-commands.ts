@@ -46,6 +46,7 @@ import migrateCommands from "./commands/migrate";
 import optimizeCommand from "./commands/optimize";
 import pmCommand from "./commands/pm";
 import releaseCommands from "./commands/release";
+import releaseRootCommand from "./commands/release/root-command";
 import removeCommand from "./commands/remove";
 import replayCommand from "./commands/replay";
 import runCommand from "./commands/run";
@@ -99,6 +100,15 @@ const registerCommands = (cli: Cli<Console>): void => {
     cli.addCommand(listCommand);
     cli.addCommand(completionCommand);
     cli.addCommand(versionCommand);
+
+    // Release umbrella. Declaring it at all is what stops `release ci release`
+    // (leaf name `release`) from owning the bare `release` slot and making
+    // `vis release` run the CI publish flow — `Cli.addCommand` re-keys the
+    // nested namesake under its full path in either order. Registering it
+    // HERE, ahead of the nested `release <sub>` commands at the bottom of this
+    // function, only decides where the "Release" group lands in `vis --help`,
+    // which is grouped by first registration.
+    cli.addCommand(releaseRootCommand);
 
     // Lint & format commands
     cli.addCommand(lintCommand);
