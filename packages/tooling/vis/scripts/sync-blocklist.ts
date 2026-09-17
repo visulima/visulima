@@ -7,7 +7,8 @@
  * already-known so they are never re-discovered or duplicated. Only the auto
  * file is written.
  *
- * Usage:
+ * Usage (needs Node >= 22.18, where type stripping is on by default; on 22.14-22.17
+ * run `node --experimental-strip-types scripts/sync-blocklist.ts` instead):
  *   node scripts/sync-blocklist.ts              # all packages in JSON
  *   node scripts/sync-blocklist.ts react vue     # specific packages
  */
