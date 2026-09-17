@@ -476,6 +476,7 @@ catalogs:
     '@dynamicabot/signales': ^2.1.2
     '@floating-ui/dom': ^1.8.0
     '@fumadocs/mdx-remote': 1.5.1
+    '@json-render/core': 0.20.0
     '@jridgewell/trace-mapping': ^0.3.31
     '@mfederczuk/deeptools': 2.1.0-rc01
     '@oclif/core': 4.13.3
