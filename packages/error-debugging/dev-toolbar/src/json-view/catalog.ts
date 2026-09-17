@@ -1,5 +1,7 @@
 import type { ActionBinding, Spec, VisibilityCondition } from "@json-render/core";
 
+import type { Severity, ValidationMessage } from "./components/message-list";
+
 /**
  * Props of every base component, keyed by the `type` a spec element uses.
  *
@@ -12,20 +14,46 @@ import type { ActionBinding, Spec, VisibilityCondition } from "@json-render/core
  * is what lets these props satisfy `UIElement`'s `Record&lt;string, unknown>`.
  */
 export type BaseComponents = {
+    CodeBlock: { code: string };
+    DisclosureHeader: { expanded?: Bindable<boolean>; label: string; severity: Severity; title: string };
+    EmptyState: { hint?: string; icon: string; title: string; tone?: "muted" | "success" };
     HeaderBar: {
         actionLabel?: string;
         badges?: { label: string; variant?: "default" | "destructive" | "info" | "outline" | "secondary" | "success" | "warning" }[];
         chips?: { label: string; title?: string }[];
     };
     KeyValue: { label: string; value?: unknown };
+    MessageList: { emptyText?: string; messages: ValidationMessage[] };
+    MetaRow: { label: string; required?: boolean; value: string };
     Note: { text: string };
     PairTable: { keyLabel: string; keyTone?: "amber" | "primary"; rows: { key: string; value: string }[]; showCopy?: boolean; valueLabel: string };
     Row: { value: string };
-    Section: { title?: string };
-    Stack: { class?: string; variant?: "bare" | "pane" };
+    Section: { title?: string; variant?: "accent" | "card" | "plain" };
+    SerpSnippet: {
+        description: string;
+        favicon?: string;
+        isMobile?: boolean;
+        issues: string[];
+        label: string;
+        siteName: string;
+        title: string;
+        url: string;
+    };
+    SocialCard: { accentClass?: string; description: string; image: string; missing: string[]; name: string; title: string; url: string };
+    Stack: { class?: string; variant?: "bare" | "grid" | "pane" };
     StatStrip: { stats: { label: string; value: number | string }[] };
-    TabView: { tabs: { label: string; value: string }[] };
+    TabView: { actionLabel?: string; tabs: { badge?: number; badgeVariant?: "destructive" | "warning"; label: string; value: string }[] };
+    TagCard: { description: string; label: string; priority: "recommended" | "required"; snippet: string };
+    Text: { text: string; tone?: "body" | "caption" };
 };
+
+/**
+ * A prop a spec may either set outright or bind to a state path.
+ *
+ * The renderer resolves the binding before the component sees it, so the
+ * component's own prop type stays the plain value.
+ */
+export type Bindable<T> = T | { $state: string };
 
 /** Any component map a view can be built against. */
 export type ComponentMap = Record<string, Record<string, unknown>>;
