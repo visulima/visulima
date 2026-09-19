@@ -225,6 +225,29 @@ export const compileReleaseTagRegex = (pattern: string, pkg: { name: string }): 
     return new RegExp(reSource);
 };
 
+/** Fallback `releaseTagPattern` when neither per-package nor workspace config sets one. */
+export const DEFAULT_RELEASE_TAG_PATTERN = "{name}@{version}";
+
+/**
+ * Turn a `releaseTagPattern` into a `git tag --list` / `git describe
+ * --match` glob so we never have to pull every tag in the repo and
+ * post-filter in process. Tokens with a known literal value (`{name}`,
+ * `{unscopedName}`) are substituted; every other token becomes `*`
+ * because we don't yet know the value.
+ */
+export const releaseTagListGlob = (pattern: string, pkg: { name: string }): string =>
+    pattern.replaceAll(/\{(name|unscopedName|version|major|minor|patch|date|channel)\}/g, (_match, key: string) => {
+        if (key === "name") {
+            return pkg.name;
+        }
+
+        if (key === "unscopedName") {
+            return pkg.name.replace(/^@[^/]+\//, "");
+        }
+
+        return "*";
+    });
+
 /**
  * Resolve the "current" version of a single package via the requested mode.
  *
@@ -269,24 +292,8 @@ export const resolveCurrentVersion = async (
     }
 
     // git-tag mode
-    const pattern = options.perPackageConfig?.releaseTagPattern ?? options.workspaceConfig?.releaseTagPattern ?? "{name}@{version}";
-
-    // Compile the pattern to a globbed `--list` filter so we don't have to
-    // pull every tag in the repo and post-filter in process. The substitution
-    // replaces tokens with their literal counterparts where known (`{name}`,
-    // `{unscopedName}`) and a `*` glob for everything else — `{version}`,
-    // `{major}`, etc. all become wildcards because we don't yet know the value.
-    const listGlob = pattern.replaceAll(/\{(name|unscopedName|version|major|minor|patch|date|channel)\}/g, (_match, key: string) => {
-        if (key === "name") {
-            return pkg.name;
-        }
-
-        if (key === "unscopedName") {
-            return pkg.name.replace(/^@[^/]+\//, "");
-        }
-
-        return "*";
-    });
+    const pattern = options.perPackageConfig?.releaseTagPattern ?? options.workspaceConfig?.releaseTagPattern ?? DEFAULT_RELEASE_TAG_PATTERN;
+    const listGlob = releaseTagListGlob(pattern, pkg);
 
     const listResult = await options.runner.run("git", ["tag", "--list", listGlob, "--sort=-v:refname"], { cwd: options.cwd, silent: true });
 
@@ -450,4 +457,147 @@ export const resolveCurrentVersionsForWorkspace = async (
     }
 
     return { versions, warnings };
+};
+
+// ── "Since last release" range resolution (issue #864) ─────────────
+
+export interface ResolveLastReleaseRefOptions {
+    /** Workspace root. */
+    cwd: string;
+    /** Packages whose `releaseTagPattern`s form the candidate tag set. */
+    packages: ReadonlyArray<WorkspacePackage>;
+    /** Per-package config map (for `releaseTagPattern` overrides). */
+    perPackageConfig?: ReadonlyMap<string, PerPackageReleaseConfig>;
+    /** Runner used for the `git describe` / `git rev-list` probes. */
+    runner: CommandRunner;
+    /** Workspace-level config. Read for the `releaseTagPattern` default. */
+    workspaceConfig?: VisReleaseConfig;
+}
+
+export interface ResolveLastReleaseRefResult {
+    /**
+     * How the boundary was resolved. Callers MUST branch on this rather
+     * than on `ref` alone: `"root-commit"` carries a ref too, but it
+     * means "the entire repository history", which is a destructive
+     * range for anything that publishes unattended (issue #864).
+     *
+     *   - `"tag"`         — a real release tag was found.
+     *   - `"root-commit"` — no tag matched; `ref` is the repo's oldest
+     *                       root commit, i.e. the whole history.
+     *   - `"unresolved"`  — not even the root commit could be resolved;
+     *                       `ref` is absent.
+     */
+    kind: "root-commit" | "tag" | "unresolved";
+    /** Human-readable explanation of how the ref was picked (logged by callers). */
+    reason: string;
+    /** The resolved start ref, or `undefined` when even the root-commit fallback failed. */
+    ref?: string;
+    /** The matched tag, when the resolution came from one. */
+    tag?: string;
+}
+
+/**
+ * Resolve the git ref marking "the last release" so `vis release
+ * generate --since-last-release` can walk `&lt;ref>..HEAD` without the
+ * operator hand-picking a `--from`.
+ *
+ * Reuses the `currentVersionResolver: "git-tag"` machinery — the same
+ * `releaseTagPattern` → glob derivation ({@link releaseTagListGlob})
+ * and the same strict matcher ({@link compileReleaseTagRegex}) — rather
+ * than introducing a second tag scanner that could drift.
+ *
+ * **Workspace-wide, not per-package.** `generate` emits ONE change file
+ * covering ONE commit range, so it cannot express a different boundary
+ * per package. The boundary we want is therefore "the most recent
+ * release tag reachable from HEAD, whichever package it belongs to":
+ * in the wave-based CI flow this command exists for, every package that
+ * released did so at that wave's commit, so everything after it is
+ * genuinely unreleased. That is also exactly the boundary
+ * `github.event.before` approximates in the workaround from issue #864,
+ * only derived from the tag history instead of the CI event payload.
+ *
+ * When no matching tag exists (greenfield repo, first release, or a
+ * `releaseTagPattern` that has never been written), the result carries
+ * `kind: "root-commit"` and `ref` set to the repo's oldest root commit —
+ * i.e. effectively the whole history. That is offered as a *candidate*,
+ * not a default: walking it bumps every package that has ever been
+ * touched, so callers must gate it behind an explicit opt-in and treat
+ * `kind !== "tag"` as "no boundary found" otherwise. `reason` explains
+ * which case fired so the decision is visible in CI logs.
+ */
+export const resolveLastReleaseRef = async (options: ResolveLastReleaseRefOptions): Promise<ResolveLastReleaseRefResult> => {
+    const { cwd, packages, perPackageConfig, runner, workspaceConfig } = options;
+
+    // Build the candidate glob set — deduped, because a workspace-wide
+    // `v{version}` collapses 50 packages into a single `v*` glob while
+    // the default `{name}@{version}` yields one glob per package.
+    const globs = new Set<string>();
+    const patterns = new Map<string, string>();
+
+    for (const pkg of packages) {
+        const pattern = perPackageConfig?.get(pkg.name)?.releaseTagPattern ?? workspaceConfig?.releaseTagPattern ?? DEFAULT_RELEASE_TAG_PATTERN;
+
+        patterns.set(pkg.name, pattern);
+        globs.add(releaseTagListGlob(pattern, pkg));
+    }
+
+    const rootFallback = async (reason: string): Promise<ResolveLastReleaseRefResult> => {
+        const roots = await runner.run("git", ["rev-list", "--max-parents=0", "HEAD"], { cwd, silent: true });
+        const lines
+            = roots.exitCode === 0
+                ? roots.stdout
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                : [];
+        // `rev-list` is newest-first, so the LAST entry is the oldest
+        // root commit. Multi-root histories (grafted / subtree merges)
+        // are rare; picking the oldest keeps the range maximal.
+        const root = lines.at(-1);
+
+        if (!root) {
+            return { kind: "unresolved", reason: `${reason} and the repository root commit could not be resolved` };
+        }
+
+        return {
+            kind: "root-commit",
+            reason: `${reason}; the only remaining boundary is the repository root commit (${root.slice(0, 7)}) — the whole history`,
+            ref: root,
+        };
+    };
+
+    if (globs.size === 0) {
+        return rootFallback("no workspace packages to derive a release tag pattern from");
+    }
+
+    // `git describe --abbrev=0` returns the most recent tag *reachable
+    // from HEAD* by ancestry distance — precisely the boundary we want,
+    // and stronger than sorting by creatordate (which a rebase or an
+    // out-of-order tag push can scramble).
+    const describe = await runner.run("git", ["describe", "--tags", "--abbrev=0", ...[...globs].flatMap((glob) => ["--match", glob]), "HEAD"], {
+        cwd,
+        silent: true,
+    });
+
+    const tag = describe.exitCode === 0 ? describe.stdout.trim() : "";
+
+    if (!tag) {
+        return rootFallback(`no git tag matching the configured releaseTagPattern is reachable from HEAD`);
+    }
+
+    // Re-validate against the strict matcher. `--match` is an fnmatch
+    // glob, so `{version}` degraded to `*` can accept a tag the real
+    // pattern would reject (e.g. `@scope/a@nightly`). Only tags that
+    // parse into a real semver count as a release boundary.
+    const matched = packages.some((pkg) => {
+        const match = compileReleaseTagRegex(patterns.get(pkg.name) ?? DEFAULT_RELEASE_TAG_PATTERN, pkg).exec(tag);
+
+        return match?.[1] !== undefined && semver.valid(match[1]) !== null;
+    });
+
+    if (!matched) {
+        return rootFallback(`the nearest matching tag "${tag}" did not parse as a release tag`);
+    }
+
+    return { kind: "tag", reason: `resolved the last release boundary to tag "${tag}"`, ref: tag, tag };
 };

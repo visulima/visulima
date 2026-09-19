@@ -487,3 +487,190 @@ export const annotateAndResolveReverts = (
 
     return { commits: annotated, warnings };
 };
+
+// ── Machine release-commit filtering (issue #864) ──────────────────
+
+/**
+ * Built-in heuristic for "this commit was written by release tooling,
+ * not by a human". Release commits must never contribute a bump or a
+ * changelog line — a package whose only commits in the range are its
+ * own release commits would otherwise be bumped forever, and the
+ * previous changelog header would be transcribed verbatim into the new
+ * entry.
+ *
+ * Recognised shapes:
+ *
+ *   - `chore(release): \@scope/pkg\@1.0.0-alpha.44 [skip ci]` —
+ *     multi-semantic-release + changesets (`chore(release): version packages`).
+ *   - `chore(main): release 1.2.3` — release-please.
+ *   - `chore: release v1.2.3` — plain release-please / lerna style.
+ *   - `release(alpha): version packages [skip ci]` — vis's own
+ *     version-PR commit (see `ci release`).
+ *
+ * A `[skip ci]` / `[ci skip]` marker is deliberately NOT a pattern of
+ * its own. It means "don't run CI", not "don't release": humans put it
+ * on ordinary commits, so matching it alone would silently swallow a
+ * real `fix: … [skip ci]` and lose the patch bump with it. Every
+ * machine format above already carries its own subject prefix, so
+ * nothing is missed. Repos that do want the blunt rule can opt in with
+ * `ignoreCommitPattern: ["\\[skip ci\\]"]`.
+ *
+ * Every pattern BELOW is anchored and uses bounded quantifiers so a
+ * pathological subject cannot trigger catastrophic backtracking
+ * (CodeQL polynomial-ReDoS). That property is a claim about these
+ * literals only — user-supplied `ignoreCommitPattern` sources carry no
+ * such guarantee (see {@link buildIgnoreCommitMatchers}).
+ */
+export const DEFAULT_RELEASE_COMMIT_PATTERNS: ReadonlyArray<RegExp> = [
+    // `chore(release): …` / `chore(release)!: …`
+    /^chore\(release\)!?:/i,
+    // release-please: `chore(main): release 1.2.3`, `chore(@scope/pkg): release 1.2.3`
+    /^chore\([^\n)]{0,64}\)!?:[ \t]{0,8}release[ \t]/i,
+    // `chore: release v1.2.3`
+    /^chore!?:[ \t]{0,8}release[ \t]/i,
+    // vis: `release: version packages [skip ci]` / `release(alpha): …`
+    /^release(?:\([^\n)]{0,64}\))?!?:/i,
+];
+
+/** Options controlling {@link buildIgnoreCommitMatchers}. */
+export interface BuildIgnoreCommitMatchersOptions {
+    /** `release.ignoreCommitPattern` — regex source(s) from user config. */
+    ignoreCommitPattern?: string | string[];
+
+    /**
+     * `release.ignoreReleaseCommits` — explicit opt-out from the
+     * built-in heuristic. Default `true` (heuristic active). User
+     * patterns EXTEND the built-ins; setting this to `false` is the
+     * only way to drop them.
+     */
+    ignoreReleaseCommits?: boolean;
+
+    /**
+     * Invoked once per unparseable user pattern so the caller can
+     * surface it (`logger.warn`). An invalid pattern is skipped, never
+     * fatal — a typo in config must not brick a release.
+     */
+    onInvalidPattern?: (source: string, error: Error) => void;
+}
+
+/**
+ * Compile the effective ignore-matcher list: the built-in release-commit
+ * heuristic (unless explicitly opted out via `ignoreReleaseCommits:
+ * false`) plus every user-supplied `ignoreCommitPattern` source.
+ *
+ * User patterns are compiled with `new RegExp(source)` — case-sensitive
+ * unless the source itself opts otherwise — and run unsandboxed.
+ *
+ * **No ReDoS guarantee.** {@link isIgnoredCommit} truncates the tested
+ * subject, which bounds the *input*, not the backtracking: a pattern
+ * with nested quantifiers (`(a+)+$` and friends) is exponential in the
+ * input length and hangs long before 512 characters. There is no
+ * timeout around a JS regex, so a pathological source here stalls the
+ * release until the job is killed.
+ *
+ * That is accepted rather than mitigated because this is not a trust
+ * boundary: the sources come from the repo's own `vis.config.*`, which
+ * already executes arbitrary code at load time. A repo that can set
+ * `ignoreCommitPattern` can hang its release far more directly. Do NOT
+ * extend this to accept patterns from a commit, a PR body, or any other
+ * attacker-reachable input without a real mitigation first.
+ */
+export const buildIgnoreCommitMatchers = (options: BuildIgnoreCommitMatchersOptions = {}): RegExp[] => {
+    const matchers: RegExp[] = options.ignoreReleaseCommits === false ? [] : [...DEFAULT_RELEASE_COMMIT_PATTERNS];
+    const raw = options.ignoreCommitPattern;
+    const sources = raw === undefined ? [] : typeof raw === "string" ? [raw] : raw;
+
+    for (const source of sources) {
+        if (typeof source !== "string" || source.trim() === "") {
+            continue;
+        }
+
+        try {
+            matchers.push(new RegExp(source));
+        } catch (error) {
+            options.onInvalidPattern?.(source, error as Error);
+        }
+    }
+
+    return matchers;
+};
+
+/**
+ * Maximum subject length considered by {@link isIgnoredCommit}. Commit
+ * subjects are conventionally ≤ 100 chars, so this only ever truncates
+ * pathological ones and keeps the built-in matchers' linear scan cheap.
+ *
+ * It is NOT a ReDoS bound for user-supplied patterns — see
+ * {@link buildIgnoreCommitMatchers} for why that is accepted.
+ */
+const IGNORE_MATCH_MAX_SUBJECT_LENGTH = 512;
+
+/**
+ * True when the subject matches any ignore matcher — i.e. the commit is
+ * machine-authored release bookkeeping (or the operator asked for it to
+ * be dropped) and must contribute neither a bump nor a changelog line.
+ */
+export const isIgnoredCommit = (subject: string, matchers: ReadonlyArray<RegExp>): boolean => {
+    if (matchers.length === 0) {
+        return false;
+    }
+
+    const probe = subject.slice(0, IGNORE_MATCH_MAX_SUBJECT_LENGTH);
+
+    return matchers.some((matcher) => {
+        // `lastIndex` is shared state on /g and /y regexes; reset it
+        // defensively so a user pattern carrying those flags can't skip
+        // every other commit.
+
+        matcher.lastIndex = 0;
+
+        return matcher.test(probe);
+    });
+};
+
+/**
+ * Trim a commit subject down to its first line.
+ *
+ * `git log --pretty=%s` yields the real first line, but
+ * multi-semantic-release writes its release commits with a LITERAL
+ * `\n\n` escape sequence between the subject and the changelog header
+ * it appends:
+ *
+ * ```text
+ * chore(release): \@scope/pkg\@1.0.0 [skip ci]\n\n## \@scope/pkg [1.0.0](…) (2026-09-07)
+ * ```
+ *
+ * Git sees that as one physical line, so `%s` returns the whole thing
+ * and the old changelog header gets transcribed into the freshly
+ * generated change file.
+ *
+ * Cut at the first real newline, or at a literal `\n\n` escape that is
+ * followed by a markdown heading — the exact shape above. The heading
+ * check is what keeps an ordinary subject that merely *mentions* an
+ * escape intact: `fix(parser): handle \n in template literals` must
+ * survive whole, so a bare literal `\n` is never a cut point.
+ */
+export const normalizeCommitSubject = (subject: string): string => {
+    const candidates: number[] = [];
+    const realNewline = subject.indexOf("\n");
+
+    if (realNewline !== -1) {
+        candidates.push(realNewline);
+    }
+
+    // Only the doubled escape immediately preceding a `#` heading is the
+    // multi-semantic-release changelog-header join. Anything else is prose.
+    const escapedBreak = String.raw`\n\n`;
+    let index = subject.indexOf(escapedBreak);
+
+    while (index !== -1) {
+        if (/^\s{0,8}#/.test(subject.slice(index + escapedBreak.length))) {
+            candidates.push(index);
+            break;
+        }
+
+        index = subject.indexOf(escapedBreak, index + 1);
+    }
+
+    return (candidates.length > 0 ? subject.slice(0, Math.min(...candidates)) : subject).trim();
+};
