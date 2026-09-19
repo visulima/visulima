@@ -163,13 +163,31 @@ describe(slice, () => {
         expect(slice("\u001B[4mtest\u001B[24m", 0, 1)).toEqualAnsi("\u001B[4mt\u001B[24m");
     });
 
+    it("keeps the non-colour half of a compound sequence across a colour reset", () => {
+        expect.assertions(2);
+
+        // `slice` stores whole sequences and swaps them as units, so it cannot take the 31 out of
+        // `CSI 1;31 m` and keep the 1. Classifying the sequence as a foreground would let the
+        // `39m` delete the bold along with the colour.
+        const compound = slice("\u001B[1;31mbold red\u001B[39m tail", 0, 12);
+        const separate = slice("\u001B[1m\u001B[31mbold red\u001B[39m tail", 0, 12);
+
+        expect(compound).toContain("\u001B[1;31m");
+        // The separated spelling is representable, so there the reset drops only the colour.
+        expect(separate).toContain("\u001B[39m");
+    });
+
     it("should correctly slice a string with unknown ANSI color codes", () => {
         expect.assertions(3);
 
         // The slice will not use a full reset sequence of unknown colors
         expect(slice("\u001B[20mTEST\u001B[49m", 0, 4)).toEqualAnsi("\u001B[20mTEST\u001B[49m");
-        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toEqualAnsi("\u001B[1001mTES\u001B[49m");
-        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toEqualAnsi("\u001B[1001mTE\u001B[49m");
+
+        // 1001 is not an SGR code. Comparing the parameter as text used to sort it inside the
+        // "100".."107" bright-background range, so the slice invented a `49m` close that would
+        // have wiped a background the caller had legitimately set. Carry it through untouched.
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 3)).toEqualAnsi("\u001B[1001mTES");
+        expect(slice("\u001B[1001mTEST\u001B[49m", 0, 2)).toEqualAnsi("\u001B[1001mTE");
     });
 
     it("should handle null issue correctly when slicing special emoji strings", () => {
