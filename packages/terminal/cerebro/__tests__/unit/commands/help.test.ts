@@ -366,6 +366,37 @@ describe("command/help", () => {
             expect(content.some((row) => row[0].includes("ai test") && row[1] === "Test the selected provider")).toBe(true);
         });
 
+        it("should list grandchildren, not only direct children, under a parent", () => {
+            expect.assertions(3);
+
+            commandsMap.set("release status", {
+                commandPath: ["release"],
+                description: "Show pending releases",
+                execute: () => {},
+                name: "status",
+            });
+
+            commandsMap.set("release ci plan", {
+                commandPath: ["release", "ci"],
+                description: "Plan a CI release",
+                execute: () => {},
+                name: "plan",
+            });
+
+            const helpCommand = new HelpCommand(commandsMap);
+
+            helpCommand.execute({ commandName: "release", logger: loggerMock, runtime: runtimeMock } as unknown as IToolbox);
+
+            const usageCalls = vi.mocked(commandLineUsage).mock.calls[0][0];
+            const subcommandsSection = usageCalls.find((section) => section.header?.includes("Subcommands"));
+            const content = subcommandsSection?.content as [string, string][];
+
+            expect(content).toHaveLength(2);
+            expect(content.some((row) => row[0].includes("release status"))).toBe(true);
+            // Equal-depth matching used to drop the whole `ci` group here.
+            expect(content.some((row) => row[0].includes("release ci plan"))).toBe(true);
+        });
+
         it("should support multi-segment parent paths", () => {
             expect.assertions(2);
 

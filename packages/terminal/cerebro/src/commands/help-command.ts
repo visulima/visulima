@@ -107,7 +107,14 @@ const findChildren = <OD extends OptionDefinition<any>>(commands: Map<string, IC
 
         const commandPath = cmd.commandPath ?? [];
 
-        if (commandPath.length !== parentPath.length) {
+        // Prefix match, not equal depth. Requiring equality hid every
+        // grandchild from a parent listing: `help release` skipped all six
+        // `release ci *` commands (commandPath `["release", "ci"]`) because
+        // their path is one segment longer than `["release"]`, so the whole
+        // `ci` group was undiscoverable from the only place a user would look
+        // (visulima/visulima#863). A listing for `X` should show everything
+        // under `X`.
+        if (commandPath.length < parentPath.length) {
             continue;
         }
 
