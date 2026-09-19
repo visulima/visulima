@@ -101,6 +101,27 @@ describe("resolveFormatter — built-ins", () => {
 
         expect(out).toBeTypeOf("string");
     });
+
+    it("returns the conventional formatter for setting=\"conventional\"", async () => {
+        expect.hasAssertions();
+
+        const formatter = await resolveFormatter("conventional", "/tmp");
+        const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
+
+        // `{compareUrl}` resolves against whatever remote the sandbox has (or
+        // none), so assert on the tokens the template always fills.
+        expect(out).toContain("## a ");
+        expect(out).toContain("(2026-01-01)");
+    }, 15_000);
+
+    it("aliases \"conventionalcommits\" to the same formatter", async () => {
+        expect.hasAssertions();
+
+        const formatter = await resolveFormatter("conventionalcommits", "/tmp");
+        const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
+
+        expect(out).toBeTypeOf("string");
+    }, 15_000);
 });
 
 describe("resolveFormatter — tuple form for built-ins", () => {
@@ -129,6 +150,20 @@ describe("resolveFormatter — tuple form for built-ins", () => {
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
         expect(out).toBeTypeOf("string");
+    });
+
+    it("forwards `types` + `heading` options to the conventional factory", async () => {
+        expect.hasAssertions();
+
+        const formatter = await resolveFormatter(["conventional", { heading: "## {version} ({date})", repo: "owner/name" }], "/tmp");
+        const out = await formatter({
+            changeFiles: [{ body: "feat(cli): add pdf()", id: "x", path: "x.md", payload: { bumps: { a: "minor" } } }],
+            date: "2026-01-01",
+            release: mkRelease("a"),
+            target: "changelog",
+        });
+
+        expect(out).toBe(["## 1.1.0 (2026-01-01)", "", "### Features", "", "* **cli:** add pdf()"].join("\n"));
     });
 });
 
