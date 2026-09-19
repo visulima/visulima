@@ -62,6 +62,7 @@ jobs:
                       task-runner:
                         - 'packages/tooling/task-runner/native/src/**'
                         - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/benches/**'
                         - 'packages/tooling/task-runner/native/Cargo.toml'
                         - 'packages/tooling/task-runner/native/Cargo.lock'
                       tui:
@@ -72,6 +73,7 @@ jobs:
                         - 'packages/tooling/vis/native/src/**'
                         - 'packages/tooling/vis/native/cli/**'
                         - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/benches/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -90,6 +92,7 @@ jobs:
                       task-runner:
                         - 'packages/tooling/task-runner/native/src/**'
                         - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/benches/**'
                         - 'packages/tooling/task-runner/native/Cargo.toml'
                         - 'packages/tooling/task-runner/native/Cargo.lock'
                       tui:
@@ -100,6 +103,7 @@ jobs:
                         - 'packages/tooling/vis/native/src/**'
                         - 'packages/tooling/vis/native/cli/**'
                         - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/benches/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -189,6 +193,97 @@ jobs:
 
             # Only write the cache from trusted refs. PRs restore but never save,
             # so a fork can't poison the cache for downstream runs.
+            - name: "Save Cargo cache"
+              if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "${{ steps.cargo-cache.outputs.cache-primary-key }}"
+
+    # Native criterion benches tracked on CodSpeed. Separate from the JS
+    # benches in codspeed.yml (those run `nx ...:test:bench` under the CodSpeed
+    # vitest plugin); these compile the crate's criterion benches via
+    # `cargo codspeed`. The bench sources depend on `codspeed-criterion-compat`
+    # (a drop-in for criterion) so the same files run instrumented here and as
+    # plain `cargo bench` locally. Not part of the required-check aggregation
+    # below, so a CodSpeed upload hiccup can't block merge.
+    benchmark-native:
+        name: "Bench native (${{ matrix.package.name }})"
+        needs: "files-changed"
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
+        # Scope the CodSpeed OIDC token to an environment so the same secrets /
+        # reviewer rules as the JS bench job (codspeed.yml) apply to uploads.
+        environment: "benchmarks"
+        permissions:
+            contents: "read"
+            id-token: "write" # OIDC auth with CodSpeed
+        strategy:
+            fail-fast: false
+            matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner/native"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis/native"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
+                exclude:
+                    - package:
+                          changed: "false"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+
+            - name: "Install Rust stable toolchain"
+              uses: "dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9" # v1
+              with:
+                  toolchain: "stable"
+
+            - name: "Restore Cargo cache"
+              id: "cargo-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "cargo-bench-${{ matrix.package.name }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.package.dir)) }}"
+                  restore-keys: |
+                      cargo-bench-${{ matrix.package.name }}-
+                      cargo-test-${{ matrix.package.name }}-
+
+            # `cargo codspeed` builds + runs the criterion benches with CodSpeed
+            # instrumentation. Pinned to the 4.x line to match the
+            # `codspeed-criterion-compat` dev-dep and CodSpeedHQ/action@v4.
+            - name: "Install cargo-codspeed"
+              run: "cargo install cargo-codspeed --locked --version '^4'"
+
+            - name: "Build benches (instrumented)"
+              working-directory: "${{ matrix.package.dir }}"
+              run: "cargo codspeed build"
+
+            - name: "Run benchmarks"
+              uses: "CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286" # v4.18.5
+              with:
+                  mode: "instrumentation"
+                  working-directory: "${{ matrix.package.dir }}"
+                  run: "cargo codspeed run"
+
+            # Same trusted-ref rule as the test job: PRs restore but never save,
+            # so a fork can't poison the bench cache for downstream runs.
             - name: "Save Cargo cache"
               if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
               uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
