@@ -5,6 +5,7 @@
  *   - `false`      → no-op formatter (returns empty string)
  *   - `"default"`  → built-in default
  *   - `"github"`   → built-in github (with default options)
+ *   - `"conventional"` → built-in conventional-commits (grouped by type)
  *   - `string`     → path to a custom module
  *   - `[string, options]` → path + options for the custom module
  */
@@ -13,6 +14,7 @@ import { pathToFileURL } from "node:url";
 
 import type { VisReleaseConfig } from "../../types";
 import type { ChangelogFormatter, ChangelogFormatterModule } from "./api";
+import { createConventionalFormatter } from "./conventional";
 import { createDefaultFormatter, defaultFormatter } from "./default";
 import { createGithubFormatter } from "./github";
 import { createKeepAChangelogFormatter } from "./keep-a-changelog";
@@ -34,6 +36,10 @@ export const resolveFormatter = async (setting: VisReleaseConfig["changelog"], c
         return createKeepAChangelogFormatter();
     }
 
+    if (setting === "conventional" || setting === "conventionalcommits") {
+        return createConventionalFormatter();
+    }
+
     let path: string;
     let options: Record<string, unknown> = {};
 
@@ -53,6 +59,10 @@ export const resolveFormatter = async (setting: VisReleaseConfig["changelog"], c
 
     if (path === "keep-a-changelog" || path === "keepachangelog") {
         return createKeepAChangelogFormatter(options);
+    }
+
+    if (path === "conventional" || path === "conventionalcommits") {
+        return createConventionalFormatter(options);
     }
 
     // Path to user module. The import is deferred through a helper file that

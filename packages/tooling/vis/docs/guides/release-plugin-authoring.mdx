@@ -441,7 +441,7 @@ For the **full publish path** with catalog rewriting, clean-package-json, proven
 
 ## Custom `ChangelogFormatter`
 
-Use this when neither the `default` formatter (plain Markdown), the `github` formatter (PR / commit / author links), nor the `keep-a-changelog` formatter (the [keepachangelog.com](https://keepachangelog.com) 1.1.0 layout) match your house style. Common reasons:
+Use this when none of the built-ins — `default` (plain Markdown), `github` (PR / commit / author links), `keep-a-changelog` (the [keepachangelog.com](https://keepachangelog.com) 1.1.0 layout), or `conventional` (grouped by commit type, scope bolded, templated heading) — match your house style. Common reasons:
 
 - You want emoji prefixes per change type (`✨ Features`, `🐛 Bug Fixes`).
 - You ship to docs (Mintlify, Docusaurus) and need MDX-compatible output.
@@ -483,7 +483,7 @@ The convention: for `"github-release"`, **omit the version heading** (`## 1.2.3`
 // vis.config.ts
 export default {
     release: {
-        // Built-in id — `"default"`, `"github"`, or `"keep-a-changelog"`:
+        // Built-in id — `"default"`, `"github"`, `"keep-a-changelog"`, or `"conventional"`:
         changelog: "github",
         // Or false — no-op formatter (writes nothing):
         // changelog: false,
@@ -682,7 +682,7 @@ A few observations:
 
 ### Re-using built-in formatters
 
-To layer a small tweak on top of a built-in — e.g. the github formatter with a footer — set `release.changelog` to the built-in id in your config and wrap the rendered output with a post-process step in your CI. For deeper composition (calling `createGithubFormatter` directly), copy the formatter logic into your own module: the built-in factories live at `packages/tooling/vis/src/release/core/changelog/{default,github,keep-a-changelog}.ts` and are not re-exported from the plugin SDK.
+To layer a small tweak on top of a built-in — e.g. the github formatter with a footer — set `release.changelog` to the built-in id in your config and wrap the rendered output with a post-process step in your CI. For deeper composition (calling `createGithubFormatter` directly), copy the formatter logic into your own module: the built-in factories live at `packages/tooling/vis/src/release/core/changelog/{default,github,keep-a-changelog,conventional}.ts` and are not re-exported from the plugin SDK. The primitives they share sit next to them, one module per concern: the commit-header grammar (`parseConventionalHeader`, `isBreakingChange`) in `changelog/conventional-header.ts`, the grouped-section renderer (`renderGroupedEntries`) in `changelog/sections.ts`, and the heading template (`renderReleaseHeading`, `buildCompareUrl`) in `changelog/release-heading.ts`.
 
 ## Cross-references
 

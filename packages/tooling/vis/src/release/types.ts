@@ -1208,8 +1208,17 @@ export interface VisReleaseConfig {
 
     /**
      * Changelog formatter selection. Pass `false` to disable changelog output,
-     * one of the built-in names (`"default"`, `"github"`, `"keep-a-changelog"`),
-     * a path to a custom module, or a `[path, options]` tuple.
+     * one of the built-in names (`"default"`, `"github"`, `"keep-a-changelog"`,
+     * `"conventional"`), a path to a custom module, or a `[path, options]`
+     * tuple.
+     *
+     * `"conventional"` renders the `conventional-changelog` /
+     * `semantic-release` shape: entries grouped by commit type under
+     * configurable `types: [{ type, section, hidden? }]` headings, the scope
+     * lifted out and bolded (`* **client,react:** …`), and a templated
+     * release heading (`heading`, tokens `{name}`, `{version}`, `{date}`,
+     * `{compareUrl}`). The same `types` / `heading` options are available
+     * opt-in on `"github"`, and `heading` on `"default"`.
      */
     changelog?: false | string | [string, Record<string, unknown>];
     /** Directory holding change files. Default: `".vis/release"`. */
