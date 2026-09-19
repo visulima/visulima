@@ -1,4 +1,5 @@
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -266,12 +267,14 @@ describe("init --from-semantic-release", () => {
         // surfaces as a camelCase property; absent flags are `undefined`.
         const options = {
             apply: undefined,
+            cutover: undefined,
             dryRun: undefined,
             fresh: undefined,
             fromBumpy: undefined,
             fromChangesets: undefined,
             fromSemanticRelease: true,
             packageManager: undefined,
+            packages: undefined,
             workflows: undefined,
             yes: undefined,
             ...overrides,
@@ -283,6 +286,8 @@ describe("init --from-semantic-release", () => {
             command: { name: "init" } as never,
             commandName: "init",
             env: {},
+            // The real `node:fs/promises`, in the shape cerebro injects it.
+            fs: { access, mkdir, readdir, readFile, rm, stat, writeFile },
             logger: fakeLogger(),
             options,
             projectRoot: undefined,
@@ -300,6 +305,9 @@ describe("init --from-semantic-release", () => {
 
     afterEach(() => {
         rmSync(tmpDir, { force: true, recursive: true });
+        // The refusal paths set `process.exitCode`; leaving it set would fail
+        // the whole vitest run even when every test passed.
+        process.exitCode = undefined;
         vi.restoreAllMocks();
     });
 
@@ -329,7 +337,7 @@ describe("init --from-semantic-release", () => {
         expect(pkgA["vis-release"]).toBeUndefined();
     });
 
-    it("writes vis.config.ts, adds release.managed to packages, and deletes .releaserc.json files with --apply", async () => {
+    it("writes vis.config.ts but leaves .releaserc.json + manifests alone with --apply (issue #862)", async () => {
         expect.assertions(8);
 
         const toolbox = fakeToolbox({ apply: true });
@@ -345,6 +353,34 @@ describe("init --from-semantic-release", () => {
 
         expect(visConfig).toContain("defineConfig");
         expect(visConfig).toContain("release: {");
+        expect(visConfig).toContain("defaultManaged: false");
+
+        // Migration off semantic-release is per-package opt-in: no manifest is
+        // marked managed and no .releaserc.json is deleted without --cutover.
+        const pkgA = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-a", "package.json"), "utf8")) as Record<string, unknown>;
+
+        expect(pkgA["vis-release"]).toBeUndefined();
+        expect(existsSync(join(tmpDir, ".releaserc.json"))).toBe(true);
+        expect(existsSync(join(tmpDir, "packages", "pkg-a", ".releaserc.json"))).toBe(true);
+        expect(existsSync(join(tmpDir, "packages", "pkg-b", ".releaserc.json"))).toBe(true);
+    });
+
+    it("adds release.managed to packages and deletes .releaserc.json files with --apply --cutover", async () => {
+        expect.assertions(8);
+
+        const toolbox = fakeToolbox({ apply: true, cutover: true, yes: true });
+
+        await initExecute(toolbox);
+
+        // vis.config.ts is written and already says the packages are managed.
+        const visConfigPath = join(tmpDir, "vis.config.ts");
+
+        expect(existsSync(visConfigPath)).toBe(true);
+
+        const visConfig = readFileSync(visConfigPath, "utf8");
+
+        expect(visConfig).toContain("release: {");
+        expect(visConfig).toContain("defaultManaged: true,");
 
         // Per-package package.json files gained `"vis-release": { "managed": true }`.
         const pkgA = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-a", "package.json"), "utf8")) as Record<string, unknown>;
