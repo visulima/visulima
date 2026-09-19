@@ -10,6 +10,11 @@ const initOptionDefinitions = {
         description: "Actually perform the migration writes (not dry-run)",
         type: Boolean,
     },
+    cutover: {
+        description:
+            "Full cutover: mark every detected package `vis-release.managed` and delete its `.releaserc.*` (Phase 6). Confirms before deleting — pass `--yes` in a non-interactive shell. Without it, `--apply` never touches manifests or `.releaserc.*`.",
+        type: Boolean,
+    },
     "dry-run": {
         description: "Print what would happen without writing files",
         type: Boolean,
@@ -34,6 +39,10 @@ const initOptionDefinitions = {
         description: "Override package manager when generating workflows (npm | pnpm | yarn | bun). Default: auto-detect",
         type: String,
     },
+    packages: {
+        description: "Comma-separated package names (or workspace-relative dirs) to opt into `vis-release.managed` — e.g. '@scope/a,@scope/b'",
+        type: String,
+    },
     workflows: {
         description: "Generate CI workflow files. GitHub → `.github/workflows/vis-release{,-check,-snapshot}.yml`. GitLab → `.gitlab-ci.yml`.",
         type: Boolean,
@@ -54,7 +63,9 @@ const init = defineCommand({
         ["vis release init --from-changesets", "Force changesets migration"],
         ["vis release init --fresh", "Skip migration; start clean"],
         ["vis release init --dry-run", "Print what would happen without writing files"],
-        ["vis release init --from-semantic-release --apply", "Actually perform the semantic-release migration writes"],
+        ["vis release init --from-semantic-release --apply", "Scaffold + write the config; leaves .releaserc.* and manifests untouched"],
+        ["vis release init --from-semantic-release --apply --packages '@scope/a,@scope/b'", "Opt two packages into vis-release"],
+        ["vis release init --from-semantic-release --apply --cutover --yes", "Full cutover: mark every package managed and delete every .releaserc.*"],
     ],
     group: "Release",
     loader: () => import("./handler"),
