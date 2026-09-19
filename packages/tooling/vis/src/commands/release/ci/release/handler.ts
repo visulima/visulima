@@ -26,11 +26,14 @@
  *     downstream workflows on the version-PR)
  */
 
+import { join } from "node:path";
+
 import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { DEFAULT_CHANGES_DIR } from "../../../../release/config";
 import { readChangeFiles } from "../../../../release/core/change-file-reader";
-import { getCurrentBranch, hasUncommittedChanges, pushBranch, stageAndCommit } from "../../../../release/core/git";
+import { runGenerate } from "../../../../release/core/generate/run";
+import { getCurrentBranch, getShortSha, listUncommittedPaths, pushBranch, stageAndCommit, toRepoRelativePath } from "../../../../release/core/git";
 import { applyContext, buildContext, publishContext } from "../../../../release/core/orchestrator";
 import { createShellRunner } from "../../../../release/core/shell-runner";
 import { stateFilePath } from "../../../../release/core/state";
@@ -172,11 +175,26 @@ const applyPrMetadata = async (
     }
 };
 
+/**
+ * The exact filename shape `--generate` writes: `ci-&lt;short sha>.md`, or
+ * `ci-head.md` when the sha probe failed. Anchored and narrow on
+ * purpose — it is the only thing the clean-tree guard is allowed to
+ * forgive, so it must not match a hand-written change file.
+ */
+const GENERATED_CHANGE_FILE_NAME = /^ci-(?:head|[\da-f]{4,40})\.md$/;
+
+/** True for a repo-relative path that is this command's own generated change file. */
+const isGeneratedChangeFile = (path: string, changesDirRelative: string): boolean => {
+    const prefix = changesDirRelative === "" ? "" : `${changesDirRelative}/`;
+
+    return path.startsWith(prefix) && GENERATED_CHANGE_FILE_NAME.test(path.slice(prefix.length));
+};
+
 const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, ReleaseCiReleaseOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const runner = createShellRunner();
 
-    const ctx = await buildContext({ channel: options.channel, cwd });
+    let ctx = await buildContext({ channel: options.channel, cwd });
 
     const { printConfigIfRequested } = await import("../../../../release/core/print-config");
 
@@ -184,14 +202,112 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
         return;
     }
 
-    const mode: "version-pr" | "auto-publish" = options.autoPublish === true ? "auto-publish" : (ctx.channel?.mode ?? "auto-publish");
+    const changesDirectory = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
+    const generating = options.generate === true;
 
-    if (await hasUncommittedChanges({ cwd, runner })) {
-        logger.warn("Working tree has uncommitted changes. CI mode requires a clean tree.");
+    // Clean-tree guard — runs BEFORE `--generate` writes anything.
+    //
+    // It used to run after, which made an aborted run poison every run
+    // that followed: the abort left `ci-<old sha>.md` behind, the next
+    // run at a new HEAD generated `ci-<new sha>.md`, and the leftover
+    // was then "unexpected dirt" forever (issue #864 F2).
+    //
+    // The only thing forgiven, and only under `--generate`, is a
+    // leftover matching the name this command itself writes, inside the
+    // change dir. That file is a genuine pending change file describing
+    // commits that were never released, so the wave consumes it like any
+    // other. With `--generate` off nothing is forgiven and this is
+    // exactly the old "is the tree clean?" boolean.
+    const changesDirRelative = generating ? await toRepoRelativePath({ cwd, runner }, join(cwd, changesDirectory)) : "";
+    const dirtyPaths = await listUncommittedPaths({ cwd, runner });
+    const leftoverGenerated = generating ? dirtyPaths.filter((path) => isGeneratedChangeFile(path, changesDirRelative)) : [];
+    const unexpectedPaths = dirtyPaths.filter((path) => !leftoverGenerated.includes(path));
+
+    if (unexpectedPaths.length > 0) {
+        const preview = unexpectedPaths.slice(0, 5).join(", ");
+        const more = unexpectedPaths.length > 5 ? ` (+${unexpectedPaths.length - 5} more)` : "";
+
+        logger.warn(`Working tree has uncommitted changes. CI mode requires a clean tree. Offending paths: ${preview}${more}`);
         process.exitCode = 1;
 
         return;
     }
+
+    if (leftoverGenerated.length > 0) {
+        logger.warn(`Keeping ${leftoverGenerated.length} change file(s) left behind by an interrupted --generate run: ${leftoverGenerated.join(", ")}.`);
+    }
+
+    // `--generate` (issue #864): derive the change file in-process so a
+    // commit-driven repo needs ONE CI step instead of
+    // `generate` → `git commit` → `ci release`. The generated file is
+    // staged (never committed on its own) so `applyContext`'s
+    // `git add -- <consumed change file>` can stage the deletion —
+    // `git add` refuses a path that was never in the index.
+    if (generating) {
+        const shortSha = await getShortSha({ cwd, runner });
+        const result = await runGenerate({
+            allowFullHistory: options.allowFullHistory === true,
+            config: ctx.config,
+            cwd,
+            from: options.generateFrom,
+            fs,
+            name: `ci-${shortSha ?? "head"}`,
+            packages: ctx.packages,
+            perPackageConfig: ctx.perPackageConfig,
+            runner,
+            // No explicit `--generate-from`? Walk from the last release
+            // tag — on the release branch itself the merge-base with
+            // baseBranch is HEAD, which would always yield nothing.
+            sinceLastRelease: options.generateFrom === undefined,
+        });
+
+        for (const note of result.notes) {
+            logger.info(note);
+        }
+
+        for (const warning of result.warnings) {
+            logger.warn(warning);
+        }
+
+        if (result.status === "failed") {
+            logger.error(result.error);
+            process.exitCode = 1;
+
+            return;
+        }
+
+        if (result.status === "written") {
+            const relativePath = await toRepoRelativePath({ cwd, runner }, result.createdFile);
+            const stage = await runner.run("git", ["add", "--", result.createdFile], { cwd, silent: true });
+
+            if (stage.exitCode !== 0) {
+                logger.error(`Could not stage the generated change file ${relativePath}: ${stage.stderr.trim() || `exit ${stage.exitCode}`}`);
+
+                // The guard above passed, so this file is the only thing
+                // this run added to the tree. Drop it again rather than
+                // leaving it for the next run to trip over.
+                try {
+                    await fs.rm(result.createdFile, { force: true });
+                } catch {
+                    logger.warn(`Could not clean up ${relativePath} after the staging failure — remove it before the next run.`);
+                }
+
+                process.exitCode = 1;
+
+                return;
+            }
+
+            logger.info(`Generated ${relativePath} from ${result.fromRef}..HEAD (${result.bumps.size} package(s)).`);
+
+            // The plan was assembled before the change file existed —
+            // rebuild so the release wave actually sees it.
+            ctx = await buildContext({ channel: options.channel, cwd });
+        } else {
+            logger.info(`--generate derived no bumps from ${result.fromRef}..HEAD.`);
+        }
+    }
+
+    const mode: "version-pr" | "auto-publish" = options.autoPublish === true ? "auto-publish" : (ctx.channel?.mode ?? "auto-publish");
 
     const { files: pendingFiles } = await readChangeFiles({ changesDir: ctx.config.changesDir, cwd });
 
@@ -241,8 +357,7 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
         // success). State-file present → pass `resume: true` so we
         // don't replay every package and either crash on already-
         // published versions or create parallel stages.
-        const changesDir = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        const resumeWave = await hasPriorStateFile(fs, cwd, changesDir);
+        const resumeWave = await hasPriorStateFile(fs, cwd, changesDirectory);
 
         if (resumeWave) {
             logger.info("No pending change files but `.state.json` is present — resuming the prior wave's publish.");
