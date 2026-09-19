@@ -10,9 +10,18 @@
  * produced from that file. Set this on a workspace via
  * `release.changelog: ["default", { authorCredit: true }]` — defaults
  * to off so legacy changelogs don't gain unsolicited credit lines.
+ *
+ * `sections` opts into grouped output. It uses the shared renderer in
+ * `sections.ts`, configured to this formatter's long-standing shape: entries
+ * stay verbatim (no scope lifting), `-` bullets, `!`-marked headers re-typed
+ * to a `breaking` pseudo-type rather than listed in a separate section, and a
+ * `Miscellaneous` catch-all.
  */
 
 import type { ChangelogContext, ChangelogFormatter } from "./api";
+import { buildCompareUrl, renderReleaseHeading } from "./release-heading";
+import type { ConventionalTypeRule, GroupableEntry } from "./sections";
+import { renderGroupedEntries, withBullet } from "./sections";
 
 /**
  * Section heading config — release-please parity. Each rule maps a
@@ -22,18 +31,12 @@ import type { ChangelogContext, ChangelogFormatter } from "./api";
  *
  * Default mapping (when `sections` is omitted) preserves the legacy
  * flat-list output.
+ *
+ * Structurally identical to — and an alias of — the `types` table the
+ * `conventional` and `github` formatters take; the two option names are kept
+ * apart only because `sections` shipped first.
  */
-export interface ChangelogSection {
-    /**
-     * Drop entries of this type entirely. Useful for `chore`, `style`,
-     * `refactor` — the "internal" changes consumers don't care about.
-     */
-    hidden?: boolean;
-    /** Markdown heading (without leading `###`). */
-    section: string;
-    /** Conventional-commit type — `feat`, `fix`, `perf`, `chore`, … */
-    type: string;
-}
+export type ChangelogSection = ConventionalTypeRule;
 
 export interface DefaultFormatterOptions {
     /**
@@ -42,6 +45,23 @@ export interface DefaultFormatterOptions {
      */
     authorCredit?: boolean;
 
+    /** Override the URL prefix used by `{compareUrl}` (self-hosted GitLab, Gitea, …). */
+    compareUrlPrefix?: string;
+
+    /**
+     * Release-heading template. Tokens: `{name}`, `{version}`, `{date}`,
+     * `{compareUrl}` — the `[…]({compareUrl})` link syntax is unwrapped when
+     * there is nothing to compare against (no `repo`/`compareUrlPrefix`, or a
+     * first release), so the heading never degrades to `[1.0.0]()`.
+     *
+     * Omitted (the default) keeps the legacy two-line
+     * `## &lt;version>` + `&lt;sub>&lt;date>&lt;/sub>` heading byte-for-byte.
+     */
+    heading?: string;
+
+    /** `owner/name` slug used to build `{compareUrl}`. Not auto-detected — pass it explicitly. */
+    repo?: string;
+
     /**
      * Group entries under section headings inferred from
      * conventional-commit type prefixes. When omitted, the formatter
@@ -49,10 +69,34 @@ export interface DefaultFormatterOptions {
      * grouping uses the release-please default mapping.
      */
     sections?: ChangelogSection[];
+
+    /**
+     * Tag template naming both ends of `{compareUrl}`. Should match the
+     * workspace `releaseTagPattern`. Default `"{name}@{version}"`.
+     */
+    tagPattern?: string;
 }
 
+/**
+ * Pseudo-type `feat!:` / `fix(scope)!:` entries are re-bucketed under, so the
+ * table below can give them a section without the operator having to invent a
+ * `breaking:` commit type.
+ */
+const BREAKING_PSEUDO_TYPE = "breaking";
+
+/** Catch-all heading for entries no rule in `sections` claims. */
+const MISCELLANEOUS_SECTION = "Miscellaneous";
+
+/** List marker this formatter has always used. */
+const BULLET = "-";
+
+/**
+ * Release-please's default mapping, used when `sections: []`. Deliberately not
+ * the `conventional` formatter's table: this one shows `docs`, carries the
+ * `breaking` pseudo-type, and leans on the `Miscellaneous` catch-all.
+ */
 const DEFAULT_SECTIONS: ChangelogSection[] = [
-    { section: "Breaking Changes", type: "breaking" },
+    { section: "Breaking Changes", type: BREAKING_PSEUDO_TYPE },
     { section: "Features", type: "feat" },
     { section: "Bug Fixes", type: "fix" },
     { section: "Performance Improvements", type: "perf" },
@@ -66,119 +110,11 @@ const DEFAULT_SECTIONS: ChangelogSection[] = [
     { hidden: true, section: "Miscellaneous Chores", type: "chore" },
 ];
 
-const COMMIT_TYPE_REGEX = /^(?<type>[a-z]+)(?:\([^)]+\))?!?:\s+/;
-
-/**
- * Optional gitmoji / `:shortcode:` prefix preceding the conventional
- * commit type (release-please #2385 parity).
- *
- * Some teams use ":rocket: feat: add tab completion" or "🚀 feat: …".
- * Strip a leading single emoji codepoint OR a `:word:` shortcode (plus
- * trailing whitespace) before applying COMMIT_TYPE_REGEX so the parser
- * doesn't bail on the leading non-ASCII glyph.
- */
-const GITMOJI_PREFIX_REGEX = /^(?:[\p{Emoji_Presentation}\p{Extended_Pictographic}]|:\w+:)\s+/u;
-
-/**
- * Extract a conventional-commit type from a body line. Returns
- * `undefined` for lines that don't match the convention; the caller
- * is responsible for the "no type" bucket.
- *
- * `feat!:`/`fix!:`/etc. → `"breaking"` so type-level breaking
- * conventions get the `Breaking Changes` section without requiring
- * the operator to use a custom `breaking:` prefix.
- *
- * A leading gitmoji (Unicode emoji codepoint) or `:shortcode:` is
- * stripped before parsing (release-please #2385). Lines like
- * `:rocket: feat: add tab completion` and `🚀 feat: add tab completion`
- * both yield `"feat"`.
- */
-const extractCommitType = (line: string): string | undefined => {
-    // Strip a leading gitmoji / shortcode before applying the conventional-
-    // commits regex. Keeps the rest of the parser unchanged.
-    const stripped = line.replace(GITMOJI_PREFIX_REGEX, "");
-    const match = COMMIT_TYPE_REGEX.exec(stripped);
-
-    if (!match?.groups?.["type"]) {
-        return undefined;
-    }
-
-    // Breaking-change shorthand: `feat!:` / `fix!:` / etc.
-    if (stripped.includes("!:") && stripped.split("!:")[0]?.match(/^[a-z]+(?:\([^)]+\))?$/)) {
-        return "breaking";
-    }
-
-    return match.groups["type"];
-};
-
 const formatAuthor = (author: string): string => `(${author.startsWith("@") ? author : `@${author}`})`;
 
-const renderFlat = (lines: string[], entries: { line: string; suffix: string }[]): void => {
+const renderFlat = (lines: string[], entries: ReadonlyArray<GroupableEntry>): void => {
     for (const entry of entries) {
-        const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
-
-        lines.push(`${normalised}${entry.suffix}`);
-    }
-};
-
-const renderSectioned = (lines: string[], entries: { line: string; suffix: string; type: string | undefined }[], sections: ChangelogSection[]): void => {
-    // Bucket entries by type. Lines without a recognised type go to a
-    // "Miscellaneous" catch-all rendered after every configured
-    // section, unless that catch-all type is itself hidden.
-    const byType = new Map<string, { line: string; suffix: string }[]>();
-
-    for (const entry of entries) {
-        const type = entry.type ?? "other";
-        const bucket = byType.get(type) ?? [];
-
-        bucket.push({ line: entry.line, suffix: entry.suffix });
-        byType.set(type, bucket);
-    }
-
-    for (const rule of sections) {
-        const bucket = byType.get(rule.type);
-
-        if (rule.hidden) {
-            // Hidden types are dropped entirely — remove the bucket so it
-            // doesn't leak into the Miscellaneous catch-all rendered below.
-            byType.delete(rule.type);
-
-            continue;
-        }
-
-        if (!bucket || bucket.length === 0) {
-            continue;
-        }
-
-        lines.push(`### ${rule.section}`);
-        lines.push("");
-
-        for (const entry of bucket) {
-            const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
-
-            lines.push(`${normalised}${entry.suffix}`);
-        }
-
-        lines.push("");
-
-        byType.delete(rule.type);
-    }
-
-    // Leftover types not covered by `sections` → catch-all section.
-    // Skip if `other` is configured + hidden.
-    const otherHidden = sections.some((s) => s.type === "other" && s.hidden);
-
-    if (!otherHidden && byType.size > 0) {
-        lines.push("### Miscellaneous");
-        lines.push("");
-
-        for (const bucket of byType.values()) {
-            for (const entry of bucket) {
-                const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
-
-                lines.push(`${normalised}${entry.suffix}`);
-            }
-        }
+        lines.push(`${withBullet(entry.line, BULLET)}${entry.suffix ?? ""}`);
     }
 };
 
@@ -189,14 +125,25 @@ export const createDefaultFormatter
             const lines: string[] = [];
 
             if (target !== "github-release") {
-                lines.push(`## ${release.newVersion}`);
-                lines.push(`<sub>${date}</sub>`);
-                lines.push("");
+                if (options.heading === undefined) {
+                    lines.push(`## ${release.newVersion}`);
+                    lines.push(`<sub>${date}</sub>`);
+                    lines.push("");
+                } else {
+                    const compareUrl = buildCompareUrl({
+                        compareUrlPrefix: options.compareUrlPrefix,
+                        name: release.name,
+                        newVersion: release.newVersion,
+                        oldVersion: release.oldVersion,
+                        repo: options.repo,
+                        tagPattern: options.tagPattern,
+                    });
+
+                    lines.push(renderReleaseHeading(options.heading, { compareUrl, date, name: release.name, version: release.newVersion }), "");
+                }
             }
 
-            // Collect entries with their inferred conventional-commit type
-            // so the renderer can decide flat-list vs sectioned output.
-            const entries: { line: string; suffix: string; type: string | undefined }[] = [];
+            const entries: GroupableEntry[] = [];
 
             for (const file of changeFiles) {
                 const body = file.body.trim();
@@ -211,18 +158,25 @@ export const createDefaultFormatter
                 for (const rawLine of body.split(/\r?\n/)) {
                     const line = rawLine.trim();
 
-                    if (!line) {
-                        continue;
+                    if (line) {
+                        entries.push({ line, suffix });
                     }
-
-                    entries.push({ line, suffix, type: extractCommitType(line) });
                 }
             }
 
             const sections = options.sections === undefined ? undefined : options.sections.length === 0 ? DEFAULT_SECTIONS : options.sections;
 
             if (sections) {
-                renderSectioned(lines, entries, sections);
+                lines.push(
+                    ...renderGroupedEntries(entries, {
+                        breakingSection: false,
+                        breakingType: BREAKING_PSEUDO_TYPE,
+                        bullet: BULLET,
+                        entryStyle: "verbatim",
+                        types: sections,
+                        uncategorizedSection: MISCELLANEOUS_SECTION,
+                    }),
+                );
             } else {
                 renderFlat(lines, entries);
             }

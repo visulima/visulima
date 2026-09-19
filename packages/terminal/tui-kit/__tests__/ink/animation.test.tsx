@@ -90,7 +90,8 @@ describe(AnimatePresence, () => {
     // Windows runners don't reliably complete the exit transition in 200ms;
     // the 30ms duration + 5ms tickInterval race the event loop on slow CI.
     it.skipIf(process.platform === "win32")("should keep a removed child mounted until its exit animation finishes", async () => {
-        expect.assertions(2);
+        // `hasAssertions` rather than a count: the polled expectation below runs once per tick.
+        expect.hasAssertions();
 
         const Harness = ({ visible }: { visible: boolean }) => (
             <AnimatePresence>
@@ -124,9 +125,9 @@ describe(AnimatePresence, () => {
         // should still be rendering it (show=false, transitioning out).
         expect(getOutput()).toContain("panel-body");
 
-        await delay(200);
-
-        // After the exit transition finishes AnimatePresence unmounts it.
-        expect(getOutput()).not.toContain("panel-body");
+        // After the exit transition finishes AnimatePresence unmounts it. A fixed delay
+        // races the runner: macOS CI needed longer than 200ms and failed all four attempts.
+        // Poll for the unmount instead, so the test still fails if it never happens.
+        await vi.waitFor(() => expect(getOutput()).not.toContain("panel-body"), { interval: 10, timeout: 2000 });
     });
 });

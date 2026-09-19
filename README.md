@@ -19,6 +19,7 @@
 [![mit licence][license-badge]][license]
 [![Chat][chat-badge]][chat]
 [![PRs Welcome][prs-welcome-badge]][prs-welcome]
+[![OpenSSF Scorecard][scorecard-badge]][scorecard]
 
 </div>
 
@@ -244,11 +245,13 @@ We have a list of [good first issues](https://github.com/visulima/visulima/label
 
 <!-- badges -->
 
+[scorecard-badge]: https://api.scorecard.dev/projects/github.com/visulima/visulima/badge?style=for-the-badge
+[scorecard]: https://scorecard.dev/viewer/?uri=github.com/visulima/visulima
 [license-badge]: https://img.shields.io/badge/LICENSE-MIT-green?style=for-the-badge
 [license]: https://github.com/visulima/visulima/blob/main/LICENSE
 [prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
 [prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
-[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
-[chat]: https://discord.gg/TtFJY8xkFK
+[chat-badge]: https://img.shields.io/discord/902465130518949899.svg?style=for-the-badge
+[chat]: https://discord.gg/eajEZvk2PG
 [typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: https://www.typescriptlang.org/

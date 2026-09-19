@@ -319,3 +319,114 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect(result).toContain("- Untagged note here.");
     });
 });
+
+describe("default formatter: byte-for-byte output (guards the shared-renderer refactor)", () => {
+    /** One body covering every branch: breaking, visible, hidden, unmapped and unparseable. */
+    const MIXED_BODY = [
+        "feat: add tab completion",
+        "feat!: drop legacy API",
+        "fix(cli): handle empty input",
+        "chore: bump linter",
+        "docs: tweak readme",
+        "banana: peel it",
+        "Untagged note here.",
+    ].join("\n");
+
+    const mkMixedCtx = (release: PlannedRelease = mkRelease()): ChangelogContext =>
+        mkCtx({ changeFiles: [{ body: MIXED_BODY, id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }], release });
+
+    it("`sections: []` renders the release-please default table unchanged", async () => {
+        expect.hasAssertions();
+
+        const result = await createDefaultFormatter({ sections: [] })(mkMixedCtx());
+
+        expect(result).toBe(
+            [
+                "## 1.1.0",
+                "<sub>2026-05-02</sub>",
+                "",
+                "### Breaking Changes",
+                "",
+                "- feat!: drop legacy API",
+                "",
+                "### Features",
+                "",
+                "- feat: add tab completion",
+                "",
+                "### Bug Fixes",
+                "",
+                "- fix(cli): handle empty input",
+                "",
+                "### Documentation",
+                "",
+                "- docs: tweak readme",
+                "",
+                "### Miscellaneous",
+                "",
+                "- banana: peel it",
+                "- Untagged note here.",
+            ].join("\n"),
+        );
+    });
+
+    it("a custom table renders unchanged, catch-all included", async () => {
+        expect.hasAssertions();
+
+        const result = await createDefaultFormatter({
+            sections: [
+                { section: "Headlines", type: "feat" },
+                { hidden: true, section: "Internal", type: "chore" },
+            ],
+        })(mkMixedCtx());
+
+        expect(result).toBe(
+            [
+                "## 1.1.0",
+                "<sub>2026-05-02</sub>",
+                "",
+                "### Headlines",
+                "",
+                "- feat: add tab completion",
+                "",
+                "### Miscellaneous",
+                "",
+                "- feat!: drop legacy API",
+                "- fix(cli): handle empty input",
+                "- docs: tweak readme",
+                "- banana: peel it",
+                "- Untagged note here.",
+            ].join("\n"),
+        );
+    });
+
+    it("appends cascade notes straight after the catch-all, as it always has", async () => {
+        expect.hasAssertions();
+
+        const result = await createDefaultFormatter({ sections: [] })(
+            mkMixedCtx(mkRelease({ isCascadeBump: true, sources: [{ bumpType: "minor", name: "@scope/core", newVersion: "2.0.0" }] })),
+        );
+
+        expect(result.endsWith(["- banana: peel it", "- Untagged note here.", "- Cascade from @scope/core@2.0.0"].join("\n"))).toBe(true);
+    });
+
+    it("`sections` omitted stays a flat list", async () => {
+        expect.hasAssertions();
+
+        const result = await createDefaultFormatter()(mkMixedCtx());
+
+        expect(result).toBe(
+            [
+                "## 1.1.0",
+                "<sub>2026-05-02</sub>",
+                "",
+                "- feat: add tab completion",
+                "- feat!: drop legacy API",
+                "- fix(cli): handle empty input",
+                "- chore: bump linter",
+                "- docs: tweak readme",
+                "- banana: peel it",
+                "- Untagged note here.",
+            ].join("\n"),
+        );
+    });
+});
