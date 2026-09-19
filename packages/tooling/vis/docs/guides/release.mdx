@@ -193,11 +193,28 @@ vis release init --from-semantic-release
 vis release init --from-bumpy
 ```
 
-By default `init` runs in **plan mode** — it prints what would change without writing files. Add `--apply` to perform the writes (currently wired for `--from-semantic-release`: writes the suggested `vis.config.ts` block, opts every detected package into `vis-release.managed: true`, and deletes migrated `.releaserc.*` files):
+A semantic-release migration runs in **plan mode** by default — the whole run, scaffold included, prints what would change and writes
+nothing. Add `--apply` to perform the writes: it scaffolds `.vis/release/`, writes the ignore-file entries and injects the suggested
+`vis.config.ts` block. (`--from-changesets` / `--from-bumpy` / `--fresh` still scaffold straight away; only the semantic-release lane
+waits for `--apply`, because it is the lane with a destructive Phase 6 behind it.)
+
+`--apply` on its own is deliberately non-destructive — migrating off semantic-release is per-package opt-in, so it leaves every
+`.releaserc.*` and every manifest alone. Opt packages in as you go with `--packages`, and only run the full Phase-6 cutover once they are
+all migrated:
 
 ```bash
-vis release init --from-semantic-release --apply
+vis release init --from-semantic-release --apply                                  # Scaffold + config only
+vis release init --from-semantic-release --apply --packages '@scope/a,@scope/b'   # Opt two packages in
+vis release init --from-semantic-release --apply --cutover --yes                  # Phase 6: all packages, delete every .releaserc.*
 ```
+
+`--cutover` is the only flag that deletes `.releaserc.*` files, and it flips the generated config to `defaultManaged: true`. It confirms
+before deleting anything — interactively with a prompt, non-interactively only with `--yes` — and refuses to run at all if the
+`vis.config.ts` release block could not be written, so a failed config write can never leave you with neither release system. "Could be
+written" is decided structurally: an existing root `release` property means the repo is already configured and the cutover proceeds, but a
+`release:` inside a comment, a string, or another object is not configuration and does not unlock it. Deletions also stay inside the
+workspace — the walk never descends through a symlinked directory. Pair any of these with `--dry-run` to see the exact list of files that
+run would touch.
 
 See the [comparison page](./release-comparison.mdx#migration) for what carries over and what doesn't.
 
@@ -313,29 +330,29 @@ Explicit `managed: false` always wins. Private packages (`"private": true`) are 
 
 ## Commands
 
-| Command                          | What it does                                                                              |
-| -------------------------------- | ----------------------------------------------------------------------------------------- |
-| `vis release init`               | Scaffold the subsystem; auto-detect migration source. `--apply` writes                    |
-| `vis release add`                | Author a change file (interactive or `--packages '@a:minor,@b:patch'`)                    |
-| `vis release generate`           | Derive a change file from branch commits                                                  |
-| `vis release status`             | Human-readable pending plan (table)                                                       |
-| `vis release plan`               | JSON plan; `--interactive` walks you through overrides                                    |
-| `vis release next-version`       | Print `<pkg> <old> -> <new>` for every package in the plan                                |
-| `vis release changelog`          | Render the would-be changelog entries without writing                                     |
-| `vis release check`              | Verify change files cover every changed package (husky / CI gate)                         |
-| `vis release doctor`             | Preflight diagnostics                                                                     |
-| `vis release version`            | Apply the plan to disk                                                                    |
-| `vis release publish`            | Pack + publish + tag + push                                                               |
-| `vis release snapshot`           | Ephemeral `0.0.0-<tag>-<sha>` PR previews                                                 |
-| `vis release pre enter/exit`     | Toggle changesets-compatible pre-mode (every `version` is a prerelease)                   |
-| `vis release stage list/approve` | Manage `npm stage publish` records ([staged publishing](./release-staged-publishing.mdx)) |
-| `vis release notifications test` | Dry-run configured Slack / Discord / webhook destinations                                 |
-| `vis release ci release`         | The CI driver — opens / updates the version-PR (or `--auto-publish` to skip)              |
-| `vis release ci snapshot`        | CI snapshot publish + sticky PR comment                                                   |
-| `vis release ci check`           | Sticky-comment the pending plan on the PR                                                 |
-| `vis release ci plan`            | Emit JSON plan + write to `$GITHUB_OUTPUT` for workflow gating                            |
-| `vis release ci rebase-pr`       | Rebase the version-PR onto base — wire to a cron when `versionPr.autoRebase` is on        |
-| `vis release ci setup`           | Print the recommended secrets / permissions checklist                                     |
+| Command                          | What it does                                                                                    |
+| -------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `vis release init`               | Scaffold the subsystem; auto-detect migration source. `--apply` writes, `--cutover` for Phase 6 |
+| `vis release add`                | Author a change file (interactive or `--packages '@a:minor,@b:patch'`)                          |
+| `vis release generate`           | Derive a change file from branch commits                                                        |
+| `vis release status`             | Human-readable pending plan (table)                                                             |
+| `vis release plan`               | JSON plan; `--interactive` walks you through overrides                                          |
+| `vis release next-version`       | Print `<pkg> <old> -> <new>` for every package in the plan                                      |
+| `vis release changelog`          | Render the would-be changelog entries without writing                                           |
+| `vis release check`              | Verify change files cover every changed package (husky / CI gate)                               |
+| `vis release doctor`             | Preflight diagnostics                                                                           |
+| `vis release version`            | Apply the plan to disk                                                                          |
+| `vis release publish`            | Pack + publish + tag + push                                                                     |
+| `vis release snapshot`           | Ephemeral `0.0.0-<tag>-<sha>` PR previews                                                       |
+| `vis release pre enter/exit`     | Toggle changesets-compatible pre-mode (every `version` is a prerelease)                         |
+| `vis release stage list/approve` | Manage `npm stage publish` records ([staged publishing](./release-staged-publishing.mdx))       |
+| `vis release notifications test` | Dry-run configured Slack / Discord / webhook destinations                                       |
+| `vis release ci release`         | The CI driver — opens / updates the version-PR (or `--auto-publish` to skip)                    |
+| `vis release ci snapshot`        | CI snapshot publish + sticky PR comment                                                         |
+| `vis release ci check`           | Sticky-comment the pending plan on the PR                                                       |
+| `vis release ci plan`            | Emit JSON plan + write to `$GITHUB_OUTPUT` for workflow gating                                  |
+| `vis release ci rebase-pr`       | Rebase the version-PR onto base — wire to a cron when `versionPr.autoRebase` is on              |
+| `vis release ci setup`           | Print the recommended secrets / permissions checklist                                           |
 
 See [the commands reference](../commands/release.mdx) for per-flag detail.
 
