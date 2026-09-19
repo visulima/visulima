@@ -239,7 +239,7 @@ describe("template-engines", () => {
         });
 
         describe(renderMjml, () => {
-            it("should render MJML to HTML", () => {
+            it("should render MJML to HTML", async () => {
                 expect.assertions(2);
 
                 const mjmlResult = {
@@ -247,9 +247,9 @@ describe("template-engines", () => {
                     html: "<div>Rendered HTML</div>",
                 };
 
-                mockMjml.default.mockReturnValue(mjmlResult);
+                mockMjml.default.mockResolvedValue(mjmlResult);
 
-                const result = renderMjml("<mjml><mj-body><mj-text>Hello</mj-text></mj-body></mjml>");
+                const result = await renderMjml("<mjml><mj-body><mj-text>Hello</mj-text></mj-body></mjml>");
 
                 expect(mockMjml.default).toHaveBeenCalledWith("<mjml><mj-body><mj-text>Hello</mj-text></mj-body></mjml>", {
                     beautify: false,
@@ -261,7 +261,7 @@ describe("template-engines", () => {
                 expect(result).toBe("<div>Rendered HTML</div>");
             });
 
-            it("should render with custom options", () => {
+            it("should render with custom options", async () => {
                 expect.assertions(2);
 
                 const mjmlResult = {
@@ -269,7 +269,7 @@ describe("template-engines", () => {
                     html: "<div>Custom HTML</div>",
                 };
 
-                mockMjml.default.mockReturnValue(mjmlResult);
+                mockMjml.default.mockResolvedValue(mjmlResult);
                 const options = {
                     beautify: true,
                     fonts: { "Open Sans": "https://fonts.googleapis.com/css?family=Open+Sans" },
@@ -277,7 +277,7 @@ describe("template-engines", () => {
                     validationLevel: "strict" as const,
                 };
 
-                const result = renderMjml("<mjml></mjml>", {}, options);
+                const result = await renderMjml("<mjml></mjml>", {}, options);
 
                 expect(mockMjml.default).toHaveBeenCalledWith("<mjml></mjml>", {
                     beautify: true,
@@ -289,13 +289,13 @@ describe("template-engines", () => {
                 expect(result).toBe("<div>Custom HTML</div>");
             });
 
-            it("should throw error for non-string template", () => {
+            it("should throw error for non-string template", async () => {
                 expect.assertions(2);
-                expect(() => renderMjml(null)).toThrow(EmailError);
-                expect(() => renderMjml(null)).toThrow("MJML template must be a string");
+                await expect(renderMjml(null)).rejects.toThrow(EmailError);
+                await expect(renderMjml(null)).rejects.toThrow("MJML template must be a string");
             });
 
-            it("should throw EmailError for MJML validation errors", () => {
+            it("should throw EmailError for MJML validation errors", async () => {
                 expect.assertions(2);
 
                 const mjmlResult = {
@@ -303,13 +303,13 @@ describe("template-engines", () => {
                     html: "<div>Error HTML</div>",
                 };
 
-                mockMjml.default.mockReturnValue(mjmlResult);
+                mockMjml.default.mockResolvedValue(mjmlResult);
 
-                expect(() => renderMjml("<invalid>")).toThrow(EmailError);
-                expect(() => renderMjml("<invalid>")).toThrow("MJML validation errors: Invalid tag; Missing attribute");
+                await expect(renderMjml("<invalid>")).rejects.toThrow(EmailError);
+                await expect(renderMjml("<invalid>")).rejects.toThrow("MJML validation errors: Invalid tag; Missing attribute");
             });
 
-            it("should throw EmailError when MJML is not installed", () => {
+            it("should throw EmailError when MJML is not installed", async () => {
                 expect.assertions(2);
 
                 const error = new Error("Cannot find module 'mjml'");
@@ -318,11 +318,11 @@ describe("template-engines", () => {
                     throw error;
                 });
 
-                expect(() => renderMjml("<mjml></mjml>")).toThrow(EmailError);
-                expect(() => renderMjml("<mjml></mjml>")).toThrow("MJML is not installed. Please install it: pnpm add mjml");
+                await expect(renderMjml("<mjml></mjml>")).rejects.toThrow(EmailError);
+                await expect(renderMjml("<mjml></mjml>")).rejects.toThrow("MJML is not installed. Please install it: pnpm add mjml");
             });
 
-            it("should re-throw EmailError instances", () => {
+            it("should re-throw EmailError instances", async () => {
                 expect.assertions(1);
 
                 const emailError = new EmailError("mjml", "Custom error");
@@ -331,7 +331,7 @@ describe("template-engines", () => {
                     throw emailError;
                 });
 
-                expect(() => renderMjml("<mjml></mjml>")).toThrow(emailError);
+                await expect(renderMjml("<mjml></mjml>")).rejects.toThrow(emailError);
             });
         });
     });

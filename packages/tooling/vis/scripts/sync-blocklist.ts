@@ -7,9 +7,10 @@
  * already-known so they are never re-discovered or duplicated. Only the auto
  * file is written.
  *
- * Usage:
- *   npx tsx scripts/sync-blocklist.ts              # all packages in JSON
- *   npx tsx scripts/sync-blocklist.ts react vue     # specific packages
+ * Usage (needs Node >= 22.18, where type stripping is on by default; on 22.14-22.17
+ * run `node --experimental-strip-types scripts/sync-blocklist.ts` instead):
+ *   node scripts/sync-blocklist.ts              # all packages in JSON
+ *   node scripts/sync-blocklist.ts react vue     # specific packages
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -17,7 +18,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { Blocklist } from "../src/security/typosquats";
-import { generateVariants } from "../src/security/typosquat-variants";
+import { generateVariants } from "../src/security/typosquat-variants.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = resolve(__dirname, "../data/typosquats.json");

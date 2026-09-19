@@ -71,7 +71,10 @@ export default createConfig(
             "@typescript-eslint/restrict-template-expressions": "off",
             // `is-in-ci` covers the providers that do not set a bare `CI`; the CLI gates prompts
             // and TUI output on it, so a hand-rolled check would prompt in a CI run.
-            "e18e/ban-dependencies": ["error", { allowed: ["is-in-ci"] }],
+            // `semver` backs the release manager's range/precedence logic across 23 modules —
+            // the suggested replacement is not a drop-in, and getting version comparison subtly
+            // wrong there mis-publishes packages. Revisit as a deliberate migration, not a lint fix.
+            "e18e/ban-dependencies": ["error", { allowed: ["is-in-ci", "semver"] }],
             // Static regex optimization is not critical in CLI startup code
             "e18e/prefer-static-regex": "off",
             // Inline exports are used throughout for co-located declarations

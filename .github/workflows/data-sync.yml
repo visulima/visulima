@@ -57,7 +57,7 @@ jobs:
             - name: "Sync typosquats blocklist"
               if: "success()"
               working-directory: "packages/tooling/vis"
-              run: "npx tsx scripts/sync-blocklist.ts"
+              run: "node scripts/sync-blocklist.ts"
 
             - name: "Commit data updates"
               if: "success()"
