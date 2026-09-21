@@ -1,3 +1,10 @@
+## @visulima/package [5.0.23](https://github.com/visulima/visulima/compare/@visulima/package@5.0.22...@visulima/package@5.0.23) (2026-09-21)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.10
+
 ## @visulima/package [5.0.22](https://github.com/visulima/visulima/compare/@visulima/package@5.0.21...@visulima/package@5.0.22) (2026-09-21)
 
 ### Miscellaneous Chores
