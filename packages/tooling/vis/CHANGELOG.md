@@ -1,3 +1,38 @@
+## @visulima/vis [4.1.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.0.2...@visulima/vis@4.1.0) (2026-09-21)
+
+### Features
+
+* **vis:** group changelog entries by commit type ([#870](https://github.com/visulima/visulima/issues/870)) ([7d585a9](https://github.com/visulima/visulima/commit/7d585a9ea8e20ef5e826c9546804c5d786afef14)), closes [#865](https://github.com/visulima/visulima/issues/865)
+* **vis:** support commit-driven release ci flows ([#869](https://github.com/visulima/visulima/issues/869)) ([53f7969](https://github.com/visulima/visulima/commit/53f7969bd713688d891d17dec28cef8a0a3188d1))
+
+### Bug Fixes
+
+* unblock the failing pipelines (audit gate, mjml, semver ban, data sync) ([#873](https://github.com/visulima/visulima/issues/873)) ([18709d4](https://github.com/visulima/visulima/commit/18709d48e80109c3ac02d3b6217812d759f1a572)), closes [#869](https://github.com/visulima/visulima/issues/869) [#870](https://github.com/visulima/visulima/issues/870)
+* **vis:** make release init --apply per-package opt-in ([#867](https://github.com/visulima/visulima/issues/867)) ([632d9e0](https://github.com/visulima/visulima/commit/632d9e0cd7d78b69a7c7367fc7d9696a1bb2515f)), closes [#862](https://github.com/visulima/visulima/issues/862)
+* **vis:** surface release in help and fix doctor cause ([#868](https://github.com/visulima/visulima/issues/868)) ([e826ef9](https://github.com/visulima/visulima/commit/e826ef96162a6d59443f1174f4ca75240cf6e917)), closes [#863](https://github.com/visulima/visulima/issues/863)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+### Build System
+
+* **deps:** Bump fastify in /packages/tooling/vis/examples/docker ([#856](https://github.com/visulima/visulima/issues/856)) ([4cbfa90](https://github.com/visulima/visulima/commit/4cbfa90be8d6c6d36c4c6b4fc76d62e18dc383cd))
+
+### Continuous Integration
+
+* **task-runner,vis:** track native criterion benches on CodSpeed ([#866](https://github.com/visulima/visulima/issues/866)) ([846be71](https://github.com/visulima/visulima/commit/846be71ace30bc4e69b7458418dfa4a440f9f97b))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.9
+* **@visulima/tui-kit:** upgraded to 1.0.12
+* **@visulima/cerebro:** upgraded to 3.1.2
+* **@visulima/fs:** upgraded to 6.0.9
+* **@visulima/package:** upgraded to 5.0.22
+* **@visulima/tsconfig:** upgraded to 3.2.16
+
 ## @visulima/vis [4.0.2](https://github.com/visulima/visulima/compare/@visulima/vis@4.0.1...@visulima/vis@4.0.2) (2026-09-07)
 
 
