@@ -5,6 +5,7 @@ export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 export { default as Icon } from "./components/icon";
 export { default as Input } from "./components/input";
 export { default as Label } from "./components/label";
+export { default as LoadingState } from "./components/loading-state";
 export { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "./components/popover";
 export { default as Progress } from "./components/progress";
 export type { SelectOption } from "./components/select";
@@ -15,5 +16,6 @@ export { default as Switch } from "./components/switch";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/tabs";
 export { default as Textarea } from "./components/textarea";
 export { Tooltip, TooltipContent, TooltipTrigger } from "./components/tooltip";
+export { useCopy } from "./hooks/use-copy";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { clsx } from "clsx";

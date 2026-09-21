@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { TailwindConfigResult } from "../../rpc/functions/tailwind-config";
 import type { AppComponentProps } from "../../types/app";
+import { LoadingState, useCopy } from "../../ui";
 
 type Tab = "colors" | "spacing" | "type" | "effects" | "config";
 
@@ -199,26 +200,6 @@ const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>;
     }
 
     return { scales: scaleMap, semantic };
-};
-
-// ─── Copy button hook ─────────────────────────────────────────────────────────
-
-const useCopy = (): { copied: boolean; copy: (text: string) => void } => {
-    const [copied, setCopied] = useState(false);
-    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const copy = (text: string): void => {
-        navigator.clipboard.writeText(text).catch(() => {});
-        setCopied(true);
-
-        if (timer.current) {
-            clearTimeout(timer.current);
-        }
-
-        timer.current = setTimeout(setCopied, 1500, false);
-    };
-
-    return { copied, copy };
 };
 
 // ─── Section header ───────────────────────────────────────────────────────────
@@ -638,16 +619,7 @@ const ConfigTab = ({
     const [colorSearch, setColorSearch] = useState("");
 
     if (loading) {
-        return (
-            <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div aria-hidden="true" class="flex gap-1.5 items-center">
-                    {([0, 160, 320] as const).map((delay) => (
-                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
-                    ))}
-                </div>
-                <span class="text-[0.75rem] text-muted-foreground">Loading Tailwind config…</span>
-            </div>
-        );
+        return <LoadingState label="Loading Tailwind config…" />;
     }
 
     if (error || !configData) {

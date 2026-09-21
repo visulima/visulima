@@ -5,7 +5,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
-import { Button, Input } from "../../ui";
+import { Button, Input, LoadingState } from "../../ui";
 
 interface ModuleEntry {
     ext: string;
@@ -109,16 +109,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     };
 
     if (loading) {
-        return (
-            <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div aria-hidden="true" class="flex gap-1.5 items-center">
-                    {([0, 160, 320] as const).map((delay) => (
-                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
-                    ))}
-                </div>
-                <span class="text-[0.75rem] text-muted-foreground">Scanning module graph…</span>
-            </div>
-        );
+        return <LoadingState label="Scanning module graph…" />;
     }
 
     if (error) {

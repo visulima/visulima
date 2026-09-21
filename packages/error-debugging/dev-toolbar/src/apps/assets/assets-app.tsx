@@ -2,11 +2,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import type { StaticAsset } from "../../types/rpc";
-import { Button, Input } from "../../ui";
+import { Button, Input, LoadingState, useCopy } from "../../ui";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -105,16 +105,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState<StaticAsset["type"] | "all">("all");
     const [selected, setSelected] = useState<StaticAsset | undefined>(undefined);
-    const [copied, setCopied] = useState(false);
-    const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-    // Clear the copy feedback timer on unmount
-    useEffect(
-        () => () => {
-            clearTimeout(copyTimerRef.current);
-        },
-        [],
-    );
+    const { copied, copy } = useCopy();
 
     const load = (): void => {
         setLoading(true);
@@ -149,31 +140,11 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     });
 
     const copyPath = (asset: StaticAsset): void => {
-        navigator.clipboard
-            .writeText(asset.publicPath)
-            .then(() => {
-                clearTimeout(copyTimerRef.current);
-                setCopied(true);
-                copyTimerRef.current = setTimeout(setCopied, 1500, false);
-
-                return undefined;
-            })
-            .catch(() => {
-                /* ignore */
-            });
+        copy(asset.publicPath);
     };
 
     if (loading) {
-        return (
-            <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div aria-hidden="true" class="flex gap-1.5 items-center">
-                    {([0, 160, 320] as const).map((delay) => (
-                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
-                    ))}
-                </div>
-                <span class="text-[0.75rem] text-muted-foreground">Scanning assets…</span>
-            </div>
-        );
+        return <LoadingState label="Scanning assets…" />;
     }
 
     if (error) {

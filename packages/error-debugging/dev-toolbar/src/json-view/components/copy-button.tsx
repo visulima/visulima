@@ -2,27 +2,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
 import type { JSX } from "preact";
-import { useState } from "preact/hooks";
 
-const COPIED_RESET_MS = 1500;
+import { useCopy } from "../../ui";
 
-/** Copy-to-clipboard button. Owns its own `copied` flash, so no view state is needed for it. */
+/** Copy-to-clipboard button. The flash is the shared `useCopy` behaviour. */
 const CopyButton = ({ text }: { text: string }): JSX.Element => {
-    const [copied, setCopied] = useState(false);
-
-    const copy = (): void => {
-        navigator.clipboard
-            .writeText(text)
-            .then(() => {
-                setCopied(true);
-                setTimeout(setCopied, COPIED_RESET_MS, false);
-
-                return undefined;
-            })
-            .catch(() => {
-                /* clipboard unavailable — nothing useful to show */
-            });
-    };
+    const { copied, copy } = useCopy();
 
     return (
         <button
@@ -32,7 +17,9 @@ const CopyButton = ({ text }: { text: string }): JSX.Element => {
                     ? "border-primary text-primary bg-card"
                     : "border-border text-muted-foreground hover:text-foreground hover:border-foreground bg-transparent",
             )}
-            onClick={copy}
+            onClick={() => {
+                copy(text);
+            }}
             title="Copy to clipboard"
             type="button"
         >
