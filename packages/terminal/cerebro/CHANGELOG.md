@@ -1,3 +1,13 @@
+## @visulima/cerebro [3.1.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.1.1...@visulima/cerebro@3.1.2) (2026-09-21)
+
+### Bug Fixes
+
+* **vis:** surface release in help and fix doctor cause ([#868](https://github.com/visulima/visulima/issues/868)) ([e826ef9](https://github.com/visulima/visulima/commit/e826ef96162a6d59443f1174f4ca75240cf6e917)), closes [#863](https://github.com/visulima/visulima/issues/863)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/cerebro [3.1.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.1.0...@visulima/cerebro@3.1.1) (2026-09-03)
 
 ### Bug Fixes
