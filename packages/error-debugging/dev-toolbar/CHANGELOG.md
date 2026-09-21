@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.1.0](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.21...@visulima/dev-toolbar@1.1.0) (2026-09-21)
+
+### Features
+
+* **dev-toolbar:** render panels from a spec, and test the logic behind them ([#880](https://github.com/visulima/visulima/issues/880)) ([daf8a14](https://github.com/visulima/visulima/commit/daf8a142cb5896203319ea64ba373ac40817481f))
+
 ## @visulima/dev-toolbar [1.0.21](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.20...@visulima/dev-toolbar@1.0.21) (2026-09-21)
 
 ### Miscellaneous Chores
