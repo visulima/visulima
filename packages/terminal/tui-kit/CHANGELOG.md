@@ -1,3 +1,18 @@
+## @visulima/tui-kit [1.0.12](https://github.com/visulima/visulima/compare/@visulima/tui-kit@1.0.11...@visulima/tui-kit@1.0.12) (2026-09-21)
+
+### Bug Fixes
+
+* unblock the failing pipelines (audit gate, mjml, semver ban, data sync) ([#873](https://github.com/visulima/visulima/issues/873)) ([18709d4](https://github.com/visulima/visulima/commit/18709d48e80109c3ac02d3b6217812d759f1a572)), closes [#869](https://github.com/visulima/visulima/issues/869) [#870](https://github.com/visulima/visulima/issues/870)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.9
+
 ## @visulima/tui-kit [1.0.11](https://github.com/visulima/visulima/compare/@visulima/tui-kit@1.0.10...@visulima/tui-kit@1.0.11) (2026-09-07)
 
 
