@@ -33,9 +33,8 @@ interface TabViewProps {
 }
 
 const TabView = ({ actionLabel, children, onAction, tabs }: TabViewProps): JSX.Element => {
-    // The renderer drops children that render nothing, so a pane hidden by
-    // `visible` — or a dangling child reference — would shift every later
-    // pane onto the wrong tab if these were paired by position.
+    // Paired to `tabs` by position, which holds because the renderer keeps a
+    // slot for a child that renders nothing rather than compacting it away.
     const panes = toChildArray(children);
 
     return (

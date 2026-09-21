@@ -5,6 +5,7 @@ import "../setup";
 import type { Spec } from "@json-render/core";
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import type { JSX } from "preact";
+import { toChildArray } from "preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { JsonViewRegistry } from "../../src/json-view";
@@ -235,5 +236,32 @@ describe("jsonView", () => {
 
         expect(prevented).toBe(true);
         expect(notPrevented).toBe(false);
+    });
+
+    it("keeps a slot for a child that renders nothing, so positional parents stay aligned", () => {
+        expect.hasAssertions();
+
+        // A parent that pairs children to something else by position — a tab
+        // strip to its panes — must see the hidden child as a gap, not have
+        // every later child shift up one place.
+        const Positional = ({ children }: { children?: JSX.Element[] }): JSX.Element => {
+            const panes = toChildArray(children);
+
+            return <div data-testid="third">{panes[2]}</div>;
+        };
+
+        const spec: Spec = {
+            elements: {
+                first: { props: { label: "first" }, type: "Box", visible: false },
+                root: { children: ["first", "second", "third"], props: {}, type: "Positional" },
+                second: { props: { label: "second" }, type: "Box" },
+                third: { props: { label: "third" }, type: "Box" },
+            },
+            root: "root",
+        };
+
+        render(<JsonView registry={{ ...registry, Positional }} spec={spec} />);
+
+        expect(screen.getByTestId("third")).toHaveTextContent("third");
     });
 });

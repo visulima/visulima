@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
+import { Fragment } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
 import type { Spec } from "./catalog";
@@ -74,7 +75,11 @@ const renderElement = (elementKey: string, context: RenderContext): JSX.Element 
         };
     }
 
-    const children = element.children?.map((childKey) => renderElement(childKey, context)).filter(Boolean);
+    // A child that renders nothing keeps its slot. Dropping it would compact
+    // the array, and a parent that pairs children positionally — a tab strip
+    // to its panes — would silently shift every later child onto the wrong
+    // parent slot rather than leaving one blank.
+    const children = element.children?.map((childKey) => renderElement(childKey, context) ?? <Fragment key={childKey} />);
 
     return (
         <Component key={elementKey} store={context.store} {...properties}>
