@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.21](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.20...@visulima/dev-toolbar@1.0.21) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/dev-toolbar [1.0.20](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.19...@visulima/dev-toolbar@1.0.20) (2026-09-07)
 
 ## @visulima/dev-toolbar [1.0.19](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.18...@visulima/dev-toolbar@1.0.19) (2026-09-06)
