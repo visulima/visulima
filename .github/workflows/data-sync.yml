@@ -59,16 +59,19 @@ jobs:
               working-directory: "packages/tooling/vis"
               run: "node scripts/sync-blocklist.ts"
 
+            # Only README.md and typosquats.json are tracked. The generated domain
+            # list lands in disposable-email-domains/dist/, which is gitignored and
+            # shipped from the npm tarball — listing it here stages nothing. Leave
+            # skip_dirty_check off so a run that produces no diff is a no-op instead
+            # of failing on an empty `git commit`.
             - name: "Commit data updates"
               if: "success()"
               uses: "stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d" # v7.2.0
               with:
                   file_pattern: |
-                      packages/email/disposable-email-domains/dist/domains.json
                       packages/email/disposable-email-domains/README.md
                       packages/tooling/vis/data/typosquats.json
                   commit_message: "fix: sync data sources (disposable email domains, typosquats blocklist)"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
                   commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
-                  skip_dirty_check: "true"
