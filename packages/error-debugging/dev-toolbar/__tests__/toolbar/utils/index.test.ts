@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { checkIsSafari, clamp, pixelToNumber } from "../../../src/toolbar/utils/index";
+import { checkIsSafari, clamp, formatBytes, pixelToNumber } from "../../../src/toolbar/utils/index";
 
 describe("toolbar/utils", () => {
     describe(clamp, () => {
@@ -74,5 +74,42 @@ describe("toolbar/utils", () => {
 
             expect(checkIsSafari()).toBe(false);
         });
+    });
+});
+
+describe(formatBytes, () => {
+    it("reports whole bytes below a kibibyte", () => {
+        expect.hasAssertions();
+
+        expect(formatBytes(0)).toBe("0 B");
+        expect(formatBytes(1023)).toBe("1023 B");
+    });
+
+    it("switches to KB at exactly one kibibyte", () => {
+        expect.hasAssertions();
+
+        expect(formatBytes(1024)).toBe("1.0 KB");
+    });
+
+    it("switches to MB at exactly one mebibyte", () => {
+        expect.hasAssertions();
+
+        expect(formatBytes(1024 * 1024)).toBe("1.0 MB");
+        expect(formatBytes(1024 * 1024 - 1)).toBe("1024.0 KB");
+    });
+
+    it("keeps one decimal place", () => {
+        expect.hasAssertions();
+
+        expect(formatBytes(1536)).toBe("1.5 KB");
+        expect(formatBytes(2.5 * 1024 * 1024)).toBe("2.5 MB");
+    });
+
+    it("renders an unstattable size as a dash rather than NaN", () => {
+        expect.hasAssertions();
+
+        expect(formatBytes(Number.NaN)).toBe("–");
+        expect(formatBytes(Number.POSITIVE_INFINITY)).toBe("–");
+        expect(formatBytes(-1)).toBe("–");
     });
 });

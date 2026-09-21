@@ -10,7 +10,12 @@ import type { AppTooltipProps } from "../../types/app";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
-const formatBytes = (bytes: number): string => {
+/**
+ * Deliberately not `formatBytes` from `toolbar/utils`: the tooltip is narrow,
+ * so it starts at KB and drops the decimal there. Keep the names apart so the
+ * difference reads as a choice rather than an oversight.
+ */
+const formatBytesCompact = (bytes: number): string => {
     if (bytes < 1024 * 1024) {
         return `${(bytes / 1024).toFixed(0)} KB`;
     }
@@ -57,7 +62,7 @@ const MiniMemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren =>
                 <div class={clsx("h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
             </div>
             <span class="text-[0.65rem] tabular-nums text-muted-foreground shrink-0">
-                {formatBytes(memory.usedJSHeapSize)} / {formatBytes(memory.jsHeapSizeLimit)}
+                {formatBytesCompact(memory.usedJSHeapSize)} / {formatBytesCompact(memory.jsHeapSizeLimit)}
             </span>
         </div>
     );

@@ -123,7 +123,7 @@ const applyOverlaysDOM = (issues: A11yIssue[]): void => {
 
 // ─── Axe scan helpers ─────────────────────────────────────────────────────────
 
-const nodeSelector = (target: unknown[]): string => {
+export const nodeSelector = (target: unknown[]): string => {
     const last = target.at(-1);
 
     if (Array.isArray(last)) {
@@ -133,7 +133,7 @@ const nodeSelector = (target: unknown[]): string => {
     return String(last ?? "");
 };
 
-const convertViolations = (violations: AxeViolation[], disabledRules: string[]): A11yIssue[] => {
+export const convertViolations = (violations: AxeViolation[], disabledRules: string[]): A11yIssue[] => {
     const result: A11yIssue[] = [];
 
     for (const v of violations) {

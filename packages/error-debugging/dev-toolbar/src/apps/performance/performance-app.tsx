@@ -6,21 +6,10 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
 import { getCwvRating, performanceMonitor } from "../../performance/monitor";
+import { formatBytes } from "../../toolbar/utils";
 import type { AppComponentProps } from "../../types/app";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-const formatBytes = (bytes: number): string => {
-    if (bytes < 1024) {
-        return `${bytes} B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
 
 const formatMs = (ms: number): string => `${ms} ms`;
 
