@@ -1,3 +1,9 @@
+## @visulima/error-handler [2.0.10](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.9...@visulima/error-handler@2.0.10) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/error-handler [2.0.9](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.8...@visulima/error-handler@2.0.9) (2026-09-07)
 
 ## @visulima/error-handler [2.0.8](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.7...@visulima/error-handler@2.0.8) (2026-09-06)
