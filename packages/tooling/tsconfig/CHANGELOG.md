@@ -1,3 +1,10 @@
+## @visulima/tsconfig [3.2.17](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.16...@visulima/tsconfig@3.2.17) (2026-09-21)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.10
+
 ## @visulima/tsconfig [3.2.16](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.15...@visulima/tsconfig@3.2.16) (2026-09-21)
 
 ### Miscellaneous Chores
