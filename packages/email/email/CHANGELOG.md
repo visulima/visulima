@@ -1,3 +1,18 @@
+## @visulima/email [3.0.7](https://github.com/visulima/visulima/compare/@visulima/email@3.0.6...@visulima/email@3.0.7) (2026-09-21)
+
+### Bug Fixes
+
+* unblock the failing pipelines (audit gate, mjml, semver ban, data sync) ([#873](https://github.com/visulima/visulima/issues/873)) ([18709d4](https://github.com/visulima/visulima/commit/18709d48e80109c3ac02d3b6217812d759f1a572)), closes [#869](https://github.com/visulima/visulima/issues/869) [#870](https://github.com/visulima/visulima/issues/870)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.9
+
 ## @visulima/email [3.0.6](https://github.com/visulima/visulima/compare/@visulima/email@3.0.5...@visulima/email@3.0.6) (2026-09-07)
 
 
