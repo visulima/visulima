@@ -1,3 +1,5 @@
+## @visulima/email-verifier [1.0.12](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.11...@visulima/email-verifier@1.0.12) (2026-09-21)
+
 ## @visulima/email-verifier [1.0.11](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.10...@visulima/email-verifier@1.0.11) (2026-09-21)
 
 ### Miscellaneous Chores
