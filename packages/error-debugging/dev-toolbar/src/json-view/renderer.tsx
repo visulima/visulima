@@ -1,9 +1,11 @@
 /** @jsxImportSource preact */
-import type { Spec, StateStore } from "@json-render/core";
-import { createStateStore, evaluateVisibility, resolveElementProps } from "@json-render/core";
 import type { JSX } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
+import type { Spec } from "./catalog";
+import { evaluateVisibility, resolveElementProps } from "./resolve";
+import type { StateStore } from "./state-store";
+import { createStateStore } from "./state-store";
 import type { JsonViewAction, JsonViewRegistry } from "./types";
 
 interface JsonViewProps {
@@ -50,14 +52,14 @@ const renderElement = (elementKey: string, context: RenderContext): JSX.Element 
 
     const stateModel = context.store.getSnapshot();
 
-    if (!evaluateVisibility(element.visible, { stateModel })) {
+    if (!evaluateVisibility(element.visible, stateModel)) {
         return undefined;
     }
 
-    const properties = resolveElementProps(element.props ?? {}, { stateModel });
+    const properties = resolveElementProps(element.props ?? {}, stateModel);
 
     for (const [event, binding] of Object.entries(element.on ?? {})) {
-        const bindings = Array.isArray(binding) ? binding : [binding];
+        const bindings = (Array.isArray(binding) ? binding : [binding]).filter(Boolean);
 
         properties[toEventProp(event)] = (domEvent: Event): void => {
             for (const { action, params, preventDefault } of bindings) {
@@ -65,7 +67,9 @@ const renderElement = (elementKey: string, context: RenderContext): JSX.Element 
                     domEvent.preventDefault();
                 }
 
-                context.actions[action]?.(resolveElementProps(params ?? {}, { stateModel }), context.store);
+                // Re-read rather than closing over `stateModel`: with two
+                // bindings on one event, the second must see the first's write.
+                context.actions[action]?.(resolveElementProps(params ?? {}, context.store.getSnapshot()), context.store);
             }
         };
     }

@@ -155,4 +155,85 @@ describe("jsonView", () => {
 
         expect(screen.getByText("now visible")).toBeInTheDocument();
     });
+
+    it("dispatches every binding when an event carries an array of them", () => {
+        expect.hasAssertions();
+
+        const first = vi.fn();
+        const second = vi.fn();
+
+        const spec: Spec = {
+            elements: {
+                root: {
+                    on: { click: [{ action: "first" }, { action: "second" }] },
+                    props: { label: "Both" },
+                    type: "Pressable",
+                },
+            },
+            root: "root",
+        };
+
+        render(<JsonView actions={{ first, second }} registry={registry} spec={spec} />);
+        fireEvent.click(screen.getByRole("button", { name: "Both" }));
+
+        expect(first).toHaveBeenCalledTimes(1);
+        expect(second).toHaveBeenCalledTimes(1);
+    });
+
+    it("lets a later binding see what an earlier one wrote", () => {
+        expect.hasAssertions();
+
+        const observed: unknown[] = [];
+
+        const spec: Spec = {
+            elements: {
+                root: {
+                    on: { click: [{ action: "write" }, { action: "observe", params: { seen: { $state: "/flag" } } }] },
+                    props: { label: "Go" },
+                    type: "Pressable",
+                },
+            },
+            root: "root",
+            state: { flag: false },
+        };
+
+        render(
+            <JsonView
+                actions={{
+                    observe: (parameters) => {
+                        observed.push(parameters["seen"]);
+                    },
+                    write: (_parameters, store) => {
+                        store.set("/flag", true);
+                    },
+                }}
+                registry={registry}
+                spec={spec}
+            />,
+        );
+        fireEvent.click(screen.getByRole("button", { name: "Go" }));
+
+        expect(observed).toStrictEqual([true]);
+    });
+
+    it("calls preventDefault only when the binding asks for it", () => {
+        expect.hasAssertions();
+
+        const spec = (preventDefault: boolean): Spec => {
+            return {
+                elements: { root: { on: { click: { action: "noop", preventDefault } }, props: { label: "Go" }, type: "Pressable" } },
+                root: "root",
+            };
+        };
+
+        const { unmount } = render(<JsonView actions={{ noop: () => {} }} registry={registry} spec={spec(true)} />);
+        const prevented = !fireEvent.click(screen.getByRole("button", { name: "Go" }));
+
+        unmount();
+        render(<JsonView actions={{ noop: () => {} }} registry={registry} spec={spec(false)} />);
+        const notPrevented = !fireEvent.click(screen.getByRole("button", { name: "Go" }));
+
+        expect(prevented).toBe(true);
+        expect(notPrevented).toBe(false);
+    });
 });

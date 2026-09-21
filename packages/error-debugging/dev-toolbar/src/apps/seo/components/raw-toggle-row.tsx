@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
 
-import CopyButton from "../../../json-view/components/copy-button";
+import { CopyButton } from "../../../ui";
 
 interface RawToggleRowProps {
     /** Bound to the same state path the click toggles. */

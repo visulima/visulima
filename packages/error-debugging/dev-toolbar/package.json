@@ -135,7 +135,6 @@
         "@babel/parser": "catalog:prod",
         "@babel/traverse": "catalog:prod",
         "@floating-ui/dom": "catalog:prod",
-        "@json-render/core": "catalog:prod",
         "launch-editor": "catalog:prod",
         "preact": "catalog:prod"
     },
@@ -148,6 +147,7 @@
         "@babel/preset-react": "catalog:frontend",
         "@babel/types": "catalog:dev",
         "@eslint/css": "catalog:lint",
+        "@json-render/core": "catalog:prod",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@tailwindcss/node": "catalog:frontend",
         "@tailwindcss/oxide": "catalog:frontend",

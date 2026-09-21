@@ -1,3 +1,4 @@
+import { createBuilder } from "../../json-view/builder";
 import type { MetaTags, SerpData, SerpOverflow } from "./analyze";
 import {
     COMMON_CHECKS,
@@ -15,20 +16,9 @@ import type { SeoElement, SeoSnapshot, SeoSpec } from "./types";
 
 const plural = (count: number, word: string): string => `${count} ${word}${count === 1 ? "" : "s"}`;
 
-/** Collects elements under generated keys, so a builder never has to name them. */
-const createBuilder = () => {
-    const elements: Record<string, SeoElement> = {};
-    let counter = 0;
-
-    const add = (element: SeoElement): string => {
-        counter += 1;
-
-        const key = `e${counter}`;
-
-        elements[key] = element;
-
-        return key;
-    };
+/** Panel-shaped helpers over the shared element builder. */
+const createSeoBuilder = () => {
+    const { add, elements } = createBuilder<SeoElement>();
 
     const pane = (children: string[], variant: "grid" | "pane" = "pane"): string => add({ children, props: { variant }, type: "Stack" });
 
@@ -103,7 +93,7 @@ const metaTagGroups = (meta: MetaTags): { rows: { label: string; required?: bool
  */
 
 const buildSeoSpec = ({ meta, schemas }: SeoSnapshot): SeoSpec => {
-    const { add, elements, pane } = createBuilder();
+    const { add, elements, pane } = createSeoBuilder();
 
     const missingRequired = TAG_DEFINITIONS.filter((definition) => definition.priority === "required" && !meta[definition.key]);
     const missingRecommended = TAG_DEFINITIONS.filter((definition) => definition.priority === "recommended" && !meta[definition.key]);
@@ -303,7 +293,7 @@ const buildSeoSpec = ({ meta, schemas }: SeoSnapshot): SeoSpec => {
         type: "TabView",
     });
 
-    return { elements, root };
+    return { elements, root, state: { expanded: [], raw: [] } };
 };
 
 export default buildSeoSpec;

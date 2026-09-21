@@ -35,10 +35,29 @@ describe(safePublicPath, () => {
         expect(safePublicPath("//evil.example/x.png")).toBe("#");
     });
 
-    it("blocks a rooted path that smuggles a scheme separator", () => {
+    it("blocks a backslash, which the url parser folds to a slash", () => {
         expect.hasAssertions();
 
-        expect(safePublicPath("/redirect?to=javascript:alert(1)")).toBe("#");
+        // `/\\evil.com` has no colon and starts with one slash, so a
+        // colon-and-double-slash rule lets it through; the parser then reads
+        // it as `http://evil.com/`.
+        expect(safePublicPath(String.raw`/\evil.com`)).toBe("#");
+    });
+
+    it("blocks a tab or newline, which the url parser strips before parsing", () => {
+        expect.hasAssertions();
+
+        expect(safePublicPath("/\t/evil.com")).toBe("#");
+        expect(safePublicPath("/\n/evil.com")).toBe("#");
+        expect(safePublicPath("/\r/evil.com")).toBe("#");
+    });
+
+    it("allows a same-origin path that merely mentions a scheme in a query", () => {
+        expect.hasAssertions();
+
+        // This navigates to /redirect on our own origin; the colon is data,
+        // not a scheme, so rejecting it was over-strict.
+        expect(safePublicPath("/redirect?to=javascript:alert(1)")).toBe("/redirect?to=javascript:alert(1)");
     });
 
     it("blocks a relative path, which would resolve against the panel", () => {

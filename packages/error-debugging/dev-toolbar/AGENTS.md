@@ -37,23 +37,34 @@ The real fix belongs in packem's dts bundler (separate repo); keeping to one blo
 pnpm build && tsc --noEmit --ignoreConfig --target es2022 --moduleResolution bundler --module esnext dist/packem_shared/global-api.d-*.d.ts
 ```
 
-### `@json-render/core` only tree-shakes under rollup
+### The json-view renderer has no runtime dependency
 
-The json-view renderer (`src/json-view/`) imports three functions from
-`@json-render/core`: `createStateStore`, `evaluateVisibility` and `resolveElementProps`.
+`src/json-view/` renders a panel from a JSON spec. It implements its own state store
+(`state-store.ts`, JSON-Pointer get/set over a plain object) and its own binding
+resolution (`resolve.ts`), rather than depending on a library for them.
 
-The package declares no `"sideEffects"` field. Rollup — and so packem, and so our
-published `dist` — analyses it anyway and inlines just those three, with no zod reaching
-the bundle: the whole vite-config panel is 18 KB built. **esbuild is conservative without
-the field and keeps the entire package: 440 KB raw, 89 KB gzipped, zod included.**
+That is deliberate, and the reason is worth keeping:
 
-That does not affect consumers of the published package, who get the rollup output. It
-does affect anyone bundling our `src` directly with esbuild, and it affects any
-measurement taken with esbuild — a probe of the renderer's cost reports 440 KB and is
-simply wrong about what ships.
+`@json-render/core` supplies exactly these pieces, and the first version of this module
+used it. But packem **externalises** declared dependencies rather than inlining them — the
+built chunk keeps a bare `import … from "@json-render/core"` — so nothing was tree-shaken
+at our build at all. The consumer's dev server resolves it with esbuild, which without a
+`"sideEffects"` field keeps the whole package: **270 KB (58 KB gzip), zod included**,
+fetched by every consumer's browser the first time a panel opens. For three functions, in
+a dev-only overlay whose other runtime deps are Babel, floating-ui, launch-editor and
+Preact.
 
-The fix belongs upstream (`"sideEffects": false` in `@json-render/core`). Until then, take
-bundle measurements from `pnpm build` output, never from an esbuild probe.
+Two traps if you revisit this:
+
+- A green `grep -r zod dist/` proves nothing. Our `dist` is clean because the dependency
+  **is not in it**, not because it was shaken out.
+- Measuring the panel chunk from `pnpm build` output under-counts for the same reason. To
+  see what a consumer actually downloads, build a host app against the built `dist` and
+  look at `node_modules/.vite/deps/`.
+
+The package is still a devDependency: `validateSpec` is used in the spec tests to assert
+structural integrity, which never reaches a consumer. The spec's wire format is unchanged,
+so a `@json-render/*` renderer remains a drop-in option for anyone who wants one.
 
 ### Peer deps
 

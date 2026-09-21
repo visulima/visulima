@@ -8,17 +8,13 @@ import eyeOffIcon from "lucide-static/icons/eye-off.svg?data-uri&encoding=css";
 import type { ComponentChildren, JSX } from "preact";
 import { useState } from "preact/hooks";
 
-import CopyButton from "../../../json-view/components/copy-button";
-import Section from "../../../json-view/components/section";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../../ui";
+import { COLUMN_LABEL, CopyButton, Section, Tooltip, TooltipContent, TooltipTrigger } from "../../../ui";
 import Icon from "../../../ui/components/icon";
 
 /** Built-in Vite env vars, never secret — tagged so a reader can skip them. */
 const VITE_BUILTIN_KEYS = new Set(["BASE_URL", "DEV", "MODE", "PROD", "SSR"]);
 
 const VALUE_TRUNCATE_AT = 36;
-
-const COLUMN_LABEL = "text-xxs font-bold uppercase tracking-widest text-muted-foreground";
 
 const SecretValue = ({ forceVisible, tag, value }: { forceVisible: boolean; tag?: ComponentChildren; value: string }): JSX.Element => {
     const [localRevealed, setLocalRevealed] = useState(false);

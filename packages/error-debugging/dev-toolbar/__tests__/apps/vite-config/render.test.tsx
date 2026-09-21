@@ -3,14 +3,14 @@
 import "../../setup";
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import EnvTable from "../../../src/apps/vite-config/components/env-table";
 import PluginList from "../../../src/apps/vite-config/components/plugin-list";
 import buildViteConfigSpec from "../../../src/apps/vite-config/spec";
 import type { ViteConfig } from "../../../src/apps/vite-config/types";
 import type { JsonViewRegistry } from "../../../src/json-view";
-import { baseRegistry, JsonView } from "../../../src/json-view";
+import { baseActions, baseRegistry, JsonView } from "../../../src/json-view";
 
 afterEach(cleanup);
 
@@ -26,7 +26,8 @@ const config: ViteConfig = {
     server: { port: 5173, strictPort: true },
 };
 
-const renderPanel = () => render(<JsonView registry={registry} spec={buildViteConfigSpec(config)} />);
+const renderPanel = (actions: Record<string, () => void> = {}) =>
+    render(<JsonView actions={{ ...baseActions, ...actions }} registry={registry} spec={buildViteConfigSpec(config)} />);
 
 describe("vite config panel", () => {
     it("renders the header badges and the stats strip", () => {
@@ -72,5 +73,16 @@ describe("vite config panel", () => {
         fireEvent.click(screen.getByRole("button", { name: "reveal all" }));
 
         expect(screen.getByText("s3cret")).toBeInTheDocument();
+    });
+
+    it("runs the refresh action when the header button is clicked", () => {
+        expect.hasAssertions();
+
+        const refresh = vi.fn();
+
+        renderPanel({ refresh });
+        fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+        expect(refresh).toHaveBeenCalledTimes(1);
     });
 });

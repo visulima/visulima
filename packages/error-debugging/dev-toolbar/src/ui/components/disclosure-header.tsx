@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import type { JSX } from "preact";
 
-import { Badge } from "../../ui";
+import Badge from "./badge";
 import type { Severity } from "./message-list";
 import { SEVERITY_CONFIG } from "./message-list";
 

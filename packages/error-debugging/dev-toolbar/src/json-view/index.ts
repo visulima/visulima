@@ -1,6 +1,9 @@
 export { default as baseActions } from "./actions";
-export type { BaseComponents, Bindable, ComponentMap, ViewElement, ViewSpec } from "./catalog";
-export type { Severity, ValidationMessage } from "./components/message-list";
+export type { ActionBinding, BaseComponents, BaseEvents, Bindable, ComponentMap, EventMap, Spec, UIElement, ViewElement, ViewSpec } from "./catalog";
 export { default as baseRegistry } from "./registry";
 export { default as JsonView } from "./renderer";
-export type { JsonViewAction, JsonViewComponentProps, JsonViewRegistry } from "./types";
+export type { StateBinding, VisibilityCondition } from "./resolve";
+export { evaluateVisibility, resolveElementProps } from "./resolve";
+export type { StateModel, StateStore } from "./state-store";
+export { createStateStore, getByPath, setByPath } from "./state-store";
+export type { CheckedRegistry, JsonViewAction, JsonViewComponentProps, JsonViewRegistry, Resolved } from "./types";

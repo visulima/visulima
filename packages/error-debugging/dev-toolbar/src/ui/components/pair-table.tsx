@@ -2,13 +2,7 @@
 import type { JSX } from "preact";
 
 import CopyButton from "./copy-button";
-import { ShortPath, ValueCell } from "./value";
-
-const PATH_SHORTEN_AT = 40;
-
-const LOOKS_LIKE_PATH = /^\/|^[A-Z]:\\/i;
-
-const COLUMN_LABEL = "text-xxs font-bold uppercase tracking-widest text-muted-foreground";
+import { COLUMN_LABEL, ValueCell } from "./value";
 
 interface PairTableProps {
     /** Left column heading. */
@@ -44,7 +38,7 @@ const PairTable = ({ keyLabel, keyTone = "primary", rows, showCopy = false, valu
                 <code class={`text-xs font-mono break-all leading-relaxed self-center ${keyToneClasses[keyTone]}`}>{key}</code>
                 <div class="flex items-center gap-2 self-center min-w-0">
                     <div class="flex-1 min-w-0">
-                        {LOOKS_LIKE_PATH.test(value) && value.length > PATH_SHORTEN_AT ? <ShortPath path={value} /> : <ValueCell value={value} />}
+                        <ValueCell value={value} />
                     </div>
                     {showCopy && <CopyButton text={`${key}=${value}`} />}
                 </div>

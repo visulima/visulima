@@ -3,7 +3,7 @@
 import "../../setup";
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { JsonLdSchema, MetaTags } from "../../../src/apps/seo/analyze";
 import GroupHeading from "../../../src/apps/seo/components/group-heading";
@@ -54,7 +54,8 @@ const schemas: JsonLdSchema[] = [
     },
 ];
 
-const renderPanel = () => render(<JsonView actions={baseActions} registry={registry} spec={buildSeoSpec({ meta, schemas })} />);
+const renderPanel = (actions: Record<string, () => void> = {}) =>
+    render(<JsonView actions={{ ...baseActions, ...actions }} registry={registry} spec={buildSeoSpec({ meta, schemas })} />);
 
 describe("seo panel", () => {
     it("opens on the social previews tab with one card per platform", () => {
@@ -112,5 +113,16 @@ describe("seo panel", () => {
         renderPanel();
 
         expect(screen.getByRole("tab", { name: /^Missing/ })).toHaveTextContent(/Missing\d+/);
+    });
+
+    it("runs the refresh action when the header button is clicked", () => {
+        expect.hasAssertions();
+
+        const refresh = vi.fn();
+
+        renderPanel({ refresh });
+        fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+        expect(refresh).toHaveBeenCalledTimes(1);
     });
 });

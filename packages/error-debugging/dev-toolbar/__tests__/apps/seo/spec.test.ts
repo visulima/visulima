@@ -130,9 +130,9 @@ describe(buildSeoSpec, () => {
         const spec = build({}, [schema("ok"), schema("ok", 1)]);
         const headers = elementsOfType(spec, "DisclosureHeader");
 
-        expect(headers.map((header) => header.on?.["click"])).toStrictEqual([
-            { action: "toggle", params: { path: "/expanded/0" } },
-            { action: "toggle", params: { path: "/expanded/1" } },
+        expect(headers.map((header) => header.on)).toStrictEqual([
+            { click: { action: "toggle", params: { path: "/expanded/0" } } },
+            { click: { action: "toggle", params: { path: "/expanded/1" } } },
         ]);
         expect(headers.map((header) => (header.props as { expanded: unknown }).expanded)).toStrictEqual([{ $state: "/expanded/0" }, { $state: "/expanded/1" }]);
     });

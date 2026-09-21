@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { TailwindConfigResult } from "../../rpc/functions/tailwind-config";
 import type { AppComponentProps } from "../../types/app";
-import { LoadingState, useCopy } from "../../ui";
+import { EmptyState, LoadingState, useCopy } from "../../ui";
 import type { ColorToken, EffectToken, FontSizeToken, SpacingToken } from "./analyze";
 import { extractTokens, groupColors, isNumericScale, parseToPx, scanRootVariables, TRAILING_NUMBER_CAPTURE_RE, TRAILING_NUMBER_RE } from "./analyze";
 
@@ -746,21 +746,6 @@ const ConfigTab = ({
     );
 };
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-const EmptyState = (): ComponentChildren => (
-    <div class="flex flex-col items-center justify-center h-full gap-4 py-16 px-8 text-center select-none">
-        <div class="size-12 border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/30 text-2xl">◻</div>
-        <div class="space-y-1.5">
-            <p class="text-[0.8rem] font-medium text-foreground/70">No design tokens detected</p>
-            <p class="text-[0.7rem] text-muted-foreground leading-relaxed max-w-[240px]">
-                This app reads CSS custom properties from your page's <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your app uses
-                Tailwind CSS v4 or defines custom properties.
-            </p>
-        </div>
-    </div>
-);
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
@@ -835,7 +820,12 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             </div>
 
             {total === 0 && tab !== "config" ? (
-                <EmptyState />
+                <EmptyState icon="◻" title="No design tokens detected" tone="accent">
+                    <p class="text-[0.7rem] text-muted-foreground leading-relaxed max-w-[240px] text-center">
+                        This app reads CSS custom properties from your page&apos;s <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your
+                        app uses Tailwind CSS v4 or defines custom properties.
+                    </p>
+                </EmptyState>
             ) : (
                 <>
                     {/* Tab bar */}

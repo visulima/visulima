@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import type { JSX } from "preact";
 
-import { useCopy } from "../../ui";
+import { useCopy } from "../hooks/use-copy";
 
 /** Copy-to-clipboard button. The flash is the shared `useCopy` behaviour. */
 const CopyButton = ({ text }: { text: string }): JSX.Element => {

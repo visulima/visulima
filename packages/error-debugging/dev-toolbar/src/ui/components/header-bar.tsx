@@ -1,7 +1,8 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
 
-import { Badge, Button } from "../../ui";
+import Badge from "./badge";
+import Button from "./button";
 
 type BadgeVariant = "default" | "destructive" | "info" | "outline" | "secondary" | "success" | "warning";
 

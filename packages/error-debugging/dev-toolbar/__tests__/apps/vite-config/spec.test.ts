@@ -106,7 +106,9 @@ describe(buildViteConfigSpec, () => {
 
         const [header] = elementsOfType(minimalConfig, "HeaderBar");
 
-        expect(header?.on).toStrictEqual({ click: { action: "refresh" } });
+        // `action`, not `click`: HeaderBar reads its handler from `onAction`, and
+        // a `click` binding would render a button that silently does nothing.
+        expect(header?.on).toStrictEqual({ action: { action: "refresh" } });
     });
 
     it("explains an empty env section instead of rendering an empty table", () => {

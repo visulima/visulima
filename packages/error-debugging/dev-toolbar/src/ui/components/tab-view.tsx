@@ -2,7 +2,9 @@
 import type { ComponentChildren, JSX } from "preact";
 import { toChildArray } from "preact";
 
-import { Badge, Button, Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui";
+import Badge from "./badge";
+import Button from "./button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 
 const TRIGGER_CLASS
     = "rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground "
@@ -31,6 +33,9 @@ interface TabViewProps {
 }
 
 const TabView = ({ actionLabel, children, onAction, tabs }: TabViewProps): JSX.Element => {
+    // The renderer drops children that render nothing, so a pane hidden by
+    // `visible` — or a dangling child reference — would shift every later
+    // pane onto the wrong tab if these were paired by position.
     const panes = toChildArray(children);
 
     return (

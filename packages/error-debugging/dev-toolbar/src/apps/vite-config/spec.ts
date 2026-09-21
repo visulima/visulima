@@ -1,3 +1,4 @@
+import { createBuilder } from "../../json-view/builder";
 import type { PluginInfo, ViteConfig, ViteConfigElement, ViteConfigSpec } from "./types";
 
 /** Shortens a path to its last two segments, for the header chip. */
@@ -34,26 +35,19 @@ const aliasRows = (alias: unknown): { key: string; value: string }[] => {
     return [];
 };
 
-/** Collects elements under generated keys, so a builder never has to name them. */
-const createBuilder = () => {
-    const elements: Record<string, ViteConfigElement> = {};
-    let counter = 0;
+/** Panel-shaped helpers over the shared element builder. */
+const createViteConfigBuilder = () => {
+    const { add, elements } = createBuilder<ViteConfigElement>();
 
-    const add = (element: ViteConfigElement): string => {
-        counter += 1;
-
-        const key = `e${counter}`;
-
-        elements[key] = element;
-
-        return key;
-    };
-
-    /** One `KeyValue` per defined entry; absent values produce no element at all. */
-    const keyValues = (entries: Record<string, unknown>): string[] =>
-        Object.entries(entries)
-            .filter(([, value]) => value !== undefined && value !== null)
-            .map(([label, value]) => add({ props: { label, value }, type: "KeyValue" }));
+    /**
+     * One `KeyValue` per defined entry; absent values produce no element.
+     *
+     * Takes ordered pairs rather than an object so the rows read in the order
+     * a person scans them, not the order the RPC module happens to declare its
+     * keys in — and so key-sorting lint cannot silently reorder the panel.
+     */
+    const keyValues = (entries: [string, unknown][]): string[] =>
+        entries.filter(([, value]) => value !== undefined && value !== null).map(([label, value]) => add({ props: { label, value }, type: "KeyValue" }));
 
     /** A titled `Section`, or nothing when it would be empty. */
     const section = (title: string | undefined, children: string[]): string[] => {
@@ -78,12 +72,13 @@ const createBuilder = () => {
  */
 
 const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
-    const { add, elements, keyValues, pane, section } = createBuilder();
+    const { add, elements, keyValues, pane, section } = createViteConfigBuilder();
 
     const plugins: PluginInfo[] = config.plugins ?? [];
     const envEntries = Object.entries(config.env ?? {});
     const defineEntries = Object.entries(config.define ?? {});
     const aliases = aliasRows(config.resolve?.alias);
+    const hasOptimizeDeps = (config.optimizeDeps?.include?.length ?? 0) > 0 || (config.optimizeDeps?.exclude?.length ?? 0) > 0;
 
     // ── Header ──────────────────────────────────────────────────────────────
     const badges: { label: string; variant?: "destructive" | "secondary" | "success" }[] = [];
@@ -109,7 +104,7 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
     }
 
     const header = add({
-        on: { click: { action: "refresh" } },
+        on: { action: { action: "refresh" } },
         props: { actionLabel: "Refresh", badges, chips },
         type: "HeaderBar",
     });
@@ -129,18 +124,24 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
     // ── Server ──────────────────────────────────────────────────────────────
     const serverPane = pane([
         ...section(undefined, [
-            ...keyValues({
-                cors: config.server?.cors,
-                host: config.server?.host ?? false,
-                https: config.server?.https,
-                middlewareMode: config.server?.middlewareMode,
-                open: config.server?.open,
-                origin: config.server?.origin,
-                port: config.server?.port,
-                strictPort: config.server?.strictPort,
-            }),
+            ...keyValues([
+                ["host", config.server?.host ?? false],
+                ["port", config.server?.port],
+                ["strictPort", config.server?.strictPort],
+                ["https", config.server?.https],
+                ["open", config.server?.open],
+                ["cors", config.server?.cors],
+                ["origin", config.server?.origin],
+                ["middlewareMode", config.server?.middlewareMode],
+            ]),
         ]),
-        ...section("HMR", keyValues({ enabled: config.server?.hmrEnabled ?? true, port: config.server?.hmrPort })),
+        ...section(
+            "HMR",
+            keyValues([
+                ["enabled", config.server?.hmrEnabled ?? true],
+                ["port", config.server?.hmrPort],
+            ]),
+        ),
         ...section(
             "Proxy Routes",
             (config.server?.proxy ?? []).map((route) => add({ props: { value: route }, type: "Row" })),
@@ -154,35 +155,81 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
 
     // ── Build ───────────────────────────────────────────────────────────────
     const buildPane = pane([
-        ...section(undefined, keyValues(config.build ?? {})),
-        ...section("esbuild Transform", keyValues(config.esbuild ?? {})),
-        ...section("CSS", keyValues({ devSourcemap: config.css?.devSourcemap, preprocessors: config.css?.preprocessors })),
-        ...section("Optimize Deps", keyValues({ exclude: config.optimizeDeps?.exclude, include: config.optimizeDeps?.include })),
-        ...section("SSR", keyValues(config.ssr ?? {})),
+        ...section(
+            undefined,
+            keyValues([
+                ["outDir", config.build?.["outDir"]],
+                ["target", config.build?.["target"]],
+                ["minify", config.build?.["minify"]],
+                ["sourcemap", config.build?.["sourcemap"]],
+                ["cssCodeSplit", config.build?.["cssCodeSplit"]],
+                ["assetsDir", config.build?.["assetsDir"]],
+                ["assetsInlineLimit", config.build?.["assetsInlineLimit"]],
+                ["chunkSizeWarningLimit", config.build?.["chunkSizeWarningLimit"]],
+                ["emptyOutDir", config.build?.["emptyOutDir"]],
+                ["reportCompressedSize", config.build?.["reportCompressedSize"]],
+            ]),
+        ),
+        ...section(
+            "esbuild Transform",
+            keyValues([
+                ["jsx", config.esbuild?.["jsx"]],
+                ["jsxFactory", config.esbuild?.["jsxFactory"]],
+                ["jsxFragment", config.esbuild?.["jsxFragment"]],
+                ["jsxImportSource", config.esbuild?.["jsxImportSource"]],
+                ["target", config.esbuild?.["target"]],
+            ]),
+        ),
+        ...section(
+            "CSS",
+            keyValues([
+                ["devSourcemap", config.css?.devSourcemap],
+                ["preprocessors", config.css?.preprocessors],
+            ]),
+        ),
+        // An explicitly empty include/exclude renders nothing, as before: a
+        // bare `[]` would otherwise show a section containing an "empty" pill.
+        ...section(
+            "Optimize Deps",
+            hasOptimizeDeps
+                ? keyValues([
+                    ["include", config.optimizeDeps?.include],
+                    ["exclude", config.optimizeDeps?.exclude],
+                ])
+                : [],
+        ),
+        ...section(
+            "SSR",
+            keyValues([
+                ["target", config.ssr?.target],
+                ["external", config.ssr?.external],
+                ["noExternal", config.ssr?.noExternal],
+            ]),
+        ),
     ]);
 
     // ── Resolve ─────────────────────────────────────────────────────────────
     const resolvePane = pane([
         ...section(
             undefined,
-            keyValues({
-                conditions: config.resolve?.conditions,
-                dedupe: config.resolve?.dedupe,
-                extensions: config.resolve?.extensions,
-                mainFields: config.resolve?.mainFields,
-                preserveSymlinks: config.resolve?.preserveSymlinks,
-            }),
+            keyValues([
+                ["extensions", config.resolve?.extensions],
+                ["conditions", config.resolve?.conditions],
+                ["mainFields", config.resolve?.mainFields],
+                ["dedupe", config.resolve?.dedupe],
+                ["preserveSymlinks", config.resolve?.preserveSymlinks],
+            ]),
         ),
         ...section("Alias", aliases.length === 0 ? [] : [add({ props: { keyLabel: "Find", rows: aliases, valueLabel: "Replacement" }, type: "PairTable" })]),
         ...section(
             "Paths",
-            keyValues({
-                cacheDir: config.cacheDir,
-                envDir: config.envDir,
-                envPrefix: config.envPrefix,
-                publicDir: config.publicDir,
-                root: config.root,
-            }),
+            keyValues([
+                ["root", config.root],
+                ["publicDir", config.publicDir],
+                ["cacheDir", config.cacheDir],
+                ["envDir", config.envDir],
+                ["envPrefix", config.envPrefix],
+            ]),
         ),
     ]);
 
@@ -235,7 +282,7 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
 
     const root = add({ children: [header, stats, tabs], props: { class: "flex flex-col h-full space-y-0" }, type: "Stack" });
 
-    return { elements, root };
+    return { elements, root, state: {} };
 };
 
 export default buildViteConfigSpec;

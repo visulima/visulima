@@ -17,12 +17,14 @@ interface ToolResult {
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
 
-const { registeredTools } = vi.hoisted(() => { return { registeredTools: new Map<string, ToolHandler>() }; });
+const { registeredTools } = vi.hoisted(() => {
+    return { registeredTools: new Map<string, ToolHandler>() };
+});
 
 vi.mock(import("@modelcontextprotocol/sdk/server/mcp.js"), () => {
     return {
         McpServer: class {
-        // eslint-disable-next-line class-methods-use-this
+            // eslint-disable-next-line class-methods-use-this
             public tool(_name: string, _description: string, _schema: unknown, handler: ToolHandler): void {
                 registeredTools.set(_name, handler);
             }

@@ -1,5 +1,7 @@
-import type { StateStore } from "@json-render/core";
 import type { ComponentChildren, ComponentType } from "preact";
+
+import type { StateBinding } from "./resolve";
+import type { StateStore } from "./state-store";
 
 /**
  * A handler for one named action. Receives the action's resolved `params`
@@ -27,3 +29,24 @@ export interface JsonViewComponentProps {
  * that renders it. A `type` with no entry renders nothing.
  */
 export type JsonViewRegistry = Record<string, ComponentType<any>>;
+
+/**
+ * A registry checked against a component map: every name is present, and each
+ * component's props match the catalog entry. `baseRegistry` is typed with
+ * this so renaming a prop in the catalog fails the build rather than silently
+ * diverging from the component.
+ */
+export type CheckedRegistry<Components> = {
+    [Name in keyof Components]: ComponentType<Partial<JsonViewComponentProps> & Resolved<Components[Name]>>;
+};
+
+/**
+ * The props a component actually receives.
+ *
+ * A catalog prop may be written as `{ $state }` by the spec author, but the
+ * renderer resolves every binding before the component sees it — so the
+ * component's own type is the binding-free one.
+ */
+export type Resolved<Properties> = {
+    [Key in keyof Properties]: Exclude<Properties[Key], StateBinding>;
+};

@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
 
-import { Badge } from "../../ui";
+import Badge from "./badge";
 import CopyButton from "./copy-button";
 
 interface TagCardProps {

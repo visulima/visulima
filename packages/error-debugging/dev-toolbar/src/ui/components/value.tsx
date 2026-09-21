@@ -5,6 +5,9 @@ import type { JSX } from "preact";
 
 import CopyButton from "./copy-button";
 
+/** Shared by every component that draws a two-column header. */
+export const COLUMN_LABEL = "text-xxs font-bold uppercase tracking-widest text-muted-foreground";
+
 const LOOKS_LIKE_PATH = /^\/|^[A-Z]:\\/i;
 
 const PATH_SHORTEN_AT = 40;

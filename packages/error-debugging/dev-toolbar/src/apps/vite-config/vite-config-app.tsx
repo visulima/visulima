@@ -3,7 +3,7 @@ import type { JSX } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
 import type { JsonViewRegistry } from "../../json-view";
-import { baseRegistry, JsonView } from "../../json-view";
+import { baseActions, baseRegistry, JsonView } from "../../json-view";
 import type { AppComponentProps } from "../../types/app";
 import { Button, LoadingState } from "../../ui";
 import EnvTable from "./components/env-table";
@@ -59,7 +59,7 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): JSX.Element => {
         return <ErrorState error={error ?? "No config available"} onRetry={load} />;
     }
 
-    return <JsonView actions={{ refresh: load }} registry={registry} spec={spec} />;
+    return <JsonView actions={{ ...baseActions, refresh: load }} registry={registry} spec={spec} />;
 };
 
 export default ViteConfigApp;

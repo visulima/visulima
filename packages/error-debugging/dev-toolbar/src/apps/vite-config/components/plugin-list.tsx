@@ -6,21 +6,14 @@ import searchIcon from "lucide-static/icons/search.svg?data-uri&encoding=css";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 
-import Section from "../../../json-view/components/section";
-import { Input } from "../../../ui";
+import { COLUMN_LABEL, Input, Section } from "../../../ui";
 import Icon from "../../../ui/components/icon";
-
-interface PluginInfo {
-    enforce?: "post" | "pre";
-    name: string;
-}
+import type { PluginInfo } from "../types";
 
 const ENFORCE_COLORS: Record<string, string> = {
     post: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     pre: "bg-amber-500/15 text-amber-400 border-amber-500/30",
 };
-
-const COLUMN_LABEL = "text-xxs font-bold uppercase tracking-widest text-muted-foreground";
 
 const PluginRow = ({ index, plugin }: { index: number; plugin: PluginInfo }): JSX.Element => (
     <div class="flex items-center gap-3 px-4 py-1.5 hover:bg-secondary transition-colors duration-100">
@@ -45,7 +38,12 @@ const PluginRow = ({ index, plugin }: { index: number; plugin: PluginInfo }): JS
  */
 const PluginList = ({ plugins }: { plugins: PluginInfo[] }): JSX.Element => {
     const [query, setQuery] = useState("");
-    const filtered = query ? plugins.filter((plugin) => plugin.name.toLowerCase().includes(query.toLowerCase())) : plugins;
+    // Carry the original position through the filter. `indexOf` would be
+    // O(n²) and, worse, returns the first match — so a plugin registered at
+    // both `pre` and `post` would render two rows with the same number and
+    // collide on the key.
+    const numbered = plugins.map((plugin, index) => { return { index, plugin }; });
+    const filtered = query ? numbered.filter(({ plugin }) => plugin.name.toLowerCase().includes(query.toLowerCase())) : numbered;
 
     return (
         <Section>
@@ -69,7 +67,7 @@ const PluginList = ({ plugins }: { plugins: PluginInfo[] }): JSX.Element => {
             {filtered.length === 0 ? (
                 <div class="px-4 py-6 text-center text-xs text-muted-foreground">No plugins match "{query}"</div>
             ) : (
-                filtered.map((plugin) => <PluginRow index={plugins.indexOf(plugin)} key={plugin.name} plugin={plugin} />)
+                filtered.map(({ index, plugin }) => <PluginRow index={index} key={`${index}:${plugin.name}`} plugin={plugin} />)
             )}
 
             {query && filtered.length > 0 && (

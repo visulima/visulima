@@ -10,7 +10,7 @@ interface EmptyStateProps {
     icon: string;
     title: string;
     /** Frame and glyph tone. */
-    tone?: "muted" | "success";
+    tone?: "accent" | "muted" | "success";
 }
 
 /** Centred "nothing here" panel with a framed glyph. */
@@ -19,7 +19,9 @@ const EmptyState = ({ children, hint, icon, title, tone = "muted" }: EmptyStateP
         <div
             class={clsx(
                 "size-10 border flex items-center justify-center text-lg select-none",
-                tone === "success" ? "border-success/30 bg-success/8 text-success" : "border-border text-muted-foreground/40",
+                tone === "success" && "border-success/30 bg-success/8 text-success",
+                tone === "accent" && "border-primary/20 bg-primary/5 text-primary/30",
+                tone === "muted" && "border-border text-muted-foreground/40",
             )}
         >
             {icon}

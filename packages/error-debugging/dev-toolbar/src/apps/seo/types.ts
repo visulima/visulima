@@ -1,4 +1,4 @@
-import type { BaseComponents, Bindable, ViewElement, ViewSpec } from "../../json-view";
+import type { BaseComponents, BaseEvents, Bindable, ViewElement, ViewSpec } from "../../json-view";
 import type { JsonLdSchema, MetaTags } from "./analyze";
 
 /** What the panel reads off the page in one pass. */
@@ -14,6 +14,9 @@ export type SeoComponents = BaseComponents & {
     SummaryRow: { left: string; right?: string };
 };
 
-export type SeoElement = ViewElement<SeoComponents>;
+/** The raw-JSON row is the one panel-local component that takes a binding. */
+export type SeoEvents = BaseEvents & { RawToggleRow: "click" };
 
-export type SeoSpec = ViewSpec<SeoComponents>;
+export type SeoElement = ViewElement<SeoComponents, SeoEvents>;
+
+export type SeoSpec = ViewSpec<SeoComponents, SeoEvents>;
