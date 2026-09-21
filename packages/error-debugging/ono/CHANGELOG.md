@@ -1,3 +1,5 @@
+## @visulima/ono [2.1.9](https://github.com/visulima/visulima/compare/@visulima/ono@2.1.8...@visulima/ono@2.1.9) (2026-09-21)
+
 ## @visulima/ono [2.1.8](https://github.com/visulima/visulima/compare/@visulima/ono@2.1.7...@visulima/ono@2.1.8) (2026-09-07)
 
 ## @visulima/ono [2.1.7](https://github.com/visulima/visulima/compare/@visulima/ono@2.1.6...@visulima/ono@2.1.7) (2026-09-06)
