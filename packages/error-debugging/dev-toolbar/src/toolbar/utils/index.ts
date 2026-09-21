@@ -18,3 +18,25 @@ export const pixelToNumber = (value: string | number): number => {
 
     return value;
 };
+
+/**
+ * Human-readable byte size: `B` under 1 KiB, then `KB` and `MB` to one decimal.
+ *
+ * A negative or non-finite size renders as an en dash rather than "NaN B",
+ * which is what an asset the server could not stat reports.
+ */
+export const formatBytes = (bytes: number): string => {
+    if (!Number.isFinite(bytes) || bytes < 0) {
+        return "–";
+    }
+
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
+
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
