@@ -6,14 +6,8 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Button, Input, LoadingState } from "../../ui";
-
-interface ModuleEntry {
-    ext: string;
-    id: string;
-    importers: number;
-    importerUrls: string[];
-    url: string;
-}
+import type { ModuleEntry } from "./normalize";
+import { filterModules, toModuleEntries } from "./normalize";
 
 const EXT_COLORS: Record<string, string> = {
     css: "bg-purple-500/15 text-purple-400 border-purple-500/30",
@@ -24,14 +18,6 @@ const EXT_COLORS: Record<string, string> = {
     ts: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     tsx: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     vue: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-};
-
-const EXT_REGEX = /\.([a-z]+)(?:\?|$)/i;
-
-const getExtension = (url: string): string => {
-    const match = url.match(EXT_REGEX);
-
-    return match?.[1]?.toLowerCase() ?? "?";
 };
 
 const ExtensionBadge = ({ ext }: { ext: string }): ComponentChildren => (
@@ -62,18 +48,8 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         (helpers.rpc as any)
             .getModuleGraph()
 
-            .then((rawModules: any[]) => {
-                const entries: ModuleEntry[] = rawModules.map((m: any) => {
-                    return {
-                        ext: getExtension(m.url ?? m.id ?? ""),
-                        id: m.id ?? m.url ?? "",
-                        importers: m.importerCount ?? 0,
-                        importerUrls: Array.isArray(m.importerUrls) ? m.importerUrls : [],
-                        url: m.url ?? m.id ?? "",
-                    };
-                });
-
-                setModules(entries);
+            .then((rawModules: unknown[]) => {
+                setModules(toModuleEntries(rawModules));
                 setLoading(false);
 
                 return undefined;
@@ -88,11 +64,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         load();
     }, []);
 
-    const filtered = modules.filter((m) => {
-        const q = search.toLowerCase();
-
-        return !q || m.url.toLowerCase().includes(q) || m.ext.includes(q);
-    });
+    const filtered = filterModules(modules, search);
 
     const selectedModule = selectedId ? modules.find((m) => m.id === selectedId) : undefined;
 
