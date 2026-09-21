@@ -20,11 +20,15 @@ const aliasRows = (alias: unknown): { key: string; value: string }[] => {
     if (Array.isArray(alias)) {
         return (alias as { find?: string; replacement?: string }[])
             .filter((entry) => entry?.find !== undefined)
-            .map((entry) => { return { key: String(entry.find), value: String(entry.replacement ?? "") }; });
+            .map((entry) => {
+                return { key: String(entry.find), value: String(entry.replacement ?? "") };
+            });
     }
 
     if (typeof alias === "object" && alias !== null) {
-        return Object.entries(alias as Record<string, unknown>).map(([key, value]) => { return { key, value: String(value) }; });
+        return Object.entries(alias as Record<string, unknown>).map(([key, value]) => {
+            return { key, value: String(value) };
+        });
     }
 
     return [];
@@ -186,7 +190,14 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
     const envPane = pane([
         envEntries.length === 0
             ? add({ props: { text: "No environment variables exposed to the client." }, type: "Note" })
-            : add({ props: { rows: envEntries.map(([key, value]) => { return { key, value }; }) }, type: "EnvTable" }),
+            : add({
+                props: {
+                    rows: envEntries.map(([key, value]) => {
+                        return { key, value };
+                    }),
+                },
+                type: "EnvTable",
+            }),
         ...section(
             "Define Constants",
             defineEntries.length === 0
@@ -196,7 +207,9 @@ const buildViteConfigSpec = (config: ViteConfig): ViteConfigSpec => {
                         props: {
                             keyLabel: "Identifier",
                             keyTone: "amber",
-                            rows: defineEntries.map(([key, value]) => { return { key, value: JSON.stringify(value) }; }),
+                            rows: defineEntries.map(([key, value]) => {
+                                return { key, value: JSON.stringify(value) };
+                            }),
                             showCopy: true,
                             valueLabel: "Replacement",
                         },

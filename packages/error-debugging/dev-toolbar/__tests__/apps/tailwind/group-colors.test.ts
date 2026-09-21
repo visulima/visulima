@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { ColorToken } from "../../../src/apps/tailwind/analyze";
 import { groupColors, isNumericScale } from "../../../src/apps/tailwind/analyze";
 
-const token = (name: string): ColorToken => { return { cssVar: `--color-${name}`, name, value: "#000" }; };
+const token = (name: string): ColorToken => {
+    return { cssVar: `--color-${name}`, name, value: "#000" };
+};
 
 describe(isNumericScale, () => {
     it("accepts a name ending in a number", () => {

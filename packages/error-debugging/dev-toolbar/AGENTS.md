@@ -37,6 +37,24 @@ The real fix belongs in packem's dts bundler (separate repo); keeping to one blo
 pnpm build && tsc --noEmit --ignoreConfig --target es2022 --moduleResolution bundler --module esnext dist/packem_shared/global-api.d-*.d.ts
 ```
 
+### `@json-render/core` only tree-shakes under rollup
+
+The json-view renderer (`src/json-view/`) imports three functions from
+`@json-render/core`: `createStateStore`, `evaluateVisibility` and `resolveElementProps`.
+
+The package declares no `"sideEffects"` field. Rollup — and so packem, and so our
+published `dist` — analyses it anyway and inlines just those three, with no zod reaching
+the bundle: the whole vite-config panel is 18 KB built. **esbuild is conservative without
+the field and keeps the entire package: 440 KB raw, 89 KB gzipped, zod included.**
+
+That does not affect consumers of the published package, who get the rollup output. It
+does affect anyone bundling our `src` directly with esbuild, and it affects any
+measurement taken with esbuild — a probe of the renderer's cost reports 440 KB and is
+simply wrong about what ships.
+
+The fix belongs upstream (`"sideEffects": false` in `@json-render/core`). Until then, take
+bundle measurements from `pnpm build` output, never from an esbuild probe.
+
 ### Peer deps
 
 `vite` `^8.0.11` (required). Optional peers: `@modelcontextprotocol/sdk` `^1.29.0` (only when consuming the `./mcp` entry), `axe-core` (a11y app), `zod` `^3.25.0 || ^4.0.0`.

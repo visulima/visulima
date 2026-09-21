@@ -4,31 +4,13 @@ import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
+import { formatBytes } from "../../toolbar/utils";
 import type { AppComponentProps } from "../../types/app";
 import type { StaticAsset } from "../../types/rpc";
 import { Button, Input, LoadingState, useCopy } from "../../ui";
+import { safePublicPath } from "./safe-public-path";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatSize = (bytes: number): string => {
-    if (!Number.isFinite(bytes) || bytes < 0) {
-        return "–";
-    }
-
-    if (bytes < 1024) {
-        return `${bytes} B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-/** Guard against javascript: and data: URIs produced by unusual filenames. */
-
-const safePublicPath = (p: string): string => (p.startsWith("/") && !p.includes(":") ? p : "#");
 
 const TYPE_FILTER_OPTIONS: { label: string; value: StaticAsset["type"] | "all" }[] = [
     { label: "All", value: "all" },
@@ -228,7 +210,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             >
                                 <TypeBadge type={asset.type} />
                                 <span class="flex-1 text-[0.775rem] font-mono text-foreground/80 truncate min-w-0">{asset.publicPath}</span>
-                                <span class="shrink-0 text-[0.65rem] text-muted-foreground">{formatSize(asset.size)}</span>
+                                <span class="shrink-0 text-[0.65rem] text-muted-foreground">{formatBytes(asset.size)}</span>
                             </button>
                         ))
                     )}
@@ -266,7 +248,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             </div>
                             <div>
                                 <div class="text-[0.6rem] uppercase tracking-wider text-muted-foreground mb-1">Size</div>
-                                <span class="text-[0.8rem] font-mono text-foreground">{formatSize(selected.size)}</span>
+                                <span class="text-[0.8rem] font-mono text-foreground">{formatBytes(selected.size)}</span>
                             </div>
                             <div>
                                 <div class="text-[0.6rem] uppercase tracking-wider text-muted-foreground mb-1">Last Modified</div>
