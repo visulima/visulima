@@ -1,3 +1,9 @@
+## @visulima/html [1.0.12](https://github.com/visulima/visulima/compare/@visulima/html@1.0.11...@visulima/html@1.0.12) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/html [1.0.11](https://github.com/visulima/visulima/compare/@visulima/html@1.0.10...@visulima/html@1.0.11) (2026-09-07)
 
 ## @visulima/html [1.0.10](https://github.com/visulima/visulima/compare/@visulima/html@1.0.9...@visulima/html@1.0.10) (2026-09-06)
