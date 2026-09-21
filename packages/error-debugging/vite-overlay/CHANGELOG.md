@@ -1,3 +1,5 @@
+## @visulima/vite-overlay [2.0.23](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.22...@visulima/vite-overlay@2.0.23) (2026-09-21)
+
 ## @visulima/vite-overlay [2.0.22](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.21...@visulima/vite-overlay@2.0.22) (2026-09-21)
 
 ### Miscellaneous Chores
