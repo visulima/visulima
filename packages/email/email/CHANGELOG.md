@@ -1,3 +1,10 @@
+## @visulima/email [3.0.11](https://github.com/visulima/visulima/compare/@visulima/email@3.0.10...@visulima/email@3.0.11) (2026-09-24)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.13
+
 ## @visulima/email [3.0.10](https://github.com/visulima/visulima/compare/@visulima/email@3.0.9...@visulima/email@3.0.10) (2026-09-23)
 
 
