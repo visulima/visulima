@@ -1,3 +1,47 @@
+## @visulima/vis-mcp [1.0.26](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.25...@visulima/vis-mcp@1.0.26) (2026-09-24)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.13
+* **@visulima/vis:** upgraded to 4.1.4
+
+## @visulima/vis-mcp [1.0.25](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.24...@visulima/vis-mcp@1.0.25) (2026-09-23)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.12
+* **@visulima/vis:** upgraded to 4.1.3
+
+## @visulima/vis-mcp [1.0.24](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.23...@visulima/vis-mcp@1.0.24) (2026-09-22)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.11
+* **@visulima/vis:** upgraded to 4.1.2
+
+## @visulima/vis-mcp [1.0.23](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.22...@visulima/vis-mcp@1.0.23) (2026-09-21)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.10
+* **@visulima/vis:** upgraded to 4.1.1
+
+## @visulima/vis-mcp [1.0.22](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.21...@visulima/vis-mcp@1.0.22) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.9
+* **@visulima/vis:** upgraded to 4.1.0
+
 ## @visulima/vis-mcp [1.0.21](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.20...@visulima/vis-mcp@1.0.21) (2026-09-07)
 
 

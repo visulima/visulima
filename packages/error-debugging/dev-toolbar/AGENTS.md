@@ -37,6 +37,35 @@ The real fix belongs in packem's dts bundler (separate repo); keeping to one blo
 pnpm build && tsc --noEmit --ignoreConfig --target es2022 --moduleResolution bundler --module esnext dist/packem_shared/global-api.d-*.d.ts
 ```
 
+### The json-view renderer has no runtime dependency
+
+`src/json-view/` renders a panel from a JSON spec. It implements its own state store
+(`state-store.ts`, JSON-Pointer get/set over a plain object) and its own binding
+resolution (`resolve.ts`), rather than depending on a library for them.
+
+That is deliberate, and the reason is worth keeping:
+
+`@json-render/core` supplies exactly these pieces, and the first version of this module
+used it. But packem **externalises** declared dependencies rather than inlining them — the
+built chunk keeps a bare `import … from "@json-render/core"` — so nothing was tree-shaken
+at our build at all. The consumer's dev server resolves it with esbuild, which without a
+`"sideEffects"` field keeps the whole package: **270 KB (58 KB gzip), zod included**,
+fetched by every consumer's browser the first time a panel opens. For three functions, in
+a dev-only overlay whose other runtime deps are Babel, floating-ui, launch-editor and
+Preact.
+
+Two traps if you revisit this:
+
+- A green `grep -r zod dist/` proves nothing. Our `dist` is clean because the dependency
+  **is not in it**, not because it was shaken out.
+- Measuring the panel chunk from `pnpm build` output under-counts for the same reason. To
+  see what a consumer actually downloads, build a host app against the built `dist` and
+  look at `node_modules/.vite/deps/`.
+
+The package is still a devDependency: `validateSpec` is used in the spec tests to assert
+structural integrity, which never reaches a consumer. The spec's wire format is unchanged,
+so a `@json-render/*` renderer remains a drop-in option for anyone who wants one.
+
 ### Peer deps
 
 `vite` `^8.0.11` (required). Optional peers: `@modelcontextprotocol/sdk` `^1.29.0` (only when consuming the `./mcp` entry), `axe-core` (a11y app), `zod` `^3.25.0 || ^4.0.0`.

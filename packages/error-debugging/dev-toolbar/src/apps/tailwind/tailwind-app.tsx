@@ -6,220 +6,13 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { TailwindConfigResult } from "../../rpc/functions/tailwind-config";
 import type { AppComponentProps } from "../../types/app";
+import { EmptyState, LoadingState, useCopy } from "../../ui";
+import type { ColorToken, EffectToken, FontSizeToken, SpacingToken } from "./analyze";
+import { extractTokens, groupColors, isNumericScale, parseToPx, scanRootVariables, TRAILING_NUMBER_CAPTURE_RE, TRAILING_NUMBER_RE } from "./analyze";
 
-type Tab = "colors" | "spacing" | "type" | "effects" | "config";
-
-// ─── Module-scope regex constants ─────────────────────────────────────────────
-
-const NUMERIC_SCALE_RE = /^\w+-\d+$/;
-const TRAILING_NUMBER_RE = /-\d+$/;
-const TRAILING_NUMBER_CAPTURE_RE = /-(\d+)$/;
 const CSS_VAR_PREFIX_RE = /^--/;
 
-// ─── CSS variable scanner ─────────────────────────────────────────────────────
-
-/**
- * Collect CSS custom properties from :root / html rules.
- * Recurses into \@layer, \@media, and \@supports blocks because Tailwind v4
- * wraps its theme tokens inside `\@layer theme { :root { ... } }`.
- */
-const isRootSelector = (selectorText: string): boolean =>
-    selectorText.split(",").some((s) => {
-        const t = s.trim();
-
-        return t === ":root" || t === "html";
-    });
-
-const collectRootStyleVariables = (style: CSSStyleDeclaration, variables: Map<string, string>): void => {
-    for (let i = 0; i < style.length; i += 1) {
-        const prop = style[i] as string;
-
-        if (prop.startsWith("--") && !prop.startsWith("--tw-") && !prop.startsWith("--brand-")) {
-            const value = style.getPropertyValue(prop).trim();
-
-            if (value) {
-                variables.set(prop, value);
-            }
-        }
-    }
-};
-
-const collectVariablesFromRules = (rules: CSSRuleList, variables: Map<string, string>): void => {
-    for (const rule of rules) {
-        if (rule instanceof CSSStyleRule) {
-            if (isRootSelector(rule.selectorText)) {
-                collectRootStyleVariables(rule.style, variables);
-            }
-        } else if ("cssRules" in rule && rule.cssRules instanceof CSSRuleList) {
-            // Recurse into \@layer, \@media, \@supports, and any other grouping rule
-            collectVariablesFromRules(rule.cssRules, variables);
-        }
-    }
-};
-
-const scanRootVariables = (): Map<string, string> => {
-    const variables = new Map<string, string>();
-
-    for (const sheet of document.styleSheets) {
-        try {
-            collectVariablesFromRules(sheet.cssRules, variables);
-        } catch {
-            // CORS — skip cross-origin stylesheets
-        }
-    }
-
-    return variables;
-};
-
-// ─── Token types ──────────────────────────────────────────────────────────────
-
-interface ColorToken {
-    cssVar: string;
-    name: string;
-    value: string;
-}
-
-interface SpacingToken {
-    cssVar: string;
-    name: string;
-    numericPx: number;
-    value: string;
-}
-
-interface FontSizeToken {
-    cssVar: string;
-    name: string;
-    sizePx: number;
-    value: string;
-}
-
-interface EffectToken {
-    cssVar: string;
-    name: string;
-    value: string;
-}
-
-interface TokenSet {
-    colors: ColorToken[];
-    fontFamilies: EffectToken[];
-    fontSizes: FontSizeToken[];
-    radii: EffectToken[];
-    shadows: EffectToken[];
-    spacing: SpacingToken[];
-}
-
-// ─── Token extraction ─────────────────────────────────────────────────────────
-
-const parseToPx = (value: string): number => {
-    if (value.endsWith("rem")) {
-        return Number.parseFloat(value) * 16;
-    }
-
-    if (value.endsWith("px")) {
-        return Number.parseFloat(value);
-    }
-
-    if (value.endsWith("em")) {
-        return Number.parseFloat(value) * 16;
-    }
-
-    return 0;
-};
-
-const extractTokens = (variables: Map<string, string>): TokenSet => {
-    const colors: ColorToken[] = [];
-    const spacing: SpacingToken[] = [];
-    const fontSizes: FontSizeToken[] = [];
-    const fontFamilies: EffectToken[] = [];
-    const radii: EffectToken[] = [];
-    const shadows: EffectToken[] = [];
-
-    for (const [prop, value] of variables) {
-        if (prop.startsWith("--color-")) {
-            colors.push({ cssVar: prop, name: prop.slice(8), value });
-        } else if (prop.startsWith("--spacing-")) {
-            spacing.push({
-                cssVar: prop,
-                name: prop.slice(10),
-                numericPx: parseToPx(value),
-                value,
-            });
-        } else if (prop.startsWith("--text-") && !prop.includes("--line-height") && !prop.endsWith("--font-weight")) {
-            fontSizes.push({
-                cssVar: prop,
-                name: prop.slice(7),
-                sizePx: parseToPx(value),
-                value,
-            });
-        } else if (prop.startsWith("--font-")) {
-            fontFamilies.push({ cssVar: prop, name: prop.slice(7), value });
-        } else if (prop.startsWith("--radius-")) {
-            radii.push({ cssVar: prop, name: prop.slice(9), value });
-        } else if (prop.startsWith("--shadow-") || prop.startsWith("--drop-shadow-")) {
-            shadows.push({ cssVar: prop, name: prop.slice(2), value });
-        }
-    }
-
-    const sortedSpacing = spacing.toSorted((a, b) => a.numericPx - b.numericPx);
-    const sortedFontSizes = fontSizes.toSorted((a, b) => a.sizePx - b.sizePx);
-
-    return { colors, fontFamilies, fontSizes: sortedFontSizes, radii, shadows, spacing: sortedSpacing };
-};
-
-// ─── Color grouping ───────────────────────────────────────────────────────────
-
-const isNumericScale = (name: string): boolean => NUMERIC_SCALE_RE.test(name);
-
-const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>; semantic: ColorToken[] } => {
-    const semantic: ColorToken[] = [];
-    const scaleMap = new Map<string, ColorToken[]>();
-
-    for (const token of colors) {
-        if (isNumericScale(token.name)) {
-            const scaleName = token.name.replace(TRAILING_NUMBER_RE, "");
-            const existing = scaleMap.get(scaleName) ?? [];
-
-            existing.push(token);
-            scaleMap.set(scaleName, existing);
-        } else {
-            semantic.push(token);
-        }
-    }
-
-    for (const [key, tokens] of scaleMap) {
-        scaleMap.set(
-            key,
-            tokens.toSorted((a, b) => {
-                const numberA = Number.parseInt(a.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
-                const numberB = Number.parseInt(b.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
-
-                return numberA - numberB;
-            }),
-        );
-    }
-
-    return { scales: scaleMap, semantic };
-};
-
-// ─── Copy button hook ─────────────────────────────────────────────────────────
-
-const useCopy = (): { copied: boolean; copy: (text: string) => void } => {
-    const [copied, setCopied] = useState(false);
-    const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const copy = (text: string): void => {
-        navigator.clipboard.writeText(text).catch(() => {});
-        setCopied(true);
-
-        if (timer.current) {
-            clearTimeout(timer.current);
-        }
-
-        timer.current = setTimeout(setCopied, 1500, false);
-    };
-
-    return { copied, copy };
-};
+type Tab = "colors" | "spacing" | "type" | "effects" | "config";
 
 // ─── Section header ───────────────────────────────────────────────────────────
 
@@ -638,16 +431,7 @@ const ConfigTab = ({
     const [colorSearch, setColorSearch] = useState("");
 
     if (loading) {
-        return (
-            <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div aria-hidden="true" class="flex gap-1.5 items-center">
-                    {([0, 160, 320] as const).map((delay) => (
-                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
-                    ))}
-                </div>
-                <span class="text-[0.75rem] text-muted-foreground">Loading Tailwind config…</span>
-            </div>
-        );
+        return <LoadingState label="Loading Tailwind config…" />;
     }
 
     if (error || !configData) {
@@ -962,21 +746,6 @@ const ConfigTab = ({
     );
 };
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-const EmptyState = (): ComponentChildren => (
-    <div class="flex flex-col items-center justify-center h-full gap-4 py-16 px-8 text-center select-none">
-        <div class="size-12 border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/30 text-2xl">◻</div>
-        <div class="space-y-1.5">
-            <p class="text-[0.8rem] font-medium text-foreground/70">No design tokens detected</p>
-            <p class="text-[0.7rem] text-muted-foreground leading-relaxed max-w-[240px]">
-                This app reads CSS custom properties from your page's <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your app uses
-                Tailwind CSS v4 or defines custom properties.
-            </p>
-        </div>
-    </div>
-);
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
@@ -1051,7 +820,12 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             </div>
 
             {total === 0 && tab !== "config" ? (
-                <EmptyState />
+                <EmptyState icon="◻" title="No design tokens detected" tone="accent">
+                    <p class="text-[0.7rem] text-muted-foreground leading-relaxed max-w-[240px] text-center">
+                        This app reads CSS custom properties from your page&apos;s <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your
+                        app uses Tailwind CSS v4 or defines custom properties.
+                    </p>
+                </EmptyState>
             ) : (
                 <>
                     {/* Tab bar */}

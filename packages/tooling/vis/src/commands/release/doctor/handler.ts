@@ -53,20 +53,86 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    // Workspace integrity
-    if (ctx.packages.length === 0) {
+    // Workspace integrity.
+    //
+    // `ctx.packages` is the *release-managed* set — what discovery found, minus
+    // everything `isPackageManaged` filtered out. An empty list therefore has
+    // two very different causes, and collapsing them into one "check your
+    // workspace block" error sent visulima/visulima#863 to `pnpm-workspace.yaml`,
+    // the one file that was not the problem. `defaultManaged` defaults to
+    // `false`, so "workspace resolves, nothing has opted in yet" is the normal
+    // state of every mid-migration repo.
+    //
+    // Split into two checks: `workspace-discovered` answers "does the package
+    // manager see any projects?", `release-managed-packages` answers "has any
+    // of them opted in?". Only the first can be an error — the second is a
+    // legitimate waypoint during an incremental adoption, so it warns.
+    // Probe the package manager unconditionally. `ctx.packages` is the MANAGED
+    // subset, so reporting its length as the workspace count would print
+    // "Discovered 3 workspace package(s)" on a 50-package repo with 3 opted in —
+    // re-conflating the two numbers this very check exists to separate.
+    let workspaceEntries: { private: boolean }[] | undefined;
+
+    try {
+        workspaceEntries = await ctx.pm.listWorkspacePackages(cwd);
+    } catch {
+        // Probe failed (PM missing / workspace unreadable) — indistinguishable
+        // from "resolves to nothing" from here.
+        workspaceEntries = undefined;
+    }
+
+    if (ctx.packages.length > 0) {
+        // A managed package can only come from a discovered one, so the probe
+        // failing here is a probe problem, not a workspace problem — fall back
+        // to the managed count rather than claiming the workspace is empty.
+        const discovered = workspaceEntries === undefined ? ctx.packages.length : Math.max(workspaceEntries.length, ctx.packages.length);
+
+        checks.push({
+            message: `Discovered ${discovered} workspace package(s).`,
+            name: "workspace-discovered",
+            severity: "info",
+            status: "pass",
+        });
+        checks.push({
+            message: `${ctx.packages.length} of ${discovered} package(s) are release-managed.`,
+            name: "release-managed-packages",
+            severity: "info",
+            status: "pass",
+        });
+    } else if (workspaceEntries === undefined || workspaceEntries.length === 0) {
         checks.push({
             message: "No packages discovered. Ensure your package manager's workspace block resolves.",
             name: "workspace-discovered",
             severity: "error",
             status: "fail",
         });
-    } else {
         checks.push({
-            message: `Discovered ${ctx.packages.length} workspace package(s).`,
+            message: "Skipped — no workspace packages to opt in.",
+            name: "release-managed-packages",
+            severity: "info",
+            status: "skip",
+        });
+    } else {
+        const workspaceProjectCount = workspaceEntries.length;
+        // `isPackageManaged` rule 5 drops every `private: true` package
+        // unless `privatePackages.version` is set — so on an all-private
+        // workspace even `defaultManaged: true` yields an empty managed set.
+        // Naming only the two opt-in knobs there would be its own dead end.
+        const privateHint = workspaceEntries.every((entry) => entry.private)
+            ? " Every discovered package is private — private packages additionally need release.privatePackages.version."
+            : "";
+
+        checks.push({
+            message: `Discovered ${workspaceProjectCount} workspace package(s).`,
             name: "workspace-discovered",
             severity: "info",
             status: "pass",
+        });
+        checks.push({
+            message: `No release-managed packages (${workspaceProjectCount} workspace package(s) discovered). Set release.defaultManaged: true in vis.config.ts, or add "vis-release": { "managed": true } to a package.json.${privateHint}`,
+            name: "release-managed-packages",
+            severity: "warn",
+            status: "fail",
         });
     }
 
@@ -406,8 +472,21 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             checks.push({ message: w, name: "plan-warning", severity: "warn", status: "fail" });
         }
     } else {
+        // "No pending releases." reads like a clean bill of health, but with an
+        // empty managed set it is vacuous — nothing *can* release. Say which of
+        // the two it is (see the workspace-integrity block above).
+        let planMessage: string;
+
+        if (ctx.plan.releases.length > 0) {
+            planMessage = `Plan resolves ${ctx.plan.releases.length} release(s).`;
+        } else if (ctx.packages.length === 0) {
+            planMessage = "No pending releases — no package is release-managed, so the plan is always empty.";
+        } else {
+            planMessage = "No pending releases.";
+        }
+
         checks.push({
-            message: ctx.plan.releases.length === 0 ? "No pending releases." : `Plan resolves ${ctx.plan.releases.length} release(s).`,
+            message: planMessage,
             name: "plan-readable",
             severity: "info",
             status: "pass",
@@ -1355,15 +1434,26 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                 }
             }
 
-            checks.push({
-                message:
-                    missing.length === 0
-                        ? "All catalog: references resolve against pnpm-workspace.yaml."
-                        : `${missing.length} catalog: reference(s) don't resolve: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}`,
-                name: "catalog-consistency",
-                severity: "warn",
-                status: missing.length === 0 ? "pass" : "fail",
-            });
+            // With no release-managed packages the loop above inspected nothing,
+            // so "all references resolve" would be a pass nobody earned.
+            if (ctx.packages.length === 0) {
+                checks.push({
+                    message: "Skipped — no release-managed packages to inspect.",
+                    name: "catalog-consistency",
+                    severity: "info",
+                    status: "skip",
+                });
+            } else {
+                checks.push({
+                    message:
+                        missing.length === 0
+                            ? "All catalog: references resolve against pnpm-workspace.yaml."
+                            : `${missing.length} catalog: reference(s) don't resolve: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}`,
+                    name: "catalog-consistency",
+                    severity: "warn",
+                    status: missing.length === 0 ? "pass" : "fail",
+                });
+            }
         }
     } catch {
         // No catalog support / parse failure — not fatal for the doctor.

@@ -1,3 +1,42 @@
+## @visulima/tsconfig [3.2.20](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.19...@visulima/tsconfig@3.2.20) (2026-09-24)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.13
+
+## @visulima/tsconfig [3.2.19](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.18...@visulima/tsconfig@3.2.19) (2026-09-23)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.12
+
+## @visulima/tsconfig [3.2.18](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.17...@visulima/tsconfig@3.2.18) (2026-09-22)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.11
+
+## @visulima/tsconfig [3.2.17](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.16...@visulima/tsconfig@3.2.17) (2026-09-21)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.10
+
+## @visulima/tsconfig [3.2.16](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.15...@visulima/tsconfig@3.2.16) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.9
+
 ## @visulima/tsconfig [3.2.15](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.14...@visulima/tsconfig@3.2.15) (2026-09-07)
 
 

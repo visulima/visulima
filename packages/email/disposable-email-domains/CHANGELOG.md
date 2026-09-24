@@ -1,3 +1,25 @@
+## @visulima/disposable-email-domains [1.1.4](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.1.3...@visulima/disposable-email-domains@1.1.4) (2026-09-24)
+
+### Bug Fixes
+
+* sync data sources (disposable email domains, typosquats blocklist) ([ed0ee9e](https://github.com/visulima/visulima/commit/ed0ee9e51f86b8bfd679fea8ae85779e7f6e407a))
+
+## @visulima/disposable-email-domains [1.1.3](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.1.2...@visulima/disposable-email-domains@1.1.3) (2026-09-23)
+
+### Bug Fixes
+
+* sync data sources (disposable email domains, typosquats blocklist) ([de657e5](https://github.com/visulima/visulima/commit/de657e50bd94a88c38129a8efd46c75ba896204e))
+
+## @visulima/disposable-email-domains [1.1.2](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.1.1...@visulima/disposable-email-domains@1.1.2) (2026-09-22)
+
+### Bug Fixes
+
+* sync data sources (disposable email domains, typosquats blocklist) ([1e7adeb](https://github.com/visulima/visulima/commit/1e7adeb53b32b26e55f4d8e4c8c3d2f83f87fbf3))
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/disposable-email-domains [1.1.1](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.1.0...@visulima/disposable-email-domains@1.1.1) (2026-09-03)
 
 ### Bug Fixes

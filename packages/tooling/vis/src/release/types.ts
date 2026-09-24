@@ -1208,8 +1208,17 @@ export interface VisReleaseConfig {
 
     /**
      * Changelog formatter selection. Pass `false` to disable changelog output,
-     * one of the built-in names (`"default"`, `"github"`, `"keep-a-changelog"`),
-     * a path to a custom module, or a `[path, options]` tuple.
+     * one of the built-in names (`"default"`, `"github"`, `"keep-a-changelog"`,
+     * `"conventional"`), a path to a custom module, or a `[path, options]`
+     * tuple.
+     *
+     * `"conventional"` renders the `conventional-changelog` /
+     * `semantic-release` shape: entries grouped by commit type under
+     * configurable `types: [{ type, section, hidden? }]` headings, the scope
+     * lifted out and bolded (`* **client,react:** …`), and a templated
+     * release heading (`heading`, tokens `{name}`, `{version}`, `{date}`,
+     * `{compareUrl}`). The same `types` / `heading` options are available
+     * opt-in on `"github"`, and `heading` on `"default"`.
      */
     changelog?: false | string | [string, Record<string, unknown>];
     /** Directory holding change files. Default: `".vis/release"`. */
@@ -1400,6 +1409,41 @@ export interface VisReleaseConfig {
 
     /** Globs of packages to exclude from release entirely. */
     ignore?: string[];
+
+    /**
+     * Extra regex source(s) matched against each commit subject by
+     * `vis release generate`. A matching commit contributes neither a
+     * bump nor a changelog line.
+     *
+     * Accepts a single regex source or an array of them (plain strings,
+     * not `/…/` literals — the config file is also expressed as JSON in
+     * `schemas/vis-release-config.schema.json`). Invalid sources are
+     * skipped with a warning rather than failing the release.
+     *
+     * These EXTEND the built-in machine-release-commit heuristic
+     * (`chore(release): …`, `chore(main): release …`, `chore: release v…`,
+     * `release(alpha): …`). Set `ignoreReleaseCommits: false` to drop the
+     * built-ins and match only your own patterns.
+     *
+     * A bare `[skip ci]` marker is deliberately not built in — it means
+     * "don't run CI", not "don't release", so matching it would swallow a
+     * real `fix: … [skip ci]` and its bump. Opt in with
+     * `ignoreCommitPattern: ["\\[skip ci\\]"]` if you want that.
+     */
+    ignoreCommitPattern?: string | string[];
+
+    /**
+     * Skip machine-authored release commits in `vis release generate`.
+     * Default `true`.
+     *
+     * With the default, a package whose only commits in the range are
+     * its own `chore(release): pkg@1.2.3 [skip ci]` commits is not
+     * bumped, and the previous changelog header those commits carry is
+     * never transcribed into the new entry. Set to `false` for the
+     * historical (verbatim) behaviour — `ignoreCommitPattern` then
+     * becomes the only filter.
+     */
+    ignoreReleaseCommits?: boolean;
     /** Globs that override `ignore` and `private` exclusion. */
     include?: string[];
 

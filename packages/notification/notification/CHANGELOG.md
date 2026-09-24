@@ -1,3 +1,42 @@
+## @visulima/notification [1.1.7](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.6...@visulima/notification@1.1.7) (2026-09-24)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.11
+
+## @visulima/notification [1.1.6](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.5...@visulima/notification@1.1.6) (2026-09-23)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.10
+
+## @visulima/notification [1.1.5](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.4...@visulima/notification@1.1.5) (2026-09-22)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.9
+
+## @visulima/notification [1.1.4](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.3...@visulima/notification@1.1.4) (2026-09-21)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.8
+
+## @visulima/notification [1.1.3](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.2...@visulima/notification@1.1.3) (2026-09-21)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.7
+
 ## @visulima/notification [1.1.2](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.1...@visulima/notification@1.1.2) (2026-09-07)
 
 

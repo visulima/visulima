@@ -27,6 +27,8 @@ import {
     isElementFixed,
 } from "./element-utils";
 import { originalSetTimeout, unfreezeAll } from "./freeze-animations";
+import { computePopupPosition, toPageCoords, toViewportCoords } from "./geometry";
+import { parseInlineStyle } from "./parse-inline-style";
 // ─── Palette (shared with inspector-app.ts via theme-palette.ts) ─────────────
 import type { AnnotationPalette } from "./theme-palette";
 import { getAnnotationPalette } from "./theme-palette";
@@ -187,29 +189,6 @@ let loadedAnnotations: Annotation[] = [];
 let scrollHandler: (() => void) | undefined;
 let resizeHandler: (() => void) | undefined;
 let navigationHandler: (() => void) | undefined;
-
-/**
- * Convert viewport click coords to page-absolute coords for storage.
- * x = percentage of viewport width, y = absolute page Y (scrollY + clientY).
- * For fixed elements, y stays as viewport-relative (no scrollY offset).
- */
-export const toPageCoords = (clientX: number, clientY: number, fixed: boolean = false): { x: number; y: number } => {
-    return {
-        x: (clientX / window.innerWidth) * 100,
-        y: fixed ? clientY : clientY + window.scrollY,
-    };
-};
-
-/**
- * Convert stored page coords back to viewport position for rendering.
- * Fixed elements use viewport-relative Y directly.
- */
-const toViewportCoords = (x: number, y: number, fixed: boolean = false): { left: number; top: number } => {
-    return {
-        left: (x / 100) * window.innerWidth,
-        top: fixed ? y : y - window.scrollY,
-    };
-};
 
 const repositionMarkers = (): void => {
     const markers = document.querySelectorAll<HTMLElement>(`.${MARKER_CLASS}`);
@@ -1514,39 +1493,6 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
 // ─── Shared form positioning helper ──────────────────────────────────────────
 
 /**
- * Compute the best position for a popup near an anchor point.
- */
-const computePopupPosition = (formRect: DOMRect, anchorX: number, anchorY: number): { left: number; top: number } => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const margin = 8;
-
-    // Vertical: below → above → clamp
-    let top: number;
-
-    if (anchorY + margin + formRect.height <= vh - margin) {
-        top = anchorY + margin;
-    } else if (anchorY - margin - formRect.height >= margin) {
-        top = anchorY - margin - formRect.height;
-    } else {
-        top = Math.max(margin, vh - formRect.height - margin);
-    }
-
-    // Horizontal: right of anchor → left → clamp
-    let left: number;
-
-    if (anchorX + formRect.width <= vw - margin) {
-        left = anchorX;
-    } else if (anchorX - formRect.width >= margin) {
-        left = anchorX - formRect.width;
-    } else {
-        left = Math.max(margin, vw - formRect.width - margin);
-    }
-
-    return { left, top };
-};
-
-/**
  * Position a popup form near an anchor point with full collision handling.
  * Renders offscreen first to measure, then repositions within viewport bounds.
  * Watches for size changes (content expanding) and re-clamps automatically.
@@ -1646,30 +1592,6 @@ const createToggleGroup = (
     row.append(group);
 
     return row;
-};
-
-const parseInlineStyle = (css: string): Record<string, string> => {
-    const result: Record<string, string> = {};
-
-    for (const pair of css.split(";")) {
-        const colonIndex = pair.indexOf(":");
-
-        if (colonIndex === -1) {
-            continue;
-        }
-
-        const key = pair.slice(0, colonIndex).trim();
-        const value = pair.slice(colonIndex + 1).trim();
-
-        if (key && value) {
-            // Convert css-property to camelCase
-            const camelKey = key.replaceAll(/-([a-z])/g, (_, ch) => (ch as string).toUpperCase());
-
-            result[camelKey] = value;
-        }
-    }
-
-    return result;
 };
 
 // ─── Annotation detail popup ─────────────────────────────────────────────────
@@ -2377,3 +2299,5 @@ export const isOverAnnotationOverlay = (target: Element | undefined): boolean =>
     // Check if target is a marker or inside one (e.g. the number span or edit icon)
     return !!target.closest?.(`.${MARKER_CLASS}`);
 };
+
+export { toPageCoords } from "./geometry";
