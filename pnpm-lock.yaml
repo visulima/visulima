@@ -33238,6 +33238,7 @@ packages:
 
   typescript-coverage-report@1.1.1:
     resolution: {integrity: sha512-tQt/wzYaQ7f2oPOVjU54DACxKXbpRx6soUWgsQZP7i+GRm5s/52YTpFj7ARiIT2oRWf3aH3ba/xf3KfURE9ukQ==}
+    deprecated: 'Broken package contents: the published dist requires react/semantic-ui-react. Upgrade to 2.0.0. See https://github.com/alexcanessa/typescript-coverage-report/issues/171'
     hasBin: true
     peerDependencies:
       typescript: 2 || 3 || 4 || 5
