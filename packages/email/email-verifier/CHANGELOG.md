@@ -1,3 +1,10 @@
+## @visulima/email-verifier [1.0.18](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.17...@visulima/email-verifier@1.0.18) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.1.7
+
 ## @visulima/email-verifier [1.0.17](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.16...@visulima/email-verifier@1.0.17) (2026-09-26)
 
 
