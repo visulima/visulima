@@ -1,3 +1,5 @@
+## @visulima/tui [4.0.18](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.17...@visulima/tui@4.0.18) (2026-09-29)
+
 ## @visulima/tui [4.0.17](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.16...@visulima/tui@4.0.17) (2026-09-28)
 
 ## @visulima/tui [4.0.16](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.15...@visulima/tui@4.0.16) (2026-09-27)
