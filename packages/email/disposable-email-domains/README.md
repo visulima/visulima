@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| willwhite/freemail | 88,162 | ✅ | 0.69s (1.3 MB) |
-| disposable/disposable-email-domains | 75,430 | ✅ | 0.81s (1.1 MB) |
-| FGRibreau/mailchecker | 56,331 | ✅ | 0.40s (846.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.32s (388.0 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.77s (144.0 KB) |
-| 7c/fakefilter | 10,396 | ✅ | 0.31s (143.3 KB) |
-| disposable-email-domains/disposable-email-domains | 9,185 | ✅ | 0.11s (127.0 KB) |
-| groundcat/disposable-email-domain-list | 5,797 | ✅ | 0.31s (80.9 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.41s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.26s (45.7 KB) |
+| willwhite/freemail | 88,162 | ✅ | 0.36s (1.3 MB) |
+| disposable/disposable-email-domains | 75,631 | ✅ | 0.29s (1.1 MB) |
+| FGRibreau/mailchecker | 56,331 | ✅ | 0.13s (846.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.21s (388.0 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.20s (144.0 KB) |
+| 7c/fakefilter | 10,420 | ✅ | 0.02s (143.6 KB) |
+| disposable-email-domains/disposable-email-domains | 9,185 | ✅ | 0.13s (127.0 KB) |
+| groundcat/disposable-email-domain-list | 6,022 | ✅ | 0.07s (83.5 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.15s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
 | MattKetmo/EmailChecker | 2,515 | ✅ | 0.28s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.32s (15.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.13s (15.4 KB) |
 | castle/disposable-email-domains | 1,000 | ✅ | 0.01s (13.6 KB) |
-| jespernissen/disposable-maildomain-list | 986 | ✅ | 0.29s (12.7 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.35s (234 B) |
+| jespernissen/disposable-maildomain-list | 986 | ✅ | 0.30s (12.7 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.15s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-09-28_
+_Last updated: 2026-09-29_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
