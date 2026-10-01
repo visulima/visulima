@@ -1,3 +1,10 @@
+## @visulima/storage [2.0.21](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.20...@visulima/storage@2.0.21) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+
 ## @visulima/storage [2.0.20](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.19...@visulima/storage@2.0.20) (2026-09-30)
 
 
