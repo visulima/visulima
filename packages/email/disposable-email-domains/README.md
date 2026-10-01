@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| willwhite/freemail | 88,162 | ✅ | 0.43s (1.3 MB) |
-| disposable/disposable-email-domains | 78,082 | ✅ | 0.38s (1.1 MB) |
-| FGRibreau/mailchecker | 56,331 | ✅ | 0.28s (846.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.08s (388.0 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.09s (144.0 KB) |
-| 7c/fakefilter | 10,448 | ✅ | 0.20s (143.9 KB) |
-| disposable-email-domains/disposable-email-domains | 9,189 | ✅ | 0.14s (127.1 KB) |
-| groundcat/disposable-email-domain-list | 6,022 | ✅ | 0.13s (83.5 KB) |
+| disposable/disposable-email-domains | 98,944 | ✅ | 0.34s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.34s (1.3 MB) |
+| FGRibreau/mailchecker | 56,331 | ✅ | 0.24s (846.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.17s (388.0 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.19s (144.0 KB) |
+| 7c/fakefilter | 10,480 | ✅ | 0.15s (144.3 KB) |
+| disposable-email-domains/disposable-email-domains | 9,189 | ✅ | 0.16s (127.1 KB) |
+| groundcat/disposable-email-domain-list | 6,022 | ✅ | 0.35s (83.5 KB) |
 | eser/sanitizer-svc | 3,855 | ✅ | 0.16s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.23s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.12s (32.4 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.14s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.32s (32.4 KB) |
 | GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.15s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.12s (13.6 KB) |
-| jespernissen/disposable-maildomain-list | 985 | ✅ | 0.35s (12.7 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.11s (13.6 KB) |
+| jespernissen/disposable-maildomain-list | 985 | ✅ | 0.33s (12.7 KB) |
 | TheDahoom/disposable-email | 18 | ✅ | 0.20s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-09-30_
+_Last updated: 2026-10-01_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
