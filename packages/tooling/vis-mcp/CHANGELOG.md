@@ -1,3 +1,11 @@
+## @visulima/vis-mcp [1.0.33](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.32...@visulima/vis-mcp@1.0.33) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+* **@visulima/vis:** upgraded to 4.1.11
+
 ## @visulima/vis-mcp [1.0.32](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.31...@visulima/vis-mcp@1.0.32) (2026-09-30)
 
 
