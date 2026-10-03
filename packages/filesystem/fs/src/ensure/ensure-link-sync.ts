@@ -34,7 +34,7 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
     let destinationStat;
 
     try {
-        destinationStat = lstatSync(destination);
+        destinationStat = lstatSync(destination, { bigint: true });
     } catch {
         // ignore error
     }
@@ -42,7 +42,7 @@ const ensureLinkSync = (source: URL | string, destination: URL | string): void =
     let sourceStat;
 
     try {
-        sourceStat = lstatSync(source);
+        sourceStat = lstatSync(source, { bigint: true });
     } catch (error: unknown) {
         const nodeError = error as NodeJS.ErrnoException;
 
