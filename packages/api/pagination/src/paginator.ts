@@ -239,8 +239,8 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
      */
     public getUrlsForWindow(options: WindowOptions = {}): WindowedUrl[] {
         const requestedEachSide = options.eachSide;
-        const eachSide
-            = typeof requestedEachSide === "number" && Number.isFinite(requestedEachSide) && requestedEachSide >= 0 ? Math.trunc(requestedEachSide) : 2;
+        const eachSide =
+            typeof requestedEachSide === "number" && Number.isFinite(requestedEachSide) && requestedEachSide >= 0 ? Math.trunc(requestedEachSide) : 2;
         const { lastPage } = this;
 
         // Small enough to show every page without ellipsis.
@@ -299,12 +299,13 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
 
     /**
      * Returns JSON representation of the paginated data.
-     * @param namingStrategy Optional key-transform applied to the `meta` keys.
+     * @param namingStrategy Optional key-transform applied to the `meta` keys. `JSON.stringify` calls
+     * `toJSON` with the property key (a string), which is ignored.
      */
-    public toJSON(namingStrategy?: NamingStrategy): PaginationResult<T> {
+    public toJSON(namingStrategy?: NamingStrategy | string): PaginationResult<T> {
         return {
             data: this.all(),
-            meta: this.getMeta(namingStrategy),
+            meta: this.getMeta(typeof namingStrategy === "function" ? namingStrategy : undefined),
         };
     }
 
