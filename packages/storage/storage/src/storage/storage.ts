@@ -264,6 +264,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     protected locker: Locker;
 
+    /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
+    private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
+
     protected namingFunction: (file: TFile) => string;
 
     protected validation: Validator<TFile> = new Validator<TFile>();
@@ -493,11 +496,73 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async saveMeta(file: TFile): Promise<TFile> {
         BaseStorage.assertSafeId(file.id);
+
+        // A chunked upload's `_chunks` list is append-only, but a provider write saves the record
+        // it read before storing its bytes. A chunk another request recorded in the meantime would
+        // be dropped from that stale copy (#902), so merge in the stored progress, one save per id at a time.
+        if (!Array.isArray(file.metadata?._chunks)) {
+            return this.persistMeta(file);
+        }
+
+        const save = (this.chunkedMetaSaves.get(file.id) ?? Promise.resolve())
+            .catch(() => undefined)
+            .then(async () => {
+                await this.mergeStoredProgress(file);
+
+                return this.persistMeta(file);
+            });
+
+        this.chunkedMetaSaves.set(file.id, save);
+
+        try {
+            return await save;
+        } finally {
+            if (this.chunkedMetaSaves.get(file.id) === save) {
+                this.chunkedMetaSaves.delete(file.id);
+            }
+        }
+    }
+
+    private async persistMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
         this.cache.set(file.id, file);
 
         return this.meta.save(file.id, file);
+    }
+
+    /**
+     * Adds the chunks recorded in the stored record that `file` is missing, and keeps the larger
+     * `bytesWritten`: chunks land at their offsets, so a save from an earlier write may carry a
+     * smaller extent than one already stored.
+     */
+    private async mergeStoredProgress(file: TFile): Promise<void> {
+        let stored: TFile;
+
+        try {
+            stored = await this.meta.get(file.id);
+        } catch {
+            // Nothing stored yet (or the record is gone): there is nothing to keep.
+            return;
+        }
+
+        if (typeof stored.bytesWritten === "number" && stored.bytesWritten > (file.bytesWritten || 0)) {
+            file.bytesWritten = stored.bytesWritten;
+        }
+
+        const storedChunks = stored.metadata?._chunks;
+
+        if (!Array.isArray(storedChunks) || storedChunks.length === 0) {
+            return;
+        }
+
+        const chunks = file.metadata._chunks as { length: number; offset: number }[];
+        const known = new Set(chunks.map((chunk) => `${String(chunk.offset)}:${String(chunk.length)}`));
+        const missing = (storedChunks as { length: number; offset: number }[]).filter((chunk) => !known.has(`${String(chunk.offset)}:${String(chunk.length)}`));
+
+        if (missing.length > 0) {
+            file.metadata = { ...file.metadata, _chunks: [...chunks, ...missing] };
+        }
     }
 
     /**

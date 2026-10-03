@@ -330,6 +330,9 @@ abstract class RestBase<TFile extends UploadFile> {
         // second write would overwrite the first — silently losing a chunk record. A distinct
         // `chunks:` namespace avoids conflict with the adapter's internal write lock keyed on the file id.
         // The lock fails fast when held, so retry briefly: the chunk is already stored and must be recorded.
+        // The stored status is reconciled with the chunk list under the same lock: each provider
+        // write sets it from its own view of the bytes, so concurrent PATCHes would otherwise leave
+        // "part" behind on a finished upload (#902), or "completed" on an unfinished one.
         let chunks: ChunkInfo[];
 
         try {
@@ -343,8 +346,15 @@ abstract class RestBase<TFile extends UploadFile> {
                             length: contentLength,
                             offset: chunkOffset,
                         });
+                        let status: UploadFile["status"] | undefined;
 
-                        await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged } });
+                        if (isUploadComplete(merged, totalSize)) {
+                            status = "completed";
+                        } else if (current.status === "completed") {
+                            status = "part";
+                        }
+
+                        await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged }, ...(status ? { status } : {}) });
 
                         return merged;
                     }),
@@ -364,15 +374,16 @@ abstract class RestBase<TFile extends UploadFile> {
             throw error;
         }
 
-        let updatedFile: TFile = { ...written, metadata: { ...written.metadata, _chunks: chunks } };
         const isComplete = isUploadComplete(chunks, totalSize);
+        let { status } = written;
 
-        // If storage marked it as completed but chunks are missing (out of order upload reaching end), revert status
-        if (updatedFile.status === "completed" && !isComplete) {
-            await this.storage.update({ id }, { status: "part" });
-            // Update local object for response
-            updatedFile = { ...updatedFile, status: "part" };
+        if (isComplete) {
+            status = "completed";
+        } else if (status === "completed") {
+            status = "part";
         }
+
+        const updatedFile: TFile = { ...written, metadata: { ...written.metadata, _chunks: chunks }, status };
 
         // For completed uploads, ensure bytesWritten equals totalSize
         const finalFile = isComplete && updatedFile.bytesWritten !== totalSize ? { ...updatedFile, bytesWritten: totalSize } : updatedFile;
