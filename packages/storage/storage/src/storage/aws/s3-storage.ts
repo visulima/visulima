@@ -86,15 +86,13 @@ class S3Storage extends S3BaseStorage {
         // Initialize client before calling super
         const client = new S3Client(config);
 
+        // Pass the whole config on: the base storage reads allowMIME, maxUploadSize, the hooks,
+        // validation, acl, … from it, and they were silently dropped by an explicit allowlist.
         super({
+            ...config,
             bucket,
-            clientDirectUpload: config.clientDirectUpload,
             expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
-            filename: config.filename,
-            logger: config.logger,
-            metaStorage: config.metaStorage,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
-            partSize: config.partSize,
             retryConfig: {
                 ...config.retryConfig,
                 shouldRetry: (error: unknown) => {

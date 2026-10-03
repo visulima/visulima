@@ -167,6 +167,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     protected readonly resolvedRetryConfig: RetryConfig;
 
+    private readyPromise?: Promise<void>;
+
     /**
      * Abstract method to get S3 API operations implementation.
      */
@@ -250,16 +252,34 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             }
         }
 
+        // The bucket probe runs lazily in ensureReady(): subclasses create their S3 client only
+        // after super() returns, so an accessCheck() started here would always see it undefined.
         this.isReady = false;
-        this.accessCheck()
-            .then(() => {
-                this.isReady = true;
+    }
 
-                return undefined;
-            })
-            .catch((error) => {
+    /**
+     * Runs {@link S3BaseStorage.accessCheck} once, on the first request, and marks the storage
+     * ready when it succeeds. A failed check is logged, thrown to the caller and forgotten, so the
+     * next request retries it instead of the storage staying unready forever.
+     */
+    public async ensureReady(): Promise<void> {
+        if (this.isReady) {
+            return;
+        }
+
+        this.readyPromise ??= this.accessCheck().then(
+            () => {
+                this.isReady = true;
+            },
+            (error: unknown) => {
+                this.readyPromise = undefined;
                 this.logger?.error("Storage access check failed: %O", error);
-            });
+
+                throw error;
+            },
+        );
+
+        await this.readyPromise;
     }
 
     protected override getRetryConfig(): RetryConfig {

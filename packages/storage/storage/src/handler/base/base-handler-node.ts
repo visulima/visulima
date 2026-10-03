@@ -94,7 +94,9 @@ abstract class BaseHandlerNode<
 
         try {
             await waitForStorage(this.storage);
-        } catch {
+        } catch (error: unknown) {
+            this.logger?.error("Storage is not ready: %O", error);
+
             await this.sendError(response, { UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
 
             return;

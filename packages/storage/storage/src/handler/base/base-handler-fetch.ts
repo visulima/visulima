@@ -68,7 +68,9 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
 
         try {
             await waitForStorage(this.storage);
-        } catch {
+        } catch (error: unknown) {
+            this.logger?.error("Storage is not ready: %O", error);
+
             return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
         }
 

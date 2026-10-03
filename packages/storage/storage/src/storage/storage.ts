@@ -284,7 +284,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     protected autoPurgeTimer?: ReturnType<typeof setInterval>;
 
     protected constructor(config: BaseStorageOptions<TFile>) {
-        const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
+        // An option explicitly set to `undefined` (e.g. a subclass forwarding `filename: config.filename`)
+        // must not replace its default.
+        const definedConfig = Object.fromEntries(Object.entries(config).filter(([, value]) => value !== undefined)) as Partial<BaseStorageOptions<TFile>>;
+        const options = { ...defaults, ...definedConfig } as Required<BaseStorageOptions<TFile>>;
 
         this.onCreate = options.onCreate;
         this.onUpdate = options.onUpdate;
