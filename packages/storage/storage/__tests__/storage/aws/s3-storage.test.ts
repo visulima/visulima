@@ -7,6 +7,7 @@ import {
     CopyObjectCommand,
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
+    HeadBucketCommand,
     HeadObjectCommand,
     ListObjectsV2Command,
     ListPartsCommand,
@@ -18,6 +19,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { mockClient } from "aws-sdk-client-mock";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
+import { waitForStorage } from "../../../src/handler/utils/storage-utils";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import type { AwsError, S3StorageOptions } from "../../../src/storage/aws/types";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
@@ -670,6 +672,23 @@ describe("s3PresignedStorage", () => {
             expect(call?.args[0].input.Prefix).toBe("photos/");
             expect(result.prefixes).toStrictEqual(["photos/2023/", "photos/2024/"]);
             expect(result.files.map((file) => file.id)).toStrictEqual(["photos/cover.jpg"]);
+        });
+    });
+
+    // #905: the probe used to run from the base constructor, before the S3 client existed.
+    describe("readiness", () => {
+        it("should probe the bucket from the constructor and become ready", async () => {
+            expect.assertions(2);
+
+            s3Mock.reset();
+            s3Mock.on(HeadBucketCommand).resolves({});
+
+            const readyStorage = new S3Storage(options);
+
+            await waitForStorage(readyStorage);
+
+            expect(readyStorage.isReady).toBe(true);
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(1);
         });
     });
 });

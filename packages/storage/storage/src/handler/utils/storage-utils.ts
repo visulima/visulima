@@ -1,7 +1,7 @@
 /**
  * Wait for storage to be ready before handling requests.
  * This ensures storage initialization (e.g., AWS S3, GCS) completes before processing uploads.
- * @param storage Storage instance with isReady property and an optional lazy ensureReady check
+ * @param storage Storage instance with isReady property and an optional ensureReady access check
  * @param timeoutMs Maximum time to wait in milliseconds (default: 5000)
  * @throws Error if storage doesn't become ready within timeout, or the ensureReady check's own error
  */
@@ -10,7 +10,8 @@ export const waitForStorage = async (storage: { ensureReady?: () => Promise<void
         return;
     }
 
-    // Storages with a lazy readiness check (e.g. S3) run it now; its failure is thrown as-is.
+    // Run (or retry) the storage's access check now; its failure is thrown as-is. A storage
+    // without one is polled until it reports ready.
     if (typeof storage.ensureReady === "function") {
         let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -27,7 +28,9 @@ export const waitForStorage = async (storage: { ensureReady?: () => Promise<void
             clearTimeout(timer);
         }
 
-        return;
+        if (storage.isReady) {
+            return;
+        }
     }
 
     const startTime = Date.now();

@@ -104,6 +104,22 @@ export const trackChunk = (chunks: ChunkInfo[], chunkInfo: ChunkInfo): ChunkInfo
 };
 
 /**
+ * Adds the chunks of `other` to `chunks` with {@link trackChunk}'s idempotency rules.
+ * @param chunks Chunks array to extend
+ * @param other Chunks to merge in
+ * @returns Merged chunks array
+ */
+export const mergeChunks = (chunks: ChunkInfo[], other: ChunkInfo[]): ChunkInfo[] => {
+    let merged = chunks;
+
+    for (const chunk of other) {
+        merged = trackChunk(merged, chunk);
+    }
+
+    return merged;
+};
+
+/**
  * Checks if a file is a chunked upload based on metadata.
  * @param file The file object
  * @returns True if file is a chunked upload

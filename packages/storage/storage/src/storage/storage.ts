@@ -9,6 +9,8 @@ import typeis from "type-is";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
+import type { ChunkInfo } from "../utils/chunked-upload";
+import { mergeChunks } from "../utils/chunked-upload";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
@@ -191,6 +193,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     public onError: (error: HttpError) => Promise<void> | void;
 
     public isReady = true;
+
+    /**
+     * Backend access probe registered by {@link BaseStorage.startAccessCheck}.
+     */
+    protected accessProbe?: () => Promise<unknown>;
+
+    private readyPromise?: Promise<void>;
 
     public errorResponses = {} as ErrorResponses;
 
@@ -499,7 +508,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         // A chunked upload's `_chunks` list is append-only, but a provider write saves the record
         // it read before storing its bytes. A chunk another request recorded in the meantime would
-        // be dropped from that stale copy (#902), so merge in the stored progress, one save per id at a time.
+        // be dropped from that stale copy (#902), so merge in the stored progress, one save per id
+        // at a time. Like the handler's `chunks:` lock, this only serializes within one process.
         if (!Array.isArray(file.metadata?._chunks)) {
             return this.persistMeta(file);
         }
@@ -534,9 +544,16 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     /**
      * Adds the chunks recorded in the stored record that `file` is missing, and keeps the larger
      * `bytesWritten`: chunks land at their offsets, so a save from an earlier write may carry a
-     * smaller extent than one already stored.
+     * smaller extent than one already stored. A fresh record (no chunks, nothing written, e.g. a
+     * new POST for the same id) replaces the stored progress instead.
      */
     private async mergeStoredProgress(file: TFile): Promise<void> {
+        const chunks = file.metadata._chunks as ChunkInfo[];
+
+        if (chunks.length === 0 && !file.bytesWritten) {
+            return;
+        }
+
         let stored: TFile;
 
         try {
@@ -550,19 +567,48 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             file.bytesWritten = stored.bytesWritten;
         }
 
-        const storedChunks = stored.metadata?._chunks;
+        if (Array.isArray(stored.metadata?._chunks) && stored.metadata._chunks.length > 0) {
+            file.metadata = { ...file.metadata, _chunks: mergeChunks(chunks, stored.metadata._chunks as ChunkInfo[]) };
+        }
+    }
 
-        if (!Array.isArray(storedChunks) || storedChunks.length === 0) {
+    /**
+     * Resolves once the storage is ready. Runs the access probe registered by
+     * {@link BaseStorage.startAccessCheck} if it has not succeeded yet; a failed probe is thrown
+     * to the caller and forgotten, so the next call retries it (e.g. after a transient network
+     * error at startup) instead of the storage staying unready forever.
+     */
+    public async ensureReady(): Promise<void> {
+        if (this.isReady || this.accessProbe === undefined) {
             return;
         }
 
-        const chunks = file.metadata._chunks as { length: number; offset: number }[];
-        const known = new Set(chunks.map((chunk) => `${String(chunk.offset)}:${String(chunk.length)}`));
-        const missing = (storedChunks as { length: number; offset: number }[]).filter((chunk) => !known.has(`${String(chunk.offset)}:${String(chunk.length)}`));
+        this.readyPromise ??= this.accessProbe().then(
+            () => {
+                this.isReady = true;
+            },
+            (error: unknown) => {
+                this.readyPromise = undefined;
 
-        if (missing.length > 0) {
-            file.metadata = { ...file.metadata, _chunks: [...chunks, ...missing] };
-        }
+                throw error;
+            },
+        );
+
+        await this.readyPromise;
+    }
+
+    /**
+     * Marks the storage unready and starts probing the backend with `probe`; {@link BaseStorage.isReady}
+     * turns true once it succeeds. Call it at the end of the subclass constructor, after the
+     * backend client exists. A failure is logged here and retried by {@link BaseStorage.ensureReady}.
+     */
+    protected startAccessCheck(probe: () => Promise<unknown>): void {
+        this.accessProbe = probe;
+        this.isReady = false;
+
+        this.ensureReady().catch((error: unknown) => {
+            this.logger?.error("Storage access check failed: %O", error);
+        });
     }
 
     /**

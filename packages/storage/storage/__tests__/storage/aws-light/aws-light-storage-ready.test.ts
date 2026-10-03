@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { waitForStorage } from "../../../src/handler/utils/storage-utils";
+import AwsLightMetaStorage from "../../../src/storage/aws-light/aws-light-meta-storage";
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
 import type { AwsLightStorageOptions } from "../../../src/storage/aws-light/types";
 
@@ -19,6 +20,8 @@ vi.mock(import("aws4fetch"), () => {
     };
 });
 
+const ok = { ok: true, status: 200, text: async () => "" };
+
 // #905: the base constructor probed the bucket before the subclass created its client, so the
 // storage never became ready and every request answered 503 after the readiness timeout.
 describe("awsLightStorage readiness (#905)", () => {
@@ -34,19 +37,10 @@ describe("awsLightStorage readiness (#905)", () => {
         mockFetch.mockReset();
     });
 
-    it("should not probe the bucket from the constructor", () => {
-        expect.assertions(2);
-
-        const storage = new AwsLightStorage(options);
-
-        expect(storage.isReady).toBe(false);
-        expect(mockFetch).not.toHaveBeenCalled();
-    });
-
-    it("should probe the bucket once on the first request and become ready", async () => {
+    it("should probe the bucket once its client exists and become ready", async () => {
         expect.assertions(3);
 
-        mockFetch.mockResolvedValue({ ok: true, status: 200, text: async () => "" });
+        mockFetch.mockResolvedValue(ok);
 
         const storage = new AwsLightStorage(options);
 
@@ -58,14 +52,15 @@ describe("awsLightStorage readiness (#905)", () => {
         expect(mockFetch.mock.calls[0]?.[1]).toStrictEqual({ method: "HEAD" });
     });
 
-    it("should surface a failed probe and retry it on the next request", async () => {
+    it("should retry a failed startup probe on the next request and surface its error", async () => {
         expect.assertions(4);
 
         mockFetch.mockResolvedValueOnce({ ok: false, status: 403, text: async () => "AccessDenied" });
-        mockFetch.mockResolvedValueOnce({ ok: true, status: 200, text: async () => "" });
+        mockFetch.mockResolvedValueOnce(ok);
 
         const storage = new AwsLightStorage(options);
 
+        // The first request joins the failing startup probe instead of starting a second one.
         await expect(waitForStorage(storage)).rejects.toThrow("Failed to access bucket: 403 AccessDenied");
 
         expect(storage.isReady).toBe(false);
@@ -76,16 +71,24 @@ describe("awsLightStorage readiness (#905)", () => {
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
-    it("should keep the base storage options and defaults it does not handle itself", () => {
-        expect.assertions(4);
+    it("should forward the base storage options it does not handle itself", async () => {
+        expect.assertions(5);
+
+        mockFetch.mockResolvedValue(ok);
 
         const onComplete = vi.fn();
-        const storage = new AwsLightStorage({ ...options, allowMIME: ["image/*"], maxUploadSize: 100, onComplete });
+        const expiration = { maxAge: "1h", purgeInterval: "10min", rolling: true };
+        const storage = new AwsLightStorage({ ...options, allowMIME: ["image/*"], expiration, maxUploadSize: 100, onComplete });
 
-        expect(storage.maxUploadSize).toBe(100);
-        expect(storage.config.allowMIME).toStrictEqual(["image/*"]);
-        expect(storage.onComplete).toBe(onComplete);
-        // `filename` was forwarded as undefined and replaced the default naming function.
-        expect(storage.config.filename?.({ id: "abc" } as never)).toBe("abc");
+        try {
+            expect(storage.maxUploadSize).toBe(100);
+            expect(storage.config.allowMIME).toStrictEqual(["image/*"]);
+            expect(storage.onComplete).toBe(onComplete);
+            // purgeInterval and rolling used to be dropped, so auto-purge never started.
+            expect(storage.config.expiration).toStrictEqual(expiration);
+            expect((storage as unknown as { meta: unknown }).meta).toBeInstanceOf(AwsLightMetaStorage);
+        } finally {
+            await storage.close();
+        }
     });
 });

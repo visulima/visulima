@@ -12,7 +12,7 @@ import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { BaseStorageOptions, OperationOptions } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
@@ -154,7 +154,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     protected bucket: string;
 
-    protected meta: MetaStorage<TFile>;
+    /** Set here for a caller-supplied or local meta storage, otherwise by the subclass constructor. */
+    protected meta!: MetaStorage<TFile>;
 
     /**
      * S3 multipart upload does not allow more than 10000 parts.
@@ -166,8 +167,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     protected readonly retry: ReturnType<typeof createRetryWrapper>;
 
     protected readonly resolvedRetryConfig: RetryConfig;
-
-    private readyPromise?: Promise<void>;
 
     /**
      * Abstract method to get S3 API operations implementation.
@@ -189,18 +188,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      */
     protected abstract accessCheck(maxWaitTime?: number): Promise<void>;
 
-    public constructor(config: {
-        bucket: string;
-        clientDirectUpload?: boolean;
-        expiration?: { maxAge?: string };
-        filename?: (file: TFile) => string;
-        logger?: BaseStorage<TFile>["logger"];
-        metaStorage?: MetaStorage<TFile>;
-        metaStorageConfig?: unknown;
-        partSize?: number | string;
-        retryConfig?: RetryConfig;
-    }) {
-        super(config as never);
+    public constructor(
+        config: Omit<BaseStorageOptions<TFile>, "metaStorage" | "retryConfig"> & {
+            bucket: string;
+            clientDirectUpload?: boolean;
+            metaStorage?: MetaStorage<TFile>;
+            metaStorageConfig?: unknown;
+            partSize?: number | string;
+            retryConfig?: RetryConfig;
+        },
+    ) {
+        super(config);
 
         this.bucket = config.bucket;
 
@@ -242,44 +240,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             const metaConfig = { ...config, ...(metaStorageConfig as Record<string, unknown>), logger: this.logger } as Record<string, unknown>;
             const localMeta = "directory" in metaConfig;
 
+            // Otherwise the subclass creates its bucket-backed meta storage once its client exists.
+            // Building a LocalMetaStorage here regardless created a directory on local disk even
+            // for storages that never use it (e.g. aws-light on an edge runtime).
             if (localMeta) {
                 this.logger?.debug("Using local meta storage");
-                this.meta = new LocalMetaStorage<TFile>(metaConfig);
-            } else {
-                // For aws-light, we'll use local meta storage by default
-                // S3Storage will override this to use S3MetaStorage
                 this.meta = new LocalMetaStorage<TFile>(metaConfig);
             }
         }
 
-        // The bucket probe runs lazily in ensureReady(): subclasses create their S3 client only
-        // after super() returns, so an accessCheck() started here would always see it undefined.
-        this.isReady = false;
-    }
-
-    /**
-     * Runs {@link S3BaseStorage.accessCheck} once, on the first request, and marks the storage
-     * ready when it succeeds. A failed check is logged, thrown to the caller and forgotten, so the
-     * next request retries it instead of the storage staying unready forever.
-     */
-    public async ensureReady(): Promise<void> {
-        if (this.isReady) {
-            return;
-        }
-
-        this.readyPromise ??= this.accessCheck().then(
-            () => {
-                this.isReady = true;
-            },
-            (error: unknown) => {
-                this.readyPromise = undefined;
-                this.logger?.error("Storage access check failed: %O", error);
-
-                throw error;
-            },
-        );
-
-        await this.readyPromise;
+        // Subclasses start the bucket probe (startAccessCheck) at the end of their own constructor:
+        // their S3 client only exists after super() returns.
     }
 
     protected override getRetryConfig(): RetryConfig {

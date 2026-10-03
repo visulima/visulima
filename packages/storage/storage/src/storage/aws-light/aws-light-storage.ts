@@ -80,7 +80,6 @@ class AwsLightStorage extends S3BaseStorage {
         super({
             ...config,
             bucket,
-            expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
             retryConfig: {
                 ...config.retryConfig,
@@ -116,6 +115,8 @@ class AwsLightStorage extends S3BaseStorage {
 
             this.meta = new AwsLightMetaStorage(metaConfig);
         }
+
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     /**

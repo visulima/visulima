@@ -102,6 +102,18 @@ const toCollectionUrl = (requestUrl: string): string => {
  */
 const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.metadata?._chunks) ? (file.metadata._chunks as ChunkInfo[]) : []);
 
+/**
+ * The status a chunked upload has once `chunks` are recorded: "completed" when they cover the
+ * file, and a "completed" the chunks don't back up reopened as "part".
+ */
+const reconcileChunkedStatus = (chunks: ChunkInfo[], totalSize: number, status: UploadFile["status"]): UploadFile["status"] => {
+    if (isUploadComplete(chunks, totalSize)) {
+        return "completed";
+    }
+
+    return status === "completed" ? "part" : status;
+};
+
 abstract class RestBase<TFile extends UploadFile> {
     /**
      * Handle single file deletion.
@@ -334,29 +346,23 @@ abstract class RestBase<TFile extends UploadFile> {
         // write sets it from its own view of the bytes, so concurrent PATCHes would otherwise leave
         // "part" behind on a finished upload (#902), or "completed" on an unfinished one.
         let chunks: ChunkInfo[];
+        let status: UploadFile["status"];
 
         try {
-            chunks = await retry(
+            ({ chunks, status } = await retry(
                 async () =>
                     this.storage.withLock(`chunks:${id}`, async () => {
                         const current = await this.storage.getMeta(id);
-                        const currentMetadata = current.metadata ?? {};
                         const merged = trackChunk(getChunks(current), {
                             checksum: chunkChecksum,
                             length: contentLength,
                             offset: chunkOffset,
                         });
-                        let status: UploadFile["status"] | undefined;
+                        const reconciled = reconcileChunkedStatus(merged, totalSize, current.status);
 
-                        if (isUploadComplete(merged, totalSize)) {
-                            status = "completed";
-                        } else if (current.status === "completed") {
-                            status = "part";
-                        }
+                        await this.storage.update({ id }, { metadata: { ...current.metadata, _chunks: merged }, status: reconciled });
 
-                        await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged }, ...(status ? { status } : {}) });
-
-                        return merged;
+                        return { chunks: merged, status: reconciled };
                     }),
                 {
                     initialDelay: 10,
@@ -364,7 +370,7 @@ abstract class RestBase<TFile extends UploadFile> {
                     maxRetries: 8,
                     shouldRetry: (error) => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_LOCKED,
                 },
-            );
+            ));
         } catch (error) {
             // Don't leave a "completed" status set by the write behind for an unrecorded chunk.
             if (written.status === "completed") {
@@ -374,15 +380,7 @@ abstract class RestBase<TFile extends UploadFile> {
             throw error;
         }
 
-        const isComplete = isUploadComplete(chunks, totalSize);
-        let { status } = written;
-
-        if (isComplete) {
-            status = "completed";
-        } else if (status === "completed") {
-            status = "part";
-        }
-
+        const isComplete = status === "completed";
         const updatedFile: TFile = { ...written, metadata: { ...written.metadata, _chunks: chunks }, status };
 
         // For completed uploads, ensure bytesWritten equals totalSize

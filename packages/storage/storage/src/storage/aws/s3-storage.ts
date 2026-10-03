@@ -91,7 +91,6 @@ class S3Storage extends S3BaseStorage {
         super({
             ...config,
             bucket,
-            expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
             retryConfig: {
                 ...config.retryConfig,
@@ -136,6 +135,8 @@ class S3Storage extends S3BaseStorage {
         if (this.config.clientDirectUpload) {
             this.onCreate = async () => {}; // TODO: remove hook
         }
+
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     /**
