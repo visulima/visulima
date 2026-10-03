@@ -48,14 +48,8 @@ const ensureSymlinkSync = (target: URL | string, linkName: URL | string, type?: 
     try {
         const linkStatInfo = lstatSync(linkName);
 
-        if (linkStatInfo.isSymbolicLink() && isStatsIdentical(statSync(targetRealPath), statSync(linkName))) {
-            const sourceStat = statSync(targetRealPath);
-
-            const destinationStat = statSync(linkName);
-
-            if (isStatsIdentical(sourceStat, destinationStat)) {
-                return;
-            }
+        if (linkStatInfo.isSymbolicLink() && isStatsIdentical(statSync(targetRealPath, { bigint: true }), statSync(linkName, { bigint: true }))) {
+            return;
         }
     } catch {
         /* empty */
