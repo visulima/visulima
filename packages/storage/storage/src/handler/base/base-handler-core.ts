@@ -21,7 +21,7 @@ import type { ResponseFile, ResponseList, UploadOptions } from "../types";
  * @param path Request path (without query string)
  * @returns The parsed target, or `undefined` when the path does not address a file
  */
-const parseFilePath = (path: string): { ext?: string; hasParentSegment: boolean; isMetadataRequest: boolean; uuid: string } | undefined => {
+const parseFilePath = (path: string): { ext?: string; isMetadataRequest: boolean; uuid: string } | undefined => {
     const segments = path
         .split("/")
         .filter(Boolean)
@@ -33,8 +33,7 @@ const parseFilePath = (path: string): { ext?: string; hasParentSegment: boolean;
             }
         });
     const isMetadataRequest = segments.length >= 2 && segments[segments.length - 1] === "metadata";
-    const idIndex = segments.length - (isMetadataRequest ? 2 : 1);
-    const idSegment = segments[idIndex];
+    const idSegment = segments[segments.length - (isMetadataRequest ? 2 : 1)];
 
     if (!idSegment) {
         return undefined;
@@ -47,7 +46,7 @@ const parseFilePath = (path: string): { ext?: string; hasParentSegment: boolean;
         return undefined;
     }
 
-    return { ext: extensionMatch?.[2], hasParentSegment: idIndex > 0, isMetadataRequest, uuid };
+    return { ext: extensionMatch?.[2], isMetadataRequest, uuid };
 };
 
 /**
@@ -259,7 +258,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         const target = parseFilePath(path);
 
         if (target) {
-            const { ext, hasParentSegment, isMetadataRequest, uuid } = target;
+            const { ext, isMetadataRequest, uuid } = target;
 
             try {
                 BaseStorage.assertSafeId(uuid);
@@ -296,9 +295,12 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 }
             }
 
-            // For non-metadata requests, accept UUID-like ids, and other ids (e.g. nanoid) of at least
-            // 8 characters below a collection path — the same rules as `getIdFromPath`
-            if (!uuidRegex.test(uuid) && !(hasParentSegment && uuid.length >= 8)) {
+            // UUID-like segments are always file ids. Other segments of at least 8 characters (e.g. a
+            // nanoid) may be a file id or a collection path such as `/api/attachments`, so they fall back
+            // to the list when no such file exists.
+            const isUuidLike = uuidRegex.test(uuid);
+
+            if (!isUuidLike && uuid.length < 8) {
                 // Not a file id - treat as list request
                 return undefined;
             }
@@ -403,6 +405,11 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 } as unknown as ResponseFile<TFile>;
             } catch (error: unknown) {
                 const errorWithCode = error as { UploadErrorCode?: string };
+
+                if (!isUuidLike && errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+                    // Ambiguous segment that is not a stored file - treat as list request
+                    return undefined;
+                }
 
                 if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
                     throw createHttpError(404, "File not found");

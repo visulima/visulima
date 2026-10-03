@@ -78,6 +78,14 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
         passThrough.destroy(error);
     });
 
+    // When the consumer cancels (e.g. the client aborts a 206 download) only the returned stream is
+    // destroyed; release the source too so file descriptors and connections are not leaked.
+    passThrough.on("close", () => {
+        if (!sourceStream.destroyed) {
+            sourceStream.destroy();
+        }
+    });
+
     return passThrough;
 };
 

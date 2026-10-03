@@ -10,6 +10,7 @@ import {
     getBaseUrl,
     getHeader,
     getIdFromRequest,
+    getIdFromRequestUrl,
     getMetadata,
     getRealPath,
     readBody,
@@ -203,6 +204,26 @@ describe("utils", () => {
 
             expect(() => getIdFromRequest(createRequest({ url }))).toThrow("Invalid request URL");
         });
+
+        it.each([
+            ["http://localhost/files/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
+            ["http://localhost/t/1111-2222-3333/files/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
+            ["http://localhost/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
+            ["http://localhost/files/391c9157ec481ac6-f72b2d884632d7e6.png", "391c9157ec481ac6-f72b2d884632d7e6"],
+        ])("should extract the last path segment as ID from a fetch URL: %p -> %p", (url, id) => {
+            expect.assertions(1);
+
+            expect(getIdFromRequestUrl(url)).toBe(id);
+        });
+
+        it.each([["http://localhost/"], ["http://localhost/files"], ["http://localhost/files/upload"], ["http://localhost/files/3"]])(
+            "should return undefined for fetch URLs without an ID: %p",
+            (url) => {
+                expect.assertions(1);
+
+                expect(getIdFromRequestUrl(url)).toBeUndefined();
+            },
+        );
 
         it("should return the real path from request URL or originalUrl", () => {
             expect.assertions(2);

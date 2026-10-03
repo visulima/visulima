@@ -268,10 +268,14 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
  * @internal
  * @param realPath URL path (without query string)
  * @param options.allowSingleSegment Accept a non-UUID id that is the only path segment (e.g. a handler mounted at `/`)
+ * @param options.lastSegmentOnly Only consider the last path segment, so a UUID-like parent segment is never taken as the id
  * @returns The extracted identifier
  * @throws Error("Invalid request URL") if no valid ID is found in the path
  */
-export const getIdFromPath = (realPath: string, { allowSingleSegment = false }: { allowSingleSegment?: boolean } = {}): string => {
+export const getIdFromPath = (
+    realPath: string,
+    { allowSingleSegment = false, lastSegmentOnly = false }: { allowSingleSegment?: boolean; lastSegmentOnly?: boolean } = {},
+): string => {
     // Extract UUID from the path by finding the last UUID-like segment
     const segments = realPath.split("/").filter(Boolean);
 
@@ -280,7 +284,7 @@ export const getIdFromPath = (realPath: string, { allowSingleSegment = false }: 
     }
 
     // Try to find a UUID-like segment first (check from the end)
-    for (let index = segments.length - 1; index >= 0; index -= 1) {
+    for (let index = segments.length - 1; index >= (lastSegmentOnly ? segments.length - 1 : 0); index -= 1) {
         const segment = segments[index];
 
         if (!segment) {
@@ -336,7 +340,7 @@ export const getIdFromPath = (realPath: string, { allowSingleSegment = false }: 
 
 /**
  * Extracts a file identifier from a Web API request URL (Fetch handlers).
- * Uses the same rules as {@link getIdFromRequest}, but also accepts an id that is the only path segment.
+ * Uses the same rules as {@link getIdFromRequest}, but only looks at the last path segment and also accepts an id that is the only path segment.
  * @internal
  * @param url Request URL
  * @returns The extracted identifier, or `undefined` when the URL does not address a file
@@ -352,7 +356,7 @@ export const getIdFromRequestUrl = (url: string): string | undefined => {
     }
 
     try {
-        return getIdFromPath(pathname, { allowSingleSegment: true });
+        return getIdFromPath(pathname, { allowSingleSegment: true, lastSegmentOnly: true });
     } catch (error: unknown) {
         if (error instanceof Error && error.message === "Invalid request URL") {
             return undefined;

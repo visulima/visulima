@@ -94,6 +94,38 @@ describe("fetch RestFetch GET", () => {
         await expect(response.text()).resolves.toBe(content);
     });
 
+    it.each(["http://localhost/api/attachments", "http://localhost/api/files-rest"])("should list files for a nested collection path %s", async (url) => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({});
+        const restHandler = new RestFetch({ storage });
+
+        const response = await restHandler.fetch(new Request(url));
+
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toStrictEqual([]);
+    });
+
+    it("should download a single-segment id when mounted at the root", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({});
+        const restHandler = new RestFetch({ storage });
+
+        await restHandler.fetch(
+            new Request("http://localhost/mydocument", {
+                body: "hello",
+                headers: { "content-length": "5", "content-type": "text/plain" },
+                method: "PUT",
+            }),
+        );
+
+        const response = await restHandler.fetch(new Request("http://localhost/mydocument"));
+
+        expect(response.status).toBe(200);
+        await expect(response.text()).resolves.toBe("hello");
+    });
+
     it("should reject a traversal id with 400", async () => {
         expect.assertions(1);
 
