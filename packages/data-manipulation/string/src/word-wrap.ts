@@ -1,10 +1,17 @@
-import { ANSI_ESCAPE_BELL, ANSI_ESCAPE_LINK, ANSI_SGR_TERMINATOR, ESCAPES, RE_ZERO_WIDTH } from "./constants";
+import { ESCAPES, RE_ZERO_WIDTH } from "./constants";
 import { getStringWidth } from "./get-string-width";
 import { processAnsiString } from "./utils/ansi-parser";
-import AnsiStateTracker from "./utils/ansi-state-tracker";
 import preserveAnsi from "./utils/preserve-ansi";
+import readControlSequence from "./utils/read-control-sequence";
 
 const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
+
+/** Shared so the wrap path does not build a segmenter per call. */
+const graphemeSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+
+/** Matches the first character that could be wide, or could combine with the one before it. */
+// eslint-disable-next-line no-control-regex
+const RE_NEEDS_SEGMENTING = /[^\u0000-\u02FF]/;
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
 /**
@@ -34,35 +41,127 @@ const getSingleCharWidth = (char: string): number => {
 };
 
 /**
- * Resets ANSI sequences at line breaks.
+ * Splits a token so a run of wide characters can wrap.
  *
- * Deliberately narrow: this only closes the foreground-black / background-green
- * codes. {@link preserveAnsi} (applied to the wrapped line array) is the
- * canonical mechanism that closes *and* re-opens every active SGR code per line.
- * Closing all active codes here as well would defeat that re-open pass - it makes
- * `preserveAnsi`'s scanner see the color as already closed before the newline, so
- * continuation lines lose their color entirely (e.g. `boxen(red(longText))` was
- * coloring only its first line). Do not generalize this to close all codes.
- * @param currentLine Current line of text
- * @returns Line with reset codes if needed
+ * Word wrapping looks for whitespace, and scripts written with fullwidth characters — Chinese,
+ * Japanese, Korean — do not use it. Without this, a CJK paragraph is one unbreakable token and
+ * overflows its container at whatever width it happens to be. UAX #14 allows a break between two
+ * ideographs, so each wide character becomes its own breakable unit and the narrow runs around it
+ * stay whole.
+ *
+ * Segmented by grapheme cluster rather than code point: a ZWJ emoji such as a family sequence is
+ * several wide code points that must never be split from each other.
+ * @param token A whitespace-free token.
+ * @returns The token split into breakable pieces, in order.
  */
-const resetAnsiAtLineBreak = (currentLine: string): string => {
-    if (!currentLine.includes("\u001B")) {
-        return currentLine;
+const splitAtWideCharacters = (token: string): string[] => {
+    // Segmenting is the expensive part, and most tokens cannot need it: nothing below U+0300 is
+    // wide or combines with what precedes it, so such a token is always one indivisible piece.
+    // Skipping the walk here is what keeps wrapping plain prose as cheap as it was before this
+    // function existed.
+    if (!RE_NEEDS_SEGMENTING.test(token)) {
+        return [token];
     }
 
-    let result = currentLine;
+    const pieces: string[] = [];
 
-    // Add reset codes in reverse order of how they were applied
-    if (currentLine.includes("\u001B[30m")) {
-        result += "\u001B[39m"; // foreground reset
+    let current = "";
+
+    for (const { segment } of graphemeSegmenter.segment(token)) {
+        if (getStringWidth(segment) > 1) {
+            if (current !== "") {
+                pieces.push(current);
+                current = "";
+            }
+
+            pieces.push(segment);
+
+            continue;
+        }
+
+        current += segment;
     }
 
-    if (currentLine.includes("\u001B[42m")) {
-        result += "\u001B[49m"; // background reset
+    if (current !== "") {
+        pieces.push(current);
     }
 
-    return result;
+    return pieces;
+};
+
+/**
+ * Splits literal text into wrappable tokens: whitespace runs, words, and individual wide characters.
+ * @param input The text to split.
+ * @returns The tokens, in order. Their concatenation is `input`.
+ */
+const splitLiteral = (input: string): string[] =>
+    input.split(RE_SPLIT_WHITESPACE).flatMap((token) => {
+        if (token === "" || RE_WHITESPACE_ONLY.test(token)) {
+            return [token];
+        }
+
+        return splitAtWideCharacters(token);
+    });
+
+/** Stands in for one unit of a control sequence: narrow, not whitespace, so it is never a break point. */
+const SEQUENCE_MASK = "x";
+
+/**
+ * Replaces every control sequence with an equal number of {@link SEQUENCE_MASK} units.
+ *
+ * A sequence is not text and must never be broken, but its bytes can look like break points to the
+ * splitter: an intermediate byte is a space (`CSI 1 SP q` sets the cursor style), and an OSC 8 URL
+ * can hold anything up to the bell, including a wide character. Masking keeps the offsets identical
+ * so the real substrings can be sliced back out afterwards.
+ * @param input The line to mask.
+ * @returns The line with sequence units replaced, same length.
+ */
+const maskControlSequences = (input: string): string => {
+    let masked = "";
+    let index = 0;
+
+    while (index < input.length) {
+        const sequence = ESCAPES.has(input[index] as string) ? readControlSequence(input, index) : undefined;
+
+        if (sequence === undefined) {
+            if (ESCAPES.has(input[index] as string)) {
+                // Truncated or malformed: the remainder is one opaque span, as processAnsiString treats it.
+                return masked + SEQUENCE_MASK.repeat(input.length - index);
+            }
+
+            masked += input[index] as string;
+            index += 1;
+
+            continue;
+        }
+
+        masked += SEQUENCE_MASK.repeat(sequence.length);
+        index += sequence.length;
+    }
+
+    return masked;
+};
+
+/**
+ * Splits input into wrappable tokens, treating control sequences as opaque.
+ * @param input The line to tokenize.
+ * @returns The tokens, in order.
+ */
+const tokenize = (input: string): string[] => {
+    if (![...ESCAPES].some((escape) => input.includes(escape))) {
+        return splitLiteral(input);
+    }
+
+    const tokens: string[] = [];
+
+    let offset = 0;
+
+    for (const token of splitLiteral(maskControlSequences(input))) {
+        tokens.push(input.slice(offset, offset + token.length));
+        offset += token.length;
+    }
+
+    return tokens;
 };
 
 /**
@@ -107,13 +206,9 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
     }
 
     const rows: string[] = [];
-    const ansiTracker = new AnsiStateTracker();
 
     let currentLine = "";
     let currentWidth = 0;
-    let isInsideEscape = false;
-    let isInsideLinkEscape = false;
-    let escapeBuffer = "";
 
     // For each character in the input string
     let index = 0;
@@ -125,33 +220,23 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
         const char = String.fromCodePoint(codePoint);
         const charLength = char.length;
 
-        // Handle escape sequences
+        // Escape sequences carry no width; copy them through whole. Reading the sequence rather
+        // than scanning ahead for a terminator keeps a non-SGR sequence (CSI 1 D) from swallowing
+        // the rest of the line.
         if (ESCAPES.has(char)) {
-            isInsideEscape = true;
-            escapeBuffer = char;
-            currentLine += char;
+            const sequence = readControlSequence(string, index);
 
-            isInsideLinkEscape = string.startsWith(ANSI_ESCAPE_LINK, index + 1);
-            index += 1;
+            if (sequence === undefined) {
+                // Truncated or malformed: keep the remainder whole, as processAnsiString does. Copying
+                // just the introducer would leave the sequence bytes to be wrapped as visible text.
+                currentLine += string.slice(index);
 
-            continue;
-        }
-
-        if (isInsideEscape) {
-            escapeBuffer += char;
-            currentLine += char;
-
-            if (isInsideLinkEscape) {
-                if (char === ANSI_ESCAPE_BELL) {
-                    // eslint-disable-next-line no-multi-assign
-                    isInsideEscape = isInsideLinkEscape = false;
-                }
-            } else if (char === ANSI_SGR_TERMINATOR) {
-                isInsideEscape = false;
-                ansiTracker.processEscape(escapeBuffer);
+                break;
             }
 
-            index += 1;
+            currentLine += sequence;
+            index += sequence.length;
+
             continue;
         }
 
@@ -171,12 +256,11 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             // Only add to rows if the current line is not empty
             // This fixes the issue with the extra newline at the beginning
             if (currentLine) {
-                rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
+                rows.push(currentLine);
             }
 
-            // Start a new line with active ANSI codes
-            currentLine = ansiTracker.getStartEscapesForAllActiveAttributes();
-            currentWidth = getStringWidth(currentLine); // Recalculate width of ANSI codes
+            currentLine = "";
+            currentWidth = 0;
 
             // Handle spaces at wrap points
             if (isSpace && trim) {
@@ -195,11 +279,10 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
         // If we've reached exactly the width limit, wrap
         if (currentWidth === width && index + charLength < string.length) {
-            rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
+            rows.push(currentLine);
 
-            // Start a new line with active ANSI codes
-            currentLine = ansiTracker.getStartEscapesForAllActiveAttributes();
-            currentWidth = getStringWidth(currentLine); // Recalculate width of ANSI codes
+            currentLine = "";
+            currentWidth = 0;
 
             // Handle spaces after a wrap at exact width
             if (index + charLength < string.length && string[index + charLength] === " " && trim) {
@@ -218,7 +301,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
 
     // Add the final line if not empty
     if (currentLine) {
-        rows.push(currentLine + ansiTracker.getEndEscapesForAllActiveAttributes());
+        rows.push(currentLine);
     }
 
     // Apply trim on the right side of each line if needed
@@ -255,7 +338,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
     processAnsiString(inputToProcess, {
         getWidth: getStringWidth,
         // eslint-disable-next-line sonarjs/cognitive-complexity,sonarjs/no-invariant-returns
-        onSegment: (segment, stateTracker: AnsiStateTracker) => {
+        onSegment: (segment) => {
             const segText = segment.text ?? "";
 
             if (segment.isEscapeSequence) {
@@ -276,7 +359,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
                         rows.push(currentLine);
                     }
 
-                    currentLine = stateTracker.getStartEscapesForAllActiveAttributes();
+                    currentLine = "";
                     currentWidth = 0;
 
                     // Special handling for spaces at wrap points
@@ -288,7 +371,7 @@ const wrapCharByChar = (string: string, width: number, trim: boolean): string[] 
 
                         // For trim=false, space gets its own line
 
-                        rows.push(stateTracker.getStartEscapesForAllActiveAttributes() + segText);
+                        rows.push(segText);
 
                         return true;
                     }
@@ -333,7 +416,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
     // Split by space but preserve ANSI escape sequences
     // This is crucial for the test case with "\u001B[1D" between words
-    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
+    const tokens = tokenize(inputToProcess);
     const rows: string[] = [];
 
     let currentLine = "";
@@ -414,7 +497,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         return [];
     }
 
-    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
+    const tokens = tokenize(inputToProcess);
     const rows: string[] = [];
 
     let currentLine = "";
@@ -440,7 +523,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         if (tokenVisibleWidth > width) {
             if (currentLine) {
                 // Push any existing line before processing the long token
-                rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+                rows.push(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine);
             }
 
             const brokenLines = wrapWithBreakAtWidth(token, width, trim);
@@ -463,7 +546,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
 
         // If adding this token would exceed width (and it's not the first thing on the line)
         if (currentWidth + tokenVisibleWidth > width && currentWidth > 0) {
-            rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+            rows.push(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine);
 
             currentLine = "";
             currentWidth = 0;
@@ -481,7 +564,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
     }
 
     if (currentLine) {
-        rows.push(resetAnsiAtLineBreak(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine));
+        rows.push(trim ? stringVisibleTrimSpacesRight(currentLine) : currentLine);
     }
 
     return rows;
