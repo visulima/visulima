@@ -42,6 +42,8 @@ export interface UseTusUploadOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Send a tus termination request (`DELETE`) for the server-side upload when it is aborted */
+    terminateOnAbort?: boolean;
     /** Persistent storage for resume URLs. */
     urlStorage?: UrlStorage;
 }
@@ -93,6 +95,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         onSuccess,
         restrictions,
         retry,
+        terminateOnAbort,
         urlStorage,
     } = options;
 
@@ -114,6 +117,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         metadata,
         restrictions,
         retry,
+        terminateOnAbort,
         urlStorage,
     });
 
