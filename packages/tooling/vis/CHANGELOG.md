@@ -1,3 +1,18 @@
+## @visulima/vis [4.1.15](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.14...@visulima/vis@4.1.15) (2026-10-03)
+
+### Continuous Integration
+
+* cache nx tasks, slim pr test matrix, stop bailing ([#889](https://github.com/visulima/visulima/issues/889)) ([d83f551](https://github.com/visulima/visulima/commit/d83f5515b59a4027b56c6b3de55c2b4017e15ec7))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.24
+* **@visulima/tui-kit:** upgraded to 1.0.27
+* **@visulima/fs:** upgraded to 6.0.24
+* **@visulima/package:** upgraded to 5.0.37
+* **@visulima/tsconfig:** upgraded to 3.2.31
+
 ## @visulima/vis [4.1.14](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.13...@visulima/vis@4.1.14) (2026-10-03)
 
 
