@@ -21,7 +21,7 @@ import {
 export { parseMetadata, resolveMethodOverride, serializeMetadata } from "./tus-protocol";
 
 /** Default for {@link TusBaseConfig.maxChecksumBufferSize}: 64 MiB. */
-export const DEFAULT_MAX_CHECKSUM_BUFFER_SIZE = 64 * 1024 * 1024;
+export const DEFAULT_MAX_CHECKSUM_BUFFER_SIZE: number = 64 * 1024 * 1024;
 
 /**
  * A TUS request, independent of the runtime (Node.js `IncomingMessage` or Web `Request`).
