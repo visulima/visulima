@@ -334,6 +334,40 @@ describe("tus-adapter protocol compliance", () => {
             expect(requests().filter(({ method }) => method === "DELETE")).toHaveLength(1);
         });
 
+        it("terminates and never persists an upload created while abort was pending", async () => {
+            expect.assertions(4);
+
+            const urlStorage = new MemoryUrlStorage();
+            const addSpy = vi.spyOn(urlStorage, "addEntry");
+            const adapter = createTusAdapter({ endpoint: ENDPOINT, terminateOnAbort: true, urlStorage });
+            const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+            let resolvePost: ((response: Partial<Response>) => void) | undefined;
+
+            mockFetch.mockImplementation((_url: string, init?: RequestInit) => {
+                if (init?.method === "POST") {
+                    return new Promise<Partial<Response>>((resolve) => {
+                        resolvePost = resolve;
+                    });
+                }
+
+                return Promise.resolve({ headers: new Headers(), ok: true, status: 204 });
+            });
+
+            const uploadPromise = adapter.upload(file);
+
+            await waitFor(() => resolvePost !== undefined);
+            adapter.abort();
+            resolvePost?.(created(`${ENDPOINT}/abc`));
+
+            await expect(uploadPromise).rejects.toThrow("Upload aborted");
+
+            await waitFor(() => requests().some(({ method }) => method === "DELETE"));
+
+            expect(requests().map(({ method }) => method)).toStrictEqual(["POST", "DELETE"]);
+            expect(requests()[1]?.url).toBe(`${ENDPOINT}/abc`);
+            expect(addSpy).not.toHaveBeenCalled();
+        });
+
         it("does not send DELETE by default", async () => {
             expect.assertions(2);
 
