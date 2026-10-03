@@ -1,4 +1,5 @@
 import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { getMetaVersion, setMetaVersion } from "../meta-storage";
 
 /** S3 rejects CompleteMultipartUpload when any part but the last is smaller than this. */
 export const MIN_PART_SIZE: number = 5 * 1024 * 1024;
@@ -29,6 +30,8 @@ export const buildRangeHeader = (range: { end?: number; start: number } | undefi
  */
 export const withoutParts = <T extends { Parts?: unknown }>(file: T): T => {
     const { Parts: _parts, ...rest } = file;
+
+    setMetaVersion(rest, getMetaVersion(file));
 
     return rest as T;
 };

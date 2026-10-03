@@ -1,7 +1,7 @@
 import type { BlobGetPropertiesResponse, BlobItem, BlobServiceClient, ContainerClient, Metadata } from "@azure/storage-blob";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
-import MetaStorage from "../meta-storage";
+import MetaStorage, { setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import { createAzureClient } from "./azure-client";
@@ -17,6 +17,9 @@ const CAMEL_CASE_FIELDS = ["bytesWritten", "contentType", "createdAt", "expiredA
 const NUMERIC_FIELDS = ["bytesWritten", "expiredAt", "size"] as const;
 
 class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
+    /** Uses `If-Match` ETag conditions. */
+    public override readonly supportsConditionalSave: boolean = true;
+
     private client: BlobServiceClient;
 
     private containerClient: ContainerClient;
@@ -64,6 +67,8 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             file.metadata = parseMetadata(file.metadata);
         }
 
+        setMetaVersion(file, propertyData.etag);
+
         return file;
     }
 
@@ -107,24 +112,51 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
+        const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
+        const metadata = AzureMetaStorage.toBlobMetadata(file);
+
+        // Set Blob Metadata 404s on a missing blob, so the first save has to create the sidecar.
+        const created = await appendBlobClient.createIfNotExists({ metadata });
+
+        const response = created.succeeded ? created : await appendBlobClient.setMetadata(metadata, {});
+
+        setMetaVersion(file, response?.etag);
+
+        return file;
+    }
+
+    public override async saveIfVersion(id: string, file: T, version: string): Promise<T | undefined> {
+        const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
+
+        try {
+            const response = await appendBlobClient.setMetadata(AzureMetaStorage.toBlobMetadata(file), { conditions: { ifMatch: version } });
+
+            setMetaVersion(file, response?.etag);
+        } catch (error) {
+            // 412: the ETag no longer matches; 404: the sidecar is gone.
+            const { statusCode } = error as { statusCode?: number };
+
+            if (statusCode === 412 || statusCode === 404) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        return file;
+    }
+
+    /**
+     * One JSON value keeps names and types intact; per-field metadata loses both (see restoreFields).
+     */
+    private static toBlobMetadata(file: File): Metadata {
+        const transformedMetadata = { ...file } as unknown as Omit<File, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);
         }
 
-        // One JSON value keeps names and types intact; per-field metadata loses both (see restoreFields).
-        const metadata: Metadata = { [FILE_KEY]: encodeURIComponent(JSON.stringify(transformedMetadata)) };
-        const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
-
-        // Set Blob Metadata 404s on a missing blob, so the first save has to create the sidecar.
-        const { succeeded } = await appendBlobClient.createIfNotExists({ metadata });
-
-        if (!succeeded) {
-            await appendBlobClient.setMetadata(metadata, {});
-        }
-
-        return file;
+        return { [FILE_KEY]: encodeURIComponent(JSON.stringify(transformedMetadata)) };
     }
 
     public async list(): Promise<T[]> {

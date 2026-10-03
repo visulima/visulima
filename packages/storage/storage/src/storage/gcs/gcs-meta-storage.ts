@@ -5,14 +5,24 @@ import { request } from "gaxios";
 import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
-import MetaStorage from "../meta-storage";
+import MetaStorage, { setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import GCSConfig from "./gcs-config";
 import type { ClientError, GCSMetaStorageOptions } from "./types";
 import { retryOptions as baseRetryOptions } from "./utils";
 
+/** HTTP status of a gaxios error. */
+const errorStatus = (error: unknown): number | undefined => {
+    const { code, response, status } = error as { code?: number | string; response?: { status?: number }; status?: number };
+
+    return response?.status ?? status ?? (code === undefined ? undefined : Number(code));
+};
+
 class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
+    /** Uses `ifGenerationMatch` preconditions. */
+    public override readonly supportsConditionalSave: boolean = true;
+
     private authClient: GoogleAuth;
 
     private readonly storageBaseURI: string;
@@ -85,22 +95,22 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        await this.ensureAccess();
+        await this.upload(id, file);
 
-        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
+        return file;
+    }
 
-        if (transformedMetadata.metadata) {
-            transformedMetadata.metadata = stringifyMetadata(file.metadata);
+    public override async saveIfVersion(id: string, file: T, version: string): Promise<T | undefined> {
+        try {
+            await this.upload(id, file, version);
+        } catch (error) {
+            // 412: the generation no longer matches (or the object is gone).
+            if (errorStatus(error) === 412) {
+                return undefined;
+            }
+
+            throw error;
         }
-
-        // TODO: use JSON API multipart POST?
-        await this.makeRequest({
-            body: JSON.stringify(transformedMetadata),
-            headers: { "Content-Type": "application/json; charset=utf-8" },
-            method: "POST",
-            params: { name: encodeURIComponent(this.getMetaName(id)), uploadType: "media" },
-            url: this.uploadBaseURI,
-        });
 
         return file;
     }
@@ -118,11 +128,13 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         const url = this.getMetaPath(id);
 
-        const { data } = await this.makeRequest<T>({ params: { alt: "media" }, url });
+        const { data, headers } = await this.makeRequest<T>({ params: { alt: "media" }, url });
 
         if (data.metadata && typeof data.metadata === "string") {
             data.metadata = parseMetadata(data.metadata);
         }
+
+        setMetaVersion(data, headers?.get("x-goog-generation") ?? undefined);
 
         return data;
     }
@@ -130,6 +142,31 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async touch(id: string, file: T): Promise<T> {
         // For GCS, touching means updating the metadata
         return this.save(id, file);
+    }
+
+    private async upload(id: string, file: T, ifGenerationMatch?: string): Promise<void> {
+        await this.ensureAccess();
+
+        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
+
+        if (transformedMetadata.metadata) {
+            transformedMetadata.metadata = stringifyMetadata(file.metadata);
+        }
+
+        // TODO: use JSON API multipart POST?
+        const { data } = await this.makeRequest<{ generation?: string }>({
+            body: JSON.stringify(transformedMetadata),
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+            method: "POST",
+            params: {
+                name: this.getMetaName(id),
+                uploadType: "media",
+                ...(ifGenerationMatch === undefined ? {} : { ifGenerationMatch }),
+            },
+            url: this.uploadBaseURI,
+        });
+
+        setMetaVersion(file, data?.generation === undefined ? undefined : String(data.generation));
     }
 
     /**
@@ -152,12 +189,16 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         data = {
             ...data,
+            // Merge the caller's headers and params instead of replacing them: replacing dropped the
+            // upload's name/uploadType, the get's alt=media and the Content-Type.
             headers: {
                 "User-Agent": `${package_.name}/${package_.version}`,
                 "x-goog-api-client": `gl-node/${process.versions.node} gccl/${package_.version} gccl-invocation-id/${randomUUID()}`,
+                ...data.headers,
             },
             params: {
                 ...(this.userProject === undefined ? {} : { userProject: this.userProject }),
+                ...(data.params as Record<string, unknown>),
             },
             retry: true,
             retryConfig: this.retryOptions,

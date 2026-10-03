@@ -9,6 +9,7 @@ import typeis from "type-is";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
+import { isFreshChunkedRecord, mergeChunkedProgress } from "../utils/chunked-upload";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
@@ -21,6 +22,7 @@ import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
+import { getMetaVersion, setMetaVersion } from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
@@ -49,6 +51,9 @@ const redactSecrets = (config: Record<string, unknown>): Record<string, unknown>
 
     return out;
 };
+
+/** Conditional saves of a chunked record before giving up on a record that keeps changing. */
+const CONDITIONAL_SAVE_ATTEMPTS = 20;
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
@@ -192,6 +197,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     public isReady = true;
 
+    /**
+     * Backend access probe registered by {@link BaseStorage.startAccessCheck}.
+     */
+    protected accessProbe?: () => Promise<unknown>;
+
+    private readyPromise?: Promise<void>;
+
     public errorResponses = {} as ErrorResponses;
 
     public cache: Cache<string, TFile>;
@@ -264,6 +276,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     protected locker: Locker;
 
+    /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
+    private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
+
     protected namingFunction: (file: TFile) => string;
 
     protected validation: Validator<TFile> = new Validator<TFile>();
@@ -284,7 +299,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     protected autoPurgeTimer?: ReturnType<typeof setInterval>;
 
     protected constructor(config: BaseStorageOptions<TFile>) {
-        const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
+        // An option explicitly set to `undefined` (e.g. a subclass forwarding `filename: config.filename`)
+        // must not replace its default.
+        const definedConfig = Object.fromEntries(Object.entries(config).filter(([, value]) => value !== undefined)) as Partial<BaseStorageOptions<TFile>>;
+        const options = { ...defaults, ...definedConfig } as Required<BaseStorageOptions<TFile>>;
 
         this.onCreate = options.onCreate;
         this.onUpdate = options.onUpdate;
@@ -490,11 +508,128 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async saveMeta(file: TFile): Promise<TFile> {
         BaseStorage.assertSafeId(file.id);
+
+        // A chunked upload's progress (`_chunks`, `bytesWritten`) only grows, but a provider write
+        // saves the record it read before storing its bytes, and several PATCHes write it at once.
+        // A save that would drop progress another request stored in the meantime has to merge it
+        // in (#902). A fresh record (e.g. a new POST for the same id) replaces the stored one.
+        if (!Array.isArray(file.metadata?._chunks) || isFreshChunkedRecord(file)) {
+            return this.persistMeta(file);
+        }
+
+        if (this.meta.supportsConditionalSave) {
+            return this.saveChunkedMetaConditionally(file);
+        }
+
+        // Without conditional saves, merge with what is stored, one save per id at a time. This
+        // only serializes saves within this process.
+        const save = (this.chunkedMetaSaves.get(file.id) ?? Promise.resolve())
+            .catch(() => undefined)
+            .then(async () => {
+                // A record that can't be read fails the save rather than overwriting its progress.
+                mergeChunkedProgress(file, await this.meta.get(file.id));
+
+                return this.persistMeta(file);
+            });
+
+        this.chunkedMetaSaves.set(file.id, save);
+
+        try {
+            return await save;
+        } finally {
+            if (this.chunkedMetaSaves.get(file.id) === save) {
+                this.chunkedMetaSaves.delete(file.id);
+            }
+        }
+    }
+
+    private async persistMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
         this.cache.set(file.id, file);
 
         return this.meta.save(file.id, file);
+    }
+
+    /**
+     * Saves a chunked record with an optimistic compare-and-swap, safe across processes. The
+     * record normally carries the version its writer read, so there is no extra read; only
+     * when another request saved in between is the stored record read and merged, then the
+     * save retried.
+     */
+    private async saveChunkedMetaConditionally(file: TFile): Promise<TFile> {
+        this.updateTimestamps(file);
+
+        let version = getMetaVersion(file);
+
+        for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
+            if (version === undefined) {
+                // A record that can't be read (deleted, or the store failing) fails the save
+                // rather than overwriting its progress.
+                const stored = await this.meta.get(file.id);
+                const storedVersion = getMetaVersion(stored);
+
+                mergeChunkedProgress(file, stored);
+
+                // The store gave no version to compare against (e.g. a service without ETags).
+                if (storedVersion === undefined) {
+                    return this.persistMeta(file);
+                }
+
+                version = storedVersion;
+            }
+
+            const saved = await this.meta.saveIfVersion(file.id, file, version);
+
+            if (saved !== undefined) {
+                this.cache.set(file.id, file);
+
+                return saved;
+            }
+
+            version = undefined;
+        }
+
+        return throwErrorCode(ERRORS.FILE_LOCKED, `Metadata of ${file.id} kept changing while saving it`);
+    }
+
+    /**
+     * Resolves once the storage is ready. Runs the access probe registered by
+     * {@link BaseStorage.startAccessCheck} if it has not succeeded yet; a failed probe is thrown
+     * to the caller and forgotten, so the next call retries it (e.g. after a transient network
+     * error at startup) instead of the storage staying unready forever.
+     */
+    public async ensureReady(): Promise<void> {
+        if (this.isReady || this.accessProbe === undefined) {
+            return;
+        }
+
+        this.readyPromise ??= this.accessProbe().then(
+            () => {
+                this.isReady = true;
+            },
+            (error: unknown) => {
+                this.readyPromise = undefined;
+
+                throw error;
+            },
+        );
+
+        await this.readyPromise;
+    }
+
+    /**
+     * Marks the storage unready and starts probing the backend with `probe`; {@link BaseStorage.isReady}
+     * turns true once it succeeds. Call it at the end of the subclass constructor, after the
+     * backend client exists. A failure is logged here and retried by {@link BaseStorage.ensureReady}.
+     */
+    protected startAccessCheck(probe: () => Promise<unknown>): void {
+        this.accessProbe = probe;
+        this.isReady = false;
+
+        this.ensureReady().catch((error: unknown) => {
+            this.logger?.error("Storage access check failed: %O", error);
+        });
     }
 
     /**
@@ -547,7 +682,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             this.cache.set(file.id, file);
 
-            return { ...file };
+            const copy = { ...file };
+
+            // Keep the version the record was read at, so saving the copy can be conditional.
+            setMetaVersion(copy, getMetaVersion(file));
+
+            return copy;
         } catch (error: unknown) {
             const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 

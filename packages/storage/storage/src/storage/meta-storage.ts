@@ -2,9 +2,43 @@ import type { MetaStorageOptions } from "./meta-storage-options";
 import type { File } from "./utils/file";
 
 /**
+ * Key of the version token a {@link MetaStorage} attaches to the records it reads (an ETag, a
+ * generation, a content hash). A non-enumerable symbol property: never persisted, and invisible to
+ * equality checks and serialization, so a copy of a record has to carry it over explicitly.
+ */
+export const META_VERSION: unique symbol = Symbol("visulima.storage.metaVersion");
+
+/**
+ * Returns the version token {@link MetaStorage.get} attached to `file`, if any.
+ * @param file A record read from a meta storage, or a copy of one
+ * @returns The version token
+ */
+export const getMetaVersion = (file: object): string | undefined => (file as { [META_VERSION]?: string })[META_VERSION];
+
+/**
+ * Attaches a version token to `file`; `undefined` removes it.
+ * @param file The record
+ * @param version The version token
+ */
+export const setMetaVersion = (file: object, version: string | undefined): void => {
+    if (version === undefined) {
+        Reflect.deleteProperty(file, META_VERSION);
+    } else {
+        Object.defineProperty(file, META_VERSION, { configurable: true, enumerable: false, value: version, writable: true });
+    }
+};
+
+/**
  * Stores upload metadata.
  */
 class MetaStorage<T extends File = File> {
+    /**
+     * Whether {@link MetaStorage.saveIfVersion} is implemented. Records written by several
+     * requests at once (chunked uploads) are then merged safely across processes, not just
+     * within one.
+     */
+    public readonly supportsConditionalSave: boolean = false;
+
     public prefix = "";
 
     public suffix = "";
@@ -26,6 +60,17 @@ class MetaStorage<T extends File = File> {
     // eslint-disable-next-line class-methods-use-this
     public async save(_id: string, file: T): Promise<T> {
         return file;
+    }
+
+    /**
+     * Saves upload metadata only if the stored record still has `version`, the token
+     * {@link MetaStorage.get} attached to it (an atomic compare-and-swap). On success the new
+     * version is attached to the returned record.
+     * @returns The saved record, or `undefined` when the stored record changed or is gone
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public async saveIfVersion(_id: string, _file: T, _version: string): Promise<T | undefined> {
+        throw new Error("Not implemented");
     }
 
     /**

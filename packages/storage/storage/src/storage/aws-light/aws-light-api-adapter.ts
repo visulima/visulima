@@ -527,11 +527,17 @@ ${partsXml}
         Bucket: string;
         ContentLength?: number;
         ContentType?: string;
+        /** Conditional write: only replace the object while it still has this ETag. */
+        IfMatch?: string;
         Key: string;
         Metadata?: Record<string, string>;
-    }): Promise<void> {
+    }): Promise<{ ETag?: string }> {
         const url = this.buildUrl(params.Key);
         const headers: Record<string, string> = {};
+
+        if (params.IfMatch !== undefined) {
+            headers["If-Match"] = params.IfMatch.startsWith('"') ? params.IfMatch : `"${params.IfMatch}"`;
+        }
 
         if (params.ContentType) {
             headers["Content-Type"] = params.ContentType;
@@ -568,8 +574,10 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to put object: ${response.status} ${text}`);
+            throw Object.assign(new Error(`Failed to put object: ${response.status} ${text}`), { statusCode: response.status });
         }
+
+        return { ETag: response.headers?.get("ETag")?.replaceAll(/(^"|"$)/g, "") || undefined };
     }
 
     public async checkBucketAccess(_params: { Bucket: string }): Promise<void> {

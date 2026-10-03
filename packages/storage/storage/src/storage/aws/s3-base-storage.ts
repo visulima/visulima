@@ -12,7 +12,7 @@ import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { BaseStorageOptions, OperationOptions } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
@@ -154,7 +154,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     protected bucket: string;
 
-    protected meta: MetaStorage<TFile>;
+    /** Set here for a caller-supplied or local meta storage, otherwise by the subclass constructor. */
+    protected meta!: MetaStorage<TFile>;
 
     /**
      * S3 multipart upload does not allow more than 10000 parts.
@@ -187,18 +188,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      */
     protected abstract accessCheck(maxWaitTime?: number): Promise<void>;
 
-    public constructor(config: {
-        bucket: string;
-        clientDirectUpload?: boolean;
-        expiration?: { maxAge?: string };
-        filename?: (file: TFile) => string;
-        logger?: BaseStorage<TFile>["logger"];
-        metaStorage?: MetaStorage<TFile>;
-        metaStorageConfig?: unknown;
-        partSize?: number | string;
-        retryConfig?: RetryConfig;
-    }) {
-        super(config as never);
+    public constructor(
+        config: Omit<BaseStorageOptions<TFile>, "metaStorage" | "retryConfig"> & {
+            bucket: string;
+            clientDirectUpload?: boolean;
+            metaStorage?: MetaStorage<TFile>;
+            metaStorageConfig?: unknown;
+            partSize?: number | string;
+            retryConfig?: RetryConfig;
+        },
+    ) {
+        super(config);
 
         this.bucket = config.bucket;
 
@@ -240,26 +240,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             const metaConfig = { ...config, ...(metaStorageConfig as Record<string, unknown>), logger: this.logger } as Record<string, unknown>;
             const localMeta = "directory" in metaConfig;
 
+            // Otherwise the subclass creates its bucket-backed meta storage once its client exists.
+            // Building a LocalMetaStorage here regardless created a directory on local disk even
+            // for storages that never use it (e.g. aws-light on an edge runtime).
             if (localMeta) {
                 this.logger?.debug("Using local meta storage");
-                this.meta = new LocalMetaStorage<TFile>(metaConfig);
-            } else {
-                // For aws-light, we'll use local meta storage by default
-                // S3Storage will override this to use S3MetaStorage
                 this.meta = new LocalMetaStorage<TFile>(metaConfig);
             }
         }
 
-        this.isReady = false;
-        this.accessCheck()
-            .then(() => {
-                this.isReady = true;
-
-                return undefined;
-            })
-            .catch((error) => {
-                this.logger?.error("Storage access check failed: %O", error);
-            });
+        // Subclasses start the bucket probe (startAccessCheck) at the end of their own constructor:
+        // their S3 client only exists after super() returns.
     }
 
     protected override getRetryConfig(): RetryConfig {

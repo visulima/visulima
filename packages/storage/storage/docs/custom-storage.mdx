@@ -256,6 +256,42 @@ Implement these methods in your custom `MetaStorage`:
 - **`delete(id: string): Promise<void>`** - Delete file metadata
 - **`touch(id: string, file: T): Promise<T>`** - Update last accessed timestamp
 
+### Conditional Saves
+
+Chunked REST uploads write the same record from several requests at once, possibly from several
+server processes. To keep that record consistent across processes, a `MetaStorage` can support
+an atomic compare-and-swap:
+
+1. Set `supportsConditionalSave` to `true`.
+2. In `get()`, attach the record's version (an ETag, a row version, a content hash) with `setMetaVersion(file, version)`.
+3. Implement `saveIfVersion(id, file, version)`: save only while the stored record still has `version`, attach the new version, and return `undefined` when it changed or is gone.
+
+```typescript
+import { MetaStorage, setMetaVersion } from "@visulima/storage";
+
+class DatabaseMetaStorage<T extends File = File> extends MetaStorage<T> {
+    public override readonly supportsConditionalSave = true;
+
+    public override async saveIfVersion(id: string, file: T, version: string): Promise<T | undefined> {
+        const { rowCount, rows } = await this.db.query(
+            `UPDATE ${this.tableName} SET data = $1, version = version + 1 WHERE id = $2 AND version = $3 RETURNING version`,
+            [JSON.stringify(file), id, Number(version)],
+        );
+
+        if (rowCount === 0) {
+            return undefined;
+        }
+
+        setMetaVersion(file, String(rows[0].version));
+
+        return file;
+    }
+}
+```
+
+The bundled metadata storages (local, memory, S3, aws-light, GCS and Azure) all support this.
+Without it, concurrent saves are only merged within one process.
+
 ### Using Custom MetaStorage
 
 Use your custom `MetaStorage` with any storage backend:

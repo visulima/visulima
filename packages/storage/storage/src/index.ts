@@ -50,7 +50,7 @@ export { default as LocalMetaStorage } from "./storage/local/local-meta-storage"
 export { default as MemoryMetaStorage } from "./storage/memory/memory-meta-storage";
 export type { MemoryStorageOptions } from "./storage/memory/memory-storage";
 export { default as MemoryStorage } from "./storage/memory/memory-storage";
-export { default as MetaStorage } from "./storage/meta-storage";
+export { getMetaVersion, META_VERSION, default as MetaStorage, setMetaVersion } from "./storage/meta-storage";
 export { BaseStorage as AbstractBaseStorage, defaultCloudStorageFileNameValidation, defaultFilesystemFileNameValidation } from "./storage/storage";
 export type {
     BaseStorageOptions,
