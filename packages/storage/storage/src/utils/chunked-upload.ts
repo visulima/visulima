@@ -1,4 +1,4 @@
-import type { UploadFile } from "../storage/utils/file";
+import type { File, UploadFile } from "../storage/utils/file";
 
 /**
  * Chunk information structure for tracking uploaded chunks.
@@ -101,6 +101,63 @@ export const trackChunk = (chunks: ChunkInfo[], chunkInfo: ChunkInfo): ChunkInfo
     }
 
     return chunks;
+};
+
+/**
+ * Adds the chunks of `other` to `chunks` with {@link trackChunk}'s idempotency rules.
+ * @param chunks Chunks array to extend
+ * @param other Chunks to merge in
+ * @returns Merged chunks array
+ */
+export const mergeChunks = (chunks: ChunkInfo[], other: ChunkInfo[]): ChunkInfo[] => {
+    let merged = chunks;
+
+    for (const chunk of other) {
+        merged = trackChunk(merged, chunk);
+    }
+
+    return merged;
+};
+
+/**
+ * Reads the chunks recorded for a chunked upload.
+ * @param file The file object
+ * @returns The recorded chunks
+ */
+export const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.metadata?._chunks) ? (file.metadata._chunks as ChunkInfo[]) : []);
+
+/**
+ * Whether a chunked upload record has no progress yet (as created by a POST).
+ * @param file The file object
+ * @returns True if no chunk is recorded and nothing written
+ */
+export const isFreshChunkedRecord = (file: UploadFile): boolean => getChunks(file).length === 0 && !file.bytesWritten;
+
+/**
+ * Merges the progress of the stored record of a chunked upload into `file`, a copy that may be
+ * stale: the recorded chunks are combined, the larger `bytesWritten` kept (chunks land at their
+ * offsets, so an earlier write can carry a smaller extent), and the status set from the chunks.
+ * @param file The record about to be saved; updated in place
+ * @param stored The record currently stored
+ */
+export const mergeChunkedProgress = (file: File, stored: File): void => {
+    // Stored first, so a checksum the incoming record carries for the same chunk wins, and one
+    // it lacks is kept from the stored record.
+    const chunks = mergeChunks(getChunks(stored), getChunks(file));
+
+    file.metadata = { ...file.metadata, _chunks: chunks };
+
+    if (typeof stored.bytesWritten === "number" && stored.bytesWritten > (file.bytesWritten || 0)) {
+        file.bytesWritten = stored.bytesWritten;
+    }
+
+    const totalSize = typeof file.metadata._totalSize === "number" ? file.metadata._totalSize : file.size;
+
+    if (typeof totalSize === "number" && isUploadComplete(chunks, totalSize)) {
+        file.status = "completed";
+    } else if (file.status === "completed") {
+        file.status = "part";
+    }
 };
 
 /**

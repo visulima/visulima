@@ -157,16 +157,7 @@ class AzureStorage extends BaseStorage {
             }
         }
 
-        this.isReady = false;
-        this.accessCheck()
-            .then(() => {
-                this.isReady = true;
-
-                return undefined;
-            })
-            .catch((error) => {
-                this.logger?.error("Storage access check failed: %O", error);
-            });
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     protected override getRetryConfig(): RetryConfig {

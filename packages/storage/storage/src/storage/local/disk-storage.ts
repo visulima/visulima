@@ -77,16 +77,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             this.meta = new LocalMetaStorage(metaConfig);
         }
 
-        this.isReady = false;
-        this.accessCheck()
-            .then(() => {
-                this.isReady = true;
-
-                return undefined;
-            })
-            .catch((error) => {
-                this.logger?.error("Storage access check failed: %O", error);
-            });
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     /**

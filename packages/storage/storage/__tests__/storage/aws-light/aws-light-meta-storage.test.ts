@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AwsLightMetaStorage from "../../../src/storage/aws-light/aws-light-meta-storage";
 import type { AwsLightMetaStorageOptions } from "../../../src/storage/aws-light/types";
+import { getMetaVersion } from "../../../src/storage/meta-storage";
 import { metafile } from "../../__helpers__/config";
 
 const { checkBucketAccess } = vi.hoisted(() => {
@@ -183,6 +184,37 @@ describe(AwsLightMetaStorage, () => {
             const result = await metaStorage.touch(metafile.id, metafile);
 
             expect(result).toBe(metafile);
+        });
+    });
+
+    describe("conditional saves", () => {
+        const adapterOf = (storage: AwsLightMetaStorage) =>
+            (storage as unknown as { adapter: { headObject: ReturnType<typeof vi.fn>; putObject: ReturnType<typeof vi.fn> } }).adapter;
+
+        it("should attach the ETag read by get() and write with IfMatch", async () => {
+            expect.assertions(3);
+
+            const adapter = adapterOf(metaStorage);
+
+            adapter.headObject.mockResolvedValueOnce({ ETag: "v1", Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
+            adapter.putObject.mockResolvedValueOnce({ ETag: "v2" });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(getMetaVersion(file)).toBe("v1");
+
+            await metaStorage.saveIfVersion(metafile.id, file, "v1");
+
+            expect(adapter.putObject).toHaveBeenCalledWith(expect.objectContaining({ IfMatch: "v1" }));
+            expect(getMetaVersion(file)).toBe("v2");
+        });
+
+        it.each([412, 409])("should report a %d conditional write conflict as undefined", async (statusCode) => {
+            expect.assertions(1);
+
+            adapterOf(metaStorage).putObject.mockRejectedValueOnce(Object.assign(new Error("conflict"), { statusCode }));
+
+            await expect(metaStorage.saveIfVersion(metafile.id, { ...metafile }, "v1")).resolves.toBeUndefined();
         });
     });
 });

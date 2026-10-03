@@ -81,7 +81,7 @@ class Rest<
                     }>;
                     getMeta: (id: string) => Promise<TFile>;
                     maxUploadSize: number;
-                    update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+                    update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
                     withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
                     write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
                 };
