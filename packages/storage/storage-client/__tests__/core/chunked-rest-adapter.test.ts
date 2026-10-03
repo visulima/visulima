@@ -317,4 +317,69 @@ describe(createChunkedRestAdapter, () => {
 
         expect(offset).toBe(0);
     });
+
+    it("should build the result from the completing PATCH without a GET (#895)", async () => {
+        expect.assertions(4);
+
+        const file = new File([new Uint8Array([0, 1, 2, 3])], "f.bin", { type: "application/octet-stream" });
+        const fileId = "file-895";
+
+        // Create upload (POST)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-ID": fileId }), ok: true });
+        // Upload status (HEAD)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": "0" }), ok: true });
+        // Completing chunk (PATCH) carries the file JSON
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-Complete": "true", "X-Upload-Offset": String(file.size) }),
+            json: async () => {
+                return { bytesWritten: file.size, id: fileId, name: "stored-name", size: file.size, status: "completed" };
+            },
+            ok: true,
+        });
+        // Final status check (HEAD)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": String(file.size) }), ok: true });
+
+        const adapter = createChunkedRestAdapter({ endpoint: "https://api.example.com/upload", retry: false });
+
+        const result = await adapter.upload(file);
+
+        expect(result.id).toBe(fileId);
+        expect(result.name).toBe("stored-name");
+        expect(result.status).toBe("completed");
+        expect(mockFetch.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === "GET")).toBe(false);
+    });
+
+    it("should read metadata from /:id/metadata, never the file bytes route, when no PATCH completed the upload", async () => {
+        expect.assertions(3);
+
+        const file = new File([new Uint8Array([0, 1, 2, 3])], "f.bin", { type: "application/octet-stream" });
+        const fileId = "file-resumed";
+
+        // Create upload (POST)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-ID": fileId }), ok: true });
+        // Upload status (HEAD): the server already has every chunk
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Received-Chunks": JSON.stringify([{ length: file.size, offset: 0 }]), "X-Upload-Offset": String(file.size) }),
+            ok: true,
+        });
+        // Final status check (HEAD)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": String(file.size) }), ok: true });
+        // Metadata (GET /:id/metadata)
+        mockFetch.mockResolvedValueOnce({
+            json: async () => {
+                return { id: fileId, name: "meta-name", status: "completed" };
+            },
+            ok: true,
+        });
+
+        const adapter = createChunkedRestAdapter({ endpoint: "https://api.example.com/upload", retry: false });
+
+        const result = await adapter.upload(file);
+
+        const getCall = mockFetch.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === "GET");
+
+        expect(getCall?.[0]).toBe(`https://api.example.com/upload/${fileId}/metadata`);
+        expect(result.name).toBe("meta-name");
+        expect(result.id).toBe(fileId);
+    });
 });

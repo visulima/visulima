@@ -29,6 +29,33 @@ const buildContentDisposition = (name: string): string => {
     return `attachment; filename="${asciiName}"; filename*=UTF-8''${encoded}`;
 };
 
+/** File metadata as serialized by the storage REST handler. */
+interface FileMeta {
+    bytesWritten?: number;
+    contentType?: string;
+    createdAt?: string;
+    id?: string;
+    metadata?: Record<string, unknown>;
+    name?: string;
+    originalName?: string;
+    size?: number;
+    status?: string;
+    url?: string;
+}
+
+/**
+ * Reads a response body as {@link FileMeta}, or `undefined` when it isn't a JSON object.
+ */
+const parseFileMeta = async (response: Response): Promise<FileMeta | undefined> => {
+    try {
+        const body: unknown = await response.json();
+
+        return body !== null && typeof body === "object" && !Array.isArray(body) ? body : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
 interface UploadState {
     abortController?: AbortController;
     aborted: boolean;
@@ -392,13 +419,13 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Uploads a single chunk.
      */
-    const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<void> => {
+    const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<FileMeta | undefined> => {
         const chunk = file.slice(startOffset, endOffset);
         const currentChunkSize = endOffset - startOffset;
 
         // Skip if already uploaded
         if (uploadState.uploadedChunks.has(startOffset)) {
-            return;
+            return undefined;
         }
 
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
@@ -438,6 +465,30 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         control?._updateOffset(currentOffset);
         progressCallback?.(progress, currentOffset);
+
+        // The PATCH that completes the upload carries the file metadata as its JSON body.
+        return response.headers.get("X-Upload-Complete") === "true" ? parseFileMeta(response) : undefined;
+    };
+
+    /**
+     * Fetches the metadata of a finished upload from the `/:id/metadata` route. Only needed
+     * when no PATCH completed the upload in this session (e.g. every chunk was already on the
+     * server when resuming). Returns `undefined` when the route is unavailable, e.g. on a
+     * write-only upload route, so the result falls back to what the client knows.
+     */
+    const fetchFileMeta = async (fileId: string): Promise<FileMeta | undefined> => {
+        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}/metadata` : `${endpoint}/${fileId}/metadata`;
+
+        try {
+            const response = await fetchWithRetry(url, {
+                headers: await buildHeaders(url, "GET", {}),
+                method: "GET",
+            });
+
+            return response.ok ? await parseFileMeta(response) : undefined;
+        } catch {
+            return undefined;
+        }
     };
 
     /**
@@ -473,6 +524,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const CONCURRENCY = 4;
         let nextIndex = 0;
 
+        let completedMeta: FileMeta | undefined;
+
         const worker = async (): Promise<void> => {
             while (nextIndex < pending.length) {
                 // If paused, block on a promise that resolves on resume()/abort
@@ -499,7 +552,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 }
 
                 // eslint-disable-next-line no-await-in-loop -- Sequential drain within a single worker bounds concurrency
-                await uploadChunk(file, fileId, pair.startOffset, pair.endOffset, signal);
+                const meta = await uploadChunk(file, fileId, pair.startOffset, pair.endOffset, signal);
+
+                if (meta) {
+                    completedMeta = meta;
+                }
             }
         };
 
@@ -519,30 +576,9 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             throw new Error("No chunks were uploaded");
         }
 
-        // Parse response as FileMeta
-        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
-
-        const response = await fetchWithRetry(url, {
-            headers: await buildHeaders(url, "GET", {}),
-            method: "GET",
-        });
-
-        if (!response.ok) {
-            throw new Error(`Failed to get upload result: ${String(response.status)} ${response.statusText}`);
-        }
-
-        const fileMeta = (await response.json()) as {
-            bytesWritten?: number;
-            contentType?: string;
-            createdAt?: string;
-            id?: string;
-            metadata?: Record<string, unknown>;
-            name?: string;
-            originalName?: string;
-            size?: number;
-            status?: string;
-            url?: string;
-        };
+        // Never `GET <endpoint>/<id>`: that serves the file bytes, not JSON, and may not be exposed
+        // on a write-only upload route.
+        const fileMeta = completedMeta ?? await fetchFileMeta(fileId) ?? {};
 
         // Build UploadResult
         return {
