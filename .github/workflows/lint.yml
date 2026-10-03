@@ -7,19 +7,15 @@ on: # yamllint disable-line rule:truthy
         types: ["opened", "synchronize"]
         branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
-    # Pushes to main lint what landed and save the Nx task cache that PR runs
-    # restore from (a PR's own cache entries are scoped to its ref, so main can
-    # only be warmed by main itself).
-    push:
-        branches: ["main"]
+    # No `push` trigger: a PR's lint already ran on its merge with main, so a
+    # post-merge run would repeat it. The Nx cache steps below still let later
+    # pushes to the same PR reuse that PR's earlier results.
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.ref }}"
-    # Don't cancel main runs mid-way: a cancelled run never saves its Nx cache.
-    cancel-in-progress: "${{ github.event_name != 'push' }}"
+    cancel-in-progress: true
 
 permissions:
-    actions: "read" # nx-set-shas looks up the last successful main run on push events
     contents: "read" # to fetch code (actions/checkout)
 
 env:
