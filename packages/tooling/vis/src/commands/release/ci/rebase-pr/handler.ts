@@ -20,6 +20,7 @@
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
+import { resolvePushAuthEnv } from "../../../../release/core/git";
 import { buildContext } from "../../../../release/core/orchestrator";
 import { createShellRunner } from "../../../../release/core/shell-runner";
 import type { ReleaseCiRebasePrOptions } from "./index";
@@ -81,7 +82,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    const pushResult = await runner.run("git", ["push", "--force-with-lease", "origin", `${branch}:${branch}`], { cwd, silent: true });
+    const pushEnv = await resolvePushAuthEnv({ cwd, runner }, "origin");
+    const pushResult = await runner.run("git", ["push", "--force-with-lease", "origin", `${branch}:${branch}`], { cwd, env: pushEnv, silent: true });
 
     if (pushResult.exitCode !== 0) {
         logger.error(`Failed to force-push ${branch}: ${pushResult.stderr.trim()}`);
