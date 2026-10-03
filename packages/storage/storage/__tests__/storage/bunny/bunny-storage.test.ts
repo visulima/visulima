@@ -492,6 +492,28 @@ describe(BunnyStorage, () => {
             expect(storage.tusExtension.filter((extension) => extension === "creation-defer-length" || extension === "concatenation")).toStrictEqual([]);
         });
 
+        it("reports Bunny's 400 on a checksummed upload as a checksum mismatch", async () => {
+            expect.assertions(1);
+
+            const storage = new BunnyStorage(baseOptions);
+            const payload = Buffer.from("payload");
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: payload.length } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            fileMock.upload.mockRejectedValueOnce(new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"));
+
+            await expect(
+                storage.write({
+                    body: Readable.from(payload),
+                    checksum: createHash("sha256").update("other").digest("base64"),
+                    checksumAlgorithm: "sha256",
+                    contentLength: payload.length,
+                    id: "f",
+                    start: 0,
+                }),
+            ).rejects.toMatchObject({ UploadErrorCode: "ChecksumMismatch" });
+        });
+
         it("converts a base64 sha256 upload checksum to the uppercase hex Bunny verifies", async () => {
             expect.assertions(1);
 

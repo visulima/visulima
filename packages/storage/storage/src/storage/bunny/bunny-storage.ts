@@ -80,6 +80,17 @@ const resolveClient = (config: BunnyStorageOptions): BunnyStorageClient => {
 const collectFromWebStream = async (stream: unknown): Promise<Buffer> => Buffer.from(await new Response(stream as BodyInit).arrayBuffer());
 
 /**
+ * Whether an SDK error is Bunny rejecting an upload with HTTP 400 (bad path or bad checksum).
+ * @param error SDK error
+ * @returns True for the SDK's "Unable to upload file" error
+ */
+const isBunnyUploadRejection = (error: unknown): boolean => {
+    const message = (error as { message?: unknown } | null)?.message;
+
+    return typeof message === "string" && /^unable to upload file/iu.test(message);
+};
+
+/**
  * Map a `@bunny.net/storage-sdk` thrown error into an `UploadError`.
  *
  * The SDK's internal helper (`u()` in `lib.mjs`) throws plain `Error` objects
@@ -103,7 +114,7 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
         return wrapStorageError(error, { adapter: "Bunny Storage", operation, status: 401 });
     }
 
-    if (/^unable to upload file/iu.test(message)) {
+    if (isBunnyUploadRejection(error)) {
         return wrapStorageError(error, { adapter: "Bunny Storage", operation, status: 400 });
     }
 
@@ -242,6 +253,13 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                             }),
                         );
                     } catch (error) {
+                        // Bunny answers a wrong `Checksum` with a bare 400, which the SDK reports as "invalid
+                        // path or checksum". The path comes from toBunnyPath, so with a checksum sent the
+                        // checksum is what failed — report it as such (TUS: 460 Checksum Mismatch).
+                        if (part.checksum && part.checksumAlgorithm === "sha256" && isBunnyUploadRejection(error)) {
+                            return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
+                        }
+
                         throw wrapBunnyError(error, "upload");
                     }
 
