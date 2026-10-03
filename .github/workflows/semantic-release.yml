@@ -61,9 +61,11 @@ jobs:
                   # Workflows that also run on pushes to release branches but must not
                   # gate (or time out) the release: Lint/Tests already passed on the PR
                   # that produced this commit and only run here to warm the Nx cache, so
-                  # a post-merge flake must not block publishing. Their jobs are looked
-                  # up by workflow name each poll, as job names are matrix-generated.
-                  IGNORE_WORKFLOWS: "[\"Lint\",\"Tests\"]"
+                  # a post-merge flake must not block publishing; Coverage baseline only
+                  # reports to Codecov and runs the full suite (well past this deadline).
+                  # Their jobs are looked up by workflow name each poll, as job names
+                  # are matrix-generated.
+                  IGNORE_WORKFLOWS: "[\"Lint\",\"Tests\",\"Coverage baseline\"]"
                   IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
               run: |
                   set -euo pipefail
@@ -233,20 +235,11 @@ jobs:
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
 
-            - name: "test and coverage"
-              run: "pnpm run test:affected:coverage"
-
-            # Upload per-package coverage via the shared local composite action
-            # (see .github/actions/codecov-upload). `continue-on-error` keeps any
-            # transient Codecov/keyserver hiccup from blocking the `Semantic
-            # Release` publish below (which gates on `success()`) — a soft-failed
-            # step keeps `success()` true.
-            - name: "Upload code coverage to codecov"
-              continue-on-error: true
-              uses: "./.github/actions/codecov-upload"
-              with:
-                  token: "${{ secrets.CODECOV_TOKEN }}"
-                  run-id: "${{ github.run_id }}"
+            # Plain tests (no coverage) still gate the publish on the merged tree.
+            # The Codecov base comes from coverage-baseline.yml, which runs the full
+            # suite on every push independently of whether this release runs.
+            - name: "Test"
+              run: "pnpm run test:affected"
 
             - name: "Semantic Release"
               if: "success()"
