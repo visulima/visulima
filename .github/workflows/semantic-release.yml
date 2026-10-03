@@ -37,6 +37,7 @@ jobs:
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
         permissions:
+            actions: "read" # to map Lint/Tests workflow runs to their job names
             contents: "read"
 
         steps:
@@ -57,11 +58,26 @@ jobs:
                   REF: "${{ github.event.pull_request.head.sha || github.sha }}"
                   REPO: "${{ github.repository }}"
                   SELF_CHECK_NAME: "Wait for tests to succeed"
+                  # Workflows that also run on pushes to release branches but must not
+                  # gate (or time out) the release: Lint/Tests already passed on the PR
+                  # that produced this commit and only run here to warm the Nx cache, so
+                  # a post-merge flake must not block publishing. Their jobs are looked
+                  # up by workflow name each poll, as job names are matrix-generated.
+                  IGNORE_WORKFLOWS: "[\"Lint\",\"Tests\"]"
                   IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
               run: |
                   set -euo pipefail
                   deadline=$(( $(date +%s) + 1680 ))
                   while :; do
+                      # Job (= check-run) names of every run of an ignored workflow for this commit.
+                      ignored_jobs=$(
+                          gh api -X GET "repos/${REPO}/actions/runs" -f head_sha="$REF" --paginate --jq '.workflow_runs[] | [.id, .name] | @tsv' \
+                              | while IFS=$'\t' read -r run_id run_name; do
+                                  if jq -e --arg n "$run_name" --argjson list "$IGNORE_WORKFLOWS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then
+                                      gh api -X GET "repos/${REPO}/actions/runs/${run_id}/jobs" --paginate --jq '.jobs[].name'
+                                  fi
+                              done | jq -Rsc 'split("\n") | map(select(length > 0))'
+                      )
                       runs=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, .status, .conclusion // ""] | @tsv')
                       pending=0
                       failed=""
@@ -69,6 +85,7 @@ jobs:
                           [ -z "${name:-}" ] && continue
                           if [ "$name" = "$SELF_CHECK_NAME" ]; then continue; fi
                           if jq -e --arg n "$name" --argjson list "$IGNORE_CHECKS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
+                          if jq -e --arg n "$name" --argjson list "$ignored_jobs" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
                           if [ "$status" != "completed" ]; then
                               pending=$((pending + 1))
                               continue
