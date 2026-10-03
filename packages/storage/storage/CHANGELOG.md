@@ -1,3 +1,14 @@
+## @visulima/storage [2.0.26](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.25...@visulima/storage@2.0.26) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** tus 1.0 compliance for server and client ([#899](https://github.com/visulima/visulima/issues/899), [#900](https://github.com/visulima/visulima/issues/900)) ([#901](https://github.com/visulima/visulima/issues/901)) ([5b4aae6](https://github.com/visulima/visulima/commit/5b4aae6403024d294e69ea4864971eb5d72787f3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.25
+
 ## @visulima/storage [2.0.25](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.24...@visulima/storage@2.0.25) (2026-10-03)
 
 ### Bug Fixes
