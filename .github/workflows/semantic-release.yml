@@ -185,14 +185,11 @@ jobs:
                   ref: "${{ github.sha }}"
                   github-token: "${{ secrets.GITHUB_TOKEN }}"
 
+            # No test step: Tests already passed on the PR that produced this commit
+            # and runs again on this push (see IGNORE_WORKFLOWS above), and
+            # coverage-baseline.yml runs the full suite for Codecov.
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
-
-            # Plain tests (no coverage) still gate the publish on the merged tree.
-            # The Codecov base comes from coverage-baseline.yml, which runs the full
-            # suite on every push independently of whether this release runs.
-            - name: "Test"
-              run: "pnpm run test:affected"
 
             - name: "Semantic Release"
               if: "success()"
