@@ -166,23 +166,22 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const incoming = Buffer.concat(chunks);
             const existing = this.store.get(file.name)?.bytes;
-            const end = start + incoming.length;
-            // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale.
-            const isOverwrite = start === 0 && file.status === "completed";
+            // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale. Chunked
+            // uploads are excluded: providers mark them completed as soon as the furthest byte lands,
+            // so offset 0 can still be a missing chunk of an unfinished upload.
+            const isOverwrite = start === 0 && file.status === "completed" && file.metadata?._chunkedUpload !== true;
+            const base = isOverwrite || !existing ? Buffer.alloc(0) : existing;
 
-            // Otherwise write at `start`, growing the buffer as needed and leaving bytes outside
-            // `[start, end)` untouched, so out-of-order chunks don't clobber each other.
-            let bytes: Buffer;
+            // Write at `start`, growing the buffer as needed and leaving bytes outside
+            // `[start, start + incoming.length)` untouched, so out-of-order chunks don't clobber each other.
+            const bytes = Buffer.alloc(Math.max(base.length, start + incoming.length));
 
+            base.copy(bytes);
+            incoming.copy(bytes, start);
+
+            // An overwrite may be shorter than the file it replaces.
             if (isOverwrite) {
-                bytes = incoming;
                 updateSize(file, bytes.length);
-            } else if (!existing || existing.length === 0) {
-                bytes = start === 0 ? incoming : Buffer.concat([Buffer.alloc(start), incoming]);
-            } else {
-                bytes = Buffer.alloc(Math.max(existing.length, end));
-                existing.copy(bytes);
-                incoming.copy(bytes, start);
             }
 
             const now = new Date().toISOString();

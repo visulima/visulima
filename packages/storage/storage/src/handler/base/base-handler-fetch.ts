@@ -135,7 +135,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 headers: this.convertHeaders({
                     ...headers,
                     "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
                 }),
                 status: statusCode,
             });
@@ -164,7 +164,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 headers: this.convertHeaders({
                     ...responseHeaders,
                     "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
                 }),
                 status,
             });
@@ -226,7 +226,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         const convertedHeaders = this.convertHeaders({
             ...allHeaders,
             "Access-Control-Expose-Headers":
-                "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
             ...(basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value }),
         });
 
