@@ -207,7 +207,7 @@ describe("express Tus", () => {
             expect(response.header["tus-version"]).toStrictEqual(TUS_VERSION);
             expect(response.header["tus-extension"]).toBe("creation,creation-with-upload,termination,checksum,creation-defer-length,concatenation,expiration");
             expect(response.header["tus-max-size"]).toBe("6442450944");
-            expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1,sha256,sha384,sha512");
+            expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1,sha256,sha384,sha512,crc32,crc32c");
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, DOWNLOAD, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(

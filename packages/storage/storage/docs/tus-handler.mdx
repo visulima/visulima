@@ -165,9 +165,10 @@ Verify each chunk. The checksum is the **base64** digest of the chunk's bytes:
 ```
 
 `Tus-Checksum-Algorithm` lists the algorithms the storage adapter verifies natively, followed by the ones the
-handler verifies itself (`md5`, `sha1`, `sha256`, `sha384`, `sha512`). When the handler verifies a checksum, it
-buffers that chunk in memory first, so keep chunks for checksummed uploads at a sensible size. A mismatch is
-answered with `460 Checksum Mismatch` and the chunk is discarded; an unknown algorithm gets `400`.
+handler verifies itself (`md5`, `sha1`, `sha256`, `sha384`, `sha512`, `crc32`, `crc32c`). To verify a checksum
+itself, the handler buffers that chunk in memory, so such a PATCH needs a `Content-Length` (411 otherwise) and may
+be at most `maxChecksumBufferSize` bytes (64 MiB by default, 413 otherwise) — send checksummed uploads in chunks. A
+mismatch is answered with `460 Checksum Mismatch` and the chunk is discarded; an unknown algorithm gets `400`.
 
 ### Concatenation Extension
 
@@ -184,33 +185,13 @@ processed on its own: `onComplete` and the `completed` event fire for the final 
 ### X-HTTP-Method-Override
 
 Clients behind proxies that only allow `GET`/`POST` can send the real method in `X-HTTP-Method-Override`; the
-handler uses it in place of the request method, as the protocol requires.
-
-### Expiration Extension
-
-Automatic cleanup of expired uploads:
+handler uses it in place of the request method, as the protocol requires. The method changes inside the handler,
+after routing and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may `DELETE`) must
+also check this header — or turn the override off:
 
 ```typescript
-const storage = new DiskStorage({
-    directory: "./uploads",
-    expiration: {
-        maxAge: "24h",
-        purgeInterval: "1h",
-    },
-});
+const tus = new Tus({ storage, allowMethodOverride: false });
 ```
-
-## Response Headers
-
-TUS responses include standard TUS headers:
-
-- `Tus-Resumable`: TUS protocol version (e.g., "1.0.0")
-- `Tus-Version`: Supported TUS versions
-- `Tus-Extension`: Supported TUS extensions
-- `Tus-Max-Size`: Maximum upload size
-- `Location`: Upload URL for created uploads
-- `Upload-Offset`: Current upload offset
-- `Upload-Expires`: Upload expiration timestamp
 
 ## Storage Backend Limits
 
@@ -233,6 +214,7 @@ Resumable, chunked TUS uploads need a backend that can append to an upload:
 | `PATCH` (every successful chunk)         | `204 No Content`, with `Upload-Offset`       |
 | `PATCH` with a stale `Upload-Offset`     | `409 Conflict`; the upload is left untouched |
 | `PATCH` with a mismatching checksum      | `460 Checksum Mismatch`                      |
+| `PATCH` while another one is in progress | `423 Locked`; retry once the first finishes  |
 | `HEAD`                                   | `200 OK`, with `Cache-Control: no-store`     |
 | `DELETE`                                 | `204 No Content`                             |
 | Unknown / expired upload                 | `404 Not Found` / `410 Gone`                 |

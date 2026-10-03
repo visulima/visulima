@@ -1,15 +1,14 @@
-/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
-import createHttpError from "http-errors";
-
-import type { FileInit, UploadFile } from "../../storage/utils/file";
+import type { UploadFile } from "../../storage/utils/file";
 import { getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
 import type { UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { parseUploadOffset, resolveMethodOverride, TUS_RESUMABLE, TusBase } from "./tus-base";
+import type { TusRequest } from "./tus-base";
+import { TUS_RESUMABLE, TusBase } from "./tus-base";
+import { resolveMethodOverride } from "./tus-protocol";
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -36,69 +35,20 @@ export class Tus<
 
     public override disableTerminationForFinishedUploads = false;
 
+    private readonly allowMethodOverride: boolean;
+
     private readonly tusBase: TusBase<TFile>;
 
     public constructor(options: UploadOptions<TFile>) {
         super(options);
         this.disableTerminationForFinishedUploads = options.disableTerminationForFinishedUploads ?? false;
-
-        // TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
-        // Server, if the header is presented. The actual method of the request MUST be ignored."
-        const { upload } = this;
-
-        this.upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
-            try {
-                const override = resolveMethodOverride(getHeader(request, "x-http-method-override"));
-
-                if (override !== undefined) {
-                    request.method = override;
-                }
-            } catch (error: unknown) {
-                await this.sendError(response, error as Error);
-
-                return undefined;
-            }
-
-            return upload(request, response, next);
-        };
-
-        // Create TusBase instance with access to this Tus instance
-        const tusInstance = this;
-
-        this.tusBase = new (class extends TusBase<TFile> {
-            // eslint-disable-next-line class-methods-use-this
-            protected override get storage() {
-                return tusInstance.storage as unknown as {
-                    checkIfExpired: (file: TFile) => Promise<void>;
-                    checksumTypes: string[];
-                    config: { useRelativeLocation?: boolean };
-                    create: (config: FileInit) => Promise<TFile>;
-                    delete: (options: { id: string }) => Promise<TFile>;
-                    getMeta: (id: string) => Promise<TFile>;
-                    maxUploadSize: number;
-                    tusExtension: string[];
-                    update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-                    write: (options: {
-                        body: unknown;
-                        checksum?: string;
-                        checksumAlgorithm?: string;
-                        contentLength: number;
-                        id: string;
-                        start: number;
-                    }) => Promise<TFile>;
-                };
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get disableTerminationForFinishedUploads() {
-                return tusInstance.disableTerminationForFinishedUploads;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override buildFileUrl(requestUrl: string, file: TFile): string {
-                return tusInstance.buildFileUrlForTus(requestUrl, file);
-            }
-        })();
+        this.allowMethodOverride = options.allowMethodOverride ?? true;
+        this.tusBase = new TusBase<TFile>({
+            buildFileUrl: (requestUrl, file) => this.buildFileUrlForTus(requestUrl, file),
+            disableTerminationForFinishedUploads: () => this.disableTerminationForFinishedUploads,
+            maxChecksumBufferSize: options.maxChecksumBufferSize,
+            storage: () => this.storage,
+        });
     }
 
     /**
@@ -115,18 +65,7 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with upload location and offset.
      */
     public async post(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        this.tusBase.validateTusResumableHeader(getHeader(request, "tus-resumable"));
-
-        const uploadLength = request.headers["upload-length"] as string | undefined;
-        const uploadDeferLength = request.headers["upload-defer-length"] as string | undefined;
-        const uploadConcat = request.headers["upload-concat"] as string | undefined;
-        const metadataHeader = getHeader(request, "upload-metadata", true);
-        const contentType = getHeader(request, "content-type") || "";
-        const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
-        const bodyStream = getRequestStream(request);
-
-        return this.tusBase.handlePost(uploadLength, uploadDeferLength, uploadConcat, metadataHeader, requestUrl, bodyStream, contentLength, contentType);
+        return this.tusBase.handlePost(this.toTusRequest(request));
     }
 
     /**
@@ -135,55 +74,7 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with updated offset
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        this.tusBase.validateTusResumableHeader(getHeader(request, "tus-resumable"));
-
-        try {
-            const id = getIdFromRequest(request);
-
-            // Validate required headers
-            if (request.headers["upload-offset"] === undefined) {
-                throw createHttpError(412, "Missing Upload-Offset header");
-            }
-
-            if (request.headers["content-type"] === undefined) {
-                throw createHttpError(412, "Content-Type header required");
-            }
-
-            if (request.headers["content-type"] !== "application/offset+octet-stream") {
-                throw createHttpError(415, "Unsupported Media Type");
-            }
-
-            const uploadOffset = parseUploadOffset(getHeader(request, "upload-offset"));
-            const uploadLength = request.headers["upload-length"] as string | undefined;
-            const metadataHeader = getHeader(request, "upload-metadata", true);
-            const contentLength = Number(getHeader(request, "content-length"));
-            const checksumHeader = getHeader(request, "upload-checksum");
-            const { checksum, checksumAlgorithm } = this.tusBase.extractChecksum(checksumHeader);
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
-            const bodyStream = getRequestStream(request);
-
-            return await this.tusBase.handlePatch(
-                id,
-                uploadOffset,
-                uploadLength,
-                metadataHeader,
-                checksum,
-                checksumAlgorithm,
-                requestUrl,
-                bodyStream,
-                contentLength,
-            );
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handlePatch(this.toTusRequest(request));
     }
 
     /**
@@ -192,23 +83,7 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with upload-offset and metadata headers
      */
     public async head(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        this.tusBase.validateTusResumableHeader(getHeader(request, "tus-resumable"));
-
-        try {
-            const id = getIdFromRequest(request);
-
-            return await this.tusBase.handleHead(id);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handleHead(this.toTusRequest(request));
     }
 
     /**
@@ -217,23 +92,7 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
     public override async get(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        this.tusBase.validateTusResumableHeader(getHeader(request, "tus-resumable"));
-
-        try {
-            const id = getIdFromRequest(request);
-
-            return await this.tusBase.handleGet(id);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handleGet(this.toTusRequest(request));
     }
 
     /**
@@ -242,23 +101,7 @@ export class Tus<
      * @returns Promise resolving to ResponseFile with deletion confirmation
      */
     public async delete(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        this.tusBase.validateTusResumableHeader(getHeader(request, "tus-resumable"));
-
-        try {
-            const id = getIdFromRequest(request);
-
-            return await this.tusBase.handleDelete(id);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            const errorWithCode = error as { code?: string };
-
-            if (errorWithCode.code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handleDelete(this.toTusRequest(request));
     }
 
     /**
@@ -282,6 +125,23 @@ export class Tus<
     }
 
     /**
+     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
+     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * @param request Node.js IncomingMessage
+     */
+    protected override normalizeRequest(request: NodeRequest): void {
+        if (!this.allowMethodOverride) {
+            return;
+        }
+
+        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined);
+
+        if (override !== undefined) {
+            request.method = override;
+        }
+    }
+
+    /**
      * Compose and register HTTP method handlers.
      */
     protected compose(): void {
@@ -297,14 +157,7 @@ export class Tus<
 
     /**
      * Build file URL for TUS uploads (without file extension).
-     *
-     * On the Node runtime the TUS protocol chain only carries the request *path* (`requestUrl` is
-     * `request.originalUrl || request.url`), so an absolute `Location` can only be produced when that
-     * path is itself an absolute URL (e.g. an upstream proxy rewrote it). When it is just a path the
-     * `Location` is necessarily relative — the request headers are not threaded through the protocol
-     * methods. Use the fetch/hono handlers (which receive `request.url` with the origin) or set
-     * `useRelativeLocation: true` explicitly for relative URLs everywhere.
-     * @param requestUrl Request URL string (path-only on Node unless rewritten to an absolute URL).
+     * @param requestUrl Request URL string
      * @param file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
@@ -323,5 +176,33 @@ export class Tus<
         const origin = /^https?:\/\//iu.test(requestUrl) ? url.origin : "";
 
         return origin + relative;
+    }
+
+    /**
+     * Adapts a Node.js request to the runtime-independent {@link TusRequest}.
+     * @param request Node.js IncomingMessage
+     * @returns TUS request
+     */
+    private toTusRequest(request: NodeRequest): TusRequest {
+        return {
+            get body() {
+                return getRequestStream(request);
+            },
+            header: (name) => {
+                const value = request.headers[name];
+
+                return Array.isArray(value) ? value.join(", ") : value;
+            },
+            resolveId: () => {
+                try {
+                    return getIdFromRequest(request);
+                } catch (error: unknown) {
+                    this.checkForUndefinedIdOrPath(error);
+
+                    throw error;
+                }
+            },
+            url: (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "",
+        };
     }
 }

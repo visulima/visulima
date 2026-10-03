@@ -76,6 +76,14 @@ abstract class BaseHandlerNode<
 
         this.logger?.debug("[request]: %s %s", request.method, request.url);
 
+        try {
+            this.normalizeRequest(request);
+        } catch (error: unknown) {
+            await this.sendError(response, error as Error);
+
+            return;
+        }
+
         const handler = this.registeredHandlers.get(request.method as string);
 
         if (!handler) {
@@ -149,6 +157,16 @@ abstract class BaseHandlerNode<
             await handleUploadError(error, request, this.emit.bind(this), this.listenerCount.bind(this), this.logger, this.sendError.bind(this), response);
         }
     };
+
+    /**
+     * Adjusts a request before it is routed to a method handler (e.g. a protocol's method
+     * override). Throw an HttpError to reject the request.
+     * @param _request Node.js IncomingMessage.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected normalizeRequest(_request: NodeRequest): void {
+        // No-op by default.
+    }
 
     /**
      * Compose and register HTTP method handlers.

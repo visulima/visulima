@@ -154,7 +154,7 @@ describe("fetch Tus", () => {
                 "creation,creation-with-upload,termination,checksum,creation-defer-length,concatenation,expiration",
             );
             expect(response.headers.get("tus-max-size")).toBe("6442450944");
-            expect(response.headers.get("tus-checksum-algorithm")).toBe("md5,sha1,sha256,sha384,sha512");
+            expect(response.headers.get("tus-checksum-algorithm")).toBe("md5,sha1,sha256,sha384,sha512,crc32,crc32c");
         });
     });
 

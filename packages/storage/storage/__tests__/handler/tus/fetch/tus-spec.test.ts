@@ -14,12 +14,12 @@ const statusOf = async (response: Promise<Response>): Promise<number> => respons
 
 const headerOf = async (response: Promise<Response>, name: string): Promise<string | null> => response.then((resolved) => resolved.headers.get(name));
 
-const setup = (options: { maxUploadSize?: number; onComplete?: () => void } = {}) => {
+const setup = (options: { allowMethodOverride?: boolean; maxChecksumBufferSize?: number; maxUploadSize?: number; onComplete?: () => void } = {}) => {
     const storage = new MemoryStorage({
         maxUploadSize: options.maxUploadSize ?? 1024 * 1024,
         ...(options.onComplete ? { onComplete: options.onComplete } : {}),
     });
-    const tus = new TusFetch({ storage });
+    const tus = new TusFetch({ allowMethodOverride: options.allowMethodOverride, maxChecksumBufferSize: options.maxChecksumBufferSize, storage });
 
     const send = async (method: string, url: string, headers: Record<string, string> = {}, body?: Uint8Array | string): Promise<Response> =>
         tus.fetch(
@@ -272,6 +272,126 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
 
             expect(response.status).toBe(400);
             expect(response.headers.get("tus-resumable")).toBe("1.0.0");
+        });
+    });
+
+    describe("hardening", () => {
+        it("should verify crc32 and crc32c checksums", async () => {
+            expect.assertions(4);
+
+            const { create, patch } = setup();
+            // Standard check values for "123456789": CRC-32 0xCBF43926, CRC-32C 0xE3069283.
+            const crc = (value: number): string => {
+                const bytes = Buffer.alloc(4);
+
+                bytes.writeUInt32BE(value);
+
+                return bytes.toString("base64");
+            };
+            const url32 = await create(9);
+            const url32c = await create(9, { "Upload-Metadata": `name ${b64("crc32c.bin")}` });
+
+            await expect(statusOf(patch(url32, 0, "123456789", { "Upload-Checksum": `crc32 ${crc(0xcb_f4_39_26)}` }))).resolves.toBe(204);
+            await expect(statusOf(patch(url32c, 0, "123456789", { "Upload-Checksum": `crc32c ${crc(0xe3_06_92_83)}` }))).resolves.toBe(204);
+        });
+
+        it("should refuse to buffer a checksummed chunk without Content-Length or over the limit", async () => {
+            expect.assertions(4);
+
+            const { create, offsetOf, send, tus } = setup({ maxChecksumBufferSize: 4 });
+            const url = await create(10);
+            // eslint-disable-next-line sonarjs/hashing -- SHA-1 is the checksum algorithm the tus spec mandates
+            const sha1 = createHash("sha1").update("hello").digest("base64");
+            const headers = { "Content-Type": "application/offset+octet-stream", "Upload-Checksum": `sha1 ${sha1}`, "Upload-Offset": "0" };
+
+            await expect(statusOf(send("PATCH", url, { ...headers, "Content-Length": "5" }, "hello"))).resolves.toBe(413);
+            // A constructed Request carries no Content-Length.
+            await expect(statusOf(tus.fetch(new Request(url, { body: "hello", headers: { ...TUS, ...headers }, method: "PATCH" })))).resolves.toBe(411);
+            await expect(offsetOf(url)).resolves.toBe("0");
+        });
+
+        it("should answer 423 to a PATCH racing another one on the same upload", async () => {
+            expect.assertions(3);
+
+            const { create, patch, storage } = setup();
+            const url = await create(10);
+            const { write } = storage;
+            let release: () => void = () => undefined;
+
+            vi.spyOn(storage, "write").mockImplementationOnce(async (part) => {
+                await new Promise<void>((resolve) => {
+                    release = resolve;
+                });
+
+                return write.call(storage, part);
+            });
+
+            const first = patch(url, 0, "hello");
+
+            await vi.waitFor(() => {
+                if (vi.mocked(storage.write).mock.calls.length === 0) {
+                    throw new Error("first PATCH has not reached the storage yet");
+                }
+            });
+
+            await expect(statusOf(patch(url, 0, "hello"))).resolves.toBe(423);
+
+            release();
+
+            await expect(statusOf(first)).resolves.toBe(204);
+        });
+
+        it("should leave a deferred length and metadata untouched when the write fails", async () => {
+            expect.assertions(3);
+
+            const { patch, send, storage } = setup();
+            const deferred = await send("POST", BASE, { "Upload-Defer-Length": "1", "Upload-Metadata": `name ${b64("rollback.bin")}` });
+            const url = new URL(deferred.headers.get("location") as string, BASE).toString();
+
+            vi.spyOn(storage, "write").mockRejectedValueOnce(new Error("backend down"));
+
+            await expect(statusOf(patch(url, 0, "hello", { "Upload-Length": "5", "Upload-Metadata": `name ${b64("changed.bin")}` }))).resolves.toBe(500);
+
+            const head = await send("HEAD", url);
+
+            expect(head.headers.get("upload-defer-length")).toBe("1");
+            expect(head.headers.get("upload-metadata")).toBe(`name ${b64("rollback.bin")}`);
+        });
+
+        it("should accept a retried PATCH that repeats the Upload-Length already set", async () => {
+            expect.assertions(2);
+
+            const { patch, send } = setup();
+            const deferred = await send("POST", BASE, { "Upload-Defer-Length": "1", "Upload-Metadata": `name ${b64("repeat.bin")}` });
+            const url = new URL(deferred.headers.get("location") as string, BASE).toString();
+
+            await expect(statusOf(patch(url, 0, "hello", { "Upload-Length": "10" }))).resolves.toBe(204);
+            await expect(statusOf(patch(url, 5, "world", { "Upload-Length": "10" }))).resolves.toBe(204);
+        });
+
+        it("should ignore X-HTTP-Method-Override when disabled", async () => {
+            expect.assertions(2);
+
+            const { send } = setup({ allowMethodOverride: false });
+            const response = await send("POST", BASE, { "Upload-Length": "5", "X-HTTP-Method-Override": "DELETE" });
+
+            expect(response.status).toBe(201);
+            expect(response.headers.has("location")).toBe(true);
+        });
+
+        it("should refuse a partial chunk before reading it when the storage can't append", async () => {
+            expect.assertions(4);
+
+            const { create, offsetOf, patch, storage } = setup();
+            const url = await create(10);
+
+            Object.defineProperty(storage, "supportsResumableWrites", { value: false });
+
+            const write = vi.spyOn(storage, "write");
+
+            await expect(statusOf(patch(url, 0, "hello"))).resolves.toBe(405);
+            await expect(offsetOf(url)).resolves.toBe("0");
+            expect(write).not.toHaveBeenCalled();
         });
     });
 });
