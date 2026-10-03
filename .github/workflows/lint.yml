@@ -7,17 +7,27 @@ on: # yamllint disable-line rule:truthy
         types: ["opened", "synchronize"]
         branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
+    # Pushes to main lint what landed and save the Nx task cache that PR runs
+    # restore from (a PR's own cache entries are scoped to its ref, so main can
+    # only be warmed by main itself).
+    push:
+        branches: ["main"]
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.ref }}"
-    cancel-in-progress: true
+    # Don't cancel main runs mid-way: a cancelled run never saves its Nx cache.
+    cancel-in-progress: "${{ github.event_name != 'push' }}"
 
 permissions:
+    actions: "read" # nx-set-shas looks up the last successful main run on push events
     contents: "read" # to fetch code (actions/checkout)
 
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
+    # Bound the Nx cache that is saved/restored between runs (GitHub's 10 GB
+    # cache quota is shared with the pnpm store caches).
+    NX_MAX_CACHE_SIZE: "1GB"
     HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
     HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
 
@@ -95,12 +105,25 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
+
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved at the end even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-lint-ts-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-lint-ts-
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
@@ -118,6 +141,13 @@ jobs:
 
                   - name: "lint attw"
                     run: "pnpm run lint:affected:attw"
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
     # fallow codebase-intelligence over the affected graph. `health` is a report
     # (prints each project's score, exits 0) — it surfaces dead code / dupes /
@@ -149,7 +179,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
                   run-npm-audit: true
@@ -184,18 +214,38 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
+
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved at the end even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-lint-package-json-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-lint-package-json-
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
             - name: "lint package.json"
               run: "pnpm run lint:affected:package-json"
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
     vis-schemas-drift:
         if: "needs.files-changed.outputs.vis_schemas_lintable == 'true'"
@@ -215,7 +265,7 @@ jobs:
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
                   run-npm-audit: true
