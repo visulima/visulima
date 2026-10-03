@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
 import MemoryStorage from "../../../../src/storage/memory/memory-storage";
@@ -86,6 +86,45 @@ describe("fetch RestFetch GET", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain("application/json");
         expect(list.map((file) => file.id)).toContain(id);
+    });
+
+    it.each([
+        ["abc", 1000],
+        ["-5", 1000],
+        ["0", 1000],
+        ["5000", 1000],
+        ["2", 2],
+    ])("should normalize the list limit %s to %s", async (limit, expected) => {
+        expect.assertions(1);
+
+        const { restHandler, storage } = await setup(true);
+        const listSpy = vi.spyOn(storage, "list");
+
+        await restHandler.fetch(new Request(`${basePath}?limit=${limit}`));
+
+        expect(listSpy).toHaveBeenCalledWith(expected);
+    });
+
+    it("should return the rows of the requested page", async () => {
+        expect.assertions(2);
+
+        const { id: firstId, restHandler, storage } = await setup(true);
+        const second = await restHandler.fetch(
+            new Request(basePath, {
+                body: content,
+                headers: { "content-length": String(content.length), "content-type": "text/plain" },
+                method: "POST",
+            }),
+        );
+        const { id: secondId } = (await second.json()) as { id: string };
+        const stored = await storage.list();
+        const ids = stored.map((file) => file.id);
+
+        const response = await restHandler.fetch(new Request(`${basePath}?page=2&limit=1`));
+        const page2 = (await response.json()) as { data: { id: string }[] };
+
+        expect([firstId, secondId]).toContain(page2.data[0]?.id);
+        expect(page2.data[0]?.id).toBe(ids[1]);
     });
 
     it("should download a file below a nested mount path", async () => {

@@ -141,6 +141,26 @@ describe("http Rest", () => {
             expect(response.header.location).toMatch(new RegExp(String.raw`${basePath}/node-location-id\.\w+$`, "u"));
         });
 
+        it("should create, read and delete a short caller-chosen id like the fetch handler", async () => {
+            expect.assertions(3);
+
+            const put = await supertest(app)
+                .put(`${basePath}/abc`)
+                .set("Content-Type", testfile.contentType)
+                .set("Content-Length", String(testfile.size))
+                .send(testfile.asBuffer);
+
+            expect(put.status).toBe(201);
+
+            const head = await supertest(app).head(`${basePath}/abc`);
+
+            expect(head.status).toBe(200);
+
+            const deleted = await supertest(app).delete(`${basePath}/abc`);
+
+            expect(deleted.status).toBe(204);
+        });
+
         it("should refuse to overwrite another file's metadata sidecar", async () => {
             expect.assertions(3);
 

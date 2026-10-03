@@ -89,4 +89,6 @@ Well-behaved clients, including `@visulima/storage-client`, are not affected.
 
 - **Encoded traversal ids:** ids like `..%2F..%2Fetc` are rejected with `400` on every method. `GET` no longer URL-decodes ids, so every method addresses the same file.
 - **`Location` header:** `PUT` and `PATCH` responses now point at `<collection>/<id>.<ext>`. They used to repeat the id (`<collection>/<id>/<id>.<ext>`).
+- **Node REST ids:** the Node `Rest` handler now reads the file id like the fetch handlers do: the last path segment, with its extension stripped, and no minimum length. Short ids such as `abc` work on Node too. A UUID-like _parent_ segment is no longer picked as the id.
+- **List pagination (`allowList: true`):** `?page=` now returns the rows of that page; it used to repeat the first page. `limit` must be a positive integer, is capped at 1000, and malformed values are ignored. A list request reads at most 1000 files from storage.
 - **Batch delete limit:** a JSON batch-delete body over 1 MiB answers `413` on Node and fetch runtimes, and the client actually receives that response.

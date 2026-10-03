@@ -15,6 +15,7 @@ import { HeaderUtilities } from "../../utils/headers";
 import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
 import type { ResponseBodyType } from "../../utils/types";
 import type { ResponseFile, ResponseList, UploadOptions } from "../types";
+import { parseIntegerHeader } from "../utils/request-parser";
 
 /**
  * A file addressed by a GET/download path.
@@ -84,6 +85,12 @@ const fileStateHeaders = (file: Pick<UploadFile, "ETag" | "expiredAt" | "modifie
         ...(file?.ETag === undefined ? {} : { ETag: file.ETag }),
     };
 };
+
+/**
+ * Maximum number of files a list request (`allowList`) reads from storage, and the maximum `limit`.
+ * This is the HTTP contract, independent of how many requests a provider needs to fetch them.
+ */
+const MAX_LIST_ITEMS = 1000;
 
 const JSON_CONTENT_TYPE = HeaderUtilities.createContentType({ charset: "utf8", mediaType: "application/json" });
 
@@ -496,44 +503,33 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
 
     /**
      * Returns a list of uploaded files with optional pagination support.
+     *
+     * `limit` and `page` must be positive integers; malformed values are ignored. At most
+     * {@link MAX_LIST_ITEMS} files are ever read from storage for one request, whatever the provider's own page size.
      * @param searchParams Query parameters (`limit`, `page`) of the request.
-     * @returns Promise resolving to a paginated or complete list of uploaded files.
+     * @returns Promise resolving to a paginated (when `page` is given) or plain list of uploaded files.
      */
     protected async listFiles(searchParams: URLSearchParams): Promise<ResponseList<TFile>> {
-        const limit = searchParams.get("limit");
-        const page = searchParams.get("page");
-
-        const list = await this.storage.list(Number(limit || 1000));
-
+        const limit = parseIntegerHeader(searchParams.get("limit"));
+        const page = parseIntegerHeader(searchParams.get("page"));
+        const perPage = limit ? Math.min(limit, MAX_LIST_ITEMS) : MAX_LIST_ITEMS;
         const headers = { "Content-Type": JSON_CONTENT_TYPE };
 
+        if (!page) {
+            return { data: await this.storage.list(perPage), headers, statusCode: 200 };
+        }
+
+        // `paginate` expects the rows of the requested page only; `total` is what storage holds up to the cap
+        const list = await this.storage.list(MAX_LIST_ITEMS);
+
         if (list.length === 0) {
-            return {
-                data: [],
-                headers,
-                statusCode: 200,
-            };
+            return { data: [], headers, statusCode: 200 };
         }
 
-        const pageNumber = Number(page);
-        const limitNumber = Number(limit);
+        const rows = list.slice((page - 1) * perPage, page * perPage);
 
-        // URLSearchParams.get() returns string | null (never undefined); only
-        // paginate when both params are actually present and numeric, otherwise
-        // fall through to the plain-array shape below.
-        if (page !== null && limit !== null && Number.isFinite(pageNumber) && Number.isFinite(limitNumber)) {
-            return {
-                data: paginate(pageNumber, limitNumber, list.length, list),
-                headers,
-                statusCode: 200,
-            };
-        }
-
-        return {
-            data: list,
-            headers,
-            statusCode: 200,
-        };
+        // Serialize explicitly: older @visulima/pagination releases break under JSON.stringify's toJSON(key) call
+        return { data: paginate(page, perPage, list.length, rows).toJSON(), headers, statusCode: 200 };
     }
 
     /**

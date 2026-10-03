@@ -5,7 +5,7 @@ import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
-import { getHeader, getIdFromRequest, getRequestStream, readBody } from "../../utils/http";
+import { getHeader, getIdFromRequestUrl, getRealPath, getRequestStream, readBody } from "../../utils/http";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import {
@@ -19,6 +19,16 @@ import {
     validateRequestBody,
 } from "../utils/request-parser";
 import RestBase, { MAX_BATCH_DELETE_BYTES, parseBatchDeleteBody, parseBatchIdsParameter } from "./rest-base";
+
+/**
+ * Extracts the file id from a REST request with the same rules as the Fetch REST handler:
+ * the last path segment with its extension stripped, no minimum length.
+ * @param request Node.js request
+ * @returns The file id, or `undefined` when the path addresses the collection
+ * @throws {HttpError} 400 when the id is unsafe
+ */
+const getRestFileId = (request: IncomingMessage & { originalUrl?: string }): string | undefined =>
+    getIdFromRequestUrl(getRealPath(request), { stripExtension: true });
 
 /**
  * REST API handler for direct binary file uploads (Node.js version).
@@ -142,14 +152,10 @@ class Rest<
      * @returns Promise resolving to ResponseFile with upload result
      */
     public async put(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        let id: string;
+        const id = getRestFileId(request);
 
-        try {
-            id = getIdFromRequest(request);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            throw error;
+        if (!id) {
+            throw createHttpError(400, "File ID is required in URL path");
         }
 
         // Check if request has a body
@@ -212,13 +218,15 @@ class Rest<
         }
 
         // Single file delete
-        try {
-            const id = getIdFromRequest(request);
+        const id = getRestFileId(request);
 
+        if (!id) {
+            throw createHttpError(404, "File not found");
+        }
+
+        try {
             return await this.restBase.deleteSingle(id);
         } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
             if ((error as { code?: string }).code === "ENOENT" || (error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(404, "File not found");
             }
@@ -235,14 +243,10 @@ class Rest<
      * @returns Promise resolving to ResponseFile with upload progress.
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        let id: string;
+        const id = getRestFileId(request);
 
-        try {
-            id = getIdFromRequest(request);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            throw error;
+        if (!id) {
+            throw createHttpError(404, "File not found");
         }
 
         // Check if request has a body
@@ -273,13 +277,15 @@ class Rest<
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async head(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        try {
-            const id = getIdFromRequest(request);
+        const id = getRestFileId(request);
 
+        if (!id) {
+            throw createHttpError(404, "File not found");
+        }
+
+        try {
             return await this.restBase.handleHead(id);
         } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
             if ((error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND" || (error as { code?: string }).code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
