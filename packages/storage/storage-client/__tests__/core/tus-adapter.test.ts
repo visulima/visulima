@@ -101,6 +101,44 @@ describe(createTusAdapter, () => {
         );
     });
 
+    it("should accept a 200 on the completing PATCH from older servers without retrying (#899)", async () => {
+        expect.assertions(3);
+
+        const adapter = createTusAdapter({
+            chunkSize: 100,
+            endpoint: "http://localhost/api/upload/tus",
+        });
+        const progress: number[] = [];
+
+        adapter.setOnProgress((percent) => {
+            progress.push(percent);
+        });
+
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ Location: "http://localhost/api/upload/tus/123", "Tus-Resumable": "1.0.0" }),
+            ok: true,
+            status: 201,
+        });
+        // @visulima/storage <= 2.0.25 answered the completing PATCH with 200 instead of 204.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "Tus-Resumable": "1.0.0", "Upload-Offset": "100" }),
+            ok: true,
+            status: 200,
+        });
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "Tus-Resumable": "1.0.0", "Upload-Length": "100", "Upload-Offset": "100" }),
+            ok: true,
+            status: 200,
+        });
+
+        const result = await adapter.upload(new File(["x".repeat(100)], "test.jpg", { type: "image/jpeg" }));
+
+        expect(result.status).toBe("completed");
+        expect(progress).toStrictEqual([100]);
+        // POST + PATCH + final HEAD; no retry HEAD
+        expect(mockFetch).toHaveBeenCalledTimes(3);
+    });
+
     it("should attach onBeforeRequest hook headers, with TUS protocol headers winning", async () => {
         expect.assertions(4);
 
@@ -183,25 +221,23 @@ describe(createTusAdapter, () => {
             };
         });
 
-        // Mock HEAD response for resume (to get current offset)
-        mockFetch.mockResolvedValueOnce({
-            headers: new Headers({
-                "Tus-Resumable": "1.0.0",
-                "Upload-Length": "100",
-                "Upload-Offset": "0",
-            }),
-            ok: true,
-            status: 200,
-        });
+        // Mock PATCH response; slow enough that pause() lands while the upload is in flight
+        // (resume() itself sends no HEAD)
+        mockFetch.mockImplementationOnce(async () => {
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, 50);
+            });
 
-        // Mock PATCH response (will be called after resume)
-        mockFetch.mockResolvedValueOnce({
-            headers: new Headers({
-                "Tus-Resumable": "1.0.0",
-                "Upload-Offset": "100",
-            }),
-            ok: true,
-            status: 204,
+            return {
+                headers: new Headers({
+                    "Tus-Resumable": "1.0.0",
+                    "Upload-Offset": "100",
+                }),
+                ok: true,
+                status: 204,
+            };
         });
 
         // Mock final HEAD response

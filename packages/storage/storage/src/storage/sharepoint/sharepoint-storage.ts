@@ -97,6 +97,9 @@ const parseSiteUrl = (siteUrl: string): { hostname: string; sitePath: string } =
 class SharePointStorage extends BaseStorage<SharePointFile> {
     public static override readonly name: string = "sharepoint";
 
+    /** Delegates writes to {@link OneDriveStorage}, which stores each object in a single request. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<SharePointFile>;

@@ -15,25 +15,10 @@ import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
 
-const MIN_PART_SIZE = 5 * 1024 * 1024;
-const PART_SIZE = 16 * 1024 * 1024;
-
-/**
- * Build the HTTP `Range` header value (`bytes=start-end`) from a structured range.
- *
- * Returns `undefined` for an absent range so call sites can spread it conditionally
- * (omit the `Range` field entirely rather than send `Range: undefined`). `start` is
- * clamped to `0` because S3 rejects negative offsets and an `end` of `undefined`
- * renders as the open-ended `bytes=start-` form (read to EOF).
- */
-export const buildRangeHeader = (range: { end?: number; start: number } | undefined): string | undefined => {
-    if (!range) {
-        return undefined;
-    }
-
-    return `bytes=${Math.max(0, range.start)}-${range.end === undefined ? "" : range.end}`;
-};
+// Re-exported for existing importers of this module.
+export { buildRangeHeader } from "./s3-utils";
 
 /**
  * Part interface for multipart uploads.
@@ -155,7 +140,13 @@ export interface S3ApiOperations {
  * @template TFile The file type used by this storage backend.
  */
 export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3CompatibleFile> extends BaseStorage<TFile> {
-    public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
+    /**
+     * Only `md5` is verified by S3 itself (`Content-MD5` on UploadPart, `BadDigest` on mismatch).
+     * The flexible `x-amz-checksum-*` algorithms (sha1/sha256/crc32/crc32c) are not offered: S3
+     * rejects a part checksum whose algorithm was not declared on CreateMultipartUpload, and a
+     * TUS client only announces its algorithm per PATCH, after the multipart upload exists.
+     */
+    public override checksumTypes: string[] = ["md5"];
 
     public override readonly supportsRange: boolean = true;
 
@@ -396,6 +387,19 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
+                    // Parts are appended strictly in order (PartNumber = Parts.length + 1). Persist the
+                    // offset S3 reports before rejecting a misplaced chunk, so a stale stored offset
+                    // heals and the client's next HEAD sees the real value.
+                    try {
+                        this.assertContiguousWrite(part, file);
+                    } catch (error: unknown) {
+                        await this.saveMeta(withoutParts(file));
+
+                        throw error;
+                    }
+
+                    assertNextPartSize(part, file);
+
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
@@ -432,23 +436,33 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // retry. Forces maxRetries=0 for stream bodies.
                     const replayable = partBody instanceof Uint8Array;
 
-                    const { ETag } = await this.runOperation(
-                        options,
-                        (signal) =>
-                            s3Api.uploadPart(
-                                {
-                                    Body: partBody,
-                                    Bucket: this.bucket,
-                                    ContentLength: part.contentLength || 0,
-                                    Key: file.name,
-                                    PartNumber: partNumber,
-                                    UploadId: uploadId,
-                                    ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
-                                },
-                                { signal },
-                            ),
-                        { replayable },
-                    );
+                    let ETag: string;
+
+                    try {
+                        ({ ETag } = await this.runOperation(
+                            options,
+                            (signal) =>
+                                s3Api.uploadPart(
+                                    {
+                                        Body: partBody,
+                                        Bucket: this.bucket,
+                                        ContentLength: part.contentLength || 0,
+                                        Key: file.name,
+                                        PartNumber: partNumber,
+                                        UploadId: uploadId,
+                                        ...(part.checksumAlgorithm === "md5" && part.checksum ? { ContentMD5: part.checksum } : {}),
+                                    },
+                                    { signal },
+                                ),
+                            { replayable },
+                        ));
+                    } catch (error: unknown) {
+                        if (isBadDigest(error)) {
+                            return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
+                        }
+
+                        throw error;
+                    }
 
                     const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
 
@@ -467,6 +481,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                     file.uri = completed.Location;
                     file.ETag = completed.ETag;
+                } else if (hasContent(part)) {
+                    // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
+                    await this.saveMeta(withoutParts(file));
                 }
             } finally {
                 await this.unlock(part.id, lockToken);

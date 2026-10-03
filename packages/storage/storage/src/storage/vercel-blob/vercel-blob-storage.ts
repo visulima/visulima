@@ -45,7 +45,11 @@ type VercelBlobCredentials = { oidcToken: string; storeId: string; token?: never
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override get raw(): {
         copy: typeof copy;
@@ -197,6 +201,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     // Convert stream to buffer for Vercel Blob
                     const chunks: Buffer[] = [];
                     const stream = part.body;
@@ -206,6 +212,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                     }
 
                     const buffer = Buffer.concat(chunks);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
 
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)

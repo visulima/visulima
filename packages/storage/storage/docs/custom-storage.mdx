@@ -475,13 +475,15 @@ const storage = new RedisStorage({
 1. **Implement Error Normalization** - Always implement `normalizeError()` to provide consistent error responses
 2. **Use Instrumentation** - Wrap operations with `instrumentOperation()` for automatic metrics
 3. **Handle Metadata** - Properly save and retrieve metadata using the `meta` property
-4. **Call Hooks** - Call lifecycle hooks (`onCreate`, `onUpdate`, `onDelete`, `onComplete`) at appropriate times
-5. **Handle Streams** - Properly handle Readable streams for file data
-6. **Validate Inputs** - Validate file sizes, MIME types, and other constraints
-7. **Handle Concurrency** - Use file locking for concurrent access (base class provides `locker`)
-8. **Support Batch Operations** - Implement batch operations for better performance
-9. **Test Thoroughly** - Test all operations including error cases
-10. **Document Your Storage** - Document any limitations or special behavior
+4. **Call Hooks** - Call lifecycle hooks (`onCreate`, `onUpdate`, `onDelete`) at appropriate times. Don't call `onComplete` from `write()`: the upload handlers call it once the upload completes
+5. **Persist the Offset** - Save the file's metadata (including `bytesWritten`) after every successful `write()`. The TUS handler compares a chunk's `Upload-Offset` with the stored offset and reports it on `HEAD`
+6. **List Only Verified Checksums** - Put an algorithm in `checksumTypes` only if `write()` really verifies `checksum` against the bytes; the TUS handler verifies the rest itself
+7. **Handle Streams** - Properly handle Readable streams for file data
+8. **Validate Inputs** - Validate file sizes, MIME types, and other constraints
+9. **Handle Concurrency** - Use file locking for concurrent access (base class provides `locker`)
+10. **Support Batch Operations** - Implement batch operations for better performance
+11. **Test Thoroughly** - Test all operations including error cases
+12. **Document Your Storage** - Document any limitations or special behavior
 
 ## Integration with Handlers
 

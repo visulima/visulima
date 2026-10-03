@@ -55,7 +55,8 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
 
@@ -201,11 +202,9 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             file.modifiedAt = entry.modifiedAt;
             file.status = getFileStatus(file);
 
+            // onComplete is the upload handlers' job (they call it once the upload is
+            // completed); calling it here too made every handler upload fire it twice.
             await this.saveMeta(file);
-
-            if (file.status === "completed") {
-                await this.onComplete(file, {});
-            }
 
             return file;
         });

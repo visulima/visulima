@@ -7,6 +7,15 @@ import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import { createAzureClient } from "./azure-client";
 import type { AzureMetaStorageOptions } from "./types";
 
+/** Blob metadata key holding the whole upload record as URI-encoded JSON. */
+const FILE_KEY = "file";
+
+// Legacy sidecars stored every File field as its own metadata entry; these lists only exist to
+// read those back and must cover the camelCase / numeric fields of `File` (see `../utils/file/file.ts`).
+const CAMEL_CASE_FIELDS = ["bytesWritten", "contentType", "createdAt", "expiredAt", "modifiedAt", "originalName", "requestId"] as const;
+
+const NUMERIC_FIELDS = ["bytesWritten", "expiredAt", "size"] as const;
+
 class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     private client: BlobServiceClient;
 
@@ -44,12 +53,44 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
 
-        const file = propertyData.metadata as unknown as T;
+        const { metadata } = propertyData;
+        const file = (
+            typeof metadata[FILE_KEY] === "string" ? JSON.parse(decodeURIComponent(metadata[FILE_KEY])) : AzureMetaStorage.restoreFields(metadata)
+        ) as T;
 
-        // Metadata is base64 encoded to avoid errors for non-ASCII characters
+        // User metadata is base64 encoded to avoid errors for non-ASCII characters
         // so we need to decode it separately
         if (file.metadata && typeof file.metadata === "string") {
             file.metadata = parseMetadata(file.metadata);
+        }
+
+        return file;
+    }
+
+    /**
+     * Reads a legacy sidecar that stored each File field as its own metadata entry.
+     * Blob metadata comes back as strings, and (behind Node's HTTP stack) with lower-cased names.
+     * Restore the camelCase names of the File fields and the numbers the upload flow compares
+     * against — a string `bytesWritten` would never equal the numeric offset of a PATCH.
+     */
+    private static restoreFields(metadata: Metadata): Record<string, unknown> {
+        const file: Record<string, unknown> = { ...metadata };
+
+        for (const key of CAMEL_CASE_FIELDS) {
+            const lower = key.toLowerCase();
+
+            if (file[key] === undefined && file[lower] !== undefined) {
+                file[key] = file[lower];
+                Reflect.deleteProperty(file, lower);
+            }
+        }
+
+        for (const key of NUMERIC_FIELDS) {
+            const value = file[key];
+
+            if (typeof value === "string" && /^\d+$/.test(value)) {
+                file[key] = Number(value);
+            }
         }
 
         return file;
@@ -72,9 +113,16 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             transformedMetadata.metadata = stringifyMetadata(file.metadata);
         }
 
+        // One JSON value keeps names and types intact; per-field metadata loses both (see restoreFields).
+        const metadata: Metadata = { [FILE_KEY]: encodeURIComponent(JSON.stringify(transformedMetadata)) };
         const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
 
-        await appendBlobClient.setMetadata(transformedMetadata as unknown as Metadata, {});
+        // Set Blob Metadata 404s on a missing blob, so the first save has to create the sidecar.
+        const { succeeded } = await appendBlobClient.createIfNotExists({ metadata });
+
+        if (!succeeded) {
+            await appendBlobClient.setMetadata(metadata, {});
+        }
 
         return file;
     }

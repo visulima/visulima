@@ -36,6 +36,8 @@ describe(AzureMetaStorage, () => {
 
         // Create mock append blob client
         mockAppendBlobClient = {
+            // Default: the sidecar already exists, so save() falls through to setMetadata.
+            createIfNotExists: vi.fn().mockResolvedValue({ succeeded: false }),
             deleteIfExists: vi.fn(),
             getProperties: vi.fn(),
             setMetadata: vi.fn(),
@@ -76,6 +78,38 @@ describe(AzureMetaStorage, () => {
 
             expect(mockAppendBlobClient.setMetadata).toHaveBeenCalledTimes(1);
         });
+
+        it("creates the sidecar blob with the metadata on the first save", async () => {
+            expect.assertions(2);
+
+            (mockAppendBlobClient.createIfNotExists as ReturnType<typeof vi.fn>).mockResolvedValue({ succeeded: true });
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(mockAppendBlobClient.createIfNotExists).toHaveBeenCalledWith({ metadata: { file: expect.stringContaining(metafile.id) } });
+            expect(mockAppendBlobClient.setMetadata).not.toHaveBeenCalled();
+        });
+
+        it("round-trips the upload record through a single JSON metadata value", async () => {
+            expect.assertions(4);
+
+            let stored: Record<string, string> = {};
+
+            (mockAppendBlobClient.setMetadata as ReturnType<typeof vi.fn>).mockImplementation(async (metadata: Record<string, string>) => {
+                stored = metadata;
+            });
+
+            await metaStorage.save(metafile.id, { ...metafile, bytesWritten: 10, metadata: { name: "ünïcode.mp4" }, size: 64 });
+
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockResolvedValue({ metadata: stored });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(Object.keys(stored)).toStrictEqual(["file"]);
+            expect(file.bytesWritten).toBe(10);
+            expect(file.size).toBe(64);
+            expect(file.metadata).toStrictEqual({ name: "ünïcode.mp4" });
+        });
     });
 
     describe(".get()", () => {
@@ -94,6 +128,20 @@ describe(AzureMetaStorage, () => {
             const file = await metaStorage.get(metafile.id);
 
             expect(file.id).toBe(metafile.id);
+        });
+
+        it("restores numeric offsets and camelCase field names from a legacy per-field sidecar", async () => {
+            expect.assertions(3);
+
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockResolvedValue({
+                metadata: { byteswritten: "10", id: metafile.id, originalname: "a.mp4", size: "64" },
+            });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(file.bytesWritten).toBe(10);
+            expect(file.size).toBe(64);
+            expect(file.originalName).toBe("a.mp4");
         });
 
         it("should throw error when metadata not found", async () => {

@@ -74,6 +74,9 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
 class SupabaseStorage extends BaseStorage<SupabaseFile> {
     public static override readonly name: string = "supabase";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<SupabaseFile>;
@@ -186,7 +189,12 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? file.name;
 
                     const { data, error } = await this.runOperation(options, () =>

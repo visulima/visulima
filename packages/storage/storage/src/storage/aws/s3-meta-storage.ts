@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";
@@ -30,18 +30,23 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
             }
 
             this.client = new S3Client(metaConfig);
-
-            this.accessCheck(bucket).catch((error) => {
-                throw error;
-            });
         } else {
             this.client = client;
         }
 
         this.bucket = bucket as string;
+
+        if (client === undefined) {
+            // A single HEAD fails fast; `waitUntilBucketExists` would poll for up to 30s per failing operation.
+            this.accessProbe = async () => {
+                await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+            };
+        }
     }
 
     public override async get(id: string): Promise<T> {
+        await this.ensureAccess();
+
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
         const { Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters));
@@ -70,12 +75,16 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
+        await this.ensureAccess();
+
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
 
         await this.client.send(new DeleteObjectCommand(parameters));
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.ensureAccess();
+
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
@@ -93,10 +102,6 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         await this.client.send(new PutObjectCommand(parameters));
 
         return file;
-    }
-
-    private async accessCheck(bucket: string, maxWaitTime = 30): Promise<void> {
-        await waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
     }
 }
 

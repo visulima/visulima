@@ -287,7 +287,7 @@ export default function LargeFileUpload() {
 
     const { upload, pause, resume, progress, isUploading, isPaused, offset, error, result, reset } = createTusUpload({
         endpoint: "/api/upload/tus",
-        chunkSize: 1024 * 1024, // 1MB chunks
+        chunkSize: 5 * 1024 * 1024, // 5 MiB chunks
         onSuccess: (result) => {
             console.log("Upload complete:", result);
         },

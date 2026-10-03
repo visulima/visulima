@@ -21,6 +21,7 @@ interface BaseResponse {
 export interface StreamingResponse extends BaseResponse {
     /** Total size of the stream (for Content-Length header) */
     size?: number;
+
     /** Stream of data to send */
     stream: Readable;
 }
@@ -74,9 +75,27 @@ export interface UploadOptions<TFile extends UploadFile> {
      * @default false
      */
     allowList?: boolean;
+
+    /**
+     * TUS only: honour `X-HTTP-Method-Override`, which the TUS protocol requires a server to
+     * interpret as the request method. The method changes inside the handler, after routing
+     * and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may
+     * DELETE) must also check this header — or set this option to `false`.
+     * @default true
+     */
+    allowMethodOverride?: boolean;
     disableTerminationForFinishedUploads?: boolean;
+
+    /**
+     * TUS only: largest chunk the handler buffers in memory to verify an `Upload-Checksum` that
+     * the storage can't verify itself. Larger checksummed chunks are refused with 413.
+     * @default 67108864 (64 MiB)
+     */
+    maxChecksumBufferSize?: number;
+
     /** Maximum file size for multipart parser (default: min(storage.maxUploadSize, 1GB)) */
     maxFileSize?: number;
+
     /** Maximum header size for multipart parser (default: 64KB) */
     maxHeaderSize?: number;
     mediaTransformer?: MediaTransformer;

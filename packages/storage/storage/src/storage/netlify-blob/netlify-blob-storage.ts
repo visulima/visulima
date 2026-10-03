@@ -36,7 +36,11 @@ import type { NetlifyBlobStorageOptions } from "./types";
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
     public static override readonly name: string = "netlify-blob";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override get raw(): ReturnType<typeof getStore> {
         return this.store;
@@ -186,6 +190,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     // Convert stream to buffer for Netlify Blob
                     const chunks: Buffer[] = [];
                     const stream = part.body;
@@ -195,6 +201,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                     }
 
                     const buffer = Buffer.concat(chunks);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
 
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)

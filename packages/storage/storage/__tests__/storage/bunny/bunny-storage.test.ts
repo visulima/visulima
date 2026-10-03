@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { Readable } from "node:stream";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
@@ -447,6 +450,91 @@ describe(BunnyStorage, () => {
             expect(file.name).toBe("user/dest.bin");
             expect(fileMock.upload).toHaveBeenCalledTimes(1);
             expect(fileMock.upload.mock.calls[0]?.[1]).toBe("/user/dest.bin");
+        });
+    });
+
+    describe(".write()", () => {
+        it("rejects a chunk that isn't the whole file instead of storing it as the complete upload", async () => {
+            expect.assertions(3);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: 10 } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+
+            await expect(storage.write({ body: Readable.from(Buffer.from("hello")), contentLength: 5, id: "f", start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "MethodNotAllowed",
+            });
+            await expect(storage.write({ body: Readable.from(Buffer.from("world")), contentLength: 5, id: "f", start: 5 })).rejects.toMatchObject({
+                UploadErrorCode: "MethodNotAllowed",
+            });
+            expect(fileMock.upload).not.toHaveBeenCalled();
+        });
+
+        it("rejects a declared partial chunk before reading its body", async () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+            const body = Readable.from(Buffer.from("hello"));
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: 10 } as never);
+
+            await expect(storage.write({ body, contentLength: 5, id: "f", start: 0 })).rejects.toMatchObject({ UploadErrorCode: "MethodNotAllowed" });
+            expect(body.readableDidRead).toBe(false);
+        });
+
+        it("does not advertise resumable tus extensions", () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            expect(storage.supportsResumableWrites).toBe(false);
+            expect(storage.tusExtension.filter((extension) => extension === "creation-defer-length" || extension === "concatenation")).toStrictEqual([]);
+        });
+
+        it("reports Bunny's 400 on a checksummed upload as a checksum mismatch", async () => {
+            expect.assertions(1);
+
+            const storage = new BunnyStorage(baseOptions);
+            const payload = Buffer.from("payload");
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: payload.length } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            fileMock.upload.mockRejectedValueOnce(new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"));
+
+            await expect(
+                storage.write({
+                    body: Readable.from(payload),
+                    checksum: createHash("sha256").update("other").digest("base64"),
+                    checksumAlgorithm: "sha256",
+                    contentLength: payload.length,
+                    id: "f",
+                    start: 0,
+                }),
+            ).rejects.toMatchObject({ UploadErrorCode: "ChecksumMismatch" });
+        });
+
+        it("converts a base64 sha256 upload checksum to the uppercase hex Bunny verifies", async () => {
+            expect.assertions(1);
+
+            const storage = new BunnyStorage(baseOptions);
+            const payload = Buffer.from("payload");
+            const sha256 = createHash("sha256").update(payload).digest();
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: payload.length } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            fileMock.upload.mockResolvedValueOnce(true);
+
+            await storage.write({
+                body: Readable.from(payload),
+                checksum: sha256.toString("base64"),
+                checksumAlgorithm: "sha256",
+                contentLength: payload.length,
+                id: "f",
+                start: 0,
+            });
+
+            expect(fileMock.upload.mock.calls[0]?.[3]).toMatchObject({ sha256Checksum: sha256.toString("hex").toUpperCase() });
         });
     });
 });

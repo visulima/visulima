@@ -92,6 +92,9 @@ const resolveClient = (config: BunS3StorageOptions): BunS3ClientLike => {
 class BunS3Storage extends BaseStorage<BunS3File> {
     public static override readonly name: string = "bun-s3";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     protected meta: MetaStorage<BunS3File>;
 
     private readonly client: BunS3ClientLike;
@@ -168,7 +171,12 @@ class BunS3Storage extends BaseStorage<BunS3File> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = toKey(file.name || file.id);
 
                     try {

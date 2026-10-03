@@ -4,10 +4,14 @@ import AwsLightMetaStorage from "../../../src/storage/aws-light/aws-light-meta-s
 import type { AwsLightMetaStorageOptions } from "../../../src/storage/aws-light/types";
 import { metafile } from "../../__helpers__/config";
 
+const { checkBucketAccess } = vi.hoisted(() => {
+    return { checkBucketAccess: vi.fn() };
+});
+
 // Mock aws-light-api-adapter
 vi.mock(import("../../../src/storage/aws-light/aws-light-api-adapter"), () => {
     class MockAwsLightApiAdapter {
-        public checkBucketAccess = vi.fn().mockResolvedValue(undefined);
+        public checkBucketAccess = checkBucketAccess;
 
         public deleteObject = vi.fn().mockResolvedValue(undefined);
 
@@ -33,7 +37,44 @@ describe(AwsLightMetaStorage, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        checkBucketAccess.mockResolvedValue(undefined);
         metaStorage = new AwsLightMetaStorage(options);
+    });
+
+    describe("bucket access check", () => {
+        it("should not probe the bucket from the constructor", () => {
+            expect.assertions(1);
+
+            expect(checkBucketAccess).not.toHaveBeenCalled();
+        });
+
+        it("should throw a failed probe to the first operation and retry it on the next one", async () => {
+            expect.assertions(4);
+
+            const error = new TypeError("fetch failed");
+
+            checkBucketAccess.mockRejectedValueOnce(error);
+
+            await expect(metaStorage.save(metafile.id, metafile)).rejects.toBe(error);
+
+            const adapterInstance = (metaStorage as { adapter?: { putObject?: ReturnType<typeof vi.fn> } }).adapter;
+
+            expect(adapterInstance?.putObject).not.toHaveBeenCalled();
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(adapterInstance?.putObject).toHaveBeenCalledTimes(1);
+            expect(checkBucketAccess).toHaveBeenCalledTimes(2);
+        });
+
+        it("should probe only once after a successful check", async () => {
+            expect.assertions(1);
+
+            await metaStorage.save(metafile.id, metafile);
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(checkBucketAccess).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe(".save()", () => {

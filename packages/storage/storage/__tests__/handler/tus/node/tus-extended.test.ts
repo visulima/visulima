@@ -531,7 +531,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 .set("Content-Type", "application/offset+octet-stream")
                 .send(Buffer.alloc(100, "a"));
 
-            expect(patchResponse.status).toBe(200);
+            expect(patchResponse.status).toBe(204);
 
             // Try to terminate the completed upload - should fail
             const deleteResponse = await terminationAgent.delete(`${STORE_PATH}-termination/${completedUploadId}`).set("Tus-Resumable", TUS_RESUMABLE);

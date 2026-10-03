@@ -27,6 +27,8 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly userProject: string | undefined;
 
+    private readonly bucketName: string | undefined;
+
     public constructor(public readonly config: GCSMetaStorageOptions) {
         super(config);
 
@@ -65,18 +67,26 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             ...retryOptions,
         };
 
-        if (authClient === undefined) {
-            this.accessCheck().catch((error: ClientError) => {
-                if (error.code === "404") {
-                    throw new Error(`Bucket ${bucketName} does not exist`);
-                }
+        this.bucketName = bucketName;
 
-                throw error;
-            });
+        if (authClient === undefined) {
+            this.accessProbe = async () => {
+                try {
+                    await this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
+                } catch (error: unknown) {
+                    if ((error as ClientError).code === "404") {
+                        throw new Error(`Bucket ${String(this.bucketName)} does not exist`, { cause: error });
+                    }
+
+                    throw error;
+                }
+            };
         }
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.ensureAccess();
+
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
@@ -96,12 +106,16 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
+        await this.ensureAccess();
+
         const url = this.getMetaPath(id);
 
         await this.makeRequest({ method: "DELETE", url });
     }
 
     public override async get(id: string): Promise<T> {
+        await this.ensureAccess();
+
         const url = this.getMetaPath(id);
 
         const { data } = await this.makeRequest<T>({ params: { alt: "media" }, url });
@@ -116,10 +130,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async touch(id: string, file: T): Promise<T> {
         // For GCS, touching means updating the metadata
         return this.save(id, file);
-    }
-
-    private async accessCheck(): Promise<GaxiosResponse> {
-        return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
     }
 
     /**

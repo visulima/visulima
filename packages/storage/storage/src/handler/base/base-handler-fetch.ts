@@ -54,6 +54,12 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     public async fetch(request: Request): Promise<globalThis.Response> {
         this.logger?.debug("[fetch request]: %s %s", request.method, request.url);
 
+        try {
+            request = this.normalizeRequest(request);
+        } catch (error: unknown) {
+            return this.createErrorResponse(error instanceof Error ? error : new Error(String(error)));
+        }
+
         const handler = this.registeredHandlers.get(request.method || "GET");
 
         if (!handler) {
@@ -90,6 +96,17 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
 
             return this.createErrorResponse(errorObject);
         }
+    }
+
+    /**
+     * Adjusts a request before it is routed to a method handler (e.g. a protocol's method
+     * override). Throw an HttpError to reject the request.
+     * @param request Web API Request.
+     * @returns The request to route.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected normalizeRequest(request: Request): Request {
+        return request;
     }
 
     /**
