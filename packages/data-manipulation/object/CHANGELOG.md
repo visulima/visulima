@@ -1,3 +1,5 @@
+## @visulima/object [3.1.25](https://github.com/visulima/visulima/compare/@visulima/object@3.1.24...@visulima/object@3.1.25) (2026-10-03)
+
 ## @visulima/object [3.1.24](https://github.com/visulima/visulima/compare/@visulima/object@3.1.23...@visulima/object@3.1.24) (2026-10-03)
 
 ## @visulima/object [3.1.23](https://github.com/visulima/visulima/compare/@visulima/object@3.1.22...@visulima/object@3.1.23) (2026-10-03)
