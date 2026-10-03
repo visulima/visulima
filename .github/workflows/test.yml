@@ -308,9 +308,9 @@ jobs:
               uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: ".nx/cache"
-                  key: "nx-test-${{ runner.os }}-node${{ matrix.node_version }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  key: "nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
                   restore-keys: |
-                      nx-test-${{ runner.os }}-node${{ matrix.node_version }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-
+                      nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-
 
             - name: "Build"
               run: "pnpm run build:affected:packages"
