@@ -341,7 +341,7 @@
         "aws-crt": "catalog:dev",
         "aws-sdk-client-mock": "catalog:dev",
         "aws4fetch": "catalog:dev",
-        "basic-ftp": "6.2.0",
+        "basic-ftp": "6.2.1",
         "box-typescript-sdk-gen": "1.19.1",
         "cloudinary": "2.10.0",
         "dropbox": "10.44.0",
