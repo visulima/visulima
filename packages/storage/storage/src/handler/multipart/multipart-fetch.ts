@@ -5,43 +5,14 @@ import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
 import createHttpError from "http-errors";
 
-import { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
+import { getIdFromRequestUrl } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import MultipartBase from "./multipart-base";
 
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
-
-/**
- * Extract file ID from request URL and validate it as a safe storage id.
- * Returns `undefined` for missing IDs; throws 400 for traversal/invalid IDs.
- */
-const getIdFromRequestUrl = (url: string): string | undefined => {
-    let candidate: string | undefined;
-
-    try {
-        const urlObject = new URL(url);
-        const pathParts = urlObject.pathname.split("/").filter(Boolean);
-
-        candidate = pathParts[pathParts.length - 1] || undefined;
-    } catch {
-        return undefined;
-    }
-
-    if (!candidate) {
-        return undefined;
-    }
-
-    try {
-        BaseStorage.assertSafeId(candidate);
-    } catch {
-        throw createHttpError(400, `Invalid file id: "${candidate}"`);
-    }
-
-    return candidate;
-};
 
 /**
  * Multipart/form-data upload handler (Web API Fetch version).
@@ -221,19 +192,6 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             },
             statusCode: 204,
         } as unknown as ResponseFile<TFile>;
-    }
-
-    /**
-     * Retrieves a file or list of files based on the request path.
-     * Delegates to BaseHandlerFetch.fetch() method.
-     * @param _request Web API Request
-     * @returns Promise resolving to Web API Response
-     */
-    // eslint-disable-next-line class-methods-use-this
-    public async get(_request: Request): Promise<ResponseFile<TFile>> {
-        // For Fetch version, get is handled by the fetch() method
-        // This method signature exists for consistency but shouldn't be called directly
-        throw createHttpError(500, "GET requests should be handled via fetch() method");
     }
 
     /**

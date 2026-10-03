@@ -2,11 +2,18 @@ import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:h
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
+import createHttpError from "http-errors";
 import typeis, { hasBody } from "type-is";
 
 import { BaseStorage } from "../storage/storage";
 import getLastOne from "./primitives/get-last-one";
 import type { Header, Headers, IncomingMessageWithBody } from "./types";
+
+/**
+ * Message of the 413 error raised when a request body exceeds its size limit.
+ * @internal
+ */
+export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
 
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>
@@ -55,25 +62,78 @@ export const readBody = (
         const chunks: Buffer[] = [];
         let byteLength = 0;
 
-        request.on("data", (chunk: Buffer | string) => {
+        const onData = (chunk: Buffer | string): void => {
             const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding);
 
             byteLength += buf.length;
 
             if (limit !== undefined && byteLength > limit) {
-                reject(new Error("Request body length limit exceeded"));
-                request.destroy();
+                // Stop buffering but keep the socket open so the caller can still send the 413;
+                // the remaining body is discarded and `Connection: close` ends the socket after the response.
+                request.off("data", onData);
+                request.off("end", onEnd);
+                request.resume();
+                chunks.length = 0;
+                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE, { headers: { Connection: "close" } }));
 
                 return;
             }
 
             chunks.push(buf);
-        });
-        request.once("end", () => {
+        };
+        const onEnd = (): void => {
             resolve(Buffer.concat(chunks).toString(encoding));
-        });
+        };
+
+        request.on("data", onData);
+        request.once("end", onEnd);
         request.once("error", reject);
     });
+
+/**
+ * Reads the body of a Web API request as text, enforcing a byte limit while streaming
+ * so a missing or lying `Content-Length` cannot make the server buffer an unbounded body.
+ * @internal
+ * @param request Web API Request
+ * @param limit Maximum body size in bytes
+ * @returns The body decoded as UTF-8
+ * @throws {HttpError} 413 when the body exceeds `limit`
+ */
+export const readWebRequestText = async (request: Request, limit: number): Promise<string> => {
+    const declaredLength = Number(request.headers.get("content-length") ?? Number.NaN);
+
+    if (Number.isFinite(declaredLength) && declaredLength > limit) {
+        throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
+    }
+
+    if (!request.body) {
+        return "";
+    }
+
+    const reader = request.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let byteLength = 0;
+
+    for (;;) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+            break;
+        }
+
+        byteLength += value.byteLength;
+
+        if (byteLength > limit) {
+            await reader.cancel();
+
+            throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
+        }
+
+        chunks.push(value);
+    }
+
+    return Buffer.concat(chunks).toString("utf8");
+};
 
 /**
  * Retrieve the value of a specific header of an HTTP request.
@@ -246,6 +306,37 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
 
 /**
+ * Path segments that are never treated as file IDs.
+ * @internal
+ */
+export const COMMON_PATH_NAMES: ReadonlyArray<string> = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
+
+/**
+ * Validates an id taken from a URL path segment. The raw segment is the id, but its URL-decoded
+ * form is checked too, so an encoded traversal such as `..%2F..%2Fetc` is rejected even if a
+ * storage backend or proxy decodes the id later.
+ * @internal
+ * @param id Raw path segment
+ * @throws {HttpError} 400 when the id is unsafe
+ */
+export const assertSafeUrlId = (id: string): void => {
+    let decoded = id;
+
+    try {
+        decoded = decodeURIComponent(id);
+    } catch {
+        // Malformed escape sequences can't decode into a traversal; validate the raw id only
+    }
+
+    try {
+        BaseStorage.assertSafeId(id);
+        BaseStorage.assertSafeId(decoded);
+    } catch {
+        throw createHttpError(400, `Invalid file id: "${id}"`);
+    }
+};
+
+/**
  * Extracts a UUID identifier from the request URL path.
  * Uses regex pattern to match UUID-like strings in the URL.
  * @internal
@@ -253,9 +344,17 @@ export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
  * @returns The extracted UUID identifier
  * @throws TypeError if no valid ID is found in the path
  */
-export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
-    const realPath = getRealPath(request);
+export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => getIdFromPath(getRealPath(request));
 
+/**
+ * Extracts a file identifier from a URL path.
+ * Skips common path names (`files`, `upload`, …) and rejects segments shorter than 8 characters.
+ * @internal
+ * @param realPath URL path (without query string)
+ * @returns The extracted identifier
+ * @throws Error("Invalid request URL") if no valid ID is found in the path
+ */
+export const getIdFromPath = (realPath: string): string => {
     // Extract UUID from the path by finding the last UUID-like segment
     const segments = realPath.split("/").filter(Boolean);
 
@@ -275,9 +374,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         const cleanSegment = segment.replace(/\.[^/.]+$/, "");
 
         // Skip common path names
-        const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
-
-        if (commonPathNames.includes(cleanSegment.toLowerCase())) {
+        if (COMMON_PATH_NAMES.includes(cleanSegment.toLowerCase())) {
             continue;
         }
 
@@ -297,11 +394,8 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 
     const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
 
-    // Common path names that should never be treated as IDs
-    const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
-
     // Reject if it's a common path name
-    if (commonPathNames.includes(cleanLastSegment.toLowerCase())) {
+    if (COMMON_PATH_NAMES.includes(cleanLastSegment.toLowerCase())) {
         throw new Error("Invalid request URL");
     }
 
@@ -321,6 +415,36 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     // Single segment paths that aren't UUIDs and aren't common names but are >= 8 chars
     // These could be valid IDs, but we're conservative and reject them unless they match UUID pattern
     throw new Error("Invalid request URL");
+};
+
+/**
+ * Extracts a file identifier from the last path segment of a Web API request URL (Fetch handlers).
+ * Unlike {@link getIdFromPath} there is no minimum length, so caller-chosen ids such as `asset01` work;
+ * only a collection root (an empty path or a common path name such as `files`) yields `undefined`.
+ * @internal
+ * @param url Request URL
+ * @param options.stripExtension Drop a trailing `.ext` (REST routes address files as `id.ext`)
+ * @returns The extracted identifier, or `undefined` when the URL does not address a file
+ * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
+ */
+export const getIdFromRequestUrl = (url: string, { stripExtension = false }: { stripExtension?: boolean } = {}): string | undefined => {
+    let lastSegment: string | undefined;
+
+    try {
+        lastSegment = new URL(url, "http://localhost").pathname.split("/").findLast(Boolean);
+    } catch {
+        return undefined;
+    }
+
+    const id = stripExtension ? lastSegment?.replace(/\.[^.]+$/, "") : lastSegment;
+
+    if (!id || COMMON_PATH_NAMES.includes(id.toLowerCase())) {
+        return undefined;
+    }
+
+    assertSafeUrlId(id);
+
+    return id;
 };
 
 /**

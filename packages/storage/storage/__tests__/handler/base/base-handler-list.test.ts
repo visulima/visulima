@@ -68,20 +68,25 @@ describe("baseHandlerNode.list pagination", () => {
         expect(result.data).toStrictEqual(files);
     });
 
-    it("returns a paginator only when both page and limit params are present", async () => {
-        expect.assertions(2);
+    it.each([
+        [1, ["a", "b"]],
+        [2, ["c"]],
+    ])("returns the serialized rows of page %s when a page param is present", async (page, expectedIds) => {
+        expect.assertions(3);
 
         const files = [makeFile("a"), makeFile("b"), makeFile("c")];
 
         vi.spyOn(storage, "list").mockResolvedValue(files);
 
-        const request = createRequest({ method: "GET", url: "/files?page=1&limit=2" });
+        const request = createRequest({ method: "GET", url: `/files?page=${page}&limit=2` });
         const response = createResponse();
 
         const result = await uploader.list(request, response);
+        const data = result.data as { data: File[]; meta: { page: number; perPage: number; total: number } };
 
-        // A Paginator carries pagination metadata derived from the query params.
-        expect(result.data).toHaveProperty("currentPage", 1);
-        expect(result.data).toHaveProperty("perPage", 2);
+        expect(data.data.map((file) => file.id)).toStrictEqual(expectedIds);
+        expect(data.meta).toStrictEqual(expect.objectContaining({ page, perPage: 2, total: 3 }));
+        // Plain JSON, so it survives JSON.stringify unchanged
+        expect(JSON.stringify(result.data)).toContain(String.raw`"total":3`);
     });
 });

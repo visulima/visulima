@@ -1027,23 +1027,27 @@ export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject
 
 export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
     return {
-        description: "List upload",
+        description: "List uploads. Only served when the handler is created with `allowList: true`; otherwise the server answers 404.",
         operationId,
         parameters: [
             {
-                description: "Maximum number of elements to retrieve.",
+                description:
+                    "Maximum number of elements to retrieve (per page when `page` is set). Values above 1000 are capped; malformed values are ignored.",
                 in: "query",
                 name: "limit",
                 schema: {
+                    maximum: 1000,
+                    minimum: 1,
                     nullable: true,
                     type: "integer",
                 },
             },
             {
-                description: "Page number. Use only for pagination.",
+                description: "Page number (1-based). Returns a paginated result over at most the first 1000 files.",
                 in: "query",
                 name: "page",
                 schema: {
+                    minimum: 1,
                     nullable: true,
                     type: "integer",
                 },

@@ -1,5 +1,6 @@
 import { rm } from "node:fs/promises";
 
+import express from "express";
 import supertest from "supertest";
 import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -126,6 +127,59 @@ describe("http Rest", () => {
     });
 
     describe("put", () => {
+        it("should create the file under the id from the URL with a Location of the form <collection>/<id>.<ext>", async () => {
+            expect.assertions(3);
+
+            response = await supertest(app)
+                .put(`${basePath}/node-location-id`)
+                .set("Content-Type", testfile.contentType)
+                .set("Content-Length", String(testfile.size))
+                .send(testfile.asBuffer);
+
+            expect(response.status).toBe(201);
+            expect(response.body.id).toBe("node-location-id");
+            expect(response.header.location).toMatch(new RegExp(String.raw`${basePath}/node-location-id\.\w+$`, "u"));
+        });
+
+        it("should create, read and delete a short caller-chosen id like the fetch handler", async () => {
+            expect.assertions(3);
+
+            const put = await supertest(app)
+                .put(`${basePath}/abc`)
+                .set("Content-Type", testfile.contentType)
+                .set("Content-Length", String(testfile.size))
+                .send(testfile.asBuffer);
+
+            expect(put.status).toBe(201);
+
+            const head = await supertest(app).head(`${basePath}/abc`);
+
+            expect(head.status).toBe(200);
+
+            const deleted = await supertest(app).delete(`${basePath}/abc`);
+
+            expect(deleted.status).toBe(204);
+        });
+
+        it("should refuse to overwrite another file's metadata sidecar", async () => {
+            expect.assertions(3);
+
+            const victim = await create();
+
+            response = await supertest(app)
+                .put(`${basePath}/${victim.body.id}.META.x`)
+                .set("Content-Type", "application/json")
+                .set("Content-Length", "21")
+                .send('{"owner":"attacker"}\n');
+
+            expect(response.status).toBe(400);
+
+            const metadata = await supertest(app).get(`${basePath}/${victim.body.id}/metadata`);
+
+            expect(metadata.status).toBe(200);
+            expect(metadata.body.id).toBe(victim.body.id);
+        });
+
         it("should create file with PUT when ID doesn't exist", async () => {
             expect.assertions(3);
 
@@ -240,6 +294,76 @@ describe("http Rest", () => {
 
             expect(response.status).toBe(404);
         });
+
+        it("should download a file by id", async () => {
+            expect.assertions(2);
+
+            const created = await create();
+
+            response = await supertest(app).get(`${basePath}/${created.body.id}`);
+
+            expect(response.status).toBe(200);
+            expect(Buffer.from(response.body as Buffer)).toHaveLength(testfile.size);
+        });
+
+        it("should download a file with a caller-chosen non-UUID id", async () => {
+            expect.assertions(3);
+
+            const put = await supertest(app)
+                .put(`${basePath}/node-custom-id`)
+                .set("Content-Type", "application/octet-stream")
+                .set("Content-Length", "5")
+                .send(Buffer.from("hello"));
+
+            expect(put.status).toBe(201);
+
+            response = await supertest(app)
+                .get(`${basePath}/node-custom-id`)
+                .buffer(true)
+                .parse((incoming, callback) => {
+                    const chunks: Buffer[] = [];
+
+                    incoming.on("data", (chunk: Buffer) => chunks.push(chunk));
+                    incoming.on("end", () => callback(null, Buffer.concat(chunks)));
+                });
+
+            expect(response.status).toBe(200);
+            expect((response.body as Buffer).toString()).toBe("hello");
+        });
+
+        it.each(["..%2F..%2Fetc%2Fpasswd", "%2Fetc%2Fpasswd"])("should reject the encoded traversal id %s with 400", async (id) => {
+            expect.assertions(1);
+
+            response = await supertest(app).get(`${basePath}/${id}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it.each(["", "/V1StGXR8_Z5jdHi6B-myT"])("should answer 404 instead of listing files for GET %s by default", async (suffix) => {
+            expect.assertions(2);
+
+            await create();
+
+            response = await supertest(app).get(`${basePath}${suffix}`);
+
+            expect(response.status).toBe(404);
+            expect(JSON.stringify(response.body)).not.toContain("createdAt");
+        });
+
+        it("should list files for the collection path when listing is enabled", async () => {
+            expect.assertions(2);
+
+            const listingApp = express();
+
+            listingApp.use(basePath, new Rest({ allowList: true, storage: rest.storage }).handle);
+
+            await create();
+
+            response = await supertest(listingApp).get(basePath);
+
+            expect(response.status).toBe(200);
+            expect(response.body.length).toBeGreaterThan(0);
+        });
     });
 
     describe("delete", () => {
@@ -289,6 +413,23 @@ describe("http Rest", () => {
             response = await supertest(app).delete(basePath).set("Content-Type", "application/json").send({ ids });
 
             expect(response.status).toBe(204);
+        });
+
+        it("should deliver a 413 for an oversized batch-delete body and keep the URL file", async () => {
+            expect.assertions(2);
+
+            const created = await create();
+
+            response = await supertest(app)
+                .delete(`${basePath}/${created.body.id}`)
+                .set("Content-Type", "application/json")
+                .send(JSON.stringify(["x".repeat(1_100_000)]));
+
+            expect(response.status).toBe(413);
+
+            const head = await supertest(app).head(`${basePath}/${created.body.id}`);
+
+            expect(head.status).toBe(200);
         });
 
         it("should return 400 when batch delete has no IDs", async () => {

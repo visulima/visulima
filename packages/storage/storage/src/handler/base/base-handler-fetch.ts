@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import { isHttpError } from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
@@ -9,6 +11,7 @@ import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types"
 import { isValidationError } from "../../utils/validator";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
+import { applyRange } from "../utils/stream-utils";
 import BaseHandlerCore from "./base-handler-core";
 
 /**
@@ -90,6 +93,28 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     }
 
     /**
+     * Retrieves a file, its metadata (`/:id/metadata`) or - with `allowList` enabled - a list of files based on the request path.
+     * Large files and `Range` requests are streamed.
+     * @param request Web API Request.
+     * @returns Promise resolving to a single file or a (paginated) list of files.
+     * @throws {HttpError} When the file is not found.
+     */
+    public async get(request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
+        const url = new URL(request.url, "http://localhost");
+
+        return this.resolveGet(url.pathname, url.searchParams, request.headers.has("range"), async () => this.list(request));
+    }
+
+    /**
+     * Returns a list of uploaded files with optional pagination support (`limit` and `page` query parameters).
+     * @param request Web API Request.
+     * @returns Promise resolving to a paginated or complete list of uploaded files.
+     */
+    public async list(request: Request): Promise<ResponseList<TFile>> {
+        return this.listFiles(new URL(request.url, "http://localhost").searchParams);
+    }
+
+    /**
      * Compose and register HTTP method handlers.
      * Subclasses should override this to register their specific handlers.
      */
@@ -117,22 +142,31 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         }
 
         if (request.method === "GET") {
-            const { headers, statusCode } = file as ResponseFile<TFile>;
+            const { headers, statusCode } = file;
+            const responseHeaders: Record<string, number | string | string[]> = { ...headers };
             let body: BodyInit = "";
+            let status = statusCode;
 
-            if ((file as ResponseFile<TFile>).content !== undefined) {
-                body = new Uint8Array((file as ResponseFile<TFile>).content as Buffer);
-            } else if (typeof file === "object" && "data" in file) {
+            if ("data" in file) {
                 body = JSON.stringify(file.data);
+            } else if (file.stream) {
+                // Streaming response, with range support for partial content requests
+                const ranged = applyRange(file.stream, file.size, this.parseRangeHeader(request.headers.get("range") ?? undefined, file.size || 0));
+
+                Object.assign(responseHeaders, ranged.headers);
+                status = ranged.partial ? 206 : statusCode;
+                body = Readable.toWeb(ranged.stream) as ReadableStream<Uint8Array>;
+            } else if (file.content !== undefined) {
+                body = typeof file.content === "string" ? file.content : new Uint8Array(file.content);
             }
 
             return new Response(body, {
                 headers: this.convertHeaders({
-                    ...headers,
+                    ...responseHeaders,
                     "Access-Control-Expose-Headers":
                         "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 }),
-                status: statusCode,
+                status,
             });
         }
 

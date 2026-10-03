@@ -63,7 +63,7 @@ describe("baseHandler", () => {
     });
 
     beforeEach(async () => {
-        uploader = new TestUploader({ storage });
+        uploader = new TestUploader({ allowList: true, storage });
     });
 
     afterEach(() => {
@@ -178,7 +178,18 @@ describe("baseHandler", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    it("should handle GET requests for specific file IDs", async () => {
+    it.each(["/files", "/files/111"])("should answer 404 for GET %s when listing is disabled (the default)", async (url) => {
+        expect.assertions(1);
+
+        const request = createRequest({ method: "GET", url });
+        const response = createResponse();
+
+        await new TestUploader({ storage }).handle(request, response);
+
+        expect(response.statusCode).toBe(404);
+    });
+
+    it("should fall back to the list for a short non-file segment when listing is enabled", async () => {
         expect.assertions(2);
 
         const request = createRequest({ method: "GET", url: "/files/111" });
