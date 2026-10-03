@@ -10,6 +10,9 @@ export const waitForStorage = async (storage: { ensureReady?: () => Promise<void
         return;
     }
 
+    // One budget for the access check and the polling after it.
+    const deadline = Date.now() + timeoutMs;
+
     // Run (or retry) the storage's access check now; its failure is thrown as-is. A storage
     // without one is polled until it reports ready.
     if (typeof storage.ensureReady === "function") {
@@ -33,9 +36,7 @@ export const waitForStorage = async (storage: { ensureReady?: () => Promise<void
         }
     }
 
-    const startTime = Date.now();
-
-    while (!storage.isReady && Date.now() - startTime < timeoutMs) {
+    while (!storage.isReady && Date.now() < deadline) {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 resolve();

@@ -141,7 +141,9 @@ export const isFreshChunkedRecord = (file: UploadFile): boolean => getChunks(fil
  * @param stored The record currently stored
  */
 export const mergeChunkedProgress = (file: File, stored: File): void => {
-    const chunks = mergeChunks(getChunks(file), getChunks(stored));
+    // Stored first, so a checksum the incoming record carries for the same chunk wins, and one
+    // it lacks is kept from the stored record.
+    const chunks = mergeChunks(getChunks(stored), getChunks(file));
 
     file.metadata = { ...file.metadata, _chunks: chunks };
 

@@ -44,6 +44,23 @@ describe(waitForStorage, () => {
         await expect(pending).resolves.toBeUndefined();
     });
 
+    it("should share one timeout between the access check and the polling after it", async () => {
+        expect.assertions(1);
+
+        vi.useFakeTimers();
+
+        // The check settles just before the deadline without making the storage ready.
+        const ensureReady = async () =>
+            new Promise<void>((resolve) => {
+                setTimeout(resolve, 900);
+            });
+        const pending = waitForStorage({ ensureReady, isReady: false }, 1000).catch((error: unknown) => error);
+
+        await vi.advanceTimersByTimeAsync(1200);
+
+        await expect(pending).resolves.toStrictEqual(new Error("Storage initialization timeout"));
+    });
+
     it("should time out a storage that never reports ready", async () => {
         expect.assertions(1);
 

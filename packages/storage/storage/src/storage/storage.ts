@@ -526,11 +526,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         const save = (this.chunkedMetaSaves.get(file.id) ?? Promise.resolve())
             .catch(() => undefined)
             .then(async () => {
-                const stored = await this.readStoredMeta(file.id);
-
-                if (stored !== undefined) {
-                    mergeChunkedProgress(file, stored);
-                }
+                // A record that can't be read fails the save rather than overwriting its progress.
+                mergeChunkedProgress(file, await this.meta.get(file.id));
 
                 return this.persistMeta(file);
             });
@@ -543,15 +540,6 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             if (this.chunkedMetaSaves.get(file.id) === save) {
                 this.chunkedMetaSaves.delete(file.id);
             }
-        }
-    }
-
-    /** The stored record, or `undefined` when there is none. */
-    private async readStoredMeta(id: string): Promise<TFile | undefined> {
-        try {
-            return await this.meta.get(id);
-        } catch {
-            return undefined;
         }
     }
 
@@ -576,15 +564,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
             if (version === undefined) {
-                const stored = await this.readStoredMeta(file.id);
-                const storedVersion = stored === undefined ? undefined : getMetaVersion(stored);
+                // A record that can't be read (deleted, or the store failing) fails the save
+                // rather than overwriting its progress.
+                const stored = await this.meta.get(file.id);
+                const storedVersion = getMetaVersion(stored);
 
-                // Nothing stored (or no version to compare against): there is nothing to keep.
-                if (stored === undefined || storedVersion === undefined) {
+                mergeChunkedProgress(file, stored);
+
+                // The store gave no version to compare against (e.g. a service without ETags).
+                if (storedVersion === undefined) {
                     return this.persistMeta(file);
                 }
 
-                mergeChunkedProgress(file, stored);
                 version = storedVersion;
             }
 

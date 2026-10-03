@@ -24,6 +24,7 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
 
         const storage = new MemoryStorage();
 
+        await storage.saveMeta(chunked());
         await storage.saveMeta(
             chunked({ bytesWritten: 30, metadata: { _chunkedUpload: true, _chunks: [{ checksum: "abc", length: 10, offset: 20 }], _totalSize: 30 } }),
         );
@@ -34,9 +35,50 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
 
         expect(stored.bytesWritten).toBe(30);
         expect(stored.metadata._chunks).toStrictEqual([
-            { length: 10, offset: 0 },
             { checksum: "abc", length: 10, offset: 20 },
+            { length: 10, offset: 0 },
         ]);
+    });
+
+    it("should let the incoming checksum of a chunk win and keep the stored one when it has none", async () => {
+        expect.assertions(1);
+
+        const storage = new MemoryStorage();
+        const chunks = (first: string | undefined, second: string | undefined) => [
+            { checksum: first, length: 10, offset: 0 },
+            { checksum: second, length: 10, offset: 10 },
+        ];
+
+        await storage.saveMeta(chunked());
+        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("old", "kept"), _totalSize: 30 } }));
+        // A stale copy (no version) re-uploading chunk 0 with a new checksum and chunk 1 without one.
+        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("new", undefined), _totalSize: 30 } }));
+
+        const stored = await storage.getMeta("chunked-id");
+
+        expect(stored.metadata._chunks).toStrictEqual([
+            { checksum: "new", length: 10, offset: 0 },
+            { checksum: "kept", length: 10, offset: 10 },
+        ]);
+    });
+
+    it("should fail a save whose stored record can't be read instead of overwriting it", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage();
+
+        await storage.saveMeta(chunked());
+        await storage.saveMeta(chunked({ bytesWritten: 10, metadata: { _chunkedUpload: true, _chunks: [{ length: 10, offset: 0 }], _totalSize: 30 } }));
+
+        vi.spyOn(storage.meta, "get").mockRejectedValueOnce(new Error("ECONNRESET"));
+
+        await expect(
+            storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: [{ length: 10, offset: 10 }], _totalSize: 30 } })),
+        ).rejects.toThrow("ECONNRESET");
+
+        const stored = await storage.getMeta("chunked-id");
+
+        expect(stored.metadata._chunks).toStrictEqual([{ length: 10, offset: 0 }]);
     });
 
     it("should not lose a chunk when saves of the same record run concurrently", async () => {
@@ -61,6 +103,7 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
 
         const storage = new MemoryStorage();
 
+        await storage.saveMeta(chunked());
         await storage.saveMeta(chunked({ bytesWritten: 10, metadata: { _chunkedUpload: true, _chunks: [{ length: 10, offset: 0 }], _totalSize: 30 } }));
         await storage.saveMeta(chunked());
 
@@ -119,8 +162,8 @@ describe("baseStorage saveMeta conditional saves", () => {
         expect(saveIfVersion).toHaveBeenCalledTimes(2);
         expect(stored.bytesWritten).toBe(30);
         expect(stored.metadata._chunks).toStrictEqual([
-            { length: 10, offset: 0 },
             { length: 10, offset: 20 },
+            { length: 10, offset: 0 },
         ]);
     });
 
@@ -133,6 +176,7 @@ describe("baseStorage saveMeta conditional saves", () => {
 
         const storage = new MemoryStorage({ metaStorage });
 
+        await storage.saveMeta(chunked());
         await storage.saveMeta(chunked({ bytesWritten: 30, metadata: { _chunkedUpload: true, _chunks: [{ length: 10, offset: 20 }], _totalSize: 30 } }));
         await storage.saveMeta(chunked({ bytesWritten: 10, metadata: { _chunkedUpload: true, _chunks: [{ length: 10, offset: 0 }], _totalSize: 30 } }));
 
