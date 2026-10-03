@@ -3,15 +3,105 @@ import createHttpError from "http-errors";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ChunkInfo } from "../../utils/chunked-upload";
 import { getTotalSize, isChunkedUpload, isUploadComplete, trackChunk, validateChunk } from "../../utils/chunked-upload";
-import { ERRORS } from "../../utils/errors";
+import { ERRORS, isUploadError } from "../../utils/errors";
+import { retry } from "../../utils/retry";
 import type { ResponseFile, ResponseList } from "../types";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";
+
+/**
+ * Maximum size of a JSON batch-delete body. 1 MiB comfortably holds thousands of ids.
+ */
+export const MAX_BATCH_DELETE_BYTES = 1_048_576;
+
+/**
+ * Ids a client may choose when creating a file via PUT. Dots are excluded so a client-chosen id can
+ * never collide with a storage sidecar such as `id.META` (which would overwrite another file's metadata).
+ */
+const CLIENT_FILE_ID_PATTERN = /^[\w-]{1,255}$/;
+
+/**
+ * Validates a list of ids for batch deletion.
+ * @param ids Candidate ids
+ * @returns The ids
+ * @throws {HttpError} 400 when the list is empty or contains a non-string entry
+ */
+const assertBatchIds = (ids: unknown[]): string[] => {
+    if (ids.length === 0) {
+        throw createHttpError(400, "No file IDs provided");
+    }
+
+    if (!ids.every((id) => typeof id === "string" && id.length > 0)) {
+        throw createHttpError(400, "File IDs must be non-empty strings");
+    }
+
+    return ids as string[];
+};
+
+/**
+ * Parses the `?ids=id1,id2` batch-delete query parameter.
+ * @param value Raw query parameter value
+ * @returns The ids
+ * @throws {HttpError} 400 when no id is given
+ */
+export const parseBatchIdsParameter = (value: string): string[] =>
+    assertBatchIds(
+        value
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean),
+    );
+
+/**
+ * Parses a JSON batch-delete body: either `["id1", "id2"]` or `{ "ids": ["id1", "id2"] }`.
+ * @param body Raw request body
+ * @returns The ids, or `undefined` when the body is not a batch-delete payload (the request is then a single delete)
+ * @throws {HttpError} 400 when the payload is a batch-delete shape with no or invalid ids
+ */
+export const parseBatchDeleteBody = (body: string): string[] | undefined => {
+    let parsed: unknown;
+
+    try {
+        parsed = JSON.parse(body);
+    } catch {
+        return undefined;
+    }
+
+    if (Array.isArray(parsed)) {
+        return assertBatchIds(parsed);
+    }
+
+    if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray(parsed.ids)) {
+        return assertBatchIds(parsed.ids);
+    }
+
+    return undefined;
+};
+
+/**
+ * Drops the file id segment from a request URL that addresses a single file (PUT/PATCH), so the
+ * Location header can be built from the collection URL like it is for POST (`collection/id.ext`).
+ * @param requestUrl Request URL (absolute on fetch runtimes, path-only on Node)
+ * @returns The collection URL, keeping origin and query string
+ */
+const toCollectionUrl = (requestUrl: string): string => {
+    const url = new URL(requestUrl, "http://localhost");
+
+    url.pathname = url.pathname.replace(/\/[^/]+\/?$/, "") || "/";
+
+    return /^https?:\/\//i.test(requestUrl) ? url.toString() : `${url.pathname}${url.search}`;
+};
 
 /**
  * Base class containing shared REST API business logic.
  * Platform-agnostic - contains no Node.js or Web API specific code.
  * @template TFile The file type used by this handler.
  */
+
+/**
+ * Reads the chunks recorded for a chunked upload.
+ */
+const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.metadata?._chunks) ? (file.metadata._chunks as ChunkInfo[]) : []);
+
 abstract class RestBase<TFile extends UploadFile> {
     /**
      * Handle single file deletion.
@@ -129,27 +219,25 @@ abstract class RestBase<TFile extends UploadFile> {
             const errorWithCode = error as { code?: string; UploadErrorCode?: string };
 
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
-                try {
-                    // Create new file (storage will generate ID, but we use the one from URL)
-                    const newFile = await this.storage.create(config);
-
-                    // Write file data
-                    file = await this.storage.write({
-                        body: bodyStream,
-                        contentLength,
-                        id: newFile.id,
-                        start: 0,
-                    });
-                } catch (createError: unknown) {
-                    // If file creation or write fails, re-throw the error
-                    throw createError;
+                if (!CLIENT_FILE_ID_PATTERN.test(id)) {
+                    throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
                 }
+
+                // Create new file under the ID from the URL (providers that assign their own IDs may still override it)
+                const newFile = await this.storage.create({ ...config, id });
+
+                file = await this.storage.write({
+                    body: bodyStream,
+                    contentLength,
+                    id: newFile.id,
+                    start: 0,
+                });
             } else {
                 throw error;
             }
         }
 
-        const locationUrl = this.buildFileUrl(requestUrl, file);
+        const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
 
         return buildResponseFile(file, buildFileHeaders(file, locationUrl), isUpdate ? 200 : 201);
     }
@@ -205,69 +293,91 @@ abstract class RestBase<TFile extends UploadFile> {
             throw createHttpError(400, error instanceof Error ? error.message : String(error));
         }
 
-        // Check if file is already completed
+        // Check if file is already completed. A "completed" status the chunk list doesn't back up
+        // is stale: providers mark a file completed once the furthest byte is written, so the last
+        // chunk arriving first sets it before earlier chunks exist. Reopen the upload instead of
+        // answering "complete" for chunks that were never stored.
         if (file.status === "completed") {
-            const locationUrl = this.buildFileUrl(requestUrl, file);
+            if (isUploadComplete(getChunks(file), totalSize)) {
+                const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
 
-            return buildResponseFile(
-                file,
-                {
-                    ...buildFileHeaders(file, locationUrl),
-                    "X-Upload-Complete": "true",
-                },
-                200,
-            );
+                return buildResponseFile(
+                    file,
+                    {
+                        ...buildFileHeaders(file, locationUrl),
+                        "X-Upload-Complete": "true",
+                    },
+                    200,
+                );
+            }
+
+            await this.storage.update({ id }, { status: "part" });
         }
 
-        // Track chunks in metadata (for status checking). The read-modify-write of `_chunks` must
-        // be serialized: two concurrent PATCHes for the same file would otherwise each read the
-        // same `existingChunks`, append their own entry, and the second write would overwrite the
-        // first — silently losing a chunk record. A distinct `chunks:` namespace avoids conflict
-        // with the adapter's internal write lock keyed on the file id.
-        const chunks = await this.storage.withLock(`chunks:${id}`, async () => {
-            const current = await this.storage.getMeta(id);
-            const currentMetadata = current.metadata ?? {};
-            const existingChunks = Array.isArray(currentMetadata._chunks) ? (currentMetadata._chunks as ChunkInfo[]) : [];
-            const chunkInfo: ChunkInfo = {
-                checksum: chunkChecksum,
-                length: contentLength,
-                offset: chunkOffset,
-            };
-            const merged = trackChunk(existingChunks, chunkInfo);
-
-            await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged } });
-
-            return merged;
-        });
-
-        // Write chunk data using start offset (handles out-of-order chunks)
-        let updatedFile = await this.storage.write({
+        // Write the chunk first and record it in `_chunks` only once the provider has stored it.
+        // Completion is derived from that list, so recording a chunk the provider then refuses
+        // (conflict, transient error, sequential-only provider) would let a later PATCH report the
+        // upload complete with bytes missing from storage.
+        const written = await this.storage.write({
             body: bodyStream,
             contentLength,
             id,
             start: chunkOffset,
         });
 
-        // Check if upload is complete using chunked upload utilities
-        let isComplete = updatedFile.bytesWritten >= totalSize;
+        // The read-modify-write of `_chunks` must be serialized: two concurrent PATCHes for the same
+        // file would otherwise each read the same `existingChunks`, append their own entry, and the
+        // second write would overwrite the first — silently losing a chunk record. A distinct
+        // `chunks:` namespace avoids conflict with the adapter's internal write lock keyed on the file id.
+        // The lock fails fast when held, so retry briefly: the chunk is already stored and must be recorded.
+        let chunks: ChunkInfo[];
 
-        if (isChunkedUploadFile) {
-            const isChunksComplete = isUploadComplete(chunks, totalSize);
+        try {
+            chunks = await retry(
+                async () =>
+                    this.storage.withLock(`chunks:${id}`, async () => {
+                        const current = await this.storage.getMeta(id);
+                        const currentMetadata = current.metadata ?? {};
+                        const merged = trackChunk(getChunks(current), {
+                            checksum: chunkChecksum,
+                            length: contentLength,
+                            offset: chunkOffset,
+                        });
 
-            isComplete = isChunksComplete;
+                        await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged } });
 
-            // If storage marked it as completed but chunks are missing (out of order upload reaching end), revert status
-            if (updatedFile.status === "completed" && !isComplete) {
+                        return merged;
+                    }),
+                {
+                    initialDelay: 10,
+                    maxDelay: 200,
+                    maxRetries: 8,
+                    shouldRetry: (error) => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_LOCKED,
+                },
+            );
+        } catch (error) {
+            // Don't leave a "completed" status set by the write behind for an unrecorded chunk.
+            if (written.status === "completed") {
                 await this.storage.update({ id }, { status: "part" });
-                // Update local object for response
-                updatedFile = { ...updatedFile, status: "part" };
             }
+
+            throw error;
+        }
+
+        let updatedFile: TFile = { ...written, metadata: { ...written.metadata, _chunks: chunks } };
+        const isComplete = isUploadComplete(chunks, totalSize);
+
+        // If storage marked it as completed but chunks are missing (out of order upload reaching end), revert status
+        if (updatedFile.status === "completed" && !isComplete) {
+            await this.storage.update({ id }, { status: "part" });
+            // Update local object for response
+            updatedFile = { ...updatedFile, status: "part" };
         }
 
         // For completed uploads, ensure bytesWritten equals totalSize
         const finalFile = isComplete && updatedFile.bytesWritten !== totalSize ? { ...updatedFile, bytesWritten: totalSize } : updatedFile;
 
-        const locationUrl = this.buildFileUrl(requestUrl, finalFile);
+        const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), finalFile);
         const headers = {
             ...buildFileHeaders(finalFile, locationUrl),
             ...buildChunkedUploadHeaders(finalFile, isComplete),
@@ -301,10 +411,8 @@ abstract class RestBase<TFile extends UploadFile> {
 
         // Add chunked upload progress headers
         if (isChunkedUploadFile) {
-            const metadata = file.metadata || {};
             const totalSize = getTotalSize(file) || file.size || 0;
-            const chunks = Array.isArray(metadata._chunks) ? (metadata._chunks as ChunkInfo[]) : [];
-            const isComplete = isUploadComplete(chunks, totalSize);
+            const isComplete = isUploadComplete(getChunks(file), totalSize);
 
             Object.assign(headers, buildChunkedUploadHeaders(file, isComplete));
         }

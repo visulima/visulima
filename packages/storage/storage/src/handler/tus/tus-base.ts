@@ -1,96 +1,104 @@
+import { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
-import { Metadata } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
 import type { Headers } from "../../utils/types";
 import type { ResponseFile } from "../types";
+import { computeChecksum, getHandlerChecksumAlgorithms, readBoundedBody } from "./tus-checksum";
+import {
+    isNonNegativeInteger,
+    parseFinalConcatIds,
+    parseMetadata,
+    publicMetadata,
+    serializeMetadata,
+    TUS_RESUMABLE_VERSION,
+    TUS_VERSION_VERSION,
+    validateTusResumable,
+} from "./tus-protocol";
 
-const TUS_RESUMABLE_VERSION = "1.0.0";
-const TUS_VERSION_VERSION = "1.0.0";
+export { parseMetadata, resolveMethodOverride, serializeMetadata } from "./tus-protocol";
+
+/** Default for {@link TusBaseConfig.maxChecksumBufferSize}: 64 MiB. */
+export const DEFAULT_MAX_CHECKSUM_BUFFER_SIZE: number = 64 * 1024 * 1024;
 
 /**
- * Parse TUS protocol metadata string into object.
- * @param encoded Base64-encoded metadata string (optional, defaults to empty string)
- * @returns Parsed metadata object with decoded values
+ * A TUS request, independent of the runtime (Node.js `IncomingMessage` or Web `Request`).
  */
-export const parseMetadata = (encoded = ""): Metadata => {
-    const kvPairs = encoded.split(",").map((kv) => kv.split(" "));
-    const metadata = Object.create(Metadata.prototype) as Record<string, string>;
+export interface TusRequest {
+    /** Request body stream. */
+    body: unknown;
 
-    Object.values(kvPairs).forEach(([key, value]) => {
-        if (key) {
-            metadata[key] = value ? Buffer.from(value, "base64").toString() : "";
-        }
-    });
+    /** Reads a request header by its lower-case name. */
+    header: (name: string) => string | undefined;
 
-    return metadata;
-};
+    /** Resolves the upload ID from the URL; throws a 404 HttpError when there is none. */
+    resolveId: () => string;
+
+    /** Request URL, used to build `Location`. */
+    url: string;
+}
 
 /**
- * Serialize metadata object to TUS protocol format.
- * @param object Metadata object to serialize
- * @returns Base64-encoded metadata string in TUS format
+ * The part of a storage adapter the TUS handler uses.
  */
-export const serializeMetadata = (object: Metadata | Record<string, unknown> | undefined): string => {
-    if (!object || Object.keys(object).length === 0) {
-        return "";
-    }
+export interface TusStorage<TFile extends UploadFile> {
+    checkIfExpired: (file: TFile) => Promise<unknown>;
+    checksumTypes: string[];
+    config: { useRelativeLocation?: boolean };
+    create: (config: FileInit) => Promise<TFile>;
+    delete: (options: { id: string }) => Promise<TFile>;
+    getMeta: (id: string) => Promise<TFile>;
+    getStream?: (options: { id: string }) => Promise<{ size?: number; stream: unknown }>;
+    maxUploadSize: number;
 
-    return Object.entries(object)
-        .map(([key, value]) => {
-            if (value === undefined) {
-                return key;
-            }
+    /** False for adapters that can only store an object in one request. */
+    supportsResumableWrites?: boolean;
+    tusExtension: string[];
+    update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
+    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+}
 
-            return `${key} ${Buffer.from(String(value)).toString("base64")}`;
-        })
-        .toString();
-};
+export interface TusBaseConfig<TFile extends UploadFile> {
+    /** Builds the `Location` of an upload from the creation request's URL. */
+    buildFileUrl: (requestUrl: string, file: TFile) => string;
+
+    /** Whether DELETE is refused for finished uploads. */
+    disableTerminationForFinishedUploads: () => boolean;
+
+    /**
+     * Largest chunk the handler buffers to verify an `Upload-Checksum` the storage can't verify
+     * itself. Bigger checksummed chunks are refused with 413.
+     */
+    maxChecksumBufferSize?: number;
+
+    /** The storage adapter. */
+    storage: () => TusStorage<TFile>;
+}
 
 /**
- * Base class containing shared TUS protocol business logic.
- * Platform-agnostic - contains no Node.js or Web API specific code.
+ * Shared TUS protocol logic for the Node.js and Web (fetch) handlers. The runtime handlers only
+ * adapt their request to a {@link TusRequest}; all header parsing and validation happens here.
  * @template TFile The file type used by this handler.
  */
-export abstract class TusBase<TFile extends UploadFile> {
-    /**
-     * Storage instance for file operations.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected get storage(): {
-        checkIfExpired: (file: TFile) => Promise<void>;
-        checksumTypes: string[];
-        config: { useRelativeLocation?: boolean };
-        create: (config: FileInit) => Promise<TFile>;
-        delete: (options: { id: string }) => Promise<TFile>;
-        getMeta: (id: string) => Promise<TFile>;
-        getStream?: (options: { id: string }) => Promise<{ size?: number; stream: unknown }>;
-        maxUploadSize: number;
-        tusExtension: string[];
-        update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-        write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
-    } {
-        // This will be overridden by subclasses
-        throw new Error("storage must be implemented");
+export class TusBase<TFile extends UploadFile> {
+    /** Uploads with a PATCH in progress in this process; a concurrent PATCH gets 423 Locked. */
+    private readonly patchesInFlight = new Set<string>();
+
+    public constructor(private readonly config: TusBaseConfig<TFile>) {}
+
+    private get storage(): TusStorage<TFile> {
+        return this.config.storage();
     }
 
     /**
-     * Whether to disable termination for finished uploads.
-     * Must be implemented by subclasses via getter.
+     * Checksum algorithms advertised in `Tus-Checksum-Algorithm`: the ones the storage verifies
+     * natively first, then the ones this handler verifies itself.
+     * @returns Lowercase algorithm names
      */
-    protected abstract get disableTerminationForFinishedUploads(): boolean;
-
-    /**
-     * Build file URL from request URL and file data.
-     * @param _requestUrl Request URL string
-     * @param _file File object containing ID
-     * @returns Constructed file URL for TUS protocol
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
-        // This will be overridden by subclasses
-        throw new Error("buildFileUrl must be implemented");
+    public get checksumAlgorithms(): string[] {
+        return [...new Set([...this.storage.checksumTypes, ...getHandlerChecksumAlgorithms()])];
     }
 
     /**
@@ -101,10 +109,10 @@ export abstract class TusBase<TFile extends UploadFile> {
     public handleOptions(methods: string[]): ResponseFile<TFile> {
         const headers = {
             "Access-Control-Allow-Headers":
-                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
+                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Checksum, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             "Access-Control-Allow-Methods": methods.map((method) => method.toUpperCase()).join(", "),
             "Access-Control-Max-Age": 86_400,
-            "Tus-Checksum-Algorithm": this.storage.checksumTypes.join(","),
+            "Tus-Checksum-Algorithm": this.checksumAlgorithms.join(","),
             "Tus-Extension": this.storage.tusExtension.toString(),
             "Tus-Max-Size": this.storage.maxUploadSize,
             "Tus-Version": TUS_VERSION_VERSION,
@@ -114,394 +122,117 @@ export abstract class TusBase<TFile extends UploadFile> {
     }
 
     /**
-     * Handle TUS POST (create upload).
-     * @param uploadLength Upload length header value
-     * @param uploadDeferLength Upload defer length header value
-     * @param uploadConcat Upload concat header value
-     * @param metadataHeader Upload metadata header value
-     * @param requestUrl Request URL for Location header
-     * @param bodyStream Request body stream (for creation-with-upload)
-     * @param contentLength Content length (for creation-with-upload)
-     * @param contentType Content type (for creation-with-upload)
+     * Handle TUS POST (create an upload, optionally with its first data).
+     * @param request TUS request
      * @returns Promise resolving to ResponseFile with upload result
      */
-    public async handlePost(
-        uploadLength: string | undefined,
-        uploadDeferLength: string | undefined,
-        uploadConcat: string | undefined,
-        metadataHeader: string | undefined,
-        requestUrl: string,
-        bodyStream: unknown,
-        contentLength: number,
-        contentType: string,
-    ): Promise<ResponseFile<TFile>> {
-        // Handle Creation-Defer-Length extension
+    public async handlePost(request: TusRequest): Promise<ResponseFile<TFile>> {
+        validateTusResumable(request.header("tus-resumable"));
+
+        const uploadLength = request.header("upload-length");
+        const uploadDeferLength = request.header("upload-defer-length");
+        const uploadConcat = request.header("upload-concat");
+        const metadata = parseMetadata(request.header("upload-metadata"));
+
+        if (uploadLength !== undefined && !isNonNegativeInteger(uploadLength)) {
+            throw createHttpError(400, "Invalid upload-length");
+        }
+
         if (uploadDeferLength !== undefined) {
-            if (!this.storage.tusExtension.includes("creation-defer-length")) {
-                throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
-            }
+            this.requireExtension("creation-defer-length");
 
-            // When defer-length is enabled, Upload-Length is optional
-            if (uploadLength === undefined) {
-                // Create upload with undefined size
-                const metadata = metadataHeader ? parseMetadata(metadataHeader) : {};
-                const config: FileInit = { metadata };
-
-                let file = await this.storage.create(config);
-
-                // 'creation-with-upload' block - check if content type is application/offset+octet-stream
-                if (contentType === "application/offset+octet-stream" && contentLength > 0) {
-                    file = await this.storage.write({
-                        ...file,
-                        body: bodyStream,
-                        contentLength,
-                        start: 0,
-                    });
-                }
-
-                let headers: Headers = {};
-
-                // The Upload-Expires response header indicates the time after which the unfinished upload expires.
-                if (this.storage.tusExtension.includes("expiration") && typeof file.expiredAt === "number" && file.size === undefined) {
-                    headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
-                }
-
-                // Build TUS headers and ensure Location header is set
-                const locationUrl = this.buildFileUrl(requestUrl, file);
-
-                headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
-
-                // Ensure Location header is present (TUS protocol requirement)
-                if (!headers.Location) {
-                    headers.Location = locationUrl;
-                }
-
-                if (file.bytesWritten > 0) {
-                    headers["Upload-Offset"] = file.bytesWritten.toString();
-                }
-
-                // For defer-length, always include Upload-Defer-Length header
-                headers["Upload-Defer-Length"] = "1";
-
-                const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-                return { ...file, headers: headers as Record<string, string | number>, statusCode };
+            // TUS creation-defer-length: "If the Upload-Defer-Length header contains any other value than 1
+            // the server should return a 400 Bad Request status."
+            if (uploadDeferLength !== "1") {
+                throw createHttpError(400, "Upload-Defer-Length must be 1");
             }
         }
 
-        // Handle Concatenation extension
-        if (uploadConcat) {
-            if (!this.storage.tusExtension.includes("concatenation")) {
-                throw createHttpError(501, "Concatenation extension is not (yet) supported. Disable parallel upload in the tus client.");
-            }
+        if (uploadConcat !== undefined) {
+            this.requireExtension("concatenation");
 
-            const parsedMetadata = metadataHeader ? parseMetadata(metadataHeader) : {};
-
-            // Parse Upload-Concat header: "partial" or "final;id1 id2 id3"
             if (uploadConcat === "partial") {
-                // Create a partial upload
-                // Partial uploads don't require Upload-Length (can use defer-length)
-                const config: FileInit = {
-                    metadata: { ...parsedMetadata, uploadConcat: "partial" },
-                    size: uploadLength,
-                };
-
-                let file = await this.storage.create(config);
-
-                // 'creation-with-upload' block
-                if (contentType === "application/offset+octet-stream" && contentLength > 0) {
-                    file = await this.storage.write({
-                        ...file,
-                        body: bodyStream,
-                        contentLength,
-                        start: 0,
-                    });
-                }
-
-                let headers: Headers = {};
-
-                if (this.storage.tusExtension.includes("expiration") && typeof file.expiredAt === "number" && file.bytesWritten !== (file.size ?? 0)) {
-                    headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
-                }
-
-                const locationUrl = this.buildFileUrl(requestUrl, file);
-
-                headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
-
-                if (!headers.Location) {
-                    headers.Location = locationUrl;
-                }
-
-                if (file.bytesWritten > 0) {
-                    headers["Upload-Offset"] = file.bytesWritten.toString();
-                }
-
-                headers["Upload-Concat"] = "partial";
-
-                const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-                return { ...file, headers: headers as Record<string, string | number>, statusCode };
+                return this.createUpload(request, { metadata: { ...metadata, uploadConcat: "partial" }, size: uploadLength }, { "Upload-Concat": "partial" });
             }
 
             if (uploadConcat.startsWith("final;")) {
-                // Create a final upload that concatenates partial uploads
-                const partialIds = uploadConcat.slice(6).trim().split(/\s+/).filter(Boolean);
-
-                if (partialIds.length === 0) {
-                    throw createHttpError(400, "Upload-Concat final must include at least one partial upload ID");
-                }
-
-                // Verify all partial uploads exist and are completed
-                let totalSize = 0;
-                const partialFiles: TFile[] = [];
-
-                for (const partialId of partialIds) {
-                    try {
-                        const partialFile = await this.storage.getMeta(partialId);
-
-                        await this.storage.checkIfExpired(partialFile);
-
-                        // Verify it's a partial upload
-                        if (partialFile.metadata?.uploadConcat !== "partial") {
-                            throw createHttpError(400, `Upload ${partialId} is not a partial upload`);
-                        }
-
-                        // Verify it's completed
-                        if (partialFile.status !== "completed" || partialFile.size === undefined) {
-                            throw createHttpError(409, `Partial upload ${partialId} is not completed`);
-                        }
-
-                        partialFiles.push(partialFile);
-                        totalSize += partialFile.size;
-                    } catch (error: unknown) {
-                        const errorWithCode = error as { statusCode?: number };
-
-                        if (errorWithCode.statusCode === 404 || errorWithCode.statusCode === 410) {
-                            throw createHttpError(409, `Partial upload ${partialId} not found or expired`);
-                        }
-
-                        throw error;
-                    }
-                }
-
-                // Create final upload with concatenation metadata
-                const config: FileInit = {
-                    metadata: {
-                        ...parsedMetadata,
-                        partialIds,
-                        uploadConcat: `final;${partialIds.join(" ")}`,
-                    },
-                    size: totalSize,
-                };
-
-                const file = await this.storage.create(config);
-
-                // Concatenate the partial uploads
-                await this.concatenateFiles(file, partialFiles);
-
-                const locationUrl = this.buildFileUrl(requestUrl, file);
-                const headers: Headers = {
-                    ...this.buildHeaders(file, { Location: locationUrl }),
-                    "Upload-Concat": uploadConcat,
-                };
-
-                return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
+                return this.createFinalUpload(request, metadata, uploadConcat);
             }
 
             throw createHttpError(400, "Invalid Upload-Concat header format");
         }
 
-        // Validate that either upload-length or upload-defer-length is specified
         if (uploadLength === undefined && uploadDeferLength === undefined) {
             throw createHttpError(400, "Either upload-length or upload-defer-length must be specified.");
         }
 
-        if (uploadLength !== undefined && Number.isNaN(Number(uploadLength))) {
-            throw createHttpError(400, "Invalid upload-length");
-        }
-
-        const metadata = metadataHeader ? parseMetadata(metadataHeader) : {};
-        const config: FileInit = { metadata, size: uploadLength };
-
-        let file = await this.storage.create(config);
-
-        // 'creation-with-upload' block - check if content type is application/offset+octet-stream
-        if (contentType === "application/offset+octet-stream" && contentLength > 0) {
-            file = await this.storage.write({
-                ...file,
-                body: bodyStream,
-                contentLength,
-                start: 0,
-            });
-        }
-
-        let headers: Headers = {};
-
-        // The Upload-Expires response header indicates the time after which the unfinished upload expires.
-        if (
-            this.storage.tusExtension.includes("expiration") &&
-            typeof file.expiredAt === "number" &&
-            file.bytesWritten !== Number.parseInt(uploadLength as string, 10)
-        ) {
-            headers = { "Upload-Expires": new Date(file.expiredAt).toUTCString() };
-        }
-
-        // Build TUS headers and ensure Location header is set
-        const locationUrl = this.buildFileUrl(requestUrl, file);
-
-        headers = { ...headers, ...this.buildHeaders(file, { Location: locationUrl }) };
-
-        // Ensure Location header is present (TUS protocol requirement)
-        if (!headers.Location) {
-            headers.Location = locationUrl;
-        }
-
-        if (file.bytesWritten > 0) {
-            headers["Upload-Offset"] = file.bytesWritten.toString();
-        }
-
-        const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-        return { ...file, headers: headers as Record<string, string | number>, statusCode };
+        return this.createUpload(request, { metadata, size: uploadLength }, uploadLength === undefined ? { "Upload-Defer-Length": "1" } : {});
     }
 
     /**
-     * Handle TUS PATCH (write chunk).
-     * @param id File ID from URL
-     * @param uploadOffset Upload offset header value
-     * @param uploadLength Optional upload length header value (for defer-length)
-     * @param metadataHeader Optional upload metadata header value
-     * @param checksum Optional checksum
-     * @param checksumAlgorithm Optional checksum algorithm
-     * @param requestUrl Request URL for Location header
-     * @param bodyStream Request body stream
-     * @param contentLength Content length
+     * Handle TUS PATCH (write a chunk).
+     * @param request TUS request
      * @returns Promise resolving to ResponseFile with upload progress
      */
-    public async handlePatch(
-        id: string,
-        uploadOffset: number,
-        uploadLength: string | undefined,
-        metadataHeader: string | undefined,
-        checksum: string | undefined,
-        checksumAlgorithm: string | undefined,
-        _requestUrl: string,
-        bodyStream: unknown,
-        contentLength: number,
-    ): Promise<ResponseFile<TFile>> {
-        const metadata = metadataHeader ? parseMetadata(metadataHeader) : undefined;
+    public async handlePatch(request: TusRequest): Promise<ResponseFile<TFile>> {
+        validateTusResumable(request.header("tus-resumable"));
 
-        if (metadata) {
-            try {
-                await this.storage.update({ id }, { id, metadata });
-            } catch (error: unknown) {
-                const errorWithCode = error as { UploadErrorCode?: string };
+        const id = request.resolveId();
+        const offsetHeader = request.header("upload-offset");
+        const contentType = request.header("content-type");
 
-                if (errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
-                    throw createHttpError(410, "Upload expired");
-                }
-
-                throw error;
-            }
+        if (offsetHeader === undefined) {
+            throw createHttpError(412, "Missing Upload-Offset header");
         }
 
-        // Check if file is expired before processing
-        let currentFile: TFile;
+        if (contentType === undefined) {
+            throw createHttpError(412, "Content-Type header required");
+        }
+
+        if (contentType !== "application/offset+octet-stream") {
+            throw createHttpError(415, "Unsupported Media Type");
+        }
+
+        // TUS core: Upload-Offset MUST be a non-negative integer.
+        if (!isNonNegativeInteger(offsetHeader)) {
+            throw createHttpError(400, "Invalid Upload-Offset header");
+        }
+
+        // A second PATCH racing the first would pass the offset check below before either writes.
+        if (this.patchesInFlight.has(id)) {
+            throw createHttpError(423, "The upload is locked by another request");
+        }
+
+        this.patchesInFlight.add(id);
 
         try {
-            currentFile = await this.storage.getMeta(id);
-            await this.storage.checkIfExpired(currentFile);
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
+            return await this.writeChunk(request, id, Number(offsetHeader));
+        } finally {
+            this.patchesInFlight.delete(id);
         }
-
-        // Block PATCH on final concatenation uploads
-        const uploadConcatValue = currentFile.metadata?.uploadConcat;
-
-        if (typeof uploadConcatValue === "string" && uploadConcatValue.startsWith("final;")) {
-            throw createHttpError(403, "Cannot PATCH a final concatenation upload");
-        }
-
-        let file = await this.storage.write({
-            body: bodyStream,
-            checksum,
-            checksumAlgorithm,
-            contentLength,
-            id,
-            start: uploadOffset,
-        });
-
-        // Handle Upload-Length header for Creation-Defer-Length extension
-        if (uploadLength !== undefined) {
-            if (!this.storage.tusExtension.includes("creation-defer-length")) {
-                throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
-            }
-
-            // If size is already set, it cannot be changed
-            if (file.size !== undefined && !Number.isNaN(file.size)) {
-                throw createHttpError(412, "Upload-Length has already been set for this upload");
-            }
-
-            const size = Number.parseInt(uploadLength, 10);
-
-            if (Number.isNaN(size)) {
-                throw createHttpError(400, "Invalid Upload-Length value");
-            }
-
-            if (size < file.bytesWritten) {
-                throw createHttpError(400, "Upload-Length is smaller than the current offset");
-            }
-
-            // Update file size
-            file = await this.storage.update({ id }, { size });
-
-            // Check if upload is now completed
-            if (file.bytesWritten === file.size) {
-                file = { ...file, status: "completed" };
-            }
-        }
-
-        return {
-            ...file,
-            headers: this.buildHeaders(file, {
-                "Upload-Offset": file.bytesWritten,
-            }) as Record<string, string | number>,
-            statusCode: file.status === "completed" ? 200 : 204,
-        };
     }
 
     /**
      * Handle TUS HEAD (get upload status).
-     * @param id File ID from URL
+     * @param request TUS request
      * @returns Promise resolving to ResponseFile with upload status headers
      */
-    public async handleHead(id: string): Promise<ResponseFile<TFile>> {
-        const file = await this.storage.getMeta(id);
+    public async handleHead(request: TusRequest): Promise<ResponseFile<TFile>> {
+        validateTusResumable(request.header("tus-resumable"));
+
+        const file = await this.storage.getMeta(request.resolveId());
 
         await this.storage.checkIfExpired(file);
 
         const headers: Headers = {
-            ...(typeof file.size === "number" && !Number.isNaN(file.size)
-                ? {
-                      "Upload-Length": file.size,
-                  }
-                : {
-                      "Upload-Defer-Length": "1",
-                  }),
+            ...(typeof file.size === "number" && !Number.isNaN(file.size) ? { "Upload-Length": file.size } : { "Upload-Defer-Length": "1" }),
             ...this.buildHeaders(file, {
                 "Cache-Control": HeaderUtilities.createCacheControlPreset("no-store"),
-                "Upload-Metadata": serializeMetadata(file.metadata),
+                "Upload-Metadata": serializeMetadata(publicMetadata(file.metadata)),
                 "Upload-Offset": file.bytesWritten,
             }),
         };
 
-        // Add Upload-Concat header for concatenation extension
         const uploadConcatValue = file.metadata?.uploadConcat;
 
         if (typeof uploadConcatValue === "string") {
@@ -513,19 +244,19 @@ export abstract class TusBase<TFile extends UploadFile> {
 
     /**
      * Handle TUS GET (get upload metadata).
-     * @param id File ID from URL
+     * @param request TUS request
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
-    public async handleGet(id: string): Promise<ResponseFile<TFile>> {
-        const file = await this.storage.getMeta(id);
+    public async handleGet(request: TusRequest): Promise<ResponseFile<TFile>> {
+        validateTusResumable(request.header("tus-resumable"));
+
+        const file = await this.storage.getMeta(request.resolveId());
 
         return {
             ...file,
-            body: file, // Return file metadata as JSON
+            body: file,
             headers: this.buildHeaders(file, {
-                "Content-Type": HeaderUtilities.createContentType({
-                    mediaType: "application/json",
-                }),
+                "Content-Type": HeaderUtilities.createContentType({ mediaType: "application/json" }),
             }) as Record<string, string | number>,
             statusCode: 200,
         };
@@ -533,30 +264,37 @@ export abstract class TusBase<TFile extends UploadFile> {
 
     /**
      * Handle TUS DELETE (terminate upload).
-     * @param id File ID from URL
+     * @param request TUS request
      * @returns Promise resolving to ResponseFile with deletion confirmation
      */
-    public async handleDelete(id: string): Promise<ResponseFile<TFile>> {
-        // Check if termination is disabled for finished uploads
-        if (this.disableTerminationForFinishedUploads) {
-            const file = await this.storage.getMeta(id);
+    public async handleDelete(request: TusRequest): Promise<ResponseFile<TFile>> {
+        validateTusResumable(request.header("tus-resumable"));
 
-            if (file.status === "completed") {
-                throw createHttpError(400, "Termination of finished uploads is disabled");
+        const id = request.resolveId();
+
+        try {
+            if (this.config.disableTerminationForFinishedUploads()) {
+                const existing = await this.storage.getMeta(id);
+
+                if (existing.status === "completed") {
+                    throw createHttpError(400, "Termination of finished uploads is disabled");
+                }
             }
+
+            const file = await this.storage.delete({ id });
+
+            if (file.status === undefined) {
+                throw createHttpError(404, "File not found");
+            }
+
+            return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === "ENOENT") {
+                throw createHttpError(404, "File not found");
+            }
+
+            throw error;
         }
-
-        const file = await this.storage.delete({ id });
-
-        if (file.status === undefined) {
-            throw createHttpError(404, "File not found");
-        }
-
-        return {
-            ...file,
-            headers: this.buildHeaders(file) as Record<string, string>,
-            statusCode: 204,
-        };
     }
 
     /**
@@ -566,7 +304,6 @@ export abstract class TusBase<TFile extends UploadFile> {
      * @returns Headers object with TUS protocol headers
      */
     protected buildHeaders(file: UploadFile, headers: Headers = {}): Headers {
-        // All TUS responses must include Tus-Resumable header
         headers["Tus-Resumable"] = TUS_RESUMABLE_VERSION;
 
         if (this.storage.tusExtension.includes("expiration") && file.expiredAt !== undefined) {
@@ -577,74 +314,355 @@ export abstract class TusBase<TFile extends UploadFile> {
     }
 
     /**
-     * Extract checksum algorithm and value from Upload-Checksum header.
-     * @param checksumHeader Upload-Checksum header value
-     * @returns Object containing checksum algorithm and value
-     */
-    // eslint-disable-next-line class-methods-use-this
-    public extractChecksum(checksumHeader: string | undefined): Checksum {
-        if (!checksumHeader) {
-            return { checksum: undefined, checksumAlgorithm: undefined };
-        }
-
-        const [checksumAlgorithm, checksum] = checksumHeader.split(/\s+/).filter(Boolean);
-
-        return { checksum, checksumAlgorithm };
-    }
-
-    /**
-     * Validate Tus-Resumable header value.
-     * @param tusResumable Tus-Resumable header value
-     * @throws {Error} 412 if version doesn't match or header is missing
-     */
-    // eslint-disable-next-line class-methods-use-this
-    public validateTusResumableHeader(tusResumable: string | undefined): void {
-        if (!tusResumable) {
-            throw createHttpError(412, "Missing Tus-Resumable header");
-        }
-
-        if (tusResumable !== TUS_RESUMABLE_VERSION) {
-            throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`);
-        }
-    }
-
-    /**
      * Concatenate partial uploads into a final upload.
      * @param finalFile Final file that will contain concatenated content
      * @param partialFiles Array of partial upload files to concatenate
-     * @returns Promise resolving when concatenation is complete
      */
     protected async concatenateFiles(finalFile: TFile, partialFiles: TFile[]): Promise<void> {
-        // Concatenate all streams sequentially
+        const { getStream } = this.storage;
+
+        if (!getStream) {
+            throw createHttpError(501, "getStream is not supported by this storage backend");
+        }
+
         let offset = 0;
 
         for (const partialFile of partialFiles) {
-            // Get stream for this partial file
-            if (!this.storage.getStream) {
-                throw createHttpError(501, "getStream is not supported by this storage backend");
-            }
-
-            const { size, stream } = await this.storage.getStream({ id: partialFile.id });
+            const { size, stream } = await getStream.call(this.storage, { id: partialFile.id });
 
             if (size === undefined) {
                 throw createHttpError(500, "Partial upload size is undefined");
             }
 
-            // Write the stream to the final file at the current offset
-            const updatedFile = await this.storage.write({
-                ...finalFile,
-                body: stream,
-                contentLength: size,
-                start: offset,
-            });
-
-            // Update finalFile reference with latest state
-            Object.assign(finalFile, updatedFile);
+            Object.assign(finalFile, await this.storage.write({ ...finalFile, body: stream, contentLength: size, start: offset }));
             offset += size;
         }
+    }
 
-        // Final file should already be completed after all writes
-        // bytesWritten is updated automatically by the write operations
+    /**
+     * Creates an upload and, for creation-with-upload, writes the request body as its first data.
+     * @param request TUS request
+     * @param init Upload to create
+     * @param extraHeaders Headers specific to the kind of upload
+     * @returns 201 response
+     */
+    private async createUpload(request: TusRequest, init: FileInit, extraHeaders: Headers): Promise<ResponseFile<TFile>> {
+        const contentLength = TusBase.contentLength(request);
+        let file = await this.storage.create(init);
+
+        if (request.header("content-type") === "application/offset+octet-stream" && contentLength !== undefined && contentLength > 0) {
+            this.assertResumableWrite(file, 0, contentLength, undefined);
+
+            file = await this.storage.write({ ...file, body: request.body, contentLength, start: 0 });
+        }
+
+        file = TusBase.holdPartialUpload(file);
+
+        const headers: Headers = { ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }), ...extraHeaders };
+
+        if (file.bytesWritten > 0) {
+            headers["Upload-Offset"] = file.bytesWritten.toString();
+        }
+
+        // TUS creation: the server MUST respond with 201 Created, also with creation-with-upload.
+        return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
+    }
+
+    /**
+     * Creates a final upload from completed partial uploads (concatenation extension).
+     * @param request TUS request
+     * @param metadata Client metadata for the final upload
+     * @param uploadConcat Upload-Concat header (`final;...`)
+     * @returns 201 response
+     */
+    private async createFinalUpload(request: TusRequest, metadata: Record<string, unknown>, uploadConcat: string): Promise<ResponseFile<TFile>> {
+        const partialIds = parseFinalConcatIds(uploadConcat);
+        const partialFiles: TFile[] = [];
+
+        for (const partialId of partialIds) {
+            partialFiles.push(await this.getCompletedPartial(partialId));
+        }
+
+        const file = await this.storage.create({
+            metadata: { ...metadata, partialIds, uploadConcat: `final;${partialIds.join(" ")}` },
+            size: partialFiles.reduce((total, partial) => total + (partial.size as number), 0),
+        });
+
+        await this.concatenateFiles(file, partialFiles);
+
+        const headers: Headers = {
+            ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }),
+            "Upload-Concat": uploadConcat,
+        };
+
+        return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
+    }
+
+    /**
+     * Loads a partial upload referenced by a final upload and checks it is finished.
+     * @param partialId Partial upload ID
+     * @returns The partial upload
+     */
+    private async getCompletedPartial(partialId: string): Promise<TFile> {
+        let partialFile: TFile;
+
+        try {
+            partialFile = await this.storage.getMeta(partialId);
+            await this.storage.checkIfExpired(partialFile);
+        } catch {
+            throw createHttpError(409, `Partial upload ${partialId} not found or expired`);
+        }
+
+        if (partialFile.metadata?.uploadConcat !== "partial") {
+            throw createHttpError(400, `Upload ${partialId} is not a partial upload`);
+        }
+
+        if (partialFile.status !== "completed" || partialFile.size === undefined) {
+            throw createHttpError(409, `Partial upload ${partialId} is not completed`);
+        }
+
+        return partialFile;
+    }
+
+    /**
+     * Validates and writes one PATCH chunk. Runs while the upload is locked by {@link handlePatch}.
+     * @param request TUS request
+     * @param id Upload ID
+     * @param uploadOffset Validated Upload-Offset
+     * @returns 204 response
+     */
+    private async writeChunk(request: TusRequest, id: string, uploadOffset: number): Promise<ResponseFile<TFile>> {
+        const contentLength = TusBase.contentLength(request);
+        const metadataHeader = request.header("upload-metadata");
+        const metadata = metadataHeader === undefined ? undefined : parseMetadata(metadataHeader);
+        const current = await this.storage.getMeta(id);
+
+        await this.storage.checkIfExpired(current);
+
+        const uploadConcatValue = current.metadata?.uploadConcat;
+
+        if (typeof uploadConcatValue === "string" && uploadConcatValue.startsWith("final;")) {
+            throw createHttpError(403, "Cannot PATCH a final concatenation upload");
+        }
+
+        // TUS core: "If the offsets do not match, the Server MUST respond with the 409 Conflict
+        // status without modifying the upload resource."
+        const currentOffset = Number.isNaN(current.bytesWritten) ? 0 : current.bytesWritten;
+
+        if (uploadOffset !== currentOffset) {
+            throw createHttpError(409, `Upload-Offset ${String(uploadOffset)} does not match the current offset ${String(currentOffset)}`);
+        }
+
+        const deferredSize = this.validateDeferredUploadLength(current, request.header("upload-length"), contentLength);
+
+        this.assertResumableWrite(current, uploadOffset, contentLength, deferredSize);
+
+        const size = deferredSize ?? current.size;
+        const { body, native } = await this.prepareChecksum(request, contentLength, size === undefined ? undefined : size - uploadOffset);
+
+        // The adapter must know the final length when it writes, to finish the upload on its last byte.
+        if (deferredSize !== undefined) {
+            await this.storage.update({ id }, { size: deferredSize });
+        }
+
+        let file: TFile;
+
+        try {
+            file = await this.storage.write({ body, ...native, contentLength: contentLength ?? 0, id, start: uploadOffset });
+        } catch (error: unknown) {
+            // A rejected chunk must leave the upload as it was.
+            if (deferredSize !== undefined) {
+                await this.storage.update({ id }, { size: undefined }).catch(() => undefined);
+            }
+
+            throw error;
+        }
+
+        // A deferred length can make an upload complete without this chunk carrying the last byte.
+        if (deferredSize !== undefined && file.bytesWritten === deferredSize && file.status !== "completed") {
+            file = { ...file, size: deferredSize, status: "completed" };
+        }
+
+        if (metadata !== undefined) {
+            file = await this.applyMetadata(file, metadata);
+        }
+
+        return {
+            ...TusBase.holdPartialUpload(file),
+            headers: this.buildHeaders(file, { "Upload-Offset": file.bytesWritten }) as Record<string, string | number>,
+            // TUS core: a successful PATCH MUST answer 204 No Content, including the completing one.
+            statusCode: 204,
+        };
+    }
+
+    /**
+     * Stores `Upload-Metadata` sent with a PATCH (a non-standard convenience), after the chunk
+     * was written so a rejected chunk doesn't change it.
+     * @param file Upload after the write
+     * @param metadata Parsed metadata
+     * @returns The upload with the metadata merged in
+     */
+    private async applyMetadata(file: TFile, metadata: Record<string, unknown>): Promise<TFile> {
+        try {
+            await this.storage.update({ id: file.id }, { id: file.id, metadata });
+        } catch (error: unknown) {
+            // Some adapters drop a finished upload's metadata on completion; nothing left to update.
+            if (file.status !== "completed") {
+                throw error;
+            }
+        }
+
+        return { ...file, metadata: { ...file.metadata, ...metadata } };
+    }
+
+    /**
+     * Picks who verifies an `Upload-Checksum`: the storage when it supports the algorithm, else
+     * this handler, which buffers the chunk (bounded by `maxChecksumBufferSize`) and compares
+     * digests before anything is written.
+     * @param request TUS request
+     * @param contentLength Declared chunk length
+     * @param remaining Bytes left in the upload, when its length is known
+     * @returns The body to write and the checksum to pass to the storage
+     */
+    private async prepareChecksum(
+        request: TusRequest,
+        contentLength: number | undefined,
+        remaining: number | undefined,
+    ): Promise<{ body: unknown; native: Checksum }> {
+        const header = request.header("upload-checksum");
+
+        if (header === undefined) {
+            return { body: request.body, native: {} };
+        }
+
+        const [algorithm, checksum] = header.split(/\s+/).filter(Boolean);
+
+        if (algorithm === undefined || checksum === undefined) {
+            throw createHttpError(400, "Invalid Upload-Checksum header");
+        }
+
+        if (this.storage.checksumTypes.includes(algorithm)) {
+            return { body: request.body, native: { checksum, checksumAlgorithm: algorithm } };
+        }
+
+        if (!getHandlerChecksumAlgorithms().includes(algorithm)) {
+            throw createHttpError(400, `Unsupported checksum algorithm: ${algorithm}`);
+        }
+
+        if (contentLength === undefined) {
+            throw createHttpError(411, "Content-Length is required to verify Upload-Checksum");
+        }
+
+        if (remaining !== undefined && contentLength > remaining) {
+            throw createHttpError(413, "Chunk is larger than the rest of the upload");
+        }
+
+        const limit = this.config.maxChecksumBufferSize ?? DEFAULT_MAX_CHECKSUM_BUFFER_SIZE;
+
+        if (contentLength > limit) {
+            throw createHttpError(413, `Checksummed chunks may be at most ${String(limit)} bytes; send smaller chunks`);
+        }
+
+        const bytes = await readBoundedBody(request.body, contentLength);
+
+        if (bytes.byteLength !== contentLength) {
+            throw createHttpError(400, "Request body is shorter than its Content-Length");
+        }
+
+        if (computeChecksum(algorithm, bytes) !== checksum) {
+            throw createHttpError(460, "Checksum Mismatch");
+        }
+
+        return { body: Readable.from([bytes]), native: {} };
+    }
+
+    /**
+     * Validates an `Upload-Length` sent on PATCH for a deferred-length upload.
+     * @param file Current upload state
+     * @param uploadLength Upload-Length header value
+     * @param contentLength Length of this PATCH's body
+     * @returns The new upload size, or undefined when there is nothing to set
+     */
+    private validateDeferredUploadLength(file: TFile, uploadLength: string | undefined, contentLength: number | undefined): number | undefined {
+        if (uploadLength === undefined) {
+            return undefined;
+        }
+
+        this.requireExtension("creation-defer-length");
+
+        if (!isNonNegativeInteger(uploadLength)) {
+            throw createHttpError(400, "Invalid Upload-Length value");
+        }
+
+        const size = Number(uploadLength);
+
+        if (file.size !== undefined && !Number.isNaN(file.size)) {
+            // A client retrying with the same length is fine; changing it is not.
+            if (file.size === size) {
+                return undefined;
+            }
+
+            throw createHttpError(412, "Upload-Length has already been set for this upload");
+        }
+
+        const offset = Number.isNaN(file.bytesWritten) ? 0 : file.bytesWritten;
+
+        if (size < offset + (contentLength ?? 0)) {
+            throw createHttpError(400, "Upload-Length is smaller than the upload's data");
+        }
+
+        if (size > this.storage.maxUploadSize) {
+            throw createHttpError(413, "Upload-Length exceeds the maximum upload size");
+        }
+
+        return size;
+    }
+
+    /**
+     * Refuses a chunk a single-request storage can't take, before its body is read.
+     * @param file Current upload state
+     * @param offset Chunk offset
+     * @param contentLength Declared chunk length
+     * @param deferredSize Length set by this request, if any
+     */
+    private assertResumableWrite(file: TFile, offset: number, contentLength: number | undefined, deferredSize: number | undefined): void {
+        if (this.storage.supportsResumableWrites !== false) {
+            return;
+        }
+
+        const size = deferredSize ?? file.size;
+
+        if (offset > 0 || (contentLength !== undefined && typeof size === "number" && !Number.isNaN(size) && contentLength < size)) {
+            throw createHttpError(405, "This storage backend does not support chunked or resumable uploads; send the whole file in a single request.");
+        }
+    }
+
+    private requireExtension(extension: string): void {
+        if (!this.storage.tusExtension.includes(extension)) {
+            throw createHttpError(501, `${extension} extension is not supported by this storage backend.`);
+        }
+    }
+
+    /**
+     * Content-Length of a request, or undefined when it is absent or not a valid length.
+     * @param request TUS request
+     * @returns The length in bytes
+     */
+    private static contentLength(request: TusRequest): number | undefined {
+        const header = request.header("content-length");
+
+        return header !== undefined && isNonNegativeInteger(header) ? Number(header) : undefined;
+    }
+
+    /**
+     * TUS concatenation: "The Server SHOULD NOT process these partial uploads until they are
+     * concatenated to form a final upload", so a finished partial is not reported as completed
+     * (no onComplete hook, no "completed" event).
+     * @param file Upload state
+     * @returns The upload, with a finished partial reported as "part"
+     */
+    private static holdPartialUpload<T extends UploadFile>(file: T): T {
+        return file.status === "completed" && file.metadata?.uploadConcat === "partial" ? { ...file, status: "part" } : file;
     }
 }
 

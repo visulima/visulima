@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,6 +10,9 @@ vi.mock(import("aws-crt"));
 
 const s3Mock = mockClient(S3Client);
 
+// Calls other than the lazy bucket access probe (HeadBucketCommand) run on the first operation.
+const dataCalls = () => s3Mock.calls().filter((call) => !(call.args[0] instanceof HeadBucketCommand));
+
 describe(S3MetaStorage, () => {
     let metaStorage: S3MetaStorage;
 
@@ -20,10 +23,48 @@ describe(S3MetaStorage, () => {
 
     beforeEach(() => {
         s3Mock.reset();
-        // Mock bucket access check (waitUntilBucketExists)
+        // Mock bucket access check (HeadBucketCommand)
         s3Mock.onAnyCommand().resolves({});
         metaStorage = new S3MetaStorage(options);
-        s3Mock.resetHistory();
+    });
+
+    describe("bucket access check", () => {
+        it("should probe the bucket once, on the first operation instead of the constructor", async () => {
+            expect.assertions(2);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(0);
+
+            await metaStorage.save(metafile.id, metafile);
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(1);
+        });
+
+        it("should fail fast on a single HeadBucket and retry it on the next operation", async () => {
+            expect.assertions(3);
+
+            const error = Object.assign(new Error("NotFound"), { name: "NotFound" });
+
+            s3Mock.on(HeadBucketCommand).rejectsOnce(error);
+
+            await expect(metaStorage.save(metafile.id, metafile)).rejects.toThrow("NotFound");
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(1);
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(2);
+        });
+
+        it("should not probe a caller-supplied client", async () => {
+            expect.assertions(1);
+
+            const storage = new S3MetaStorage({ ...options, client: new S3Client({ region: "us-east-1" }) });
+
+            await storage.save(metafile.id, metafile);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(0);
+        });
     });
 
     describe(".save()", () => {
@@ -34,7 +75,7 @@ describe(S3MetaStorage, () => {
 
             await metaStorage.save(metafile.id, metafile);
 
-            expect(s3Mock.calls()).toHaveLength(1);
+            expect(dataCalls()).toHaveLength(1);
         });
 
         it("should encode metadata correctly", async () => {
@@ -44,7 +85,7 @@ describe(S3MetaStorage, () => {
 
             await metaStorage.save(metafile.id, metafile);
 
-            const putCommand = s3Mock.call(0).args[0].input as { Metadata?: { metadata?: string } };
+            const putCommand = s3Mock.commandCalls(PutObjectCommand)[0]?.args[0].input as { Metadata?: { metadata?: string } };
 
             expect(putCommand.Metadata?.metadata).toBeDefined();
         });
@@ -103,7 +144,7 @@ describe(S3MetaStorage, () => {
 
             await expect(metaStorage.get(metafile.id)).rejects.toThrow(`Metafile ${metafile.id} not found`);
 
-            expect(s3Mock.calls()).toHaveLength(2); // HeadObjectCommand + DeleteObjectCommand
+            expect(dataCalls()).toHaveLength(2); // HeadObjectCommand + DeleteObjectCommand
         });
     });
 
@@ -115,7 +156,7 @@ describe(S3MetaStorage, () => {
 
             await metaStorage.delete(metafile.id);
 
-            expect(s3Mock.calls()).toHaveLength(1);
+            expect(dataCalls()).toHaveLength(1);
         });
     });
 

@@ -273,6 +273,9 @@ const isNotFoundError = (error: unknown): boolean => {
 class OneDriveStorage extends BaseStorage<OneDriveFile> {
     public static override readonly name: string = "onedrive";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<OneDriveFile>;
@@ -385,7 +388,12 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.name || file.id;
 
                     const item =

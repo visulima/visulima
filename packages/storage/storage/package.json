@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "2.0.14",
+    "version": "2.0.26",
     "description": "Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.",
     "keywords": [
         "anolilab",
@@ -262,7 +262,8 @@
         "dist/**",
         "README.md",
         "CHANGELOG.md",
-        "LICENSE.md"
+        "LICENSE.md",
+        "MIGRATION-GUIDE.md"
     ],
     "scripts": {
         "build": "packem build --development",
@@ -287,13 +288,12 @@
     "dependencies": {
         "@remix-run/multipart-parser": "catalog:prod",
         "@sindresorhus/fnv1a": "catalog:prod",
-        "@visulima/pagination": "7.0.1",
+        "@visulima/pagination": "7.0.2",
         "file-type": "catalog:prod",
         "lru-cache": "catalog:prod",
         "mime": "catalog:prod",
         "nanoid": "catalog:prod",
         "openapi-types": "catalog:prod",
-        "path-to-regexp": "catalog:prod",
         "type-is": "catalog:prod",
         "zod": "catalog:utils"
     },
@@ -331,7 +331,7 @@
         "@types/supertest": "catalog:types",
         "@types/type-is": "catalog:types",
         "@vercel/blob": "catalog:dev",
-        "@visulima/fs": "6.0.13",
+        "@visulima/fs": "6.0.25",
         "@visulima/humanizer": "4.0.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "4.0.0",
@@ -341,7 +341,7 @@
         "aws-crt": "catalog:dev",
         "aws-sdk-client-mock": "catalog:dev",
         "aws4fetch": "catalog:dev",
-        "basic-ftp": "6.2.0",
+        "basic-ftp": "6.2.1",
         "box-typescript-sdk-gen": "1.19.1",
         "cloudinary": "2.10.0",
         "dropbox": "10.44.0",

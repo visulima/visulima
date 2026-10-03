@@ -1,3 +1,101 @@
+## @visulima/storage [2.0.26](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.25...@visulima/storage@2.0.26) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** tus 1.0 compliance for server and client ([#899](https://github.com/visulima/visulima/issues/899), [#900](https://github.com/visulima/visulima/issues/900)) ([#901](https://github.com/visulima/visulima/issues/901)) ([5b4aae6](https://github.com/visulima/visulima/commit/5b4aae6403024d294e69ea4864971eb5d72787f3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.25
+
+## @visulima/storage [2.0.25](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.24...@visulima/storage@2.0.25) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** chunked REST data integrity and client result parsing ([#896](https://github.com/visulima/visulima/issues/896)) ([625b240](https://github.com/visulima/visulima/commit/625b24069b1432c4cc398529af1ee6e963c7c4c9))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.24
+
+## @visulima/storage [2.0.24](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.23...@visulima/storage@2.0.24) (2026-10-03)
+
+### Bug Fixes
+
+* **deps:** patch transitive audit advisories ([#886](https://github.com/visulima/visulima/issues/886)) ([dca4293](https://github.com/visulima/visulima/commit/dca4293ca14bf7bfe6681b839bcd5b4f62aad86a))
+* **storage:** chunked REST uploads and GET in fetch handlers ([#885](https://github.com/visulima/visulima/issues/885)) ([1a6f77d](https://github.com/visulima/visulima/commit/1a6f77da602d0395c8f6965a104d54dffdf171c2))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 7.0.2
+* **@visulima/fs:** upgraded to 6.0.23
+
+## @visulima/storage [2.0.23](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.22...@visulima/storage@2.0.23) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.22
+
+## @visulima/storage [2.0.22](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.21...@visulima/storage@2.0.22) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.21
+
+## @visulima/storage [2.0.21](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.20...@visulima/storage@2.0.21) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+
+## @visulima/storage [2.0.20](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.19...@visulima/storage@2.0.20) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.19
+
+## @visulima/storage [2.0.19](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.18...@visulima/storage@2.0.19) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.18
+
+## @visulima/storage [2.0.18](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.17...@visulima/storage@2.0.18) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.17
+
+## @visulima/storage [2.0.17](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.16...@visulima/storage@2.0.17) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.16
+
+## @visulima/storage [2.0.16](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.15...@visulima/storage@2.0.16) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.15
+
+## @visulima/storage [2.0.15](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.14...@visulima/storage@2.0.15) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.14
+
 ## @visulima/storage [2.0.14](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.13...@visulima/storage@2.0.14) (2026-09-24)
 
 

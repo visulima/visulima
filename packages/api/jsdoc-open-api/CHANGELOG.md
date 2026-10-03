@@ -1,3 +1,87 @@
+## @visulima/jsdoc-open-api [4.0.25](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.24...@visulima/jsdoc-open-api@4.0.25) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.25
+
+## @visulima/jsdoc-open-api [4.0.24](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.23...@visulima/jsdoc-open-api@4.0.24) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.24
+
+## @visulima/jsdoc-open-api [4.0.23](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.22...@visulima/jsdoc-open-api@4.0.23) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.23
+
+## @visulima/jsdoc-open-api [4.0.22](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.21...@visulima/jsdoc-open-api@4.0.22) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.22
+
+## @visulima/jsdoc-open-api [4.0.21](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.20...@visulima/jsdoc-open-api@4.0.21) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.21
+
+## @visulima/jsdoc-open-api [4.0.20](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.19...@visulima/jsdoc-open-api@4.0.20) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+
+## @visulima/jsdoc-open-api [4.0.19](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.18...@visulima/jsdoc-open-api@4.0.19) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.19
+
+## @visulima/jsdoc-open-api [4.0.18](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.17...@visulima/jsdoc-open-api@4.0.18) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.18
+
+## @visulima/jsdoc-open-api [4.0.17](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.16...@visulima/jsdoc-open-api@4.0.17) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.17
+
+## @visulima/jsdoc-open-api [4.0.16](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.15...@visulima/jsdoc-open-api@4.0.16) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.16
+
+## @visulima/jsdoc-open-api [4.0.15](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.14...@visulima/jsdoc-open-api@4.0.15) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.15
+
+## @visulima/jsdoc-open-api [4.0.14](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.13...@visulima/jsdoc-open-api@4.0.14) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.14
+
 ## @visulima/jsdoc-open-api [4.0.13](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@4.0.12...@visulima/jsdoc-open-api@4.0.13) (2026-09-24)
 
 

@@ -1,3 +1,87 @@
+## @visulima/package [5.0.38](https://github.com/visulima/visulima/compare/@visulima/package@5.0.37...@visulima/package@5.0.38) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.25
+
+## @visulima/package [5.0.37](https://github.com/visulima/visulima/compare/@visulima/package@5.0.36...@visulima/package@5.0.37) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.24
+
+## @visulima/package [5.0.36](https://github.com/visulima/visulima/compare/@visulima/package@5.0.35...@visulima/package@5.0.36) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.23
+
+## @visulima/package [5.0.35](https://github.com/visulima/visulima/compare/@visulima/package@5.0.34...@visulima/package@5.0.35) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.22
+
+## @visulima/package [5.0.34](https://github.com/visulima/visulima/compare/@visulima/package@5.0.33...@visulima/package@5.0.34) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.21
+
+## @visulima/package [5.0.33](https://github.com/visulima/visulima/compare/@visulima/package@5.0.32...@visulima/package@5.0.33) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+
+## @visulima/package [5.0.32](https://github.com/visulima/visulima/compare/@visulima/package@5.0.31...@visulima/package@5.0.32) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.19
+
+## @visulima/package [5.0.31](https://github.com/visulima/visulima/compare/@visulima/package@5.0.30...@visulima/package@5.0.31) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.18
+
+## @visulima/package [5.0.30](https://github.com/visulima/visulima/compare/@visulima/package@5.0.29...@visulima/package@5.0.30) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.17
+
+## @visulima/package [5.0.29](https://github.com/visulima/visulima/compare/@visulima/package@5.0.28...@visulima/package@5.0.29) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.16
+
+## @visulima/package [5.0.28](https://github.com/visulima/visulima/compare/@visulima/package@5.0.27...@visulima/package@5.0.28) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.15
+
+## @visulima/package [5.0.27](https://github.com/visulima/visulima/compare/@visulima/package@5.0.26...@visulima/package@5.0.27) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.14
+
 ## @visulima/package [5.0.26](https://github.com/visulima/visulima/compare/@visulima/package@5.0.25...@visulima/package@5.0.26) (2026-09-24)
 
 

@@ -287,7 +287,7 @@ export default function LargeFileUpload() {
 
     const { upload, pause, resume, progress, isUploading, isPaused, offset, error, result, reset } = createTusUpload({
         endpoint: "/api/upload/tus",
-        chunkSize: 1024 * 1024, // 1MB chunks
+        chunkSize: 5 * 1024 * 1024, // 5 MiB chunks
         onSuccess: (result) => {
             console.log("Upload complete:", result);
         },
@@ -417,6 +417,8 @@ export default function BatchUploadPage() {
 ## File Management
 
 ### Listing and Deleting Files
+
+> **Note:** the server only answers list requests when its handler is created with `allowList: true` (e.g. `new Rest({ allowList: true, storage })`). Listing is off by default because the list exposes every stored file; enable it only behind authentication.
 
 ```tsx
 // src/routes/files.tsx

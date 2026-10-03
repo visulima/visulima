@@ -1,3 +1,27 @@
+## @visulima/error-handler [2.0.26](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.25...@visulima/error-handler@2.0.26) (2026-10-03)
+
+## @visulima/error-handler [2.0.25](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.24...@visulima/error-handler@2.0.25) (2026-10-03)
+
+## @visulima/error-handler [2.0.24](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.23...@visulima/error-handler@2.0.24) (2026-10-03)
+
+## @visulima/error-handler [2.0.23](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.22...@visulima/error-handler@2.0.23) (2026-10-03)
+
+## @visulima/error-handler [2.0.22](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.21...@visulima/error-handler@2.0.22) (2026-10-02)
+
+## @visulima/error-handler [2.0.21](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.20...@visulima/error-handler@2.0.21) (2026-10-01)
+
+## @visulima/error-handler [2.0.20](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.19...@visulima/error-handler@2.0.20) (2026-09-30)
+
+## @visulima/error-handler [2.0.19](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.18...@visulima/error-handler@2.0.19) (2026-09-29)
+
+## @visulima/error-handler [2.0.18](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.17...@visulima/error-handler@2.0.18) (2026-09-28)
+
+## @visulima/error-handler [2.0.17](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.16...@visulima/error-handler@2.0.17) (2026-09-27)
+
+## @visulima/error-handler [2.0.16](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.15...@visulima/error-handler@2.0.16) (2026-09-26)
+
+## @visulima/error-handler [2.0.15](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.14...@visulima/error-handler@2.0.15) (2026-09-25)
+
 ## @visulima/error-handler [2.0.14](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.13...@visulima/error-handler@2.0.14) (2026-09-24)
 
 ## @visulima/error-handler [2.0.13](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.12...@visulima/error-handler@2.0.13) (2026-09-23)

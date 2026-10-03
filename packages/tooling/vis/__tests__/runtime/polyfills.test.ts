@@ -33,15 +33,19 @@ describe(installPolyfills, () => {
     it("warns (does not throw) when an opt-in polyfill package can't be resolved from cwd", async () => {
         expect.hasAssertions();
 
-        const warn = vi.spyOn(process.stderr, "write").mockReturnValue(true);
+        // Node 26 ships Temporal natively; hide it so the installer takes the
+        // "not native" path on every runtime.
+        await withTargetAbsent(globalRecord, "Temporal", async () => {
+            const warn = vi.spyOn(process.stderr, "write").mockReturnValue(true);
 
-        // Temporal isn't native and @js-temporal/polyfill isn't installed in the
-        // temp project → graceful warning, no throw, global stays absent.
-        await expect(installPolyfills("temporal", workspace)).resolves.toBeUndefined();
+            // @js-temporal/polyfill isn't installed in the temp project → graceful
+            // warning, no throw, global stays absent.
+            await expect(installPolyfills("temporal", workspace)).resolves.toBeUndefined();
 
-        expect(globalRecord["Temporal"]).toBeUndefined();
-        expect(warn).toHaveBeenCalledTimes(1);
-        expect(String((warn.mock.calls[0] as unknown[])[0])).toContain("@js-temporal/polyfill");
+            expect(globalRecord["Temporal"]).toBeUndefined();
+            expect(warn).toHaveBeenCalledTimes(1);
+            expect(String((warn.mock.calls[0] as unknown[])[0])).toContain("@js-temporal/polyfill");
+        });
     });
 
     it("ignores unknown polyfill names", async () => {

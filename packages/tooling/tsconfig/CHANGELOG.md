@@ -1,3 +1,87 @@
+## @visulima/tsconfig [3.2.32](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.31...@visulima/tsconfig@3.2.32) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.25
+
+## @visulima/tsconfig [3.2.31](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.30...@visulima/tsconfig@3.2.31) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.24
+
+## @visulima/tsconfig [3.2.30](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.29...@visulima/tsconfig@3.2.30) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.23
+
+## @visulima/tsconfig [3.2.29](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.28...@visulima/tsconfig@3.2.29) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.22
+
+## @visulima/tsconfig [3.2.28](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.27...@visulima/tsconfig@3.2.28) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.21
+
+## @visulima/tsconfig [3.2.27](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.26...@visulima/tsconfig@3.2.27) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.20
+
+## @visulima/tsconfig [3.2.26](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.25...@visulima/tsconfig@3.2.26) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.19
+
+## @visulima/tsconfig [3.2.25](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.24...@visulima/tsconfig@3.2.25) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.18
+
+## @visulima/tsconfig [3.2.24](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.23...@visulima/tsconfig@3.2.24) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.17
+
+## @visulima/tsconfig [3.2.23](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.22...@visulima/tsconfig@3.2.23) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.16
+
+## @visulima/tsconfig [3.2.22](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.21...@visulima/tsconfig@3.2.22) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.15
+
+## @visulima/tsconfig [3.2.21](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.20...@visulima/tsconfig@3.2.21) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.14
+
 ## @visulima/tsconfig [3.2.20](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.2.19...@visulima/tsconfig@3.2.20) (2026-09-24)
 
 

@@ -1,3 +1,139 @@
+## @visulima/vis [4.1.16](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.15...@visulima/vis@4.1.16) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.25
+* **@visulima/tui-kit:** upgraded to 1.0.28
+* **@visulima/fs:** upgraded to 6.0.25
+* **@visulima/package:** upgraded to 5.0.38
+* **@visulima/tsconfig:** upgraded to 3.2.32
+
+## @visulima/vis [4.1.15](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.14...@visulima/vis@4.1.15) (2026-10-03)
+
+### Continuous Integration
+
+* cache nx tasks, slim pr test matrix, stop bailing ([#889](https://github.com/visulima/visulima/issues/889)) ([d83f551](https://github.com/visulima/visulima/commit/d83f5515b59a4027b56c6b3de55c2b4017e15ec7))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.24
+* **@visulima/tui-kit:** upgraded to 1.0.27
+* **@visulima/fs:** upgraded to 6.0.24
+* **@visulima/package:** upgraded to 5.0.37
+* **@visulima/tsconfig:** upgraded to 3.2.31
+
+## @visulima/vis [4.1.14](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.13...@visulima/vis@4.1.14) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.23
+* **@visulima/tui-kit:** upgraded to 1.0.26
+* **@visulima/fs:** upgraded to 6.0.23
+* **@visulima/package:** upgraded to 5.0.36
+* **@visulima/tsconfig:** upgraded to 3.2.30
+
+## @visulima/vis [4.1.13](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.12...@visulima/vis@4.1.13) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.22
+* **@visulima/tui-kit:** upgraded to 1.0.25
+* **@visulima/fs:** upgraded to 6.0.22
+* **@visulima/package:** upgraded to 5.0.35
+* **@visulima/tsconfig:** upgraded to 3.2.29
+
+## @visulima/vis [4.1.12](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.11...@visulima/vis@4.1.12) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.21
+* **@visulima/tui-kit:** upgraded to 1.0.24
+* **@visulima/fs:** upgraded to 6.0.21
+* **@visulima/package:** upgraded to 5.0.34
+* **@visulima/tsconfig:** upgraded to 3.2.28
+
+## @visulima/vis [4.1.11](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.10...@visulima/vis@4.1.11) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.20
+* **@visulima/tui-kit:** upgraded to 1.0.23
+* **@visulima/fs:** upgraded to 6.0.20
+* **@visulima/package:** upgraded to 5.0.33
+* **@visulima/tsconfig:** upgraded to 3.2.27
+
+## @visulima/vis [4.1.10](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.9...@visulima/vis@4.1.10) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.19
+* **@visulima/tui-kit:** upgraded to 1.0.22
+* **@visulima/fs:** upgraded to 6.0.19
+* **@visulima/package:** upgraded to 5.0.32
+* **@visulima/tsconfig:** upgraded to 3.2.26
+
+## @visulima/vis [4.1.9](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.8...@visulima/vis@4.1.9) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.18
+* **@visulima/tui-kit:** upgraded to 1.0.21
+* **@visulima/fs:** upgraded to 6.0.18
+* **@visulima/package:** upgraded to 5.0.31
+* **@visulima/tsconfig:** upgraded to 3.2.25
+
+## @visulima/vis [4.1.8](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.7...@visulima/vis@4.1.8) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.17
+* **@visulima/tui-kit:** upgraded to 1.0.20
+* **@visulima/fs:** upgraded to 6.0.17
+* **@visulima/package:** upgraded to 5.0.30
+* **@visulima/tsconfig:** upgraded to 3.2.24
+
+## @visulima/vis [4.1.7](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.6...@visulima/vis@4.1.7) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.16
+* **@visulima/tui-kit:** upgraded to 1.0.19
+* **@visulima/fs:** upgraded to 6.0.16
+* **@visulima/package:** upgraded to 5.0.29
+* **@visulima/tsconfig:** upgraded to 3.2.23
+
+## @visulima/vis [4.1.6](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.5...@visulima/vis@4.1.6) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.15
+* **@visulima/tui-kit:** upgraded to 1.0.18
+* **@visulima/fs:** upgraded to 6.0.15
+* **@visulima/package:** upgraded to 5.0.28
+* **@visulima/tsconfig:** upgraded to 3.2.22
+
+## @visulima/vis [4.1.5](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.4...@visulima/vis@4.1.5) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.14
+* **@visulima/tui-kit:** upgraded to 1.0.17
+* **@visulima/fs:** upgraded to 6.0.14
+* **@visulima/package:** upgraded to 5.0.27
+* **@visulima/tsconfig:** upgraded to 3.2.21
+
 ## @visulima/vis [4.1.4](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.3...@visulima/vis@4.1.4) (2026-09-24)
 
 

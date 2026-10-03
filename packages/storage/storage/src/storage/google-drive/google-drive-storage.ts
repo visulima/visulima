@@ -194,6 +194,9 @@ const toUint8 = (data: unknown): Uint8Array => {
 class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     public static override readonly name: string = "google-drive";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<GoogleDriveFile>;
@@ -317,7 +320,12 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.name || file.id;
 
                     const appProperties: Record<string, string> = {

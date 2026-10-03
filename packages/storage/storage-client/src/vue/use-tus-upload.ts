@@ -8,7 +8,7 @@ import type { UrlStorage } from "../core/url-storage";
 import type { HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface UseTusUploadOptions {
-    /** Chunk size for TUS uploads (default: 1MB) */
+    /** Chunk size for TUS uploads (default: 5 MiB) */
     chunkSize?: number;
     /** Unified control handle. See `UploadControl`. */
     control?: UploadControl;
@@ -42,6 +42,8 @@ export interface UseTusUploadOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Send a tus termination request (`DELETE`) for the server-side upload when it is aborted */
+    terminateOnAbort?: boolean;
     /** Persistent storage for resume URLs. */
     urlStorage?: UrlStorage;
 }
@@ -93,6 +95,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         onSuccess,
         restrictions,
         retry,
+        terminateOnAbort,
         urlStorage,
     } = options;
 
@@ -114,6 +117,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         metadata,
         restrictions,
         retry,
+        terminateOnAbort,
         urlStorage,
     });
 

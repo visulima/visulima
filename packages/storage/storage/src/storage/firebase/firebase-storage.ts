@@ -64,6 +64,9 @@ const isBucket = (value: unknown): value is FirebaseBucket =>
 class FirebaseStorage extends BaseStorage<FirebaseFile> {
     public static override readonly name: string = "firebase";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<FirebaseFile>;
@@ -169,7 +172,12 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? file.name;
 
                     await this.runOperation(options, () =>

@@ -34,7 +34,7 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
     let destinationStat;
 
     try {
-        destinationStat = await lstat(destination);
+        destinationStat = await lstat(destination, { bigint: true });
     } catch {
         // ignore error
     }
@@ -42,7 +42,7 @@ const ensureLink = async (source: URL | string, destination: URL | string): Prom
     let sourceStat;
 
     try {
-        sourceStat = await lstat(source);
+        sourceStat = await lstat(source, { bigint: true });
     } catch (error: unknown) {
         const nodeError = error as NodeJS.ErrnoException;
 

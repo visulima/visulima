@@ -63,6 +63,9 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
 class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public static override readonly name: string = "pocketbase";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<PocketBaseFile>;
@@ -205,7 +208,12 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
                         throw new Error("Unsupported checksum algorithm");
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.path ?? file.name;
 
                     await this.putRecord(key, buffer, file.contentType, options);

@@ -44,6 +44,13 @@ describe("baseStorage", () => {
         expect(storage.maxUploadSize).toBe(6_442_450_944); // 6GB
     });
 
+    it("supports resumable writes and advertises the tus extensions that need them by default", () => {
+        expect.assertions(2);
+
+        expect(storage.supportsResumableWrites).toBe(true);
+        expect(storage.tusExtension).toStrictEqual(expect.arrayContaining(["creation-defer-length", "concatenation"]));
+    });
+
     it("should successfully validate valid files", async () => {
         expect.assertions(1);
 

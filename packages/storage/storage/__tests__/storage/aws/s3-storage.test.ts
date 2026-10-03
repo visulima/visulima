@@ -1,4 +1,6 @@
-import type { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { Readable } from "node:stream";
+
+import type { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,
@@ -8,6 +10,7 @@ import {
     HeadObjectCommand,
     ListObjectsV2Command,
     ListPartsCommand,
+    PutObjectCommand,
     S3Client,
     UploadPartCommand,
 } from "@aws-sdk/client-s3";
@@ -181,6 +184,132 @@ describe(S3Storage, () => {
 
             expect(s3file).toMatchSnapshot();
         });
+
+        // S3 needs every part but the last to be at least 5 MiB, so these tests use a larger upload.
+        const MIN_PART = 5 * 1024 * 1024;
+        const largeMetafileResponse = {
+            Metadata: {
+                metadata: encodeURIComponent(
+                    JSON.stringify({
+                        ...JSON.parse(decodeURIComponent(metafileResponse.Metadata.metadata)),
+                        size: MIN_PART * 2,
+                    }),
+                ),
+            },
+        };
+
+        it("rejects a non-final part under 5 MiB before uploading it", async () => {
+            expect.assertions(2);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
+            await expect(storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "BadRequest",
+            });
+            expect(s3Mock.commandCalls(UploadPartCommand)).toHaveLength(0);
+        });
+
+        const decodeSavedMeta = (): Record<string, unknown>[] =>
+            s3Mock
+                .commandCalls(PutObjectCommand)
+                .map((call) => JSON.parse(decodeURIComponent(call.args[0].input.Metadata?.metadata as string)) as Record<string, unknown>);
+
+        it("persists the new bytesWritten without the Parts list after a partial write", async () => {
+            expect.assertions(4);
+
+            s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+            s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
+            s3Mock.on(PutObjectCommand).resolves({});
+
+            const s3file = await storage.write({ body: Readable.from(Buffer.alloc(MIN_PART)), contentLength: MIN_PART, id: metafile.id, start: 0 });
+
+            expect(s3file.bytesWritten).toBe(MIN_PART);
+
+            const saved = decodeSavedMeta();
+
+            expect(saved).toHaveLength(1);
+            expect(saved[0]?.bytesWritten).toBe(MIN_PART);
+            expect(saved[0]).not.toHaveProperty("Parts");
+        });
+
+        it("rejects a part whose start does not match the current offset and heals the stored offset", async () => {
+            expect.assertions(3);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [{ ETag: "1", PartNumber: 1, Size: 5 }] });
+            s3Mock.on(PutObjectCommand).resolves({});
+
+            await expect(storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "FileConflict",
+            });
+
+            expect(s3Mock.commandCalls(UploadPartCommand)).toHaveLength(0);
+            expect(decodeSavedMeta()[0]?.bytesWritten).toBe(5);
+        });
+
+        it("forwards an md5 checksum as ContentMD5 on UploadPart", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+            s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
+            s3Mock.on(PutObjectCommand).resolves({});
+
+            await storage.write({
+                body: Readable.from(Buffer.alloc(MIN_PART)),
+                checksum: "1B2M2Y8AsgTpgAmY7PhCfg==",
+                checksumAlgorithm: "md5",
+                contentLength: MIN_PART,
+                id: metafile.id,
+                start: 0,
+            });
+
+            expect(s3Mock.commandCalls(UploadPartCommand)[0]?.args[0].input.ContentMD5).toBe("1B2M2Y8AsgTpgAmY7PhCfg==");
+        });
+
+        it("maps an S3 BadDigest rejection to a checksum mismatch", async () => {
+            expect.assertions(1);
+
+            const badDigest = Object.assign(new Error("The Content-MD5 you specified did not match what we received."), { name: "BadDigest" });
+
+            s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+            s3Mock.on(UploadPartCommand).rejects(badDigest);
+
+            await expect(
+                storage.write({
+                    body: Readable.from(Buffer.alloc(MIN_PART)),
+                    checksum: "AAAAAAAAAAAAAAAAAAAAAA==",
+                    checksumAlgorithm: "md5",
+                    contentLength: MIN_PART,
+                    id: metafile.id,
+                    start: 0,
+                }),
+            ).rejects.toMatchObject({ UploadErrorCode: "ChecksumMismatch" });
+        });
+
+        it("only advertises md5 and rejects checksum algorithms S3 cannot verify per part", async () => {
+            expect.assertions(3);
+
+            expect(storage.checksumTypes).toStrictEqual(["md5"]);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
+            await expect(
+                storage.write({
+                    body: Readable.from(Buffer.alloc(10)),
+                    checksum: "abc",
+                    checksumAlgorithm: "sha256",
+                    contentLength: 10,
+                    id: metafile.id,
+                    start: 0,
+                }),
+            ).rejects.toMatchObject({ UploadErrorCode: "UnsupportedChecksumAlgorithm" });
+            expect(s3Mock.commandCalls(UploadPartCommand)).toHaveLength(0);
+        });
     });
 
     describe("delete()", () => {
@@ -228,7 +357,7 @@ describe(S3Storage, () => {
 
             const result = await storage.copy("name", "new name");
 
-            expect(s3Mock.call(1).args[0].input).toStrictEqual({
+            expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",
@@ -258,7 +387,7 @@ describe(S3Storage, () => {
 
             const result = await storage.copy("name", "new name", { storageClass: "GLACIER" });
 
-            expect(s3Mock.call(1).args[0].input).toStrictEqual({
+            expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",

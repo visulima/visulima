@@ -55,7 +55,8 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
 
@@ -145,6 +146,10 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 return file;
             }
 
+            if (part.size !== undefined) {
+                updateSize(file, part.size);
+            }
+
             const { body, start } = part;
             const chunks: Buffer[] = [];
 
@@ -162,7 +167,23 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const incoming = Buffer.concat(chunks);
             const existing = this.store.get(file.name)?.bytes;
-            const bytes: Buffer = start === 0 || !existing ? incoming : Buffer.concat([existing.subarray(0, start), incoming]);
+            // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale. Chunked
+            // uploads are excluded: providers mark them completed as soon as the furthest byte lands,
+            // so offset 0 can still be a missing chunk of an unfinished upload.
+            const isOverwrite = start === 0 && file.status === "completed" && file.metadata?._chunkedUpload !== true;
+            const base = isOverwrite || !existing ? Buffer.alloc(0) : existing;
+
+            // Write at `start`, growing the buffer as needed and leaving bytes outside
+            // `[start, start + incoming.length)` untouched, so out-of-order chunks don't clobber each other.
+            const bytes = Buffer.alloc(Math.max(base.length, start + incoming.length));
+
+            base.copy(bytes);
+            incoming.copy(bytes, start);
+
+            // An overwrite may be shorter than the file it replaces.
+            if (isOverwrite) {
+                updateSize(file, bytes.length);
+            }
 
             const now = new Date().toISOString();
             const entry: MemoryEntry = {
@@ -179,14 +200,11 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             file.bytesWritten = bytes.length;
             file.ETag = entry.eTag;
             file.modifiedAt = entry.modifiedAt;
-            updateSize(file, bytes.length);
             file.status = getFileStatus(file);
 
+            // onComplete is the upload handlers' job (they call it once the upload is
+            // completed); calling it here too made every handler upload fire it twice.
             await this.saveMeta(file);
-
-            if (file.status === "completed") {
-                await this.onComplete(file, {});
-            }
 
             return file;
         });

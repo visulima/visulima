@@ -1,3 +1,27 @@
+## @visulima/vite-overlay [2.0.38](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.37...@visulima/vite-overlay@2.0.38) (2026-10-03)
+
+## @visulima/vite-overlay [2.0.37](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.36...@visulima/vite-overlay@2.0.37) (2026-10-03)
+
+## @visulima/vite-overlay [2.0.36](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.35...@visulima/vite-overlay@2.0.36) (2026-10-03)
+
+## @visulima/vite-overlay [2.0.35](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.34...@visulima/vite-overlay@2.0.35) (2026-10-03)
+
+## @visulima/vite-overlay [2.0.34](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.33...@visulima/vite-overlay@2.0.34) (2026-10-02)
+
+## @visulima/vite-overlay [2.0.33](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.32...@visulima/vite-overlay@2.0.33) (2026-10-01)
+
+## @visulima/vite-overlay [2.0.32](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.31...@visulima/vite-overlay@2.0.32) (2026-09-30)
+
+## @visulima/vite-overlay [2.0.31](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.30...@visulima/vite-overlay@2.0.31) (2026-09-29)
+
+## @visulima/vite-overlay [2.0.30](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.29...@visulima/vite-overlay@2.0.30) (2026-09-28)
+
+## @visulima/vite-overlay [2.0.29](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.28...@visulima/vite-overlay@2.0.29) (2026-09-27)
+
+## @visulima/vite-overlay [2.0.28](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.27...@visulima/vite-overlay@2.0.28) (2026-09-26)
+
+## @visulima/vite-overlay [2.0.27](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.26...@visulima/vite-overlay@2.0.27) (2026-09-25)
+
 ## @visulima/vite-overlay [2.0.26](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.25...@visulima/vite-overlay@2.0.26) (2026-09-24)
 
 ## @visulima/vite-overlay [2.0.25](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.24...@visulima/vite-overlay@2.0.25) (2026-09-23)

@@ -1,0 +1,120 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Coverage baseline"
+
+# Codecov compares a PR against the most recent report on its BASE branch. That
+# base used to come from the release job (semantic-release.yml), which tied it to
+# publishing: no base when the release was skipped, blocked by `wait-for-tests`
+# or cancelled by a follow-up push, and only an `affected` subset when it did
+# run, with `carryforward` filling the rest from arbitrarily old reports.
+#
+# This workflow exists solely to give Codecov a truthful base: the FULL coverage
+# suite on every push to a release branch. It is NOT a gate - nothing requires
+# it, the release ignores it, and a PR's own coverage still comes from test.yml.
+on: # yamllint disable-line rule:truthy
+    push:
+        branches:
+            # Maintenance branches (semantic-release's `+([0-9])?(.{+([0-9]),x}).x`
+            # extglob), in GitHub filter syntax, where `+` repeats the previous
+            # character and parentheses are literal: 1.x, 1.2.x, 1.x.x.
+            - "[0-9]+.x"
+            - "[0-9]+.[0-9]+.x"
+            - "[0-9]+.x.x"
+            - "main"
+            - "next"
+            - "next-major"
+            - "alpha"
+            - "beta"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    # A release branch takes several pushes in a row (the squashed PR, then the
+    # release bot's commits). Only the newest tree is worth a report, and nothing
+    # here publishes, so superseded runs can be cancelled.
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    actions: "read" # to download this commit's Build Native artifacts
+    checks: "read" # to poll Check Native Build via gh api
+    contents: "read" # to fetch code (actions/checkout)
+
+env:
+    NX_MAX_CACHE_SIZE: "1GB"
+
+jobs:
+    coverage:
+        name: "Upload coverage baseline"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        # Up to 80 minutes waiting for Build Native (see the composite action), then
+        # a full build + coverage run of the whole tree.
+        timeout-minutes: 150
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+
+            # Same runtime and settings as the test.yml leg that uploads PR coverage
+            # (ubuntu-latest, Node 24), so the base and the PR reports are comparable.
+            - name: "Setup resources and environment"
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              with:
+                  node-version: "24"
+                  install-node-gyp: "true"
+                  cache-prefix: "coverage"
+                  skip-playwright: "true"
+                  enable-nx-cache: "false"
+                  upgrade-npm-version: false
+                  run-npm-audit: false
+                  run-signatures-audit: false
+
+            - name: "Native test artifacts"
+              uses: "./.github/actions/native-test-artifacts"
+              with:
+                  ref: "${{ github.sha }}"
+                  github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+            # Shares the cache family of the test.yml coverage leg: a task whose
+            # inputs are unchanged restores the very coverage it produced, so only
+            # what changed actually runs - while the report still covers every package.
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-test-${{ runner.os }}-node24-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-test-${{ runner.os }}-node24-
+
+            # Whole tree, not `build:affected`: every package's `dist` has to exist for
+            # the suites that import it.
+            - name: "Build packages"
+              run: "pnpm run build:packages"
+
+            # `test:coverage` over every project, not the `affected` subset the PR leg
+            # runs: an affected run reports only what changed, which is the one thing a
+            # baseline must not be. Same exclusions as the PR leg (test:affected:coverage).
+            - name: "Run the coverage suite"
+              run: "pnpm exec nx run-many --target=test:coverage --all --parallel --exclude='*-bench,storybook,shared-utils,www'"
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
+
+            # `continue-on-error`, matching test.yml: a Codecov outage must not paint a
+            # release branch red. A missed upload only leaves the base where it was.
+            - name: "Upload coverage to Codecov"
+              continue-on-error: true
+              uses: "./.github/actions/codecov-upload"
+              with:
+                  token: "${{ secrets.CODECOV_TOKEN }}"
+                  run-id: "${{ github.run_id }}"
+                  exclude-projects: "pail-bench,redact-bench,colorize-bench,inspector-bench,docs,storybook"

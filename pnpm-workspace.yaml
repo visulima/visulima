@@ -82,6 +82,26 @@ auditConfig:
     # Second extract-zip symlink advisory, same story: it names 2.0.2 as the
     # fix and 2.0.1 is still the latest published version. Same dev-only paths.
     - GHSA-7pqw-9j4j-h8q3
+    # node-forge RSA PKCS#1 v1.5 signature verification leniency. The advisory
+    # names 1.4.1 as the fix but 1.4.0 is still the latest published version.
+    # Only reached through listhen (Nuxt/Nitro/vinxi/Netlify dev servers in
+    # apps/web and storage-client examples), which uses forge to mint a
+    # self-signed dev certificate and never verifies untrusted signatures.
+    # Re-check when node-forge publishes 1.4.1.
+    - GHSA-86w9-cpqp-85rv
+    # http-cache-semantics max-stale cross-user cache disclosure. The advisory
+    # names 4.2.1 as the fix but 4.2.0 is still the latest published version.
+    # Reached via got/cacheable-request (textlint-rule-alex update-notifier,
+    # dev-only) and make-fetch-happen (vis > sigstore), both single-user
+    # private caches, so no response is shared across users. Re-check when
+    # http-cache-semantics publishes 4.2.1.
+    - GHSA-ch52-4w7c-c8xp
+    # braces stack exhaustion on deeply nested brace patterns. The advisory
+    # names 3.0.4 as the fix but 3.0.3 is still the latest published version.
+    # Reached via micromatch (fast-glob, semantic-release, findup-sync, ...),
+    # which only expands glob patterns authored in repo config/tooling, never
+    # attacker-supplied input. Re-check when braces publishes 3.0.4.
+    - GHSA-vfj7-8cjw-p6xm
 
 autoInstallPeers: true
 
@@ -100,7 +120,7 @@ catalogs:
     '@prisma/internals': 7.9.1
     express: ^5.2.1
     fastify: 5.11.3
-    hono: 4.13.5
+    hono: 4.13.12
     koa: 3.2.1
     prisma: 7.9.1
     swagger-ui-express: ^5.0.1
@@ -253,11 +273,11 @@ catalogs:
     mobx: ^7.0.0
     ms: ^2.1.3
     msw: 2.15.0
-    next: 16.3.3
+    next: 16.3.8
     node-fetch: ^3.3.2
     node-mocks-http: ^1.18.1
     node-pty: 1.1.0
-    nodemailer: 9.1.1
+    nodemailer: 10.0.13
     npm: 12.0.2
     npm-run-all2: ^9.0.3
     openai: 7.4.0
@@ -456,7 +476,7 @@ catalogs:
   prod:
     '@alcalzone/ansi-tokenize': ^0.3.0
     '@anolilab/commitlint-config': 10.1.0
-    '@anolilab/multi-semantic-release': ^4.4.7
+    '@anolilab/multi-semantic-release': ^4.4.21
     '@anolilab/textlint-config': 13.0.6
     '@antfu/install-pkg': ^2.0.1
     '@apidevtools/swagger-parser': ^12.1.0
@@ -606,10 +626,10 @@ catalogs:
     nano-copy: ^0.1.1
     nanoclone: ^1.0.2
     nanoid: 6.0.1
-    next: 16.3.3
+    next: 16.3.8
     next-themes: ^0.4.6
     nitro: 3.0.260311-beta
-    nodemailer: 9.1.1
+    nodemailer: 10.0.13
     normalize-package-data: ^9.0.0
     nuxt: ^4.5.2
     nx: 23.1.1
@@ -942,7 +962,7 @@ overrides:
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@>=1.0.0 <1.15.2: ^1.15.2
-  basic-ftp@<=5.3.0: ^5.3.1
+  basic-ftp@<=5.3.0: ^6.2.1
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   brace-expansion@<5.0.5: '>=5.0.5'
   brace-expansion@>=5.0.0 <5.0.7: '>=5.0.7 <6'
@@ -1095,7 +1115,7 @@ overrides:
   dompurify@<=3.4.5: ^3.4.6
   # These parents pin dompurify 3.4.9 via a spec the range override above can't
   # re-catch; force the resolved edge to the patched 3.4.12 (a safe patch bump).
-  'posthog-js>dompurify': ^3.4.13
+  'posthog-js>dompurify': ^3.4.16
   'redoc>dompurify': ^3.4.12
   'swagger-ui-react>dompurify': ^3.4.12
   dompurify@<=3.4.6: ^3.4.7
@@ -1140,24 +1160,24 @@ overrides:
   '@sveltejs/kit@2': '>=2.70.2 <3'
   axios@1: '>=1.18.0 <2'
   body-parser@2: '>=2.3.0 <3'
-  brace-expansion@5: '>=5.0.9 <6'
+  brace-expansion@5: '>=5.0.12 <6'
   # Stack exhaustion on recursive object graphs (GHSA-ggr8-5vv4-36mx, high), reached
   # through html-to-text and @wdio/config. There is no patched 7.x — the fix landed in
   # 8.0.0 — so this floor has to cross the major. v8 keeps the same dual ESM/CJS entry
   # points and the same node >=16 engine, so both consumers resolve unchanged.
   deepmerge-ts@7: '>=8.0.1 <9'
   deepmerge-ts@8: '>=8.0.1 <9'
-  dompurify@3: '>=3.4.13 <4'
-  fast-uri@3: '>=3.1.6 <4'
-  fast-uri@4: '>=4.1.3 <5'
+  dompurify@3: '>=3.4.16 <4'
+  fast-uri@3: '>=3.1.8 <4'
+  fast-uri@4: '>=4.1.5 <5'
   fast-xml-parser@5: '>=5.10.1 <6'
   find-my-way@9: '>=9.6.1 <10'
-  hono@4: '>=4.13.5 <5'
-  ip-address@10: '>=10.3.1 <11'
+  hono@4: '>=4.13.7 <5'
+  ip-address@10: '>=10.7.1 <11'
   js-yaml@3: '>=3.15.1 <4'
   js-yaml@4: '>=4.3.1 <5'
   linkify-it@5: '>=5.0.2 <6'
-  next@16: '>=16.3.3 <17'
+  next@16: '>=16.3.6 <17'
   postcss@8: '>=8.5.18 <9'
   protobufjs@7: '>=7.6.5 <8'
   protobufjs@8: '>=8.6.6 <9'
@@ -1174,22 +1194,33 @@ overrides:
   valibot@1: '>=1.4.2 <2'
   # Nested-path pins for edges the major-line keys above can't re-catch (an
   # ancestor already rewrote the spec, so pnpm keeps the stale resolved copy).
-  '@hono/node-server>hono': '>=4.13.5 <5'
+  '@hono/node-server>hono': '>=4.13.7 <5'
   '@modelcontextprotocol/sdk>@hono/node-server': '>=2.0.10 <3'
-  minimatch>brace-expansion: '>=5.0.9 <6'
+  minimatch>brace-expansion: '>=5.0.12 <6'
   'minimizer-webpack-plugin>postcss': '>=8.5.18 <9'
   # Advisories published after the previous audit sweep; same major-line floor
   # convention as the block above.
   '@humanfs/node@0': '>=0.16.8 <1'
   '@tiptap/core@3': '>=3.30.4 <4'
   browserslist@4: '>=4.28.7 <5'
-  fastify@5: '>=5.12.1 <6'
+  fastify@5: '>=5.12.5 <6'
   qs@6: '>=6.16.0 <7'
   sanitize-html@2: '>=2.17.7 <3'
   '@vitest/mocker@4': '>=4.1.11 <5'
-  nodemailer@9: '>=9.1.1 <10'
+  nodemailer@10: '>=10.0.9 <11'
   sharp@0.35: '>=0.35.4 <0.36'
   smol-toml@1: '>=1.7.1 <2'
+  '@grpc/grpc-js@1': '>=1.14.5 <2'
+  devalue@5: '>=5.9.3 <6'
+  moment@2: '>=2.31.0 <3'
+  serialize-javascript@7: '>=7.1.2 <8'
+  # basic-ftp directory-listing CPU DoS (GHSA-c475-qrg2-pj4r, high). There is no
+  # patched 5.x — the fix landed in 6.2.1 — so the 5-line floor has to cross the
+  # major for get-uri's ^5.3.1 edge (puppeteer/box-sdk proxy-agent, dev-only).
+  # 6.0's only break is refusing separate PASV transfer hosts by default (FTP
+  # bounce hardening); get-uri's connect/size/download calls are unchanged.
+  basic-ftp@5: '>=6.2.1 <7'
+  basic-ftp@6: '>=6.2.1 <7'
   vitest@4: '>=4.1.11 <5'
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.

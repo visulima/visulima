@@ -1,3 +1,87 @@
+## @visulima/notification [1.1.19](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.18...@visulima/notification@1.1.19) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.23
+
+## @visulima/notification [1.1.18](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.17...@visulima/notification@1.1.18) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.22
+
+## @visulima/notification [1.1.17](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.16...@visulima/notification@1.1.17) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.21
+
+## @visulima/notification [1.1.16](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.15...@visulima/notification@1.1.16) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.20
+
+## @visulima/notification [1.1.15](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.14...@visulima/notification@1.1.15) (2026-10-02)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.19
+
+## @visulima/notification [1.1.14](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.13...@visulima/notification@1.1.14) (2026-10-01)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.18
+
+## @visulima/notification [1.1.13](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.12...@visulima/notification@1.1.13) (2026-09-30)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.17
+
+## @visulima/notification [1.1.12](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.11...@visulima/notification@1.1.12) (2026-09-29)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.16
+
+## @visulima/notification [1.1.11](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.10...@visulima/notification@1.1.11) (2026-09-28)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.15
+
+## @visulima/notification [1.1.10](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.9...@visulima/notification@1.1.10) (2026-09-27)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.14
+
+## @visulima/notification [1.1.9](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.8...@visulima/notification@1.1.9) (2026-09-26)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.13
+
+## @visulima/notification [1.1.8](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.7...@visulima/notification@1.1.8) (2026-09-25)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.12
+
 ## @visulima/notification [1.1.7](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.6...@visulima/notification@1.1.7) (2026-09-24)
 
 

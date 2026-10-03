@@ -38,6 +38,36 @@ describe(GCSMetaStorage, async () => {
         metaStorage = new GCSMetaStorage(options);
     });
 
+    describe("bucket access check", () => {
+        it("reports a missing bucket by name and retries the probe on the next operation", async () => {
+            expect.assertions(2);
+
+            mockAuthRequest.mockReset();
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Not Found"), { code: "404" }));
+
+            await expect(metaStorage.save(metafile.id, metafile)).rejects.toThrow("Bucket test-bucket does not exist");
+
+            mockAuthRequest.mockResolvedValue({ status: 200 });
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(mockAuthRequest).toHaveBeenCalledTimes(3); // failed probe + probe + save
+        });
+
+        it("does not probe a caller-supplied auth client", async () => {
+            expect.assertions(1);
+
+            mockAuthRequest.mockReset();
+
+            const request = vi.fn().mockResolvedValue({ status: 200 });
+            const storage = new GCSMetaStorage({ ...options, authClient: { request } as unknown as GoogleAuth });
+
+            await storage.save(metafile.id, metafile);
+
+            expect(request).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe(".save()", () => {
         it("should save metadata to GCS", async () => {
             expect.assertions(1);

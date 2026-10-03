@@ -33,7 +33,7 @@ Every provider/runtime SDK is an **optional** peer (see `peerDependenciesMeta` i
 
 ### Hard dependencies
 
-`@remix-run/multipart-parser`, `@sindresorhus/fnv1a`, `@visulima/pagination`, `file-type`, `lru-cache`, `mime`, `nanoid`, `path-to-regexp`, `type-is`, `zod`. Implicit Nx deps: `api/pagination`, `data-manipulation/humanizer`, `filesystem/path`, `filesystem/fs`.
+`@remix-run/multipart-parser`, `@sindresorhus/fnv1a`, `@visulima/pagination`, `file-type`, `lru-cache`, `mime`, `nanoid`, `type-is`, `zod`. Implicit Nx deps: `api/pagination`, `data-manipulation/humanizer`, `filesystem/path`, `filesystem/fs`.
 
 ## Related
 

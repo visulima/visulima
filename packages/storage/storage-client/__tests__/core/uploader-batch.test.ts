@@ -96,11 +96,11 @@ describe("uploader Batch Operations", () => {
 
         uploader.addBatch([file1]);
 
-        // Wait for progress event
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 15);
+        // Wait for the progress event; a fixed sleep was too short on loaded CI runners
+        await vi.waitFor(() => {
+            if (onBatchProgress.mock.calls.length === 0) {
+                throw new Error("BATCH_PROGRESS not emitted yet");
+            }
         });
 
         expect(onBatchProgress).toHaveBeenCalledWith(
@@ -124,11 +124,11 @@ describe("uploader Batch Operations", () => {
 
         uploader.addBatch([file1]);
 
-        // Wait for completion
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 25);
+        // Wait for completion; a fixed sleep was too short on loaded CI runners
+        await vi.waitFor(() => {
+            if (onBatchFinish.mock.calls.length === 0) {
+                throw new Error("BATCH_FINISH not emitted yet");
+            }
         });
 
         expect(onBatchFinish).toHaveBeenCalledWith(

@@ -135,44 +135,93 @@ Delete incomplete uploads:
 // DELETE /upload/tus/:id
 ```
 
+### Creation-Defer-Length Extension
+
+Start an upload before its size is known, and send `Upload-Length` with a later `PATCH`. The value is
+checked against `maxUploadSize` (413), and an `Upload-Defer-Length` other than `1` is rejected with 400.
+
+```typescript
+// POST /upload/tus
+// Headers:
+//   Upload-Defer-Length: 1
+
+// PATCH /upload/tus/:id
+// Headers:
+//   Upload-Offset: 0
+//   Upload-Length: 10485760
+```
+
 ### Checksum Extension
 
-Verify upload integrity:
+Verify each chunk. The checksum is the **base64** digest of the chunk's bytes:
 
 ```typescript
 // PATCH /upload/tus/:id
 // Headers:
 //   Upload-Offset: 0
-//   Upload-Checksum: sha1 3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2
+//   Upload-Checksum: sha1 qvTGHdzF6KLavt4PO0gs2a6pQ00=   (SHA-1 of the bytes "hello")
 //   Content-Type: application/offset+octet-stream
 // Body: [chunk data]
 ```
 
-### Expiration Extension
+`Tus-Checksum-Algorithm` lists the algorithms the storage adapter verifies natively, followed by the ones the
+handler verifies itself (`md5`, `sha1`, `sha256`, `sha384`, `sha512`, `crc32`, `crc32c`). To verify a checksum
+itself, the handler buffers that chunk in memory, so such a PATCH needs a `Content-Length` (411 otherwise) and may
+be at most `maxChecksumBufferSize` bytes (64 MiB by default, 413 otherwise) — send checksummed uploads in chunks. A
+mismatch is answered with `460 Checksum Mismatch` and the chunk is discarded; an unknown algorithm gets `400`.
 
-Automatic cleanup of expired uploads:
+### Concatenation Extension
+
+Upload parts in parallel as partial uploads and join them with a final upload. Partial uploads are referenced
+by their URLs (absolute or relative); bare upload IDs are accepted too. A finished partial upload is not
+processed on its own: `onComplete` and the `completed` event fire for the final upload only.
 
 ```typescript
-const storage = new DiskStorage({
-    directory: "./uploads",
-    expiration: {
-        maxAge: "24h",
-        purgeInterval: "1h",
-    },
-});
+// POST /upload/tus            Upload-Concat: partial          → Location: /upload/tus/a
+// POST /upload/tus            Upload-Concat: partial          → Location: /upload/tus/b
+// POST /upload/tus            Upload-Concat: final;/upload/tus/a /upload/tus/b
 ```
 
-## Response Headers
+### X-HTTP-Method-Override
 
-TUS responses include standard TUS headers:
+Clients behind proxies that only allow `GET`/`POST` can send the real method in `X-HTTP-Method-Override`; the
+handler uses it in place of the request method, as the protocol requires. The method changes inside the handler,
+after routing and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may `DELETE`) must
+also check this header — or turn the override off:
 
-- `Tus-Resumable`: TUS protocol version (e.g., "1.0.0")
-- `Tus-Version`: Supported TUS versions
-- `Tus-Extension`: Supported TUS extensions
-- `Tus-Max-Size`: Maximum upload size
-- `Location`: Upload URL for created uploads
-- `Upload-Offset`: Current upload offset
-- `Upload-Expires`: Upload expiration timestamp
+```typescript
+const tus = new Tus({ storage, allowMethodOverride: false });
+```
+
+## Storage Backend Limits
+
+Resumable, chunked TUS uploads need a backend that can append to an upload:
+
+- **Disk, Memory, S3 (incl. aws-light), GCS and Azure** support chunked uploads. S3 needs every chunk except the
+  last to be at least 5 MiB; a smaller chunk is rejected right away with `400`. Azure stages each chunk as one
+  block, and a block can hold at most 4000 MiB; a larger chunk is rejected with `413` before any byte is stored, so
+  set the client's chunk size below that.
+- **Box, Bunny, Bun S3, Cloudinary, Dropbox, Firebase, FTP, Google Drive, Netlify Blobs, OneDrive, PocketBase,
+  SFTP, SharePoint, Supabase, UploadThing and Vercel Blob** store an object in one request
+  (`storage.supportsResumableWrites === false`). Send the whole file in one `PATCH` (or with creation-with-upload);
+  a partial chunk is rejected with `405` instead of being stored as a truncated file. These adapters don't advertise
+  the `creation-defer-length` and `concatenation` extensions.
+- S3, GCS and Azure drop an upload's metadata once it completes, so a `HEAD` after completion answers `404`, as the
+  protocol allows.
+
+## Status Codes
+
+| Request                                  | Status                                       |
+| ---------------------------------------- | -------------------------------------------- |
+| `POST` (creation, also with upload data) | `201 Created`                                |
+| `PATCH` (every successful chunk)         | `204 No Content`, with `Upload-Offset`       |
+| `PATCH` with a stale `Upload-Offset`     | `409 Conflict`; the upload is left untouched |
+| `PATCH` with a mismatching checksum      | `460 Checksum Mismatch`                      |
+| `PATCH` while another one is in progress | `423 Locked`; retry once the first finishes  |
+| `HEAD`                                   | `200 OK`, with `Cache-Control: no-store`     |
+| `DELETE`                                 | `204 No Content`                             |
+| Unknown / expired upload                 | `404 Not Found` / `410 Gone`                 |
+| Malformed `Upload-*` header              | `400 Bad Request`                            |
 
 ## Configuration
 
