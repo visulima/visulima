@@ -1,0 +1,129 @@
+name: "Native test artifacts"
+description: >-
+    Wait for the Build Native workflow of a commit, download its host-matching
+    native bindings and distribute them into the package roots, so suites that
+    load a compiled binding (secret-scanner, task-runner, tui, vis) run against it
+    instead of skipping. Shared by the PR test legs (`test.yml`) and the coverage
+    baseline (`coverage-baseline.yml`), so both measure the same thing.
+
+inputs:
+    ref:
+        description: "Commit whose Build Native run to wait for and download from."
+        required: true
+    github-token:
+        description: "Token for the check-run / artifact API calls (secrets.GITHUB_TOKEN)."
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        - name: "Wait for Build Native"
+          uses: "./.github/actions/wait-for-native-build"
+          with:
+              ref: "${{ inputs.ref }}"
+              github-token: "${{ inputs.github-token }}"
+
+        # Pull the host-matching binaries produced by build-native.yml so tests that require
+        # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
+        # the .node files only exist in the build-native runner — test runs fail at
+        # require('./<pkg>-native.linux-x64-gnu.node').
+        #
+        # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
+        # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
+        # retry on auth failure, so wrap the step with a two-shot retry.
+        - name: "Download native build artifacts"
+          id: "download_native_artifacts"
+          continue-on-error: true
+          uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+          with:
+              workflow: "build-native.yml"
+              commit: "${{ inputs.ref }}"
+              name: "bindings-(.+)"
+              name_is_regexp: true
+              path: "artifacts"
+              if_no_artifact_found: "fail"
+              allow_forks: false
+
+        - name: "Wait before retrying artifact download"
+          if: "steps.download_native_artifacts.outcome == 'failure'"
+          shell: "bash"
+          run: |
+              rm -rf artifacts
+              sleep 30
+
+        - name: "Download native build artifacts (retry)"
+          if: "steps.download_native_artifacts.outcome == 'failure'"
+          # No continue-on-error here: if the retry also fails, fail loud
+          # rather than silently running native-binding-dependent tests
+          # (secret-scanner, task-runner, etc.) against missing bindings.
+          uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+          with:
+              workflow: "build-native.yml"
+              commit: "${{ inputs.ref }}"
+              name: "bindings-(.+)"
+              name_is_regexp: true
+              path: "artifacts"
+              if_no_artifact_found: "fail"
+              allow_forks: false
+
+        - name: "Distribute native artifacts to package roots"
+          shell: "bash"
+          run: |
+              if [ ! -d artifacts ]; then
+                echo "no native artifacts downloaded, skipping distribution"
+                exit 0
+              fi
+
+              find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \; 2>/dev/null || true
+              find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
+              find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
+              find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
+
+              # Restore the task-runner sidecars into their binding-package
+              # dirs (the .node moves above don't carry them). Without this,
+              # the seccomp + macOS-interpose integration tests can't find
+              # the helper/dylib and silently skip instead of validating.
+              for sidecar in fspy-seccomp-helper fspy-macos.dylib fspy-windows.dll; do
+                  find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/task-runner/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/task-runner/npm/$binding/$sidecar" 2>/dev/null || true
+                  done
+              done
+
+              # Restore the vis CLI front-end binary into its binding-package
+              # dirs so the CLI front-end integration test resolves it instead
+              # of skipping. Both vis-native-cli (unix) and .exe (Windows) match.
+              find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                  binding="$(basename "$(dirname "$f")")"
+                  mkdir -p "packages/tooling/vis/npm/$binding"
+                  install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
+              done
+
+              rm -rf artifacts/
+
+        # Build Native uploads every target, so the runner's own bindings must be
+        # present now; tests would otherwise silently skip their native coverage.
+        - name: "Verify host native bindings"
+          shell: "bash"
+          run: |
+              set -euo pipefail
+              case "$(node -p 'process.platform + "-" + process.arch')" in
+                  linux-x64) triple="linux-x64-gnu" ;;
+                  linux-arm64) triple="linux-arm64-gnu" ;;
+                  darwin-x64) triple="darwin-x64" ;;
+                  darwin-arm64) triple="darwin-arm64" ;;
+                  win32-x64) triple="win32-x64-msvc" ;;
+                  win32-arm64) triple="win32-arm64-msvc" ;;
+                  *) echo "::error::unsupported runner platform"; exit 1 ;;
+              esac
+              missing=0
+              for binding in tooling/task-runner/task-runner tooling/vis/vis terminal/tui/tui tooling/secret-scanner/secret-scanner; do
+                  file="packages/${binding}-native.${triple}.node"
+                  if [ ! -f "$file" ]; then
+                      echo "::error::missing native binding ${file}"
+                      missing=$((missing + 1))
+                  fi
+              done
+              [ "$missing" -eq 0 ] || exit 1
+              echo "Native bindings for ${triple} are in place"

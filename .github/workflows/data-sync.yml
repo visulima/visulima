@@ -38,7 +38,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "data-sync"
                   install-packages: "true"

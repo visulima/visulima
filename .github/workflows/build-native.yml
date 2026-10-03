@@ -9,10 +9,20 @@ on: # yamllint disable-line rule:truthy
             - "next"
             - "alpha"
             - "beta"
+    # Every branch semantic-release.yml and coverage-baseline.yml run on: both
+    # consume this commit's native artifacts and fail (or wait out their deadline)
+    # without them.
     push:
         branches:
+            # Maintenance branches (semantic-release's `+([0-9])?(.{+([0-9]),x}).x`
+            # extglob), in GitHub filter syntax, where `+` repeats the previous
+            # character and parentheses are literal: 1.x, 1.2.x, 1.x.x.
+            - "[0-9]+.x"
+            - "[0-9]+.[0-9]+.x"
+            - "[0-9]+.x.x"
             - "main"
             - "next"
+            - "next-major"
             - "alpha"
             - "beta"
     workflow_dispatch: # yamllint disable-line rule:empty-values
@@ -200,7 +210,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   cache-prefix: "build-native"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false

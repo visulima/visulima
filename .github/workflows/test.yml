@@ -7,18 +7,28 @@ on: # yamllint disable-line rule:truthy
         types: ["opened", "synchronize", "reopened"]
         branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
+    # Pushes to main test what landed and save the Nx task cache that PR runs
+    # restore from (a PR's own cache entries are scoped to its ref, so main can
+    # only be warmed by main itself).
+    push:
+        branches: ["main"]
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.ref }}"
-    cancel-in-progress: true
+    # Don't cancel main runs mid-way: a cancelled run never saves its Nx cache.
+    cancel-in-progress: "${{ github.event_name != 'push' }}"
 
 permissions:
+    actions: "read" # nx-set-shas looks up the last successful main run on push events
     contents: "read" # to fetch code (actions/checkout)
     checks: "read" # to poll Check Native Build via gh api
 
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
+    # Bound the Nx cache that is saved/restored between runs (GitHub's 10 GB
+    # cache quota is shared with the pnpm store caches).
+    NX_MAX_CACHE_SIZE: "1GB"
     HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
     HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
 
@@ -83,23 +93,11 @@ jobs:
         timeout-minutes: 130
         strategy:
             matrix:
-                include:
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                    - os: "ubuntu-latest"
-                      node_version: "24"
-                    - os: "ubuntu-latest"
-                      node_version: "25"
-                    - os: "macos-15"
-                      node_version: "22"
-                    - os: "windows-latest"
-                      node_version: "22"
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                      bun_version: "latest"
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                      deno_version: "lts"
+                # The bun / deno legs only add that binary to PATH; the suite still
+                # runs on Node via vitest and nothing in it gates on either binary,
+                # so they duplicate the node-24 leg. Run them post-merge (push to
+                # main) instead of occupying two runners on every PR.
+                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"26\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"deno_version\":\"lts\"}' || '')) }}"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -127,17 +125,19 @@ jobs:
                   install-node-gyp: "true"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "true"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   # The setup action's default `npm install --global npm@latest` exists only
                   # to enable publish provenance, which the test job never needs. npm@12 dropped
-                  # support for the Node 25 current line (engines require >=26.0.0), so the
-                  # upgrade fails the node-25 matrix leg. The runner's bundled npm is fine here.
+                  # support for odd/older lines (engines: ^22.22.2 || ^24.15.0 || >=26.0.0), which
+                  # broke the former node-25 leg. The runner's bundled npm is fine here.
                   upgrade-npm-version: false
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false
 
             - name: "Setup Deno"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.deno_version"
               uses: "denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed" # v2.0.5
               with:
                   deno-version: "${{ matrix.deno_version }}"
@@ -148,145 +148,18 @@ jobs:
                   # fails Post Setup Deno with "Path Validation Error".
                   cache: false
             - name: "Setup Bun"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.bun_version"
               uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0
               with:
                   bun-version: "${{ matrix.bun_version }}"
 
-            - name: "Wait for Build Native workflow"
-              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
-              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
-              # Plain shell + gh api works on every runner without Ruby.
-              # GitHub-hosted runner queue depth occasionally pushes the
-              # gate job's start time 30+ minutes past the last build
-              # completion — and on bad days the build matrix itself stays
-              # queued long enough that the old 50-min deadline timed out
-              # mid-build (check still in_progress). 85-min step ceiling +
-              # 80-min internal deadline rides out those spikes; the gate
-              # still exits in ~minutes in the common case, so the higher
-              # ceiling only costs wall-clock when the runner pool is saturated.
-              timeout-minutes: 85
-              shell: "bash"
-              env:
-                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-                  REF: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  REPO: "${{ github.repository }}"
-              run: |
-                  set -euo pipefail
-                  check_name="Check Native Build"
-                  deadline=$(( $(date +%s) + 4800 ))
-                  while :; do
-                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
-                      # mid-poll (the token gets briefly rotated by Actions).
-                      # `set -e` would then kill the whole job before the next
-                      # iteration can retry — swallow the exit so the loop
-                      # keeps going.
-                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
-                          echo "Transient gh api error, retrying in 15s: $payload"
-                          payload=""
-                      fi
-                      if [ -n "$payload" ]; then
-                          status=$(printf '%s' "$payload" | jq -r '.status')
-                          conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
-                          if [ "$status" = "completed" ]; then
-                              case "$conclusion" in
-                                  success|skipped|neutral)
-                                      echo "Check '$check_name' completed: $conclusion"
-                                      exit 0
-                                      ;;
-                                  *)
-                                      echo "Check '$check_name' failed: $conclusion"
-                                      exit 1
-                                      ;;
-                              esac
-                          fi
-                          echo "Check '$check_name' status=$status, waiting 15s..."
-                      else
-                          echo "Check '$check_name' not yet registered or token blip, waiting 15s..."
-                      fi
-                      if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out waiting for '$check_name' after 80 minutes"
-                          exit 1
-                      fi
-                      sleep 15
-                  done
-
-            # Pull the host-matching binaries produced by build-native.yml so tests that require
-            # a compiled native binding (e.g. @visulima/secret-scanner) can load it. Without this
-            # the .node files only exist in the build-native runner — test runs fail at
-            # require('./<pkg>-native.linux-x64-gnu.node').
-            #
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download
-            # (observed on multi-MB artifact runs); dawidd6's v21 doesn't
-            # retry on auth failure, so wrap the step with a two-shot retry.
-            - name: "Download native build artifacts"
-              id: "download_native_artifacts"
-              continue-on-error: true
-              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+            # Wait for this commit's Build Native run and drop its host-matching
+            # bindings into the package roots (shared with coverage-baseline.yml).
+            - name: "Native test artifacts"
+              uses: "./.github/actions/native-test-artifacts"
               with:
-                  workflow: "build-native.yml"
-                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  name: "bindings-(.+)"
-                  name_is_regexp: true
-                  path: "artifacts"
-                  if_no_artifact_found: "warn"
-                  allow_forks: false
-
-            - name: "Wait before retrying artifact download"
-              if: "steps.download_native_artifacts.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 30"
-
-            - name: "Download native build artifacts (retry)"
-              if: "steps.download_native_artifacts.outcome == 'failure'"
-              # No continue-on-error here: if the retry also fails, fail loud
-              # rather than silently running native-binding-dependent tests
-              # (secret-scanner, task-runner, etc.) against missing bindings.
-              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
-              with:
-                  workflow: "build-native.yml"
-                  commit: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  name: "bindings-(.+)"
-                  name_is_regexp: true
-                  path: "artifacts"
-                  if_no_artifact_found: "warn"
-                  allow_forks: false
-
-            - name: "Distribute native artifacts to package roots"
-              shell: "bash"
-              run: |
-                  if [ ! -d artifacts ]; then
-                    echo "no native artifacts downloaded, skipping distribution"
-                    exit 0
-                  fi
-
-                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \; 2>/dev/null || true
-                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \; 2>/dev/null || true
-                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \; 2>/dev/null || true
-                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \; 2>/dev/null || true
-
-                  # Restore the task-runner sidecars into their binding-package
-                  # dirs (the .node moves above don't carry them). Without this,
-                  # the seccomp + macOS-interpose integration tests can't find
-                  # the helper/dylib and silently skip instead of validating.
-                  for sidecar in fspy-seccomp-helper fspy-macos.dylib fspy-windows.dll; do
-                      find artifacts -path "*/npm/*/$sidecar" -print0 2>/dev/null | while IFS= read -r -d "" f; do
-                          binding="$(basename "$(dirname "$f")")"
-                          mkdir -p "packages/tooling/task-runner/npm/$binding"
-                          install -m 0755 "$f" "packages/tooling/task-runner/npm/$binding/$sidecar" 2>/dev/null || true
-                      done
-                  done
-
-                  # Restore the vis CLI front-end binary into its binding-package
-                  # dirs so the CLI front-end integration test resolves it instead
-                  # of skipping. Both vis-native-cli (unix) and .exe (Windows) match.
-                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
-                      binding="$(basename "$(dirname "$f")")"
-                      mkdir -p "packages/tooling/vis/npm/$binding"
-                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
-                  done
-
-                  rm -rf artifacts/
+                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  github-token: "${{ secrets.GITHUB_TOKEN }}"
 
             # The codecov step below consumes the changed-files list; nx
             # affected detection itself uses NX_BASE/NX_HEAD env vars set
@@ -301,17 +174,37 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved below even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-test-${{ runner.os }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-node${{ matrix.node_version }}-
+
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
             - name: "Run tests"
               shell: "bash"
               run: |
-                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
+                  # Coverage only on the leg that uploads it. Decide in the expression layer:
+                  # rendered `false` is a non-empty string, so `[[ false ]]` would be true.
+                  if [[ "${{ matrix.os == 'ubuntu-latest' && matrix.node_version == '24' && !matrix.deno_version && !matrix.bun_version }}" == "true" ]]; then
                       pnpm run test:affected:coverage
                   else
                       pnpm run test:affected
                   fi
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
             # Inlined replacement for `anolilab/workflows/step/codecov`.
             # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
@@ -324,7 +217,7 @@ jobs:
             # config-only PRs where no coverage was produced.
             # Tracking upstream fix at anolilab/workflows#397.
             - name: "Validate codecov.yml"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version && needs.files-changed.outputs.codecov == 'true'"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push' && needs.files-changed.outputs.codecov == 'true'"
               shell: "bash"
               run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
 
@@ -332,8 +225,11 @@ jobs:
             # (see .github/actions/codecov-upload). `continue-on-error` keeps a
             # transient Codecov/keyserver hiccup from failing the Tests gate —
             # coverage upload is reporting, not test correctness.
+            #
+            # PRs only: on release-branch pushes this run is affected-only, so it
+            # would upload a partial base. coverage-baseline.yml uploads the full one.
             - name: "Upload code coverage to codecov"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push'"
               continue-on-error: true
               uses: "./.github/actions/codecov-upload"
               with:
@@ -358,7 +254,7 @@ jobs:
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
         env:
-            NODE: "22"
+            NODE: "24"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
@@ -378,10 +274,12 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "workerd"
                   skip-playwright: "true"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   # This job never publishes, so the provenance-only npm upgrade is unneeded.
                   upgrade-npm-version: false
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages.
@@ -390,11 +288,29 @@ jobs:
 
             # The workerd specs import from `src/`, not `dist/`, but workspace
             # dependencies still resolve through their published entry points.
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved below even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-workerd-${{ runner.os }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-workerd-${{ runner.os }}-
+
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
             - name: "Run workerd tests"
               run: "pnpm run test:affected:workerd"
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
     # Runs ONLY the @visulima/tsconfig package's test suite against every
     # TypeScript version it claims to support. The package emulates `tsc
@@ -429,7 +345,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "tsconfig-ts-${{ matrix.ts_version }}"
                   skip-playwright: "true"
