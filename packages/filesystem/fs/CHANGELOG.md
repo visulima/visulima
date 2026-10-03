@@ -1,3 +1,9 @@
+## @visulima/fs [6.0.23](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.22...@visulima/fs@6.0.23) (2026-10-03)
+
+### Bug Fixes
+
+* unbreak main ci (email lint, fs windows ino) ([#888](https://github.com/visulima/visulima/issues/888)) ([47611c1](https://github.com/visulima/visulima/commit/47611c172537d020d1f5bc55f7ad8777c40dd72e))
+
 ## @visulima/fs [6.0.22](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.21...@visulima/fs@6.0.22) (2026-10-03)
 
 ## @visulima/fs [6.0.21](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.20...@visulima/fs@6.0.21) (2026-10-02)
