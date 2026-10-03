@@ -108,7 +108,11 @@ describe("git: resolvePushAuthEnv", () => {
 
         const { runner } = createRunner({ remoteUrl: "https://gitlab.example.com/acme/repo.git" });
 
-        const env = await resolvePushAuthEnv({ cwd: "/r", env: { CI_SERVER_HOST: "gitlab.example.com", GITHUB_TOKEN: "github", GITLAB_TOKEN: "glpat" }, runner });
+        const env = await resolvePushAuthEnv({
+            cwd: "/r",
+            env: { CI_SERVER_HOST: "gitlab.example.com", GITHUB_TOKEN: "github", GITLAB_TOKEN: "glpat" },
+            runner,
+        });
 
         expect(env).toStrictEqual({
             GIT_CONFIG_COUNT: "1",
@@ -151,6 +155,8 @@ describe("git: resolvePushAuthEnv", () => {
         ["no token in the env", { remoteUrl: "https://github.com/acme/repo.git" }, {}],
         ["an empty token", { remoteUrl: "https://github.com/acme/repo.git" }, { GITHUB_TOKEN: "" }],
         ["a missing remote", {}, { GITHUB_TOKEN: "t" }],
+        ["a non-numeric GIT_CONFIG_COUNT", { remoteUrl: "https://github.com/acme/repo.git" }, { GIT_CONFIG_COUNT: "x", GITHUB_TOKEN: "t" }],
+        ["a remote url with a backslash", { remoteUrl: String.raw`https://github.com\@evil.example/acme/repo.git` }, { GITHUB_TOKEN: "t" }],
         [
             "an already configured extraheader",
             { extraheader: "http.https://github.com/.extraheader AUTHORIZATION: basic xyz", remoteUrl: "https://github.com/acme/repo.git" },
@@ -190,7 +196,7 @@ describe("git: verifyPushAccess", () => {
 
         const pushCall = calls.find((call) => call.args[0] === "push");
 
-        expect(pushCall?.args).toStrictEqual(["push", "origin", "--dry-run", "HEAD:refs/heads/main"]);
+        expect(pushCall?.args).toStrictEqual(["push", "origin", "--porcelain", "--dry-run", "--no-verify", "HEAD:refs/heads/main"]);
         expect(pushCall?.env?.["GIT_CONFIG_KEY_0"]).toBe("http.https://github.com/.extraheader");
     });
 
@@ -201,7 +207,14 @@ describe("git: verifyPushAccess", () => {
 
         await expect(verifyPushAccess({ cwd: "/r", env: {}, runner })).resolves.toBeUndefined();
 
-        expect(calls.find((call) => call.args[0] === "push")?.args).toStrictEqual(["push", "origin", "--dry-run", "HEAD:refs/heads/vis-release-push-check"]);
+        expect(calls.find((call) => call.args[0] === "push")?.args).toStrictEqual([
+            "push",
+            "origin",
+            "--porcelain",
+            "--dry-run",
+            "--no-verify",
+            "HEAD:refs/heads/vis-release-push-check",
+        ]);
     });
 
     it("treats a non-fast-forward rejection as access", async () => {
@@ -209,12 +222,28 @@ describe("git: verifyPushAccess", () => {
 
         const { runner } = createRunner({
             push: () => {
-                return { exitCode: 1, stderr: " ! [rejected]        HEAD -> main (fetch first)", stdout: "" };
+                return {
+                    exitCode: 1,
+                    stderr: "error: failed to push some refs",
+                    stdout: "To https://github.com/acme/repo.git\n!\tHEAD:refs/heads/main\t[rejected] (fetch first)\nDone\n",
+                };
             },
             remoteUrl: "https://github.com/acme/repo.git",
         });
 
         await expect(verifyPushAccess({ cwd: "/r", env: {}, runner })).resolves.toBeUndefined();
+    });
+
+    it.each([
+        ["a stray [rejected] on stderr", { exitCode: 1, stderr: "pre-push: [rejected] by policy", stdout: "" }],
+        ["a rejection of another refspec", { exitCode: 1, stderr: "denied", stdout: "!\tHEAD:refs/heads/other\t[rejected] (fetch first)\n" }],
+        ["a server-side rejection", { exitCode: 1, stderr: "denied", stdout: "!\tHEAD:refs/heads/main\t[remote rejected] (permission denied)\n" }],
+    ])("does not treat %s as access", async (_label, pushResult) => {
+        expect.hasAssertions();
+
+        const { runner } = createRunner({ push: () => pushResult, remoteUrl: "https://github.com/acme/repo.git" });
+
+        await expect(verifyPushAccess({ cwd: "/r", env: {}, runner })).resolves.toBe(pushResult.stderr);
     });
 
     it("returns git's error when authentication fails", async () => {

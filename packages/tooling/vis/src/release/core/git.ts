@@ -99,6 +99,12 @@ export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Pr
 
     let url: URL;
 
+    // A backslash is where WHATWG URL parsing and git's own (curl's) parsing
+    // can disagree about the host, so such a URL never gets a token.
+    if (remoteUrl.includes("\\")) {
+        return undefined;
+    }
+
     try {
         url = new URL(remoteUrl);
     } catch {
@@ -123,8 +129,15 @@ export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Pr
         return undefined;
     }
 
-    // Append after any GIT_CONFIG_* entries the caller already set.
-    const index = Number.parseInt(env["GIT_CONFIG_COUNT"] ?? "0", 10) || 0;
+    // Append after any GIT_CONFIG_* entries the caller already set. A count git
+    // itself would reject is left alone rather than guessed at.
+    const count = env["GIT_CONFIG_COUNT"] ?? "0";
+
+    if (!/^\d+$/u.test(count)) {
+        return undefined;
+    }
+
+    const index = Number(count);
     const basic = Buffer.from(`${source.user}:${token}`).toString("base64");
 
     return {
@@ -804,9 +817,19 @@ export const verifyPushAccess = async (ctx: GitContext, options: { branch?: stri
     // Detached HEAD (CI checkout of a sha): any branch name works — a dry-run
     // never updates the remote, it only needs a refspec to negotiate.
     const target = options.branch ?? (await getCurrentBranch(ctx)) ?? "vis-release-push-check";
-    const result = await push(ctx, options.remote ?? "origin", ["--dry-run", `HEAD:refs/heads/${target}`], true);
+    const refspec = `HEAD:refs/heads/${target}`;
+    // --porcelain: machine-readable, unlocalized status lines on stdout.
+    // --no-verify: a pre-push hook must not run (or add output) for a probe.
+    const result = await push(ctx, options.remote ?? "origin", ["--porcelain", "--dry-run", "--no-verify", refspec], true);
 
-    if (result.exitCode === 0 || /\[rejected\]|non-fast-forward|fetch first/u.test(result.stderr)) {
+    // Only a non-fast-forward rejection of this exact refspec proves the
+    // credentials authenticated; any other failure means no push access.
+    const nonFastForward = result.stdout
+        .split("\n")
+        .map((line) => line.replace(/\r$/u, ""))
+        .some((line) => line === `!\t${refspec}\t[rejected] (fetch first)` || line === `!\t${refspec}\t[rejected] (non-fast-forward)`);
+
+    if (result.exitCode === 0 || nonFastForward) {
         return undefined;
     }
 
