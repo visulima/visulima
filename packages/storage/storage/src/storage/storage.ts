@@ -9,8 +9,7 @@ import typeis from "type-is";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
-import type { ChunkInfo } from "../utils/chunked-upload";
-import { mergeChunks } from "../utils/chunked-upload";
+import { isFreshChunkedRecord, mergeChunkedProgress } from "../utils/chunked-upload";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
@@ -23,6 +22,7 @@ import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
+import { getMetaVersion, setMetaVersion } from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
@@ -51,6 +51,9 @@ const redactSecrets = (config: Record<string, unknown>): Record<string, unknown>
 
     return out;
 };
+
+/** Conditional saves of a chunked record before giving up on a record that keeps changing. */
+const CONDITIONAL_SAVE_ATTEMPTS = 20;
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
@@ -506,18 +509,28 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     public async saveMeta(file: TFile): Promise<TFile> {
         BaseStorage.assertSafeId(file.id);
 
-        // A chunked upload's `_chunks` list is append-only, but a provider write saves the record
-        // it read before storing its bytes. A chunk another request recorded in the meantime would
-        // be dropped from that stale copy (#902), so merge in the stored progress, one save per id
-        // at a time. Like the handler's `chunks:` lock, this only serializes within one process.
-        if (!Array.isArray(file.metadata?._chunks)) {
+        // A chunked upload's progress (`_chunks`, `bytesWritten`) only grows, but a provider write
+        // saves the record it read before storing its bytes, and several PATCHes write it at once.
+        // A save that would drop progress another request stored in the meantime has to merge it
+        // in (#902). A fresh record (e.g. a new POST for the same id) replaces the stored one.
+        if (!Array.isArray(file.metadata?._chunks) || isFreshChunkedRecord(file)) {
             return this.persistMeta(file);
         }
 
+        if (this.meta.supportsConditionalSave) {
+            return this.saveChunkedMetaConditionally(file);
+        }
+
+        // Without conditional saves, merge with what is stored, one save per id at a time. This
+        // only serializes saves within this process.
         const save = (this.chunkedMetaSaves.get(file.id) ?? Promise.resolve())
             .catch(() => undefined)
             .then(async () => {
-                await this.mergeStoredProgress(file);
+                const stored = await this.readStoredMeta(file.id);
+
+                if (stored !== undefined) {
+                    mergeChunkedProgress(file, stored);
+                }
 
                 return this.persistMeta(file);
             });
@@ -533,6 +546,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         }
     }
 
+    /** The stored record, or `undefined` when there is none. */
+    private async readStoredMeta(id: string): Promise<TFile | undefined> {
+        try {
+            return await this.meta.get(id);
+        } catch {
+            return undefined;
+        }
+    }
+
     private async persistMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
@@ -542,34 +564,42 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
-     * Adds the chunks recorded in the stored record that `file` is missing, and keeps the larger
-     * `bytesWritten`: chunks land at their offsets, so a save from an earlier write may carry a
-     * smaller extent than one already stored. A fresh record (no chunks, nothing written, e.g. a
-     * new POST for the same id) replaces the stored progress instead.
+     * Saves a chunked record with an optimistic compare-and-swap, safe across processes. The
+     * record normally carries the version its writer read, so there is no extra read; only
+     * when another request saved in between is the stored record read and merged, then the
+     * save retried.
      */
-    private async mergeStoredProgress(file: TFile): Promise<void> {
-        const chunks = file.metadata._chunks as ChunkInfo[];
+    private async saveChunkedMetaConditionally(file: TFile): Promise<TFile> {
+        this.updateTimestamps(file);
 
-        if (chunks.length === 0 && !file.bytesWritten) {
-            return;
+        let version = getMetaVersion(file);
+
+        for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
+            if (version === undefined) {
+                const stored = await this.readStoredMeta(file.id);
+                const storedVersion = stored === undefined ? undefined : getMetaVersion(stored);
+
+                // Nothing stored (or no version to compare against): there is nothing to keep.
+                if (stored === undefined || storedVersion === undefined) {
+                    return this.persistMeta(file);
+                }
+
+                mergeChunkedProgress(file, stored);
+                version = storedVersion;
+            }
+
+            const saved = await this.meta.saveIfVersion(file.id, file, version);
+
+            if (saved !== undefined) {
+                this.cache.set(file.id, file);
+
+                return saved;
+            }
+
+            version = undefined;
         }
 
-        let stored: TFile;
-
-        try {
-            stored = await this.meta.get(file.id);
-        } catch {
-            // Nothing stored yet (or the record is gone): there is nothing to keep.
-            return;
-        }
-
-        if (typeof stored.bytesWritten === "number" && stored.bytesWritten > (file.bytesWritten || 0)) {
-            file.bytesWritten = stored.bytesWritten;
-        }
-
-        if (Array.isArray(stored.metadata?._chunks) && stored.metadata._chunks.length > 0) {
-            file.metadata = { ...file.metadata, _chunks: mergeChunks(chunks, stored.metadata._chunks as ChunkInfo[]) };
-        }
+        return throwErrorCode(ERRORS.FILE_LOCKED, `Metadata of ${file.id} kept changing while saving it`);
     }
 
     /**
@@ -661,7 +691,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             this.cache.set(file.id, file);
 
-            return { ...file };
+            const copy = { ...file };
+
+            // Keep the version the record was read at, so saving the copy can be conditional.
+            setMetaVersion(copy, getMetaVersion(file));
+
+            return copy;
         } catch (error: unknown) {
             const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 

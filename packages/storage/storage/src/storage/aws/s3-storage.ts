@@ -132,10 +132,6 @@ class S3Storage extends S3BaseStorage {
             }
         }
 
-        if (this.config.clientDirectUpload) {
-            this.onCreate = async () => {}; // TODO: remove hook
-        }
-
         this.startAccessCheck(async () => this.accessCheck());
     }
 

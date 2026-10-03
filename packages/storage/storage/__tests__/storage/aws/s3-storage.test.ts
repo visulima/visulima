@@ -525,6 +525,21 @@ describe("s3PresignedStorage", () => {
             expect(s3file.partsUrls?.length).toBe(1);
             expect(s3file.partSize).toBeGreaterThan(0);
         });
+
+        it("should call the onCreate hook", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+
+            const onCreate = vi.fn();
+            const hookedStorage = new S3Storage({ ...options, onCreate });
+
+            await hookedStorage.create(metafile);
+
+            expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ UploadId: "123456789" }));
+        });
     });
 
     describe("update", () => {

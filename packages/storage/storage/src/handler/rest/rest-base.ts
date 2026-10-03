@@ -2,7 +2,7 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ChunkInfo } from "../../utils/chunked-upload";
-import { getTotalSize, isChunkedUpload, isUploadComplete, trackChunk, validateChunk } from "../../utils/chunked-upload";
+import { getChunks, getTotalSize, isChunkedUpload, isUploadComplete, trackChunk, validateChunk } from "../../utils/chunked-upload";
 import { ERRORS, isUploadError } from "../../utils/errors";
 import { retry } from "../../utils/retry";
 import type { ResponseFile, ResponseList } from "../types";
@@ -96,11 +96,6 @@ const toCollectionUrl = (requestUrl: string): string => {
  * Platform-agnostic - contains no Node.js or Web API specific code.
  * @template TFile The file type used by this handler.
  */
-
-/**
- * Reads the chunks recorded for a chunked upload.
- */
-const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.metadata?._chunks) ? (file.metadata._chunks as ChunkInfo[]) : []);
 
 /**
  * The status a chunked upload has once `chunks` are recorded: "completed" when they cover the
@@ -358,11 +353,14 @@ abstract class RestBase<TFile extends UploadFile> {
                             length: contentLength,
                             offset: chunkOffset,
                         });
-                        const reconciled = reconcileChunkedStatus(merged, totalSize, current.status);
+                        const saved = await this.storage.update(
+                            { id },
+                            { metadata: { ...current.metadata, _chunks: merged }, status: reconcileChunkedStatus(merged, totalSize, current.status) },
+                        );
+                        // The save may have merged in chunks another process recorded meanwhile.
+                        const savedChunks = getChunks(saved);
 
-                        await this.storage.update({ id }, { metadata: { ...current.metadata, _chunks: merged }, status: reconciled });
-
-                        return { chunks: merged, status: reconciled };
+                        return { chunks: savedChunks, status: reconcileChunkedStatus(savedChunks, totalSize, current.status) };
                     }),
                 {
                     initialDelay: 10,
@@ -500,7 +498,7 @@ abstract class RestBase<TFile extends UploadFile> {
         }>;
         getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
-        update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<void>;
+        update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
         withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
         write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
     } {
