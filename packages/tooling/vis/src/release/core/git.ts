@@ -14,11 +14,99 @@ import type { CommandRunner } from "./package-managers/interface";
 
 export interface GitContext {
     cwd: string;
+    /** Environment to read push tokens from. Defaults to `process.env`. */
+    env?: NodeJS.ProcessEnv;
     runner: CommandRunner;
 }
 
 const run = async (ctx: GitContext, args: ReadonlyArray<string>, silent = true): Promise<{ exitCode: number; stderr: string; stdout: string }> =>
     ctx.runner.run("git", args, { cwd: ctx.cwd, silent });
+
+// ── Push authentication ────────────────────────────────────────────
+
+/** Token env vars tried in order, and the basic-auth user each forge expects. */
+const PUSH_TOKEN_SOURCES = {
+    github: { user: "x-access-token", vars: ["VIS_GH_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"] },
+    gitlab: { user: "oauth2", vars: ["GITLAB_TOKEN", "GL_TOKEN", "VIS_GH_TOKEN"] },
+} as const;
+
+/**
+ * Env that authenticates a `git push` to `remote` over HTTPS with the CI
+ * token (`VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN`, or `GITLAB_TOKEN` /
+ * `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab hosts), or `undefined` when git should be left alone.
+ *
+ * The generated release workflow checks out with `persist-credentials: false`
+ * so install scripts can't read a token from `.git/config`; without this a
+ * plain `git push origin` has no credentials. The token goes in as env-only
+ * git config (`GIT_CONFIG_COUNT` / `_KEY_n` / `_VALUE_n`) for the one push
+ * command: never written to disk and never on the command line.
+ *
+ * Left alone when the remote isn't HTTPS (SSH keys), the URL carries its own
+ * credentials, no token is set, or an `http.*.extraheader` is already
+ * configured (a persisted checkout token, or caller-supplied `GIT_CONFIG_*`)
+ * — a second Authorization header makes GitHub reject the request.
+ */
+export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Promise<NodeJS.ProcessEnv | undefined> => {
+    const env = ctx.env ?? process.env;
+    const existing = await run(ctx, ["config", "--get-regexp", String.raw`^http\..*extraheader$`]);
+
+    if (existing.exitCode === 0 && existing.stdout.trim() !== "") {
+        return undefined;
+    }
+
+    let remoteUrl = remote;
+
+    if (!/^[a-z][\w+.-]*:\/\//iu.test(remote)) {
+        const urlResult = await run(ctx, ["remote", "get-url", "--push", remote]);
+
+        if (urlResult.exitCode !== 0) {
+            return undefined;
+        }
+
+        remoteUrl = urlResult.stdout.trim();
+    }
+
+    let url: URL;
+
+    try {
+        url = new URL(remoteUrl);
+    } catch {
+        return undefined;
+    }
+
+    if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username !== "") {
+        return undefined;
+    }
+
+    const source = url.hostname.includes("gitlab") || env["GITLAB_CI"] === "true" ? PUSH_TOKEN_SOURCES.gitlab : PUSH_TOKEN_SOURCES.github;
+    const token = source.vars.map((name) => env[name]).find((value) => value !== undefined && value !== "");
+
+    if (token === undefined) {
+        return undefined;
+    }
+
+    // Append after any GIT_CONFIG_* entries the caller already set.
+    const index = Number.parseInt(env["GIT_CONFIG_COUNT"] ?? "0", 10) || 0;
+    const basic = Buffer.from(`${source.user}:${token}`).toString("base64");
+
+    return {
+        [`GIT_CONFIG_KEY_${index}`]: `http.${url.origin}/.extraheader`,
+        [`GIT_CONFIG_VALUE_${index}`]: `AUTHORIZATION: basic ${basic}`,
+        GIT_CONFIG_COUNT: String(index + 1),
+    };
+};
+
+/** `git push &lt;remote> ...args`, authenticated via {@link resolvePushAuthEnv}. */
+const push = async (
+    ctx: GitContext,
+    remote: string,
+    args: ReadonlyArray<string>,
+    silent = false,
+): Promise<{ exitCode: number; stderr: string; stdout: string }> => {
+    const authEnv = await resolvePushAuthEnv(ctx, remote);
+
+    return ctx.runner.run("git", ["push", remote, ...args], { cwd: ctx.cwd, env: authEnv, silent });
+};
 
 // ── Read-only ──────────────────────────────────────────────────────
 
@@ -415,13 +503,8 @@ export const createTag = async (
 };
 
 export const pushTags = async (ctx: GitContext, options: { atomic?: boolean; remote?: string } = {}): Promise<void> => {
-    const args = ["push", options.remote ?? "origin", "--tags"];
-
-    if (options.atomic) {
-        args.splice(1, 0, "--atomic");
-    }
-
-    const result = await run(ctx, args, false);
+    const args = options.atomic ? ["--atomic", "--tags"] : ["--tags"];
+    const result = await push(ctx, options.remote ?? "origin", args);
 
     if (result.exitCode !== 0) {
         throw new VisReleaseError({
@@ -474,7 +557,7 @@ export const createOrUpdateFloatingTag = async (
                 return;
             }
 
-            const pushResult = await run(ctx, ["push", options.remote ?? "origin", "--force", `refs/tags/${tag}:refs/tags/${tag}`], false);
+            const pushResult = await push(ctx, options.remote ?? "origin", ["--force", `refs/tags/${tag}:refs/tags/${tag}`]);
 
             if (pushResult.exitCode !== 0) {
                 throw new VisReleaseError({
@@ -523,7 +606,7 @@ export const createOrUpdateFloatingTag = async (
     // here because that pushes new tags only; we need `--force` for the
     // retarget. A targeted `refs/tags/<tag>:refs/tags/<tag>` keeps the
     // blast radius minimal — no other tags are touched.
-    const pushResult = await run(ctx, ["push", options.remote ?? "origin", "--force", `refs/tags/${tag}:refs/tags/${tag}`], false);
+    const pushResult = await push(ctx, options.remote ?? "origin", ["--force", `refs/tags/${tag}:refs/tags/${tag}`]);
 
     if (pushResult.exitCode !== 0) {
         throw new VisReleaseError({
@@ -605,19 +688,19 @@ export const stageAndCommitFile = async (
         return { committed: true, pushed: false };
     }
 
-    const pushResult = await ctx.runner.run("git", ["push", options.remote ?? "origin", `HEAD:${branch}`], { cwd: ctx.cwd, silent: false });
+    const pushResult = await push(ctx, options.remote ?? "origin", [`HEAD:${branch}`]);
 
     return { committed: true, pushed: pushResult.exitCode === 0 };
 };
 
 export const pushBranch = async (ctx: GitContext, branch: string, options: { force?: boolean; remote?: string } = {}): Promise<void> => {
-    const args = ["push", options.remote ?? "origin", `HEAD:${branch}`];
+    const args = [`HEAD:${branch}`];
 
     if (options.force) {
         args.push("--force-with-lease");
     }
 
-    const result = await run(ctx, args, false);
+    const result = await push(ctx, options.remote ?? "origin", args);
 
     if (result.exitCode !== 0) {
         throw new VisReleaseError({
@@ -670,4 +753,24 @@ export const renderTagPattern = (template: string, tokens: { channel?: string; d
     };
 
     return template.replaceAll(TAG_TOKEN_RE, (_match, key: string) => values[key] ?? "");
+};
+
+/**
+ * Check that this run can push to `remote` before anything is published, so
+ * missing or read-only credentials fail the release up front instead of
+ * leaving packages on the registry without their tags. A `--dry-run` push
+ * still performs the authenticated receive-pack handshake. A non-fast-forward
+ * rejection proves the credentials work, so it counts as access.
+ */
+export const verifyPushAccess = async (ctx: GitContext, options: { branch?: string; remote?: string } = {}): Promise<string | undefined> => {
+    // Detached HEAD (CI checkout of a sha): any branch name works — a dry-run
+    // never updates the remote, it only needs a refspec to negotiate.
+    const target = options.branch ?? (await getCurrentBranch(ctx)) ?? "vis-release-push-check";
+    const result = await push(ctx, options.remote ?? "origin", ["--dry-run", `HEAD:refs/heads/${target}`], true);
+
+    if (result.exitCode === 0 || /\[rejected\]|non-fast-forward|fetch first/u.test(result.stderr)) {
+        return undefined;
+    }
+
+    return result.stderr.trim() || result.stdout.trim() || `git push --dry-run exited with ${String(result.exitCode)}`;
 };

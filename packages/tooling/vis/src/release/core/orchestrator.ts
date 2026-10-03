@@ -1098,6 +1098,27 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
         }
     }
 
+    // Fail before publishing when the tags / lock / registry commits pushed
+    // later in this run would be rejected (no or read-only credentials).
+    // Otherwise packages land on the registry and only the tag push fails.
+    // Skipped without an `origin` remote: there is nothing to push to, and
+    // those pushes already fail softly.
+    if (!options.dryRun && !options.noPush) {
+        const { verifyPushAccess } = await import("./git");
+        const gitContext = { cwd: context.cwd, runner };
+        const originResult = await runner.run("git", ["remote", "get-url", "--push", "origin"], { cwd: context.cwd, silent: true });
+        const pushError = originResult.exitCode === 0 ? await verifyPushAccess(gitContext) : undefined;
+
+        if (pushError !== undefined) {
+            result.failed.push({
+                name: "_pushAccess",
+                reason: `Cannot push to origin, nothing was published. Set VIS_GH_TOKEN (or GITHUB_TOKEN / GITLAB_TOKEN) with write access, or pass --no-push. git said: ${pushError}`,
+            });
+
+            return result;
+        }
+    }
+
     // Process-level lock (RFC §19.1) — prevents two `vis release publish`
     // invocations on the same machine from racing. Acquired here; released
     // in the finally block at the end of this function.
