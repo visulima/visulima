@@ -30,10 +30,44 @@ const PUSH_TOKEN_SOURCES = {
     gitlab: { user: "oauth2", vars: ["GITLAB_TOKEN", "GL_TOKEN", "VIS_GH_TOKEN"] },
 } as const;
 
+type PushTokenSource = (typeof PUSH_TOKEN_SOURCES)[keyof typeof PUSH_TOKEN_SOURCES];
+
+/** Host part of an env value that may be a bare host (`GH_HOST`) or a URL (`GITHUB_SERVER_URL`). */
+const hostOf = (value: string | undefined): string | undefined => {
+    if (value === undefined || value.trim() === "") {
+        return undefined;
+    }
+
+    try {
+        return new URL(value.includes("://") ? value : `https://${value}`).host.toLowerCase();
+    } catch {
+        return undefined;
+    }
+};
+
 /**
- * Env that authenticates a `git push` to `remote` over HTTPS with the CI
- * token (`VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN`, or `GITLAB_TOKEN` /
- * `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab hosts), or `undefined` when git should be left alone.
+ * Which forge's token may be sent to `host`, by exact host match only: the
+ * public forges plus the hosts CI and the gh / glab CLIs are configured for.
+ * Any other host (a mirror, Bitbucket, a repointed remote) gets no token.
+ */
+const tokenSourceForHost = (host: string, env: NodeJS.ProcessEnv): PushTokenSource | undefined => {
+    const githubHosts = new Set(["github.com", hostOf(env["GH_HOST"]), hostOf(env["GITHUB_SERVER_URL"])]);
+    const gitlabHosts = new Set(["gitlab.com", hostOf(env["CI_SERVER_HOST"]), hostOf(env["CI_SERVER_URL"]), hostOf(env["GITLAB_HOST"])]);
+
+    if (githubHosts.has(host)) {
+        return PUSH_TOKEN_SOURCES.github;
+    }
+
+    if (gitlabHosts.has(host)) {
+        return PUSH_TOKEN_SOURCES.gitlab;
+    }
+
+    return undefined;
+};
+
+/**
+ * Env that authenticates a `git push` to `remote` with the CI token, or
+ * `undefined` when git should be left alone.
  *
  * The generated release workflow checks out with `persist-credentials: false`
  * so install scripts can't read a token from `.git/config`; without this a
@@ -41,19 +75,16 @@ const PUSH_TOKEN_SOURCES = {
  * git config (`GIT_CONFIG_COUNT` / `_KEY_n` / `_VALUE_n`) for the one push
  * command: never written to disk and never on the command line.
  *
- * Left alone when the remote isn't HTTPS (SSH keys), the URL carries its own
- * credentials, no token is set, or an `http.*.extraheader` is already
- * configured (a persisted checkout token, or caller-supplied `GIT_CONFIG_*`)
- * — a second Authorization header makes GitHub reject the request.
+ * Only sent over HTTPS and only to a known forge host (see
+ * {@link tokenSourceForHost}): `VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` for
+ * GitHub, `GITLAB_TOKEN` / `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab. Left alone
+ * when the URL carries its own credentials, no token is set, or an
+ * `http.extraheader` already applies to this remote (a persisted checkout
+ * token, or caller-supplied `GIT_CONFIG_*`) — a second Authorization header
+ * makes GitHub reject the request.
  */
 export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Promise<NodeJS.ProcessEnv | undefined> => {
     const env = ctx.env ?? process.env;
-    const existing = await run(ctx, ["config", "--get-regexp", String.raw`^http\..*extraheader$`]);
-
-    if (existing.exitCode === 0 && existing.stdout.trim() !== "") {
-        return undefined;
-    }
-
     let remoteUrl = remote;
 
     if (!/^[a-z][\w+.-]*:\/\//iu.test(remote)) {
@@ -74,14 +105,21 @@ export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Pr
         return undefined;
     }
 
-    if ((url.protocol !== "https:" && url.protocol !== "http:") || url.username !== "") {
+    if (url.protocol !== "https:" || url.username !== "") {
         return undefined;
     }
 
-    const source = url.hostname.includes("gitlab") || env["GITLAB_CI"] === "true" ? PUSH_TOKEN_SOURCES.gitlab : PUSH_TOKEN_SOURCES.github;
-    const token = source.vars.map((name) => env[name]).find((value) => value !== undefined && value !== "");
+    const source = tokenSourceForHost(url.host.toLowerCase(), env);
+    const token = source?.vars.map((name) => env[name]).find((value) => value !== undefined && value !== "");
 
-    if (token === undefined) {
+    if (source === undefined || token === undefined) {
+        return undefined;
+    }
+
+    // Only a header git would actually send to this remote counts.
+    const existing = await run(ctx, ["config", "--get-urlmatch", "http.extraheader", url.href]);
+
+    if (existing.exitCode === 0 && existing.stdout.trim() !== "") {
         return undefined;
     }
 
@@ -96,7 +134,7 @@ export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Pr
     };
 };
 
-/** `git push &lt;remote> ...args`, authenticated via {@link resolvePushAuthEnv}. */
+/** `git push` to `remote` with `args`, authenticated via {@link resolvePushAuthEnv}. */
 const push = async (
     ctx: GitContext,
     remote: string,

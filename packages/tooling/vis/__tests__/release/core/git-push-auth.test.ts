@@ -78,6 +78,21 @@ describe("git: resolvePushAuthEnv", () => {
         });
     });
 
+    it("only counts an existing extraheader that applies to this remote", async () => {
+        expect.hasAssertions();
+
+        const { calls, runner } = createRunner({ remoteUrl: "https://github.com/acme/repo.git" });
+
+        await resolvePushAuthEnv({ cwd: "/r", env: { GITHUB_TOKEN: "t" }, runner });
+
+        expect(calls.find((call) => call.args[0] === "config")?.args).toStrictEqual([
+            "config",
+            "--get-urlmatch",
+            "http.extraheader",
+            "https://github.com/acme/repo.git",
+        ]);
+    });
+
     it("prefers VIS_GH_TOKEN over GITHUB_TOKEN and GH_TOKEN", async () => {
         expect.hasAssertions();
 
@@ -88,18 +103,28 @@ describe("git: resolvePushAuthEnv", () => {
         expect(env?.["GIT_CONFIG_VALUE_0"]).toBe(basic("x-access-token:vis"));
     });
 
-    it("uses oauth2 with GITLAB_TOKEN for GitLab hosts", async () => {
+    it("uses oauth2 with GITLAB_TOKEN for the configured GitLab host", async () => {
         expect.hasAssertions();
 
         const { runner } = createRunner({ remoteUrl: "https://gitlab.example.com/acme/repo.git" });
 
-        const env = await resolvePushAuthEnv({ cwd: "/r", env: { GITHUB_TOKEN: "github", GITLAB_TOKEN: "glpat" }, runner });
+        const env = await resolvePushAuthEnv({ cwd: "/r", env: { CI_SERVER_HOST: "gitlab.example.com", GITHUB_TOKEN: "github", GITLAB_TOKEN: "glpat" }, runner });
 
         expect(env).toStrictEqual({
             GIT_CONFIG_COUNT: "1",
             GIT_CONFIG_KEY_0: "http.https://gitlab.example.com/.extraheader",
             GIT_CONFIG_VALUE_0: basic("oauth2:glpat"),
         });
+    });
+
+    it("accepts the GitHub Enterprise host from GITHUB_SERVER_URL", async () => {
+        expect.hasAssertions();
+
+        const { runner } = createRunner({ remoteUrl: "https://ghe.example.com/acme/repo.git" });
+
+        const env = await resolvePushAuthEnv({ cwd: "/r", env: { GITHUB_SERVER_URL: "https://ghe.example.com", GITHUB_TOKEN: "t" }, runner });
+
+        expect(env?.["GIT_CONFIG_KEY_0"]).toBe("http.https://ghe.example.com/.extraheader");
     });
 
     it("appends after GIT_CONFIG_* entries the caller already set", async () => {
@@ -118,6 +143,10 @@ describe("git: resolvePushAuthEnv", () => {
 
     it.each([
         ["an ssh remote", { remoteUrl: "git@github.com:acme/repo.git" }, { GITHUB_TOKEN: "t" }],
+        ["a plain http remote", { remoteUrl: "http://github.com/acme/repo.git" }, { GITHUB_TOKEN: "t" }],
+        ["an unknown host", { remoteUrl: "https://bitbucket.org/acme/repo.git" }, { GITHUB_TOKEN: "t", GITLAB_TOKEN: "g" }],
+        ["a host that merely contains a forge name", { remoteUrl: "https://gitlab.evil.example/acme/repo.git" }, { GITHUB_TOKEN: "t", GITLAB_TOKEN: "g" }],
+        ["a lookalike github host", { remoteUrl: "https://github.com.evil.example/acme/repo.git" }, { GITHUB_TOKEN: "t" }],
         ["a remote url with credentials", { remoteUrl: urlWithCredentials }, { GITHUB_TOKEN: "t" }],
         ["no token in the env", { remoteUrl: "https://github.com/acme/repo.git" }, {}],
         ["an empty token", { remoteUrl: "https://github.com/acme/repo.git" }, { GITHUB_TOKEN: "" }],
