@@ -7,18 +7,28 @@ on: # yamllint disable-line rule:truthy
         types: ["opened", "synchronize", "reopened"]
         branches: ["main", "alpha", "next", "beta"]
     merge_group: # yamllint disable-line rule:empty-values
+    # Pushes to main test what landed and save the Nx task cache that PR runs
+    # restore from (a PR's own cache entries are scoped to its ref, so main can
+    # only be warmed by main itself).
+    push:
+        branches: ["main"]
 
 concurrency:
     group: "${{ github.workflow }}-${{ github.ref }}"
-    cancel-in-progress: true
+    # Don't cancel main runs mid-way: a cancelled run never saves its Nx cache.
+    cancel-in-progress: "${{ github.event_name != 'push' }}"
 
 permissions:
+    actions: "read" # nx-set-shas looks up the last successful main run on push events
     contents: "read" # to fetch code (actions/checkout)
     checks: "read" # to poll Check Native Build via gh api
 
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
+    # Bound the Nx cache that is saved/restored between runs (GitHub's 10 GB
+    # cache quota is shared with the pnpm store caches).
+    NX_MAX_CACHE_SIZE: "1GB"
     HEAD_REF: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}"
     HEAD_REPOSITORY: "${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name || github.repository }}"
 
@@ -83,23 +93,11 @@ jobs:
         timeout-minutes: 130
         strategy:
             matrix:
-                include:
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                    - os: "ubuntu-latest"
-                      node_version: "24"
-                    - os: "ubuntu-latest"
-                      node_version: "25"
-                    - os: "macos-15"
-                      node_version: "22"
-                    - os: "windows-latest"
-                      node_version: "22"
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                      bun_version: "latest"
-                    - os: "ubuntu-latest"
-                      node_version: "22"
-                      deno_version: "lts"
+                # The bun / deno legs only add that binary to PATH; the suite still
+                # runs on Node via vitest and nothing in it gates on either binary,
+                # so they duplicate the node-22 leg. Run them post-merge (push to
+                # main) instead of occupying two runners on every PR.
+                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"22\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"25\"},{\"os\":\"macos-15\",\"node_version\":\"22\"},{\"os\":\"windows-latest\",\"node_version\":\"22\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"22\",\"bun_version\":\"latest\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"22\",\"deno_version\":\"lts\"}' || '')) }}"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -127,6 +125,8 @@ jobs:
                   install-node-gyp: "true"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "true"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   # The setup action's default `npm install --global npm@latest` exists only
                   # to enable publish provenance, which the test job never needs. npm@12 dropped
                   # support for the Node 25 current line (engines require >=26.0.0), so the
@@ -301,6 +301,17 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved below even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-test-${{ runner.os }}-node${{ matrix.node_version }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-test-${{ runner.os }}-node${{ matrix.node_version }}${{ matrix.bun_version && '-bun' || '' }}${{ matrix.deno_version && '-deno' || '' }}-
+
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
@@ -312,6 +323,13 @@ jobs:
                   else
                       pnpm run test:affected
                   fi
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
             # Inlined replacement for `anolilab/workflows/step/codecov`.
             # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
@@ -382,6 +400,8 @@ jobs:
                   install-node-gyp: "true"
                   cache-prefix: "workerd"
                   skip-playwright: "true"
+                  # Replaced by the explicit Nx cache restore/save steps below.
+                  enable-nx-cache: "false"
                   # This job never publishes, so the provenance-only npm upgrade is unneeded.
                   upgrade-npm-version: false
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages.
@@ -390,11 +410,29 @@ jobs:
 
             # The workerd specs import from `src/`, not `dist/`, but workspace
             # dependencies still resolve through their published entry points.
+            # Nx task cache: restores this branch's latest entry, falling back to
+            # main's. Saved below even when tasks fail (Nx only caches successes).
+            - name: "Restore Nx cache"
+              id: "nx-cache"
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "nx-workerd-${{ runner.os }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  restore-keys: |
+                      nx-workerd-${{ runner.os }}-
+
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
             - name: "Run workerd tests"
               run: "pnpm run test:affected:workerd"
+
+            - name: "Save Nx cache"
+              if: "${{ !cancelled() }}"
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
+              with:
+                  path: ".nx/cache"
+                  key: "${{ steps.nx-cache.outputs.cache-primary-key }}"
 
     # Runs ONLY the @visulima/tsconfig package's test suite against every
     # TypeScript version it claims to support. The package emulates `tsc
