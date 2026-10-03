@@ -36,6 +36,8 @@ describe(AzureMetaStorage, () => {
 
         // Create mock append blob client
         mockAppendBlobClient = {
+            // Default: the sidecar already exists, so save() falls through to setMetadata.
+            createIfNotExists: vi.fn().mockResolvedValue({ succeeded: false }),
             deleteIfExists: vi.fn(),
             getProperties: vi.fn(),
             setMetadata: vi.fn(),
@@ -76,6 +78,17 @@ describe(AzureMetaStorage, () => {
 
             expect(mockAppendBlobClient.setMetadata).toHaveBeenCalledTimes(1);
         });
+
+        it("creates the sidecar blob with the metadata on the first save", async () => {
+            expect.assertions(2);
+
+            (mockAppendBlobClient.createIfNotExists as ReturnType<typeof vi.fn>).mockResolvedValue({ succeeded: true });
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(mockAppendBlobClient.createIfNotExists).toHaveBeenCalledWith({ metadata: expect.objectContaining({ id: metafile.id }) });
+            expect(mockAppendBlobClient.setMetadata).not.toHaveBeenCalled();
+        });
     });
 
     describe(".get()", () => {
@@ -94,6 +107,20 @@ describe(AzureMetaStorage, () => {
             const file = await metaStorage.get(metafile.id);
 
             expect(file.id).toBe(metafile.id);
+        });
+
+        it("restores numeric offsets and camelCase field names from the string metadata", async () => {
+            expect.assertions(3);
+
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockResolvedValue({
+                metadata: { byteswritten: "10", id: metafile.id, originalname: "a.mp4", size: "64" },
+            });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(file.bytesWritten).toBe(10);
+            expect(file.size).toBe(64);
+            expect(file.originalName).toBe("a.mp4");
         });
 
         it("should throw error when metadata not found", async () => {

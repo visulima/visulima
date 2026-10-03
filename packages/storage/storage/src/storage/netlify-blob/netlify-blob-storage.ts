@@ -36,7 +36,8 @@ import type { NetlifyBlobStorageOptions } from "./types";
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
     public static override readonly name: string = "netlify-blob";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override get raw(): ReturnType<typeof getStore> {
         return this.store;

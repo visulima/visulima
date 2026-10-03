@@ -55,7 +55,8 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
 

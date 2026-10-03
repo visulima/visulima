@@ -52,7 +52,11 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
 class GCStorage extends BaseStorage<GCSFile> {
     public static override readonly name: string = "gcs";
 
-    public override checksumTypes: string[] = ["md5", "crc32c"];
+    /**
+     * GCS resumable uploads only verify whole-object hashes on finalize, never a single chunk,
+     * so no per-write checksum algorithm can be honoured.
+     */
+    public override checksumTypes: string[] = [];
 
     public override readonly supportsDelimiter: boolean = true;
 
@@ -267,6 +271,10 @@ class GCStorage extends BaseStorage<GCSFile> {
                 return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
+            if (hasContent(part) && this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+            }
+
             const lockToken = await this.lock(part.id);
 
             try {
@@ -302,6 +310,9 @@ class GCStorage extends BaseStorage<GCSFile> {
                     file.uri = `${this.storageBaseURI}/${file.name}`;
 
                     await this.internalOnComplete(file);
+                } else if (hasContent(part)) {
+                    // Persist the offset GCS confirmed, so HEAD and the next PATCH see the real value.
+                    await this.saveMeta(file);
                 }
             } finally {
                 await this.unlock(part.id, lockToken);

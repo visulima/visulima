@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { Readable } from "node:stream";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
@@ -447,6 +450,31 @@ describe(BunnyStorage, () => {
             expect(file.name).toBe("user/dest.bin");
             expect(fileMock.upload).toHaveBeenCalledTimes(1);
             expect(fileMock.upload.mock.calls[0]?.[1]).toBe("/user/dest.bin");
+        });
+    });
+
+    describe(".write()", () => {
+        it("converts a base64 sha256 upload checksum to the uppercase hex Bunny verifies", async () => {
+            expect.assertions(1);
+
+            const storage = new BunnyStorage(baseOptions);
+            const payload = Buffer.from("payload");
+            const sha256 = createHash("sha256").update(payload).digest();
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: payload.length } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            fileMock.upload.mockResolvedValueOnce(true);
+
+            await storage.write({
+                body: Readable.from(payload),
+                checksum: sha256.toString("base64"),
+                checksumAlgorithm: "sha256",
+                contentLength: payload.length,
+                id: "f",
+                start: 0,
+            });
+
+            expect(fileMock.upload.mock.calls[0]?.[3]).toMatchObject({ sha256Checksum: sha256.toString("hex").toUpperCase() });
         });
     });
 });

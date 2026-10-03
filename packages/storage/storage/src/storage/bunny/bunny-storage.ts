@@ -225,7 +225,12 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                         await this.runOperation(options, () =>
                             BunnyStorageSDK.file.upload(this.client, path, streamFromBuffer(buffer), {
                                 contentType: file.contentType,
-                                ...(part.checksum && part.checksumAlgorithm === "sha256" && { sha256Checksum: part.checksum }),
+                                // Upload checksums arrive base64-encoded (TUS `Upload-Checksum`); Bunny's
+                                // `Checksum` header expects the SHA-256 as uppercase hex.
+                                ...(part.checksum &&
+                                    part.checksumAlgorithm === "sha256" && {
+                                        sha256Checksum: Buffer.from(part.checksum, "base64").toString("hex").toUpperCase(),
+                                    }),
                             }),
                         );
                     } catch (error) {

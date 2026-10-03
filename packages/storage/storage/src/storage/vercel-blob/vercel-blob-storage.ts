@@ -45,7 +45,8 @@ type VercelBlobCredentials = { oidcToken: string; storeId: string; token?: never
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
 
-    public override checksumTypes: string[] = ["md5"];
+    /** No checksum is verified against the written bytes, so none is advertised. */
+    public override checksumTypes: string[] = [];
 
     public override get raw(): {
         copy: typeof copy;

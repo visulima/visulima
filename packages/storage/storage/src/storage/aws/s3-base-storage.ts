@@ -155,7 +155,13 @@ export interface S3ApiOperations {
  * @template TFile The file type used by this storage backend.
  */
 export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3CompatibleFile> extends BaseStorage<TFile> {
-    public override checksumTypes: string[] = ["md5", "crc32", "crc32c", "sha1", "sha256"];
+    /**
+     * Only `md5` is verified by S3 itself (`Content-MD5` on UploadPart, `BadDigest` on mismatch).
+     * The flexible `x-amz-checksum-*` algorithms (sha1/sha256/crc32/crc32c) are not offered: S3
+     * rejects a part checksum whose algorithm was not declared on CreateMultipartUpload, and a
+     * TUS client only announces its algorithm per PATCH, after the multipart upload exists.
+     */
+    public override checksumTypes: string[] = ["md5"];
 
     public override readonly supportsRange: boolean = true;
 
@@ -396,6 +402,16 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
+                    // Parts are appended strictly in order (PartNumber = Parts.length + 1), so a chunk
+                    // that does not start exactly at the current offset would corrupt the object.
+                    // Persist the offset S3 reports before rejecting, so a stale stored offset heals
+                    // and the client's next HEAD sees the real value.
+                    if (part.start !== file.bytesWritten) {
+                        await this.saveMeta(S3BaseStorage.withoutParts(file));
+
+                        return throwErrorCode(ERRORS.FILE_CONFLICT);
+                    }
+
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
@@ -432,23 +448,33 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     // retry. Forces maxRetries=0 for stream bodies.
                     const replayable = partBody instanceof Uint8Array;
 
-                    const { ETag } = await this.runOperation(
-                        options,
-                        (signal) =>
-                            s3Api.uploadPart(
-                                {
-                                    Body: partBody,
-                                    Bucket: this.bucket,
-                                    ContentLength: part.contentLength || 0,
-                                    Key: file.name,
-                                    PartNumber: partNumber,
-                                    UploadId: uploadId,
-                                    ...(part.checksumAlgorithm === "md5" ? { ContentMD5: part.checksum } : {}),
-                                },
-                                { signal },
-                            ),
-                        { replayable },
-                    );
+                    let ETag: string;
+
+                    try {
+                        ({ ETag } = await this.runOperation(
+                            options,
+                            (signal) =>
+                                s3Api.uploadPart(
+                                    {
+                                        Body: partBody,
+                                        Bucket: this.bucket,
+                                        ContentLength: part.contentLength || 0,
+                                        Key: file.name,
+                                        PartNumber: partNumber,
+                                        UploadId: uploadId,
+                                        ...(part.checksumAlgorithm === "md5" && part.checksum ? { ContentMD5: part.checksum } : {}),
+                                    },
+                                    { signal },
+                                ),
+                            { replayable },
+                        ));
+                    } catch (error: unknown) {
+                        if (S3BaseStorage.isBadDigest(error)) {
+                            return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
+                        }
+
+                        throw error;
+                    }
 
                     const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
 
@@ -459,6 +485,12 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 this.cache.set(file.id, file);
 
                 file.status = getFileStatus(file);
+
+                if (file.status !== "completed" && hasContent(part)) {
+                    // The persisted offset is what HEAD reports and what the next PATCH is checked
+                    // against, so it must be updated after every successful part.
+                    await this.saveMeta(S3BaseStorage.withoutParts(file));
+                }
 
                 if (file.status === "completed") {
                     const [completed] = await this.internalOnComplete(file);
@@ -956,6 +988,26 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             await this.onError(httpError);
         }
+    }
+
+    /**
+     * Copy of `file` without its `Parts` list, for persisting. S3MetaStorage keeps meta in a
+     * ~2KB user-metadata header that a long parts list would overflow; parts are re-fetched
+     * lazily via `listParts` instead.
+     */
+    protected static withoutParts<T extends S3CompatibleFile>(file: T): T {
+        const { Parts: _parts, ...rest } = file;
+
+        return rest as T;
+    }
+
+    /**
+     * Whether an UploadPart failure is S3 rejecting the `Content-MD5` digest.
+     */
+    protected static isBadDigest(error: unknown): boolean {
+        const { Code, code, message, name } = (error ?? {}) as { Code?: string; code?: string; message?: string; name?: string };
+
+        return [Code, code, name].includes("BadDigest") || (typeof message === "string" && message.includes("BadDigest"));
     }
 
     /**

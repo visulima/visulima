@@ -7,6 +7,10 @@ import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import { createAzureClient } from "./azure-client";
 import type { AzureMetaStorageOptions } from "./types";
 
+const CAMEL_CASE_FIELDS = ["bytesWritten", "contentType", "createdAt", "expiredAt", "modifiedAt", "originalName", "requestId"] as const;
+
+const NUMERIC_FIELDS = ["bytesWritten", "expiredAt", "size"] as const;
+
 class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     private client: BlobServiceClient;
 
@@ -44,12 +48,40 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
 
-        const file = propertyData.metadata as unknown as T;
+        const file = AzureMetaStorage.restoreFields(propertyData.metadata) as unknown as T;
 
         // Metadata is base64 encoded to avoid errors for non-ASCII characters
         // so we need to decode it separately
         if (file.metadata && typeof file.metadata === "string") {
             file.metadata = parseMetadata(file.metadata);
+        }
+
+        return file;
+    }
+
+    /**
+     * Blob metadata comes back as strings, and (behind Node's HTTP stack) with lower-cased names.
+     * Restore the camelCase names of the File fields and the numbers the upload flow compares
+     * against — a string `bytesWritten` would never equal the numeric offset of a PATCH.
+     */
+    private static restoreFields(metadata: Metadata): Record<string, unknown> {
+        const file: Record<string, unknown> = { ...metadata };
+
+        for (const key of CAMEL_CASE_FIELDS) {
+            const lower = key.toLowerCase();
+
+            if (file[key] === undefined && file[lower] !== undefined) {
+                file[key] = file[lower];
+                Reflect.deleteProperty(file, lower);
+            }
+        }
+
+        for (const key of NUMERIC_FIELDS) {
+            const value = file[key];
+
+            if (typeof value === "string" && /^\d+$/.test(value)) {
+                file[key] = Number(value);
+            }
         }
 
         return file;
@@ -74,7 +106,12 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
 
-        await appendBlobClient.setMetadata(transformedMetadata as unknown as Metadata, {});
+        // Set Blob Metadata 404s on a missing blob, so the first save has to create the sidecar.
+        const { succeeded } = await appendBlobClient.createIfNotExists({ metadata: transformedMetadata as unknown as Metadata });
+
+        if (!succeeded) {
+            await appendBlobClient.setMetadata(transformedMetadata as unknown as Metadata, {});
+        }
 
         return file;
     }

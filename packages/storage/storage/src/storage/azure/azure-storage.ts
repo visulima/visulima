@@ -1,4 +1,13 @@
-import type { BlobItem, BlobServiceClient, ContainerClient } from "@azure/storage-blob";
+import type { Readable } from "node:stream";
+
+import type {
+    BlobItem,
+    BlobServiceClient,
+    BlockBlobClient,
+    BlockBlobCommitBlockListResponse,
+    BlockBlobStageBlockResponse,
+    ContainerClient,
+} from "@azure/storage-blob";
 import { normalize } from "@visulima/path";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
@@ -13,17 +22,22 @@ import { BaseStorage } from "../storage";
 import type { BatchOperationResponse, OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
+import { collectStream } from "../utils/remote";
 import type { AzureSasSigner } from "./azure-client";
 import { appendSasToken, buildAzureSasUrl, createAzureClient } from "./azure-client";
 import AzureFile from "./azure-file";
 import AzureMetaStorage from "./azure-meta-storage";
 import type { AzureStorageOptions } from "./types";
 
+/** Prefix of the block ids staged by {@link AzureStorage.write}; the rest is the zero-padded chunk offset. */
+const BLOCK_ID_PREFIX = "visulima-";
+
 /**
  * Azure Blob Storage implementation.
  * @remarks
  * ## Supported Operations
  * - ✅ create, write, delete, get, list, update, copy, move
+ * - ✅ Resumable writes: each chunk is staged as a block (`md5` verified via `transactionalContentMD5`), the ordered block list is committed on completion
  * - ✅ Batch operations: deleteBatch (native Blob Batch API, 256/request), copyBatch + moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Azure blob)
  * - ❌ getStream: Not implemented (use get() for file retrieval)
@@ -35,6 +49,7 @@ import type { AzureStorageOptions } from "./types";
 class AzureStorage extends BaseStorage {
     public static override readonly name: string = "azure";
 
+    /** `md5` is verified by Azure per staged block (`transactionalContentMD5`, `Md5Mismatch` on failure). */
     public override checksumTypes: string[] = ["md5"];
 
     public override get raw(): BlobServiceClient {
@@ -186,23 +201,13 @@ class AzureStorage extends BaseStorage {
 
             const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(file.name));
 
-            const stringifiedMetaValues: Record<string, string> = {};
-
-            for (const [key, value] of Object.entries(file.metadata || {})) {
-                stringifiedMetaValues[key] = JSON.stringify(value);
-            }
-
             const response = await this.runOperation(options, (signal) =>
                 blobClient.uploadData(Buffer.from(""), {
                     abortSignal: signal,
                     blobHTTPHeaders: {
                         blobContentType: file.contentType,
                     },
-                    metadata: {
-                        name: file.name,
-                        originalName: file.originalName,
-                        ...stringifiedMetaValues,
-                    },
+                    metadata: AzureStorage.blobMetadata(file),
                 }),
             );
 
@@ -361,13 +366,24 @@ class AzureStorage extends BaseStorage {
             const lockToken = await this.lock(part.id);
 
             try {
+                const offset = Number(file.bytesWritten) || 0;
+
+                file.bytesWritten = offset;
+
                 if (hasContent(part)) {
+                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                    }
+
+                    // Each chunk becomes one block keyed by its start offset; a chunk that does not
+                    // start at the persisted offset would leave a gap or overlap in the block chain.
+                    if (part.start !== offset) {
+                        return throwErrorCode(ERRORS.FILE_CONFLICT);
+                    }
+
                     // Detect file type from stream if contentType is not set or is default
-                    // Only detect on first write (when bytesWritten is 0 or NaN)
-                    if (
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
-                    ) {
+                    // Only detect on first write (offset 0)
+                    if (offset === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {
                             const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
 
@@ -387,42 +403,68 @@ class AzureStorage extends BaseStorage {
 
                     const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(file.name));
 
-                    const abortController = new AbortController();
+                    // Without a declared length the chunk is buffered: stageBlock needs the exact size.
+                    let { body, contentLength }: { body: Buffer | Readable; contentLength?: number } = part;
 
-                    part.body.on("error", () => {
-                        abortController.abort();
-                    });
-
-                    // The request body is a one-shot stream — never replay it.
-                    const response = await this.runOperation(
-                        options,
-                        (signal) => {
-                            const uploadSignal = signal ? AbortSignal.any([abortController.signal, signal]) : abortController.signal;
-
-                            return blobClient.uploadStream(part.body, undefined, undefined, {
-                                abortSignal: uploadSignal,
-                                blobHTTPHeaders: {
-                                    blobContentType: file.contentType ?? "application/octet-stream",
-                                },
-                                metadata: file.metadata as Record<string, string>,
-                            });
-                        },
-                        { replayable: false },
-                    );
-
-                    if (response.requestId === undefined) {
-                        return throwErrorCode(ERRORS.FILE_ERROR, "azure write upload error");
+                    if (contentLength === undefined) {
+                        body = await collectStream(part.body);
+                        contentLength = body.length;
                     }
 
-                    file.requestId = response.requestId;
-                    file.bytesWritten += part.contentLength || 0;
+                    if (contentLength > 0) {
+                        const abortController = new AbortController();
+
+                        if (!Buffer.isBuffer(body)) {
+                            body.on("error", () => {
+                                abortController.abort();
+                            });
+                        }
+
+                        const transactionalContentMD5 = part.checksumAlgorithm === "md5" && part.checksum ? Buffer.from(part.checksum, "base64") : undefined;
+
+                        let response: BlockBlobStageBlockResponse;
+
+                        try {
+                            // A streamed chunk is one-shot — only replay an in-memory buffer.
+                            response = await this.runOperation(
+                                options,
+                                (signal) => {
+                                    const uploadSignal = signal ? AbortSignal.any([abortController.signal, signal]) : abortController.signal;
+
+                                    return blobClient.stageBlock(AzureStorage.blockId(offset), body, contentLength, {
+                                        abortSignal: uploadSignal,
+                                        ...(transactionalContentMD5 && { transactionalContentMD5 }),
+                                    });
+                                },
+                                { replayable: Buffer.isBuffer(body) },
+                            );
+                        } catch (error: unknown) {
+                            if ((error as { code?: string }).code === "Md5Mismatch") {
+                                return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
+                            }
+
+                            throw error;
+                        }
+
+                        if (response.requestId === undefined) {
+                            return throwErrorCode(ERRORS.FILE_ERROR, "azure write upload error");
+                        }
+
+                        file.requestId = response.requestId;
+                        file.bytesWritten = offset + contentLength;
+                    }
 
                     file.status = getFileStatus(file);
 
                     if (file.status === "completed") {
+                        const response = await this.commitBlocks(blobClient, file, options);
+
                         file.uri = response._response.headers.get("location");
 
                         await this.deleteMeta(file.id);
+                    } else {
+                        // The persisted offset is what HEAD reports and what the next PATCH is checked against.
+                        await this.saveMeta(file);
                     }
                 }
             } finally {
@@ -710,6 +752,71 @@ class AzureStorage extends BaseStorage {
         }
 
         return filePath;
+    }
+
+    /**
+     * Block id for the chunk starting at `offset`. Azure requires every block id of a blob to have
+     * the same length, so the offset is zero-padded (16 digits cover any Number-safe offset).
+     */
+    private static blockId(offset: number): string {
+        return Buffer.from(`${BLOCK_ID_PREFIX}${String(offset).padStart(16, "0")}`).toString("base64");
+    }
+
+    /**
+     * Blob metadata as Azure expects it (string values), shared by create and the final commit.
+     */
+    private static blobMetadata(file: AzureFile): Record<string, string> {
+        const stringifiedMetaValues: Record<string, string> = {};
+
+        for (const [key, value] of Object.entries(file.metadata || {})) {
+            stringifiedMetaValues[key] = JSON.stringify(value);
+        }
+
+        return {
+            name: file.name,
+            originalName: file.originalName,
+            ...stringifiedMetaValues,
+        };
+    }
+
+    /**
+     * Commits the staged chunks of `file` in offset order. Only the contiguous chain of blocks
+     * starting at offset 0 is committed, so a stale block left by an abandoned PATCH is ignored.
+     */
+    private async commitBlocks(blobClient: BlockBlobClient, file: AzureFile, options?: OperationOptions): Promise<BlockBlobCommitBlockListResponse> {
+        const { uncommittedBlocks = [] } = await this.runOperation(options, (signal) => blobClient.getBlockList("uncommitted", { abortSignal: signal }));
+
+        const blocksByOffset = new Map<number, { name: string; size: number }>();
+
+        for (const block of uncommittedBlocks) {
+            const decoded = Buffer.from(block.name, "base64").toString();
+
+            if (decoded.startsWith(BLOCK_ID_PREFIX)) {
+                blocksByOffset.set(Number(decoded.slice(BLOCK_ID_PREFIX.length)), block);
+            }
+        }
+
+        const blockIds: string[] = [];
+        let position = 0;
+
+        for (let block = blocksByOffset.get(position); block !== undefined && block.size > 0; block = blocksByOffset.get(position)) {
+            blockIds.push(block.name);
+            position += block.size;
+        }
+
+        if (position !== file.size) {
+            return throwErrorCode(ERRORS.FILE_ERROR, `azure commit error: staged blocks cover ${position} of ${String(file.size)} bytes`);
+        }
+
+        return this.runOperation(options, (signal) =>
+            blobClient.commitBlockList(blockIds, {
+                abortSignal: signal,
+                blobHTTPHeaders: {
+                    blobContentType: file.contentType ?? "application/octet-stream",
+                },
+                metadata: AzureStorage.blobMetadata(file),
+            }),
+        );
     }
 
     private async accessCheck(): Promise<void> {

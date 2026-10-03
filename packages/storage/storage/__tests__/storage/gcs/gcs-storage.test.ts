@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import type { GoogleAuth } from "google-auth-library";
 import type { Response as NodeFetchResponse } from "node-fetch";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -282,6 +284,39 @@ describe(GCStorage, async () => {
             expect(mockMakeRequest).toHaveBeenCalledTimes(1);
             expect(gcsFile.status).toBe("part");
             expect(gcsFile.bytesWritten).toBe(6);
+        });
+
+        it("persists the offset GCS confirmed after a partial write", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
+
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            const mockMakeRequest = vi.fn().mockResolvedValue({
+                data: "",
+                headers: { get: (header: string) => (header === "range" ? "bytes=0-9" : undefined) },
+                status: 308,
+            });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            const gcsFile = await storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 });
+
+            expect(gcsFile.bytesWritten).toBe(10);
+            expect(saveMeta).toHaveBeenCalledTimes(1);
+            expect(saveMeta.mock.calls[0]?.[0]).toMatchObject({ bytesWritten: 10, id: metafile.id });
+        });
+
+        it("advertises no checksum algorithms and rejects one passed to write", async () => {
+            expect.assertions(2);
+
+            expect(storage.checksumTypes).toStrictEqual([]);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, uri });
+
+            await expect(
+                storage.write({ body: Readable.from(Buffer.alloc(10)), checksum: "x", checksumAlgorithm: "md5", contentLength: 10, id: metafile.id, start: 0 }),
+            ).rejects.toMatchObject({ UploadErrorCode: "UnsupportedChecksumAlgorithm" });
         });
     });
 
