@@ -300,34 +300,37 @@ abstract class RestBase<TFile extends UploadFile> {
             );
         }
 
-        // Track chunks in metadata (for status checking). The read-modify-write of `_chunks` must
-        // be serialized: two concurrent PATCHes for the same file would otherwise each read the
-        // same `existingChunks`, append their own entry, and the second write would overwrite the
-        // first — silently losing a chunk record. A distinct `chunks:` namespace avoids conflict
-        // with the adapter's internal write lock keyed on the file id.
+        // Write the chunk first and record it in `_chunks` only once the provider has stored it.
+        // Completion is derived from that list, so recording a chunk the provider then refuses
+        // (conflict, transient error, sequential-only provider) would let a later PATCH report the
+        // upload complete with bytes missing from storage.
+        const written = await this.storage.write({
+            body: bodyStream,
+            contentLength,
+            id,
+            start: chunkOffset,
+        });
+
+        // The read-modify-write of `_chunks` must be serialized: two concurrent PATCHes for the same
+        // file would otherwise each read the same `existingChunks`, append their own entry, and the
+        // second write would overwrite the first — silently losing a chunk record. A distinct
+        // `chunks:` namespace avoids conflict with the adapter's internal write lock keyed on the file id.
         const chunks = await this.storage.withLock(`chunks:${id}`, async () => {
             const current = await this.storage.getMeta(id);
             const currentMetadata = current.metadata ?? {};
             const existingChunks = Array.isArray(currentMetadata._chunks) ? (currentMetadata._chunks as ChunkInfo[]) : [];
-            const chunkInfo: ChunkInfo = {
+            const merged = trackChunk(existingChunks, {
                 checksum: chunkChecksum,
                 length: contentLength,
                 offset: chunkOffset,
-            };
-            const merged = trackChunk(existingChunks, chunkInfo);
+            });
 
             await this.storage.update({ id }, { metadata: { ...currentMetadata, _chunks: merged } });
 
             return merged;
         });
 
-        // Write chunk data using start offset (handles out-of-order chunks)
-        let updatedFile = await this.storage.write({
-            body: bodyStream,
-            contentLength,
-            id,
-            start: chunkOffset,
-        });
+        let updatedFile: TFile = { ...written, metadata: { ...written.metadata, _chunks: chunks } };
 
         // Check if upload is complete using chunked upload utilities
         let isComplete = updatedFile.bytesWritten >= totalSize;

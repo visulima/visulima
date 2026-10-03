@@ -145,6 +145,10 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 return file;
             }
 
+            if (part.size !== undefined) {
+                updateSize(file, part.size);
+            }
+
             const { body, start } = part;
             const chunks: Buffer[] = [];
 
@@ -162,7 +166,24 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const incoming = Buffer.concat(chunks);
             const existing = this.store.get(file.name)?.bytes;
-            const bytes: Buffer = start === 0 || !existing ? incoming : Buffer.concat([existing.subarray(0, start), incoming]);
+            const end = start + incoming.length;
+            // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale.
+            const isOverwrite = start === 0 && file.status === "completed";
+
+            // Otherwise write at `start`, growing the buffer as needed and leaving bytes outside
+            // `[start, end)` untouched, so out-of-order chunks don't clobber each other.
+            let bytes: Buffer;
+
+            if (isOverwrite) {
+                bytes = incoming;
+                updateSize(file, bytes.length);
+            } else if (!existing || existing.length === 0) {
+                bytes = start === 0 ? incoming : Buffer.concat([Buffer.alloc(start), incoming]);
+            } else {
+                bytes = Buffer.alloc(Math.max(existing.length, end));
+                existing.copy(bytes);
+                incoming.copy(bytes, start);
+            }
 
             const now = new Date().toISOString();
             const entry: MemoryEntry = {
@@ -179,7 +200,6 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             file.bytesWritten = bytes.length;
             file.ETag = entry.eTag;
             file.modifiedAt = entry.modifiedAt;
-            updateSize(file, bytes.length);
             file.status = getFileStatus(file);
 
             await this.saveMeta(file);
