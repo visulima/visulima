@@ -1,3 +1,14 @@
+## @visulima/storage-client [1.0.4](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.3...@visulima/storage-client@1.0.4) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** chunked REST uploads and GET in fetch handlers ([#885](https://github.com/visulima/visulima/issues/885)) ([1a6f77d](https://github.com/visulima/visulima/commit/1a6f77da602d0395c8f6965a104d54dffdf171c2))
+* unbreak main ci (email lint, fs windows ino) ([#888](https://github.com/visulima/visulima/issues/888)) ([47611c1](https://github.com/visulima/visulima/commit/47611c172537d020d1f5bc55f7ad8777c40dd72e))
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/storage-client [1.0.3](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.2...@visulima/storage-client@1.0.3) (2026-09-03)
 
 ### Bug Fixes

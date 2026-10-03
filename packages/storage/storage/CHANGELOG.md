@@ -1,3 +1,16 @@
+## @visulima/storage [2.0.24](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.23...@visulima/storage@2.0.24) (2026-10-03)
+
+### Bug Fixes
+
+* **deps:** patch transitive audit advisories ([#886](https://github.com/visulima/visulima/issues/886)) ([dca4293](https://github.com/visulima/visulima/commit/dca4293ca14bf7bfe6681b839bcd5b4f62aad86a))
+* **storage:** chunked REST uploads and GET in fetch handlers ([#885](https://github.com/visulima/visulima/issues/885)) ([1a6f77d](https://github.com/visulima/visulima/commit/1a6f77da602d0395c8f6965a104d54dffdf171c2))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 7.0.2
+* **@visulima/fs:** upgraded to 6.0.23
+
 ## @visulima/storage [2.0.23](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.22...@visulima/storage@2.0.23) (2026-10-03)
 
 

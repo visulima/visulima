@@ -1,3 +1,14 @@
+## @visulima/email [3.0.21](https://github.com/visulima/visulima/compare/@visulima/email@3.0.20...@visulima/email@3.0.21) (2026-10-03)
+
+### Bug Fixes
+
+* unbreak main ci (email lint, fs windows ino) ([#888](https://github.com/visulima/visulima/issues/888)) ([47611c1](https://github.com/visulima/visulima/commit/47611c172537d020d1f5bc55f7ad8777c40dd72e))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.23
+
 ## @visulima/email [3.0.20](https://github.com/visulima/visulima/compare/@visulima/email@3.0.19...@visulima/email@3.0.20) (2026-10-03)
 
 
