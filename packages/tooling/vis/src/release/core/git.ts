@@ -14,11 +14,172 @@ import type { CommandRunner } from "./package-managers/interface";
 
 export interface GitContext {
     cwd: string;
+    /** Environment to read push tokens from. Defaults to `process.env`. */
+    env?: NodeJS.ProcessEnv;
     runner: CommandRunner;
 }
 
 const run = async (ctx: GitContext, args: ReadonlyArray<string>, silent = true): Promise<{ exitCode: number; stderr: string; stdout: string }> =>
     ctx.runner.run("git", args, { cwd: ctx.cwd, silent });
+
+// ── Push authentication ────────────────────────────────────────────
+
+/** Token env vars tried in order, and the basic-auth user each forge expects. */
+const PUSH_TOKEN_SOURCES = {
+    github: { user: "x-access-token", vars: ["VIS_GH_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"] },
+    gitlab: { user: "oauth2", vars: ["GITLAB_TOKEN", "GL_TOKEN", "VIS_GH_TOKEN"] },
+} as const;
+
+type PushTokenSource = (typeof PUSH_TOKEN_SOURCES)[keyof typeof PUSH_TOKEN_SOURCES];
+
+/** Host part of an env value that may be a bare host (`GH_HOST`) or a URL (`GITHUB_SERVER_URL`). */
+const hostOf = (value: string | undefined): string | undefined => {
+    if (value === undefined || value.trim() === "") {
+        return undefined;
+    }
+
+    try {
+        return new URL(value.includes("://") ? value : `https://${value}`).host.toLowerCase();
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Which forge's token may be sent to `host`, by exact host match only: the
+ * public forges plus the hosts CI and the gh / glab CLIs are configured for.
+ * Any other host (a mirror, Bitbucket, a repointed remote) gets no token.
+ */
+const tokenSourceForHost = (host: string, env: NodeJS.ProcessEnv): PushTokenSource | undefined => {
+    const githubHosts = new Set(["github.com", hostOf(env["GH_HOST"]), hostOf(env["GITHUB_SERVER_URL"])]);
+    const gitlabHosts = new Set(["gitlab.com", hostOf(env["CI_SERVER_HOST"]), hostOf(env["CI_SERVER_URL"]), hostOf(env["GITLAB_HOST"])]);
+
+    if (githubHosts.has(host)) {
+        return PUSH_TOKEN_SOURCES.github;
+    }
+
+    if (gitlabHosts.has(host)) {
+        return PUSH_TOKEN_SOURCES.gitlab;
+    }
+
+    return undefined;
+};
+
+export interface PushCredentials {
+    /** Remote origin the token is scoped to, e.g. `https://github.com`. */
+    origin: string;
+    token: string;
+    /** Basic-auth user the forge expects for the token. */
+    user: string;
+}
+
+/**
+ * The CI token vis would send when pushing to `remote`, or `undefined` when git
+ * should be left alone (see {@link resolvePushAuthEnv} for the rules).
+ */
+export const resolvePushCredentials = async (ctx: GitContext, remote = "origin"): Promise<PushCredentials | undefined> => {
+    const env = ctx.env ?? process.env;
+    let remoteUrl = remote;
+
+    if (!/^[a-z][\w+.-]*:\/\//iu.test(remote)) {
+        const urlResult = await run(ctx, ["remote", "get-url", "--push", remote]);
+
+        if (urlResult.exitCode !== 0) {
+            return undefined;
+        }
+
+        remoteUrl = urlResult.stdout.trim();
+    }
+
+    let url: URL;
+
+    // A backslash is where WHATWG URL parsing and git's own (curl's) parsing
+    // can disagree about the host, so such a URL never gets a token.
+    if (remoteUrl.includes("\\")) {
+        return undefined;
+    }
+
+    try {
+        url = new URL(remoteUrl);
+    } catch {
+        return undefined;
+    }
+
+    if (url.protocol !== "https:" || url.username !== "") {
+        return undefined;
+    }
+
+    const source = tokenSourceForHost(url.host.toLowerCase(), env);
+    const token = source?.vars.map((name) => env[name]).find((value) => value !== undefined && value !== "");
+
+    if (source === undefined || token === undefined) {
+        return undefined;
+    }
+
+    // Only a header git would actually send to this remote counts.
+    const existing = await run(ctx, ["config", "--get-urlmatch", "http.extraheader", url.href]);
+
+    if (existing.exitCode === 0 && existing.stdout.trim() !== "") {
+        return undefined;
+    }
+
+    return { origin: url.origin, token, user: source.user };
+};
+
+/**
+ * Env that authenticates a `git push` to `remote` with the CI token, or
+ * `undefined` when git should be left alone.
+ *
+ * The generated release workflow checks out with `persist-credentials: false`
+ * so install scripts can't read a token from `.git/config`; without this a
+ * plain `git push origin` has no credentials. The token goes in as env-only
+ * git config (`GIT_CONFIG_COUNT` / `_KEY_n` / `_VALUE_n`) for the one push
+ * command: never written to disk and never on the command line.
+ *
+ * Only sent over HTTPS and only to a known forge host (see
+ * {@link tokenSourceForHost}): `VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` for
+ * GitHub, `GITLAB_TOKEN` / `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab. Left alone
+ * when the URL carries its own credentials, no token is set, or an
+ * `http.extraheader` already applies to this remote (a persisted checkout
+ * token, or caller-supplied `GIT_CONFIG_*`) — a second Authorization header
+ * makes GitHub reject the request.
+ */
+export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Promise<NodeJS.ProcessEnv | undefined> => {
+    const credentials = await resolvePushCredentials(ctx, remote);
+
+    if (credentials === undefined) {
+        return undefined;
+    }
+
+    // Append after any GIT_CONFIG_* entries the caller already set. A count git
+    // itself would reject is left alone rather than guessed at.
+    const count = (ctx.env ?? process.env)["GIT_CONFIG_COUNT"] ?? "0";
+
+    if (!/^\d+$/u.test(count)) {
+        return undefined;
+    }
+
+    const index = Number(count);
+    const basic = Buffer.from(`${credentials.user}:${credentials.token}`).toString("base64");
+
+    return {
+        [`GIT_CONFIG_KEY_${index}`]: `http.${credentials.origin}/.extraheader`,
+        [`GIT_CONFIG_VALUE_${index}`]: `AUTHORIZATION: basic ${basic}`,
+        GIT_CONFIG_COUNT: String(index + 1),
+    };
+};
+
+/** `git push` to `remote` with `args`, authenticated via {@link resolvePushAuthEnv}. */
+const push = async (
+    ctx: GitContext,
+    remote: string,
+    args: ReadonlyArray<string>,
+    silent = false,
+): Promise<{ exitCode: number; stderr: string; stdout: string }> => {
+    const authEnv = await resolvePushAuthEnv(ctx, remote);
+
+    return ctx.runner.run("git", ["push", remote, ...args], { cwd: ctx.cwd, env: authEnv, silent });
+};
 
 // ── Read-only ──────────────────────────────────────────────────────
 
@@ -415,13 +576,8 @@ export const createTag = async (
 };
 
 export const pushTags = async (ctx: GitContext, options: { atomic?: boolean; remote?: string } = {}): Promise<void> => {
-    const args = ["push", options.remote ?? "origin", "--tags"];
-
-    if (options.atomic) {
-        args.splice(1, 0, "--atomic");
-    }
-
-    const result = await run(ctx, args, false);
+    const args = options.atomic ? ["--atomic", "--tags"] : ["--tags"];
+    const result = await push(ctx, options.remote ?? "origin", args);
 
     if (result.exitCode !== 0) {
         throw new VisReleaseError({
@@ -474,7 +630,7 @@ export const createOrUpdateFloatingTag = async (
                 return;
             }
 
-            const pushResult = await run(ctx, ["push", options.remote ?? "origin", "--force", `refs/tags/${tag}:refs/tags/${tag}`], false);
+            const pushResult = await push(ctx, options.remote ?? "origin", ["--force", `refs/tags/${tag}:refs/tags/${tag}`]);
 
             if (pushResult.exitCode !== 0) {
                 throw new VisReleaseError({
@@ -523,7 +679,7 @@ export const createOrUpdateFloatingTag = async (
     // here because that pushes new tags only; we need `--force` for the
     // retarget. A targeted `refs/tags/<tag>:refs/tags/<tag>` keeps the
     // blast radius minimal — no other tags are touched.
-    const pushResult = await run(ctx, ["push", options.remote ?? "origin", "--force", `refs/tags/${tag}:refs/tags/${tag}`], false);
+    const pushResult = await push(ctx, options.remote ?? "origin", ["--force", `refs/tags/${tag}:refs/tags/${tag}`]);
 
     if (pushResult.exitCode !== 0) {
         throw new VisReleaseError({
@@ -605,19 +761,19 @@ export const stageAndCommitFile = async (
         return { committed: true, pushed: false };
     }
 
-    const pushResult = await ctx.runner.run("git", ["push", options.remote ?? "origin", `HEAD:${branch}`], { cwd: ctx.cwd, silent: false });
+    const pushResult = await push(ctx, options.remote ?? "origin", [`HEAD:${branch}`]);
 
     return { committed: true, pushed: pushResult.exitCode === 0 };
 };
 
 export const pushBranch = async (ctx: GitContext, branch: string, options: { force?: boolean; remote?: string } = {}): Promise<void> => {
-    const args = ["push", options.remote ?? "origin", `HEAD:${branch}`];
+    const args = [`HEAD:${branch}`];
 
     if (options.force) {
         args.push("--force-with-lease");
     }
 
-    const result = await run(ctx, args, false);
+    const result = await push(ctx, options.remote ?? "origin", args);
 
     if (result.exitCode !== 0) {
         throw new VisReleaseError({
@@ -635,6 +791,19 @@ export const pushBranch = async (ctx: GitContext, branch: string, options: { for
  * tag history continues to work post-migration.
  */
 export const defaultTagFor = (packageName: string, version: string): string => `${packageName}@${version}`;
+
+/**
+ * Floating major tag for a package version: the scope-qualified name with `@`
+ * dropped and `/` turned into `-`, plus `-v&lt;major>` (`@acme/cli@1.2.3` →
+ * `acme-cli-v1`). Collision-free across scopes. `undefined` when there is no
+ * usable name or major.
+ */
+export const floatingMajorTagFor = (packageName: string, version: string): string | undefined => {
+    const major = version.split(/[-+]/u, 1)[0]!.split(".")[0];
+    const safeName = packageName.replace(/^@/u, "").replaceAll("/", "-");
+
+    return major === undefined || major === "" || safeName === "" ? undefined : `${safeName}-v${major}`;
+};
 
 /**
  * Render a tag string from a template. Recognised tokens:
@@ -670,4 +839,34 @@ export const renderTagPattern = (template: string, tokens: { channel?: string; d
     };
 
     return template.replaceAll(TAG_TOKEN_RE, (_match, key: string) => values[key] ?? "");
+};
+
+/**
+ * Check that this run can push to `remote` before anything is published, so
+ * missing or read-only credentials fail the release up front instead of
+ * leaving packages on the registry without their tags. A `--dry-run` push
+ * still performs the authenticated receive-pack handshake. A non-fast-forward
+ * rejection proves the credentials work, so it counts as access.
+ */
+export const verifyPushAccess = async (ctx: GitContext, options: { branch?: string; remote?: string } = {}): Promise<string | undefined> => {
+    // Detached HEAD (CI checkout of a sha): any branch name works — a dry-run
+    // never updates the remote, it only needs a refspec to negotiate.
+    const target = options.branch ?? (await getCurrentBranch(ctx)) ?? "vis-release-push-check";
+    const refspec = `HEAD:refs/heads/${target}`;
+    // --porcelain: machine-readable, unlocalized status lines on stdout.
+    // --no-verify: a pre-push hook must not run (or add output) for a probe.
+    const result = await push(ctx, options.remote ?? "origin", ["--porcelain", "--dry-run", "--no-verify", refspec], true);
+
+    // Only a non-fast-forward rejection of this exact refspec proves the
+    // credentials authenticated; any other failure means no push access.
+    const nonFastForward = result.stdout
+        .split("\n")
+        .map((line) => line.replace(/\r$/u, ""))
+        .some((line) => line === `!\t${refspec}\t[rejected] (fetch first)` || line === `!\t${refspec}\t[rejected] (non-fast-forward)`);
+
+    if (result.exitCode === 0 || nonFastForward) {
+        return undefined;
+    }
+
+    return result.stderr.trim() || result.stdout.trim() || `git push --dry-run exited with ${String(result.exitCode)}`;
 };

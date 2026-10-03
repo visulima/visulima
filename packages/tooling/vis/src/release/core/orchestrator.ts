@@ -1037,6 +1037,134 @@ const commitPublishLock = async (
 };
 
 /**
+ * Tags a publish of the current plan pushes: release tags it creates (per
+ * package, or one per `syncGitTag` group) and floating major tags it moves.
+ * Mirrors the tagging in {@link publishContext}; private packages are skipped
+ * because they are never published, so never tagged.
+ */
+const plannedPushTags = async (context: OrchestratorContext): Promise<{ created: string[]; updated: string[] }> => {
+    const { defaultTagFor, floatingMajorTagFor, renderTagPattern } = await import("./git");
+    const { resolveSyncTagGroups } = await import("./group-tags");
+    const planned = context.plan.releases
+        .filter((release) => context.depGraph.getPackage(release.name)?.manifest?.private !== true)
+        .map((release) => {
+            return { name: release.name, version: release.newVersion };
+        });
+    const syncTags = resolveSyncTagGroups(context.config, planned);
+    const created = syncTags.groups.map((group) => group.tag);
+    const updated: string[] = [];
+    const isPrerelease = Boolean(context.channel?.prerelease) || Boolean(context.preMode);
+
+    for (const { name, version } of planned) {
+        if (syncTags.grouped.has(name)) {
+            continue;
+        }
+
+        const perPkg = context.perPackageConfig.get(name);
+        const pattern = perPkg?.releaseTagPattern ?? context.config.releaseTagPattern;
+
+        created.push(pattern ? renderTagPattern(pattern, { channel: context.channel?.tag, name, version }) : defaultTagFor(name, version));
+
+        if (context.config.floatingMajorTag === true && !isPrerelease && !pattern?.includes("{major}") && perPkg?.skipNpmPublish !== true) {
+            const floatTag = floatingMajorTagFor(name, version);
+
+            if (floatTag !== undefined) {
+                updated.push(floatTag);
+            }
+        }
+    }
+
+    return { created, updated };
+};
+
+/**
+ * Check, before anything is published, that this run's pushes will be
+ * accepted: a dry-run push proves the token authenticates, and on GitHub the
+ * rulesets / branch protection covering the release tags and branch are read
+ * through the API, since a dry-run never reaches them. Returns the failure
+ * reason, or `undefined` to go ahead; problems with soft-fail pushes only
+ * print warnings. Skipped without an `origin` remote (nothing to push to).
+ */
+const verifyReleasePushes = async (
+    context: OrchestratorContext,
+    runner: ReturnType<typeof createShellRunner>,
+    options: { noTag: boolean },
+): Promise<string | undefined> => {
+    const originResult = await runner.run("git", ["remote", "get-url", "--push", "origin"], { cwd: context.cwd, silent: true });
+
+    if (originResult.exitCode !== 0) {
+        return undefined;
+    }
+
+    const { getCurrentBranch, resolvePushCredentials, verifyPushAccess } = await import("./git");
+    const gitContext = { cwd: context.cwd, runner };
+    const pushError = await verifyPushAccess(gitContext);
+
+    if (pushError !== undefined) {
+        return `Cannot push to origin, nothing was published. Set VIS_GH_TOKEN (or GITHUB_TOKEN / GITLAB_TOKEN) with write access, or pass --no-push. git said: ${pushError}`;
+    }
+
+    const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
+    let provider: Awaited<ReturnType<typeof detectRemoteProvider>>;
+
+    try {
+        provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
+    } catch {
+        return undefined;
+    }
+
+    if (provider !== "github") {
+        return undefined;
+    }
+
+    const client = createRemoteClient(provider, { githubHost: context.config.githubHost, httpProxy: context.config.httpProxy });
+    const repo = await client.detectRepoSlug(context.cwd, runner);
+
+    if (!repo) {
+        return undefined;
+    }
+
+    // Bypass rights are per identity: ask with the token the push will use.
+    const credentials = await resolvePushCredentials(gitContext);
+    const ghEnv: NodeJS.ProcessEnv = { ...process.env };
+
+    if (credentials !== undefined) {
+        ghEnv["GH_TOKEN"] = credentials.token;
+    }
+
+    if (context.config.githubHost) {
+        ghEnv["GH_HOST"] = context.config.githubHost;
+    }
+
+    if (context.config.httpProxy) {
+        ghEnv["HTTPS_PROXY"] = context.config.httpProxy;
+        ghEnv["HTTP_PROXY"] = context.config.httpProxy;
+    }
+
+    const { checkGithubPushRules } = await import("./remote/github-push-rules");
+    const tags = options.noTag ? { created: [], updated: [] } : await plannedPushTags(context);
+    const rules = await checkGithubPushRules(runner, {
+        branch: await getCurrentBranch(gitContext),
+        createdTags: tags.created,
+        cwd: context.cwd,
+        env: ghEnv,
+        repo,
+        signedCommits: context.config.gitSignCommits === true,
+        updatedTags: tags.updated,
+    });
+
+    for (const warning of rules.warnings) {
+        process.stderr.write(`[vis release] Warning: ${warning}\n`);
+    }
+
+    if (rules.blocked.length > 0) {
+        return `GitHub push rules would reject this release, nothing was published:\n  - ${rules.blocked.join("\n  - ")}\nGrant the pushing token a bypass, adjust the ruleset, or pass --no-push / --no-tag.`;
+    }
+
+    return undefined;
+};
+
+/**
  * Publish each release in the plan via its resolved versionActions.
  * Topological order is honored so dependencies publish before dependents.
  */
@@ -1093,6 +1221,18 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             await runHook(context.cwd, context.config.prePublishCommand, "prePublishCommand");
         } catch (error) {
             result.failed.push({ name: "_prePublishCommand", reason: (error as Error).message });
+
+            return result;
+        }
+    }
+
+    // Fail before publishing when the pushes later in this run would be
+    // rejected, so packages don't land on the registry without their tags.
+    if (!options.dryRun && !options.noPush) {
+        const pushError = await verifyReleasePushes(context, runner, { noTag: options.noTag === true });
+
+        if (pushError !== undefined) {
+            result.failed.push({ name: "_pushAccess", reason: pushError });
 
             return result;
         }
@@ -1404,7 +1544,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
 
         // Create + push tags for successfully-published releases (RFC §14 / §19.1).
         if (!options.dryRun && !options.noTag && result.published.length > 0) {
-            const { createOrUpdateFloatingTag, createTag, defaultTagFor, pushTags, renderTagPattern } = await import("./git");
+            const { createOrUpdateFloatingTag, createTag, defaultTagFor, floatingMajorTagFor, pushTags, renderTagPattern } = await import("./git");
             const rootTagPattern = context.config.releaseTagPattern;
 
             const channelName = context.channel?.tag;
@@ -1475,48 +1615,25 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 const skipNpmPublish = perPkgForFloat?.skipNpmPublish === true;
 
                 if (floatingMajorEnabled && !isPrerelease && !pattern?.includes("{major}") && !isPrivate && !skipNpmPublish) {
-                    const major = version.split(/[-+]/, 1)[0]!.split(".")[0];
+                    // Scope-qualified (`@acme/cli` → `acme-cli-v1`) so two packages
+                    // with the same unscoped name never retarget each other's tag
+                    // (audit F2); undefined for an empty name or major.
+                    const floatTag = floatingMajorTagFor(name, version);
 
-                    if (major !== undefined && major !== "") {
-                        // F2 fix (audit): include the full scope in the
-                        // floating tag so cross-scope collisions are
-                        // impossible.
-                        //
-                        // Before (first attempt): `${unscopedName}-v${major}`
-                        // — two packages with the same unscoped name from
-                        // different scopes (e.g. `@acme/cli` + `@vendor/cli`)
-                        // both wrote `cli-v1`, reintroducing the cross-
-                        // package retarget bug.
-                        //
-                        // After: `${safeName}-v${major}` where `safeName`
-                        // strips the leading `@` and replaces `/` with `-`
-                        // (e.g. `@acme/cli` → `acme-cli-v1`,
-                        // `@vendor/cli` → `vendor-cli-v1`). Collision-free
-                        // across scopes; benign for unscoped packages
-                        // (`cli` → `cli-v1`).
-                        const safeName = name.replace(/^@/, "").replaceAll("/", "-");
-
-                        // Guard against an empty `safeName` (e.g.
-                        // `name === ""` — pathological but possible from
-                        // a malformed manifest). A `-v1`-prefixed tag
-                        // would conflict with everything; skip cleanly.
-                        if (safeName !== "") {
-                            const floatTag = `${safeName}-v${major}`;
-
-                            try {
-                                await createOrUpdateFloatingTag({ cwd: context.cwd, runner }, floatTag, {
-                                    push: !options.noPush,
-                                    signing: context.config.signing,
-                                });
-                                // Recorded in result.tags so the operator
-                                // sees it on the summary line.
-                                result.tags.push(floatTag);
-                            } catch (error) {
-                                result.skipped.push({
-                                    name: floatTag,
-                                    reason: `floating-major-tag: ${(error as Error).message}`,
-                                });
-                            }
+                    if (floatTag !== undefined) {
+                        try {
+                            await createOrUpdateFloatingTag({ cwd: context.cwd, runner }, floatTag, {
+                                push: !options.noPush,
+                                signing: context.config.signing,
+                            });
+                            // Recorded in result.tags so the operator
+                            // sees it on the summary line.
+                            result.tags.push(floatTag);
+                        } catch (error) {
+                            result.skipped.push({
+                                name: floatTag,
+                                reason: `floating-major-tag: ${(error as Error).message}`,
+                            });
                         }
                     }
                 }

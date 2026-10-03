@@ -414,7 +414,8 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
         { author: ctx.config.gitUser },
     );
 
-    // Push (using VIS_GH_TOKEN if available — CI workflow exports it)
+    // pushBranch authenticates with VIS_GH_TOKEN / GITHUB_TOKEN / GH_TOKEN from
+    // the env (the generated workflow checks out with persist-credentials: false).
     try {
         await pushBranch({ cwd, runner }, branch, { force: true });
     } catch (error) {

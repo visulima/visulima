@@ -19,8 +19,10 @@ const CHECKLIST = `
 
 2. Secrets
    Required:
-     - VIS_GH_TOKEN — PAT or GitHub App token. Used to force-push the
-       version-PR branch and create/edit the version PR. The default
+     - VIS_GH_TOKEN — PAT or GitHub App token. Used for every git push
+       (release tags, release / lock commits, the version-PR branch) and
+       to create/edit the version PR. vis passes it to git per command, so
+       checkout can keep persist-credentials: false. The default
        \${{ github.token }} is anti-recursion-locked and cannot trigger
        downstream workflows on the version-PR.
      - GH_TOKEN — \${{ github.token }} works for read-only / commenting.
