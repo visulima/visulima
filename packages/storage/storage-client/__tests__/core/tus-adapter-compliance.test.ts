@@ -157,16 +157,17 @@ describe("tus-adapter protocol compliance", () => {
             expect(mockFetch).toHaveBeenCalledTimes(4);
         });
 
-        it("restarts when the offset re-sync HEAD after a failed chunk reports 404", async () => {
+        it("restarts when the offset re-sync HEAD after a failed non-final chunk reports 404", async () => {
             expect.assertions(1);
 
-            const adapter = createTusAdapter({ chunkSize: 100, endpoint: ENDPOINT });
+            const adapter = createTusAdapter({ chunkSize: 50, endpoint: ENDPOINT });
             const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
 
             mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/first`));
             mockFetch.mockResolvedValueOnce(failed(500));
             mockFetch.mockResolvedValueOnce(failed(404));
             mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/second`));
+            mockFetch.mockResolvedValueOnce(patched(50));
             mockFetch.mockResolvedValueOnce(patched(100));
             mockFetch.mockResolvedValueOnce(headOk(100));
 
@@ -178,9 +179,103 @@ describe("tus-adapter protocol compliance", () => {
                 `HEAD ${ENDPOINT}/first`,
                 `POST ${ENDPOINT}`,
                 `PATCH ${ENDPOINT}/second`,
+                `PATCH ${ENDPOINT}/second`,
                 `HEAD ${ENDPOINT}/second`,
             ]);
         });
+    });
+
+    describe("lost response to the completing chunk", () => {
+        it.each([
+            ["a network error", 404, (): Promise<never> => Promise.reject(new TypeError("network down"))],
+            ["a 502", 410, (): Promise<Partial<Response>> => Promise.resolve(failed(502))],
+        ])("treats a gone upload after %s on the final PATCH as completed instead of re-uploading", async (_label, goneStatus, finalPatch) => {
+            expect.assertions(5);
+
+            const urlStorage = new MemoryUrlStorage();
+            const progress: number[] = [];
+            const adapter = createTusAdapter({ chunkSize: 50, endpoint: ENDPOINT, urlStorage });
+            const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+            adapter.setOnProgress((percent) => {
+                progress.push(percent);
+            });
+
+            mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/abc`));
+            mockFetch.mockResolvedValueOnce(patched(50));
+            mockFetch.mockImplementationOnce(finalPatch);
+            // The storage-backed server already dropped the finished upload.
+            mockFetch.mockResolvedValueOnce(failed(goneStatus));
+
+            const result = await adapter.upload(file);
+
+            // No re-creation, no second upload of the file, no final HEAD against the dropped upload.
+            expect(requests().map(({ method, url }) => `${method} ${url}`)).toStrictEqual([
+                `POST ${ENDPOINT}`,
+                `PATCH ${ENDPOINT}/abc`,
+                `PATCH ${ENDPOINT}/abc`,
+                `HEAD ${ENDPOINT}/abc`,
+            ]);
+            expect(result).toMatchObject({ id: "abc", offset: 100, size: 100, status: "completed", url: `${ENDPOINT}/abc` });
+            expect(progress).toStrictEqual([50, 100]);
+            expect(adapter.getOffset()).toBe(0);
+            await expect(urlStorage.listEntries()).resolves.toHaveLength(0);
+        });
+
+        it("still restarts when the final PATCH itself is answered with 404", async () => {
+            expect.assertions(1);
+
+            const adapter = createTusAdapter({ chunkSize: 100, endpoint: ENDPOINT });
+            const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+            mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/first`));
+            mockFetch.mockResolvedValueOnce(failed(404));
+            mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/second`));
+            mockFetch.mockResolvedValueOnce(patched(100));
+            mockFetch.mockResolvedValueOnce(headOk(100));
+
+            await adapter.upload(file);
+
+            expect(requests().map(({ method }) => method)).toStrictEqual(["POST", "PATCH", "POST", "PATCH", "HEAD"]);
+        });
+
+        it("resumes normally when the re-sync HEAD shows the final chunk did not land", async () => {
+            expect.assertions(2);
+
+            const adapter = createTusAdapter({ chunkSize: 100, endpoint: ENDPOINT });
+            const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+            mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/abc`));
+            mockFetch.mockRejectedValueOnce(new TypeError("network down"));
+            mockFetch.mockResolvedValueOnce(headOk(0));
+            mockFetch.mockResolvedValueOnce(patched(100));
+            mockFetch.mockResolvedValueOnce(headOk(100));
+
+            const result = await adapter.upload(file);
+
+            expect(requests().map(({ method }) => method)).toStrictEqual(["POST", "PATCH", "HEAD", "PATCH", "HEAD"]);
+            expect(result.offset).toBe(100);
+        });
+    });
+
+    it("sends 5 MiB chunks by default so S3-backed servers accept non-final chunks", async () => {
+        expect.assertions(2);
+
+        const adapter = createTusAdapter({ endpoint: ENDPOINT });
+        const chunk = 5 * 1024 * 1024;
+        const file = new File([new Uint8Array(chunk + 10)], "test.bin", { type: "application/octet-stream" });
+
+        mockFetch.mockResolvedValueOnce(created(`${ENDPOINT}/abc`));
+        mockFetch.mockResolvedValueOnce(patched(chunk));
+        mockFetch.mockResolvedValueOnce(patched(chunk + 10));
+        mockFetch.mockResolvedValueOnce(headOk(chunk + 10));
+
+        await adapter.upload(file);
+
+        const patches = requests().filter(({ method }) => method === "PATCH");
+
+        expect(patches.map(({ headers }) => headers["Content-Length"])).toStrictEqual([String(chunk), "10"]);
+        expect(patches.map(({ headers }) => headers["Upload-Offset"])).toStrictEqual(["0", String(chunk)]);
     });
 
     it("retries a 423 Locked PATCH after re-HEADing the offset", async () => {

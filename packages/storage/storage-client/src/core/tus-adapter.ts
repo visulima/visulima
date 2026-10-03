@@ -4,7 +4,7 @@ import { defaultFingerprint } from "./fingerprint";
 import { resolveRequestHeaders } from "./query-client";
 import { validateFile } from "./restrictions";
 import { TusResponseError, TusUploadGoneError } from "./tus/errors";
-import { toUploadResult, validateMetadataKeys } from "./tus/protocol";
+import { isGoneStatus, toUploadResult, validateMetadataKeys } from "./tus/protocol";
 import { createTusRequests } from "./tus/requests";
 import { createTusResumeStore } from "./tus/resume-store";
 import type { TusUploadState } from "./tus/state";
@@ -13,10 +13,14 @@ import type { HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage } from "./url-storage";
 
-const DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB
+/** 5 MiB — the smallest non-final part S3-backed TUS servers accept (S3 multipart minimum). */
+const DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024;
 
 export interface TusAdapterOptions {
-    /** Chunk size for TUS uploads (default: 1MB) */
+    /**
+     * Chunk size for TUS uploads (default: 5 MiB). Non-final chunks below 5 MiB are
+     * rejected by S3-backed servers, so only lower this for servers known to accept it.
+     */
     chunkSize?: number;
 
     /**
@@ -272,6 +276,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         const { signal } = state.abortController;
         let currentOffset = startOffset;
         let next: "patch" | "restart" | "sync" = "patch";
+        // The PATCH that would complete the upload was sent, but its response was lost.
+        let completingChunkUnacknowledged = false;
+        // Completion inferred from the server dropping the upload after that lost response.
+        let completedWithoutAcknowledgement = false;
 
         try {
             while (next !== "patch" || currentOffset < file.size) {
@@ -302,6 +310,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     }
 
                     next = "patch";
+                    completingChunkUnacknowledged = false;
 
                     if (currentOffset < file.size) {
                         // eslint-disable-next-line no-await-in-loop -- Sequential chunk upload required
@@ -319,7 +328,19 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     throwIfAborted(signal);
 
                     if (error_ instanceof TusUploadGoneError) {
-                        // The upload resource is gone: re-create it once, never PATCH the dead URL again.
+                        // The completing PATCH's response was lost and the re-sync HEAD now finds the
+                        // upload gone: servers backed by S3/GCS/Azure drop finished uploads, which TUS
+                        // allows to answer 404/410. Re-uploading would duplicate the file.
+                        if (next === "sync" && completingChunkUnacknowledged && isGoneStatus(error_.status)) {
+                            completedWithoutAcknowledgement = true;
+                            currentOffset = file.size;
+                            next = "patch";
+                            reportProgress(state, currentOffset);
+
+                            continue;
+                        }
+
+                        // Gone before the upload could have completed: re-create it once, never PATCH the dead URL again.
                         if (state.restartedAfterGone) {
                             throw error_;
                         }
@@ -328,6 +349,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                         next = "restart";
 
                         continue;
+                    }
+
+                    if (next === "patch") {
+                        completingChunkUnacknowledged = currentOffset + chunkSize >= file.size;
                     }
 
                     // Everything else (network errors, 5xx, 423 Locked, ...) is retried with backoff.
@@ -355,10 +380,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             throwIfAborted(signal);
 
             const uploadUrl = requireUploadUrl(state);
-            // Upload complete, get final file info
-            const finalHead = await requests.head(uploadUrl, signal);
+            // Upload complete, get final file info — unless the server already dropped the finished upload.
+            const finalHead = completedWithoutAcknowledgement ? undefined : await requests.head(uploadUrl, signal);
 
-            return toUploadResult(file, uploadUrl, currentOffset, finalHead.headers);
+            return toUploadResult(file, uploadUrl, currentOffset, finalHead?.headers);
         } finally {
             // Clear uploadState in the natural completion/finally path
             if (uploadState === state) {

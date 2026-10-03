@@ -8,7 +8,7 @@ import type { UrlStorage } from "../core/url-storage";
 import type { HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface UseTusUploadOptions {
-    /** Chunk size for TUS uploads (default: 1MB) */
+    /** Chunk size for TUS uploads (default: 5 MiB) */
     chunkSize?: number;
     /** Unified control handle. See `UploadControl`. */
     control?: UploadControl;
