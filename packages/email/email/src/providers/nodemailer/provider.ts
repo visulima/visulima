@@ -33,7 +33,8 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig> = defineProvider((op
     const createTransporter = (transport?: Record<string, unknown> | string) => {
         const transportConfig = transport ?? options.transport;
 
-        // eslint-disable-next-line sonarjs/no-clear-text-protocols
+        // Keep the default import: it works across the whole `>=7` peer range, where 7-9 are CommonJS-only.
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols, import/no-named-as-default-member
         return nodemailerModule.createTransport(transportConfig as Parameters<typeof nodemailerModule.createTransport>[0]);
     };
 
@@ -224,7 +225,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig> = defineProvider((op
 
                 return {
                     data: {
-                        messageId: info.messageId || generateMessageId(),
+                        messageId: info.messageId ?? generateMessageId(),
                         provider: PROVIDER_NAME,
                         response: info,
                         sent: true,
