@@ -382,4 +382,40 @@ describe(createChunkedRestAdapter, () => {
         expect(result.name).toBe("meta-name");
         expect(result.id).toBe(fileId);
     });
+
+    it("should fall back to /:id/metadata when the completing PATCH body is not a file object", async () => {
+        expect.assertions(2);
+
+        const file = new File([new Uint8Array([0, 1, 2, 3])], "f.bin", { type: "application/octet-stream" });
+        const fileId = "file-middleware";
+
+        // Create upload (POST)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-ID": fileId }), ok: true });
+        // Upload status (HEAD)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": "0" }), ok: true });
+        // Completing chunk (PATCH) answered by unrelated middleware JSON
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-Complete": "true", "X-Upload-Offset": String(file.size) }),
+            json: async () => {
+                return { ok: true };
+            },
+            ok: true,
+        });
+        // Final status check (HEAD)
+        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": String(file.size) }), ok: true });
+        // Metadata (GET /:id/metadata)
+        mockFetch.mockResolvedValueOnce({
+            json: async () => {
+                return { id: fileId, name: "meta-name", status: "completed" };
+            },
+            ok: true,
+        });
+
+        const adapter = createChunkedRestAdapter({ endpoint: "https://api.example.com/upload/", retry: false });
+
+        const result = await adapter.upload(file);
+
+        expect(mockFetch.mock.calls.at(-1)?.[0]).toBe(`https://api.example.com/upload/${fileId}/metadata`);
+        expect(result.name).toBe("meta-name");
+    });
 });

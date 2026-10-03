@@ -29,28 +29,15 @@ const buildContentDisposition = (name: string): string => {
     return `attachment; filename="${asciiName}"; filename*=UTF-8''${encoded}`;
 };
 
-/** File metadata as serialized by the storage REST handler. */
-interface FileMeta {
-    bytesWritten?: number;
-    contentType?: string;
-    createdAt?: string;
-    id?: string;
-    metadata?: Record<string, unknown>;
-    name?: string;
-    originalName?: string;
-    size?: number;
-    status?: string;
-    url?: string;
-}
-
 /**
- * Reads a response body as {@link FileMeta}, or `undefined` when it isn't a JSON object.
+ * Reads a response body as the stored file's metadata, or `undefined` when it isn't a file
+ * object (e.g. a non-JSON body, or an unrelated JSON reply from middleware).
  */
-const parseFileMeta = async (response: Response): Promise<FileMeta | undefined> => {
+const parseFileMeta = async (response: Response): Promise<Partial<UploadResult> | undefined> => {
     try {
-        const body: unknown = await response.json();
+        const body = (await response.json()) as Partial<UploadResult> | null;
 
-        return body !== null && typeof body === "object" && !Array.isArray(body) ? body : undefined;
+        return typeof body?.id === "string" ? body : undefined;
     } catch {
         return undefined;
     }
@@ -182,6 +169,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
     /** True while an `upload()` call's worker pool is running (possibly parked on a pause). */
     let uploadInFlight = false;
+
+    /**
+     * Builds the URL of an upload, optionally with a sub-resource suffix such as `/metadata`.
+     */
+    const fileUrl = (fileId: string, suffix = ""): string => `${endpoint.endsWith("/") ? endpoint.slice(0, -1) : endpoint}/${fileId}${suffix}`;
 
     /**
      * Merges adapter-level custom headers (and any `onBeforeRequest` hook result)
@@ -360,7 +352,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
      * caller can fall through to creating a fresh session.
      */
     const probeExistingUpload = async (fileId: string): Promise<number | undefined> => {
-        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
+        const url = fileUrl(fileId);
 
         let response: Response;
 
@@ -385,7 +377,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
      * Gets upload status from server.
      */
     const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; offset: number }> => {
-        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
+        const url = fileUrl(fileId);
 
         const response = await fetchWithRetry(url, {
             headers: await buildHeaders(url, "HEAD", {}),
@@ -419,7 +411,13 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Uploads a single chunk.
      */
-    const uploadChunk = async (file: File, fileId: string, startOffset: number, endOffset: number, signal: AbortSignal): Promise<FileMeta | undefined> => {
+    const uploadChunk = async (
+        file: File,
+        fileId: string,
+        startOffset: number,
+        endOffset: number,
+        signal: AbortSignal,
+    ): Promise<Partial<UploadResult> | undefined> => {
         const chunk = file.slice(startOffset, endOffset);
         const currentChunkSize = endOffset - startOffset;
 
@@ -428,7 +426,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             return undefined;
         }
 
-        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
+        const url = fileUrl(fileId);
 
         const chunkHeaders: Record<string, string> = {
             "Content-Length": String(currentChunkSize),
@@ -476,13 +474,14 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
      * server when resuming). Returns `undefined` when the route is unavailable, e.g. on a
      * write-only upload route, so the result falls back to what the client knows.
      */
-    const fetchFileMeta = async (fileId: string): Promise<FileMeta | undefined> => {
-        const url = endpoint.endsWith("/") ? `${endpoint}${fileId}/metadata` : `${endpoint}/${fileId}/metadata`;
+    const fetchFileMeta = async (fileId: string, signal: AbortSignal): Promise<Partial<UploadResult> | undefined> => {
+        const url = fileUrl(fileId, "/metadata");
 
         try {
             const response = await fetchWithRetry(url, {
                 headers: await buildHeaders(url, "GET", {}),
                 method: "GET",
+                signal,
             });
 
             return response.ok ? await parseFileMeta(response) : undefined;
@@ -524,7 +523,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const CONCURRENCY = 4;
         let nextIndex = 0;
 
-        let completedMeta: FileMeta | undefined;
+        let completedMeta: Partial<UploadResult> | undefined;
 
         const worker = async (): Promise<void> => {
             while (nextIndex < pending.length) {
@@ -578,7 +577,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         // Never `GET <endpoint>/<id>`: that serves the file bytes, not JSON, and may not be exposed
         // on a write-only upload route.
-        const fileMeta = completedMeta ?? await fetchFileMeta(fileId) ?? {};
+        const fileMeta = completedMeta ?? await fetchFileMeta(fileId, signal) ?? {};
 
         // Build UploadResult
         return {
@@ -591,7 +590,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             name: fileMeta.name,
             originalName: fileMeta.originalName ?? file.name,
             size: fileMeta.size ?? file.size,
-            status: (fileMeta.status as UploadResult["status"]) ?? "completed",
+            status: fileMeta.status ?? "completed",
             url: fileMeta.url,
         };
     };
