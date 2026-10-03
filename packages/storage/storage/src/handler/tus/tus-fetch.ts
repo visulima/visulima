@@ -6,7 +6,7 @@ import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getIdFromRequestUrl } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { TUS_RESUMABLE, TusBase } from "./tus-base";
+import { parseUploadOffset, resolveMethodOverride, TUS_RESUMABLE, TusBase } from "./tus-base";
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -80,8 +80,38 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * which the protocol requires on all responses.
      */
     public override async fetch(request: Request): Promise<globalThis.Response> {
-        const response = await super.fetch(request);
+        // TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
+        // Server, if the header is presented. The actual method of the request MUST be ignored."
+        let override: string | undefined;
 
+        try {
+            override = resolveMethodOverride(request.headers.get("x-http-method-override") ?? undefined);
+        } catch (error: unknown) {
+            return this.withTusResumable(await this.createErrorResponse(error as Error));
+        }
+
+        if (override !== undefined && override !== request.method) {
+            const hasBody = override !== "GET" && override !== "HEAD";
+
+            request = new Request(request.url, {
+                body: hasBody ? request.body : null,
+                headers: request.headers,
+                method: override,
+                signal: request.signal,
+                ...(hasBody && request.body ? { duplex: "half" } : {}),
+            });
+        }
+
+        return this.withTusResumable(await super.fetch(request));
+    }
+
+    /**
+     * Adds the `Tus-Resumable` header the protocol requires on every response.
+     * @param response Response to decorate
+     * @returns The response, carrying `Tus-Resumable`
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private withTusResumable(response: globalThis.Response): globalThis.Response {
         if (response.headers.has("Tus-Resumable")) {
             return response;
         }
@@ -161,7 +191,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(415, "Unsupported Media Type");
         }
 
-        const uploadOffset = Number.parseInt(uploadOffsetHeader, 10);
+        const uploadOffset = parseUploadOffset(uploadOffsetHeader);
         const uploadLength = request.headers.get("upload-length") || undefined;
         const metadataHeader = request.headers.get("upload-metadata") || undefined;
         const contentLengthHeader = request.headers.get("content-length");
@@ -172,11 +202,21 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const bodyStream = request.body;
 
         try {
-            return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);
+            return await this.tusBase.handlePatch(
+                id,
+                uploadOffset,
+                uploadLength,
+                metadataHeader,
+                checksum,
+                checksumAlgorithm,
+                requestUrl,
+                bodyStream,
+                contentLength,
+            );
         } catch (error: unknown) {
             const errorWithCode = error as { UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+            if (errorWithCode.UploadErrorCode === "GONE") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -201,11 +241,11 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.tusBase.handleHead(id);
+            return await this.tusBase.handleHead(id);
         } catch (error: unknown) {
             const errorWithCode = error as { UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+            if (errorWithCode.UploadErrorCode === "GONE") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -230,7 +270,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.tusBase.handleGet(id);
+            return await this.tusBase.handleGet(id);
         } catch (error: unknown) {
             const errorWithCode = error as { UploadErrorCode?: string };
 
@@ -259,7 +299,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.tusBase.handleDelete(id);
+            return await this.tusBase.handleDelete(id);
         } catch (error: unknown) {
             const errorWithCode = error as { code?: string };
 

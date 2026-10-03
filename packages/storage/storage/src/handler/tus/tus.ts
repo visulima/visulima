@@ -9,7 +9,7 @@ import { getHeader, getIdFromRequest, getRequestStream } from "../../utils/http"
 import type { UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import { TUS_RESUMABLE, TusBase } from "./tus-base";
+import { parseUploadOffset, resolveMethodOverride, TUS_RESUMABLE, TusBase } from "./tus-base";
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -41,6 +41,27 @@ export class Tus<
     public constructor(options: UploadOptions<TFile>) {
         super(options);
         this.disableTerminationForFinishedUploads = options.disableTerminationForFinishedUploads ?? false;
+
+        // TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
+        // Server, if the header is presented. The actual method of the request MUST be ignored."
+        const { upload } = this;
+
+        this.upload = async (request: NodeRequest, response: NodeResponse, next?: () => void): Promise<void> => {
+            try {
+                const override = resolveMethodOverride(getHeader(request, "x-http-method-override"));
+
+                if (override !== undefined) {
+                    request.method = override;
+                }
+            } catch (error: unknown) {
+                await this.sendError(response, error as Error);
+
+                return undefined;
+            }
+
+            return upload(request, response, next);
+        };
+
         // Create TusBase instance with access to this Tus instance
         const tusInstance = this;
 
@@ -132,7 +153,7 @@ export class Tus<
                 throw createHttpError(415, "Unsupported Media Type");
             }
 
-            const uploadOffset = Number.parseInt(getHeader(request, "upload-offset"), 10);
+            const uploadOffset = parseUploadOffset(getHeader(request, "upload-offset"));
             const uploadLength = request.headers["upload-length"] as string | undefined;
             const metadataHeader = getHeader(request, "upload-metadata", true);
             const contentLength = Number(getHeader(request, "content-length"));
@@ -141,13 +162,23 @@ export class Tus<
             const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
             const bodyStream = getRequestStream(request);
 
-            return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);
+            return await this.tusBase.handlePatch(
+                id,
+                uploadOffset,
+                uploadLength,
+                metadataHeader,
+                checksum,
+                checksumAlgorithm,
+                requestUrl,
+                bodyStream,
+                contentLength,
+            );
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
             const errorWithCode = error as { UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+            if (errorWithCode.UploadErrorCode === "GONE") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -166,13 +197,13 @@ export class Tus<
         try {
             const id = getIdFromRequest(request);
 
-            return this.tusBase.handleHead(id);
+            return await this.tusBase.handleHead(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
             const errorWithCode = error as { UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+            if (errorWithCode.UploadErrorCode === "GONE") {
                 throw createHttpError(410, "Upload expired");
             }
 
@@ -191,7 +222,7 @@ export class Tus<
         try {
             const id = getIdFromRequest(request);
 
-            return this.tusBase.handleGet(id);
+            return await this.tusBase.handleGet(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
@@ -216,7 +247,7 @@ export class Tus<
         try {
             const id = getIdFromRequest(request);
 
-            return this.tusBase.handleDelete(id);
+            return await this.tusBase.handleDelete(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
@@ -241,7 +272,7 @@ export class Tus<
             headers: {
                 ...headers,
                 "Access-Control-Expose-Headers":
-                    "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
+                    "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,upload-concat,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 "Tus-Resumable": TUS_RESUMABLE,
             },
             statusCode: statusCode || 200,

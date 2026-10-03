@@ -201,11 +201,9 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             file.modifiedAt = entry.modifiedAt;
             file.status = getFileStatus(file);
 
+            // onComplete is the upload handlers' job (they call it once the upload is
+            // completed); calling it here too made every handler upload fire it twice.
             await this.saveMeta(file);
-
-            if (file.status === "completed") {
-                await this.onComplete(file, {});
-            }
 
             return file;
         });

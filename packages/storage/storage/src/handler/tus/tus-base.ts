@@ -1,8 +1,12 @@
+import { createHash, getHashes } from "node:crypto";
+import { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { Metadata } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
+import { getIdFromRequestUrl } from "../../utils/http";
 import type { Headers } from "../../utils/types";
 import type { ResponseFile } from "../types";
 
@@ -10,19 +14,60 @@ const TUS_RESUMABLE_VERSION = "1.0.0";
 const TUS_VERSION_VERSION = "1.0.0";
 
 /**
+ * Whether a header value is a non-negative integer, as the spec requires for `Upload-Length`
+ * and `Upload-Offset`.
+ * @param value Header value
+ * @returns True for e.g. "0" or "42", false for "", "-1", "1.5" or "abc"
+ */
+const isNonNegativeInteger = (value: string): boolean => /^\d+$/.test(value) && Number.isSafeInteger(Number(value));
+
+const BASE64_PATTERN = /^(?:[a-z\d+/]{4})*(?:[a-z\d+/]{2}==|[a-z\d+/]{3}=)?$/i;
+
+/**
+ * Metadata keys the server stores on an upload for its own bookkeeping. They are never echoed
+ * back in `Upload-Metadata`, and a client can't set them.
+ */
+const INTERNAL_METADATA_KEYS = new Set(["partialIds", "uploadConcat"]);
+
+/**
  * Parse TUS protocol metadata string into object.
+ *
+ * Follows the spec: pairs are comma separated, each pair is a key and an optional base64 value
+ * separated by a single space. Keys MUST NOT be empty or contain spaces/commas and MUST be
+ * unique; a malformed header is rejected with `400 Bad Request`.
  * @param encoded Base64-encoded metadata string (optional, defaults to empty string)
  * @returns Parsed metadata object with decoded values
+ * @throws {HttpError} 400 when the header is malformed
  */
 export const parseMetadata = (encoded = ""): Metadata => {
-    const kvPairs = encoded.split(",").map((kv) => kv.split(" "));
     const metadata = Object.create(Metadata.prototype) as Record<string, string>;
 
-    Object.values(kvPairs).forEach(([key, value]) => {
-        if (key) {
-            metadata[key] = value ? Buffer.from(value, "base64").toString() : "";
+    if (encoded.trim() === "") {
+        return metadata;
+    }
+
+    for (const pair of encoded.split(",")) {
+        const parts = pair.trim().split(" ");
+        const [key, value] = parts;
+
+        if (!key || parts.length > 2) {
+            throw createHttpError(400, "Invalid Upload-Metadata header: malformed key-value pair");
         }
-    });
+
+        if (Object.hasOwn(metadata, key)) {
+            throw createHttpError(400, `Invalid Upload-Metadata header: duplicate key "${key}"`);
+        }
+
+        if (INTERNAL_METADATA_KEYS.has(key)) {
+            throw createHttpError(400, `Invalid Upload-Metadata header: reserved key "${key}"`);
+        }
+
+        if (value !== undefined && value !== "" && !BASE64_PATTERN.test(value)) {
+            throw createHttpError(400, `Invalid Upload-Metadata header: value of "${key}" is not base64`);
+        }
+
+        metadata[key] = value ? Buffer.from(value, "base64").toString() : "";
+    }
 
     return metadata;
 };
@@ -46,6 +91,79 @@ export const serializeMetadata = (object: Metadata | Record<string, unknown> | u
             return `${key} ${Buffer.from(String(value)).toString("base64")}`;
         })
         .toString();
+};
+
+/** Methods a client may tunnel through `X-HTTP-Method-Override`. */
+const OVERRIDABLE_METHODS = new Set(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST"]);
+
+/**
+ * Resolves an `X-HTTP-Method-Override` header to the method the server must use.
+ * @param header Header value
+ * @returns The upper-cased method, or undefined when the header is absent
+ * @throws {HttpError} 400 for a method the TUS handler doesn't serve
+ */
+export const resolveMethodOverride = (header: string | undefined): string | undefined => {
+    if (header === undefined || header.trim() === "") {
+        return undefined;
+    }
+
+    const method = header.trim().toUpperCase();
+
+    if (!OVERRIDABLE_METHODS.has(method)) {
+        throw createHttpError(400, `Unsupported X-HTTP-Method-Override: ${header}`);
+    }
+
+    return method;
+};
+
+/**
+ * Parses an `Upload-Offset` header strictly: anything but a non-negative integer becomes NaN,
+ * which `handlePatch` rejects with 400 (`Number.parseInt("12abc")` would silently give 12).
+ * @param header Header value
+ * @returns The offset, or NaN when the header is invalid
+ */
+export const parseUploadOffset = (header: string | undefined): number => (header !== undefined && isNonNegativeInteger(header) ? Number(header) : Number.NaN);
+
+/** Checksum algorithms the TUS handler can verify itself when the storage can't. */
+const HANDLER_CHECKSUM_ALGORITHMS = ["md5", "sha1", "sha256", "sha384", "sha512"].filter((algorithm) => getHashes().includes(algorithm));
+
+/**
+ * Reads a request body (Node.js Readable, Web ReadableStream or a buffer) into memory.
+ * @param body Request body
+ * @returns The body bytes
+ */
+const readBody = async (body: unknown): Promise<Buffer> => {
+    if (body === undefined || body === null) {
+        return Buffer.alloc(0);
+    }
+
+    if (body instanceof Uint8Array) {
+        return Buffer.from(body);
+    }
+
+    const chunks: Buffer[] = [];
+
+    if (typeof (body as ReadableStream<Uint8Array>).getReader === "function") {
+        const reader = (body as ReadableStream<Uint8Array>).getReader();
+
+        for (;;) {
+            const { done, value } = await reader.read();
+
+            if (done) {
+                break;
+            }
+
+            chunks.push(Buffer.from(value));
+        }
+
+        return Buffer.concat(chunks);
+    }
+
+    for await (const chunk of body as AsyncIterable<Uint8Array | string>) {
+        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : Buffer.from(chunk));
+    }
+
+    return Buffer.concat(chunks);
 };
 
 /**
@@ -104,7 +222,7 @@ export abstract class TusBase<TFile extends UploadFile> {
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Checksum, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             "Access-Control-Allow-Methods": methods.map((method) => method.toUpperCase()).join(", "),
             "Access-Control-Max-Age": 86_400,
-            "Tus-Checksum-Algorithm": this.storage.checksumTypes.join(","),
+            "Tus-Checksum-Algorithm": this.checksumAlgorithms.join(","),
             "Tus-Extension": this.storage.tusExtension.toString(),
             "Tus-Max-Size": this.storage.maxUploadSize,
             "Tus-Version": TUS_VERSION_VERSION,
@@ -204,6 +322,10 @@ export abstract class TusBase<TFile extends UploadFile> {
 
             // Parse Upload-Concat header: "partial" or "final;id1 id2 id3"
             if (uploadConcat === "partial") {
+                if (uploadLength !== undefined && !isNonNegativeInteger(uploadLength)) {
+                    throw createHttpError(400, "Invalid upload-length");
+                }
+
                 // Create a partial upload
                 // Partial uploads don't require Upload-Length (can use defer-length)
                 const config: FileInit = {
@@ -243,13 +365,38 @@ export abstract class TusBase<TFile extends UploadFile> {
 
                 headers["Upload-Concat"] = "partial";
 
+                // Partial uploads are not processed until concatenated (see handlePatch).
+                if (file.status === "completed") {
+                    file = { ...file, status: "part" };
+                }
+
                 // TUS creation: the server MUST respond with 201 Created, also with creation-with-upload.
                 return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
             }
 
             if (uploadConcat.startsWith("final;")) {
                 // Create a final upload that concatenates partial uploads
-                const partialIds = uploadConcat.slice(6).trim().split(/\s+/).filter(Boolean);
+                // The spec lists partial upload URLs (absolute or relative); bare IDs are accepted too.
+                const partialIds = uploadConcat
+                    .slice(6)
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map((reference) => {
+                        let partialId: string | undefined;
+
+                        try {
+                            partialId = reference.includes("/") ? getIdFromRequestUrl(reference) : reference;
+                        } catch {
+                            partialId = undefined;
+                        }
+
+                        if (partialId === undefined) {
+                            throw createHttpError(400, `Upload-Concat final contains an invalid partial upload URL: ${reference}`);
+                        }
+
+                        return partialId;
+                    });
 
                 if (partialIds.length === 0) {
                     throw createHttpError(400, "Upload-Concat final must include at least one partial upload ID");
@@ -320,7 +467,7 @@ export abstract class TusBase<TFile extends UploadFile> {
             throw createHttpError(400, "Either upload-length or upload-defer-length must be specified.");
         }
 
-        if (uploadLength !== undefined && Number.isNaN(Number(uploadLength))) {
+        if (uploadLength !== undefined && !isNonNegativeInteger(uploadLength)) {
             throw createHttpError(400, "Invalid upload-length");
         }
 
@@ -399,20 +546,6 @@ export abstract class TusBase<TFile extends UploadFile> {
 
         const metadata = metadataHeader ? parseMetadata(metadataHeader) : undefined;
 
-        if (metadata) {
-            try {
-                await this.storage.update({ id }, { id, metadata });
-            } catch (error: unknown) {
-                const errorWithCode = error as { UploadErrorCode?: string };
-
-                if (errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
-                    throw createHttpError(410, "Upload expired");
-                }
-
-                throw error;
-            }
-        }
-
         // Check if file is expired before processing
         let currentFile: TFile;
 
@@ -422,8 +555,12 @@ export abstract class TusBase<TFile extends UploadFile> {
         } catch (error: unknown) {
             const errorWithCode = error as { UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+            if (errorWithCode.UploadErrorCode === "GONE") {
                 throw createHttpError(410, "Upload expired");
+            }
+
+            if (errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
+                throw createHttpError(404, "Upload not found");
             }
 
             throw error;
@@ -436,43 +573,66 @@ export abstract class TusBase<TFile extends UploadFile> {
             throw createHttpError(403, "Cannot PATCH a final concatenation upload");
         }
 
+        // TUS core: "If the offsets do not match, the Server MUST respond with the 409 Conflict
+        // status without modifying the upload resource."
+        const currentOffset = Number.isNaN(currentFile.bytesWritten) ? 0 : currentFile.bytesWritten;
+
+        if (uploadOffset !== currentOffset) {
+            throw createHttpError(409, `Upload-Offset ${String(uploadOffset)} does not match the current offset ${String(currentOffset)}`);
+        }
+
+        const deferredSize = this.validateDeferredUploadLength(currentFile, uploadLength, contentLength);
+
+        // Verify the checksum before anything is written: on a mismatch the chunk MUST be discarded.
+        let body = bodyStream;
+        let nativeChecksum: Checksum = { checksum: undefined, checksumAlgorithm: undefined };
+
+        if (checksumAlgorithm !== undefined) {
+            if (checksum === undefined) {
+                throw createHttpError(400, "Invalid Upload-Checksum header");
+            }
+
+            if (this.storage.checksumTypes.includes(checksumAlgorithm)) {
+                nativeChecksum = { checksum, checksumAlgorithm };
+            } else if (HANDLER_CHECKSUM_ALGORITHMS.includes(checksumAlgorithm)) {
+                const bytes = await readBody(bodyStream);
+
+                if (createHash(checksumAlgorithm).update(bytes).digest("base64") !== checksum) {
+                    throw createHttpError(460, "Checksum Mismatch");
+                }
+
+                body = Readable.from([bytes]);
+            } else {
+                throw createHttpError(400, `Unsupported checksum algorithm: ${checksumAlgorithm}`);
+            }
+        }
+
+        if (metadata) {
+            await this.storage.update({ id }, { id, metadata });
+        }
+
+        if (deferredSize !== undefined) {
+            await this.storage.update({ id }, { size: deferredSize });
+        }
+
         let file = await this.storage.write({
-            body: bodyStream,
-            checksum,
-            checksumAlgorithm,
+            body,
+            ...nativeChecksum,
             contentLength,
             id,
             start: uploadOffset,
         });
 
-        // Handle Upload-Length header for Creation-Defer-Length extension
-        if (uploadLength !== undefined) {
-            if (!this.storage.tusExtension.includes("creation-defer-length")) {
-                throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
-            }
+        // A deferred length can make an upload complete without this chunk carrying the last byte.
+        if (deferredSize !== undefined && file.bytesWritten === deferredSize && file.status !== "completed") {
+            file = { ...file, size: deferredSize, status: "completed" };
+        }
 
-            // If size is already set, it cannot be changed
-            if (file.size !== undefined && !Number.isNaN(file.size)) {
-                throw createHttpError(412, "Upload-Length has already been set for this upload");
-            }
-
-            const size = Number.parseInt(uploadLength, 10);
-
-            if (Number.isNaN(size)) {
-                throw createHttpError(400, "Invalid Upload-Length value");
-            }
-
-            if (size < file.bytesWritten) {
-                throw createHttpError(400, "Upload-Length is smaller than the current offset");
-            }
-
-            // Update file size
-            file = await this.storage.update({ id }, { size });
-
-            // Check if upload is now completed
-            if (file.bytesWritten === file.size) {
-                file = { ...file, status: "completed" };
-            }
+        // TUS concatenation: "The Server SHOULD NOT process these partial uploads until they are
+        // concatenated to form a final upload", so a finished partial is not reported as completed
+        // (no onComplete hook, no "completed" event).
+        if (file.status === "completed" && file.metadata?.uploadConcat === "partial") {
+            file = { ...file, status: "part" };
         }
 
         return {
@@ -483,6 +643,54 @@ export abstract class TusBase<TFile extends UploadFile> {
             // TUS core: a successful PATCH MUST answer 204 No Content, including the completing one.
             statusCode: 204,
         };
+    }
+
+    /**
+     * Checksum algorithms advertised in `Tus-Checksum-Algorithm`: the ones the storage verifies
+     * natively first, then the ones this handler verifies itself.
+     * @returns Lowercase algorithm names
+     */
+    protected get checksumAlgorithms(): string[] {
+        return [...new Set([...this.storage.checksumTypes, ...HANDLER_CHECKSUM_ALGORITHMS])];
+    }
+
+    /**
+     * Validates an `Upload-Length` sent on PATCH for a deferred-length upload.
+     * @param file Current upload state
+     * @param uploadLength Upload-Length header value
+     * @param contentLength Length of this PATCH's body
+     * @returns The new upload size, or undefined when no Upload-Length was sent
+     */
+    private validateDeferredUploadLength(file: TFile, uploadLength: string | undefined, contentLength: number): number | undefined {
+        if (uploadLength === undefined) {
+            return undefined;
+        }
+
+        if (!this.storage.tusExtension.includes("creation-defer-length")) {
+            throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
+        }
+
+        // If size is already set, it cannot be changed
+        if (file.size !== undefined && !Number.isNaN(file.size)) {
+            throw createHttpError(412, "Upload-Length has already been set for this upload");
+        }
+
+        if (!isNonNegativeInteger(uploadLength)) {
+            throw createHttpError(400, "Invalid Upload-Length value");
+        }
+
+        const size = Number(uploadLength);
+        const offset = Number.isNaN(file.bytesWritten) ? 0 : file.bytesWritten;
+
+        if (size < offset + (contentLength || 0)) {
+            throw createHttpError(400, "Upload-Length is smaller than the upload's data");
+        }
+
+        if (size > this.storage.maxUploadSize) {
+            throw createHttpError(413, "Upload-Length exceeds the maximum upload size");
+        }
+
+        return size;
     }
 
     /**
@@ -505,7 +713,9 @@ export abstract class TusBase<TFile extends UploadFile> {
                   }),
             ...this.buildHeaders(file, {
                 "Cache-Control": HeaderUtilities.createCacheControlPreset("no-store"),
-                "Upload-Metadata": serializeMetadata(file.metadata),
+                "Upload-Metadata": serializeMetadata(
+                    Object.fromEntries(Object.entries(file.metadata ?? {}).filter(([key]) => !INTERNAL_METADATA_KEYS.has(key))),
+                ),
                 "Upload-Offset": file.bytesWritten,
             }),
         };

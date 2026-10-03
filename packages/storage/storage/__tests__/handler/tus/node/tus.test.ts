@@ -200,7 +200,7 @@ describe("http Tus", () => {
             expect(response.header["tus-version"]).toStrictEqual(TUS_VERSION);
             expect(response.header["tus-extension"]).toBe("creation,creation-with-upload,termination,checksum,creation-defer-length,concatenation,expiration");
             expect(response.header["tus-max-size"]).toBe("6442450944");
-            expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1");
+            expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1,sha256,sha384,sha512");
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, DOWNLOAD, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
@@ -400,6 +400,30 @@ describe("http Tus", () => {
 
             expect(garbage.status).toBe(400);
             expect(negative.status).toBe(400);
+        });
+
+        it("should honour X-HTTP-Method-Override and reject unsupported overrides", async () => {
+            expect.assertions(3);
+
+            const createResponse = await supertest(app)
+                .post(basePath)
+                .set("Upload-Metadata", serializeMetadata({ ...metadata, name: "override.mp4" }))
+                .set("Upload-Length", "5")
+                .set("Tus-Resumable", TUS_RESUMABLE);
+
+            const overridden = await supertest(app)
+                .post(createResponse.header.location)
+                .set("X-HTTP-Method-Override", "PATCH")
+                .set("Content-Type", "application/offset+octet-stream")
+                .set("Upload-Offset", "0")
+                .set("Tus-Resumable", TUS_RESUMABLE)
+                .send(Buffer.from("hello"));
+
+            const unsupported = await supertest(app).post(basePath).set("X-HTTP-Method-Override", "TRACE").set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(overridden.status).toBe(204);
+            expect(overridden.header["upload-offset"]).toBe("5");
+            expect(unsupported.status).toBe(400);
         });
 
         it("should reject an Upload-Defer-Length other than 1 with 400", async () => {
