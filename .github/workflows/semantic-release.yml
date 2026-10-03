@@ -71,8 +71,12 @@ jobs:
                   # reports to Codecov and runs the full suite (well past this deadline).
                   # Their jobs are looked up by workflow name each poll, as job names
                   # are matrix-generated.
-                  IGNORE_WORKFLOWS: "[\"Tests\",\"Coverage baseline\"]"
-                  IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
+                  # CodSpeed is ignored as a whole workflow: its benches start only after
+                  # Tests finish, and a hand-maintained list of bench job names went stale
+                  # (vis / humanizer / yaml / iso-locale benches were missing), which made
+                  # this wait time out and skip the release.
+                  IGNORE_WORKFLOWS: "[\"Tests\",\"Coverage baseline\",\"CodSpeed\"]"
+                  IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\"]"
               run: |
                   set -euo pipefail
                   deadline=$(( $(date +%s) + 1680 ))
@@ -137,6 +141,7 @@ jobs:
             issues: "write" # to be able to comment on released issues
             pull-requests: "write" # to be able to comment on released pull requests
             id-token: "write" # to enable use of OIDC for npm provenance
+            actions: "write" # to re-dispatch this workflow when the branch moved during the run
 
         steps:
             - name: "Harden Runner"
@@ -224,3 +229,26 @@ jobs:
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
                   commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
+
+            # semantic-release refuses to publish when the remote branch moved after this
+            # job checked out ("The local branch … is behind the remote one"), and the run
+            # still succeeds. Bot pushes like the lock-file maintenance commit carry
+            # [skip ci], so no later run would pick the release up. If the branch moved,
+            # start this workflow again on its current tip; a re-run with nothing new
+            # to release is a cheap no-op.
+            - name: "Re-run the release if the branch moved"
+              if: "success()"
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  BRANCH: "${{ github.ref_name }}"
+                  REPO: "${{ github.repository }}"
+              run: |
+                  set -euo pipefail
+                  git fetch --quiet origin "$BRANCH"
+                  if [ "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)" ]; then
+                      echo "${BRANCH} did not move during the release."
+                      exit 0
+                  fi
+                  echo "${BRANCH} moved to $(git rev-parse --short FETCH_HEAD) during the release; dispatching a new release run."
+                  gh workflow run semantic-release.yml --repo "$REPO" --ref "$BRANCH"
