@@ -2,10 +2,9 @@
 
 import createHttpError from "http-errors";
 
-import { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
-import { getRequestStream } from "../../utils/http";
+import { getIdFromRequestUrl, getRequestStream } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { parseContentDispositionValue } from "../utils/request-parser";
@@ -357,19 +356,6 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     public async options(_request: Request): Promise<ResponseFile<TFile>> {
         return this.restBase.handleOptions(RestFetch.methods, this.storage.maxUploadSize);
     }
-
-    /**
-     * Retrieves a file or list of files based on the request path.
-     * Delegates to BaseHandlerFetch.fetch() method.
-     * @param _request Web API Request
-     * @returns Promise resolving to Web API Response
-     */
-    // eslint-disable-next-line class-methods-use-this
-    public async get(_request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
-        // For Fetch version, get is handled by the fetch() method
-        // This method signature exists for consistency but shouldn't be called directly
-        throw createHttpError(500, "GET requests should be handled via fetch() method");
-    }
 }
 
 export default RestFetch;
@@ -424,39 +410,4 @@ const extractFileInitFromRequest = (request: Request, contentLength: number, con
         originalName,
         size: totalSize,
     };
-};
-
-/**
- * Extract file ID from request URL and validate it as a safe storage id.
- * Returns `null` for missing IDs; throws 400 for traversal/invalid IDs.
- */
-const getIdFromRequestUrl = (url: string): string | null => {
-    let id: string | undefined;
-
-    try {
-        const urlObject = new URL(url);
-        const pathParts = urlObject.pathname.split("/").filter(Boolean);
-        const lastPart = pathParts[pathParts.length - 1];
-
-        if (!lastPart) {
-            return null;
-        }
-
-        // Remove extension if present
-        id = lastPart.replace(/\.[^.]+$/, "") || undefined;
-    } catch {
-        return null;
-    }
-
-    if (!id) {
-        return null;
-    }
-
-    try {
-        BaseStorage.assertSafeId(id);
-    } catch {
-        throw createHttpError(400, `Invalid file id: "${id}"`);
-    }
-
-    return id;
 };

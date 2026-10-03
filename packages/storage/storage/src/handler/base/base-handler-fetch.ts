@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import { isHttpError } from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
@@ -9,6 +11,7 @@ import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types"
 import { isValidationError } from "../../utils/validator";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
+import { createRangeLimitedStream } from "../utils/stream-utils";
 import BaseHandlerCore from "./base-handler-core";
 
 /**
@@ -90,6 +93,29 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     }
 
     /**
+     * Retrieves a file, its metadata (`/:id/metadata`) or a list of files based on the request path.
+     * Large files and `Range` requests are streamed.
+     * @param request Web API Request.
+     * @returns Promise resolving to a single file or a (paginated) list of files.
+     * @throws {HttpError} When the file is not found.
+     */
+    public async get(request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
+        const url = new URL(request.url, "http://localhost");
+        const file = await this.getFileResponse(url.pathname, url.searchParams, request.headers.has("range"));
+
+        return file ?? this.list(request);
+    }
+
+    /**
+     * Returns a list of uploaded files with optional pagination support (`limit` and `page` query parameters).
+     * @param request Web API Request.
+     * @returns Promise resolving to a paginated or complete list of uploaded files.
+     */
+    public async list(request: Request): Promise<ResponseList<TFile>> {
+        return this.listFiles(new URL(request.url, "http://localhost").searchParams);
+    }
+
+    /**
      * Compose and register HTTP method handlers.
      * Subclasses should override this to register their specific handlers.
      */
@@ -118,21 +144,46 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
 
         if (request.method === "GET") {
             const { headers, statusCode } = file as ResponseFile<TFile>;
+            const { size, stream } = file as ResponseFile<TFile> & { size?: number };
+            const responseHeaders: Record<string, number | string | string[]> = { ...headers };
             let body: BodyInit = "";
+            let status = statusCode;
 
-            if ((file as ResponseFile<TFile>).content !== undefined) {
-                body = new Uint8Array((file as ResponseFile<TFile>).content as Buffer);
+            if (stream) {
+                // Streaming response, with range support for partial content requests
+                const range = this.parseRangeHeader(request.headers.get("range") ?? undefined, size || 0);
+                let finalStream: Readable = stream;
+
+                if (range && size) {
+                    status = 206;
+                    responseHeaders["Content-Range"] = `bytes ${range.start}-${range.end}/${size}`;
+                    responseHeaders["Content-Length"] = String(range.end - range.start + 1);
+                    finalStream = createRangeLimitedStream(stream, range.start, range.end);
+                } else if (size) {
+                    responseHeaders["Content-Length"] = String(size);
+                }
+
+                responseHeaders["Accept-Ranges"] = "bytes";
+                body = Readable.toWeb(finalStream) as ReadableStream<Uint8Array>;
+            } else if ((file as ResponseFile<TFile>).content !== undefined) {
+                const { content } = file as ResponseFile<TFile> & { content: Buffer | string };
+
+                body = typeof content === "string" ? content : new Uint8Array(content);
             } else if (typeof file === "object" && "data" in file) {
                 body = JSON.stringify(file.data);
+
+                if (!Object.keys(responseHeaders).some((key) => key.toLowerCase() === "content-type")) {
+                    responseHeaders["Content-Type"] = HeaderUtilities.createContentType({ charset: "utf8", mediaType: "application/json" });
+                }
             }
 
             return new Response(body, {
                 headers: this.convertHeaders({
-                    ...headers,
+                    ...responseHeaders,
                     "Access-Control-Expose-Headers":
                         "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control",
                 }),
-                status: statusCode,
+                status,
             });
         }
 

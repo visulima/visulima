@@ -130,8 +130,8 @@ abstract class RestBase<TFile extends UploadFile> {
 
             if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
                 try {
-                    // Create new file (storage will generate ID, but we use the one from URL)
-                    const newFile = await this.storage.create(config);
+                    // Create new file under the ID from the URL (providers that assign their own IDs may still override it)
+                    const newFile = await this.storage.create({ ...config, id });
 
                     // Write file data
                     file = await this.storage.write({

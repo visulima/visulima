@@ -2,6 +2,7 @@ import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:h
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
+import createHttpError from "http-errors";
 import typeis, { hasBody } from "type-is";
 
 import { BaseStorage } from "../storage/storage";
@@ -246,6 +247,12 @@ export const getRealPath = (request: IncomingMessage & { originalUrl?: string })
 export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
 
 /**
+ * Path segments that are never treated as file IDs.
+ * @internal
+ */
+export const COMMON_PATH_NAMES: ReadonlyArray<string> = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
+
+/**
  * Extracts a UUID identifier from the request URL path.
  * Uses regex pattern to match UUID-like strings in the URL.
  * @internal
@@ -253,9 +260,18 @@ export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
  * @returns The extracted UUID identifier
  * @throws TypeError if no valid ID is found in the path
  */
-export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
-    const realPath = getRealPath(request);
+export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => getIdFromPath(getRealPath(request));
 
+/**
+ * Extracts a file identifier from a URL path.
+ * Skips common path names (`files`, `upload`, …) and rejects segments shorter than 8 characters.
+ * @internal
+ * @param realPath URL path (without query string)
+ * @param options.allowSingleSegment Accept a non-UUID id that is the only path segment (e.g. a handler mounted at `/`)
+ * @returns The extracted identifier
+ * @throws Error("Invalid request URL") if no valid ID is found in the path
+ */
+export const getIdFromPath = (realPath: string, { allowSingleSegment = false }: { allowSingleSegment?: boolean } = {}): string => {
     // Extract UUID from the path by finding the last UUID-like segment
     const segments = realPath.split("/").filter(Boolean);
 
@@ -275,9 +291,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
         const cleanSegment = segment.replace(/\.[^/.]+$/, "");
 
         // Skip common path names
-        const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
-
-        if (commonPathNames.includes(cleanSegment.toLowerCase())) {
+        if (COMMON_PATH_NAMES.includes(cleanSegment.toLowerCase())) {
             continue;
         }
 
@@ -297,11 +311,8 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 
     const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
 
-    // Common path names that should never be treated as IDs
-    const commonPathNames = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
-
     // Reject if it's a common path name
-    if (commonPathNames.includes(cleanLastSegment.toLowerCase())) {
+    if (COMMON_PATH_NAMES.includes(cleanLastSegment.toLowerCase())) {
         throw new Error("Invalid request URL");
     }
 
@@ -312,7 +323,7 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
 
     // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
     // This allows non-UUID IDs (like nanoid) to work
-    if (segments.length > 1) {
+    if (segments.length > 1 || allowSingleSegment) {
         BaseStorage.assertSafeId(cleanLastSegment);
 
         return cleanLastSegment;
@@ -321,6 +332,34 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
     // Single segment paths that aren't UUIDs and aren't common names but are >= 8 chars
     // These could be valid IDs, but we're conservative and reject them unless they match UUID pattern
     throw new Error("Invalid request URL");
+};
+
+/**
+ * Extracts a file identifier from a Web API request URL (Fetch handlers).
+ * Uses the same rules as {@link getIdFromRequest}, but also accepts an id that is the only path segment.
+ * @internal
+ * @param url Request URL
+ * @returns The extracted identifier, or `undefined` when the URL does not address a file
+ * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
+ */
+export const getIdFromRequestUrl = (url: string): string | undefined => {
+    let pathname: string;
+
+    try {
+        pathname = new URL(url, "http://localhost").pathname;
+    } catch {
+        return undefined;
+    }
+
+    try {
+        return getIdFromPath(pathname, { allowSingleSegment: true });
+    } catch (error: unknown) {
+        if (error instanceof Error && error.message === "Invalid request URL") {
+            return undefined;
+        }
+
+        throw createHttpError(400, (error as Error).message || "Invalid file id");
+    }
 };
 
 /**
