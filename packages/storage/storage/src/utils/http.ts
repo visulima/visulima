@@ -9,6 +9,12 @@ import { BaseStorage } from "../storage/storage";
 import getLastOne from "./primitives/get-last-one";
 import type { Header, Headers, IncomingMessageWithBody } from "./types";
 
+/**
+ * Message of the 413 error raised when a request body exceeds its size limit.
+ * @internal
+ */
+export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
+
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>
     let proto = "";
@@ -56,25 +62,78 @@ export const readBody = (
         const chunks: Buffer[] = [];
         let byteLength = 0;
 
-        request.on("data", (chunk: Buffer | string) => {
+        const onData = (chunk: Buffer | string): void => {
             const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, encoding);
 
             byteLength += buf.length;
 
             if (limit !== undefined && byteLength > limit) {
-                reject(new Error("Request body length limit exceeded"));
-                request.destroy();
+                // Stop buffering but keep the socket open so the caller can still send the 413;
+                // the remaining body is discarded and `Connection: close` ends the socket after the response.
+                request.off("data", onData);
+                request.off("end", onEnd);
+                request.resume();
+                chunks.length = 0;
+                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE, { headers: { Connection: "close" } }));
 
                 return;
             }
 
             chunks.push(buf);
-        });
-        request.once("end", () => {
+        };
+        const onEnd = (): void => {
             resolve(Buffer.concat(chunks).toString(encoding));
-        });
+        };
+
+        request.on("data", onData);
+        request.once("end", onEnd);
         request.once("error", reject);
     });
+
+/**
+ * Reads the body of a Web API request as text, enforcing a byte limit while streaming
+ * so a missing or lying `Content-Length` cannot make the server buffer an unbounded body.
+ * @internal
+ * @param request Web API Request
+ * @param limit Maximum body size in bytes
+ * @returns The body decoded as UTF-8
+ * @throws {HttpError} 413 when the body exceeds `limit`
+ */
+export const readWebRequestText = async (request: Request, limit: number): Promise<string> => {
+    const declaredLength = Number(request.headers.get("content-length") ?? Number.NaN);
+
+    if (Number.isFinite(declaredLength) && declaredLength > limit) {
+        throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
+    }
+
+    if (!request.body) {
+        return "";
+    }
+
+    const reader = request.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let byteLength = 0;
+
+    for (;;) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+            break;
+        }
+
+        byteLength += value.byteLength;
+
+        if (byteLength > limit) {
+            await reader.cancel();
+
+            throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
+        }
+
+        chunks.push(value);
+    }
+
+    return Buffer.concat(chunks).toString("utf8");
+};
 
 /**
  * Retrieve the value of a specific header of an HTTP request.
@@ -253,6 +312,31 @@ export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
 export const COMMON_PATH_NAMES: ReadonlyArray<string> = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
 
 /**
+ * Validates an id taken from a URL path segment. The raw segment is the id, but its URL-decoded
+ * form is checked too, so an encoded traversal such as `..%2F..%2Fetc` is rejected even if a
+ * storage backend or proxy decodes the id later.
+ * @internal
+ * @param id Raw path segment
+ * @throws {HttpError} 400 when the id is unsafe
+ */
+export const assertSafeUrlId = (id: string): void => {
+    let decoded = id;
+
+    try {
+        decoded = decodeURIComponent(id);
+    } catch {
+        // Malformed escape sequences can't decode into a traversal; validate the raw id only
+    }
+
+    try {
+        BaseStorage.assertSafeId(id);
+        BaseStorage.assertSafeId(decoded);
+    } catch {
+        throw createHttpError(400, `Invalid file id: "${id}"`);
+    }
+};
+
+/**
  * Extracts a UUID identifier from the request URL path.
  * Uses regex pattern to match UUID-like strings in the URL.
  * @internal
@@ -267,15 +351,10 @@ export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: stri
  * Skips common path names (`files`, `upload`, …) and rejects segments shorter than 8 characters.
  * @internal
  * @param realPath URL path (without query string)
- * @param options.allowSingleSegment Accept a non-UUID id that is the only path segment (e.g. a handler mounted at `/`)
- * @param options.lastSegmentOnly Only consider the last path segment, so a UUID-like parent segment is never taken as the id
  * @returns The extracted identifier
  * @throws Error("Invalid request URL") if no valid ID is found in the path
  */
-export const getIdFromPath = (
-    realPath: string,
-    { allowSingleSegment = false, lastSegmentOnly = false }: { allowSingleSegment?: boolean; lastSegmentOnly?: boolean } = {},
-): string => {
+export const getIdFromPath = (realPath: string): string => {
     // Extract UUID from the path by finding the last UUID-like segment
     const segments = realPath.split("/").filter(Boolean);
 
@@ -284,7 +363,7 @@ export const getIdFromPath = (
     }
 
     // Try to find a UUID-like segment first (check from the end)
-    for (let index = segments.length - 1; index >= (lastSegmentOnly ? segments.length - 1 : 0); index -= 1) {
+    for (let index = segments.length - 1; index >= 0; index -= 1) {
         const segment = segments[index];
 
         if (!segment) {
@@ -327,7 +406,7 @@ export const getIdFromPath = (
 
     // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
     // This allows non-UUID IDs (like nanoid) to work
-    if (segments.length > 1 || allowSingleSegment) {
+    if (segments.length > 1) {
         BaseStorage.assertSafeId(cleanLastSegment);
 
         return cleanLastSegment;
@@ -339,31 +418,33 @@ export const getIdFromPath = (
 };
 
 /**
- * Extracts a file identifier from a Web API request URL (Fetch handlers).
- * Uses the same rules as {@link getIdFromRequest}, but only looks at the last path segment and also accepts an id that is the only path segment.
+ * Extracts a file identifier from the last path segment of a Web API request URL (Fetch handlers).
+ * Unlike {@link getIdFromPath} there is no minimum length, so caller-chosen ids such as `asset01` work;
+ * only a collection root (an empty path or a common path name such as `files`) yields `undefined`.
  * @internal
  * @param url Request URL
+ * @param options.stripExtension Drop a trailing `.ext` (REST routes address files as `id.ext`)
  * @returns The extracted identifier, or `undefined` when the URL does not address a file
  * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
  */
-export const getIdFromRequestUrl = (url: string): string | undefined => {
-    let pathname: string;
+export const getIdFromRequestUrl = (url: string, { stripExtension = false }: { stripExtension?: boolean } = {}): string | undefined => {
+    let lastSegment: string | undefined;
 
     try {
-        pathname = new URL(url, "http://localhost").pathname;
+        lastSegment = new URL(url, "http://localhost").pathname.split("/").findLast(Boolean);
     } catch {
         return undefined;
     }
 
-    try {
-        return getIdFromPath(pathname, { allowSingleSegment: true, lastSegmentOnly: true });
-    } catch (error: unknown) {
-        if (error instanceof Error && error.message === "Invalid request URL") {
-            return undefined;
-        }
+    const id = stripExtension ? lastSegment?.replace(/\.[^.]+$/, "") : lastSegment;
 
-        throw createHttpError(400, (error as Error).message || "Invalid file id");
+    if (!id || COMMON_PATH_NAMES.includes(id.toLowerCase())) {
+        return undefined;
     }
+
+    assertSafeUrlId(id);
+
+    return id;
 };
 
 /**

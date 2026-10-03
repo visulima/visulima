@@ -4,11 +4,19 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { ERRORS } from "../../utils/errors";
-import { getIdFromRequestUrl, getRequestStream } from "../../utils/http";
+import { getIdFromRequestUrl, getRequestStream, readWebRequestText } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { parseContentDispositionValue } from "../utils/request-parser";
-import RestBase from "./rest-base";
+import type { HeaderReader } from "../utils/request-parser";
+import {
+    buildFileInit,
+    parseChunkHeaders,
+    parseContentDispositionValue,
+    parseIntegerHeader,
+    parseMetadataHeader,
+    requirePositiveContentLength,
+} from "../utils/request-parser";
+import RestBase, { MAX_BATCH_DELETE_BYTES, parseBatchDeleteBody, parseBatchIdsParameter } from "./rest-base";
 
 /**
  * REST API handler for direct binary file uploads (Web API Fetch version).
@@ -98,21 +106,17 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Check if this is a chunked upload initialization
         const isChunkedUpload = request.headers.get("x-chunked-upload") === "true";
 
-        // Validate content length
+        // Validate content length (chunked upload initialization may have an empty body)
         const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
+        const contentLength = isChunkedUpload ? (parseIntegerHeader(contentLengthHeader) ?? 0) : requirePositiveContentLength(contentLengthHeader);
 
-        // Validate request body (allow empty for chunked upload initialization)
-        // For Web API Request, check Content-Length header instead of body
-        if (!isChunkedUpload) {
-            if (!contentLengthHeader || Number.isNaN(contentLength) || contentLength === 0) {
-                throw createHttpError(400, "Content-Length is required and must be greater than 0");
-            }
+        if (contentLengthHeader && parseIntegerHeader(contentLengthHeader) === undefined) {
+            throw createHttpError(400, "Content-Length must be a non-negative integer");
+        }
 
-            // Also check if body exists (for cases where Content-Length might be set incorrectly)
-            if (request.body === null) {
-                throw createHttpError(400, "Request body is required");
-            }
+        // Also check if body exists (for cases where Content-Length might be set incorrectly)
+        if (!isChunkedUpload && request.body === null) {
+            throw createHttpError(400, "Request body is required");
         }
 
         if (contentLength > this.storage.maxUploadSize) {
@@ -137,7 +141,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with upload result
      */
     public async put(request: Request): Promise<ResponseFile<TFile>> {
-        const id = getIdFromRequestUrl(request.url);
+        const id = getIdFromRequestUrl(request.url, { stripExtension: true });
 
         if (!id) {
             throw createHttpError(400, "File ID is required in URL path");
@@ -148,12 +152,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
-
-        if (!Number.isFinite(contentLength) || contentLength <= 0) {
-            throw createHttpError(400, "Content-Length is required and must be greater than 0");
-        }
+        const contentLength = requirePositiveContentLength(request.headers.get("content-length"));
 
         // Validate content length against max upload size
         if (contentLength > this.storage.maxUploadSize) {
@@ -171,7 +170,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         const config: FileInit = {
             contentType,
-            metadata,
+            metadata: metadata ?? {},
             originalName,
             size: contentLength,
         };
@@ -196,72 +195,20 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         if (idsParameter) {
             // Batch delete via query parameter: ?ids=id1,id2,id3
-            const ids = idsParameter
-                .split(",")
-                .map((id) => id.trim())
-                .filter(Boolean);
-
-            if (ids.length === 0) {
-                throw createHttpError(400, "No file IDs provided");
-            }
-
-            return this.restBase.deleteBatch(ids);
+            return this.restBase.deleteBatch(parseBatchIdsParameter(idsParameter));
         }
 
         // Check for batch delete via JSON body
-        const contentType = request.headers.get("content-type") || "";
+        if ((request.headers.get("content-type") || "").includes("application/json")) {
+            const ids = parseBatchDeleteBody(await readWebRequestText(request, MAX_BATCH_DELETE_BYTES));
 
-        if (contentType.includes("application/json")) {
-            try {
-                // Reject before reading so a malicious client can't trickle GBs into memory just
-                // to issue a DELETE. 1 MiB comfortably accommodates batch-of-thousands-of-IDs payloads.
-                const MAX_BATCH_DELETE_BYTES = 1_048_576;
-                const contentLength = Number.parseInt(request.headers.get("content-length") ?? "", 10);
-
-                if (Number.isFinite(contentLength) && contentLength > MAX_BATCH_DELETE_BYTES) {
-                    throw createHttpError(413, "Batch delete body exceeds 1 MiB");
-                }
-
-                const body = await request.text();
-
-                if (Buffer.byteLength(body, "utf8") > MAX_BATCH_DELETE_BYTES) {
-                    throw createHttpError(413, "Batch delete body exceeds 1 MiB");
-                }
-
-                const parsed = JSON.parse(body);
-
-                if (Array.isArray(parsed)) {
-                    // Array of IDs: ["id1", "id2", "id3"]
-                    if (parsed.length === 0) {
-                        throw createHttpError(400, "No file IDs provided");
-                    }
-
-                    return this.restBase.deleteBatch(parsed as string[]);
-                }
-
-                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray(parsed.ids)) {
-                    // Object with ids array: { ids: ["id1", "id2"] }
-                    const idsArray = (parsed as { ids: string[] }).ids;
-
-                    if (idsArray.length === 0) {
-                        throw createHttpError(400, "No file IDs provided");
-                    }
-
-                    return this.restBase.deleteBatch(idsArray);
-                }
-            } catch (error: unknown) {
-                const { statusCode } = error as { statusCode?: number };
-
-                if (statusCode === 400 || statusCode === 413) {
-                    throw error;
-                }
-
-                // If JSON parsing fails, fall through to single file delete
+            if (ids) {
+                return this.restBase.deleteBatch(ids);
             }
         }
 
         // Single file delete
-        const id = getIdFromRequestUrl(request.url);
+        const id = getIdFromRequestUrl(request.url, { stripExtension: true });
 
         if (!id) {
             throw createHttpError(404, "File not found");
@@ -288,7 +235,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with upload progress.
      */
     public async patch(request: Request): Promise<ResponseFile<TFile>> {
-        const id = getIdFromRequestUrl(request.url);
+        const id = getIdFromRequestUrl(request.url, { stripExtension: true });
 
         if (!id) {
             throw createHttpError(404, "File not found");
@@ -299,16 +246,10 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
-
-        if (!Number.isFinite(contentLength) || contentLength <= 0) {
-            throw createHttpError(400, "Content-Length is required and must be greater than 0");
-        }
+        const contentLength = requirePositiveContentLength(request.headers.get("content-length"));
 
         // Get chunk offset from headers
-        const chunkOffsetHeader = request.headers.get("x-chunk-offset");
-        const chunkOffset = chunkOffsetHeader ? Number.parseInt(chunkOffsetHeader, 10) : undefined;
+        const { chunkOffset } = parseChunkHeaders(webHeaderReader(request));
 
         if (chunkOffset === undefined) {
             throw createHttpError(400, "X-Chunk-Offset header is required");
@@ -329,7 +270,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async head(request: Request): Promise<ResponseFile<TFile>> {
-        const id = getIdFromRequestUrl(request.url);
+        const id = getIdFromRequestUrl(request.url, { stripExtension: true });
 
         if (!id) {
             throw createHttpError(404, "File not found");
@@ -361,53 +302,15 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 export default RestFetch;
 
 /**
- * Parse the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
- * `null`, arrays and primitives yield an empty object.
+ * Reads headers from a Web API request.
  */
-const parseMetadataHeader = (value: string | null): Record<string, unknown> => {
-    if (!value) {
-        return {};
-    }
-
-    try {
-        const parsed: unknown = JSON.parse(value);
-
-        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-            return { ...(parsed as Record<string, unknown>) };
-        }
-    } catch {
-        // Ignore invalid JSON
-    }
-
-    return {};
-};
+const webHeaderReader =
+    (request: Request): HeaderReader =>
+    (name: string) =>
+        request.headers.get(name);
 
 /**
  * Extract file initialization config from Web API Request.
  */
-const extractFileInitFromRequest = (request: Request, contentLength: number, contentType: string): FileInit => {
-    const totalSizeHeader = request.headers.get("x-total-size");
-    const parsedTotalSize = totalSizeHeader ? Number.parseInt(totalSizeHeader, 10) : Number.NaN;
-    const hasValidTotalSize = Number.isFinite(parsedTotalSize) && parsedTotalSize > 0;
-    const totalSize = hasValidTotalSize ? parsedTotalSize : contentLength;
-    const metadata = parseMetadataHeader(request.headers.get("x-file-metadata"));
-
-    // For chunked uploads, store chunk tracking info in metadata (mirrors the Node `extractFileInit`)
-    const isChunkedUpload = request.headers.get("x-chunked-upload") === "true";
-
-    if (isChunkedUpload && hasValidTotalSize) {
-        metadata._chunkedUpload = true;
-        metadata._chunks = []; // Array to track received chunks: [{ offset, length }]
-        metadata._totalSize = totalSize;
-    }
-
-    // Extract original filename from Content-Disposition header if present
-    const originalName = parseContentDispositionValue(request.headers.get("content-disposition"));
-
-    return {
-        contentType,
-        metadata,
-        originalName,
-        size: totalSize,
-    };
-};
+const extractFileInitFromRequest = (request: Request, contentLength: number, contentType: string): FileInit =>
+    buildFileInit(webHeaderReader(request), contentLength, contentType);

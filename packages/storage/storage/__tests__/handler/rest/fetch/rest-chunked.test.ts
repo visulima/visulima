@@ -48,7 +48,7 @@ describe("fetch RestFetch chunked uploads", () => {
     });
 
     it("should accept PATCH chunks and report progress via HEAD", async () => {
-        expect.assertions(7);
+        expect.assertions(8);
 
         const storage = new MemoryStorage({ path: "/files" });
         const restHandler = new RestFetch({ storage });
@@ -71,6 +71,8 @@ describe("fetch RestFetch chunked uploads", () => {
 
         expect(secondPatch.status).toBe(200);
         expect(secondPatch.headers.get("x-upload-complete")).toBe("true");
+        // Location addresses the file under the collection, not `<collection>/<id>/<id>`
+        expect(secondPatch.headers.get("location")).toMatch(new RegExp(String.raw`^${basePath}${id}\.\w+$`, "u"));
     });
 
     it("should not mark a POST as chunked without a valid total size", async () => {
@@ -94,6 +96,26 @@ describe("fetch RestFetch chunked uploads", () => {
         expect(Number.isNaN(file.size)).toBe(false);
     });
 
+    it("should not mark a POST as chunked when X-Total-Size has trailing garbage", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+
+        const response = await restHandler.fetch(
+            new Request(basePath, {
+                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "12garbage" },
+                method: "POST",
+            }),
+        );
+
+        expect(response.status).toBe(201);
+
+        const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
+
+        expect(file.metadata._totalSize).toBeUndefined();
+    });
+
     it.each(["null", "[1,2]", "42", '"text"'])("should ignore non-object X-File-Metadata %s on chunked init", async (metadataHeader) => {
         expect.assertions(2);
 
@@ -111,6 +133,24 @@ describe("fetch RestFetch chunked uploads", () => {
         const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
 
         expect(file.metadata).toStrictEqual({ _chunkedUpload: true, _chunks: [], _totalSize: 10 });
+    });
+
+    it.each(["-5", "5x"])("should reject PATCH with the malformed X-Chunk-Offset %s", async (offset) => {
+        expect.assertions(1);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+
+        const createResponse = await restHandler.fetch(initChunkedUpload(10));
+        const id = createResponse.headers.get("x-upload-id") as string;
+
+        const request = patchChunk(id, 0, new Uint8Array(5));
+
+        request.headers.set("x-chunk-offset", offset);
+
+        const response = await restHandler.fetch(request);
+
+        expect(response.status).toBe(400);
     });
 
     it("should reject PATCH with a non-numeric Content-Length", async () => {
@@ -131,26 +171,5 @@ describe("fetch RestFetch chunked uploads", () => {
         );
 
         expect(response.status).toBe(400);
-    });
-
-    it("should answer 413 for an oversized batch-delete body instead of deleting the URL id", async () => {
-        expect.assertions(2);
-
-        const storage = new MemoryStorage({ path: "/files" });
-        const restHandler = new RestFetch({ storage });
-
-        const createResponse = await restHandler.fetch(initChunkedUpload(10));
-        const id = createResponse.headers.get("x-upload-id") as string;
-
-        const response = await restHandler.fetch(
-            new Request(`${basePath}${id}`, {
-                body: JSON.stringify(["x".repeat(1_100_000)]),
-                headers: { "content-type": "application/json" },
-                method: "DELETE",
-            }),
-        );
-
-        expect(response.status).toBe(413);
-        await expect(storage.getMeta(id)).resolves.toBeDefined();
     });
 });

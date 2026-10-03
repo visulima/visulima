@@ -293,7 +293,6 @@
         "mime": "catalog:prod",
         "nanoid": "catalog:prod",
         "openapi-types": "catalog:prod",
-        "path-to-regexp": "catalog:prod",
         "type-is": "catalog:prod",
         "zod": "catalog:utils"
     },

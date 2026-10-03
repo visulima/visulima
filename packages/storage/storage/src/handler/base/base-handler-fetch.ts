@@ -11,7 +11,7 @@ import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types"
 import { isValidationError } from "../../utils/validator";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
-import { createRangeLimitedStream } from "../utils/stream-utils";
+import { applyRange } from "../utils/stream-utils";
 import BaseHandlerCore from "./base-handler-core";
 
 /**
@@ -143,38 +143,22 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         }
 
         if (request.method === "GET") {
-            const { headers, statusCode } = file as ResponseFile<TFile>;
-            const { size, stream } = file as ResponseFile<TFile> & { size?: number };
+            const { headers, statusCode } = file;
             const responseHeaders: Record<string, number | string | string[]> = { ...headers };
             let body: BodyInit = "";
             let status = statusCode;
 
-            if (stream) {
-                // Streaming response, with range support for partial content requests
-                const range = this.parseRangeHeader(request.headers.get("range") ?? undefined, size || 0);
-                let finalStream: Readable = stream;
-
-                if (range && size) {
-                    status = 206;
-                    responseHeaders["Content-Range"] = `bytes ${range.start}-${range.end}/${size}`;
-                    responseHeaders["Content-Length"] = String(range.end - range.start + 1);
-                    finalStream = createRangeLimitedStream(stream, range.start, range.end);
-                } else if (size) {
-                    responseHeaders["Content-Length"] = String(size);
-                }
-
-                responseHeaders["Accept-Ranges"] = "bytes";
-                body = Readable.toWeb(finalStream) as ReadableStream<Uint8Array>;
-            } else if ((file as ResponseFile<TFile>).content !== undefined) {
-                const { content } = file as ResponseFile<TFile> & { content: Buffer | string };
-
-                body = typeof content === "string" ? content : new Uint8Array(content);
-            } else if (typeof file === "object" && "data" in file) {
+            if ("data" in file) {
                 body = JSON.stringify(file.data);
+            } else if (file.stream) {
+                // Streaming response, with range support for partial content requests
+                const ranged = applyRange(file.stream, file.size, this.parseRangeHeader(request.headers.get("range") ?? undefined, file.size || 0));
 
-                if (!Object.keys(responseHeaders).some((key) => key.toLowerCase() === "content-type")) {
-                    responseHeaders["Content-Type"] = HeaderUtilities.createContentType({ charset: "utf8", mediaType: "application/json" });
-                }
+                Object.assign(responseHeaders, ranged.headers);
+                status = ranged.partial ? 206 : statusCode;
+                body = Readable.toWeb(ranged.stream) as ReadableStream<Uint8Array>;
+            } else if (file.content !== undefined) {
+                body = typeof file.content === "string" ? file.content : new Uint8Array(file.content);
             }
 
             return new Response(body, {

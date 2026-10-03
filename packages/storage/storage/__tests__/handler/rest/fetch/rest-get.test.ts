@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
 import MemoryStorage from "../../../../src/storage/memory/memory-storage";
+import type { File } from "../../../../src/storage/utils/file";
 
 describe("fetch RestFetch GET", () => {
     const basePath = "http://localhost/files/";
     const content = "0123456789abcdefghij";
 
-    const setup = async (): Promise<{ id: string; restHandler: RestFetch<never>; storage: MemoryStorage }> => {
+    const setup = async (): Promise<{ id: string; restHandler: RestFetch<File>; storage: MemoryStorage }> => {
         const storage = new MemoryStorage({ path: "/files" });
         const restHandler = new RestFetch({ storage });
 
@@ -20,7 +21,7 @@ describe("fetch RestFetch GET", () => {
         );
         const { id } = (await response.json()) as { id: string };
 
-        return { id, restHandler: restHandler as RestFetch<never>, storage };
+        return { id, restHandler, storage };
     };
 
     it("should download a file", async () => {
@@ -126,14 +127,25 @@ describe("fetch RestFetch GET", () => {
         await expect(response.text()).resolves.toBe("hello");
     });
 
-    it("should reject a traversal id with 400", async () => {
+    it.each(["..%2F..%2Fetc%2Fpasswd", "%2Fetc%2Fpasswd"])("should reject the encoded traversal id %s with 400", async (id) => {
         expect.assertions(1);
 
         const { restHandler } = await setup();
 
-        const response = await restHandler.fetch(new Request(`${basePath}..%2F..%2Fetc%2Fpasswd`));
+        const response = await restHandler.fetch(new Request(`${basePath}${id}`));
 
         expect(response.status).toBe(400);
+    });
+
+    it("should download a file via the /download suffix", async () => {
+        expect.assertions(2);
+
+        const { id, restHandler } = await setup();
+
+        const response = await restHandler.fetch(new Request(`${basePath}${id}/download`));
+
+        expect(response.status).toBe(200);
+        await expect(response.text()).resolves.toBe(content);
     });
 
     it("should return 404 for a missing file", async () => {
@@ -166,8 +178,26 @@ describe("fetch RestFetch ids", () => {
         );
 
         expect(response.status).toBe(201);
-        expect(response.headers.get("x-upload-id") ?? ((await response.clone().json()) as { id: string }).id).toBe(id);
+        expect(response.headers.get("location")).toBe(`${basePath}${id}.txt`);
         await expect(storage.getMeta(id)).resolves.toStrictEqual(expect.objectContaining({ id }));
+    });
+
+    it.each(["victim-id.META.x", "name.with.dots", "a%2Fb"])("should refuse to create a file under the unsafe client id %s on PUT", async (urlId) => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+
+        const response = await restHandler.fetch(
+            new Request(`${basePath}${urlId}`, {
+                body: "hello",
+                headers: { "content-length": "5", "content-type": "text/plain" },
+                method: "PUT",
+            }),
+        );
+
+        expect(response.status).toBe(400);
+        await expect(storage.list()).resolves.toHaveLength(0);
     });
 
     it("should not treat the collection path as a file id on PUT", async () => {
@@ -188,7 +218,7 @@ describe("fetch RestFetch ids", () => {
         await expect(storage.list()).resolves.toHaveLength(0);
     });
 
-    it.each(["http://localhost/files/upload", "http://localhost/files/3"])("should reject %s as a file id on DELETE", async (url) => {
+    it.each(["http://localhost/files/upload", "http://localhost/files/3"])("should answer 404 for DELETE %s when no such file exists", async (url) => {
         expect.assertions(1);
 
         const storage = new MemoryStorage({ path: "/files" });
@@ -197,6 +227,27 @@ describe("fetch RestFetch ids", () => {
         const response = await restHandler.fetch(new Request(url, { method: "DELETE" }));
 
         expect(response.status).toBe(404);
+    });
+
+    it("should address short caller-chosen ids", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+
+        await restHandler.fetch(
+            new Request(`${basePath}asset01`, {
+                body: "hello",
+                headers: { "content-length": "5", "content-type": "text/plain" },
+                method: "PUT",
+            }),
+        );
+
+        const head = await restHandler.fetch(new Request(`${basePath}asset01`, { method: "HEAD" }));
+        const deleted = await restHandler.fetch(new Request(`${basePath}asset01`, { method: "DELETE" }));
+
+        expect(head.status).toBe(200);
+        expect(deleted.status).toBe(204);
     });
 
     it("should accept a single-segment id when mounted at the root", async () => {

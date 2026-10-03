@@ -2,22 +2,20 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Readable } from "node:stream";
 
 import createHttpError, { isHttpError } from "http-errors";
-import mime from "mime";
 
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError } from "../../utils/errors";
-import filePathUrlMatcher from "../../utils/file-path-url-matcher";
 import { HeaderUtilities } from "../../utils/headers";
-import { getRealPath, setHeaders, uuidRegex } from "../../utils/http";
+import { getRealPath, setHeaders } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
 import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
-import { createRangeLimitedStream, pipeWithBackpressure } from "../utils/stream-utils";
+import { applyRange, pipeWithBackpressure } from "../utils/stream-utils";
 import { handleCompletedUpload, handleGetRequest, handleHeadOptionsRequest, handlePartialUpload, handleUploadError } from "../utils/upload-handlers";
-import BaseHandlerCore from "./base-handler-core";
+import BaseHandlerCore, { parseFilePath, resolveContentType } from "./base-handler-core";
 
 const CONTENT_TYPE = "Content-Type";
 
@@ -286,32 +284,13 @@ abstract class BaseHandlerNode<
             statusCode = 200,
         }: { headers?: Record<string, string | number>; range?: { end: number; start: number }; size?: number; statusCode?: number },
     ): void {
-        // Set headers
-        setHeaders(response, headers);
+        const ranged = applyRange(stream, size, range);
 
-        // Set status code
-        response.statusCode = statusCode;
+        setHeaders(response, { ...headers, ...ranged.headers });
 
-        let finalStream = stream;
+        response.statusCode = ranged.partial ? 206 : statusCode;
 
-        // Handle range requests for partial content
-        if (range && size) {
-            response.statusCode = 206; // Partial Content
-            response.setHeader("Content-Range", `bytes ${range.start}-${range.end}/${size}`);
-            response.setHeader("Content-Length", range.end - range.start + 1);
-            response.setHeader("Accept-Ranges", "bytes");
-
-            // Create a range-limited stream
-            finalStream = createRangeLimitedStream(stream, range.start, range.end);
-        } else {
-            // Set content length for full content
-            if (size) {
-                response.setHeader("Content-Length", size);
-            }
-
-            // Advertise that we accept range requests
-            response.setHeader("Accept-Ranges", "bytes");
-        }
+        const finalStream = ranged.stream;
 
         // Handle backpressure-aware piping (includes error handling)
         pipeWithBackpressure(finalStream, response, (resp, error) => this.sendError(resp, error));
@@ -443,13 +422,13 @@ abstract class BaseHandlerNode<
      * @throws {HttpError} When file is not found or streaming is not supported.
      */
     public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
-        const pathMatch = filePathUrlMatcher(getRealPath(request));
+        const target = parseFilePath(getRealPath(request));
 
-        if (!pathMatch?.params.uuid || !uuidRegex.test(pathMatch.params.uuid)) {
+        if (!target || target.isMetadataRequest) {
             throw createHttpError(404, "File not found");
         }
 
-        const { ext, uuid } = pathMatch.params;
+        const { ext, uuid } = target;
 
         try {
             // Get file metadata first
@@ -464,11 +443,7 @@ abstract class BaseHandlerNode<
 
             // Use streaming for better performance
             const streamResult = await this.storage.getStream({ id: uuid });
-            let contentType = streamResult.headers?.["Content-Type"] || fileMeta.contentType;
-
-            if (contentType.includes("image") && typeof ext === "string") {
-                contentType = mime.getType(ext) || contentType;
-            }
+            const contentType = resolveContentType(streamResult.headers?.["Content-Type"] || fileMeta.contentType, ext);
 
             // Parse range header for resumable downloads
             const range = this.parseRangeHeader(request.headers.range, streamResult.size || 0);

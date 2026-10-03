@@ -6,34 +6,43 @@ import { paginate } from "@visulima/pagination";
 import createHttpError from "http-errors";
 import mime from "mime";
 
-import { BaseStorage } from "../../storage/storage";
+import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
 import type { ErrorResponses } from "../../utils/errors";
 import { ErrorMap, ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
-import { COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
+import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
 import type { ResponseBodyType } from "../../utils/types";
 import type { ResponseFile, ResponseList, UploadOptions } from "../types";
 
 /**
- * Splits a GET path into the addressed file id, an optional extension and whether `/metadata` was requested.
+ * A file addressed by a GET/download path.
+ */
+export interface FileTarget {
+    /** Extension given in the URL (`id.ext`), used to refine image content types. */
+    ext?: string;
+    /** Whether `/:id/metadata` was requested. */
+    isMetadataRequest: boolean;
+    /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
+    isUuidLike: boolean;
+    /** The file id. */
+    uuid: string;
+}
+
+/**
+ * Splits a GET/download path into the addressed file id, an optional extension and whether `/metadata` was requested.
+ * A trailing `/metadata` or `/download` segment addresses the id before it. Segments are used as-is (not URL-decoded),
+ * like the id parsers of the mutating methods, so every method addresses the same id.
  * @param path Request path (without query string)
  * @returns The parsed target, or `undefined` when the path does not address a file
+ * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
  */
-const parseFilePath = (path: string): { ext?: string; isMetadataRequest: boolean; uuid: string } | undefined => {
-    const segments = path
-        .split("/")
-        .filter(Boolean)
-        .map((segment) => {
-            try {
-                return decodeURIComponent(segment);
-            } catch {
-                return segment;
-            }
-        });
-    const isMetadataRequest = segments.length >= 2 && segments[segments.length - 1] === "metadata";
-    const idSegment = segments[segments.length - (isMetadataRequest ? 2 : 1)];
+export const parseFilePath = (path: string): FileTarget | undefined => {
+    const segments = path.split("/").filter(Boolean);
+    const lastSegment = segments[segments.length - 1];
+    const hasActionSegment = segments.length >= 2 && (lastSegment === "metadata" || lastSegment === "download");
+    const idSegment = segments[segments.length - (hasActionSegment ? 2 : 1)];
 
     if (!idSegment) {
         return undefined;
@@ -46,7 +55,42 @@ const parseFilePath = (path: string): { ext?: string; isMetadataRequest: boolean
         return undefined;
     }
 
-    return { ext: extensionMatch?.[2], isMetadataRequest, uuid };
+    assertSafeUrlId(uuid);
+
+    return { ext: extensionMatch?.[2], isMetadataRequest: hasActionSegment && lastSegment === "metadata", isUuidLike: uuidRegex.test(uuid), uuid };
+};
+
+/**
+ * Refines an image content type from the extension given in the URL (e.g. `id.webp`).
+ * @param contentType Stored content type
+ * @param extension Extension from the URL
+ * @returns The content type to serve
+ */
+export const resolveContentType = (contentType: string, extension: string | undefined): string => {
+    if (extension === undefined || !contentType.includes("image")) {
+        return contentType;
+    }
+
+    return mime.getType(extension) || contentType;
+};
+
+/**
+ * Builds the optional `X-Upload-Expires` / `Last-Modified` / `ETag` headers of a stored file.
+ */
+const fileStateHeaders = (file: Pick<UploadFile, "ETag" | "expiredAt" | "modifiedAt"> | undefined): Record<string, string> => {
+    return {
+        ...(file?.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
+        ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
+        ...(file?.ETag === undefined ? {} : { ETag: file.ETag }),
+    };
+};
+
+const JSON_CONTENT_TYPE = HeaderUtilities.createContentType({ charset: "utf8", mediaType: "application/json" });
+
+const isNotFound = (error: unknown): boolean => {
+    const { UploadErrorCode } = error as { UploadErrorCode?: string };
+
+    return UploadErrorCode === ERRORS.FILE_NOT_FOUND || UploadErrorCode === ERRORS.GONE;
 };
 
 /**
@@ -212,7 +256,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         const url = new URL(requestUrl, "http://localhost");
         const { pathname } = url;
         const query = Object.fromEntries(url.searchParams.entries());
-        const relative = format({ pathname: `${pathname}/${file.id}`, query });
+        const relative = format({ pathname: `${pathname.replace(/\/$/, "")}/${file.id}`, query });
 
         let baseUrl = "";
 
@@ -248,178 +292,172 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
     /**
      * Resolves a GET request for a single file (or its `/metadata`) from the request path.
      * Platform-agnostic: shared by the Node and Fetch handlers.
+     *
+     * UUID-like segments are always file ids. Any other segment may be a file id (e.g. a nanoid or a
+     * PUT-chosen id) or a collection path such as `/api/attachments`, so it falls back to the list
+     * when no such file exists.
      * @param path Request path (without query string).
      * @param searchParams Query parameters of the request (used for media transformations).
      * @param hasRange Whether the request carries a `Range` header (forces streaming).
      * @returns The file response, or `undefined` when the path does not address a file and a list should be returned instead.
-     * @throws {HttpError} 404 when the file or its metadata is not found.
+     * @throws {HttpError} 400 for unsafe ids, 404 when the file or its metadata is not found.
      */
     protected async getFileResponse(path: string, searchParams: URLSearchParams, hasRange: boolean): Promise<ResponseFile<TFile> | undefined> {
         const target = parseFilePath(path);
 
-        if (target) {
-            const { ext, isMetadataRequest, uuid } = target;
+        if (!target) {
+            return undefined;
+        }
 
-            try {
-                BaseStorage.assertSafeId(uuid);
-            } catch {
-                throw createHttpError(400, `Invalid file id: "${uuid}"`);
+        if (target.isMetadataRequest) {
+            return this.getMetadataResponse(target.uuid);
+        }
+
+        let fileMeta: TFile;
+
+        try {
+            fileMeta = await this.storage.getMeta(target.uuid);
+        } catch (error: unknown) {
+            if (!isNotFound(error)) {
+                throw error;
             }
 
-            // Handle metadata requests (check this before UUID validation)
-            if (isMetadataRequest) {
-                try {
-                    const file = await this.storage.getMeta(uuid);
-
-                    return {
-                        ...file,
-                        content: JSON.stringify(file),
-                        headers: {
-                            "Content-Type": HeaderUtilities.createContentType({
-                                charset: "utf8",
-                                mediaType: "application/json",
-                            }),
-                            ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-                            ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
-                        },
-                        statusCode: 200,
-                    };
-                } catch (error: unknown) {
-                    const errorWithCode = error as { UploadErrorCode?: string };
-
-                    if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
-                        throw createHttpError(404, "File metadata not found");
-                    }
-
-                    throw error;
-                }
-            }
-
-            // UUID-like segments are always file ids. Other segments of at least 8 characters (e.g. a
-            // nanoid) may be a file id or a collection path such as `/api/attachments`, so they fall back
-            // to the list when no such file exists.
-            const isUuidLike = uuidRegex.test(uuid);
-
-            if (!isUuidLike && uuid.length < 8) {
-                // Not a file id - treat as list request
+            if (!target.isUuidLike) {
+                // Ambiguous segment that is not a stored file - treat as list request
                 return undefined;
             }
 
-            // Handle regular file requests
+            throw createHttpError(404, "File not found");
+        }
+
+        try {
+            return (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+        } catch (error: unknown) {
+            if (isNotFound(error)) {
+                throw createHttpError(404, "File not found");
+            }
+
+            throw error;
+        }
+    }
+
+    /**
+     * Serves the stored metadata of a file as JSON.
+     * @param id File id.
+     * @returns The metadata response.
+     * @throws {HttpError} 404 when the file does not exist.
+     */
+    private async getMetadataResponse(id: string): Promise<ResponseFile<TFile>> {
+        let file: TFile;
+
+        try {
+            file = await this.storage.getMeta(id);
+        } catch (error: unknown) {
+            if (isNotFound(error)) {
+                throw createHttpError(404, "File metadata not found");
+            }
+
+            throw error;
+        }
+
+        const { ETag: _etag, ...stateHeaders } = fileStateHeaders(file);
+
+        return {
+            ...file,
+            content: JSON.stringify(file),
+            headers: { "Content-Type": JSON_CONTENT_TYPE, ...stateHeaders },
+            statusCode: 200,
+        };
+    }
+
+    /**
+     * Applies the media transformer when the request carries transformation query parameters.
+     * @param id File id.
+     * @param searchParams Query parameters of the request.
+     * @returns The transformed response, or `undefined` when no transformation applies (or it failed and the original should be served).
+     * @throws {HttpError} 400 when the transformation parameters are invalid.
+     */
+    private async getTransformedResponse(id: string, searchParams: URLSearchParams): Promise<ResponseFile<TFile> | undefined> {
+        const queryParameters = Object.fromEntries(searchParams.entries());
+
+        if (!this.mediaTransformer || Object.keys(queryParameters).length === 0) {
+            return undefined;
+        }
+
+        try {
+            const transformed = await this.mediaTransformer.handle(id, queryParameters);
+
+            return {
+                content: transformed.buffer,
+                headers: {
+                    "Content-Length": String(transformed.size),
+                    "Content-Type": `${transformed.mediaType}/${transformed.format}`,
+                    "X-Media-Type": transformed.mediaType,
+                    "X-Original-Format": transformed.originalFile?.contentType?.split("/")[1] || "",
+                    "X-Transformed-Format": transformed.format,
+                    ...fileStateHeaders(transformed.originalFile),
+                },
+                statusCode: 200,
+            } as unknown as ResponseFile<TFile>;
+        } catch (error: unknown) {
+            if ((error as { name?: string }).name === "ValidationError") {
+                throw createHttpError(400, (error as Error).message);
+            }
+
+            // For other transformation errors, fall back to serving the original file
+            this.logger?.warn(`Media transformation failed: ${(error as Error).message}`);
+
+            return undefined;
+        }
+    }
+
+    /**
+     * Serves the original file, streamed for range requests and files over 1 MB when the storage supports it.
+     * @param fileMeta Stored metadata of the file.
+     * @param extension Extension from the URL.
+     * @param hasRange Whether the request carries a `Range` header.
+     * @returns The file response.
+     */
+    private async getStoredFileResponse(fileMeta: TFile, extension: string | undefined, hasRange: boolean): Promise<ResponseFile<TFile>> {
+        const useStreaming = hasRange || (fileMeta.size !== undefined && fileMeta.size > 1024 * 1024);
+
+        if (useStreaming && this.storage.getStream) {
             try {
-                // Check if transformation parameters are present and media transformer is available
-                const queryParameters = Object.fromEntries(searchParams.entries());
-                const hasTransformationParameters = Object.keys(queryParameters).length > 0 && this.mediaTransformer;
-
-                if (hasTransformationParameters && this.mediaTransformer) {
-                    // Use media transformer for transformation
-                    try {
-                        const transformedResult = await this.mediaTransformer.handle(uuid, queryParameters);
-
-                        return {
-                            content: transformedResult.buffer,
-                            headers: {
-                                "Content-Length": String(transformedResult.size),
-                                "Content-Type": `${transformedResult.mediaType}/${transformedResult.format}`,
-                                "X-Media-Type": transformedResult.mediaType,
-                                "X-Original-Format": transformedResult.originalFile?.contentType?.split("/")[1] || "",
-                                "X-Transformed-Format": transformedResult.format,
-                                ...(transformedResult.originalFile?.expiredAt === undefined
-                                    ? {}
-                                    : { "X-Upload-Expires": transformedResult.originalFile.expiredAt.toString() }),
-                                ...(transformedResult.originalFile?.modifiedAt === undefined
-                                    ? {}
-                                    : { "Last-Modified": transformedResult.originalFile.modifiedAt.toString() }),
-                                ...(transformedResult.originalFile?.ETag === undefined ? {} : { ETag: transformedResult.originalFile.ETag }),
-                            },
-                            statusCode: 200,
-                        } as unknown as ResponseFile<TFile>;
-                    } catch (transformError: unknown) {
-                        // If transformation fails, check if it's a validation error
-                        if ((transformError as { name?: string }).name === "ValidationError") {
-                            throw createHttpError(400, (transformError as Error).message);
-                        }
-
-                        // For other transformation errors, fall back to serving original file
-                        this.logger?.warn(`Media transformation failed: ${(transformError as Error).message}`);
-                    }
-                }
-
-                // Get file metadata first to determine if we should stream
-                const fileMeta = await this.storage.getMeta(uuid);
-
-                // Check if we should use streaming for large files
-                const useStreaming = hasRange || (fileMeta.size && fileMeta.size > 1024 * 1024); // Stream files > 1MB
-
-                if (useStreaming && this.storage.getStream) {
-                    // Use streaming for better memory efficiency
-                    try {
-                        const streamResult = await this.storage.getStream({ id: uuid });
-                        let contentType = streamResult.headers?.["Content-Type"] || fileMeta.contentType;
-
-                        if (contentType.includes("image") && typeof ext === "string") {
-                            contentType = mime.getType(ext) || contentType;
-                        }
-
-                        return {
-                            headers: {
-                                ...streamResult.headers,
-                                "Accept-Ranges": "bytes", // Indicate we support range requests
-                                "Content-Type": contentType,
-                            },
-                            size: streamResult.size,
-                            statusCode: 200,
-                            stream: streamResult.stream,
-                            ...fileMeta,
-                            contentType,
-                        };
-                    } catch (streamError) {
-                        // Fall back to regular file serving if streaming fails
-                        this.logger?.warn(`Streaming failed, falling back to buffer: ${streamError}`);
-                    }
-                }
-
-                // Serve original file (fallback or no transformation requested)
-                const file = await this.storage.get({ id: uuid });
-
-                let { contentType } = file;
-
-                if (contentType.includes("image") && typeof ext === "string") {
-                    contentType = mime.getType(ext) || contentType;
-                }
-
-                const { ETag, expiredAt, modifiedAt, size } = file;
+                const streamResult = await this.storage.getStream({ id: fileMeta.id });
+                const contentType = resolveContentType(streamResult.headers?.["Content-Type"] || fileMeta.contentType, extension);
 
                 return {
-                    headers: {
-                        "Accept-Ranges": "bytes", // Indicate we support range requests
-                        "Content-Length": String(size),
-                        "Content-Type": contentType,
-                        ...(expiredAt === undefined ? {} : { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt === undefined ? {} : { "Last-Modified": modifiedAt.toString() }),
-                        ...(ETag === undefined ? {} : { ETag }),
-                    },
-                    statusCode: 200,
-                    ...file,
+                    ...fileMeta,
                     contentType,
-                } as unknown as ResponseFile<TFile>;
-            } catch (error: unknown) {
-                const errorWithCode = error as { UploadErrorCode?: string };
-
-                if (!isUuidLike && errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
-                    // Ambiguous segment that is not a stored file - treat as list request
-                    return undefined;
+                    headers: { ...streamResult.headers, "Accept-Ranges": "bytes", "Content-Type": contentType },
+                    size: streamResult.size ?? fileMeta.size,
+                    statusCode: 200,
+                    stream: streamResult.stream,
+                };
+            } catch (streamError: unknown) {
+                if (isNotFound(streamError)) {
+                    throw streamError;
                 }
 
-                if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
-                    throw createHttpError(404, "File not found");
-                }
-
-                throw error;
+                // Fall back to regular file serving if streaming fails
+                this.logger?.warn(`Streaming failed, falling back to buffer: ${streamError}`);
             }
         }
 
-        return undefined;
+        const file = await this.storage.get({ id: fileMeta.id });
+        const contentType = resolveContentType(file.contentType, extension);
+
+        return {
+            ...file,
+            contentType,
+            headers: {
+                "Accept-Ranges": "bytes",
+                "Content-Length": String(file.size),
+                "Content-Type": contentType,
+                ...fileStateHeaders(file),
+            },
+            statusCode: 200,
+        } as unknown as ResponseFile<TFile>;
     }
 
     /**
@@ -433,10 +471,12 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
 
         const list = await this.storage.list(Number(limit || 1000));
 
+        const headers = { "Content-Type": JSON_CONTENT_TYPE };
+
         if (list.length === 0) {
             return {
                 data: [],
-                headers: {},
+                headers,
                 statusCode: 200,
             };
         }
@@ -450,14 +490,14 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         if (page !== null && limit !== null && Number.isFinite(pageNumber) && Number.isFinite(limitNumber)) {
             return {
                 data: paginate(pageNumber, limitNumber, list.length, list),
-                headers: {},
+                headers,
                 statusCode: 200,
             };
         }
 
         return {
             data: list,
-            headers: {},
+            headers,
             statusCode: 200,
         };
     }

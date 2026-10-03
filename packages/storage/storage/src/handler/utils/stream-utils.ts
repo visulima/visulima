@@ -3,6 +3,38 @@ import type { Readable } from "node:stream";
 import { PassThrough } from "node:stream";
 
 /**
+ * Applies an (already parsed) byte range to a file stream.
+ * Shared by the Node and Fetch handlers so both send identical 200/206 responses.
+ * @param stream Full file stream
+ * @param size Total file size in bytes
+ * @param range Requested byte range, if any
+ * @returns The stream to send, the response headers it needs and whether it is a partial (206) response
+ */
+export const applyRange = (
+    stream: Readable,
+    size: number | undefined,
+    range: { end: number; start: number } | undefined,
+): { headers: Record<string, number | string>; partial: boolean; stream: Readable } => {
+    if (range && size) {
+        return {
+            headers: {
+                "Accept-Ranges": "bytes",
+                "Content-Length": range.end - range.start + 1,
+                "Content-Range": `bytes ${range.start}-${range.end}/${size}`,
+            },
+            partial: true,
+            stream: createRangeLimitedStream(stream, range.start, range.end),
+        };
+    }
+
+    return {
+        headers: { "Accept-Ranges": "bytes", ...(size ? { "Content-Length": size } : {}) },
+        partial: false,
+        stream,
+    };
+};
+
+/**
  * Creates a range-limited stream that properly handles backpressure.
  * @param sourceStream Source readable stream to limit
  * @param start Start byte position (inclusive)

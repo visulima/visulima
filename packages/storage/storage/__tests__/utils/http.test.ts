@@ -14,6 +14,7 @@ import {
     getMetadata,
     getRealPath,
     readBody,
+    readWebRequestText,
     setHeaders,
 } from "../../src/utils/http";
 import { createRequest as httpCreateRequest } from "../__helpers__/utils";
@@ -209,19 +210,39 @@ describe("utils", () => {
             ["http://localhost/files/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
             ["http://localhost/t/1111-2222-3333/files/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
             ["http://localhost/V1StGXR8_Z5jdHi6B-myT", "V1StGXR8_Z5jdHi6B-myT"],
-            ["http://localhost/files/391c9157ec481ac6-f72b2d884632d7e6.png", "391c9157ec481ac6-f72b2d884632d7e6"],
+            ["http://localhost/files/asset01", "asset01"],
+            ["http://localhost/files/3", "3"],
+            ["http://localhost/files/archive.tar.gz", "archive.tar.gz"],
         ])("should extract the last path segment as ID from a fetch URL: %p -> %p", (url, id) => {
             expect.assertions(1);
 
             expect(getIdFromRequestUrl(url)).toBe(id);
         });
 
-        it.each([["http://localhost/"], ["http://localhost/files"], ["http://localhost/files/upload"], ["http://localhost/files/3"]])(
+        it.each([
+            ["http://localhost/files/391c9157ec481ac6-f72b2d884632d7e6.png", "391c9157ec481ac6-f72b2d884632d7e6"],
+            ["http://localhost/files/asset01", "asset01"],
+        ])("should strip the extension from a fetch URL id when requested: %p -> %p", (url, id) => {
+            expect.assertions(1);
+
+            expect(getIdFromRequestUrl(url, { stripExtension: true })).toBe(id);
+        });
+
+        it.each([["http://localhost/"], ["http://localhost/files"], ["http://localhost/files/upload"], ["http://localhost/files/upload.json"]])(
             "should return undefined for fetch URLs without an ID: %p",
             (url) => {
                 expect.assertions(1);
 
-                expect(getIdFromRequestUrl(url)).toBeUndefined();
+                expect(getIdFromRequestUrl(url, { stripExtension: true })).toBeUndefined();
+            },
+        );
+
+        it.each([["http://localhost/files/..%2F..%2Fetc%2Fpasswd"], ["http://localhost/files/%2Fetc%2Fpasswd"]])(
+            "should reject an encoded traversal id in a fetch URL with 400: %p",
+            (url) => {
+                expect.assertions(1);
+
+                expect(() => getIdFromRequestUrl(url)).toThrow(expect.objectContaining({ statusCode: 400 }));
             },
         );
 
@@ -289,12 +310,44 @@ describe("utils", () => {
         });
     });
 
-    it("should reject when request body exceeds length limit", async () => {
+    it("should read a Web API request body within the limit", async () => {
         expect.assertions(1);
+
+        await expect(readWebRequestText(new Request("http://localhost/", { body: "héllo", method: "POST" }), 6)).resolves.toBe("héllo");
+    });
+
+    it("should reject a Web API request body over the limit while streaming, without a Content-Length", async () => {
+        expect.assertions(1);
+
+        const body = new ReadableStream<Uint8Array>({
+            pull(controller) {
+                // Endless body: only a streaming cap can stop it
+                controller.enqueue(new Uint8Array(1024));
+            },
+        });
+        const request = new Request("http://localhost/", { body, duplex: "half", method: "POST" } as RequestInit);
+
+        await expect(readWebRequestText(request, 4096)).rejects.toThrow(expect.objectContaining({ statusCode: 413 }));
+    });
+
+    it("should reject a Web API request whose Content-Length exceeds the limit before reading", async () => {
+        expect.assertions(1);
+
+        const request = new Request("http://localhost/", { body: "x".repeat(10), headers: { "content-length": "10" }, method: "POST" });
+
+        await expect(readWebRequestText(request, 5)).rejects.toThrow(expect.objectContaining({ statusCode: 413 }));
+    });
+
+    it("should reject when request body exceeds length limit", async () => {
+        expect.assertions(2);
 
         const request = httpCreateRequest({ body: "Hello world!" });
 
-        await expect(readBody(request, "utf8", 5)).rejects.toThrow("Request body length limit exceeded");
+        await expect(readBody(request, "utf8", 5)).rejects.toThrow(
+            expect.objectContaining({ headers: { Connection: "close" }, message: "Request body length limit exceeded", statusCode: 413 }),
+        );
+        // The request is drained, not destroyed, so the caller can still send the 413 response
+        expect(request.destroyed).toBe(false);
     });
 
     it("should use UTF-8 encoding as default when reading body", async () => {
