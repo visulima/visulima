@@ -9,6 +9,10 @@ import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
 const TUS_RESUMABLE_VERSION = "1.0.0";
 const DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1MB
+/** Spaces and commas separate Upload-Metadata pairs, so keys must not contain them (or other whitespace). */
+const INVALID_METADATA_KEY_PATTERN = /[\s,]/u;
+/** A URL with a scheme (`http:`, `https:`, ...) — anything else is resolved relative to the endpoint. */
+const ABSOLUTE_URL_PATTERN = /^[a-z][\d+.a-z-]*:/iu;
 
 /**
  * Encodes a UTF-8 string to base64.
@@ -39,16 +43,48 @@ const decodeBase64Utf8 = (value: string): string => {
 };
 
 /**
- * Encodes metadata for TUS Upload-Metadata header.
+ * Validates user-supplied Upload-Metadata keys. Per the TUS spec a key MUST NOT
+ * be empty and MUST NOT contain spaces or commas (the header's separators); keys
+ * are already unique because they come from an object. Any other whitespace is
+ * rejected too since it would equally corrupt the header.
+ */
+const validateMetadataKeys = (metadata: Record<string, string>): void => {
+    for (const key of Object.keys(metadata)) {
+        if (key.length === 0) {
+            throw new Error("Invalid TUS metadata key: keys must not be empty");
+        }
+
+        if (INVALID_METADATA_KEY_PATTERN.test(key)) {
+            throw new Error(`Invalid TUS metadata key "${key}": keys must not contain spaces or commas`);
+        }
+    }
+};
+
+/**
+ * Encodes metadata for TUS Upload-Metadata header. Empty values are sent as a
+ * bare key, as the spec allows.
  */
 const encodeMetadata = (metadata: Record<string, string>): string =>
     Object.entries(metadata)
         .map(([key, value]) => {
-            const encoded = encodeBase64Utf8(value);
+            if (value === "") {
+                return key;
+            }
 
-            return `${key} ${encoded}`;
+            return `${key} ${encodeBase64Utf8(value)}`;
         })
         .join(",");
+
+/**
+ * Thrown when the server reports the upload resource no longer exists
+ * (404 / 410, or 403 on HEAD), so the client must not keep PATCHing it.
+ */
+class TusUploadGoneError extends Error {
+    public constructor(status: number) {
+        super(`Upload expired or not found (${String(status)})`);
+        this.name = "TusUploadGoneError";
+    }
+}
 
 /**
  * Decodes metadata from TUS Upload-Metadata header.
@@ -64,7 +100,10 @@ const decodeMetadata = (header: string | undefined): Record<string, string> => {
         const [key, ...valueParts] = item.trim().split(" ");
         const encoded = valueParts.join(" ");
 
-        if (key && encoded) {
+        if (key && !encoded) {
+            // The spec allows a bare key for an empty value.
+            metadata[key] = "";
+        } else if (key) {
             try {
                 metadata[key] = decodeBase64Utf8(encoded);
             } catch {
@@ -92,8 +131,12 @@ interface TusUploadState {
     offset: number;
     /** Resolvers waiting for `resume()` — invoked when the upload is unpaused. */
     pauseWaiters: (() => void)[];
+    /** Whether the upload was already re-created after the server reported it gone. */
+    restartedAfterGone: boolean;
     /** Retry count */
     retryCount: number;
+    /** Upload URL a termination (DELETE) was already issued for, so it is sent at most once. */
+    terminatedUploadUrl: string | undefined;
     /** Upload URL from server */
     uploadUrl: string | undefined;
 }
@@ -134,6 +177,16 @@ export interface TusAdapterOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
+
+    /**
+     * When `true`, `abort()` (and `control.abort()`) also terminates the upload on
+     * the server by sending a `DELETE` request to the upload URL (TUS Termination extension) and
+     * drops the stored resume URL, so aborted uploads are not left orphaned. The
+     * request runs in the background; failures are swallowed and never thrown
+     * from `abort()`. Defaults to `false`, which keeps the server-side upload so
+     * it can be resumed later.
+     */
+    terminateOnAbort?: boolean;
 
     /**
      * Inactivity timeout in milliseconds. When set, `upload()` fails via the
@@ -192,6 +245,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         onBeforeRequest,
         restrictions,
         retry = true,
+        terminateOnAbort = false,
         uploadTimeoutMs,
         urlStorage,
     } = options;
@@ -234,15 +288,29 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * (404 / 410 / 403) so the caller can fall through to a fresh POST.
      */
     const probeExistingUpload = async (uploadUrl: string, signal?: AbortSignal): Promise<number | undefined> => {
-        let response: Response;
+        const probeOnce = async (): Promise<Response | undefined> => {
+            try {
+                return await fetch(uploadUrl, {
+                    headers: await buildHeaders(uploadUrl, "HEAD", { "Tus-Resumable": TUS_RESUMABLE_VERSION }),
+                    method: "HEAD",
+                    signal,
+                });
+            } catch {
+                return undefined;
+            }
+        };
 
-        try {
-            response = await fetch(uploadUrl, {
-                headers: await buildHeaders(uploadUrl, "HEAD", { "Tus-Resumable": TUS_RESUMABLE_VERSION }),
-                method: "HEAD",
-                signal,
-            });
-        } catch {
+        let response = await probeOnce();
+
+        // 423 Locked: another request still holds the upload — back off and re-probe.
+        for (let lockedAttempts = 1; response?.status === 423 && retry && lockedAttempts <= maxRetries && !signal?.aborted; lockedAttempts += 1) {
+            // eslint-disable-next-line no-await-in-loop, no-promise-executor-return -- Sequential retry delay required; setTimeout return value is intentionally ignored
+            await new Promise<void>((resolve) => setTimeout(resolve, 1000 * lockedAttempts));
+            // eslint-disable-next-line no-await-in-loop -- Sequential re-probe required while the upload is locked
+            response = await probeOnce();
+        }
+
+        if (response === undefined) {
             return undefined;
         }
 
@@ -295,6 +363,45 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     };
 
     /**
+     * TUS Termination extension: a `DELETE` request to the upload URL so the server can free the
+     * partial upload, then drop the stored resume URL. Runs at most once per
+     * upload URL and never rejects — abort must not throw.
+     */
+    const terminateUpload = async (state: TusUploadState): Promise<void> => {
+        const { fingerprint: entryFingerprint, uploadUrl } = state;
+
+        if (!terminateOnAbort || !uploadUrl || state.terminatedUploadUrl === uploadUrl) {
+            return;
+        }
+
+        // eslint-disable-next-line no-param-reassign -- Marking shared upload state so termination happens only once
+        state.terminatedUploadUrl = uploadUrl;
+
+        try {
+            await fetch(uploadUrl, {
+                headers: await buildHeaders(uploadUrl, "DELETE", { "Tus-Resumable": TUS_RESUMABLE_VERSION }),
+                method: "DELETE",
+            });
+        } catch {
+            // Best effort: the server may not support termination or be unreachable.
+        }
+
+        await removeUploadEntry(entryFingerprint);
+    };
+
+    /**
+     * Aborts the in-flight upload and, when `terminateOnAbort` is set, terminates
+     * it on the server in the background.
+     */
+    const abortState = (state: TusUploadState): void => {
+        state.abortController.abort();
+        // Wake any pause-waiters so the upload loop sees the abort immediately.
+        flushPauseWaiters(state);
+        // Fire-and-forget: abort() stays synchronous and must never surface a rejection.
+        terminateUpload(state).catch(() => {});
+    };
+
+    /**
      * Creates a new TUS upload.
      * According to TUS protocol: POST returns 201 Created (or 200 if Creation With Upload extension is used).
      * Headers: Location (required), Tus-Resumable (required), Upload-Offset (optional, if data was uploaded).
@@ -329,7 +436,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         // Handle relative URLs
         let uploadUrl: string;
 
-        if (location.startsWith("http")) {
+        if (ABSOLUTE_URL_PATTERN.test(location)) {
             uploadUrl = location;
         } else {
             // If endpoint is absolute, use it as base; otherwise construct absolute URL
@@ -355,7 +462,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * Gets current upload offset from server.
      * According to TUS protocol: HEAD returns 200 OK.
      * Headers: Tus-Resumable (required), Upload-Length (required), Upload-Offset (required), Cache-Control: no-store.
-     * Can return 404, 410, or 403 if upload doesn't exist.
+     * Can return 404, 410, or 403 if upload doesn't exist — surfaced as `TusUploadGoneError`
+     * so the caller re-creates the upload instead of PATCHing a dead URL.
      */
     const getUploadOffset = async (uploadUrl: string, signal?: AbortSignal): Promise<number> => {
         const response = await fetch(uploadUrl, {
@@ -369,7 +477,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         // TUS protocol: HEAD returns 200 OK, or 404/410/403 if upload doesn't exist
         if (!response.ok) {
             if (response.status === 404 || response.status === 410 || response.status === 403) {
-                return 0; // Upload doesn't exist yet, start from beginning
+                throw new TusUploadGoneError(response.status);
             }
 
             throw new Error(`Failed to get upload offset: ${String(response.status)} ${response.statusText}`);
@@ -409,14 +517,14 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             if (response.status === 409) {
                 // Offset mismatch (Upload-Offset doesn't match server's offset)
                 // Get current offset and retry from that position
-                const currentOffset = await getUploadOffset(uploadUrl);
+                const currentOffset = await getUploadOffset(uploadUrl, signal);
 
                 return currentOffset;
             }
 
-            // Handle other error status codes
+            // The upload resource is gone — the caller re-creates it instead of retrying.
             if (response.status === 404 || response.status === 410) {
-                throw new Error("Upload expired or not found");
+                throw new TusUploadGoneError(response.status);
             }
 
             if (response.status === 415) {
@@ -445,8 +553,13 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     /**
      * Performs the actual upload.
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-    const performUpload = async (file: File, uploadUrl: string, startOffset: number = 0): Promise<UploadResult> => {
+    /* eslint-disable sonarjs/cognitive-complexity -- sequential chunk/retry/restart state machine */
+    const performUpload = async (
+        file: File,
+        uploadUrl: string,
+        startOffset: number = 0,
+        onUploadUrlChange?: (newUploadUrl: string) => void,
+    ): Promise<UploadResult> => {
         // Capture local reference to uploadState at start
         const state = uploadState;
 
@@ -456,9 +569,42 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
         const { abortController } = state;
         let currentOffset = startOffset;
+        let activeUploadUrl = uploadUrl;
+        // Re-sync the offset via HEAD before the next PATCH (set after a failed chunk).
+        let syncOffset = false;
+        // Re-create the upload via POST before the next PATCH (set when the server reports it gone).
+        let restartPending = false;
+
+        /**
+         * The server no longer knows the upload (404/410/403): drop the stale
+         * resume URL and POST a fresh upload, restarting from its initial offset.
+         */
+        const restartUpload = async (): Promise<number> => {
+            await removeUploadEntry(state.fingerprint);
+
+            const { initialOffset, uploadUrl: newUploadUrl } = await createUpload(file);
+
+            activeUploadUrl = newUploadUrl;
+            state.uploadUrl = newUploadUrl;
+
+            if (abortController.signal.aborted) {
+                // Aborted while the POST was in flight - don't leave the new upload orphaned.
+                terminateUpload(state).catch(() => {});
+
+                throw new Error("Upload aborted");
+            }
+
+            if (state.fingerprint !== undefined) {
+                await persistUploadEntry(state.fingerprint, newUploadUrl, file);
+            }
+
+            onUploadUrlChange?.(newUploadUrl);
+
+            return initialOffset;
+        };
 
         try {
-            while (currentOffset < file.size) {
+            while (currentOffset < file.size || restartPending) {
                 // Check if aborted before proceeding
                 if (abortController.signal.aborted) {
                     throw new Error("Upload aborted");
@@ -481,8 +627,22 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 }
 
                 try {
-                    // eslint-disable-next-line no-await-in-loop -- Sequential chunk upload required
-                    currentOffset = await uploadChunk(file, uploadUrl, currentOffset, abortController.signal);
+                    if (restartPending) {
+                        // eslint-disable-next-line no-await-in-loop -- Sequential re-creation required before the next chunk
+                        currentOffset = await restartUpload();
+                        restartPending = false;
+                        syncOffset = false;
+                    } else if (syncOffset) {
+                        // eslint-disable-next-line no-await-in-loop -- Sequential offset check required for retry
+                        currentOffset = await getUploadOffset(activeUploadUrl, abortController.signal);
+                        syncOffset = false;
+                    }
+
+                    if (currentOffset < file.size) {
+                        // eslint-disable-next-line no-await-in-loop -- Sequential chunk upload required
+                        currentOffset = await uploadChunk(file, activeUploadUrl, currentOffset, abortController.signal);
+                    }
+
                     state.offset = currentOffset;
                     control?._updateOffset(currentOffset);
 
@@ -497,6 +657,19 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                         throw new Error("Upload aborted");
                     }
 
+                    // The upload resource is gone: re-create it once, never PATCH the dead URL again.
+                    if (error_ instanceof TusUploadGoneError) {
+                        if (state.restartedAfterGone) {
+                            throw error_;
+                        }
+
+                        state.restartedAfterGone = true;
+                        restartPending = true;
+
+                        continue;
+                    }
+
+                    // Everything else (network errors, 5xx, 423 Locked, ...) is retried with backoff.
                     if (retry && state.retryCount < maxRetries) {
                         state.retryCount += 1;
                         // Wait before retry (exponential backoff)
@@ -510,9 +683,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                             throw new Error("Upload aborted");
                         }
 
-                        // Get current offset and retry
-                        // eslint-disable-next-line no-await-in-loop -- Sequential offset check required for retry
-                        currentOffset = await getUploadOffset(uploadUrl, abortController.signal);
+                        // Re-HEAD for the server's offset before retrying (unless a restart is pending).
+                        syncOffset = true;
 
                         continue;
                     }
@@ -529,15 +701,15 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             }
 
             // Upload complete, get final file info
-            const headResponse = await fetch(uploadUrl, {
-                headers: await buildHeaders(uploadUrl, "HEAD", {
+            const headResponse = await fetch(activeUploadUrl, {
+                headers: await buildHeaders(activeUploadUrl, "HEAD", {
                     "Tus-Resumable": TUS_RESUMABLE_VERSION,
                 }),
                 method: "HEAD",
                 signal: abortController.signal,
             });
 
-            const location = headResponse.headers.get("Location") ?? uploadUrl;
+            const location = headResponse.headers.get("Location") ?? activeUploadUrl;
             const uploadMetadataHeader = headResponse.headers.get("Upload-Metadata");
             const uploadMetadata = decodeMetadata(uploadMetadataHeader ?? undefined);
 
@@ -550,7 +722,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                 fileMeta = {
                     contentType,
-                    id: uploadUrl.split("/").pop() ?? "",
+                    id: activeUploadUrl.split("/").pop() ?? "",
                     metadata: uploadMetadata,
                     originalName: uploadMetadata.filename ?? file.name,
                     size: file.size,
@@ -565,7 +737,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 contentType: fileMeta.contentType ?? file.type,
                 createdAt: fileMeta.createdAt,
                 filename: fileMeta.originalName ?? file.name,
-                id: fileMeta.id ?? uploadUrl.split("/").pop() ?? "",
+                id: fileMeta.id ?? activeUploadUrl.split("/").pop() ?? "",
                 metadata: fileMeta.metadata ?? uploadMetadata,
                 name: fileMeta.name,
                 offset: currentOffset,
@@ -581,17 +753,16 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             }
         }
     };
+    /* eslint-enable sonarjs/cognitive-complexity */
 
     return {
         /**
-         * Aborts the current upload.
+         * Aborts the current upload. With `terminateOnAbort`, also terminates it on the server.
          */
         abort: () => {
             if (uploadState) {
-                uploadState.abortController.abort();
-                // Wake any pause-waiters so the upload loop sees the abort immediately.
-                flushPauseWaiters(uploadState);
                 // Don't clear uploadState here - let performUpload handle it in finally
+                abortState(uploadState);
             }
         },
 
@@ -670,6 +841,12 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
          * Uploads a file and returns a visulima-compatible result.
          */
         upload: async (file: File): Promise<UploadResult> => {
+            // Validate before any network request (and before the callbacks are
+            // swapped) so consumers get a friendly error instead of a server-side
+            // 413 or a malformed Upload-Metadata header.
+            validateFile(file, restrictions);
+            validateMetadataKeys(metadata);
+
             let resolved = false;
             const originalFinishCallback = finishCallback;
             const originalErrorCallback = errorCallback;
@@ -744,10 +921,6 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 originalProgressCallback?.(progress, offset);
             };
 
-            // Validate restrictions before any network request so consumers get a
-            // friendly error instead of a server-side 413.
-            validateFile(file, restrictions);
-
             uploadState = {
                 abortController: new AbortController(),
                 file,
@@ -755,7 +928,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 isPaused: false,
                 offset: 0,
                 pauseWaiters: [],
+                restartedAfterGone: false,
                 retryCount: 0,
+                terminatedUploadUrl: undefined,
                 uploadUrl: undefined,
             };
 
@@ -827,33 +1002,40 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                     await persistUploadEntry(fingerprint, uploadUrl, file);
 
+                    // Aborted while the POST was in flight — don't leave the new upload orphaned.
+                    // (performUpload then bails out with "Upload aborted".)
+                    if (initialState.abortController.signal.aborted) {
+                        terminateUpload(initialState).catch(() => {});
+                    }
+
                     if (initialOffset > 0) {
                         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- progressCallback may be reassigned to undefined concurrently (setOnProgress/timeout cleanup) while createUpload is in flight
                         progressCallback?.(Math.round((initialOffset / file.size) * 100), initialOffset);
                     }
                 }
 
-                control?._attach(
-                    {
-                        abort: () => {
-                            initialState.abortController.abort();
-                            flushPauseWaiters(initialState);
-                        },
-                        pause: () => {
-                            initialState.isPaused = true;
-                        },
-                        resume: () => {
-                            initialState.isPaused = false;
-                            flushPauseWaiters(initialState);
-
-                            return Promise.resolve();
-                        },
+                const controlBinding = {
+                    abort: () => {
+                        abortState(initialState);
                     },
-                    { endpoint, fingerprint, protocol: "tus", uploadUrl },
-                );
+                    pause: () => {
+                        initialState.isPaused = true;
+                    },
+                    resume: () => {
+                        initialState.isPaused = false;
+                        flushPauseWaiters(initialState);
+
+                        return Promise.resolve();
+                    },
+                };
+
+                control?._attach(controlBinding, { endpoint, fingerprint, protocol: "tus", uploadUrl });
                 control?._updateOffset(initialState.offset);
 
-                return performUpload(file, uploadUrl, initialState.offset);
+                // If the server drops the upload mid-way it is re-created; keep the control's snapshot in sync.
+                return performUpload(file, uploadUrl, initialState.offset, (newUploadUrl) => {
+                    control?._attach(controlBinding, { endpoint, fingerprint, protocol: "tus", uploadUrl: newUploadUrl });
+                });
             })();
 
             armTimeout();

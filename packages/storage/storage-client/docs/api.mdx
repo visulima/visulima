@@ -105,16 +105,23 @@ const result = await adapter.upload(file);
 
 **Options: `TusAdapterOptions`**
 
-| Property      | Type                     | Required | Default              | Description                                                                          |
-| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
-| `endpoint`    | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                              |
-| `chunkSize`   | `number`                 | No       | `1048576` (1MB)      | Chunk size for TUS uploads                                                           |
-| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
-| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
-| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
-| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
-| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
-| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
+| Property           | Type                     | Required | Default              | Description                                                                                                           |
+| ------------------ | ------------------------ | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`         | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                                                               |
+| `chunkSize`        | `number`                 | No       | `1048576` (1MB)      | Chunk size for TUS uploads                                                                                            |
+| `metadata`         | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                                                   |
+| `retry`            | `boolean`                | No       | `true`               | Enable automatic retry                                                                                                |
+| `maxRetries`       | `number`                 | No       | `3`                  | Maximum retry attempts                                                                                                |
+| `control`          | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume)                                  |
+| `fingerprint`      | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                                                      |
+| `urlStorage`       | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                                                  |
+| `terminateOnAbort` | `boolean`                | No       | `false`              | On `abort()`, also send `DELETE <uploadUrl>` (TUS Termination) and drop the stored resume URL; failures are swallowed |
+
+Metadata keys must not be empty and must not contain spaces or commas (TUS `Upload-Metadata` rules);
+`upload()` rejects before any request otherwise. If the server reports the upload gone mid-way
+(`404` / `410`, or `403` on `HEAD`), the adapter drops the stored resume URL and re-creates the
+upload once from offset `0`; a second loss fails without further retries. `423 Locked` is retried
+with backoff like other transient failures.
 
 **Returns: `TusAdapter`**
 
