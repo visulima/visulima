@@ -170,6 +170,9 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? file.name;
 
                     await this.runOperation(options, () =>

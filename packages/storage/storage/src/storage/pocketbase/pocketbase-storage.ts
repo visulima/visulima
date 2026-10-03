@@ -206,6 +206,9 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.path ?? file.name;
 
                     await this.putRecord(key, buffer, file.contentType, options);

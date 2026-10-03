@@ -333,6 +333,9 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
                     await this.authHandle.ensureAccessToken();

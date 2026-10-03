@@ -212,6 +212,19 @@ TUS responses include standard TUS headers:
 - `Upload-Offset`: Current upload offset
 - `Upload-Expires`: Upload expiration timestamp
 
+## Storage Backend Limits
+
+Resumable, chunked TUS uploads need a backend that can append to an upload:
+
+- **Disk, Memory, S3 (incl. aws-light), GCS and Azure** support chunked uploads. S3 needs every chunk except the
+  last to be at least 5 MiB; a smaller chunk is rejected right away with `400`.
+- **Box, Bunny, Bun S3, Cloudinary, Dropbox, Firebase, FTP, Google Drive, Netlify Blobs, OneDrive, PocketBase,
+  SFTP, SharePoint, Supabase, UploadThing and Vercel Blob** store an object in one request. Send the whole file
+  in one `PATCH` (or with creation-with-upload); a partial chunk is rejected with `405` instead of being stored as
+  a truncated file.
+- S3, GCS and Azure drop an upload's metadata once it completes, so a `HEAD` after completion answers `404`, as the
+  protocol allows.
+
 ## Status Codes
 
 | Request                                  | Status                                       |

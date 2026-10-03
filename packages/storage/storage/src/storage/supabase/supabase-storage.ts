@@ -187,6 +187,9 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? file.name;
 
                     const { data, error } = await this.runOperation(options, () =>

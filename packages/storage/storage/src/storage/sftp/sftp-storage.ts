@@ -147,6 +147,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
                     // `buffer` is fully materialized in memory before the upload,

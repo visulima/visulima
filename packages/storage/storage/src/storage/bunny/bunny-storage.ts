@@ -219,6 +219,9 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = toBunnyPath(file.name || file.id);
 
                     try {

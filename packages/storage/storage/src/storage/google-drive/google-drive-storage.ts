@@ -318,6 +318,9 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.name || file.id;
 
                     const appProperties: Record<string, string> = {

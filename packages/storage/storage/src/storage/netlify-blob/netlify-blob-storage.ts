@@ -197,6 +197,8 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
                     const buffer = Buffer.concat(chunks);
 
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     // Detect file type from buffer if contentType is not set or is default
                     // Only detect on first write (when bytesWritten is 0 or NaN)
                     if (

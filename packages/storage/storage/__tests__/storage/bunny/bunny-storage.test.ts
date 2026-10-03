@@ -454,6 +454,23 @@ describe(BunnyStorage, () => {
     });
 
     describe(".write()", () => {
+        it("rejects a chunk that isn't the whole file instead of storing it as the complete upload", async () => {
+            expect.assertions(3);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: 10 } as never);
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+
+            await expect(storage.write({ body: Readable.from(Buffer.from("hello")), contentLength: 5, id: "f", start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "MethodNotAllowed",
+            });
+            await expect(storage.write({ body: Readable.from(Buffer.from("world")), contentLength: 5, id: "f", start: 5 })).rejects.toMatchObject({
+                UploadErrorCode: "MethodNotAllowed",
+            });
+            expect(fileMock.upload).not.toHaveBeenCalled();
+        });
+
         it("converts a base64 sha256 upload checksum to the uppercase hex Bunny verifies", async () => {
             expect.assertions(1);
 

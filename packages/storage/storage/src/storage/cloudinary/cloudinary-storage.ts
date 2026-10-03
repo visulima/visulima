@@ -196,6 +196,9 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.path ?? file.name;
 
                     const result = await this.runOperation(options, () => this.uploadBuffer(key, buffer));

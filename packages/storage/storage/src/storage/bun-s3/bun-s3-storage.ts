@@ -169,6 +169,9 @@ class BunS3Storage extends BaseStorage<BunS3File> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = toKey(file.name || file.id);
 
                     try {

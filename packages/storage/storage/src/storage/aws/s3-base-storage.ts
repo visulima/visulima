@@ -412,6 +412,19 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         return throwErrorCode(ERRORS.FILE_CONFLICT);
                     }
 
+                    // S3 rejects CompleteMultipartUpload when any part but the last is under 5 MiB.
+                    // Fail this chunk now instead of letting the client upload everything first.
+                    const contentLength = part.contentLength ?? 0;
+
+                    if (
+                        contentLength > 0 &&
+                        contentLength < MIN_PART_SIZE &&
+                        typeof file.size === "number" &&
+                        (part.start ?? file.bytesWritten) + contentLength < file.size
+                    ) {
+                        return throwErrorCode(ERRORS.BAD_REQUEST, "S3 multipart uploads need chunks of at least 5 MiB except for the last one.");
+                    }
+
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
                         try {

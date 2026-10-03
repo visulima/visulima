@@ -386,6 +386,9 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.name || file.id;
 
                     const item =

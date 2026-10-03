@@ -183,6 +183,9 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
                     }
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const blob = new Blob([new Uint8Array(buffer)], { type: file.contentType });
                     const utfile = new UTFile([blob], basename(file.name || file.id), {
                         customId: file.name || file.id,

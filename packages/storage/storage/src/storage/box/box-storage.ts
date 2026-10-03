@@ -334,6 +334,9 @@ class BoxStorage extends BaseStorage<BoxFile> {
                     await this.authHandle.ensureReady();
 
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const key = file.name || file.id;
                     const { leaf, parents } = splitKey(key);
                     const folderId = await this.resolveFolderId(parents, { create: true }, options);

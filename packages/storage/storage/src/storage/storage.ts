@@ -1061,6 +1061,26 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         }
     }
 
+    /**
+     * Guards adapters that can only store an object in one request. Without it, a chunked or
+     * resumable upload (e.g. TUS with a chunk size) stores its first chunk as the whole file
+     * and reports the upload as completed, silently losing the rest of the data.
+     * @param part The part being written
+     * @param file The upload it belongs to
+     * @param received Number of bytes this write carries
+     * @throws {UploadError} METHOD_NOT_ALLOWED when the write isn't the whole file
+     */
+    protected assertWholeFileWrite(part: { start?: number }, file: TFile, received: number): void {
+        const expected = typeof file.size === "number" && !Number.isNaN(file.size) ? file.size : undefined;
+
+        if ((part.start ?? 0) > 0 || (expected !== undefined && received < expected)) {
+            throwErrorCode(
+                ERRORS.METHOD_NOT_ALLOWED,
+                `${this.constructor.name} does not support chunked or resumable uploads; send the whole file in a single request.`,
+            );
+        }
+    }
+
     protected isUnsupportedChecksum(algorithm = ""): boolean {
         return !!algorithm && !this.checksumTypes.includes(algorithm);
     }
