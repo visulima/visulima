@@ -1,0 +1,125 @@
+name: "Native release artifacts"
+description: >-
+    Download a commit's Build Native outputs and lay them out exactly as they are
+    published: the freshly generated NAPI loaders (index.js / index.d.ts) into the
+    package roots, the .node binaries into their `npm/<platform>` packages (via
+    `napi artifacts`), plus the sidecar files those platform packages ship (vis CLI
+    binary, task-runner fspy helpers). Finally verifies that every platform package
+    contains each file its package.json `files` lists, so nothing is published
+    with a binary missing. Shared by semantic-release.yml and preview-release.yaml,
+    so a preview package is laid out like a released one.
+
+inputs:
+    ref:
+        description: "Commit whose Build Native artifacts to use (its run must have finished)."
+        required: true
+    github-token:
+        description: "Token for the artifact download (secrets.GITHUB_TOKEN)."
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        # Build Native always uploads bindings for every target and the loaders from
+        # x86_64-unknown-linux-gnu, so a missing artifact is an error, never "nothing
+        # changed". `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-download on
+        # multi-MB artifacts and dawidd6 doesn't retry, hence one retry.
+        - name: "Download native artifacts"
+          id: "download"
+          continue-on-error: true
+          uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+          with:
+              github_token: "${{ inputs.github-token }}"
+              workflow: "build-native.yml"
+              commit: "${{ inputs.ref }}"
+              name: "(bindings|loader)-(.+)"
+              name_is_regexp: true
+              path: "artifacts"
+              if_no_artifact_found: "fail"
+              allow_forks: false
+
+        - name: "Wait before retrying artifact download"
+          if: "steps.download.outcome == 'failure'"
+          shell: "bash"
+          run: |
+              rm -rf artifacts
+              sleep 30
+
+        - name: "Download native artifacts (retry)"
+          if: "steps.download.outcome == 'failure'"
+          uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+          with:
+              github_token: "${{ inputs.github-token }}"
+              workflow: "build-native.yml"
+              commit: "${{ inputs.ref }}"
+              name: "(bindings|loader)-(.+)"
+              name_is_regexp: true
+              path: "artifacts"
+              if_no_artifact_found: "fail"
+              allow_forks: false
+
+        - name: "Distribute native artifacts to platform packages"
+          shell: "bash"
+          run: |
+              set -euo pipefail
+
+              # Loaders: overwrite committed index.js / index.d.ts with the ones napi
+              # build emitted for this commit, so the published types match the Rust
+              # signatures of the .node binaries below. (The release patches the
+              # version string baked into index.js later, in
+              # scripts/semantic-release-native-addons.mjs.)
+              for pkg in tooling/task-runner terminal/tui tooling/vis tooling/secret-scanner; do
+                  name="$(basename "$pkg")"
+                  cp "artifacts/loader-${name}/index.js" "packages/${pkg}/index.js"
+                  cp "artifacts/loader-${name}/index.d.ts" "packages/${pkg}/index.d.ts"
+              done
+
+              # .node binaries -> npm/<platform>/ via napi artifacts.
+              for pkg in tooling/task-runner terminal/tui tooling/vis tooling/secret-scanner; do
+                  name="$(basename "$pkg")"
+                  find artifacts -name "${name}-native.*.node" -exec mv {} "packages/${pkg}/" \;
+                  (cd "packages/${pkg}" && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f ./*.node)
+              done
+
+              # Sidecars napi artifacts doesn't handle (it only distributes .node files).
+              # install -m 0755 restores the exec bit the artifact round-trip drops.
+              # - vis: the CLI front-end binary
+              # - task-runner: the fspy helpers (seccomp helper / macOS dylib / Windows DLL)
+              find artifacts \( -path "*/bindings-vis-*/npm/*/vis-native-cli*" \
+                  -o -path "*/bindings-task-runner-*/npm/*/fspy-seccomp-helper" \
+                  -o -path "*/bindings-task-runner-*/npm/*/fspy-macos.dylib" \
+                  -o -path "*/bindings-task-runner-*/npm/*/fspy-windows.dll" \) -print0 \
+                  | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      case "$f" in
+                          */bindings-vis-*) dest="packages/tooling/vis/npm/${binding}" ;;
+                          *) dest="packages/tooling/task-runner/npm/${binding}" ;;
+                      esac
+                      mkdir -p "$dest"
+                      install -m 0755 "$f" "${dest}/$(basename "$f")"
+                  done
+
+              rm -rf artifacts/
+
+        # npm/pnpm silently omit `files` entries that don't exist, so a platform
+        # package missing its binary or sidecar would still publish - broken. Fail
+        # instead.
+        - name: "Verify platform packages are complete"
+          shell: "bash"
+          run: |
+              set -euo pipefail
+              missing=0
+              for manifest in packages/tooling/task-runner/npm/*/package.json packages/terminal/tui/npm/*/package.json packages/tooling/vis/npm/*/package.json packages/tooling/secret-scanner/npm/*/package.json; do
+                  dir="$(dirname "$manifest")"
+                  while IFS= read -r file; do
+                      if [ ! -e "${dir}/${file}" ]; then
+                          echo "::error file=${manifest}::missing published file ${dir}/${file}"
+                          missing=$((missing + 1))
+                      fi
+                  done < <(jq -r '.files[]? // empty' "$manifest")
+              done
+              if [ "$missing" -gt 0 ]; then
+                  echo "${missing} file(s) missing from native platform packages"
+                  exit 1
+              fi
+              echo "All native platform packages are complete"
