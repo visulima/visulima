@@ -1,3 +1,13 @@
+## @visulima/pagination [7.0.2](https://github.com/visulima/visulima/compare/@visulima/pagination@7.0.1...@visulima/pagination@7.0.2) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** chunked REST uploads and GET in fetch handlers ([#885](https://github.com/visulima/visulima/issues/885)) ([1a6f77d](https://github.com/visulima/visulima/commit/1a6f77da602d0395c8f6965a104d54dffdf171c2))
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
 ## @visulima/pagination [7.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fpagination%407.0.0...%40visulima%2Fpagination%407.0.1) (2026-08-17)
 
 ## @visulima/pagination [7.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Fpagination%406.0.0...%40visulima%2Fpagination%407.0.0) (2026-08-08)
