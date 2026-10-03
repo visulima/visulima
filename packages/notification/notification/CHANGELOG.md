@@ -1,3 +1,10 @@
+## @visulima/notification [1.1.18](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.17...@visulima/notification@1.1.18) (2026-10-03)
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.22
+
 ## @visulima/notification [1.1.17](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.16...@visulima/notification@1.1.17) (2026-10-03)
 
 
