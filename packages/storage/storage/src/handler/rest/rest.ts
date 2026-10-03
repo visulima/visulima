@@ -150,7 +150,7 @@ class Rest<
 
         const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
 
-        if (contentLength === 0) {
+        if (!Number.isFinite(contentLength) || contentLength <= 0) {
             throw createHttpError(400, "Content-Length is required and must be greater than 0");
         }
 
@@ -243,8 +243,14 @@ class Rest<
                     return this.restBase.deleteBatch(idsArray);
                 }
             } catch (error: unknown) {
-                if ((error as { statusCode?: number }).statusCode === 400) {
+                const { statusCode } = error as { statusCode?: number };
+
+                if (statusCode === 400 || statusCode === 413) {
                     throw error;
+                }
+
+                if ((error as Error).message === "Request body length limit exceeded") {
+                    throw createHttpError(413, "Batch delete body exceeds 1 MiB");
                 }
 
                 // If JSON parsing fails, fall through to single file delete
@@ -255,7 +261,7 @@ class Rest<
         try {
             const id = getIdFromRequest(request);
 
-            return this.restBase.deleteSingle(id);
+            return await this.restBase.deleteSingle(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 
@@ -292,7 +298,7 @@ class Rest<
 
         const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
 
-        if (contentLength === 0) {
+        if (!Number.isFinite(contentLength) || contentLength <= 0) {
             throw createHttpError(400, "Content-Length is required and must be greater than 0");
         }
 
@@ -320,7 +326,7 @@ class Rest<
         try {
             const id = getIdFromRequest(request);
 
-            return this.restBase.handleHead(id);
+            return await this.restBase.handleHead(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 

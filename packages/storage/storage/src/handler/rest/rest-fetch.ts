@@ -152,7 +152,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const contentLengthHeader = request.headers.get("content-length");
         const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
 
-        if (contentLength === 0) {
+        if (!Number.isFinite(contentLength) || contentLength <= 0) {
             throw createHttpError(400, "Content-Length is required and must be greater than 0");
         }
 
@@ -165,23 +165,14 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const contentType = request.headers.get("content-type") || "application/octet-stream";
 
         // Extract metadata from headers if present
-        const metadataHeader = request.headers.get("x-file-metadata");
-        let metadata: Record<string, unknown> | undefined;
-
-        if (metadataHeader) {
-            try {
-                metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
-            } catch {
-                // Ignore invalid JSON
-            }
-        }
+        const metadata = parseMetadataHeader(request.headers.get("x-file-metadata"));
 
         // Extract original filename from Content-Disposition header if present
         const originalName = parseContentDispositionValue(request.headers.get("content-disposition"));
 
         const config: FileInit = {
             contentType,
-            metadata: metadata || {},
+            metadata,
             originalName,
             size: contentLength,
         };
@@ -260,7 +251,9 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                     return this.restBase.deleteBatch(idsArray);
                 }
             } catch (error: unknown) {
-                if ((error as { statusCode?: number }).statusCode === 400) {
+                const { statusCode } = error as { statusCode?: number };
+
+                if (statusCode === 400 || statusCode === 413) {
                     throw error;
                 }
 
@@ -276,7 +269,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.restBase.deleteSingle(id);
+            return await this.restBase.deleteSingle(id);
         } catch (error: unknown) {
             const errorWithCode = error as { code?: string; UploadErrorCode?: string };
 
@@ -310,7 +303,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const contentLengthHeader = request.headers.get("content-length");
         const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
 
-        if (contentLength === 0) {
+        if (!Number.isFinite(contentLength) || contentLength <= 0) {
             throw createHttpError(400, "Content-Length is required and must be greater than 0");
         }
 
@@ -344,7 +337,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.restBase.handleHead(id);
+            return await this.restBase.handleHead(id);
         } catch (error: unknown) {
             const errorWithCode = error as { code?: string; UploadErrorCode?: string };
 
@@ -382,20 +375,44 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 export default RestFetch;
 
 /**
+ * Parse the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
+ * `null`, arrays and primitives yield an empty object.
+ */
+const parseMetadataHeader = (value: string | null): Record<string, unknown> => {
+    if (!value) {
+        return {};
+    }
+
+    try {
+        const parsed: unknown = JSON.parse(value);
+
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+            return { ...(parsed as Record<string, unknown>) };
+        }
+    } catch {
+        // Ignore invalid JSON
+    }
+
+    return {};
+};
+
+/**
  * Extract file initialization config from Web API Request.
  */
 const extractFileInitFromRequest = (request: Request, contentLength: number, contentType: string): FileInit => {
     const totalSizeHeader = request.headers.get("x-total-size");
-    const totalSize = totalSizeHeader ? Number.parseInt(totalSizeHeader, 10) : contentLength;
-    const metadataHeader = request.headers.get("x-file-metadata");
-    let metadata = {};
+    const parsedTotalSize = totalSizeHeader ? Number.parseInt(totalSizeHeader, 10) : Number.NaN;
+    const hasValidTotalSize = Number.isFinite(parsedTotalSize) && parsedTotalSize > 0;
+    const totalSize = hasValidTotalSize ? parsedTotalSize : contentLength;
+    const metadata = parseMetadataHeader(request.headers.get("x-file-metadata"));
 
-    if (metadataHeader) {
-        try {
-            metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
-        } catch {
-            // Ignore invalid JSON
-        }
+    // For chunked uploads, store chunk tracking info in metadata (mirrors the Node `extractFileInit`)
+    const isChunkedUpload = request.headers.get("x-chunked-upload") === "true";
+
+    if (isChunkedUpload && hasValidTotalSize) {
+        metadata._chunkedUpload = true;
+        metadata._chunks = []; // Array to track received chunks: [{ offset, length }]
+        metadata._totalSize = totalSize;
     }
 
     // Extract original filename from Content-Disposition header if present
