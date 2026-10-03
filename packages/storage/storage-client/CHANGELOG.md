@@ -1,3 +1,9 @@
+## @visulima/storage-client [1.0.5](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.4...@visulima/storage-client@1.0.5) (2026-10-03)
+
+### Bug Fixes
+
+* **storage:** chunked REST data integrity and client result parsing ([#896](https://github.com/visulima/visulima/issues/896)) ([625b240](https://github.com/visulima/visulima/commit/625b24069b1432c4cc398529af1ee6e963c7c4c9))
+
 ## @visulima/storage-client [1.0.4](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.3...@visulima/storage-client@1.0.4) (2026-10-03)
 
 ### Bug Fixes
