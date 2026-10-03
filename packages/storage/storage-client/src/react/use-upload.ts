@@ -9,7 +9,7 @@ import type { UseTusUploadOptions } from "./use-tus-upload";
 import { useTusUpload } from "./use-tus-upload";
 
 interface UseUploadOptions {
-    /** Chunk size for TUS and chunked REST uploads (default: 1MB for TUS, 5MB for chunked REST) */
+    /** Chunk size for TUS and chunked REST uploads (default: 5 MiB) */
     chunkSize?: number;
     /** Chunked REST upload endpoint URL */
     endpointChunkedRest?: string;

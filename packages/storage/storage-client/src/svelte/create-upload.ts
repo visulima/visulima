@@ -12,7 +12,7 @@ import { createTusUpload } from "./create-tus-upload";
 const DEFAULT_TUS_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
 export interface CreateUploadOptions {
-    /** Chunk size for TUS and chunked REST uploads (default: 1MB for TUS, 5MB for chunked REST) */
+    /** Chunk size for TUS and chunked REST uploads (default: 5 MiB) */
     chunkSize?: number;
     /** Chunked REST upload endpoint URL */
     endpointChunkedRest?: string;

@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import type { BlockBlobClient, ContainerClient } from "@azure/storage-blob";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -98,6 +100,140 @@ describe(AzureStorage, () => {
             const exists = await storage.exists({ id: metafile.id });
 
             expect(exists).toBe(false);
+        });
+    });
+
+    describe(".write()", () => {
+        const blockId = (offset: number): string => Buffer.from(`visulima-${String(offset).padStart(16, "0")}`).toString("base64");
+        const chunk = (length: number): Readable => Readable.from(Buffer.alloc(length));
+
+        beforeEach(() => {
+            Object.assign(mockBlobClient, {
+                commitBlockList: vi.fn().mockResolvedValue({ _response: { headers: { get: () => undefined } }, requestId: "commit" }),
+                getBlockList: vi.fn(),
+                stageBlock: vi.fn().mockResolvedValue({ requestId: "stage" }),
+            });
+        });
+
+        it("stages each chunk as a block keyed by its offset and persists the new offset", async () => {
+            expect.assertions(4);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, size: 20 });
+
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            const body = chunk(10);
+
+            const file = await storage.write({ body, contentLength: 10, id: metafile.id, start: 0 });
+
+            expect(mockBlobClient.stageBlock).toHaveBeenCalledWith(blockId(0), expect.anything(), 10, expect.any(Object));
+            expect(file.bytesWritten).toBe(10);
+            expect(saveMeta).toHaveBeenCalledWith(expect.objectContaining({ bytesWritten: 10 }));
+            expect(mockBlobClient.commitBlockList).not.toHaveBeenCalled();
+        });
+
+        it("commits the contiguous block chain in offset order with the blob headers on completion", async () => {
+            expect.assertions(5);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, size: 20 });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+
+            (mockBlobClient.getBlockList as ReturnType<typeof vi.fn>).mockResolvedValue({
+                uncommittedBlocks: [
+                    { name: blockId(10), size: 10 },
+                    // A stale block from an abandoned PATCH that is not part of the chain.
+                    { name: blockId(15), size: 5 },
+                    { name: blockId(0), size: 10 },
+                ],
+            });
+
+            const file = await storage.write({ body: chunk(10), contentLength: 10, id: metafile.id, start: 10 });
+
+            expect(mockBlobClient.stageBlock).toHaveBeenCalledWith(blockId(10), expect.anything(), 10, expect.any(Object));
+            expect(file.status).toBe("completed");
+            expect(mockBlobClient.commitBlockList).toHaveBeenCalledWith(
+                [blockId(0), blockId(10)],
+                expect.objectContaining({
+                    blobHTTPHeaders: { blobContentType: metafile.contentType },
+                    metadata: expect.objectContaining({ originalName: metafile.originalName }),
+                }),
+            );
+            expect(deleteMeta).toHaveBeenCalledWith(metafile.id);
+            expect(file.bytesWritten).toBe(20);
+        });
+
+        it("rejects a chunk that does not start at the persisted offset", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, size: 20 });
+
+            await expect(storage.write({ body: chunk(10), contentLength: 10, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "FileConflict",
+            });
+            expect(mockBlobClient.stageBlock).not.toHaveBeenCalled();
+        });
+
+        it("rejects a chunk larger than the 4000 MiB Put Block limit before staging it", async () => {
+            expect.assertions(2);
+
+            const size = 5 * 1024 * 1024 * 1024;
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, size });
+
+            await expect(storage.write({ body: chunk(10), contentLength: 4000 * 1024 * 1024 + 1, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "RequestEntityTooLarge",
+            });
+            expect(mockBlobClient.stageBlock).not.toHaveBeenCalled();
+        });
+
+        it("refuses to commit when the staged blocks do not cover the whole upload", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, size: 20 });
+
+            (mockBlobClient.getBlockList as ReturnType<typeof vi.fn>).mockResolvedValue({ uncommittedBlocks: [{ name: blockId(10), size: 10 }] });
+
+            await expect(storage.write({ body: chunk(10), contentLength: 10, id: metafile.id, start: 10 })).rejects.toMatchObject({
+                UploadErrorCode: "FileError",
+            });
+            expect(mockBlobClient.commitBlockList).not.toHaveBeenCalled();
+        });
+
+        it("passes an md5 checksum to Azure and maps Md5Mismatch to a checksum mismatch", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, size: 20 });
+
+            (mockBlobClient.stageBlock as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("md5 mismatch"), { code: "Md5Mismatch" }));
+
+            await expect(
+                storage.write({
+                    body: chunk(10),
+                    checksum: "1B2M2Y8AsgTpgAmY7PhCfg==",
+                    checksumAlgorithm: "md5",
+                    contentLength: 10,
+                    id: metafile.id,
+                    start: 0,
+                }),
+            ).rejects.toMatchObject({ UploadErrorCode: "ChecksumMismatch" });
+            expect(mockBlobClient.stageBlock).toHaveBeenCalledWith(
+                blockId(0),
+                expect.anything(),
+                10,
+                expect.objectContaining({ transactionalContentMD5: Buffer.from("1B2M2Y8AsgTpgAmY7PhCfg==", "base64") }),
+            );
+        });
+
+        it("rejects checksum algorithms Azure cannot verify", async () => {
+            expect.assertions(2);
+
+            expect(storage.checksumTypes).toStrictEqual(["md5"]);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, size: 20 });
+
+            await expect(
+                storage.write({ body: chunk(10), checksum: "x", checksumAlgorithm: "sha1", contentLength: 10, id: metafile.id, start: 0 }),
+            ).rejects.toMatchObject({ UploadErrorCode: "UnsupportedChecksumAlgorithm" });
         });
     });
 });

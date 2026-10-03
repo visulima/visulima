@@ -56,6 +56,9 @@ const toAbortError = (reason: unknown): Error => {
 class SftpStorage extends BaseStorage<SftpFile> {
     public static override readonly name: string = "sftp";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
@@ -146,7 +149,12 @@ class SftpStorage extends BaseStorage<SftpFile> {
                         );
                     }
 
+                    this.assertWholeFileWrite(part, file);
+
                     const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
                     // `buffer` is fully materialized in memory before the upload,
@@ -424,7 +432,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
         }
 
         const onAbort = (): void => {
-            void client.end();
+            // end() rejects when no connection is up yet (abort during connect); swallow it so
+            // the abort doesn't surface as an unhandled rejection.
+            client.end().catch(() => undefined);
         };
 
         signal?.addEventListener("abort", onAbort, { once: true });

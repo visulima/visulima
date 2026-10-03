@@ -1,12 +1,12 @@
-/* eslint-disable max-classes-per-file */
-
 import createHttpError from "http-errors";
 
-import type { FileInit, UploadFile } from "../../storage/utils/file";
+import type { UploadFile } from "../../storage/utils/file";
 import { getIdFromRequestUrl } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
+import type { TusRequest } from "./tus-base";
 import { TUS_RESUMABLE, TusBase } from "./tus-base";
+import { resolveMethodOverride } from "./tus-protocol";
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -30,54 +30,28 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      */
     public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
 
+    private readonly allowMethodOverride: boolean;
+
     private readonly tusBase: TusBase<TFile>;
 
     public constructor(options: UploadOptions<TFile>) {
         super(options);
         this.disableTerminationForFinishedUploads = options.disableTerminationForFinishedUploads ?? false;
-        // Create TusBase instance with access to this TusFetch instance
-        const tusInstance = this;
-
-        this.tusBase = new (class extends TusBase<TFile> {
-            // eslint-disable-next-line class-methods-use-this
-            protected override get storage() {
-                return tusInstance.storage as unknown as {
-                    checkIfExpired: (file: TFile) => Promise<void>;
-                    checksumTypes: string[];
-                    config: { useRelativeLocation?: boolean };
-                    create: (config: FileInit) => Promise<TFile>;
-                    delete: (options: { id: string }) => Promise<TFile>;
-                    getMeta: (id: string) => Promise<TFile>;
-                    maxUploadSize: number;
-                    tusExtension: string[];
-                    update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-                    write: (options: {
-                        body: unknown;
-                        checksum?: string;
-                        checksumAlgorithm?: string;
-                        contentLength: number;
-                        id: string;
-                        start: number;
-                    }) => Promise<TFile>;
-                };
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get disableTerminationForFinishedUploads() {
-                return tusInstance.disableTerminationForFinishedUploads ?? false;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override buildFileUrl(requestUrl: string, file: TFile): string {
-                return tusInstance.buildFileUrlForTus(requestUrl, file);
-            }
-        })();
+        this.allowMethodOverride = options.allowMethodOverride ?? true;
+        this.tusBase = new TusBase<TFile>({
+            buildFileUrl: (requestUrl, file) => this.buildFileUrlForTus(requestUrl, file),
+            disableTerminationForFinishedUploads: () => this.disableTerminationForFinishedUploads ?? false,
+            maxChecksumBufferSize: options.maxChecksumBufferSize,
+            storage: () => this.storage,
+        });
     }
 
     /**
      * Web API fetch entrypoint. Wraps the base implementation to ensure every TUS
      * response — success and error alike — carries the `Tus-Resumable` header,
      * which the protocol requires on all responses.
+     * @param request Web API Request
+     * @returns Web API Response
      */
     public override async fetch(request: Request): Promise<globalThis.Response> {
         const response = await super.fetch(request);
@@ -111,21 +85,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with upload location and offset.
      */
     public async post(request: Request): Promise<ResponseFile<TFile>> {
-        const tusResumable = request.headers.get("tus-resumable");
-
-        this.tusBase.validateTusResumableHeader(tusResumable || undefined);
-
-        const uploadLength = request.headers.get("upload-length") || undefined;
-        const uploadDeferLength = request.headers.get("upload-defer-length") || undefined;
-        const uploadConcat = request.headers.get("upload-concat") || undefined;
-        const metadataHeader = request.headers.get("upload-metadata") || undefined;
-        const contentType = request.headers.get("content-type") || "";
-        const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
-        const requestUrl = request.url;
-        const bodyStream = request.body;
-
-        return this.tusBase.handlePost(uploadLength, uploadDeferLength, uploadConcat, metadataHeader, requestUrl, bodyStream, contentLength, contentType);
+        return this.tusBase.handlePost(Tus.toTusRequest(request));
     }
 
     /**
@@ -134,54 +94,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with updated offset
      */
     public async patch(request: Request): Promise<ResponseFile<TFile>> {
-        const tusResumable = request.headers.get("tus-resumable");
-
-        this.tusBase.validateTusResumableHeader(tusResumable || undefined);
-
-        const id = getIdFromRequestUrl(request.url);
-
-        if (!id) {
-            throw createHttpError(404, "File not found");
-        }
-
-        // Validate required headers
-        const uploadOffsetHeader = request.headers.get("upload-offset");
-
-        if (!uploadOffsetHeader) {
-            throw createHttpError(412, "Missing Upload-Offset header");
-        }
-
-        const contentType = request.headers.get("content-type");
-
-        if (!contentType) {
-            throw createHttpError(412, "Content-Type header required");
-        }
-
-        if (contentType !== "application/offset+octet-stream") {
-            throw createHttpError(415, "Unsupported Media Type");
-        }
-
-        const uploadOffset = Number.parseInt(uploadOffsetHeader, 10);
-        const uploadLength = request.headers.get("upload-length") || undefined;
-        const metadataHeader = request.headers.get("upload-metadata") || undefined;
-        const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = contentLengthHeader ? Number.parseInt(contentLengthHeader, 10) : 0;
-        const checksumHeader = request.headers.get("upload-checksum") || undefined;
-        const { checksum, checksumAlgorithm } = this.tusBase.extractChecksum(checksumHeader);
-        const requestUrl = request.url;
-        const bodyStream = request.body;
-
-        try {
-            return this.tusBase.handlePatch(id, uploadOffset, uploadLength, metadataHeader, checksum, checksumAlgorithm, requestUrl, bodyStream, contentLength);
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handlePatch(Tus.toTusRequest(request));
     }
 
     /**
@@ -190,27 +103,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with upload-offset and metadata headers
      */
     public async head(request: Request): Promise<ResponseFile<TFile>> {
-        const tusResumable = request.headers.get("tus-resumable");
-
-        this.tusBase.validateTusResumableHeader(tusResumable || undefined);
-
-        const id = getIdFromRequestUrl(request.url);
-
-        if (!id) {
-            throw createHttpError(404, "File not found");
-        }
-
-        try {
-            return this.tusBase.handleHead(id);
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE" || errorWithCode.UploadErrorCode === "FILE_NOT_FOUND") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handleHead(Tus.toTusRequest(request));
     }
 
     /**
@@ -219,27 +112,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
     public override async get(request: Request): Promise<ResponseFile<TFile>> {
-        const tusResumable = request.headers.get("tus-resumable");
-
-        this.tusBase.validateTusResumableHeader(tusResumable || undefined);
-
-        const id = getIdFromRequestUrl(request.url);
-
-        if (!id) {
-            throw createHttpError(404, "File not found");
-        }
-
-        try {
-            return this.tusBase.handleGet(id);
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === "GONE") {
-                throw createHttpError(410, "Upload expired");
-            }
-
-            throw error;
-        }
+        return this.tusBase.handleGet(Tus.toTusRequest(request));
     }
 
     /**
@@ -248,27 +121,31 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with deletion confirmation
      */
     public async delete(request: Request): Promise<ResponseFile<TFile>> {
-        const tusResumable = request.headers.get("tus-resumable");
+        return this.tusBase.handleDelete(Tus.toTusRequest(request));
+    }
 
-        this.tusBase.validateTusResumableHeader(tusResumable || undefined);
+    /**
+     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
+     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * @param request Web API Request
+     * @returns The request with the overridden method
+     */
+    protected override normalizeRequest(request: Request): Request {
+        const override = this.allowMethodOverride ? resolveMethodOverride(request.headers.get("x-http-method-override") ?? undefined) : undefined;
 
-        const id = getIdFromRequestUrl(request.url);
-
-        if (!id) {
-            throw createHttpError(404, "File not found");
+        if (override === undefined || override === request.method) {
+            return request;
         }
 
-        try {
-            return this.tusBase.handleDelete(id);
-        } catch (error: unknown) {
-            const errorWithCode = error as { code?: string };
+        const hasBody = override !== "GET" && override !== "HEAD";
 
-            if (errorWithCode.code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
-
-            throw error;
-        }
+        return new Request(request.url, {
+            body: hasBody ? request.body : null,
+            headers: request.headers,
+            method: override,
+            signal: request.signal,
+            ...(hasBody && request.body ? { duplex: "half" } : {}),
+        });
     }
 
     /**
@@ -297,5 +174,27 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const relative = `${pathname}/${file.id}${search}`;
 
         return this.storage.config.useRelativeLocation ? relative : url.origin + relative;
+    }
+
+    /**
+     * Adapts a Web API request to the runtime-independent {@link TusRequest}.
+     * @param request Web API Request
+     * @returns TUS request
+     */
+    private static toTusRequest(request: Request): TusRequest {
+        return {
+            body: request.body,
+            header: (name) => request.headers.get(name) ?? undefined,
+            resolveId: () => {
+                const id = getIdFromRequestUrl(request.url);
+
+                if (!id) {
+                    throw createHttpError(404, "File not found");
+                }
+
+                return id;
+            },
+            url: request.url,
+        };
     }
 }

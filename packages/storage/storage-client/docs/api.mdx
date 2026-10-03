@@ -97,7 +97,7 @@ import { createTusAdapter } from "@visulima/storage-client";
 
 const adapter = createTusAdapter({
     endpoint: "/api/upload/tus",
-    chunkSize: 1024 * 1024, // 1MB
+    chunkSize: 5 * 1024 * 1024, // 5 MiB (the default; S3-backed servers reject smaller non-final chunks)
 });
 
 const result = await adapter.upload(file);
@@ -105,16 +105,29 @@ const result = await adapter.upload(file);
 
 **Options: `TusAdapterOptions`**
 
-| Property      | Type                     | Required | Default              | Description                                                                          |
-| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
-| `endpoint`    | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                              |
-| `chunkSize`   | `number`                 | No       | `1048576` (1MB)      | Chunk size for TUS uploads                                                           |
-| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
-| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
-| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
-| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
-| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
-| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
+| Property           | Type                     | Required | Default              | Description                                                                                                           |
+| ------------------ | ------------------------ | -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `endpoint`         | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                                                               |
+| `chunkSize`        | `number`                 | No       | `5242880` (5 MiB)    | Chunk size for TUS uploads                                                                                            |
+| `metadata`         | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                                                   |
+| `retry`            | `boolean`                | No       | `true`               | Enable automatic retry                                                                                                |
+| `maxRetries`       | `number`                 | No       | `3`                  | Maximum retry attempts                                                                                                |
+| `control`          | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume)                                  |
+| `fingerprint`      | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                                                      |
+| `urlStorage`       | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                                                  |
+| `terminateOnAbort` | `boolean`                | No       | `false`              | On `abort()`, also send `DELETE <uploadUrl>` (TUS Termination) and drop the stored resume URL; failures are swallowed |
+
+Metadata keys must not be empty and must not contain spaces or commas (TUS `Upload-Metadata` rules);
+`upload()` rejects before any request otherwise. If the server reports the upload gone mid-way
+(`404` / `410`, or `403` on `HEAD`), the adapter drops the stored resume URL and re-creates the
+upload once from offset `0`; a second loss fails without further retries. The exception is a lost
+response to the chunk that completes the upload: if the follow-up `HEAD` then answers `404` / `410`,
+the server most likely dropped the finished upload (common for S3/GCS/Azure-backed servers), so the
+upload resolves as completed instead of being uploaded twice. `423 Locked` is retried with backoff
+like other transient failures.
+
+The default `chunkSize` is 5 MiB because S3-backed TUS servers reject non-final chunks smaller than
+that; only lower it for servers known to accept smaller chunks.
 
 **Returns: `TusAdapter`**
 
@@ -495,7 +508,7 @@ const {
 | `endpointTus`         | `string`                       | -                         | TUS upload endpoint URL                    |
 | `endpointChunkedRest` | `string`                       | -                         | Chunked REST upload endpoint URL           |
 | `method`              | `UploadMethod`                 | auto-detected             | Upload method to use                       |
-| `chunkSize`           | `number`                       | 1MB (TUS) / 5MB (chunked) | Chunk size                                 |
+| `chunkSize`           | `number`                       | 5 MiB                     | Chunk size                                 |
 | `tusThreshold`        | `number`                       | `10485760` (10MB)         | File size threshold for auto-selecting TUS |
 | `metadata`            | `Record<string, string>`       | -                         | Additional metadata                        |
 | `retry`               | `boolean`                      | -                         | Enable automatic retry (TUS/chunked only)  |
@@ -543,7 +556,7 @@ const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, e
 | Property      | Type                           | Required | Default              | Description                                                                          |
 | ------------- | ------------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
 | `endpoint`    | `string`                       | Yes      | -                    | TUS upload endpoint URL                                                              |
-| `chunkSize`   | `number`                       | No       | `1048576` (1MB)      | Chunk size                                                                           |
+| `chunkSize`   | `number`                       | No       | `5242880` (5 MiB)    | Chunk size                                                                           |
 | `metadata`    | `Record<string, string>`       | No       | -                    | Additional metadata                                                                  |
 | `retry`       | `boolean`                      | No       | -                    | Enable automatic retry                                                               |
 | `maxRetries`  | `number`                       | No       | -                    | Maximum retry attempts                                                               |

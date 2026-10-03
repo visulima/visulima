@@ -7,7 +7,7 @@ import type { UrlStorage } from "../core/url-storage";
 import type { HeadersResolver, UploadRestrictions, UploadResult } from "./types";
 
 export interface UseTusUploadOptions {
-    /** Chunk size for TUS uploads (default: 1MB) */
+    /** Chunk size for TUS uploads (default: 5 MiB) */
     chunkSize?: number;
 
     /**
@@ -46,6 +46,8 @@ export interface UseTusUploadOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Send a tus termination request (`DELETE`) for the server-side upload when it is aborted */
+    terminateOnAbort?: boolean;
     /** Persistent storage for resume URLs (e.g. `defaultUrlStorage()` in the browser). */
     urlStorage?: UrlStorage;
 }
@@ -97,6 +99,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         onSuccess,
         restrictions,
         retry,
+        terminateOnAbort,
         urlStorage,
     } = options;
 
@@ -120,9 +123,10 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
                 metadata,
                 restrictions,
                 retry,
+                terminateOnAbort,
                 urlStorage,
             }),
-        [chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, restrictions, retry, urlStorage],
+        [chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, restrictions, retry, terminateOnAbort, urlStorage],
     );
 
     // Store callbacks in refs to avoid re-subscribing on every render
