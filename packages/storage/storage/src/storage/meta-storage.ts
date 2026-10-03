@@ -11,6 +11,8 @@ class MetaStorage<T extends File = File> {
 
     protected readonly logger?: Console;
 
+    private accessCheckPromise?: Promise<void>;
+
     public constructor(config?: MetaStorageOptions) {
         this.prefix = config?.prefix ?? "";
         this.suffix = config?.suffix ?? ".META";
@@ -48,6 +50,26 @@ class MetaStorage<T extends File = File> {
     // eslint-disable-next-line class-methods-use-this
     public async touch(_id: string, _file: T): Promise<T> {
         throw new Error("Not implemented");
+    }
+
+    /**
+     * Runs a backend access probe once, lazily, on the first operation instead of from the
+     * constructor. A detached probe can only end up as an unhandled rejection; awaiting it here
+     * throws the failure to the caller of the operation instead. A failed probe is forgotten so
+     * the next operation retries it (e.g. after a transient network error).
+     * @param check The probe to run, e.g. a bucket HEAD request.
+     */
+    protected async ensureAccess(check: () => Promise<unknown>): Promise<void> {
+        this.accessCheckPromise ??= check().then(
+            () => undefined,
+            (error: unknown) => {
+                this.accessCheckPromise = undefined;
+
+                throw error;
+            },
+        );
+
+        await this.accessCheckPromise;
     }
 
     public getMetaName(id: string): string {

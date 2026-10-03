@@ -12,6 +12,9 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly client: S3Client;
 
+    /** The bucket probe only runs for clients this class created itself. */
+    private readonly checkAccess: boolean;
+
     public constructor(public config: S3MetaStorageOptions) {
         super(config);
 
@@ -30,18 +33,17 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
             }
 
             this.client = new S3Client(metaConfig);
-
-            this.accessCheck(bucket).catch((error) => {
-                throw error;
-            });
         } else {
             this.client = client;
         }
 
         this.bucket = bucket as string;
+        this.checkAccess = client === undefined;
     }
 
     public override async get(id: string): Promise<T> {
+        await this.ensureBucketAccess();
+
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
         const { Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters));
@@ -70,12 +72,16 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
+        await this.ensureBucketAccess();
+
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
 
         await this.client.send(new DeleteObjectCommand(parameters));
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.ensureBucketAccess();
+
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
@@ -95,8 +101,12 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         return file;
     }
 
-    private async accessCheck(bucket: string, maxWaitTime = 30): Promise<void> {
-        await waitUntilBucketExists({ client: this.client, maxWaitTime }, { Bucket: bucket });
+    private async ensureBucketAccess(): Promise<void> {
+        if (!this.checkAccess) {
+            return;
+        }
+
+        await this.ensureAccess(async () => waitUntilBucketExists({ client: this.client, maxWaitTime: 30 }, { Bucket: this.bucket }));
     }
 }
 

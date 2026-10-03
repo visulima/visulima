@@ -424,7 +424,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
         }
 
         const onAbort = (): void => {
-            void client.end();
+            // end() rejects when no connection is up yet (abort during connect); swallow it so
+            // the abort doesn't surface as an unhandled rejection.
+            client.end().catch(() => undefined);
         };
 
         signal?.addEventListener("abort", onAbort, { once: true });

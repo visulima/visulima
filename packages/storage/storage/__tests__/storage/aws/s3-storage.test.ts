@@ -228,7 +228,7 @@ describe(S3Storage, () => {
 
             const result = await storage.copy("name", "new name");
 
-            expect(s3Mock.call(1).args[0].input).toStrictEqual({
+            expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",
@@ -258,7 +258,7 @@ describe(S3Storage, () => {
 
             const result = await storage.copy("name", "new name", { storageClass: "GLACIER" });
 
-            expect(s3Mock.call(1).args[0].input).toStrictEqual({
+            expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
                 CopySource: "bucket/name",
                 Key: "new name",

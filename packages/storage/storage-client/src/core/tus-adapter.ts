@@ -383,7 +383,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
     /**
      * Uploads a single chunk.
-     * According to TUS protocol: PATCH returns 204 No Content.
+     * According to TUS protocol: PATCH returns 204 No Content (200 tolerated for older servers).
      * Headers: Tus-Resumable (required), Upload-Offset (required), Upload-Expires (optional).
      * Can return 409 Conflict if Upload-Offset doesn't match server's offset.
      */
@@ -403,8 +403,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             signal,
         });
 
-        // TUS protocol: PATCH should return 204 No Content
-        if (response.status !== 204) {
+        // TUS protocol: PATCH must return 204 No Content. Also accept 200, which
+        // @visulima/storage <= 2.0.25 sent for the completing chunk (#899).
+        if (response.status !== 204 && response.status !== 200) {
             if (response.status === 409) {
                 // Offset mismatch (Upload-Offset doesn't match server's offset)
                 // Get current offset and retry from that position

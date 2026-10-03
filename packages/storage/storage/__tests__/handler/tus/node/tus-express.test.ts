@@ -107,7 +107,7 @@ describe("express Tus", () => {
             expect(exposedHeaders(response)).toStrictEqual(expect.arrayContaining(["upload-offset", "upload-expires", "tus-resumable"]));
         });
 
-        it("should complete upload with checksum and return 200", async () => {
+        it("should complete upload with checksum and return 204", async () => {
             expect.assertions(4);
 
             // Create upload resource
@@ -124,7 +124,7 @@ describe("express Tus", () => {
                 .set("Upload-Checksum", `sha1 ${metadata.sha1}`)
                 .send(testfile.asBuffer);
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(204);
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
@@ -211,7 +211,7 @@ describe("express Tus", () => {
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["access-control-allow-methods"]).toBe("DELETE, DOWNLOAD, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
-                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
+                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Checksum, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             );
             expect(response.header["access-control-max-age"]).toBe("86400");
         });
@@ -253,7 +253,7 @@ describe("express Tus", () => {
                 .set("Tus-Resumable", TUS_RESUMABLE)
                 .send(testfile.asBuffer.slice(0, 5));
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(response.header["upload-offset"]).toBe("5");
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
             expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));

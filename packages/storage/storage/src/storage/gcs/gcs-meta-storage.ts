@@ -27,6 +27,11 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly userProject: string | undefined;
 
+    private readonly bucketName: string | undefined;
+
+    /** The bucket probe only runs for clients this class created itself. */
+    private readonly checkAccess: boolean;
+
     public constructor(public readonly config: GCSMetaStorageOptions) {
         super(config);
 
@@ -65,18 +70,13 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
             ...retryOptions,
         };
 
-        if (authClient === undefined) {
-            this.accessCheck().catch((error: ClientError) => {
-                if (error.code === "404") {
-                    throw new Error(`Bucket ${bucketName} does not exist`);
-                }
-
-                throw error;
-            });
-        }
+        this.bucketName = bucketName;
+        this.checkAccess = authClient === undefined;
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.ensureBucketAccess();
+
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {
@@ -96,12 +96,16 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
+        await this.ensureBucketAccess();
+
         const url = this.getMetaPath(id);
 
         await this.makeRequest({ method: "DELETE", url });
     }
 
     public override async get(id: string): Promise<T> {
+        await this.ensureBucketAccess();
+
         const url = this.getMetaPath(id);
 
         const { data } = await this.makeRequest<T>({ params: { alt: "media" }, url });
@@ -118,8 +122,22 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return this.save(id, file);
     }
 
-    private async accessCheck(): Promise<GaxiosResponse> {
-        return this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
+    private async ensureBucketAccess(): Promise<void> {
+        if (!this.checkAccess) {
+            return;
+        }
+
+        await this.ensureAccess(async () => {
+            try {
+                await this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
+            } catch (error: unknown) {
+                if ((error as ClientError).code === "404") {
+                    throw new Error(`Bucket ${String(this.bucketName)} does not exist`, { cause: error });
+                }
+
+                throw error;
+            }
+        });
     }
 
     /**

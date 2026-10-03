@@ -101,7 +101,7 @@ export abstract class TusBase<TFile extends UploadFile> {
     public handleOptions(methods: string[]): ResponseFile<TFile> {
         const headers = {
             "Access-Control-Allow-Headers":
-                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
+                "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Checksum, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             "Access-Control-Allow-Methods": methods.map((method) => method.toUpperCase()).join(", "),
             "Access-Control-Max-Age": 86_400,
             "Tus-Checksum-Algorithm": this.storage.checksumTypes.join(","),
@@ -139,6 +139,12 @@ export abstract class TusBase<TFile extends UploadFile> {
         if (uploadDeferLength !== undefined) {
             if (!this.storage.tusExtension.includes("creation-defer-length")) {
                 throw createHttpError(501, "creation-defer-length extension is not (yet) supported.");
+            }
+
+            // TUS creation-defer-length: "If the Upload-Defer-Length header contains any other value than 1
+            // the server should return a 400 Bad Request status."
+            if (uploadDeferLength !== "1") {
+                throw createHttpError(400, "Upload-Defer-Length must be 1");
             }
 
             // When defer-length is enabled, Upload-Length is optional
@@ -183,9 +189,8 @@ export abstract class TusBase<TFile extends UploadFile> {
                 // For defer-length, always include Upload-Defer-Length header
                 headers["Upload-Defer-Length"] = "1";
 
-                const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-                return { ...file, headers: headers as Record<string, string | number>, statusCode };
+                // TUS creation: the server MUST respond with 201 Created, also with creation-with-upload.
+                return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
             }
         }
 
@@ -238,9 +243,8 @@ export abstract class TusBase<TFile extends UploadFile> {
 
                 headers["Upload-Concat"] = "partial";
 
-                const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-                return { ...file, headers: headers as Record<string, string | number>, statusCode };
+                // TUS creation: the server MUST respond with 201 Created, also with creation-with-upload.
+                return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
             }
 
             if (uploadConcat.startsWith("final;")) {
@@ -360,9 +364,8 @@ export abstract class TusBase<TFile extends UploadFile> {
             headers["Upload-Offset"] = file.bytesWritten.toString();
         }
 
-        const statusCode = file.bytesWritten > 0 ? 200 : 201;
-
-        return { ...file, headers: headers as Record<string, string | number>, statusCode };
+        // TUS creation: the server MUST respond with 201 Created, also with creation-with-upload.
+        return { ...file, headers: headers as Record<string, string | number>, statusCode: 201 };
     }
 
     /**
@@ -389,6 +392,11 @@ export abstract class TusBase<TFile extends UploadFile> {
         bodyStream: unknown,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
+        // TUS core: Upload-Offset is required on PATCH and MUST be a non-negative integer.
+        if (!Number.isInteger(uploadOffset) || uploadOffset < 0) {
+            throw createHttpError(400, "Invalid or missing Upload-Offset header");
+        }
+
         const metadata = metadataHeader ? parseMetadata(metadataHeader) : undefined;
 
         if (metadata) {
@@ -472,7 +480,8 @@ export abstract class TusBase<TFile extends UploadFile> {
             headers: this.buildHeaders(file, {
                 "Upload-Offset": file.bytesWritten,
             }) as Record<string, string | number>,
-            statusCode: file.status === "completed" ? 200 : 204,
+            // TUS core: a successful PATCH MUST answer 204 No Content, including the completing one.
+            statusCode: 204,
         };
     }
 

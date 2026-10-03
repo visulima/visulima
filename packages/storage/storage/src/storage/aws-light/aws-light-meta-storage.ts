@@ -35,14 +35,11 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
             service: config.service,
             sessionToken: config.sessionToken,
         });
-
-        // Check bucket access
-        this.adapter.checkBucketAccess({ Bucket: bucket }).catch((error) => {
-            throw error;
-        });
     }
 
     public override async get(id: string): Promise<T> {
+        await this.ensureAccess(async () => this.adapter.checkBucketAccess({ Bucket: this.bucket }));
+
         const Key = this.getMetaName(id);
         const { Expires, Metadata } = await this.adapter.headObject({
             Bucket: this.bucket,
@@ -73,6 +70,8 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
+        await this.ensureAccess(async () => this.adapter.checkBucketAccess({ Bucket: this.bucket }));
+
         await this.adapter.deleteObject({
             Bucket: this.bucket,
             Key: this.getMetaName(id),
@@ -80,6 +79,8 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.ensureAccess(async () => this.adapter.checkBucketAccess({ Bucket: this.bucket }));
+
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {

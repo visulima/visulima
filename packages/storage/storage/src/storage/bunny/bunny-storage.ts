@@ -127,7 +127,7 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
 class BunnyStorage extends BaseStorage<BunnyFile> {
     public static override readonly name: string = "bunny";
 
-    public override checksumTypes: string[] = ["SHA256"];
+    public override checksumTypes: string[] = ["sha256"];
 
     protected meta: MetaStorage<BunnyFile>;
 
