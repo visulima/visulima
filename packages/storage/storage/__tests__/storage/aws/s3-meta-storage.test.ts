@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import S3MetaStorage from "../../../src/storage/aws/s3-meta-storage";
 import type { S3MetaStorageOptions } from "../../../src/storage/aws/types";
+import { getMetaVersion } from "../../../src/storage/meta-storage";
 import { metafile } from "../../__helpers__/config";
 
 vi.mock(import("aws-crt"));
@@ -169,6 +170,41 @@ describe(S3MetaStorage, () => {
             const result = await metaStorage.touch(metafile.id, metafile);
 
             expect(result).toBe(metafile);
+        });
+    });
+
+    describe("conditional saves", () => {
+        it("should attach the ETag read by get() and write with If-Match", async () => {
+            expect.assertions(4);
+
+            s3Mock.on(HeadObjectCommand).resolves({ ETag: '"v1"', Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
+            s3Mock.on(PutObjectCommand).resolves({ ETag: '"v2"' });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(getMetaVersion(file)).toBe('"v1"');
+
+            const saved = await metaStorage.saveIfVersion(metafile.id, file, '"v1"');
+
+            expect(saved).toBe(file);
+            expect(s3Mock.commandCalls(PutObjectCommand)[0]?.args[0].input.IfMatch).toBe('"v1"');
+            expect(getMetaVersion(file)).toBe('"v2"');
+        });
+
+        it.each([412, 409])("should report a %d conditional write conflict as undefined", async (httpStatusCode) => {
+            expect.assertions(1);
+
+            s3Mock.on(PutObjectCommand).rejects(Object.assign(new Error("PreconditionFailed"), { $metadata: { httpStatusCode } }));
+
+            await expect(metaStorage.saveIfVersion(metafile.id, { ...metafile }, '"v1"')).resolves.toBeUndefined();
+        });
+
+        it("should rethrow other errors", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(PutObjectCommand).rejects(Object.assign(new Error("AccessDenied"), { $metadata: { httpStatusCode: 403 } }));
+
+            await expect(metaStorage.saveIfVersion(metafile.id, { ...metafile }, '"v1"')).rejects.toThrow("AccessDenied");
         });
     });
 });

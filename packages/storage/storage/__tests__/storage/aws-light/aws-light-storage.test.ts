@@ -65,13 +65,16 @@ describe(AwsLightStorage, () => {
         };
     };
 
-    // Helper function to mock bucket access check (called during AwsLightMetaStorage constructor)
+    // Mocks the two bucket access checks: the storage's own (started by its constructor) and
+    // AwsLightMetaStorage's (run lazily on its first operation).
     const mockBucketAccessCheck = () => {
-        getMockFetch().mockResolvedValueOnce({
-            ok: true,
-            status: 200,
-            text: async () => "",
-        });
+        for (let check = 0; check < 2; check += 1) {
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+        }
     };
 
     beforeEach(async () => {
@@ -89,12 +92,7 @@ describe(AwsLightStorage, () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
-            getMockFetch().mockResolvedValueOnce({
-                ok: true,
-                status: 200,
-                text: async () => "",
-            });
+            mockBucketAccessCheck();
 
             // Create storage instance first (this will trigger bucket access check)
             storage = new AwsLightStorage(options);
@@ -134,7 +132,6 @@ describe(AwsLightStorage, () => {
         it("should handle existing", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -159,7 +156,6 @@ describe(AwsLightStorage, () => {
         it("should send error on invalid s3 response", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -188,7 +184,6 @@ describe(AwsLightStorage, () => {
             // Remove expiration from storageOptions to avoid interference with TTL
             const testOptions = { ...options, expiration: undefined };
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
             // Create storage instance (this triggers bucket access check)
             storage = new AwsLightStorage(testOptions);
@@ -235,7 +230,6 @@ describe(AwsLightStorage, () => {
         it("should request api and set status and bytesWritten", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -298,7 +292,6 @@ describe(AwsLightStorage, () => {
         it("should request api and set status and bytesWritten on resume", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -361,7 +354,6 @@ describe(AwsLightStorage, () => {
         it("should set status", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -399,7 +391,6 @@ describe(AwsLightStorage, () => {
         it("should return full file object when file exists", async () => {
             expect.assertions(2);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -438,7 +429,6 @@ describe(AwsLightStorage, () => {
         it("should throw error when file does not exist", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -459,7 +449,6 @@ describe(AwsLightStorage, () => {
         it("relative", async () => {
             expect.assertions(2);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -522,7 +511,6 @@ describe(AwsLightStorage, () => {
         it("should update changed metadata keys", async () => {
             expect.assertions(2);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -556,7 +544,6 @@ describe(AwsLightStorage, () => {
             const randomId = `unique-not-found-test-${Date.now()}.mp4`;
             const uniqueMetafile = { ...metafile, id: randomId, name: randomId };
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -576,7 +563,6 @@ describe(AwsLightStorage, () => {
         it("should handle TTL option in update", async () => {
             expect.assertions(3);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -660,27 +646,27 @@ describe("awsLightPresignedStorage", () => {
         };
     };
 
-    // Helper function to mock bucket access check (called during AwsLightMetaStorage constructor)
+    // Mocks the two bucket access checks: the storage's own (started by its constructor) and
+    // AwsLightMetaStorage's (run lazily on its first operation).
     const mockBucketAccessCheck = () => {
-        getMockFetch().mockResolvedValueOnce({
-            ok: true,
-            status: 200,
-            text: async () => "",
-        });
+        for (let check = 0; check < 2; check += 1) {
+            getMockFetch().mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                text: async () => "",
+            });
+        }
     };
 
     beforeEach(async () => {
         vi.clearAllMocks();
         getMockFetch().mockReset();
-        // Mock accessCheck to avoid unwanted fetch calls during instantiation
-        vi.spyOn(AwsLightStorage.prototype as any, "accessCheck").mockResolvedValue(undefined);
     });
 
     describe(".create()", () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(2);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -726,7 +712,6 @@ describe("awsLightPresignedStorage", () => {
         it("should add partsUrls", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -757,7 +742,6 @@ describe("awsLightPresignedStorage", () => {
         it("should complete", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)
@@ -804,7 +788,6 @@ describe("awsLightPresignedStorage", () => {
         it("should complete (empty payload)", async () => {
             expect.assertions(1);
 
-            // Mock bucket access check (called during AwsLightMetaStorage constructor)
             mockBucketAccessCheck();
 
             // Create storage instance (this triggers bucket access check)

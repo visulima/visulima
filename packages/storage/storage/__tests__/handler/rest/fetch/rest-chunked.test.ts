@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
 import MemoryStorage from "../../../../src/storage/memory/memory-storage";
-import type { FilePart, FileQuery } from "../../../../src/storage/utils/file";
+import type { FilePart, FileQuery, UploadFile } from "../../../../src/storage/utils/file";
 import { ERRORS, throwErrorCode } from "../../../../src/utils/errors";
 
 describe("fetch RestFetch chunked uploads", () => {
@@ -299,5 +299,84 @@ describe("fetch RestFetch chunked uploads", () => {
 
         expect(Buffer.from(file.content).toString("latin1")).toBe("AAAAABBBBB");
         expect(file.size).toBe(10);
+    });
+
+    it("should complete an upload whose chunks are PATCHed concurrently (#902)", async () => {
+        expect.assertions(6);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const bytes = new Uint8Array(40_000).map((_, index) => index % 251);
+
+        const createResponse = await restHandler.fetch(initChunkedUpload(bytes.byteLength));
+        const id = createResponse.headers.get("x-upload-id") as string;
+
+        const responses = await Promise.all(
+            [0, 10_000, 20_000, 30_000].map(async (offset) => restHandler.fetch(patchChunk(id, offset, bytes.slice(offset, offset + 10_000)))),
+        );
+
+        expect(responses.map((response) => response.status).toSorted()).toStrictEqual([200, 202, 202, 202]);
+        expect(responses.filter((response) => response.headers.get("x-upload-complete") === "true")).toHaveLength(1);
+
+        const meta = await storage.getMeta(id);
+
+        expect(meta.metadata._chunks).toHaveLength(4);
+        expect(meta.status).toBe("completed");
+
+        const file = await storage.get({ id });
+
+        expect(Buffer.from(file.content).equals(Buffer.from(bytes))).toBe(true);
+        expect(file.size).toBe(bytes.byteLength);
+    });
+
+    it("should keep chunk records a slow concurrent write would overwrite (#902)", async () => {
+        expect.assertions(4);
+
+        let releaseFirstChunk!: () => void;
+        const firstChunkGate = new Promise<void>((resolve) => {
+            releaseFirstChunk = resolve;
+        });
+
+        // The write for offset 0 reads the file record, then stalls until the other chunks are
+        // recorded, so the record it saves afterwards carries a stale (empty) `_chunks`.
+        class SlowFirstChunkStorage extends MemoryStorage {
+            public override async write(part: FilePart | FileQuery): Promise<UploadFile> {
+                if ("start" in part && part.start === 0 && part.body) {
+                    const { body } = part;
+
+                    return super.write({
+                        ...part,
+                        body: (async function* gated() {
+                            await firstChunkGate;
+                            yield* body as AsyncIterable<Uint8Array>;
+                        })() as unknown as FilePart["body"],
+                    });
+                }
+
+                return super.write(part);
+            }
+        }
+
+        const storage = new SlowFirstChunkStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const bytes = new Uint8Array(30).map((_, index) => 65 + (index % 26));
+
+        const createResponse = await restHandler.fetch(initChunkedUpload(bytes.byteLength));
+        const id = createResponse.headers.get("x-upload-id") as string;
+
+        const first = restHandler.fetch(patchChunk(id, 0, bytes.slice(0, 10)));
+        const others = await Promise.all([10, 20].map(async (offset) => restHandler.fetch(patchChunk(id, offset, bytes.slice(offset, offset + 10)))));
+
+        releaseFirstChunk();
+
+        const firstResponse = await first;
+
+        expect(others.map((response) => response.status)).toStrictEqual([202, 202]);
+        expect(firstResponse.headers.get("x-upload-complete")).toBe("true");
+
+        const meta = await storage.getMeta(id);
+
+        expect(meta.metadata._chunks).toHaveLength(3);
+        expect(meta.status).toBe("completed");
     });
 });
