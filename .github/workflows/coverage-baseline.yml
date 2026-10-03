@@ -55,11 +55,11 @@ jobs:
               uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
 
             # Same runtime and settings as the test.yml leg that uploads PR coverage
-            # (ubuntu-latest, Node 22), so the base and the PR reports are comparable.
+            # (ubuntu-latest, Node 24), so the base and the PR reports are comparable.
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "coverage"
                   skip-playwright: "true"
@@ -82,9 +82,9 @@ jobs:
               uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: ".nx/cache"
-                  key: "nx-test-${{ runner.os }}-node22-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
+                  key: "nx-test-${{ runner.os }}-node24-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}"
                   restore-keys: |
-                      nx-test-${{ runner.os }}-node22-
+                      nx-test-${{ runner.os }}-node24-
 
             # Whole tree, not `build:affected`: every package's `dist` has to exist for
             # the suites that import it.

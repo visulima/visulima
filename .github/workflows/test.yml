@@ -95,9 +95,9 @@ jobs:
             matrix:
                 # The bun / deno legs only add that binary to PATH; the suite still
                 # runs on Node via vitest and nothing in it gates on either binary,
-                # so they duplicate the node-22 leg. Run them post-merge (push to
+                # so they duplicate the node-24 leg. Run them post-merge (push to
                 # main) instead of occupying two runners on every PR.
-                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"22\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"25\"},{\"os\":\"macos-15\",\"node_version\":\"22\"},{\"os\":\"windows-latest\",\"node_version\":\"22\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"22\",\"bun_version\":\"latest\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"22\",\"deno_version\":\"lts\"}' || '')) }}"
+                include: "${{ fromJSON(format('[{0}{1}]', '{\"os\":\"ubuntu-latest\",\"node_version\":\"24\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"25\"},{\"os\":\"macos-15\",\"node_version\":\"24\"},{\"os\":\"windows-latest\",\"node_version\":\"24\"}', github.event_name == 'push' && ',{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"bun_version\":\"latest\"},{\"os\":\"ubuntu-latest\",\"node_version\":\"24\",\"deno_version\":\"lts\"}' || '')) }}"
             fail-fast: false
         runs-on: "${{ matrix.os }}"
         env:
@@ -137,7 +137,7 @@ jobs:
                   run-npm-audit: false
 
             - name: "Setup Deno"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.deno_version"
               uses: "denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed" # v2.0.5
               with:
                   deno-version: "${{ matrix.deno_version }}"
@@ -148,7 +148,7 @@ jobs:
                   # fails Post Setup Deno with "Path Validation Error".
                   cache: false
             - name: "Setup Bun"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.bun_version"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && matrix.bun_version"
               uses: "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6" # v2.2.0
               with:
                   bun-version: "${{ matrix.bun_version }}"
@@ -191,7 +191,7 @@ jobs:
             - name: "Run tests"
               shell: "bash"
               run: |
-                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 22 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
+                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 24 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
                       pnpm run test:affected:coverage
                   else
                       pnpm run test:affected
@@ -215,7 +215,7 @@ jobs:
             # config-only PRs where no coverage was produced.
             # Tracking upstream fix at anolilab/workflows#397.
             - name: "Validate codecov.yml"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push' && needs.files-changed.outputs.codecov == 'true'"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push' && needs.files-changed.outputs.codecov == 'true'"
               shell: "bash"
               run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
 
@@ -227,7 +227,7 @@ jobs:
             # PRs only: on release-branch pushes this run is affected-only, so it
             # would upload a partial base. coverage-baseline.yml uploads the full one.
             - name: "Upload code coverage to codecov"
-              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push'"
+              if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 24 && !matrix.deno_version && !matrix.bun_version && github.event_name != 'push'"
               continue-on-error: true
               uses: "./.github/actions/codecov-upload"
               with:
@@ -252,7 +252,7 @@ jobs:
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
         env:
-            NODE: "22"
+            NODE: "24"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
@@ -272,7 +272,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "workerd"
                   skip-playwright: "true"
@@ -343,7 +343,7 @@ jobs:
               id: "setup"
               uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
-                  node-version: "22"
+                  node-version: "24"
                   install-node-gyp: "true"
                   cache-prefix: "tsconfig-ts-${{ matrix.ts_version }}"
                   skip-playwright: "true"
