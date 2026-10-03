@@ -8,9 +8,9 @@ describe("fetch RestFetch GET", () => {
     const basePath = "http://localhost/files/";
     const content = "0123456789abcdefghij";
 
-    const setup = async (): Promise<{ id: string; restHandler: RestFetch<File>; storage: MemoryStorage }> => {
+    const setup = async (allowList = false): Promise<{ id: string; restHandler: RestFetch<File>; storage: MemoryStorage }> => {
         const storage = new MemoryStorage({ path: "/files" });
-        const restHandler = new RestFetch({ storage });
+        const restHandler = new RestFetch({ allowList, storage });
 
         const response = await restHandler.fetch(
             new Request(basePath, {
@@ -61,10 +61,24 @@ describe("fetch RestFetch GET", () => {
         await expect(response.json()).resolves.toStrictEqual(expect.objectContaining({ id, size: content.length }));
     });
 
-    it("should list files", async () => {
+    it.each([basePath, `${basePath}V1StGXR8_Z5jdHi6B-myT`, "http://localhost/api/attachments"])(
+        "should answer 404 instead of listing files for GET %s by default",
+        async (url) => {
+            expect.assertions(2);
+
+            const { restHandler } = await setup();
+
+            const response = await restHandler.fetch(new Request(url));
+
+            expect(response.status).toBe(404);
+            await expect(response.text()).resolves.not.toContain("createdAt");
+        },
+    );
+
+    it("should list files when listing is enabled", async () => {
         expect.assertions(3);
 
-        const { id, restHandler } = await setup();
+        const { id, restHandler } = await setup(true);
 
         const response = await restHandler.fetch(new Request(basePath));
         const list = (await response.json()) as { id: string }[];
@@ -95,17 +109,20 @@ describe("fetch RestFetch GET", () => {
         await expect(response.text()).resolves.toBe(content);
     });
 
-    it.each(["http://localhost/api/attachments", "http://localhost/api/files-rest"])("should list files for a nested collection path %s", async (url) => {
-        expect.assertions(2);
+    it.each(["http://localhost/api/attachments", "http://localhost/api/files-rest"])(
+        "should list files for a nested collection path %s when listing is enabled",
+        async (url) => {
+            expect.assertions(2);
 
-        const storage = new MemoryStorage({});
-        const restHandler = new RestFetch({ storage });
+            const storage = new MemoryStorage({});
+            const restHandler = new RestFetch({ allowList: true, storage });
 
-        const response = await restHandler.fetch(new Request(url));
+            const response = await restHandler.fetch(new Request(url));
 
-        expect(response.status).toBe(200);
-        await expect(response.json()).resolves.toStrictEqual([]);
-    });
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toStrictEqual([]);
+        },
+    );
 
     it("should download a single-segment id when mounted at the root", async () => {
         expect.assertions(2);

@@ -29,10 +29,21 @@ describe("fetch MultipartFetch GET", () => {
         await expect(download.text()).resolves.toBe("hello world");
     });
 
-    it("should list uploaded files", async () => {
+    it("should answer 404 instead of listing files by default", async () => {
+        expect.assertions(1);
+
+        const { handler } = await setup();
+
+        const list = await handler.fetch(new Request("http://localhost/files"));
+
+        expect(list.status).toBe(404);
+    });
+
+    it("should list uploaded files when listing is enabled", async () => {
         expect.assertions(2);
 
-        const { handler, id } = await setup();
+        const { id, storage } = await setup();
+        const handler = new MultipartFetch({ allowList: true, storage });
 
         const list = await handler.fetch(new Request("http://localhost/files"));
 

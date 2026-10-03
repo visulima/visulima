@@ -93,7 +93,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     }
 
     /**
-     * Retrieves a file, its metadata (`/:id/metadata`) or a list of files based on the request path.
+     * Retrieves a file, its metadata (`/:id/metadata`) or - with `allowList` enabled - a list of files based on the request path.
      * Large files and `Range` requests are streamed.
      * @param request Web API Request.
      * @returns Promise resolving to a single file or a (paginated) list of files.
@@ -101,9 +101,8 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
      */
     public async get(request: Request): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const url = new URL(request.url, "http://localhost");
-        const file = await this.getFileResponse(url.pathname, url.searchParams, request.headers.has("range"));
 
-        return file ?? this.list(request);
+        return this.resolveGet(url.pathname, url.searchParams, request.headers.has("range"), async () => this.list(request));
     }
 
     /**

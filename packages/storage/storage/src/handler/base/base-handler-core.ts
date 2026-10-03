@@ -115,6 +115,11 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
     public mediaTransformer?: MediaTransformer;
 
     /**
+     * Whether `GET` on the collection path lists all stored files. See {@link UploadOptions.allowList}.
+     */
+    public allowList: boolean;
+
+    /**
      * Whether to disable termination for finished uploads.
      */
     public disableTerminationForFinishedUploads?: boolean;
@@ -145,9 +150,10 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         return this.internalErrorResponses;
     }
 
-    public constructor({ disableTerminationForFinishedUploads, mediaTransformer, storage }: UploadOptions<TFile>) {
+    public constructor({ allowList = false, disableTerminationForFinishedUploads, mediaTransformer, storage }: UploadOptions<TFile>) {
         super();
 
+        this.allowList = allowList;
         this.storage = storage;
         this.mediaTransformer = mediaTransformer;
         this.disableTerminationForFinishedUploads = disableTerminationForFinishedUploads;
@@ -287,6 +293,34 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         return HeaderUtilities.getPreferredMediaType(acceptHeader, supportedTypes);
+    }
+
+    /**
+     * Resolves a GET request: the addressed file, or - when listing is enabled - the list of files.
+     * @param path Request path (without query string).
+     * @param searchParams Query parameters of the request.
+     * @param hasRange Whether the request carries a `Range` header.
+     * @param list Produces the file list for paths that do not address a file.
+     * @returns The file or list response.
+     * @throws {HttpError} 404 when the path does not address a stored file and listing is disabled.
+     */
+    protected async resolveGet(
+        path: string,
+        searchParams: URLSearchParams,
+        hasRange: boolean,
+        list: () => Promise<ResponseList<TFile>>,
+    ): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
+        const file = await this.getFileResponse(path, searchParams, hasRange);
+
+        if (file) {
+            return file;
+        }
+
+        if (!this.allowList) {
+            throw createHttpError(404, "File not found");
+        }
+
+        return list();
     }
 
     /**

@@ -391,18 +391,16 @@ abstract class BaseHandlerNode<
     }
 
     /**
-     * Retrieves a file or list of files based on the request path.
+     * Retrieves a file or - with `allowList` enabled - a list of files based on the request path.
      * @param request Node.js IncomingMessage with optional originalUrl.
      * @param response Node.js ServerResponse.
      * @returns Promise resolving to a single file, paginated list, or array of files.
-     * @throws {UploadError} When file is not found or storage error occurs.
+     * @throws {HttpError} 404 when the file is not found (or the path does not address a file and listing is disabled).
      */
-
     public async get(request: NodeRequest & { originalUrl?: string }, _response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
         const url = new URL(request.url || "", "http://localhost");
-        const file = await this.getFileResponse(getRealPath(request), url.searchParams, Boolean(request.headers.range));
 
-        return file ?? this.list(request, _response);
+        return this.resolveGet(getRealPath(request), url.searchParams, Boolean(request.headers.range), async () => this.list(request, _response));
     }
 
     /**

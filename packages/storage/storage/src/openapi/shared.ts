@@ -1027,7 +1027,7 @@ export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject
 
 export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
     return {
-        description: "List upload",
+        description: "List uploads. Only served when the handler is created with `allowList: true`; otherwise the server answers 404.",
         operationId,
         parameters: [
             {

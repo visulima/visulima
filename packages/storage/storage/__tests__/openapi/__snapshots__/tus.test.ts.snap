@@ -327,7 +327,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List upload",
+        "description": "List uploads. Only served when the handler is created with \`allowList: true\`; otherwise the server answers 404.",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
         "parameters": [
           {
@@ -1543,7 +1543,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
   "paths": {
     "/files": {
       "get": {
-        "description": "List upload",
+        "description": "List uploads. Only served when the handler is created with \`allowList: true\`; otherwise the server answers 404.",
         "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
         "parameters": [
           {

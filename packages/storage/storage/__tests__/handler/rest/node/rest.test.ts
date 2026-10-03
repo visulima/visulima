@@ -1,5 +1,6 @@
 import { rm } from "node:fs/promises";
 
+import express from "express";
 import supertest from "supertest";
 import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -318,13 +319,30 @@ describe("http Rest", () => {
             expect(response.status).toBe(400);
         });
 
-        it("should list files for the collection path", async () => {
+        it.each(["", "/V1StGXR8_Z5jdHi6B-myT"])("should answer 404 instead of listing files for GET %s by default", async (suffix) => {
             expect.assertions(2);
 
-            response = await supertest(app).get(basePath);
+            await create();
+
+            response = await supertest(app).get(`${basePath}${suffix}`);
+
+            expect(response.status).toBe(404);
+            expect(JSON.stringify(response.body)).not.toContain("createdAt");
+        });
+
+        it("should list files for the collection path when listing is enabled", async () => {
+            expect.assertions(2);
+
+            const listingApp = express();
+
+            listingApp.use(basePath, new Rest({ allowList: true, storage: rest.storage }).handle);
+
+            await create();
+
+            response = await supertest(listingApp).get(basePath);
 
             expect(response.status).toBe(200);
-            expect(Array.isArray(response.body)).toBe(true);
+            expect(response.body.length).toBeGreaterThan(0);
         });
     });
 
