@@ -54,8 +54,10 @@ runs:
                       status=$(printf '%s' "$payload" | jq -r '.status')
                       conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
                       if [ "$status" = "completed" ]; then
+                          # Only `success` proves the build matrix ran and uploaded its
+                          # artifacts; skipped/neutral would let callers proceed unbuilt.
                           case "$conclusion" in
-                              success|skipped|neutral)
+                              success)
                                   echo "Check '$check_name' completed: $conclusion"
                                   exit 0
                                   ;;

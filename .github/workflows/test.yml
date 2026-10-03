@@ -191,7 +191,9 @@ jobs:
             - name: "Run tests"
               shell: "bash"
               run: |
-                  if [[ ${{ matrix.os }} == "ubuntu-latest" && ${{ matrix.node_version }} == 24 && ${{ !matrix.deno_version }} && ${{ !matrix.bun_version }} ]]; then
+                  # Coverage only on the leg that uploads it. Decide in the expression layer:
+                  # rendered `false` is a non-empty string, so `[[ false ]]` would be true.
+                  if [[ "${{ matrix.os == 'ubuntu-latest' && matrix.node_version == '24' && !matrix.deno_version && !matrix.bun_version }}" == "true" ]]; then
                       pnpm run test:affected:coverage
                   else
                       pnpm run test:affected

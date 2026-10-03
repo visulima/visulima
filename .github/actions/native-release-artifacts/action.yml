@@ -108,15 +108,26 @@ runs:
           shell: "bash"
           run: |
               set -euo pipefail
+              shopt -s nullglob
               missing=0
-              for manifest in packages/tooling/task-runner/npm/*/package.json packages/terminal/tui/npm/*/package.json packages/tooling/vis/npm/*/package.json packages/tooling/secret-scanner/npm/*/package.json; do
-                  dir="$(dirname "$manifest")"
-                  while IFS= read -r file; do
-                      if [ ! -e "${dir}/${file}" ]; then
-                          echo "::error file=${manifest}::missing published file ${dir}/${file}"
-                          missing=$((missing + 1))
-                      fi
-                  done < <(jq -r '.files[]? // empty' "$manifest")
+              for pkg in tooling/task-runner terminal/tui tooling/vis tooling/secret-scanner; do
+                  manifests=("packages/${pkg}/npm/"*/package.json)
+                  # An empty glob would otherwise skip the package and report success.
+                  if [ "${#manifests[@]}" -eq 0 ]; then
+                      echo "::error::no platform packages found under packages/${pkg}/npm"
+                      exit 1
+                  fi
+                  for manifest in "${manifests[@]}"; do
+                      dir="$(dirname "$manifest")"
+                      # Plain assignment, so a jq failure stops the step under `set -e`.
+                      files="$(jq -er '.files[]' "$manifest")"
+                      while IFS= read -r file; do
+                          if [ ! -e "${dir}/${file}" ]; then
+                              echo "::error file=${manifest}::missing published file ${dir}/${file}"
+                              missing=$((missing + 1))
+                          fi
+                      done <<< "$files"
+                  done
               done
               if [ "$missing" -gt 0 ]; then
                   echo "${missing} file(s) missing from native platform packages"

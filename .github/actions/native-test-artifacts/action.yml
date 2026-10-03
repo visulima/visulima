@@ -41,13 +41,15 @@ runs:
               name: "bindings-(.+)"
               name_is_regexp: true
               path: "artifacts"
-              if_no_artifact_found: "warn"
+              if_no_artifact_found: "fail"
               allow_forks: false
 
         - name: "Wait before retrying artifact download"
           if: "steps.download_native_artifacts.outcome == 'failure'"
           shell: "bash"
-          run: "sleep 30"
+          run: |
+              rm -rf artifacts
+              sleep 30
 
         - name: "Download native build artifacts (retry)"
           if: "steps.download_native_artifacts.outcome == 'failure'"
@@ -61,7 +63,7 @@ runs:
               name: "bindings-(.+)"
               name_is_regexp: true
               path: "artifacts"
-              if_no_artifact_found: "warn"
+              if_no_artifact_found: "fail"
               allow_forks: false
 
         - name: "Distribute native artifacts to package roots"
@@ -99,3 +101,29 @@ runs:
               done
 
               rm -rf artifacts/
+
+        # Build Native uploads every target, so the runner's own bindings must be
+        # present now; tests would otherwise silently skip their native coverage.
+        - name: "Verify host native bindings"
+          shell: "bash"
+          run: |
+              set -euo pipefail
+              case "$(node -p 'process.platform + "-" + process.arch')" in
+                  linux-x64) triple="linux-x64-gnu" ;;
+                  linux-arm64) triple="linux-arm64-gnu" ;;
+                  darwin-x64) triple="darwin-x64" ;;
+                  darwin-arm64) triple="darwin-arm64" ;;
+                  win32-x64) triple="win32-x64-msvc" ;;
+                  win32-arm64) triple="win32-arm64-msvc" ;;
+                  *) echo "::error::unsupported runner platform"; exit 1 ;;
+              esac
+              missing=0
+              for binding in tooling/task-runner/task-runner tooling/vis/vis terminal/tui/tui tooling/secret-scanner/secret-scanner; do
+                  file="packages/${binding}-native.${triple}.node"
+                  if [ ! -f "$file" ]; then
+                      echo "::error::missing native binding ${file}"
+                      missing=$((missing + 1))
+                  fi
+              done
+              [ "$missing" -eq 0 ] || exit 1
+              echo "Native bindings for ${triple} are in place"

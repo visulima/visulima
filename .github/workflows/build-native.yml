@@ -9,10 +9,15 @@ on: # yamllint disable-line rule:truthy
             - "next"
             - "alpha"
             - "beta"
+    # Every branch semantic-release.yml and coverage-baseline.yml run on: both
+    # consume this commit's native artifacts and fail (or wait out their deadline)
+    # without them.
     push:
         branches:
+            - "([0-9])?(.{+([0-9]),x}).x"
             - "main"
             - "next"
+            - "next-major"
             - "alpha"
             - "beta"
     workflow_dispatch: # yamllint disable-line rule:empty-values
