@@ -78,6 +78,9 @@ const basename = (key: string): string => {
 class UploadThingStorage extends BaseStorage<UploadThingFile> {
     public static override readonly name: string = "uploadthing";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<UploadThingFile>;
@@ -181,6 +184,8 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                         throw new Error("Unsupported checksum algorithm");
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

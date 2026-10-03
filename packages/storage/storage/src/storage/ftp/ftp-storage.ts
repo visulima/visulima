@@ -81,6 +81,9 @@ const downloadToBuffer = async (client: Client, path: string, startAt?: number):
 class FtpStorage extends BaseStorage<FtpFile> {
     public static override readonly name: string = "ftp";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
@@ -170,6 +173,8 @@ class FtpStorage extends BaseStorage<FtpFile> {
                             "FTP storage does not support chunked or resumable uploads; send the file in a single request.",
                         );
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

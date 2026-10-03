@@ -15,25 +15,10 @@ import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
 
-const MIN_PART_SIZE = 5 * 1024 * 1024;
-const PART_SIZE = 16 * 1024 * 1024;
-
-/**
- * Build the HTTP `Range` header value (`bytes=start-end`) from a structured range.
- *
- * Returns `undefined` for an absent range so call sites can spread it conditionally
- * (omit the `Range` field entirely rather than send `Range: undefined`). `start` is
- * clamped to `0` because S3 rejects negative offsets and an `end` of `undefined`
- * renders as the open-ended `bytes=start-` form (read to EOF).
- */
-export const buildRangeHeader = (range: { end?: number; start: number } | undefined): string | undefined => {
-    if (!range) {
-        return undefined;
-    }
-
-    return `bytes=${Math.max(0, range.start)}-${range.end === undefined ? "" : range.end}`;
-};
+// Re-exported for existing importers of this module.
+export { buildRangeHeader } from "./s3-utils";
 
 /**
  * Part interface for multipart uploads.
@@ -402,28 +387,18 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
-                    // Parts are appended strictly in order (PartNumber = Parts.length + 1), so a chunk
-                    // that does not start exactly at the current offset would corrupt the object.
-                    // Persist the offset S3 reports before rejecting, so a stale stored offset heals
-                    // and the client's next HEAD sees the real value.
-                    if (part.start !== file.bytesWritten) {
-                        await this.saveMeta(S3BaseStorage.withoutParts(file));
+                    // Parts are appended strictly in order (PartNumber = Parts.length + 1). Persist the
+                    // offset S3 reports before rejecting a misplaced chunk, so a stale stored offset
+                    // heals and the client's next HEAD sees the real value.
+                    try {
+                        this.assertContiguousWrite(part, file);
+                    } catch (error: unknown) {
+                        await this.saveMeta(withoutParts(file));
 
-                        return throwErrorCode(ERRORS.FILE_CONFLICT);
+                        throw error;
                     }
 
-                    // S3 rejects CompleteMultipartUpload when any part but the last is under 5 MiB.
-                    // Fail this chunk now instead of letting the client upload everything first.
-                    const contentLength = part.contentLength ?? 0;
-
-                    if (
-                        contentLength > 0 &&
-                        contentLength < MIN_PART_SIZE &&
-                        typeof file.size === "number" &&
-                        (part.start ?? file.bytesWritten) + contentLength < file.size
-                    ) {
-                        return throwErrorCode(ERRORS.BAD_REQUEST, "S3 multipart uploads need chunks of at least 5 MiB except for the last one.");
-                    }
+                    assertNextPartSize(part, file);
 
                     // Detect file type from stream if contentType is not set or is default
                     if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
@@ -482,7 +457,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             { replayable },
                         ));
                     } catch (error: unknown) {
-                        if (S3BaseStorage.isBadDigest(error)) {
+                        if (isBadDigest(error)) {
                             return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
                         }
 
@@ -499,12 +474,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                 file.status = getFileStatus(file);
 
-                if (file.status !== "completed" && hasContent(part)) {
-                    // The persisted offset is what HEAD reports and what the next PATCH is checked
-                    // against, so it must be updated after every successful part.
-                    await this.saveMeta(S3BaseStorage.withoutParts(file));
-                }
-
                 if (file.status === "completed") {
                     const [completed] = await this.internalOnComplete(file);
 
@@ -512,6 +481,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                     file.uri = completed.Location;
                     file.ETag = completed.ETag;
+                } else if (hasContent(part)) {
+                    // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
+                    await this.saveMeta(withoutParts(file));
                 }
             } finally {
                 await this.unlock(part.id, lockToken);
@@ -1001,26 +973,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             await this.onError(httpError);
         }
-    }
-
-    /**
-     * Copy of `file` without its `Parts` list, for persisting. S3MetaStorage keeps meta in a
-     * ~2KB user-metadata header that a long parts list would overflow; parts are re-fetched
-     * lazily via `listParts` instead.
-     */
-    protected static withoutParts<T extends S3CompatibleFile>(file: T): T {
-        const { Parts: _parts, ...rest } = file;
-
-        return rest as T;
-    }
-
-    /**
-     * Whether an UploadPart failure is S3 rejecting the `Content-MD5` digest.
-     */
-    protected static isBadDigest(error: unknown): boolean {
-        const { Code, code, message, name } = (error ?? {}) as { Code?: string; code?: string; message?: string; name?: string };
-
-        return [Code, code, name].includes("BadDigest") || (typeof message === "string" && message.includes("BadDigest"));
     }
 
     /**

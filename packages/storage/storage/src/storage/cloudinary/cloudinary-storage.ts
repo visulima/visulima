@@ -81,6 +81,9 @@ const parseCloudinaryUrl = (url: string | undefined): { apiKey?: string; apiSecr
 class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public static override readonly name: string = "cloudinary";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<CloudinaryFile>;
@@ -194,6 +197,8 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                         throw new Error("Unsupported checksum algorithm");
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

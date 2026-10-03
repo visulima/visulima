@@ -29,9 +29,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly bucketName: string | undefined;
 
-    /** The bucket probe only runs for clients this class created itself. */
-    private readonly checkAccess: boolean;
-
     public constructor(public readonly config: GCSMetaStorageOptions) {
         super(config);
 
@@ -71,11 +68,24 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         };
 
         this.bucketName = bucketName;
-        this.checkAccess = authClient === undefined;
+
+        if (authClient === undefined) {
+            this.accessProbe = async () => {
+                try {
+                    await this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
+                } catch (error: unknown) {
+                    if ((error as ClientError).code === "404") {
+                        throw new Error(`Bucket ${String(this.bucketName)} does not exist`, { cause: error });
+                    }
+
+                    throw error;
+                }
+            };
+        }
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
@@ -96,7 +106,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const url = this.getMetaPath(id);
 
@@ -104,7 +114,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async get(id: string): Promise<T> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const url = this.getMetaPath(id);
 
@@ -120,24 +130,6 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async touch(id: string, file: T): Promise<T> {
         // For GCS, touching means updating the metadata
         return this.save(id, file);
-    }
-
-    private async ensureBucketAccess(): Promise<void> {
-        if (!this.checkAccess) {
-            return;
-        }
-
-        await this.ensureAccess(async () => {
-            try {
-                await this.makeRequest({ url: this.storageBaseURI.replace("/o", "") });
-            } catch (error: unknown) {
-                if ((error as ClientError).code === "404") {
-                    throw new Error(`Bucket ${String(this.bucketName)} does not exist`, { cause: error });
-                }
-
-                throw error;
-            }
-        });
     }
 
     /**

@@ -32,6 +32,9 @@ import type { AzureStorageOptions } from "./types";
 /** Prefix of the block ids staged by {@link AzureStorage.write}; the rest is the zero-padded chunk offset. */
 const BLOCK_ID_PREFIX = "visulima-";
 
+/** Largest block Put Block accepts (4000 MiB); a chunk becomes exactly one block. */
+const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
+
 /**
  * Azure Blob Storage implementation.
  * @remarks
@@ -375,10 +378,15 @@ class AzureStorage extends BaseStorage {
                         return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
-                    // Each chunk becomes one block keyed by its start offset; a chunk that does not
-                    // start at the persisted offset would leave a gap or overlap in the block chain.
-                    if (part.start !== offset) {
-                        return throwErrorCode(ERRORS.FILE_CONFLICT);
+                    // Each chunk becomes one block keyed by its start offset.
+                    this.assertContiguousWrite(part, file);
+
+                    // Put Block caps a single block at 4000 MiB; reject before any byte is staged.
+                    if (part.contentLength !== undefined && part.contentLength > MAX_BLOCK_SIZE) {
+                        return throwErrorCode(
+                            ERRORS.REQUEST_ENTITY_TOO_LARGE,
+                            "Azure accepts at most 4000 MiB per chunk; split the upload into smaller chunks.",
+                        );
                     }
 
                     // Detect file type from stream if contentType is not set or is default
@@ -463,7 +471,7 @@ class AzureStorage extends BaseStorage {
 
                         await this.deleteMeta(file.id);
                     } else {
-                        // The persisted offset is what HEAD reports and what the next PATCH is checked against.
+                        // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
                         await this.saveMeta(file);
                     }
                 }

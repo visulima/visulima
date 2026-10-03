@@ -307,6 +307,21 @@ describe(GCStorage, async () => {
             expect(saveMeta.mock.calls[0]?.[0]).toMatchObject({ bytesWritten: 10, id: metafile.id });
         });
 
+        it("rejects a chunk that does not start at the persisted offset", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, createdAt: new Date().toISOString(), uri });
+
+            const mockMakeRequest = vi.fn();
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            await expect(storage.write({ body: Readable.from(Buffer.alloc(5)), contentLength: 5, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "FileConflict",
+            });
+            expect(mockMakeRequest).not.toHaveBeenCalled();
+        });
+
         it("advertises no checksum algorithms and rejects one passed to write", async () => {
             expect.assertions(2);
 

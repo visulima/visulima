@@ -233,6 +233,9 @@ const isConflictError = (error: unknown): boolean => {
 class BoxStorage extends BaseStorage<BoxFile> {
     public static override readonly name: string = "box";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<BoxFile>;
@@ -332,6 +335,8 @@ class BoxStorage extends BaseStorage<BoxFile> {
                     }
 
                     await this.authHandle.ensureReady();
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

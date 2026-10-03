@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client, waitUntilBucketExists } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import MetaStorage from "../meta-storage";
@@ -11,9 +11,6 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     private readonly bucket: string;
 
     private readonly client: S3Client;
-
-    /** The bucket probe only runs for clients this class created itself. */
-    private readonly checkAccess: boolean;
 
     public constructor(public config: S3MetaStorageOptions) {
         super(config);
@@ -38,11 +35,17 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         }
 
         this.bucket = bucket as string;
-        this.checkAccess = client === undefined;
+
+        if (client === undefined) {
+            // A single HEAD fails fast; `waitUntilBucketExists` would poll for up to 30s per failing operation.
+            this.accessProbe = async () => {
+                await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+            };
+        }
     }
 
     public override async get(id: string): Promise<T> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const Key = this.getMetaName(id);
         const parameters = { Bucket: this.bucket, Key };
@@ -72,7 +75,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async delete(id: string): Promise<void> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
 
@@ -80,7 +83,7 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
-        await this.ensureBucketAccess();
+        await this.ensureAccess();
 
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
 
@@ -99,14 +102,6 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         await this.client.send(new PutObjectCommand(parameters));
 
         return file;
-    }
-
-    private async ensureBucketAccess(): Promise<void> {
-        if (!this.checkAccess) {
-            return;
-        }
-
-        await this.ensureAccess(async () => waitUntilBucketExists({ client: this.client, maxWaitTime: 30 }, { Bucket: this.bucket }));
     }
 }
 

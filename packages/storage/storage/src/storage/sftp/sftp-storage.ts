@@ -56,6 +56,9 @@ const toAbortError = (reason: unknown): Error => {
 class SftpStorage extends BaseStorage<SftpFile> {
     public static override readonly name: string = "sftp";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     public override readonly supportsRange: boolean = true;
@@ -145,6 +148,8 @@ class SftpStorage extends BaseStorage<SftpFile> {
                             "SFTP storage does not support chunked or resumable uploads; send the file in a single request.",
                         );
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

@@ -23,7 +23,7 @@ describe(S3MetaStorage, () => {
 
     beforeEach(() => {
         s3Mock.reset();
-        // Mock bucket access check (waitUntilBucketExists)
+        // Mock bucket access check (HeadBucketCommand)
         s3Mock.onAnyCommand().resolves({});
         metaStorage = new S3MetaStorage(options);
     });
@@ -38,6 +38,32 @@ describe(S3MetaStorage, () => {
             await metaStorage.save(metafile.id, metafile);
 
             expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(1);
+        });
+
+        it("should fail fast on a single HeadBucket and retry it on the next operation", async () => {
+            expect.assertions(3);
+
+            const error = Object.assign(new Error("NotFound"), { name: "NotFound" });
+
+            s3Mock.on(HeadBucketCommand).rejectsOnce(error);
+
+            await expect(metaStorage.save(metafile.id, metafile)).rejects.toThrow("NotFound");
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(1);
+
+            await metaStorage.save(metafile.id, metafile);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(2);
+        });
+
+        it("should not probe a caller-supplied client", async () => {
+            expect.assertions(1);
+
+            const storage = new S3MetaStorage({ ...options, client: new S3Client({ region: "us-east-1" }) });
+
+            await storage.save(metafile.id, metafile);
+
+            expect(s3Mock.commandCalls(HeadBucketCommand)).toHaveLength(0);
         });
     });
 

@@ -53,14 +53,27 @@ class MetaStorage<T extends File = File> {
     }
 
     /**
-     * Runs a backend access probe once, lazily, on the first operation instead of from the
-     * constructor. A detached probe can only end up as an unhandled rejection; awaiting it here
-     * throws the failure to the caller of the operation instead. A failed probe is forgotten so
-     * the next operation retries it (e.g. after a transient network error).
-     * @param check The probe to run, e.g. a bucket HEAD request.
+     * Backend access probe (e.g. a bucket HEAD request). Subclasses set it in their constructor
+     * only when they created the backend client themselves; a caller-supplied client is trusted
+     * as-is and never probed.
      */
-    protected async ensureAccess(check: () => Promise<unknown>): Promise<void> {
-        this.accessCheckPromise ??= check().then(
+    protected accessProbe?: () => Promise<void>;
+
+    /**
+     * Runs {@link MetaStorage.accessProbe} once, lazily, on the first operation instead of from
+     * the constructor. A detached probe can only end up as an unhandled rejection; awaiting it
+     * here throws the failure to the caller of the operation instead. A failed probe is forgotten
+     * so the next operation retries it (e.g. after a transient network error). Returns
+     * immediately when no probe is set.
+     */
+    protected async ensureAccess(): Promise<void> {
+        const probe = this.accessProbe;
+
+        if (probe === undefined) {
+            return;
+        }
+
+        this.accessCheckPromise ??= probe().then(
             () => undefined,
             (error: unknown) => {
                 this.accessCheckPromise = undefined;

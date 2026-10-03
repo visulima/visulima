@@ -127,6 +127,9 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
 class BunnyStorage extends BaseStorage<BunnyFile> {
     public static override readonly name: string = "bunny";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = ["sha256"];
 
     protected meta: MetaStorage<BunnyFile>;
@@ -217,6 +220,8 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                         throw new Error("Unsupported checksum algorithm");
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

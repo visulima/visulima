@@ -173,6 +173,19 @@ describe(AzureStorage, () => {
             expect(mockBlobClient.stageBlock).not.toHaveBeenCalled();
         });
 
+        it("rejects a chunk larger than the 4000 MiB Put Block limit before staging it", async () => {
+            expect.assertions(2);
+
+            const size = 5 * 1024 * 1024 * 1024;
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, size });
+
+            await expect(storage.write({ body: chunk(10), contentLength: 4000 * 1024 * 1024 + 1, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "RequestEntityTooLarge",
+            });
+            expect(mockBlobClient.stageBlock).not.toHaveBeenCalled();
+        });
+
         it("refuses to commit when the staged blocks do not cover the whole upload", async () => {
             expect.assertions(2);
 

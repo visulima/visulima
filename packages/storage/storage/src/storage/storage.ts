@@ -249,6 +249,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public readonly reportsUploadProgress: boolean = false;
 
+    /**
+     * Adapter capability flag: when `true`, the adapter can assemble one object from several
+     * writes (TUS PATCH chunks, resumed uploads, deferred lengths, concatenation). Defaults to
+     * `true`. Adapters that can only store an object in a single request override this to
+     * `false`; {@link BaseStorage.tusExtension} then stops advertising `creation-defer-length`
+     * and `concatenation`, and the TUS handler rejects partial chunks before reading the body.
+     */
+    public readonly supportsResumableWrites: boolean = true;
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
@@ -400,7 +409,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     public get tusExtension(): string[] {
-        const extensions = ["creation", "creation-with-upload", "termination", "checksum", "creation-defer-length", "concatenation"];
+        const extensions = ["creation", "creation-with-upload", "termination", "checksum"];
+
+        if (this.supportsResumableWrites) {
+            extensions.push("creation-defer-length", "concatenation");
+        }
 
         if (this.expiration) {
             extensions.push("expiration");
@@ -1065,19 +1078,38 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Guards adapters that can only store an object in one request. Without it, a chunked or
      * resumable upload (e.g. TUS with a chunk size) stores its first chunk as the whole file
      * and reports the upload as completed, silently losing the rest of the data.
+     *
+     * Call it twice: before buffering the body (without `received`, so the declared
+     * `part.contentLength` is checked and a doomed body is never read), and again after
+     * buffering with the real byte count.
      * @param part The part being written
      * @param file The upload it belongs to
-     * @param received Number of bytes this write carries
+     * @param received Number of bytes this write carries; defaults to the declared `part.contentLength`
      * @throws {UploadError} METHOD_NOT_ALLOWED when the write isn't the whole file
      */
-    protected assertWholeFileWrite(part: { start?: number }, file: TFile, received: number): void {
+    protected assertWholeFileWrite(part: { contentLength?: number; start?: number }, file: TFile, received: number | undefined = part.contentLength): void {
         const expected = typeof file.size === "number" && !Number.isNaN(file.size) ? file.size : undefined;
 
-        if ((part.start ?? 0) > 0 || (expected !== undefined && received < expected)) {
+        if ((part.start ?? 0) > 0 || (expected !== undefined && received !== undefined && received < expected)) {
             throwErrorCode(
                 ERRORS.METHOD_NOT_ALLOWED,
                 `${this.constructor.name} does not support chunked or resumable uploads; send the whole file in a single request.`,
             );
+        }
+    }
+
+    /**
+     * Guards adapters that append parts strictly in order (S3 parts, Azure blocks, GCS resumable
+     * sessions): a part must start exactly where the stored upload ends, otherwise it would leave
+     * a gap in, or overlap, the assembled object.
+     * @param part The part being written
+     * @param file The upload it belongs to
+     * @throws {UploadError} FILE_CONFLICT when `part.start` differs from `file.bytesWritten`
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected assertContiguousWrite(part: { start?: number }, file: TFile): void {
+        if (part.start !== (Number(file.bytesWritten) || 0)) {
+            throwErrorCode(ERRORS.FILE_CONFLICT);
         }
     }
 

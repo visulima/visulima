@@ -237,6 +237,9 @@ const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
 class DropboxStorage extends BaseStorage<DropboxFile> {
     public static override readonly name: string = "dropbox";
 
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
     public override checksumTypes: string[] = [];
 
     protected meta: MetaStorage<DropboxFile>;
@@ -331,6 +334,8 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                         throw new Error("Unsupported checksum algorithm");
                     }
+
+                    this.assertWholeFileWrite(part, file);
 
                     const buffer = await collectStream(part.body);
 

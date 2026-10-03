@@ -471,6 +471,27 @@ describe(BunnyStorage, () => {
             expect(fileMock.upload).not.toHaveBeenCalled();
         });
 
+        it("rejects a declared partial chunk before reading its body", async () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+            const body = Readable.from(Buffer.from("hello"));
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ bytesWritten: 0, id: "f", metadata: {}, name: "f.bin", size: 10 } as never);
+
+            await expect(storage.write({ body, contentLength: 5, id: "f", start: 0 })).rejects.toMatchObject({ UploadErrorCode: "MethodNotAllowed" });
+            expect(body.readableDidRead).toBe(false);
+        });
+
+        it("does not advertise resumable tus extensions", () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            expect(storage.supportsResumableWrites).toBe(false);
+            expect(storage.tusExtension.filter((extension) => extension === "creation-defer-length" || extension === "concatenation")).toStrictEqual([]);
+        });
+
         it("converts a base64 sha256 upload checksum to the uppercase hex Bunny verifies", async () => {
             expect.assertions(1);
 

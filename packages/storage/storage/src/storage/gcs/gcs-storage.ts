@@ -271,8 +271,13 @@ class GCStorage extends BaseStorage<GCSFile> {
                 return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
-            if (hasContent(part) && this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+            if (hasContent(part)) {
+                if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                    return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                }
+
+                // The resumable session only appends at the offset GCS has confirmed.
+                this.assertContiguousWrite(part, file);
             }
 
             const lockToken = await this.lock(part.id);
@@ -311,7 +316,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
                     await this.internalOnComplete(file);
                 } else if (hasContent(part)) {
-                    // Persist the offset GCS confirmed, so HEAD and the next PATCH see the real value.
+                    // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
                     await this.saveMeta(file);
                 }
             } finally {
