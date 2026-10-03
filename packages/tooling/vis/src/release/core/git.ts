@@ -65,25 +65,19 @@ const tokenSourceForHost = (host: string, env: NodeJS.ProcessEnv): PushTokenSour
     return undefined;
 };
 
+export interface PushCredentials {
+    /** Remote origin the token is scoped to, e.g. `https://github.com`. */
+    origin: string;
+    token: string;
+    /** Basic-auth user the forge expects for the token. */
+    user: string;
+}
+
 /**
- * Env that authenticates a `git push` to `remote` with the CI token, or
- * `undefined` when git should be left alone.
- *
- * The generated release workflow checks out with `persist-credentials: false`
- * so install scripts can't read a token from `.git/config`; without this a
- * plain `git push origin` has no credentials. The token goes in as env-only
- * git config (`GIT_CONFIG_COUNT` / `_KEY_n` / `_VALUE_n`) for the one push
- * command: never written to disk and never on the command line.
- *
- * Only sent over HTTPS and only to a known forge host (see
- * {@link tokenSourceForHost}): `VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` for
- * GitHub, `GITLAB_TOKEN` / `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab. Left alone
- * when the URL carries its own credentials, no token is set, or an
- * `http.extraheader` already applies to this remote (a persisted checkout
- * token, or caller-supplied `GIT_CONFIG_*`) — a second Authorization header
- * makes GitHub reject the request.
+ * The CI token vis would send when pushing to `remote`, or `undefined` when git
+ * should be left alone (see {@link resolvePushAuthEnv} for the rules).
  */
-export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Promise<NodeJS.ProcessEnv | undefined> => {
+export const resolvePushCredentials = async (ctx: GitContext, remote = "origin"): Promise<PushCredentials | undefined> => {
     const env = ctx.env ?? process.env;
     let remoteUrl = remote;
 
@@ -129,19 +123,47 @@ export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Pr
         return undefined;
     }
 
+    return { origin: url.origin, token, user: source.user };
+};
+
+/**
+ * Env that authenticates a `git push` to `remote` with the CI token, or
+ * `undefined` when git should be left alone.
+ *
+ * The generated release workflow checks out with `persist-credentials: false`
+ * so install scripts can't read a token from `.git/config`; without this a
+ * plain `git push origin` has no credentials. The token goes in as env-only
+ * git config (`GIT_CONFIG_COUNT` / `_KEY_n` / `_VALUE_n`) for the one push
+ * command: never written to disk and never on the command line.
+ *
+ * Only sent over HTTPS and only to a known forge host (see
+ * {@link tokenSourceForHost}): `VIS_GH_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` for
+ * GitHub, `GITLAB_TOKEN` / `GL_TOKEN` / `VIS_GH_TOKEN` for GitLab. Left alone
+ * when the URL carries its own credentials, no token is set, or an
+ * `http.extraheader` already applies to this remote (a persisted checkout
+ * token, or caller-supplied `GIT_CONFIG_*`) — a second Authorization header
+ * makes GitHub reject the request.
+ */
+export const resolvePushAuthEnv = async (ctx: GitContext, remote = "origin"): Promise<NodeJS.ProcessEnv | undefined> => {
+    const credentials = await resolvePushCredentials(ctx, remote);
+
+    if (credentials === undefined) {
+        return undefined;
+    }
+
     // Append after any GIT_CONFIG_* entries the caller already set. A count git
     // itself would reject is left alone rather than guessed at.
-    const count = env["GIT_CONFIG_COUNT"] ?? "0";
+    const count = (ctx.env ?? process.env)["GIT_CONFIG_COUNT"] ?? "0";
 
     if (!/^\d+$/u.test(count)) {
         return undefined;
     }
 
     const index = Number(count);
-    const basic = Buffer.from(`${source.user}:${token}`).toString("base64");
+    const basic = Buffer.from(`${credentials.user}:${credentials.token}`).toString("base64");
 
     return {
-        [`GIT_CONFIG_KEY_${index}`]: `http.${url.origin}/.extraheader`,
+        [`GIT_CONFIG_KEY_${index}`]: `http.${credentials.origin}/.extraheader`,
         [`GIT_CONFIG_VALUE_${index}`]: `AUTHORIZATION: basic ${basic}`,
         GIT_CONFIG_COUNT: String(index + 1),
     };
@@ -769,6 +791,19 @@ export const pushBranch = async (ctx: GitContext, branch: string, options: { for
  * tag history continues to work post-migration.
  */
 export const defaultTagFor = (packageName: string, version: string): string => `${packageName}@${version}`;
+
+/**
+ * Floating major tag for a package version: the scope-qualified name with `@`
+ * dropped and `/` turned into `-`, plus `-v&lt;major>` (`@acme/cli@1.2.3` →
+ * `acme-cli-v1`). Collision-free across scopes. `undefined` when there is no
+ * usable name or major.
+ */
+export const floatingMajorTagFor = (packageName: string, version: string): string | undefined => {
+    const major = version.split(/[-+]/u, 1)[0]!.split(".")[0];
+    const safeName = packageName.replace(/^@/u, "").replaceAll("/", "-");
+
+    return major === undefined || major === "" || safeName === "" ? undefined : `${safeName}-v${major}`;
+};
 
 /**
  * Render a tag string from a template. Recognised tokens:
