@@ -5,11 +5,30 @@ import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
-import { getHeader, getIdFromRequest, getRequestStream, readBody } from "../../utils/http";
+import { getHeader, getIdFromRequestUrl, getRealPath, getRequestStream, readBody } from "../../utils/http";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
-import { extractFileInit, parseChunkHeaders, parseContentDisposition, validateContentLength, validateRequestBody } from "../utils/request-parser";
-import RestBase from "./rest-base";
+import {
+    extractFileInit,
+    nodeHeaderReader,
+    parseChunkHeaders,
+    parseContentDisposition,
+    parseMetadataHeader,
+    requirePositiveContentLength,
+    validateContentLength,
+    validateRequestBody,
+} from "../utils/request-parser";
+import RestBase, { MAX_BATCH_DELETE_BYTES, parseBatchDeleteBody, parseBatchIdsParameter } from "./rest-base";
+
+/**
+ * Extracts the file id from a REST request with the same rules as the Fetch REST handler:
+ * the last path segment with its extension stripped, no minimum length.
+ * @param request Node.js request
+ * @returns The file id, or `undefined` when the path addresses the collection
+ * @throws {HttpError} 400 when the id is unsafe
+ */
+const getRestFileId = (request: IncomingMessage & { originalUrl?: string }): string | undefined =>
+    getIdFromRequestUrl(getRealPath(request), { stripExtension: true });
 
 /**
  * REST API handler for direct binary file uploads (Node.js version).
@@ -133,14 +152,10 @@ class Rest<
      * @returns Promise resolving to ResponseFile with upload result
      */
     public async put(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        let id: string;
+        const id = getRestFileId(request);
 
-        try {
-            id = getIdFromRequest(request);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            throw error;
+        if (!id) {
+            throw createHttpError(400, "File ID is required in URL path");
         }
 
         // Check if request has a body
@@ -148,11 +163,7 @@ class Rest<
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-
-        if (contentLength === 0) {
-            throw createHttpError(400, "Content-Length is required and must be greater than 0");
-        }
+        const contentLength = requirePositiveContentLength(getHeader(request, "content-length"));
 
         // Validate content length against max upload size
         if (contentLength > this.storage.maxUploadSize) {
@@ -163,16 +174,7 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
 
         // Extract metadata from headers if present
-        const metadataHeader = getHeader(request, "x-file-metadata", true);
-        let metadata: Record<string, unknown> | undefined;
-
-        if (metadataHeader) {
-            try {
-                metadata = JSON.parse(metadataHeader) as Record<string, unknown>;
-            } catch {
-                // Ignore invalid JSON
-            }
-        }
+        const metadata = parseMetadataHeader(getHeader(request, "x-file-metadata", true));
 
         // Extract original filename from Content-Disposition header if present
         const originalName = parseContentDisposition(request);
@@ -203,62 +205,28 @@ class Rest<
 
         if (idsParameter) {
             // Batch delete via query parameter: ?ids=id1,id2,id3
-            const ids = idsParameter
-                .split(",")
-                .map((id) => id.trim())
-                .filter(Boolean);
-
-            if (ids.length === 0) {
-                throw createHttpError(400, "No file IDs provided");
-            }
-
-            return this.restBase.deleteBatch(ids);
+            return this.restBase.deleteBatch(parseBatchIdsParameter(idsParameter));
         }
 
         // Check for batch delete via JSON body
-        const contentType = getHeader(request, "content-type") || "";
+        if (getHeader(request, "content-type").includes("application/json")) {
+            const ids = parseBatchDeleteBody(await readBody(request, "utf8", MAX_BATCH_DELETE_BYTES));
 
-        if (contentType.includes("application/json")) {
-            try {
-                const body = await readBody(request, "utf8", 1024 * 1024); // 1MB limit
-                const parsed = JSON.parse(body);
-
-                if (Array.isArray(parsed)) {
-                    // Array of IDs: ["id1", "id2", "id3"]
-                    if (parsed.length === 0) {
-                        throw createHttpError(400, "No file IDs provided");
-                    }
-
-                    return this.restBase.deleteBatch(parsed as string[]);
-                }
-
-                if (typeof parsed === "object" && parsed !== null && "ids" in parsed && Array.isArray(parsed.ids)) {
-                    // Object with ids array: { ids: ["id1", "id2"] }
-                    const idsArray = (parsed as { ids: string[] }).ids;
-
-                    if (idsArray.length === 0) {
-                        throw createHttpError(400, "No file IDs provided");
-                    }
-
-                    return this.restBase.deleteBatch(idsArray);
-                }
-            } catch (error: unknown) {
-                if ((error as { statusCode?: number }).statusCode === 400) {
-                    throw error;
-                }
-
-                // If JSON parsing fails, fall through to single file delete
+            if (ids) {
+                return this.restBase.deleteBatch(ids);
             }
         }
 
         // Single file delete
+        const id = getRestFileId(request);
+
+        if (!id) {
+            throw createHttpError(404, "File not found");
+        }
+
         try {
-            const id = getIdFromRequest(request);
-
-            return this.restBase.deleteSingle(id);
+            return await this.restBase.deleteSingle(id);
         } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
             if ((error as { code?: string }).code === "ENOENT" || (error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND") {
                 throw createHttpError(404, "File not found");
             }
@@ -275,14 +243,10 @@ class Rest<
      * @returns Promise resolving to ResponseFile with upload progress.
      */
     public async patch(request: NodeRequest): Promise<ResponseFile<TFile>> {
-        let id: string;
+        const id = getRestFileId(request);
 
-        try {
-            id = getIdFromRequest(request);
-        } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
-            throw error;
+        if (!id) {
+            throw createHttpError(404, "File not found");
         }
 
         // Check if request has a body
@@ -290,14 +254,10 @@ class Rest<
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-
-        if (contentLength === 0) {
-            throw createHttpError(400, "Content-Length is required and must be greater than 0");
-        }
+        const contentLength = requirePositiveContentLength(getHeader(request, "content-length"));
 
         // Get chunk offset from headers
-        const { chunkOffset } = parseChunkHeaders(request);
+        const { chunkOffset } = parseChunkHeaders(nodeHeaderReader(request));
 
         if (chunkOffset === undefined) {
             throw createHttpError(400, "X-Chunk-Offset header is required");
@@ -317,13 +277,15 @@ class Rest<
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async head(request: NodeRequest): Promise<ResponseFile<TFile>> {
+        const id = getRestFileId(request);
+
+        if (!id) {
+            throw createHttpError(404, "File not found");
+        }
+
         try {
-            const id = getIdFromRequest(request);
-
-            return this.restBase.handleHead(id);
+            return await this.restBase.handleHead(id);
         } catch (error: unknown) {
-            this.checkForUndefinedIdOrPath(error);
-
             if ((error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND" || (error as { code?: string }).code === "ENOENT") {
                 throw createHttpError(404, "File not found");
             }
@@ -338,17 +300,6 @@ class Rest<
      */
     public override async options(): Promise<ResponseFile<TFile>> {
         return this.restBase.handleOptions(Rest.methods, this.storage.maxUploadSize);
-    }
-
-    /**
-     * Retrieves a file or list of files based on the request path.
-     * Delegates to BaseHandlerNode.get() method.
-     * @param request Node.js IncomingMessage with optional originalUrl.
-     * @param response Node.js ServerResponse.
-     * @returns Promise resolving to a single file, paginated list, or array of files.
-     */
-    public override async get(request: NodeRequest, response: NodeResponse): Promise<ResponseFile<TFile> | ResponseList<TFile>> {
-        return super.get(request, response);
     }
 }
 

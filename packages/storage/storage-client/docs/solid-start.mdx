@@ -418,6 +418,8 @@ export default function BatchUploadPage() {
 
 ### Listing and Deleting Files
 
+> **Note:** the server only answers list requests when its handler is created with `allowList: true` (e.g. `new Rest({ allowList: true, storage })`). Listing is off by default because the list exposes every stored file; enable it only behind authentication.
+
 ```tsx
 // src/routes/files.tsx
 import { createGetFileList, createDeleteFile, createBatchDeleteFiles } from "@visulima/storage-client/solid";

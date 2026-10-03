@@ -113,7 +113,7 @@ const spec = restOpenApiSpec("http://localhost:3000", "/files", {
 - POST - Upload file or initialize chunked upload
 - PUT - Create or update file
 - PATCH - Upload chunks for chunked uploads
-- GET - Retrieve file or list files
+- GET - Retrieve a file, or list files when the handler is created with `allowList: true` (off by default)
 - DELETE - Delete single file or batch delete
 - HEAD - Get file metadata and upload progress
 

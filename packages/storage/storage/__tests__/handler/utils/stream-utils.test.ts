@@ -36,6 +36,21 @@ describe("stream-utils", () => {
             expect(buffer.toString()).toBe("World");
         });
 
+        it("destroys the source when the range stream is destroyed early", async () => {
+            expect.assertions(1);
+
+            const source = new PassThrough();
+            const limited = createRangeLimitedStream(source, 0, 1_000_000);
+
+            limited.destroy();
+
+            await new Promise<void>((resolve) => {
+                setImmediate(resolve);
+            });
+
+            expect(source.destroyed).toBe(true);
+        });
+
         it("returns the full content when range covers entire stream", async () => {
             expect.assertions(1);
 

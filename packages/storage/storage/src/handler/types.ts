@@ -65,6 +65,15 @@ export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
 }
 
 export interface UploadOptions<TFile extends UploadFile> {
+    /**
+     * Serve the list of all stored files on `GET` of the collection path (with `limit` / `page` pagination).
+     *
+     * Off by default: the list contains every file's id, name and metadata across all users, and an id is
+     * enough to download, overwrite or delete a file. Only enable it behind authentication, for deployments
+     * where every caller may see every file. When disabled, such requests answer 404.
+     * @default false
+     */
+    allowList?: boolean;
     disableTerminationForFinishedUploads?: boolean;
     /** Maximum file size for multipart parser (default: min(storage.maxUploadSize, 1GB)) */
     maxFileSize?: number;

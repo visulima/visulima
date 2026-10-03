@@ -129,6 +129,15 @@ describe("paginator", () => {
         });
     });
 
+    it("should serialize with JSON.stringify, which passes the property key to toJSON", () => {
+        expect.assertions(2);
+
+        const paginator = paginate(2, 1, 3, [{ id: 2 }]);
+
+        expect(JSON.stringify(paginator)).toBe(JSON.stringify(paginator.toJSON()));
+        expect(JSON.stringify({ data: paginator })).toContain(String.raw`"page":2`);
+    });
+
     it("should return the correct values for the toJSON method", () => {
         expect.assertions(1);
 

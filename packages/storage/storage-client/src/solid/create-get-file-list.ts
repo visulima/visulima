@@ -46,6 +46,7 @@ export interface CreateGetFileListReturn {
 
 /**
  * Solid.js primitive for fetching a list of files using TanStack Query.
+ * Requires the server handler to be created with `allowList: true`; listing is off by default because it exposes every stored file.
  * Supports pagination via query parameters.
  * @param options Hook configuration options
  * @returns File list fetching functions and state signals

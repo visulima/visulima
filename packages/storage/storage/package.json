@@ -262,7 +262,8 @@
         "dist/**",
         "README.md",
         "CHANGELOG.md",
-        "LICENSE.md"
+        "LICENSE.md",
+        "MIGRATION-GUIDE.md"
     ],
     "scripts": {
         "build": "packem build --development",
@@ -293,7 +294,6 @@
         "mime": "catalog:prod",
         "nanoid": "catalog:prod",
         "openapi-types": "catalog:prod",
-        "path-to-regexp": "catalog:prod",
         "type-is": "catalog:prod",
         "zod": "catalog:utils"
     },

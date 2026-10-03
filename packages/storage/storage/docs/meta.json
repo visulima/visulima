@@ -16,6 +16,7 @@
         "observability",
         "openapi",
         "custom-storage",
-        "authenticated-file-uploads"
+        "authenticated-file-uploads",
+        "migration"
     ]
 }

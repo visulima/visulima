@@ -2,40 +2,11 @@
 
 import createHttpError from "http-errors";
 
-import { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
+import { getIdFromRequestUrl } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import { TUS_RESUMABLE, TusBase } from "./tus-base";
-
-/**
- * Extract file ID from request URL and validate it as a safe storage id.
- * Returns `undefined` for missing IDs; throws 400 for traversal/invalid IDs.
- */
-const getIdFromRequestUrl = (url: string): string | undefined => {
-    let candidate: string | undefined;
-
-    try {
-        const urlObject = new URL(url);
-        const pathParts = urlObject.pathname.split("/").filter(Boolean);
-
-        candidate = pathParts[pathParts.length - 1] || undefined;
-    } catch {
-        return undefined;
-    }
-
-    if (!candidate) {
-        return undefined;
-    }
-
-    try {
-        BaseStorage.assertSafeId(candidate);
-    } catch {
-        throw createHttpError(400, `Invalid file id: "${candidate}"`);
-    }
-
-    return candidate;
-};
 
 export { TUS_RESUMABLE, TUS_VERSION } from "./tus-base";
 
@@ -247,7 +218,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @param request Web API Request with upload ID
      * @returns Promise resolving to ResponseFile with file metadata as JSON
      */
-    public async get(request: Request): Promise<ResponseFile<TFile>> {
+    public override async get(request: Request): Promise<ResponseFile<TFile>> {
         const tusResumable = request.headers.get("tus-resumable");
 
         this.tusBase.validateTusResumableHeader(tusResumable || undefined);

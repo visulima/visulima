@@ -7,24 +7,78 @@ import type { FileInit } from "../../storage/utils/file";
 import { getHeader } from "../../utils/http";
 
 /**
+ * Reads a request header by (lower-case) name. Lets the Node and Fetch handlers share header parsing.
+ */
+export type HeaderReader = (name: string) => string | null | undefined;
+
+/**
+ * Parses a header value that must be a non-negative decimal integer.
+ * Unlike `Number.parseInt`, trailing garbage (`"12abc"`), signs and fractions are rejected.
+ * @param value Raw header value
+ * @returns The parsed integer, or `undefined` when the header is missing or malformed
+ */
+export const parseIntegerHeader = (value: string | null | undefined): number | undefined => {
+    const trimmed = value?.trim();
+
+    if (!trimmed || !/^\d+$/.test(trimmed)) {
+        return undefined;
+    }
+
+    const parsed = Number(trimmed);
+
+    return Number.isSafeInteger(parsed) ? parsed : undefined;
+};
+
+/**
+ * Parses a `Content-Length` header that is required to be a positive integer.
+ * @param value Raw header value
+ * @returns The content length
+ * @throws {HttpError} 400 when the header is missing, malformed or zero
+ */
+export const requirePositiveContentLength = (value: string | null | undefined): number => {
+    const contentLength = parseIntegerHeader(value);
+
+    if (contentLength === undefined || contentLength === 0) {
+        throw createHttpError(400, "Content-Length is required and must be greater than 0");
+    }
+
+    return contentLength;
+};
+
+/**
+ * Parses the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
+ * `null`, arrays and primitives yield `undefined`.
+ * @param value Raw header value
+ * @returns The metadata object, or `undefined` when the header is missing or not a JSON object
+ */
+export const parseMetadataHeader = (value: string | null | undefined): Record<string, unknown> | undefined => {
+    if (!value) {
+        return undefined;
+    }
+
+    try {
+        const parsed: unknown = JSON.parse(value);
+
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+            return { ...(parsed as Record<string, unknown>) };
+        }
+    } catch {
+        // Ignore invalid JSON
+    }
+
+    return undefined;
+};
+
+/**
  * Parses metadata from X-File-Metadata header.
  * @param request The HTTP request
  * @param existingMetadata Existing metadata to merge with (optional)
  * @returns Parsed metadata object
  */
 export const parseMetadata = (request: IncomingMessage, existingMetadata: Record<string, unknown> = {}): Record<string, unknown> => {
-    const metadataHeader = getHeader(request, "x-file-metadata", true);
+    const metadata = parseMetadataHeader(getHeader(request, "x-file-metadata", true));
 
-    if (!metadataHeader) {
-        return existingMetadata;
-    }
-
-    try {
-        return { ...existingMetadata, ...(JSON.parse(metadataHeader) as Record<string, unknown>) };
-    } catch {
-        // Ignore invalid JSON, return existing metadata
-        return existingMetadata;
-    }
+    return metadata ? { ...existingMetadata, ...metadata } : existingMetadata;
 };
 
 /**
@@ -126,45 +180,23 @@ export const parseContentDisposition = (request: IncomingMessage): string | unde
 
 /**
  * Parses chunked upload headers (X-Chunk-Offset, X-Total-Size, etc.).
- * @param request The HTTP request
+ * @param readHeader Reads a request header by name
  * @returns Object with chunk offset, total size, and chunked upload flag
  */
 export const parseChunkHeaders = (
-    request: IncomingMessage,
+    readHeader: HeaderReader,
 ): {
     chunkOffset?: number;
     isChunkedUpload: boolean;
     totalSize?: number;
 } => {
-    const isChunkedUpload = getHeader(request, "x-chunked-upload", true) === "true";
-    const chunkOffsetHeader = getHeader(request, "x-chunk-offset", true);
-    const totalSizeHeader = getHeader(request, "x-total-size", true);
+    const totalSize = parseIntegerHeader(readHeader("x-total-size"));
 
-    const result: {
-        chunkOffset?: number;
-        isChunkedUpload: boolean;
-        totalSize?: number;
-    } = {
-        isChunkedUpload,
+    return {
+        chunkOffset: parseIntegerHeader(readHeader("x-chunk-offset")),
+        isChunkedUpload: readHeader("x-chunked-upload") === "true",
+        totalSize: totalSize === 0 ? undefined : totalSize,
     };
-
-    if (chunkOffsetHeader) {
-        const offset = Number.parseInt(chunkOffsetHeader, 10);
-
-        if (!Number.isNaN(offset) && offset >= 0) {
-            result.chunkOffset = offset;
-        }
-    }
-
-    if (totalSizeHeader) {
-        const size = Number.parseInt(totalSizeHeader, 10);
-
-        if (!Number.isNaN(size) && size > 0) {
-            result.totalSize = size;
-        }
-    }
-
-    return result;
 };
 
 /**
@@ -186,10 +218,8 @@ export const validateRequestBody = (request: IncomingMessage, allowEmptyForChunk
     }
 
     // Also check Content-Length header to ensure body is not empty
-    const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
-
-    if (contentLength === 0 && !isChunkedUpload) {
-        throw createHttpError(400, "Content-Length is required and must be greater than 0");
+    if (!isChunkedUpload) {
+        requirePositiveContentLength(getHeader(request, "content-length"));
     }
 };
 
@@ -203,7 +233,12 @@ export const validateRequestBody = (request: IncomingMessage, allowEmptyForChunk
  */
 export const validateContentLength = (request: IncomingMessage, allowZeroForChunked = false, maxSize?: number): number => {
     const isChunkedUpload = getHeader(request, "x-chunked-upload", true) === "true";
-    const contentLength = Number.parseInt(getHeader(request, "content-length") || "0", 10);
+    const contentLengthHeader = getHeader(request, "content-length");
+    const contentLength = parseIntegerHeader(contentLengthHeader) ?? 0;
+
+    if (contentLengthHeader && parseIntegerHeader(contentLengthHeader) === undefined) {
+        throw createHttpError(400, "Content-Length must be a non-negative integer");
+    }
 
     // For chunked uploads, Content-Length can be 0 (initialization)
     // For regular uploads, Content-Length must be greater than 0
@@ -219,16 +254,16 @@ export const validateContentLength = (request: IncomingMessage, allowZeroForChun
 };
 
 /**
- * Extracts file initialization config from request headers.
- * @param request The HTTP request
+ * Builds the file initialization config from request headers. Shared by the Node and Fetch REST handlers.
+ * @param readHeader Reads a request header by name
  * @param contentLength The content length (already validated)
  * @param contentType The content type (default: application/octet-stream)
  * @returns FileInit configuration object
  */
-export const extractFileInit = (request: IncomingMessage, contentLength: number, contentType = "application/octet-stream"): FileInit => {
-    const originalName = parseContentDisposition(request);
-    const metadata = parseMetadata(request);
-    const { isChunkedUpload, totalSize } = parseChunkHeaders(request);
+export const buildFileInit = (readHeader: HeaderReader, contentLength: number, contentType = "application/octet-stream"): FileInit => {
+    const originalName = parseContentDispositionValue(readHeader("content-disposition"));
+    const metadata = parseMetadataHeader(readHeader("x-file-metadata")) ?? {};
+    const { isChunkedUpload, totalSize } = parseChunkHeaders(readHeader);
 
     const fileSize = isChunkedUpload && totalSize ? totalSize : contentLength;
 
@@ -246,3 +281,23 @@ export const extractFileInit = (request: IncomingMessage, contentLength: number,
         size: fileSize,
     };
 };
+
+/**
+ * Reads headers from a Node.js request.
+ * @param request The HTTP request
+ * @returns A {@link HeaderReader} for the request
+ */
+export const nodeHeaderReader =
+    (request: IncomingMessage): HeaderReader =>
+    (name: string) =>
+        getHeader(request, name, true);
+
+/**
+ * Extracts file initialization config from request headers.
+ * @param request The HTTP request
+ * @param contentLength The content length (already validated)
+ * @param contentType The content type (default: application/octet-stream)
+ * @returns FileInit configuration object
+ */
+export const extractFileInit = (request: IncomingMessage, contentLength: number, contentType = "application/octet-stream"): FileInit =>
+    buildFileInit(nodeHeaderReader(request), contentLength, contentType);

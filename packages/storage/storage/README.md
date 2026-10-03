@@ -156,6 +156,7 @@ Subpaths: `@visulima/storage/ai/{sdk,openai,claude,tanstack}` — Vercel AI SDK,
 - [Error handling](https://visulima.com/docs/packages/storage/error-handling) — `UploadError`, `ERRORS` enum, `wrapStorageError`
 - [Observability](https://visulima.com/docs/packages/storage/observability) — metrics, OpenTelemetry, structured logs
 - [OpenAPI export](https://visulima.com/docs/packages/storage/openapi)
+- [Migration guide](./MIGRATION-GUIDE.md) — upgrade notes, including the security fix that makes HTTP file listing opt-in (`allowList`)
 
 ## Supported Node.js Versions
 

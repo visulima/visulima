@@ -720,6 +720,8 @@ const { data, isLoading, error, meta, refetch } = useGetFile({
 
 Fetches a paginated list of files.
 
+> **Note:** the server only answers list requests when its handler is created with `allowList: true` (e.g. `new Rest({ allowList: true, storage })`). Listing is off by default because the list exposes every stored file; enable it only behind authentication.
+
 ```ts
 const { data, isLoading, error, refetch } = useGetFileList({
     endpoint: "/api/files",

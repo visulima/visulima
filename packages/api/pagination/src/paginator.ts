@@ -299,12 +299,13 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
 
     /**
      * Returns JSON representation of the paginated data.
-     * @param namingStrategy Optional key-transform applied to the `meta` keys.
+     * @param namingStrategy Optional key-transform applied to the `meta` keys. `JSON.stringify` calls
+     * `toJSON` with the property key (a string), which is ignored.
      */
-    public toJSON(namingStrategy?: NamingStrategy): PaginationResult<T> {
+    public toJSON(namingStrategy?: NamingStrategy | string): PaginationResult<T> {
         return {
             data: this.all(),
-            meta: this.getMeta(namingStrategy),
+            meta: this.getMeta(typeof namingStrategy === "function" ? namingStrategy : undefined),
         };
     }
 
