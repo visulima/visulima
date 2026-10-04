@@ -1,3 +1,14 @@
+## @visulima/storage [2.0.27](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.26...@visulima/storage@2.0.27) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** lazy s3 readiness and concurrent chunked patch progress ([#905](https://github.com/visulima/visulima/issues/905), [#902](https://github.com/visulima/visulima/issues/902)) ([#906](https://github.com/visulima/visulima/issues/906)) ([42ab722](https://github.com/visulima/visulima/commit/42ab7223481aabf795dd564553e2bfe885793271))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.26
+
 ## @visulima/storage [2.0.26](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.25...@visulima/storage@2.0.26) (2026-10-03)
 
 ### Bug Fixes
