@@ -377,14 +377,19 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BunnyFile | undefined;
-            let path: string;
 
             try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                path = stored.bunnyPath ?? toBunnyPath(stored.name ?? id);
+                stored = await this.getMeta(id);
             } catch {
-                path = toBunnyPath(id);
+                // No metadata — treat `id` as the object key.
             }
+
+            // Outside the try: an expired upload must answer GONE, not fall back to its object.
+            if (stored) {
+                await this.checkIfExpired(stored);
+            }
+
+            const path = stored ? (stored.bunnyPath ?? toBunnyPath(stored.name ?? id)) : toBunnyPath(id);
 
             let entry: BunnyStorageSDK.file.StorageFile;
 
@@ -463,6 +468,11 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
+    /** Purge by upload id: `list` yields stored names, which differ from ids under a custom `filename`. */
+    protected override async listUploads(): Promise<BunnyFile[]> {
+        return (await this.meta.list()) ?? this.list();
+    }
+
     public override async list(limit = 1000, options?: OperationOptions): Promise<BunnyFile[]> {
         return this.instrumentOperation(
             "list",
@@ -496,6 +506,8 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                         file.bunnyChecksum = entry.checksum ?? undefined;
                         file.ETag = entry.checksum ?? undefined;
                         file.size = entry.length;
+                        // purge() ages non-rolling uploads by createdAt; without it nothing ever expires.
+                        file.createdAt = entry.dateCreated?.toISOString();
                         file.modifiedAt = entry.lastChanged?.toISOString();
 
                         return file;

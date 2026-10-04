@@ -362,15 +362,15 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let key = id;
-            let stored: PocketBaseFile | undefined;
+            // No metadata — treat `id` as a logical key.
+            const stored = await this.getMetaSafe(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a logical key.
+            // Outside the lookup: an expired upload must answer GONE, not fall back to its record.
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored ? (stored.path ?? stored.name ?? id) : id;
 
             await this.ensureAuth();
 
@@ -463,6 +463,11 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
             return file;
         });
+    }
+
+    /** Purge by upload id: `list` yields record keys, which differ from ids under a custom `filename`. */
+    protected override async listUploads(): Promise<PocketBaseFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<PocketBaseFile[]> {
