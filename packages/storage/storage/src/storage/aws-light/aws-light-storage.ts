@@ -5,6 +5,7 @@ import type { AwsClient } from "aws4fetch";
 
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
+import { buildRangeHeader } from "../aws/s3-utils";
 import type { OperationOptions } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
@@ -149,15 +150,17 @@ class AwsLightStorage extends S3BaseStorage {
 
     public override async getStream(
         { id }: FileQuery,
-        options?: OperationOptions,
+        options?: OperationOptions & { range?: { end?: number; start: number } },
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
+            const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
                         Key: id,
+                        ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
                 ),
@@ -165,22 +168,9 @@ class AwsLightStorage extends S3BaseStorage {
 
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
-            // Body from adapter is ReadableStream, convert to Readable
+            // Returned as-is: a proxy that subscribed inside read() re-added its listeners on every
+            // pull and pushed each chunk once per listener.
             const stream: Readable = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as NodeReadableStream<Uint8Array>) : (Body as Readable);
-
-            const readableStream = new Readable({
-                read() {
-                    stream.on("data", (chunk: Buffer) => {
-                        this.push(chunk);
-                    });
-                    stream.on("end", () => {
-                        this.push(null);
-                    });
-                    stream.on("error", (error: Error) => {
-                        this.destroy(error);
-                    });
-                },
-            });
 
             return {
                 headers: {
@@ -191,7 +181,7 @@ class AwsLightStorage extends S3BaseStorage {
                     ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
-                stream: readableStream,
+                stream,
             };
         });
     }

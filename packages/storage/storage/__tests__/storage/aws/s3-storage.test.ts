@@ -312,6 +312,42 @@ describe(S3Storage, () => {
             ).rejects.toMatchObject({ UploadErrorCode: "ChecksumMismatch" });
         });
 
+        it("keeps the metadata of the completed upload", async () => {
+            expect.assertions(3);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
+            s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
+            s3Mock.on(CompleteMultipartUploadCommand).resolves({ ETag: "done", Location: "/1234" });
+            s3Mock.on(PutObjectCommand).resolves({});
+
+            await storage.write({ body: testfile.asReadable, contentLength: metafile.size, id: metafile.id, start: 0 });
+
+            expect(s3Mock.commandCalls(DeleteObjectCommand)).toHaveLength(0);
+            expect(decodeSavedMeta().at(-1)).toMatchObject({ ETag: "done", status: "completed", uri: "/1234" });
+            expect(decodeSavedMeta().at(-1)).not.toHaveProperty("Parts");
+        });
+
+        it("refuses part 10,001", async () => {
+            expect.assertions(2);
+
+            s3Mock.on(HeadObjectCommand).resolves({
+                Metadata: {
+                    metadata: encodeURIComponent(JSON.stringify({ ...JSON.parse(decodeURIComponent(metafileResponse.Metadata.metadata)), size: 10_010 })),
+                },
+            });
+            s3Mock.on(ListPartsCommand).resolves({
+                Parts: Array.from({ length: 10_000 }, (_, index) => {
+                    return { ETag: "e", PartNumber: index + 1, Size: 1 };
+                }),
+            });
+
+            await expect(storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 10_000 })).rejects.toThrow(
+                /Exceeded 10000/u,
+            );
+            expect(s3Mock.commandCalls(UploadPartCommand)).toHaveLength(0);
+        });
+
         it("only advertises md5 and rejects checksum algorithms S3 cannot verify per part", async () => {
             expect.assertions(3);
 
@@ -359,6 +395,27 @@ describe(S3Storage, () => {
             expect(deleted.status).toBe("deleted");
         });
 
+        it("keeps the metadata when aborting the multipart upload fails", async () => {
+            expect.assertions(2);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(AbortMultipartUploadCommand).rejects(Object.assign(new Error("Access Denied"), { $metadata: { httpStatusCode: 403 } }));
+
+            await expect(storage.delete(metafile)).rejects.toThrow("Access Denied");
+            expect(s3Mock.commandCalls(DeleteObjectCommand)).toHaveLength(0);
+        });
+
+        it("deletes the metadata when the multipart upload is already gone", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(AbortMultipartUploadCommand).rejects(Object.assign(new Error("NoSuchUpload"), { $metadata: { httpStatusCode: 404 } }));
+
+            await storage.delete(metafile);
+
+            expect(s3Mock.commandCalls(DeleteObjectCommand).map((call) => call.args[0].input.Key)).toStrictEqual([`${metafile.id}.META`]);
+        });
+
         it("should throw error when file does not exist", async () => {
             expect.assertions(1);
 
@@ -381,10 +438,23 @@ describe(S3Storage, () => {
 
             expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
-                CopySource: "bucket/name",
+                CopySource: "bucket/testfile.mp4",
                 Key: "new name",
             });
             expect(result.name).toBe("new name");
+        });
+
+        it("copies from the source's object key, URL-encoded", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(HeadObjectCommand).resolves({
+                Metadata: { metadata: encodeURIComponent(JSON.stringify({ ...metafile, name: "dir/a b+c?.mp4", status: "completed" })) },
+            });
+            s3Mock.on(CopyObjectCommand).resolves({});
+
+            await storage.copy(metafile.id, "new name");
+
+            expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input.CopySource).toBe("bucket/dir/a%20b%2Bc%3F.mp4");
         });
 
         it("rejects absolute destination paths to prevent cross-bucket targeting", async () => {
@@ -411,7 +481,7 @@ describe(S3Storage, () => {
 
             expect(s3Mock.commandCalls(CopyObjectCommand)[0]?.args[0].input).toStrictEqual({
                 Bucket: "bucket",
-                CopySource: "bucket/name",
+                CopySource: "bucket/testfile.mp4",
                 Key: "new name",
                 StorageClass: "GLACIER",
             });

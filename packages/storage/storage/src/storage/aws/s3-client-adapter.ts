@@ -19,6 +19,7 @@ import {
     DeleteObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
+    ListMultipartUploadsCommand,
     ListObjectsV2Command,
     ListPartsCommand,
     UploadPartCommand,
@@ -26,7 +27,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import type { Part, S3ApiOperations, S3CallOptions } from "./s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "./s3-base-storage";
 
 // Use global ReadableStream type for interface compatibility
 type ReadableStream = globalThis.ReadableStream;
@@ -147,6 +148,25 @@ class S3ClientAdapter implements S3ApiOperations {
         });
 
         await this.client.send(command, sendOptions(options));
+    }
+
+    public async listMultipartUploads(
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }> {
+        const response = await this.client.send(
+            new ListMultipartUploadsCommand({ Bucket: params.Bucket, KeyMarker: params.KeyMarker, UploadIdMarker: params.UploadIdMarker }),
+            sendOptions(options),
+        );
+
+        return {
+            IsTruncated: response.IsTruncated,
+            NextKeyMarker: response.NextKeyMarker,
+            NextUploadIdMarker: response.NextUploadIdMarker,
+            Uploads: response.Uploads?.map(({ Initiated, Key, UploadId }) => {
+                return { Initiated, Key, UploadId };
+            }),
+        };
     }
 
     public async listParts(

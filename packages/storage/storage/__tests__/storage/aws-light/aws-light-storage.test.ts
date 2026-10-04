@@ -878,10 +878,11 @@ describe("awsLightPresignedStorage", () => {
 
             storage = new AwsLightStorage(options);
 
-            // Mock headObject to return 404 (metadata doesn't exist)
-            mockFetch.mockResolvedValueOnce({
+            // Metadata HEAD, then the HEAD of an object stored under the id: both missing
+            mockFetch.mockResolvedValue({
                 ok: false,
                 status: 404,
+                text: async () => "",
             });
 
             const exists = await storage.exists({ id: "non-existent-id" });
@@ -913,6 +914,7 @@ describe("awsLightPresignedStorage", () => {
             mockFetch.mockResolvedValueOnce({
                 ok: false,
                 status: 404,
+                text: async () => "",
             });
 
             const exists = await storage.exists({ id: metafile.id });

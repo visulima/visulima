@@ -6,7 +6,10 @@ import AwsLightStorage from "../../../../src/storage/aws-light/aws-light-storage
 /**
  * In-memory path-style S3 (bucket "uploads") answering the requests AwsLightStorage makes.
  */
-const createS3Fake = (): { fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>; objects: Map<string, { body: Uint8Array; headers?: Record<string, string> }> } => {
+const createS3Fake = (): {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+    objects: Map<string, { body: Uint8Array; headers?: Record<string, string> }>;
+} => {
     const objects = new Map<string, { body: Uint8Array; headers?: Record<string, string> }>();
     const uploads = new Map<string, { key: string; parts: Map<number, { body: Uint8Array; etag: string }> }>();
     let counter = 0;
@@ -170,14 +173,13 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
         expect(stored?.byteLength).toBe(bytes.byteLength);
         expect(Buffer.from(stored as Uint8Array).equals(Buffer.from(bytes))).toBe(true);
 
-        // The metadata is gone with completion, and the object alone can't prove the route created
-        // it: HEAD answers 404 (#918), and a PUT under the id must not replace it (#919).
+        // The metadata outlives completion, so the finished upload stays reachable, and a PUT under
+        // the id does not replace the completed object.
         const head = await rest.fetch(new Request(location, { method: "HEAD" }));
-        const put = await rest.fetch(
-            new Request(location, { body: "evil", headers: { "content-length": "4", "content-type": "text/plain" }, method: "PUT" }),
-        );
 
-        expect([head.status, put.status]).toStrictEqual([404, 409]);
+        await rest.fetch(new Request(location, { body: "evil", headers: { "content-length": "4", "content-type": "text/plain" }, method: "PUT" }));
+
+        expect(head.status).toBe(200);
         expect(s3.objects.get(id)?.body.byteLength).toBe(bytes.byteLength);
     });
     it("should not answer HEAD from objects without upload metadata (#918)", async () => {
@@ -255,7 +257,8 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
             }),
         );
 
-        expect(response.status).toBeGreaterThanOrEqual(500);
+        // The provider's refusal is passed on.
+        expect(response.status).toBe(403);
         expect(new TextDecoder().decode(s3.objects.get("payroll-2026")?.body)).toBe("the real payroll");
     });
 });

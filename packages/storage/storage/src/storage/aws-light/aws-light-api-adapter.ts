@@ -3,7 +3,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
-import type { Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
 import type { AwsLightClientConfig } from "./types";
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
@@ -116,6 +116,20 @@ const toArray = <T>(value: unknown): T[] => {
 };
 
 /**
+ * An error for a failed S3 request, carrying the HTTP status in both shapes the storage reads
+ * (`statusCode` for retries, `$metadata.httpStatusCode` like the AWS SDK) and the S3 error code.
+ */
+const requestError = (message: string, status: number, body: string): Error => {
+    const code = (parseXml(body).Error as Record<string, unknown> | undefined)?.Code;
+
+    return Object.assign(new Error(`${message}: ${String(status)} ${body}`), {
+        $metadata: { httpStatusCode: status },
+        statusCode: status,
+        ...(typeof code === "string" && { code, name: code }),
+    });
+};
+
+/**
  * Adapter that uses aws4fetch to implement S3ApiOperations interface.
  */
 class AwsLightApiAdapter implements S3ApiOperations {
@@ -123,11 +137,22 @@ class AwsLightApiAdapter implements S3ApiOperations {
 
     private readonly bucket: string;
 
-    private readonly endpoint: string;
+    /** Bucket URL without a trailing slash; object keys are appended to it. */
+    private readonly baseUrl: string;
 
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
-        this.endpoint = config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`;
+
+        const endpoint = new URL(config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`);
+        let path = endpoint.pathname.replace(/\/+$/u, "");
+
+        // A custom endpoint is the service root (path-style, as for R2, MinIO and Spaces) unless it
+        // already names the bucket, in its host (virtual-hosted) or as its last path segment.
+        if (!endpoint.hostname.startsWith(`${config.bucket}.`) && path.split("/").pop() !== config.bucket) {
+            path += `/${encodeURIComponent(config.bucket)}`;
+        }
+
+        this.baseUrl = endpoint.origin + path;
 
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
@@ -175,7 +200,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to create multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to create multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -232,7 +257,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to upload part: ${response.status} ${text}`);
+            throw requestError("Failed to upload part", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful PUT requests
@@ -281,13 +306,20 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to complete multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to complete multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
+
+        // S3 can answer 200 and still fail the request, with an <Error> body; such errors are
+        // server-side (InternalError, SlowDown), so report them as a retryable 500.
+        if (xml.Error !== undefined) {
+            throw requestError("Failed to complete multipart upload", 500, xmlText);
+        }
+
         const result = (xml.CompleteMultipartUploadResult as Record<string, unknown>) || xml;
 
-        const location = (result.Location as string) || `${this.endpoint}/${params.Key}`;
+        const location = (result.Location as string) || this.buildUrl(params.Key);
         const etag = result.ETag as string | undefined;
 
         return {
@@ -307,8 +339,46 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to abort multipart upload: ${response.status} ${text}`);
+            throw requestError("Failed to abort multipart upload", response.status, text);
         }
+    }
+
+    public async listMultipartUploads(
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }> {
+        const queryParams: Record<string, string> = { uploads: "" };
+
+        if (params.KeyMarker !== undefined) {
+            queryParams["key-marker"] = params.KeyMarker;
+        }
+
+        if (params.UploadIdMarker !== undefined) {
+            queryParams["upload-id-marker"] = params.UploadIdMarker;
+        }
+
+        const response = await this.aws.fetch(this.buildUrl("", queryParams), { method: "GET", signal: options?.signal });
+        const xmlText = await response.text();
+
+        if (!response.ok) {
+            throw requestError("Failed to list multipart uploads", response.status, xmlText);
+        }
+
+        const xml = parseXml(xmlText);
+        const result = (xml.ListMultipartUploadsResult as Record<string, unknown> | undefined) ?? xml;
+
+        return {
+            IsTruncated: result.IsTruncated === "true",
+            NextKeyMarker: result.NextKeyMarker as string | undefined,
+            NextUploadIdMarker: result.NextUploadIdMarker as string | undefined,
+            Uploads: toArray<Record<string, unknown>>(result.Upload).map((upload) => {
+                return {
+                    Initiated: upload.Initiated ? new Date(String(upload.Initiated)) : undefined,
+                    Key: upload.Key as string | undefined,
+                    UploadId: upload.UploadId as string | undefined,
+                };
+            }),
+        };
     }
 
     public async listParts(
@@ -330,7 +400,7 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list parts: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list parts", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -350,7 +420,7 @@ ${partsXml}
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string },
+        params: { Bucket: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -363,6 +433,7 @@ ${partsXml}
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            ...(params.Range !== undefined && { headers: { Range: params.Range } }),
             method: "GET",
             signal: options?.signal,
         });
@@ -370,7 +441,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to get object: ${response.status} ${text}`);
+            throw requestError("Failed to get object", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful GET requests
@@ -425,7 +496,7 @@ ${partsXml}
             const text = await response.text();
 
             // The status in the SDK's shape, so callers can tell a missing object from a failure.
-            throw Object.assign(new Error(`Failed to head object: ${response.status} ${text}`), { $metadata: { httpStatusCode: response.status } });
+            throw requestError("Failed to head object", response.status, text);
         }
 
         const contentLength = response.headers.get("Content-Length");
@@ -464,7 +535,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to delete object: ${response.status} ${text}`);
+            throw requestError("Failed to delete object", response.status, text);
         }
     }
 
@@ -492,7 +563,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to copy object: ${response.status} ${text}`);
+            throw requestError("Failed to copy object", response.status, text);
         }
     }
 
@@ -534,7 +605,7 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list objects: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list objects", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -626,7 +697,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw Object.assign(new Error(`Failed to put object: ${response.status} ${text}`), { statusCode: response.status });
+            throw requestError("Failed to put object", response.status, text);
         }
 
         return { ETag: response.headers?.get("ETag")?.replaceAll(/(^"|"$)/g, "") || undefined };
@@ -642,7 +713,7 @@ ${partsXml}
         if (!response.ok && response.status !== 404) {
             const text = await response.text();
 
-            throw new Error(`Failed to access bucket: ${response.status} ${text}`);
+            throw requestError("Failed to access bucket", response.status, text);
         }
     }
 
@@ -650,7 +721,14 @@ ${partsXml}
      * Builds S3 API URL.
      */
     private buildUrl(key: string, queryParams?: Record<string, string>): string {
-        const url = new URL(key, this.endpoint);
+        const segments = key.split("/");
+
+        // URLs resolve "." and ".." segments (even percent-encoded), so such a key would address another object.
+        if (segments.some((segment) => segment === "." || segment === "..")) {
+            throw new Error(`Object key "${key}" cannot be addressed: it contains a "." or ".." segment`);
+        }
+
+        const url = new URL(`${this.baseUrl}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`);
 
         if (queryParams) {
             for (const [parameterKey, value] of Object.entries(queryParams)) {

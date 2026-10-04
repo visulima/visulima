@@ -11,11 +11,12 @@ import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
+import { getMetaVersion, setMetaVersion } from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { BaseStorageOptions, OperationOptions } from "../types";
+import type { BaseStorageOptions, OperationOptions, PurgeList } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
-import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
+import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
 
 // Re-exported for existing importers of this module.
 export { buildRangeHeader } from "./s3-utils";
@@ -27,6 +28,15 @@ export interface Part {
     ETag?: string;
     PartNumber: number;
     Size?: number;
+}
+
+/**
+ * An unfinished multipart upload, as ListMultipartUploads reports it.
+ */
+export interface MultipartUpload {
+    Initiated?: Date;
+    Key?: string;
+    UploadId?: string;
 }
 
 /**
@@ -107,6 +117,11 @@ export interface S3ApiOperations {
         LastModified?: Date;
         Metadata?: Record<string, string>;
     }>;
+
+    listMultipartUploads: (
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ) => Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }>;
 
     listObjectsV2: (
         params: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string },
@@ -346,39 +361,39 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * Writes data to an S3 multipart upload.
      */
     public async write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile> {
-        return this.instrumentOperation("write", async () => {
-            let file: TFile;
+        return this.instrumentOperation("write", async () =>
+            // Read the metadata under the lock: one read before it could be stale by the time a
+            // concurrent write to the same upload released it.
+            this.withLock(part.id, async () => {
+                let file: TFile;
 
-            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-                file = part;
-            } else {
-                file = await this.getMeta(part.id);
+                if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+                    file = part;
+                } else {
+                    file = await this.getMeta(part.id);
 
-                await this.checkIfExpired(file);
-            }
+                    await this.checkIfExpired(file);
+                }
 
-            if (file.status === "completed") {
-                return file;
-            }
+                if (file.status === "completed") {
+                    return file;
+                }
 
-            if (typeof part.size === "number" && part.size > 0) {
-                updateSize(file, part.size);
-            }
+                if (typeof part.size === "number" && part.size > 0) {
+                    updateSize(file, part.size);
+                }
 
-            if (!partMatch(part, file)) {
-                return throwErrorCode(ERRORS.FILE_CONFLICT);
-            }
+                if (!partMatch(part, file)) {
+                    return throwErrorCode(ERRORS.FILE_CONFLICT);
+                }
 
-            if (this.config.clientDirectUpload) {
-                return this.buildPresigned(file);
-            }
+                if (this.config.clientDirectUpload) {
+                    return this.buildPresigned(file);
+                }
 
-            file.Parts ??= await this.getParts(file);
-            file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
+                file.Parts ??= await this.getParts(file);
+                file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
 
-            const lockToken = await this.lock(part.id);
-
-            try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
                         return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
@@ -414,7 +429,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         }
                     }
 
-                    if (file.Parts.length > this.MAX_PARTS) {
+                    if (file.Parts.length >= this.MAX_PARTS) {
                         throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
                     }
 
@@ -472,41 +487,41 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 file.status = getFileStatus(file);
 
                 if (file.status === "completed") {
-                    const [completed] = await this.internalOnComplete(file);
-
-                    delete file.Parts;
-
-                    file.uri = completed.Location;
-                    file.ETag = completed.ETag;
+                    await this.internalOnComplete(file);
                 } else if (hasContent(part)) {
                     // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
                     await this.saveMeta(withoutParts(file));
                 }
-            } finally {
-                await this.unlock(part.id, lockToken);
-            }
 
-            return file;
-        });
+                return file;
+            }),
+        );
     }
 
     /**
-     * Deletes an upload and its metadata.
+     * Deletes an upload and its metadata: aborts an unfinished multipart upload, or deletes the
+     * object of a finished one. An object without metadata (completed by an older version, which
+     * dropped it) is deleted too.
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id);
+            const { file, tracked } = await this.findUpload(id, options);
 
-            file.status = "deleted";
+            // Remove the data before the metadata, so a failure leaves a record to retry with
+            // instead of an unreachable multipart upload that keeps incurring storage charges.
+            if (file.status === "completed") {
+                const s3Api = this.getS3Api();
 
-            // Sequence the abort before the metadata delete so a partial failure leaves a recoverable
-            // metadata orphan (detectable + retryable) instead of an unreachable multipart upload that
-            // continues to incur storage charges. abortMultipartUpload retries internally via
-            // runOperation, so no extra retry wrapper here.
-            await this.abortMultipartUpload(file, options);
-            await this.deleteMeta(file.id);
+                await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: file.name }, { signal }));
+            } else {
+                await this.abortMultipartUpload(file, options);
+            }
 
-            const deletedFile = { ...file };
+            if (tracked) {
+                await this.deleteMeta(file.id);
+            }
+
+            const deletedFile = { ...file, status: "deleted" as const };
 
             await this.onDelete(deletedFile);
 
@@ -515,52 +530,121 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Copies an upload file to a new location.
+     * Copies an upload's object to `destination`, a key in the same bucket. The copy is an object
+     * without upload metadata.
      */
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
-            S3BaseStorage.assertSafeId(name);
             S3BaseStorage.assertSafeId(destination);
 
-            const sourceFile = await this.getMeta(name);
-            const CopySource = `${this.bucket}/${name}`;
-            const Bucket = this.bucket;
-            // Always copy within the same bucket. Previously a leading-slash in
-            // `destination` would re-target a different bucket parsed from the
-            // path — an undocumented behavior that let any caller cross bucket
-            // boundaries by adding `/`.
-            const Key = destination;
+            const { file } = await this.findUpload(name, options);
 
-            const s3Api = this.getS3Api();
-
-            await this.runOperation(options, (signal) =>
-                s3Api.copyObject(
-                    {
-                        Bucket,
-                        CopySource,
-                        Key,
-                        ...(options?.storageClass && { StorageClass: options.storageClass }),
-                    },
-                    { signal },
-                ),
-            );
-
-            return { ...sourceFile, id: Key, name: Key };
+            return this.copyObject(file, destination, options);
         });
     }
 
     /**
-     * Moves an upload file to a new location.
+     * Moves an upload's object to `destination`, a key in the same bucket, and drops the source
+     * object and its metadata.
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
-            await this.copy(name, destination, options);
+            S3BaseStorage.assertSafeId(destination);
 
+            const { file, tracked } = await this.findUpload(name, options);
+            const moved = await this.copyObject(file, destination, options);
             const s3Api = this.getS3Api();
 
-            await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: name }, { signal }));
+            await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: file.name }, { signal }));
 
-            return await this.getMeta(destination);
+            if (tracked) {
+                await this.deleteMeta(file.id);
+            }
+
+            return moved;
+        });
+    }
+
+    /**
+     * Deletes expired uploads: finished ones by the age of their object, unfinished multipart
+     * uploads (which no object listing shows) by the time they were started, or last written to
+     * with `expiration.rolling`.
+     */
+    public override async purge(maxAge?: number | string): Promise<PurgeList> {
+        return this.instrumentOperation("purge", async () => {
+            const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
+            const purged = { items: [], maxAgeMs } as PurgeList;
+
+            if (!maxAgeMs) {
+                return purged;
+            }
+
+            const before = Date.now() - maxAgeMs;
+            const { prefix, suffix } = this.meta;
+            // Metadata records live next to the objects when the meta storage uses the bucket.
+            const isMetaKey = (key: string): boolean => (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
+
+            const purge = async (id: string, file: Partial<TFile>): Promise<void> => {
+                try {
+                    purged.items.push({ ...(await this.delete({ id })), ...file });
+                } catch (error: unknown) {
+                    this.logger?.warn(`Failed to delete file ${id} during purge: ${error instanceof Error ? error.message : String(error)}`);
+                }
+            };
+
+            for (const { id, ...rest } of await this.list()) {
+                if (!isMetaKey(id) && Number(rest.createdAt) < before) {
+                    await purge(id, rest as Partial<TFile>);
+                }
+            }
+
+            const s3Api = this.getS3Api();
+            let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
+
+            while (marker) {
+                const previous: { KeyMarker?: string; UploadIdMarker?: string } = marker;
+                const page = await this.runOperation(undefined, (signal) => s3Api.listMultipartUploads({ Bucket: this.bucket, ...previous }, { signal }));
+
+                for (const { Initiated, Key, UploadId } of page.Uploads ?? []) {
+                    if (Key === undefined || UploadId === undefined) {
+                        continue;
+                    }
+
+                    // ponytail: metadata is looked up by the object key, which is the upload id unless a custom `filename` is set.
+                    const file = await this.getMeta(Key).catch(() => undefined);
+                    const lastActive = (this.expiration?.rolling && file?.modifiedAt) || Initiated;
+
+                    if (lastActive === undefined || Number(new Date(lastActive)) >= before) {
+                        continue;
+                    }
+
+                    if (file?.UploadId === UploadId) {
+                        await purge(Key, {});
+                    } else {
+                        try {
+                            await this.abortMultipartUpload({ name: Key, UploadId } as TFile);
+
+                            purged.items.push({ id: Key, name: Key } as TFile);
+                        } catch (error: unknown) {
+                            this.logger?.warn(
+                                `Failed to abort multipart upload ${UploadId} during purge: ${error instanceof Error ? error.message : String(error)}`,
+                            );
+                        }
+                    }
+                }
+
+                // A truncated page without new markers would loop forever; stop instead.
+                marker =
+                    page.IsTruncated && (page.NextKeyMarker !== previous.KeyMarker || page.NextUploadIdMarker !== previous.UploadIdMarker)
+                        ? { KeyMarker: page.NextKeyMarker, UploadIdMarker: page.NextUploadIdMarker }
+                        : undefined;
+            }
+
+            if (purged.items.length > 0) {
+                this.logger?.info(`Purge: removed ${purged.items.length} uploads`);
+            }
+
+            return purged;
         });
     }
 
@@ -704,42 +788,22 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Checks if a file exists by verifying both metadata and the actual S3 object.
-     * Returns true only if both the metadata and the S3 object exist.
-     * @param query File query containing the file ID to check.
-     * @returns Promise resolving to true if both metadata and S3 object exist, false otherwise.
+     * Whether an upload's object exists: the one its metadata names, or, for an ID without
+     * metadata, the object stored under it. An unfinished upload has no object yet.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
+            let key = id;
+
             try {
-                // First check if metadata exists
-                await this.getMeta(id);
+                const file = await this.getMeta(id);
 
-                // Then verify the actual S3 object exists
-                const s3Api = this.getS3Api();
-
-                await this.runOperation(options, (signal) =>
-                    s3Api.headObject(
-                        {
-                            Bucket: this.bucket,
-                            Key: id,
-                        },
-                        { signal },
-                    ),
-                );
-
-                return true;
-            } catch (error: unknown) {
-                // Check if it's a 404 error (file not found)
-                const errorWithMetadata = error as { $metadata?: { httpStatusCode?: number } };
-
-                if (errorWithMetadata.$metadata?.httpStatusCode === 404) {
-                    return false;
-                }
-
-                // For metadata errors (FILE_NOT_FOUND), also return false
-                return false;
+                key = file.name;
+            } catch {
+                // No metadata: the object stored under the id.
             }
+
+            return (await this.getCompletedFile(key, options)) !== undefined;
         });
     }
 
@@ -836,12 +900,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         }
 
         if (file.status === "completed") {
-            const [completed] = await this.internalOnComplete(file);
-
-            delete fileWithParts.Parts;
-            fileWithParts.uri = completed.Location;
-
-            return file;
+            await this.internalOnComplete(file);
         }
 
         return file;
@@ -959,18 +1018,14 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * Aborts a multipart upload.
      */
     protected async abortMultipartUpload(file: TFile, options?: OperationOptions): Promise<void> {
-        if (file.status === "completed") {
+        const s3Api = this.getS3Api();
+        const uploadId = file.UploadId;
+
+        if (!uploadId) {
             return;
         }
 
         try {
-            const s3Api = this.getS3Api();
-            const uploadId = file.UploadId;
-
-            if (!uploadId) {
-                return;
-            }
-
             await this.runOperation(options, (signal) =>
                 s3Api.abortMultipartUpload(
                     {
@@ -982,18 +1037,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 ),
             );
         } catch (error) {
-            this.logger?.error("abortMultipartUploadError: ", error);
-
-            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-            await this.onError(httpError);
+            // NoSuchUpload: already aborted or completed. Any other failure must keep the metadata.
+            if (!isNotFound(error)) {
+                throw error;
+            }
         }
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload
-     * completes. The ID is the object key unless a custom `filename` is set. Only a missing object
-     * answers `undefined`; any other failure throws.
+     * Describes the object stored under a key that may have no upload metadata (an upload
+     * completed by an older version, which dropped it, or an object written by other means). Only
+     * a missing object answers `undefined`; any other failure throws.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
         const s3Api = this.getS3Api();
@@ -1004,7 +1058,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
         } catch (error) {
             // Only a missing object counts as absent: the result guards against overwriting one (#919).
-            if ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404) {
+            if (isNotFound(error)) {
                 return undefined;
             }
 
@@ -1018,10 +1072,68 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Internal onComplete handler.
+     * The upload's metadata, or for an ID without any, the object stored under it. `tracked` tells
+     * whether there is metadata to delete with the upload.
+     */
+    protected async findUpload(id: string, options?: OperationOptions): Promise<{ file: TFile; tracked: boolean }> {
+        S3BaseStorage.assertSafeId(id);
+
+        try {
+            return { file: await this.getMeta(id), tracked: true };
+        } catch (error: unknown) {
+            const file = await this.getCompletedFile(id, options);
+
+            if (file === undefined) {
+                throw error;
+            }
+
+            return { file, tracked: false };
+        }
+    }
+
+    /**
+     * Copies `file`'s object to `destination` in the same bucket.
+     */
+    protected async copyObject(file: TFile, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile> {
+        const s3Api = this.getS3Api();
+
+        await this.runOperation(options, (signal) =>
+            s3Api.copyObject(
+                {
+                    Bucket: this.bucket,
+                    // The source is "bucket/key" with the key URL-encoded.
+                    CopySource: `${this.bucket}/${file.name
+                        .split("/")
+                        .map((segment) => encodeURIComponent(segment))
+                        .join("/")}`,
+                    // Always the same bucket: a leading "/" in `destination` once re-targeted another one.
+                    Key: destination,
+                    ...(options?.storageClass && { StorageClass: options.storageClass }),
+                },
+                { signal },
+            ),
+        );
+
+        return { ...file, id: destination, name: destination };
+    }
+
+    /**
+     * Completes the multipart upload and keeps the finished upload's metadata, as the other
+     * storages do. A failed completion leaves the metadata of the unfinished upload in place, so it
+     * can be retried or aborted.
      */
     protected internalOnComplete = async (file: TFile): Promise<[{ ETag?: string; Location: string }, TFile]> => {
-        const [completed] = await Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+        const completed = await this.completeMultipartUpload(file);
+
+        delete file.Parts;
+        file.uri = completed.Location;
+        file.ETag = completed.ETag;
+
+        // Presigned part URLs are only useful while uploading and would bloat the record.
+        const { partsUrls: _partsUrls, ...record } = file;
+
+        setMetaVersion(record, getMetaVersion(file));
+        await this.saveMeta(record as TFile);
 
         return [completed, file];
     };

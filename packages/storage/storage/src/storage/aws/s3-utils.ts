@@ -37,6 +37,11 @@ export const withoutParts = <T extends { Parts?: unknown }>(file: T): T => {
 };
 
 /**
+ * Whether an S3 error is a 404: a missing object (NoSuchKey) or multipart upload (NoSuchUpload).
+ */
+export const isNotFound = (error: unknown): boolean => (error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 404;
+
+/**
  * Whether an UploadPart failure is S3 rejecting the `Content-MD5` digest.
  */
 export const isBadDigest = (error: unknown): boolean => {
