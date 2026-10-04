@@ -4,150 +4,363 @@
 
 ## Overview
 
-Amazon S3 is a web service interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web. You can accomplish these tasks using the simple web services interface that Amazon S3 provides. Amazon S3 is designed to make web-scale computing easier for developers and works seamlessly with Visulima upload's image transformation features.
+`S3Storage` stores uploads in an Amazon S3 bucket through the official AWS SDK v3. Every upload is an S3 multipart upload: `create()` starts it, each `write()` appends one part, and the last part completes it. The same adapter talks to any S3-compatible service (R2, MinIO, Spaces, Wasabi, …) through the [client helpers](#s3-compatible-services).
 
-## When to Use AWS S3 vs AWS Light Storage
+### S3Storage or AwsLightStorage?
 
-### Use AWS S3 Storage When:
+| Need                                                    | Use                                  |
+| ------------------------------------------------------- | ------------------------------------ |
+| Node.js server, AWS credential chain (SSO, IAM role, …) | `S3Storage`                          |
+| Presigned read/upload URLs (`files.url()`, signed PUT)  | `S3Storage`                          |
+| `clientDirectUpload` (browser uploads parts to S3)      | `S3Storage`                          |
+| Edge / worker runtime, no AWS SDK in the bundle         | [`AwsLightStorage`](./aws-light.mdx) |
+| Bun with its built-in S3 client                         | [`BunS3Storage`](./bun-s3.mdx)       |
 
-- ✅ **Node.js Environment**: Running in traditional Node.js servers or applications
-- ✅ **Full AWS SDK Features**: Need advanced AWS SDK features and integrations
-- ✅ **Better Presigned URL Support**: Require robust presigned URL generation
-- ✅ **AWS Ecosystem Integration**: Need to integrate with other AWS services
-- ✅ **Production Node.js Apps**: Standard Node.js backend applications
-
-### Use AWS Light Storage When:
-
-- ✅ **Worker Environments**: Cloudflare Workers, Web Workers, or edge runtimes
-- ✅ **Bundle Size Matters**: Need a lightweight solution (~6.4 KB vs ~2MB)
-- ✅ **No Node.js Available**: Running in browser or edge environments without Node.js
-- ✅ **Simple S3 Operations**: Basic upload, download, delete operations are sufficient
-
-> **Note**: If you're unsure, start with AWS Light Storage for worker/edge environments, or AWS S3 Storage for Node.js environments. Both provide the same core S3 functionality.
+Both S3 adapters share the same upload logic (`S3BaseStorage`), so uploads, metadata records and limits behave the same.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
 ```
 
 ```sh
-yarn add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+yarn add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
 ```
 
 ```sh
-pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+pnpm add @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
 ```
 
-## Usage
+`S3Storage` imports these three packages. `@aws-sdk/signature-v4-crt` and `aws-crt` are only needed when you use a feature of the AWS SDK that requires the CRT (for example S3 Multi-Region Access Points); `@aws-sdk/types` only for typing.
 
-```ts
-import { Files } from "@visulima/storage";
-import { LRUCache } from "lru-cache";
-import { S3Storage } from "@visulima/storage/provider/aws";
-import ImageTransformer from "@visulima/storage/transformer/image";
+## Provider setup
 
-const storage = new S3Storage({
-    bucket: "upload",
-    region: "us-east-1",
-    credentials: {
-        accessKeyId: "test",
-        secretAccessKey: "test",
-    },
-    expiration: { maxAge: "1h", purgeInterval: "15min" },
-    logger: console,
-});
+### 1. Create the bucket
 
-// Initialize cache for transformed images
-const cache = new LRUCache({
-    max: 1000, // Maximum number of cached items
-    ttl: 3600000, // 1 hour in milliseconds
-});
-
-// Initialize image transformer for on-demand transformations
-const imageTransformer = new ImageTransformer(storage, {
-    cache,
-    maxImageSize: 10 * 1024 * 1024, // 10MB
-    cacheTtl: 3600, // 1 hour
-});
-
-// Upload a file (the key doubles as the file id)
-const files = new Files({ adapter: storage });
-
-await files.upload("image.jpg", fileBuffer, { contentType: "image/jpeg" });
-
-// Transform the uploaded image
-const thumbnail = await imageTransformer.resize("image.jpg", {
-    width: 300,
-    height: 200,
-    fit: "cover",
-    quality: 80,
-});
+```sh
+aws s3api create-bucket --bucket my-uploads --region eu-central-1 \
+  --create-bucket-configuration LocationConstraint=eu-central-1
 ```
 
-## Image Transformations
+Keep **Block Public Access** on unless you deliberately serve objects publicly; the adapter reads private objects with signed requests and hands out presigned URLs.
 
-Amazon S3 integrates seamlessly with Visulima upload's image transformation capabilities:
+### 2. Grant the minimum IAM permissions
 
-```ts
-// Resize images on-demand
-const resized = await imageTransformer.resize("file-id", {
-    width: 800,
-    height: 600,
-    fit: "cover",
-});
+Attach this policy to the IAM user or role the server runs as (replace `my-uploads`):
 
-// Convert formats: `transform` takes an array of steps
-const webp = await imageTransformer.transform("file-id", [{ type: "format", options: { format: "webp", quality: 85 } }]);
-
-// Or the shorthand
-const avif = await imageTransformer.convertFormat("file-id", "avif", { quality: 60 });
-
-// Crop images
-const cropped = await imageTransformer.crop("file-id", {
-    width: 400,
-    height: 300,
-    left: 100,
-    top: 50,
-});
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Bucket",
+            "Effect": "Allow",
+            "Action": ["s3:ListBucket", "s3:ListBucketMultipartUploads"],
+            "Resource": "arn:aws:s3:::my-uploads"
+        },
+        {
+            "Sid": "Objects",
+            "Effect": "Allow",
+            "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"],
+            "Resource": "arn:aws:s3:::my-uploads/*"
+        }
+    ]
+}
 ```
+
+| Permission                      | Used for                                                                                                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `s3:ListBucket`                 | The startup bucket check (`HeadBucket`), `list()` / `listDirectory()` (`ListObjectsV2`). **Also required so a missing key answers 404**: without it S3 answers `403` for every absent object. |
+| `s3:ListBucketMultipartUploads` | `purge()` — finding expired, unfinished multipart uploads                                                                                                                                     |
+| `s3:PutObject`                  | `CreateMultipartUpload`, `UploadPart`, `CompleteMultipartUpload`, the destination of `copy()`/`move()`, metadata records, presigned `PUT` URLs                                                |
+| `s3:GetObject`                  | `get()`, `getStream()`, `HeadObject` (`exists()`, metadata reads), the source of `copy()`/`move()`, presigned `GET` URLs                                                                      |
+| `s3:DeleteObject`               | `delete()`, `move()`, metadata cleanup                                                                                                                                                        |
+| `s3:AbortMultipartUpload`       | Deleting/purging an unfinished upload                                                                                                                                                         |
+| `s3:ListMultipartUploadParts`   | Resuming an upload (`ListParts` recomputes the offset)                                                                                                                                        |
+| `s3:PutObjectAcl`               | Only when you set the `acl` option                                                                                                                                                            |
+
+If the bucket uses SSE-KMS with a customer-managed key, also allow `kms:Encrypt`, `kms:Decrypt` and `kms:GenerateDataKey` on that key. If you keep metadata in a [separate bucket](#metadata-storage), grant the object permissions and `s3:ListBucket` on that bucket too.
+
+### 3. CORS (only for browser-direct traffic)
+
+Uploads that go through your server (the TUS / REST / multipart handlers) need no bucket CORS — the browser only talks to your server. You need a CORS rule when the browser talks **to S3 directly**:
+
+- presigned `PUT` URLs from `storage.getUploadUrl()` / `files.signedUploadUrl()`,
+- `clientDirectUpload: true` (the browser `PUT`s each part to a presigned `UploadPart` URL and must read the part's `ETag`),
+- `fetch()`/XHR reads of presigned `GET` URLs from another origin (plain `<img>`/`<a>` tags need no CORS).
+
+```json
+{
+    "CORSRules": [
+        {
+            "AllowedOrigins": ["https://app.example.com"],
+            "AllowedMethods": ["GET", "HEAD", "PUT"],
+            "AllowedHeaders": ["*"],
+            "ExposeHeaders": ["ETag"],
+            "MaxAgeSeconds": 3600
+        }
+    ]
+}
+```
+
+```sh
+aws s3api put-bucket-cors --bucket my-uploads --cors-configuration file://cors.json
+```
+
+### 4. Lifecycle rule for abandoned multipart uploads
+
+An unfinished multipart upload is invisible in object listings but its parts are billed. The adapter's [`purge()`](#expiration-and-purge) only aborts uploads **it created and still has metadata for**; anything else (crashed clients of other tools, uploads whose metadata was lost, uploads with a custom `filename`) needs a bucket lifecycle rule:
+
+```json
+{
+    "Rules": [
+        {
+            "ID": "abort-incomplete-multipart-uploads",
+            "Status": "Enabled",
+            "Filter": {},
+            "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 7 }
+        }
+    ]
+}
+```
+
+```sh
+aws s3api put-bucket-lifecycle-configuration --bucket my-uploads --lifecycle-configuration file://lifecycle.json
+```
+
+Pick `DaysAfterInitiation` longer than the longest time a client may pause a resumable upload. Don't add an `Expiration` rule that matches `*.META` objects unless you also want the metadata of finished uploads to disappear.
 
 ## Configuration
 
-| Name        | Type   | Description                                  | Default |
-| :---------- | :----- | :------------------------------------------- | :------ |
-| bucket      | string | The name of the bucket to use.               |         |
-| region      | string | The region of the bucket.                    |         |
-| credentials | object | The credentials to use to access the bucket. |         |
-| expiration  | object | The expiration configuration.                |         |
-| logger      | Logger | The logger to use                            |         |
+`S3StorageOptions` is the [common storage options](#common-storage-options) + every [`S3ClientConfig`](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-s3/Interface/S3ClientConfig/) field (passed straight to `new S3Client()`) + the S3-specific options below.
 
-## Performance Considerations
+### S3-specific options
 
-1. **CloudFront Integration**: Use Amazon CloudFront as a CDN for faster global delivery
-2. **Caching**: Enable transformation caching to reduce processing costs
-3. **Storage Classes**: Use appropriate S3 storage classes for transformed images
-4. **Presigned URLs**: Generate presigned URLs for secure temporary access
+| Option               | Type                                              | Default                  | Description                                                                                                                                                                |
+| -------------------- | ------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bucket`             | `string`                                          | `process.env.S3_BUCKET`  | Bucket name. Required (throws `S3 bucket is not defined`).                                                                                                                 |
+| `region`             | `string`                                          | `process.env.S3_REGION`  | Bucket region. Required (throws `S3 region is not defined`). `AWS_REGION` is **not** read for this check.                                                                  |
+| `credentials`        | `AwsCredentialIdentity \| Provider`               | AWS SDK default chain    | Static keys or a provider (`fromSSO()`, `fromNodeProviderChain()`, …). Omit it to use env vars / shared config / IAM role.                                                 |
+| `endpoint`           | `string`                                          | AWS                      | S3 API endpoint of an S3-compatible service. Usually set by a [client helper](#s3-compatible-services).                                                                    |
+| `forcePathStyle`     | `boolean`                                         | `false`                  | Path-style addressing (`https://host/bucket/key`), needed by MinIO and some self-hosted services.                                                                          |
+| `acl`                | `ObjectCannedACL`                                 | —                        | Canned ACL sent on `CreateMultipartUpload` (e.g. `"public-read"`). Requires `s3:PutObjectAcl` and a bucket with ACLs enabled (Object Ownership ≠ "Bucket owner enforced"). |
+| `partSize`           | `number \| string`                                | `"16MB"`                 | Part size used for presigned part URLs with `clientDirectUpload`. Must be ≥ 5 MB (throws otherwise).                                                                       |
+| `clientDirectUpload` | `boolean`                                         | `false`                  | `create()`/`update()` return `partsUrls` — presigned `UploadPart` URLs — so the client uploads the parts to S3 itself. See [Direct uploads](#direct-uploads).              |
+| `metaStorageConfig`  | `LocalMetaStorageOptions \| S3MetaStorageOptions` | metadata in the bucket   | Where upload metadata lives. See [Metadata storage](#metadata-storage).                                                                                                    |
+| `keyFile`            | `string`                                          | `process.env.S3_KEYFILE` | **Deprecated.** Path of a shared credentials file, loaded with `fromIni`.                                                                                                  |
 
-## CloudFront Integration
+### Common storage options
 
-For optimal performance, integrate with Amazon CloudFront:
+These come from `BaseStorageOptions` and work on every adapter.
+
+| Option                                                          | Type                                   | Default                 | Description                                                                                                             |
+| --------------------------------------------------------------- | -------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `maxUploadSize`                                                 | `number \| string`                     | `"5TB"`                 | Largest accepted upload; larger ones answer `413`.                                                                      |
+| `allowMIME`                                                     | `string[]`                             | `["*/*"]`               | Accepted content types (`type-is` patterns); others answer `415`.                                                       |
+| `maxMetadataSize`                                               | `number \| string`                     | `"8MB"`                 | Limit for client-supplied metadata. On S3 the effective limit is far lower — see [Metadata storage](#metadata-storage). |
+| `filename`                                                      | `(file) => string`                     | `({ id }) => id`        | Object key of an upload. See [Custom filename](#custom-filename).                                                       |
+| `fileNameValidation`                                            | `(name) => boolean`                    | cloud validation        | Rejects names shorter than 3 / longer than 255 chars, absolute paths, `../` and null bytes.                             |
+| `expiration`                                                    | `{ maxAge, purgeInterval?, rolling? }` | —                       | Expiry of uploads. See [Expiration and purge](#expiration-and-purge).                                                   |
+| `metaStorage`                                                   | `MetaStorage`                          | —                       | A ready-made metadata store; takes precedence over `metaStorageConfig`.                                                 |
+| `retryConfig`                                                   | `RetryConfig`                          | see [Retries](#retries) | Retry policy for S3 calls.                                                                                              |
+| `defaultTimeout`                                                | `number`                               | —                       | Per-attempt timeout (ms) for operations that don't pass their own `timeout`.                                            |
+| `defaultSignal`                                                 | `AbortSignal`                          | —                       | Aborts every operation once fired (for the lifetime of the instance).                                                   |
+| `cache`                                                         | `Cache`                                | no cache                | Cache for file records.                                                                                                 |
+| `validation`                                                    | `Validation`                           | `{}`                    | Extra validators run on `create()`.                                                                                     |
+| `onCreate` / `onUpdate` / `onComplete` / `onDelete` / `onError` | functions                              | no-ops                  | Lifecycle hooks.                                                                                                        |
+| `logger`                                                        | `Console`                              | —                       | Logger; secrets in the config are redacted from the debug log.                                                          |
+| `metrics`                                                       | `Metrics`                              | `NoOpMetrics`           | See [Observability](../observability.mdx).                                                                              |
+| `useRelativeLocation`                                           | `boolean`                              | `false`                 | Relative `Location` headers in handler responses.                                                                       |
+
+### Environment variables
+
+| Variable                                                                            | Read by                      | Meaning                               |
+| ----------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------- |
+| `S3_BUCKET`                                                                         | `S3Storage`, `S3MetaStorage` | Fallback for `bucket`                 |
+| `S3_REGION`                                                                         | `S3Storage`                  | Fallback for `region`                 |
+| `S3_KEYFILE`                                                                        | `S3Storage`, `S3MetaStorage` | Fallback for the deprecated `keyFile` |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `AWS_PROFILE`, … | AWS SDK credential chain     | Used when `credentials` is omitted    |
+
+### Minimal example
 
 ```ts
-// Put CloudFront in front of the route that serves transformed images
-// (e.g. a MediaTransformer behind your upload handler's GET):
-const cloudFrontUrl = `https://your-distribution.cloudfront.net/files/${fileId}?width=500&height=500&fit=cover&quality=80`;
+import { S3Storage } from "@visulima/storage/provider/aws";
 
-// Presigned GET for a private object (original bytes; presigned URLs don't transform)
-const presignedUrl = await storage.getReadUrl(fileId, { expiresIn: 3600 });
-
-// Presigned PUT for a direct-from-browser upload
-const uploadUrl = await storage.getUploadUrl("incoming/photo.jpg", { contentType: "image/jpeg", expiresIn: 600 });
+// Bucket, region and credentials from S3_BUCKET, S3_REGION and the AWS credential chain
+const storage = new S3Storage({});
 ```
 
-## Cost Optimization
+### Production example
 
-1. **Intelligent Tiering**: Use S3 Intelligent Tiering for automatic cost optimization
-2. **Lifecycle Policies**: Automatically move old transformations to cheaper storage
-3. **Request Optimization**: Cache transformations to reduce compute costs
-4. **Compression**: Use efficient formats like WebP/AVIF to reduce storage costs
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+const storage = new S3Storage({
+    bucket: "my-uploads",
+    region: "eu-central-1",
+    // credentials omitted: the IAM role of the ECS task / EC2 instance / Lambda is used
+
+    maxUploadSize: "2GB",
+    allowMIME: ["image/*", "video/*", "application/pdf"],
+
+    // Abandoned uploads are deleted after a day; checked every hour
+    expiration: { maxAge: "24h", purgeInterval: "1h", rolling: true },
+
+    retryConfig: { maxRetries: 5, initialDelay: 500 },
+    defaultTimeout: 30_000,
+
+    logger: console,
+});
+```
+
+## Metadata storage
+
+Every upload has a metadata record (id, name, size, offset, `UploadId`, user metadata, timestamps). Where it lives:
+
+| Configuration                                          | Records stored in                                                       | Multiple server instances                  |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------ |
+| default (no `metaStorage`, no `metaStorageConfig`)     | the same bucket, as zero-byte objects `<id>.META`                       | ✅ shared                                  |
+| `metaStorageConfig: { bucket: "my-uploads-meta" }`     | another bucket (same region/credentials unless overridden), `<id>.META` | ✅ shared                                  |
+| `metaStorageConfig: { directory: "/var/lib/uploads" }` | JSON files on the local disk                                            | ❌ unless the directory is a shared volume |
+| `metaStorage: new MyMetaStorage()`                     | wherever your implementation puts them (Redis, SQL, …)                  | depends                                    |
+
+`metaStorageConfig` also takes `prefix` (default `""`) and `suffix` (default `".META"`) to rename the records, e.g. `{ prefix: ".meta/" }` to keep them under one folder.
+
+What this implies:
+
+- **The record is kept after completion.** Finished uploads keep their `<id>.META` object; `get()`/`exists()` use it to find the object (its key differs from the id with a custom `filename`). It is removed by `delete()`, `move()` and `purge()`.
+- **Records are hidden from `list()`.** Keys matching `prefix…suffix` are skipped, so the default `.META` objects never show up as files. Other tools listing the bucket do see them.
+- **Size limit.** In the bucket the record is stored in the object's user-metadata header, which S3 caps at **2 KB**. Upload metadata is also copied onto the object itself (`x-amz-meta-*`). Keep client metadata small, or move records to a local directory / custom `metaStorage` if you need more.
+- **Concurrent writers.** The bucket store uses conditional writes (`If-Match`), so chunked uploads hitting several instances merge their progress safely. Local directory storage locks across processes sharing the directory.
+- **Lost metadata.** An object without a record (written by another tool, or completed by an older version) can still be read, copied and deleted by its key; `purge()` leaves it alone.
+
+## Behaviour & limits
+
+| Topic               | Behaviour                                                                                                                                                                                                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resumable / chunked | ✅ Supported, **sequential only** (`sequentialWrites: true`): every chunk must start where the upload ends. An out-of-order chunk is rejected with `409 FILE_CONFLICT` and the stored offset is corrected, so the client's next `HEAD` gets the real offset.                 |
+| Chunk size          | Every chunk except the last must be **≥ 5 MiB** (S3 rejects smaller parts at completion; the adapter rejects them up front with `400`). At most 10,000 parts per upload — chunk size × 10,000 bounds the file size.                                                          |
+| Checksums           | `md5` only (`Upload-Checksum` → `Content-MD5`, verified by S3; mismatch → `CHECKSUM_MISMATCH`). Other algorithms answer `UNSUPPORTED_CHECKSUM_ALGORITHM`.                                                                                                                    |
+| Range reads         | ✅ `supportsRange`: `get()`/`getStream()`/`files.download({ range })` send an HTTP `Range` header.                                                                                                                                                                           |
+| Read URLs           | ✅ `getReadUrl(key, { expiresIn, responseContentDisposition, responseContentType })` — presigned `GET`, default 3600 s, max 7 days (SigV4).                                                                                                                                  |
+| Upload URLs         | ✅ `getUploadUrl(key, { contentType, contentLength, expiresIn })` — presigned single `PUT`, default 3600 s. The object is written by S3 directly: no metadata record, no hooks.                                                                                              |
+| `list(limit)`       | Recursive listing of the whole bucket via `ListObjectsV2`, paged internally up to `limit` (default 1000). Returns object keys and `LastModified` only (no per-object `HEAD`). Includes objects this storage didn't create; excludes metadata records and unfinished uploads. |
+| `listDirectory()`   | ✅ Native `Delimiter`/`Prefix` (`supportsDelimiter`), used by `files.list({ delimiter })`.                                                                                                                                                                                   |
+| `copy()` / `move()` | Server-side `CopyObject` within the same bucket (optional `storageClass`); `move()` = copy + delete. The copy has no metadata record. `CopyObject` is limited to 5 GB by S3.                                                                                                 |
+| `exists()`          | `HeadObject` on the upload's object; `false` only for a 404. An unfinished upload has no object yet, so it doesn't exist.                                                                                                                                                    |
+| ACL                 | Only via `acl`; ignored for presigned URLs.                                                                                                                                                                                                                                  |
+
+### Custom filename
+
+`filename(file)` sets the object key; the id stays the upload id and the metadata record stays `<id>.META`. `get()`, `delete()` & co. resolve the key from the record. Two consequences:
+
+- `list()` returns object keys (the custom names), not upload ids.
+- `purge()` looks records up by object key, so with a custom `filename` it doesn't find them and **purges nothing** — rely on the S3 lifecycle rule above for unfinished uploads, and on your own cleanup for finished ones.
+
+### Expiration and purge
+
+With `expiration: { maxAge }`, an upload older than `maxAge` (from creation, or from its last write with `rolling: true`) answers `410 GONE` and is deleted. `purge()` (run every `purgeInterval`, or manually) deletes:
+
+1. finished uploads whose object is older than `maxAge` **and** that have a metadata record — objects the storage didn't create are never touched;
+2. unfinished multipart uploads older than `maxAge` whose `UploadId` matches a record of this storage. Other clients' multipart uploads in a shared bucket are left alone (use the lifecycle rule).
+
+`purge()` inspects the first 1000 objects returned by `list()`; for larger buckets run your own cleanup or rely on lifecycle rules. The interval timer is `unref`'d; call `storage.close()` to stop it.
+
+### Retries
+
+Defaults: `maxRetries: 3`, `initialDelay: 1000`, `maxDelay: 30000`, `backoffMultiplier: 2` (exponential backoff with jitter). Retried: HTTP 408, 429, 500, 502, 503, 504, AWS server faults (`$fault: "server"`), errors the SDK marks retryable, and network errors. Aborted and timed-out calls are never retried. `S3Storage` installs its own `shouldRetry`, so a `shouldRetry` you pass in `retryConfig` is replaced; the numeric fields and `onRetry`/`calculateDelay` apply. The AWS SDK's own retry (`maxAttempts`, part of `S3ClientConfig`) runs underneath.
+
+### Direct uploads
+
+With `clientDirectUpload: true` the server never sees the file bytes: `create()` (TUS `POST` / REST `POST`) starts the multipart upload and returns `partsUrls` — one presigned `UploadPart` URL per `partSize` chunk, valid for `expiration.maxAge` (default 6 h). The client `PUT`s each part to its URL, then calls the handler again (`PATCH`/`PUT` without a body) — the adapter lists the parts and completes the upload once their sizes add up to the file size. Requires the [CORS rule](#3-cors-only-for-browser-direct-traffic) with `ExposeHeaders: ["ETag"]`.
+
+## S3-compatible services
+
+Spread a client helper from `@visulima/storage/provider/aws/s3/clients` into the options; it sets `endpoint`, `region`, `credentials` (and `forcePathStyle` where needed):
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { cloudflare } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({ bucket: "my-bucket", ...cloudflare() });
+```
+
+Per-provider setup: [Cloudflare R2](./cloudflare-r2.mdx), [MinIO](./minio.mdx), [DigitalOcean Spaces](./digital-ocean-spaces.mdx), [Backblaze B2](./backblaze-b2.mdx), [Wasabi](./wasabi.mdx), [Hetzner](./hetzner.mdx), [Tigris](./tigris.mdx), [Storj](./storj.mdx), [Alibaba OSS](./alibaba-oss.mdx), [Tencent COS](./tencent-cos.mdx), [Yandex](./yandex-object-storage.mdx).
+
+## Using it with the handlers
+
+**Node (Express, `node:http`, …)**
+
+```ts
+import express from "express";
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const storage = new S3Storage({ bucket: "my-uploads", region: "eu-central-1" });
+const tus = new Tus({ storage });
+
+const app = express();
+
+app.use("/files", tus.handle);
+app.listen(3000);
+```
+
+**Fetch (Hono, Bun, Deno, Next.js route handlers, …)**
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const storage = new S3Storage({ bucket: "my-uploads", region: "eu-central-1" });
+const rest = new Rest({ storage });
+
+export const handler = (request: Request): Promise<Response> => rest.fetch(request);
+```
+
+Clients that upload in chunks (TUS, chunked REST) must send chunks of at least 5 MiB except for the last one — e.g. `chunkSize: 8 * 1024 * 1024` in `tus-js-client`.
+
+**Files facade**
+
+```ts
+import { Files } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
+
+const files = new Files({ adapter: new S3Storage({ bucket: "my-uploads", region: "eu-central-1" }) });
+
+await files.upload("avatars/42.png", buffer, { contentType: "image/png" });
+
+const url = await files.url("avatars/42.png", { expiresIn: 600 });
+const { files: images, prefixes } = await files.list({ prefix: "avatars/", delimiter: "/" });
+```
+
+The raw `S3Client` is available as `storage.raw` for anything the adapter doesn't cover.
+
+## Image transformations
+
+Any adapter works with the [transformers](../transformers.mdx):
+
+```ts
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const images = new ImageTransformer(storage, { maxImageSize: 10 * 1024 * 1024 });
+
+const thumbnail = await images.resize("image.jpg", { width: 300, height: 200, fit: "cover" });
+```
+
+Presigned URLs return the original bytes; put a CDN (e.g. CloudFront) in front of your transform route to cache transformed variants.
+
+## Troubleshooting
+
+| Symptom                                                                        | Cause / fix                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `403 AccessDenied` for a file that doesn't exist (expected `404`)              | The role lacks `s3:ListBucket` on the bucket ARN; S3 then hides whether a key exists. Add it.                                                                                                                                |
+| `403` on every request, or the startup check fails                             | Wrong credentials, policy on the wrong ARN (`arn:aws:s3:::bucket` for bucket actions, `arn:aws:s3:::bucket/*` for objects), or a missing KMS permission.                                                                     |
+| `SignatureDoesNotMatch` / `AuthorizationHeaderMalformed` / `PermanentRedirect` | `region` doesn't match the bucket's region, or `endpoint` is wrong. Use the bucket's real region; for S3-compatible services use the client helper.                                                                          |
+| Browser: "blocked by CORS policy" on a presigned URL or part `PUT`             | Add the bucket CORS rule for your origin and method; for direct multipart also expose `ETag`.                                                                                                                                |
+| `409 FILE_CONFLICT` during chunked/TUS upload                                  | A chunk didn't start at the stored offset (parallel or out-of-order chunks). S3 uploads are sequential — upload chunks one at a time; on resume, `HEAD` first and continue from `Upload-Offset`.                             |
+| `400 … chunks of at least 5 MiB`                                               | Client chunk size below 5 MiB. Raise it.                                                                                                                                                                                     |
+| `400 MetadataTooLarge`                                                         | Upload metadata exceeds S3's 2 KB user-metadata limit. Send less metadata or use a local / custom metadata store.                                                                                                            |
+| Storage charges for "invisible" data                                           | Unfinished multipart uploads. Add the `AbortIncompleteMultipartUpload` lifecycle rule and/or enable `expiration`.                                                                                                            |
+| Handler answers `Storage initialization timeout`                               | The startup bucket check (`HeadBucket`, waits up to 30 s for the bucket) hasn't succeeded; handlers wait 5 s for it per request and retry it on the next one. Check the bucket name, region, credentials and network access. |
+| `AccessControlListNotSupported`                                                | `acl` is set but the bucket has ACLs disabled (Object Ownership "Bucket owner enforced"). Drop `acl` or enable ACLs.                                                                                                         |
