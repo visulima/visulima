@@ -500,16 +500,15 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: OneDriveFile | undefined;
-            let key = id;
+            // No metadata: direct path lookup.
+            const stored = await this.getMeta(id).catch(() => undefined);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.name ?? id;
-            } catch {
-                // direct path lookup
+            // Outside the catch, so an expired upload answers GONE instead of falling back to the path lookup.
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
 
+            const key = stored?.name ?? id;
             const item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(key)).get())) as DriveItem;
             const arrayBuffer = (await this.runOperation(options, () =>
                 this.client.api(this.itemActionPath(key, "content")).responseType(ResponseType.ARRAYBUFFER).get(),
@@ -668,6 +667,11 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             },
             { limit },
         );
+    }
+
+    /** Upload records from the meta storage: drive items carry no `createdAt`, so `purge` would never find them expired. */
+    protected override async listUploads(): Promise<OneDriveFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(
