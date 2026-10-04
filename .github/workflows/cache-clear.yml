@@ -15,6 +15,11 @@ permissions:
 
 jobs:
     cleanup-branch-cache:
+        # The reusable job requests `actions: write` to delete caches; a called
+        # workflow can't exceed the caller's grant, so it must be given here.
+        permissions:
+            actions: "write"
+            contents: "read"
         uses: "anolilab/workflows/.github/workflows/cleanup-branch-cache.yaml@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"
