@@ -194,6 +194,53 @@ describe(PocketBaseStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from a HEAD request without downloading the content", async () => {
+            expect.assertions(6);
+
+            const storage = withClient();
+
+            collectionApi.getFirstListItem.mockResolvedValue({ file: "stored.mp4", id: "rec1" });
+            mockClient.files.getURL.mockReturnValue("https://pb.example.com/file");
+
+            const fetchSpy = vi
+                .spyOn(globalThis, "fetch")
+                .mockResolvedValue(new Response(null, { headers: { "content-length": "7", "content-type": "video/mp4" }, status: 200 }));
+
+            const file = await storage.getCompletedFile("key.mp4");
+
+            expect(file).toMatchObject({ bytesWritten: 7, contentType: "video/mp4", id: "key.mp4", path: "key.mp4", status: "completed" });
+            expect(file?.size).toBe(7);
+            expect(fetchSpy).toHaveBeenCalledTimes(1);
+            expect(fetchSpy).toHaveBeenCalledWith("https://pb.example.com/file", { method: "HEAD" });
+            expect(collectionApi.getFirstListItem).toHaveBeenCalledTimes(1);
+            expect(mockClient.filter).toHaveBeenCalledWith("key = {:k}", { k: "key.mp4" });
+
+            fetchSpy.mockRestore();
+        });
+
+        it("returns undefined when the record is missing", async () => {
+            expect.assertions(1);
+
+            collectionApi.getFirstListItem.mockRejectedValue(new MockClientResponseError(404));
+
+            await expect(withClient().getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+        });
+
+        it("returns undefined when the size cannot be determined", async () => {
+            expect.assertions(1);
+
+            collectionApi.getFirstListItem.mockResolvedValue({ file: "stored.mp4", id: "rec1" });
+            mockClient.files.getURL.mockReturnValue("https://pb.example.com/file");
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+
+            await expect(withClient().getCompletedFile("key.mp4")).resolves.toBeUndefined();
+
+            fetchSpy.mockRestore();
+        });
+    });
+
     describe(".delete()", () => {
         it("deletes the matching record", async () => {
             expect.assertions(2);

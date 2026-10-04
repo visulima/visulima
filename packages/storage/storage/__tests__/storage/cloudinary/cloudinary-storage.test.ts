@@ -180,6 +180,42 @@ describe(CloudinaryStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from the resource details without downloading the content", async () => {
+            expect.assertions(5);
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+            fetchSpy.mockClear();
+            mockClient.api.resource.mockResolvedValueOnce({ bytes: 4, format: "mp4", resource_type: "video", version: 7 });
+
+            const file = await newStorage().getCompletedFile("anonymous/video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 4,
+                contentType: "video/mp4",
+                ETag: "7",
+                id: "anonymous/video.mp4",
+                path: "anonymous/video.mp4",
+                status: "completed",
+            });
+            expect(file?.size).toBe(4);
+            expect(mockClient.api.resource).toHaveBeenCalledWith("anonymous/video.mp4", expect.objectContaining({ resource_type: expect.any(String) }));
+            expect(fetchSpy).not.toHaveBeenCalled();
+            expect(mockClient.url).not.toHaveBeenCalled();
+
+            fetchSpy.mockRestore();
+        });
+
+        it("returns undefined when the resource is missing", async () => {
+            expect.assertions(1);
+
+            mockClient.api.resource.mockRejectedValueOnce(new Error("Resource not found"));
+
+            await expect(newStorage().getCompletedFile("missing")).resolves.toBeUndefined();
+        });
+    });
+
     describe(".delete()", () => {
         it("calls uploader.destroy with the resolved key", async () => {
             expect.assertions(2);
