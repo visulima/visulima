@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
@@ -92,6 +93,38 @@ describe("fetch RestFetch chunked uploads", () => {
 
         // No PATCH could ever be accepted for it.
         expect(response.status).toBe(400);
+    });
+
+    it("should verify X-Chunk-Checksum before storing the chunk", async () => {
+        expect.assertions(4);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const created = await restHandler.fetch(
+            new Request(basePath, { headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "10" }, method: "POST" }),
+        );
+        const id = created.headers.get("x-upload-id") as string;
+        const patch = async (offset: number, body: string, checksum: string): Promise<number> =>
+            restHandler
+                .fetch(
+                    new Request(`${basePath}${id}`, {
+                        body,
+                        headers: { "content-length": String(body.length), "content-type": "application/octet-stream", "x-chunk-checksum": checksum, "x-chunk-offset": String(offset) },
+                        method: "PATCH",
+                    }),
+                )
+                .then((response) => response.status);
+        const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
+
+        // Bare hex, as @visulima/storage-client sends it.
+        await expect(patch(0, "hello", sha256("hello"))).resolves.toBe(202);
+        await expect(patch(5, "world", sha256("WORLD"))).resolves.toBe(460);
+
+        // The refused chunk was not recorded; base64 with an explicit algorithm works too.
+        const afterMismatch = await storage.getMeta(id);
+
+        expect(afterMismatch.metadata._chunks).toStrictEqual([expect.objectContaining({ length: 5, offset: 0 })]);
+        await expect(patch(5, "world", `sha256 ${createHash("sha256").update("world").digest("base64")}`)).resolves.toBe(200);
     });
 
     it("should not let X-File-Metadata set internal chunk state", async () => {

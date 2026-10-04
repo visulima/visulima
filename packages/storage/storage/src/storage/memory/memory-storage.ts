@@ -3,6 +3,7 @@ import { Readable } from "node:stream";
 import etag from "etag";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { toHttpDate } from "../../utils/headers";
 import { isMetaNotFound } from "../meta-storage";
 import type { MetaStorageOptions } from "../meta-storage-options";
 import { BaseStorage } from "../storage";
@@ -291,7 +292,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     "Content-Length": String(content.length),
                     "Content-Type": entry.contentType,
                     ETag: entry.eTag,
-                    "Last-Modified": entry.modifiedAt,
+                    "Last-Modified": toHttpDate(entry.modifiedAt),
                 },
                 size: content.length,
                 stream: Readable.from(content),

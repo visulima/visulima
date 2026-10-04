@@ -3,6 +3,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import type { AwsClient } from "aws4fetch";
 
+import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
 import { buildRangeHeader } from "../aws/s3-utils";
@@ -178,7 +179,7 @@ class AwsLightStorage extends S3BaseStorage {
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
                     ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
                 stream,

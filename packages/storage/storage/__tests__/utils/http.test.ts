@@ -81,6 +81,14 @@ describe("utils", () => {
             expect(getBaseUrl(request)).toBe("https://example");
         });
 
+        it("should read quoted, padded and mixed-case Forwarded values", () => {
+            expect.assertions(2);
+
+            expect(getBaseUrl({ headers: { forwarded: 'for=1.2.3.4; Host="example.com:8080"; PROTO=HTTPS' } } as IncomingMessage)).toBe("https://example.com:8080");
+            // The first element is the one closest to the client.
+            expect(getBaseUrl({ headers: { forwarded: 'host="a.example";proto=https, host=b.example;proto=http' } } as IncomingMessage)).toBe("https://a.example");
+        });
+
         it("should handle multiple forwarded header entries", () => {
             expect.assertions(1);
 

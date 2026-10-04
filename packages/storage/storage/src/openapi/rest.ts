@@ -55,7 +55,8 @@ const swaggerSpec = (
             },
             schemas: {
                 "X-Chunk-Checksum": {
-                    description: "SHA256 checksum of the chunk data for validation. Format: 'sha256 <base64-encoded-checksum>'.",
+                    description:
+                        "Checksum of the chunk, verified before it is stored (460 on mismatch, 413 for chunks over 64 MiB). A bare hex digest (SHA-1, SHA-256, SHA-384 or SHA-512, told apart by length) or '<algorithm> <hex or base64 digest>'.",
                     type: "string",
                 },
                 "X-Chunk-Offset": {

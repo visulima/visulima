@@ -173,14 +173,15 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
         expect(stored?.byteLength).toBe(bytes.byteLength);
         expect(Buffer.from(stored as Uint8Array).equals(Buffer.from(bytes))).toBe(true);
 
-        // The metadata outlives completion, so the finished upload stays reachable, and a PUT under
-        // the id does not replace the completed object.
+        // The metadata outlives completion: HEAD answers for the finished upload, and a PUT under its
+        // id replaces it like on every other provider.
         const head = await rest.fetch(new Request(location, { method: "HEAD" }));
+        const put = await rest.fetch(
+            new Request(location, { body: "next", headers: { "content-length": "4", "content-type": "text/plain" }, method: "PUT" }),
+        );
 
-        await rest.fetch(new Request(location, { body: "evil", headers: { "content-length": "4", "content-type": "text/plain" }, method: "PUT" }));
-
-        expect(head.status).toBe(200);
-        expect(s3.objects.get(id)?.body.byteLength).toBe(bytes.byteLength);
+        expect([head.status, head.headers.get("x-upload-complete"), put.status]).toStrictEqual([200, "true", 200]);
+        expect(new TextDecoder().decode(s3.objects.get(id)?.body)).toBe("next");
     });
     it("should not answer HEAD from objects without upload metadata (#918)", async () => {
         expect.assertions(1);

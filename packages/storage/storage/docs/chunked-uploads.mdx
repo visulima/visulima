@@ -69,6 +69,14 @@ if (last.status === 200 && last.headers.get("X-Upload-Complete") === "true") {
 
 Each `PATCH` answers `202 Accepted` while the upload is incomplete and `200 OK` with `X-Upload-Complete: true` for the chunk that completes it. That response is the completion signal; you don't need a separate `HEAD`.
 
+## Chunk checksums
+
+Send `X-Chunk-Checksum` with a chunk to have it verified before it is stored. The value is a bare hex digest (SHA-1, SHA-256, SHA-384 or SHA-512, told apart by length, as `@visulima/storage-client` sends it) or `<algorithm> <hex or base64 digest>`, for example `sha256 LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=`.
+
+- A chunk that doesn't match answers `460` and is not recorded; send it again.
+- A chunk with a checksum may be at most 64 MiB (`413` otherwise), since it is read into memory to be verified before the write.
+- An unknown algorithm answers `400`.
+
 ## Chunk ordering
 
 Whether chunks may arrive out of order depends on the adapter:

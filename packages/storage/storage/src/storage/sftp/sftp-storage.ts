@@ -50,7 +50,7 @@ const toAbortError = (reason: unknown): Error => {
  * not pool connections.
  *
  * **Limitations**:
- * - `write()` buffers the full part in memory before uploading (no remote append), so chunked uploads overwrite rather than append.
+ * - `write()` buffers the full part in memory before uploading (no remote append), so only a whole-file write at offset 0 is accepted; chunked writes are rejected with `METHOD_NOT_ALLOWED`.
  * - `getReadUrl` / `getUploadUrl` are not supported — SFTP has no signed-URL concept.
  */
 class SftpStorage extends BaseStorage<SftpFile> {

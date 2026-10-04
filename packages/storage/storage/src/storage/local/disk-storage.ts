@@ -11,6 +11,7 @@ import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
+import { toHttpDate } from "../../utils/headers";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
@@ -485,7 +486,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                         "Content-Length": String(size || bytesWritten),
                         "Content-Type": contentType,
                         ...(expiredAt && { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt && { "Last-Modified": modifiedAt.toString() }),
+                        ...(modifiedAt && { "Last-Modified": toHttpDate(modifiedAt) }),
                         // Note: ETag requires reading the file content, so we don't include it for streaming
                         // Clients can use HEAD requests to get ETag if needed
                     },

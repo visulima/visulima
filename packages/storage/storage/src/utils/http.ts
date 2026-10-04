@@ -20,22 +20,30 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
     let proto = "";
     let host = "";
 
-    const header = getHeader(request, "forwarded");
+    const header = getHeader(request, "forwarded", true);
 
     if (header) {
-        const kvPairs = header.split(";");
+        // RFC 7239: the first element (closest to the client) of a comma-separated list; tokens are
+        // case-insensitive, may be padded, and values may be quoted (a host with a port must be).
+        const [first = ""] = header.split(",");
 
-        kvPairs.forEach((kv) => {
-            const [token, value] = kv.split("=");
+        for (const pair of first.split(";")) {
+            const separator = pair.indexOf("=");
 
-            if (token === "proto") {
-                proto = value as string;
+            if (separator !== -1) {
+                const token = pair.slice(0, separator).trim().toLowerCase();
+                const value = pair
+                    .slice(separator + 1)
+                    .trim()
+                    .replace(/^"(.*)"$/u, "$1");
+
+                if (token === "proto") {
+                    proto = value.toLowerCase();
+                } else if (token === "host") {
+                    host = value;
+                }
             }
-
-            if (token === "host") {
-                host = value as string;
-            }
-        });
+        }
     }
 
     return { host, proto };
@@ -230,7 +238,7 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
 
 /**
  * Extracts host with port from a HTTP or HTTPS request.
- * Prefers x-forwarded-host header for proxy compatibility.
+ * Uses the Host header, falling back to X-Forwarded-Host.
  * @param request HTTP request object
  * @returns Host string with port (e.g., "example.com:8080")
  */

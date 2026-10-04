@@ -8,6 +8,17 @@ import { Accept, ContentDisposition, ContentType } from "@remix-run/headers";
 import type { Headers as UploadHeaders } from "./types";
 
 /**
+ * Formats a date as an HTTP-date (RFC 9110 §5.6.7), the form Last-Modified and If-Range use.
+ * @param value Date, epoch milliseconds or a date string
+ * @returns The HTTP-date, or the value as given when it isn't a valid date
+ */
+export const toHttpDate = (value: Date | number | string): string => {
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? String(value) : date.toUTCString();
+};
+
+/**
  * Cache-Control directive options
  */
 export interface CacheControlOptions {

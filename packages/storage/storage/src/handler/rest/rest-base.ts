@@ -1,3 +1,6 @@
+import { createHash, getHashes } from "node:crypto";
+import { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
@@ -11,8 +14,9 @@ import {
     trackChunk,
     validateChunk,
 } from "../../utils/chunked-upload";
-import { ERRORS, isUploadError } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import { retry } from "../../utils/retry";
+import { readBoundedBody } from "../tus/tus-checksum";
 import type { ResponseFile, ResponseList } from "../types";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";
 
@@ -26,6 +30,48 @@ export const MAX_BATCH_DELETE_BYTES = 1_048_576;
  * never collide with a storage sidecar such as `id.META` (which would overwrite another file's metadata).
  */
 const CLIENT_FILE_ID_PATTERN = /^[\w-]{1,255}$/;
+
+/**
+ * Largest chunk an `X-Chunk-Checksum` is verified for: it is checked before the chunk is written,
+ * since a sequential-only provider (S3) can't take a stored part back.
+ */
+const MAX_CHECKSUM_CHUNK_SIZE = 64 * 1024 * 1024;
+
+/** Hash algorithm of a bare hex `X-Chunk-Checksum`, by its length (the client sends SHA-1 to SHA-512). */
+const CHECKSUM_ALGORITHM_BY_HEX_LENGTH: Record<number, string> = { 40: "sha1", 64: "sha256", 96: "sha384", 128: "sha512" };
+
+/**
+ * Reads a chunk and checks it against its `X-Chunk-Checksum`: a bare hex digest, or
+ * `&lt;algorithm> &lt;hex or base64 digest>`.
+ * @param body Chunk body
+ * @param contentLength Chunk length
+ * @param checksum Header value
+ * @returns The verified chunk, as a stream to write
+ * @throws {HttpError} 400 for an unknown algorithm, 413 for a chunk too large to verify
+ * @throws {UploadError} CHECKSUM_MISMATCH (460) when the chunk doesn't match
+ */
+const verifyChunk = async (body: unknown, contentLength: number, checksum: string): Promise<Readable> => {
+    const [first = "", second] = checksum.trim().split(/\s+/u);
+    const algorithm = second === undefined ? CHECKSUM_ALGORITHM_BY_HEX_LENGTH[first.length] : first.toLowerCase().replace("-", "");
+    const expected = second ?? first;
+
+    if (algorithm === undefined || !getHashes().includes(algorithm)) {
+        throw createHttpError(400, "Unsupported X-Chunk-Checksum");
+    }
+
+    if (contentLength > MAX_CHECKSUM_CHUNK_SIZE) {
+        throw createHttpError(413, `Chunks with X-Chunk-Checksum may be at most ${String(MAX_CHECKSUM_CHUNK_SIZE)} bytes`);
+    }
+
+    const bytes = await readBoundedBody(body, contentLength);
+    const digest = createHash(algorithm).update(bytes).digest();
+
+    if (expected.toLowerCase() !== digest.toString("hex") && expected !== digest.toString("base64")) {
+        throwErrorCode(ERRORS.CHECKSUM_MISMATCH, "Chunk does not match X-Chunk-Checksum");
+    }
+
+    return Readable.from([bytes]);
+};
 
 /**
  * Validates a list of ids for batch deletion.
@@ -332,7 +378,8 @@ abstract class RestBase<TFile extends UploadFile> {
         // (conflict, transient error, sequential-only provider) would let a later PATCH report the
         // upload complete with bytes missing from storage.
         const written = await this.storage.write({
-            body: bodyStream,
+            // Node reads a missing header as "".
+            body: chunkChecksum ? await verifyChunk(bodyStream, contentLength, chunkChecksum) : bodyStream,
             contentLength,
             id,
             start: chunkOffset,

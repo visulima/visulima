@@ -139,7 +139,8 @@ describe("response-builder", () => {
             const file = buildFile({ ETag: "etag", expiredAt: 1, modifiedAt: "2024-01-01" });
             const headers = buildFileMetadataHeaders(file);
 
-            expect(headers["Last-Modified"]).toBe("2024-01-01");
+            // An HTTP-date (RFC 9110 §8.8.2), not the stored string.
+            expect(headers["Last-Modified"]).toBe("Mon, 01 Jan 2024 00:00:00 GMT");
             expect(headers.ETag).toBe("etag");
             expect(headers["X-Upload-Expires"]).toBe("1");
         });

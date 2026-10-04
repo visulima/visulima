@@ -5,13 +5,24 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 
 # Migration Guide
 
-## Upgrading past 2.0.30: REST `HEAD` and `PUT` on finished uploads (security fix)
+## Upgrading past 2.0.30: upload ids, `HEAD` and `PUT` (security fix)
 
-Cloud providers (S3 and compatibles, Azure, GCS, Firebase, Bun S3, Bunny, Box, Dropbox, OneDrive, Google Drive, Supabase, PocketBase, UploadThing, Cloudinary, Vercel Blob) delete an upload's metadata once it completes. The object left behind can't be told apart from one the upload route never created, so the `Rest` handler now treats it as foreign:
+### Summary
 
-- **`HEAD` on a finished upload answers `404`**, as it did before 2.0.30. In 2.0.30 it answered from the stored object, which disclosed the existence, size, type and ETag of any object in the bucket, nested keys via `%2F` included ([#918](https://github.com/visulima/visulima/issues/918)). `@visulima/storage-client` doesn't need this `HEAD`: it finishes on the `PATCH` that completes the upload.
-- **`PUT` under an id that already has a stored object answers `409`** instead of replacing it. This covers objects written to the bucket by other means and finished uploads ([#919](https://github.com/visulima/visulima/issues/919)). A `PUT` to an upload still in progress, or on a provider that keeps metadata (disk, memory), still replaces the file.
-- **`PUT` fails with `5xx` when the provider can't say whether the object exists**, for example when the credentials may not read it. On S3, a missing object answers `403` instead of `404` without `s3:ListBucket`, so grant it to keep creating files with `PUT`.
+- **Upload ids are random** instead of hashed from the client's file name, size and `lastModified` ([#921](https://github.com/visulima/visulima/issues/921)).
+- **Finished uploads keep their metadata on every provider.** S3 and compatibles, Azure and GCS used to drop it on completion, so `HEAD`, `GET`, `DELETE`, `exists`, `copy` and `move` on a finished upload failed there.
+- **`HEAD` answers only for uploads** ([#918](https://github.com/visulima/visulima/issues/918)). In 2.0.30 it fell back to the stored object, which disclosed the existence, size, type and ETag of any object in the bucket, nested keys via `%2F` included.
+- **`PUT` never replaces an object the upload route didn't create** ([#919](https://github.com/visulima/visulima/issues/919)).
+
+### `HEAD` and `PUT`
+
+`HEAD` (and `GET`) answer from the upload's metadata, so a finished upload answers `200` with `X-Upload-Complete: true`, and an object without upload metadata answers `404`.
+
+`PUT /<id>` now:
+
+- **replaces** the upload when `<id>` has upload metadata, finished or not. The replacement is validated like a new upload (size, type) and gets the metadata of the `PUT` request. It used to answer `200` without changing a finished file.
+- **answers `409`** when `<id>` has no upload metadata but the provider stores an object under that key: an app file sharing the bucket, or an upload finished before this release on S3, Azure or GCS.
+- **fails with the provider's error** when it can't tell whether such an object exists, for example when the credentials may not read it. On S3, a missing object answers `403` instead of `404` without `s3:ListBucket`, so grant it to keep creating files with `PUT`.
 
 With a custom `filename`, the object key differs from the id and the `PUT` check can't see the object. Use server-generated ids (`POST`) there.
 
@@ -68,7 +79,7 @@ The option works the same on every handler (`Rest`, `Multipart`, `Tus`) and runt
 
 ```ts
 // Next.js
-const handler = createNextjsHandler({ allowList: true, storage, type: "rest" });
+const handler = createHandler({ allowList: true, storage, type: "rest" });
 
 // SolidStart
 const handler = createSolidStartHandler({ allowList: true, storage, type: "rest" });

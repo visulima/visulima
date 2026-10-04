@@ -11,7 +11,7 @@ import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
 import type { ErrorResponses } from "../../utils/errors";
 import { ErrorMap, ERRORS, isUploadError } from "../../utils/errors";
-import { HeaderUtilities } from "../../utils/headers";
+import { HeaderUtilities, toHttpDate } from "../../utils/headers";
 import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
 import type { HttpError, ResponseBody, ResponseBodyType, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
@@ -91,7 +91,7 @@ export const resolveContentType = (contentType: string, extension: string | unde
 const fileStateHeaders = (file: Pick<UploadFile, "ETag" | "expiredAt" | "modifiedAt"> | undefined): Record<string, string> => {
     return {
         ...(file?.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-        ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
+        ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": toHttpDate(file.modifiedAt) }),
         ...(file?.ETag === undefined ? {} : { ETag: file.ETag }),
     };
 };

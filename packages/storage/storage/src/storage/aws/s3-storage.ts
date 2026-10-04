@@ -4,6 +4,7 @@ import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3
 import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
 import type { OperationOptions } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
@@ -191,7 +192,7 @@ class S3Storage extends S3BaseStorage {
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
                     ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
                 stream: Body as Readable,

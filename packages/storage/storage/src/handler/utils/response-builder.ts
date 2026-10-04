@@ -1,7 +1,7 @@
 import mime from "mime";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { HeaderUtilities } from "../../utils/headers";
+import { HeaderUtilities, toHttpDate } from "../../utils/headers";
 import type { Header } from "../../utils/types";
 import type { ResponseFile } from "../types";
 
@@ -101,7 +101,7 @@ export const buildFileMetadataHeaders = <TFile extends UploadFile>(file: TFile):
         "Content-Length": String(file.size || 0),
         "Content-Type": file.contentType,
         ...(file.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-        ...(file.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
+        ...(file.modifiedAt === undefined ? {} : { "Last-Modified": toHttpDate(file.modifiedAt) }),
         ...(file.ETag === undefined ? {} : { ETag: file.ETag }),
     };
 };

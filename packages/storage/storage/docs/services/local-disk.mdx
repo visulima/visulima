@@ -80,7 +80,7 @@ const storage = new DiskStorage({
     expiration: {
         maxAge: "30d", // Files expire in 30 days
         purgeInterval: "1h", // Check for expired files every hour
-        rolling: true, // Extend expiration on access
+        rolling: true, // Extend expiration on every write
     },
 });
 ```
