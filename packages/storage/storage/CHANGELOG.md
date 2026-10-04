@@ -1,3 +1,10 @@
+## @visulima/storage [2.0.29](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.28...@visulima/storage@2.0.29) (2026-10-04)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.28
+
 ## @visulima/storage [2.0.28](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.27...@visulima/storage@2.0.28) (2026-10-04)
 
 ### Bug Fixes
