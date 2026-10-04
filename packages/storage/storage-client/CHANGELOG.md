@@ -1,3 +1,10 @@
+## @visulima/storage-client [1.0.7](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.6...@visulima/storage-client@1.0.7) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** S3 chunked REST completion, ListParts paging, HEAD after completion ([#915](https://github.com/visulima/visulima/issues/915), [#916](https://github.com/visulima/visulima/issues/916)) ([#917](https://github.com/visulima/visulima/issues/917)) ([85bdd14](https://github.com/visulima/visulima/commit/85bdd142b6790f72a3b61e228b35f3d6d5d85ce7))
+* **storage:** stop re-sending the completing chunk on resume ([#913](https://github.com/visulima/visulima/issues/913)) ([#914](https://github.com/visulima/visulima/issues/914)) ([d477200](https://github.com/visulima/visulima/commit/d47720029253c47a6e0cf7da188a3f077d128e28))
+
 ## @visulima/storage-client [1.0.6](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.5...@visulima/storage-client@1.0.6) (2026-10-03)
 
 ### Bug Fixes
