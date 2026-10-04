@@ -42,7 +42,9 @@ export type {
 } from "./files";
 export { Files, sync, transfer, UploadControl } from "./files";
 export { waitForStorage } from "./handler/utils/storage-utils";
-export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
+// OpenTelemetryMetrics lives on the `@visulima/storage/metrics` sub-path: it statically imports the
+// optional `@opentelemetry/api` peer, which must never be pulled in by the root entry.
+export { default as NoOpMetrics } from "./metrics/no-op-metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as DiskStorageWithChecksum } from "./storage/local/disk-storage-with-checksum";
 export type { LocalMetaStorageOptions } from "./storage/local/local-meta-storage";

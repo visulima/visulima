@@ -180,6 +180,10 @@
             "types": "./dist/storage/sharepoint/index.d.ts",
             "import": "./dist/storage/sharepoint/index.js"
         },
+        "./metrics": {
+            "types": "./dist/metrics/index.d.ts",
+            "import": "./dist/metrics/index.js"
+        },
         "./openapi": {
             "types": "./dist/openapi/index.d.ts",
             "import": "./dist/openapi/index.js"
