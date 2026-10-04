@@ -3,7 +3,7 @@ import { text } from "node:stream/consumers";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Files } from "../../src/files";
+import { Files, UploadControl } from "../../src/files";
 import RestFetch from "../../src/handler/rest/rest-fetch";
 import type MetaStorage from "../../src/storage/meta-storage";
 import type { BaseStorage } from "../../src/storage/storage";
@@ -26,7 +26,7 @@ export interface StorageContractSetup {
     putObject: (key: string, content: string) => Promise<void> | void;
 }
 
-export type StorageContractScenario = "copy and move" | "expired upload" | "REST lifecycle";
+export type StorageContractScenario = "copy and move" | "expired upload" | "resume across processes" | "REST lifecycle";
 
 const upload = async (storage: BaseStorage, content: string): Promise<string> => {
     const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: content.length });
@@ -35,6 +35,13 @@ const upload = async (storage: BaseStorage, content: string): Promise<string> =>
 
     return file.id;
 };
+
+/** S3's smallest non-final part, so one part size works for every adapter (also a multiple of GCS's 256 KiB). */
+const PART_SIZE = 5 * 1024 * 1024;
+
+/** Bytes the adapter was handed to store, over every `write` call. */
+const bytesWritten = (write: { mock: { calls: unknown[][] } }): number =>
+    write.mock.calls.reduce<number>((total, [part]) => total + ((part as { contentLength?: number }).contentLength ?? 0), 0);
 
 const metaOf = (storage: BaseStorage): MetaStorage => (storage as unknown as { meta: MetaStorage }).meta;
 
@@ -270,6 +277,128 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
                 await files.copy("source.txt", "target.txt", { ifNoneMatch: "*", sourceIfMatch: source });
 
                 await expect(files.download("target.txt").then(({ body }) => body.toString())).resolves.toBe("source");
+            });
+        });
+
+        describe.skipIf(skip["resume across processes"] !== undefined)("resumable uploads across processes", () => {
+            const source = Buffer.alloc(2 * PART_SIZE + 1000);
+
+            for (let index = 0; index < source.length; index += 1) {
+                source[index] = index % 251;
+            }
+
+            /** Process A: stores the first part, then dies before the rest of the body arrives. */
+            const startAndDie = async (storage: BaseStorage): Promise<string> => {
+                const control = new UploadControl();
+                const { promise: firstPartStored, resolve } = Promise.withResolvers<void>();
+                const body = Readable.from(
+                    (async function* dying() {
+                        yield source.subarray(0, PART_SIZE);
+
+                        await firstPartStored;
+
+                        throw new Error("process died");
+                    })(),
+                );
+                const onProgress = ({ loaded }: { loaded: number }): void => {
+                    if (loaded >= PART_SIZE) {
+                        resolve();
+                    }
+                };
+
+                await expect(
+                    new Files({ adapter: storage }).upload("big.bin", body, { control, multipart: { partSize: PART_SIZE }, onProgress, size: source.length }),
+                ).rejects.toThrow("process died");
+
+                return JSON.stringify(control);
+            };
+
+            it("should resume from the token without re-sending the stored bytes", async ({ skip: skipTest }) => {
+                expect.assertions(4);
+
+                const first = backend.createStorage();
+
+                if (!first.supportsResumableWrites) {
+                    skipTest("no resumable writes");
+                }
+
+                const token = await startAndDie(first);
+
+                expect(JSON.parse(token)).toMatchObject({ adapter: first.constructor.name, key: "big.bin", loaded: PART_SIZE, size: source.length, version: 2 });
+
+                // Process B: fresh instances over the same backend and metadata store.
+                const second = backend.createStorage();
+                const write = vi.spyOn(second, "write");
+                const files = new Files({ adapter: second });
+
+                await files.upload("big.bin", source, { control: UploadControl.from(token), multipart: { partSize: PART_SIZE } });
+
+                expect(bytesWritten(write)).toBe(source.length - PART_SIZE);
+
+                const { body } = await files.download("big.bin");
+
+                expect(body.equals(source)).toBe(true);
+            });
+
+            it("should resume with a body that starts at the stored offset", async ({ skip: skipTest }) => {
+                expect.assertions(2);
+
+                const first = backend.createStorage();
+
+                if (!first.supportsResumableWrites) {
+                    skipTest("no resumable writes");
+                }
+
+                const token = await startAndDie(first);
+                const second = backend.createStorage();
+                const files = new Files({ adapter: second });
+                const { loaded } = JSON.parse(token) as { loaded: number };
+
+                await files.upload("big.bin", Readable.from([source.subarray(loaded)]), {
+                    control: UploadControl.from(token),
+                    multipart: { partSize: PART_SIZE },
+                    resumeOffset: loaded,
+                    size: source.length,
+                });
+
+                const { body } = await files.download("big.bin");
+
+                expect(body.equals(source)).toBe(true);
+            });
+
+            it("should reject a token whose upload no longer exists", async ({ skip: skipTest }) => {
+                expect.assertions(2);
+
+                const first = backend.createStorage();
+
+                if (!first.supportsResumableWrites) {
+                    skipTest("no resumable writes");
+                }
+
+                const token = await startAndDie(first);
+
+                await first.deleteUpload("big.bin");
+
+                await expect(new Files({ adapter: backend.createStorage() }).upload("big.bin", source, { control: UploadControl.from(token) })).rejects.toHaveProperty(
+                    "UploadErrorCode",
+                    ERRORS.FILE_NOT_FOUND,
+                );
+            });
+
+            it("should reject a resume token when the adapter can't resume", async ({ skip: skipTest }) => {
+                expect.assertions(2);
+
+                const storage = backend.createStorage();
+
+                if (storage.supportsResumableWrites) {
+                    skipTest("resumable writes");
+                }
+
+                const files = new Files({ adapter: storage });
+                const control = UploadControl.from({ adapter: storage.constructor.name, key: "big.bin", loaded: 0, size: 5, uploadId: "big.bin", version: 2 });
+
+                expect(files.capabilities.resumable).toBe(false);
+                await expect(files.upload("big.bin", "hello", { control })).rejects.toHaveProperty("UploadErrorCode", ERRORS.METHOD_NOT_ALLOWED);
             });
         });
 

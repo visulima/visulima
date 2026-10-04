@@ -121,5 +121,5 @@ describe.each([
                 storage.raw.set(key, { bytes: Buffer.from(content), contentType: "text/plain", createdAt: now, eTag: "\"app\"", metadata: {}, modifiedAt: now });
             },
         };
-    });
+    }, { "resume across processes": "a MemoryStorage keeps its bytes in the instance; it resumes within one process only" });
 });

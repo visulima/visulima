@@ -18,7 +18,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Files } from "../../../src/files";
+import { Files, UploadControl } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import { ERRORS } from "../../../src/utils/errors";
@@ -273,6 +273,37 @@ describe("s3Storage against an in-memory S3", () => {
         await expect(second.write({ body: Readable.from([Buffer.from("x")]), contentLength: 1, id: file.id, start: 0 })).resolves.toMatchObject({
             status: "completed",
         });
+    });
+
+    it("should resume a facade upload from the parts S3 lists when the process died before recording the last one", async () => {
+        expect.assertions(4);
+
+        const source = Buffer.alloc(2 * 5 * MIB + 1000, 7);
+        const multipart = { partSize: 5 * MIB };
+        const control = new UploadControl();
+        const parts = (): { input: Record<string, unknown>; name: string }[] => s3.sent.filter(({ name }) => name === "UploadPartCommand");
+
+        // Process A: S3 stores the second part, then the process dies before saving its offset.
+        s3.state.override = (command) =>
+            command instanceof PutObjectCommand && String(command.input.Key).endsWith(".META") && parts().length >= 2 ? s3Error("InternalError", 500) : undefined;
+
+        await expect(new Files({ adapter: createStorage() }).upload("big.bin", source, { control, multipart })).rejects.toBeDefined();
+
+        s3.state.override = undefined;
+
+        const token = JSON.stringify(control);
+
+        expect(JSON.parse(token)).toMatchObject({ loaded: 5 * MIB });
+
+        // Process B: S3's ListParts, not the stale record, decides where to continue.
+        s3.sent.length = 0;
+
+        const files = new Files({ adapter: createStorage() });
+
+        await files.upload("big.bin", source, { control: UploadControl.from(token), multipart });
+
+        expect(parts().reduce((total, { input }) => total + (input.ContentLength as number), 0)).toBe(1000);
+        expect(s3.objects.get("big.bin")?.body.equals(source)).toBe(true);
     });
 
     it("should send a web ReadableStream part and reject a misplaced chunk", async () => {
