@@ -406,7 +406,6 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<GoogleDriveFile> {
         return this.instrumentOperation("delete", async () => {
             let file: GoogleDriveFile | undefined;
-            const key = id;
 
             try {
                 file = await this.getMeta(id);
@@ -414,13 +413,17 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                 // direct id lookup
             }
 
+            // write() stores the object under the upload's name.
+            const key = file?.name || id;
+
             try {
                 const fileId = file?.driveFileId ?? (await this.resolveFileId(key, options));
 
                 await this.runOperation(options, () => this.driveClient.files.delete({ ...this.sharedDriveParams, fileId }));
                 this.fileIdCache.delete(key);
             } catch (error) {
-                if (!isNotFoundError(error)) {
+                // An upload that never received bytes has no Drive file.
+                if (!isNotFoundError(error) && !(isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
                     throw error;
                 }
 
@@ -525,6 +528,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<GoogleDriveFile> {
         return this.instrumentOperation("copy", async () => {
             const fromId = await this.resolveFileId(name, options);
+            const previousId = await this.findFileId(destination, options);
             const response = await this.runOperation(options, () =>
                 this.driveClient.files.copy({
                     ...this.sharedDriveParams,
@@ -542,6 +546,15 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
             if (newId) {
                 this.fileIdCache.set(destination, newId);
+            }
+
+            // Replace the file already stored under the destination key, so the key keeps resolving to one file.
+            if (previousId && previousId !== newId && previousId !== fromId) {
+                await this.runOperation(options, () => this.driveClient.files.delete({ ...this.sharedDriveParams, fileId: previousId })).catch((error: unknown) => {
+                    if (!isNotFoundError(error)) {
+                        throw error;
+                    }
+                });
             }
 
             const file = new GoogleDriveFile({
@@ -576,16 +589,26 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             "list",
             async () => {
                 const q = `'${escapeQueryValue(this.rootFolderId)}' in parents and trashed=false`;
-                const response = await this.runOperation(options, () =>
-                    this.driveClient.files.list({
-                        ...this.sharedDriveParams,
-                        fields: `nextPageToken, files(${FILE_FIELDS})`,
-                        pageSize: limit,
-                        q,
-                    }),
-                );
+                const files: drive_v3.Schema$File[] = [];
+                let pageToken: string | undefined;
 
-                const files = response.data.files ?? [];
+                // Drive may return fewer files than `pageSize`, so follow nextPageToken until `limit` is reached.
+                do {
+                    const token = pageToken;
+                    const { data } = await this.runOperation(options, () =>
+                        this.driveClient.files.list({
+                            ...this.sharedDriveParams,
+                            fields: `nextPageToken, files(${FILE_FIELDS})`,
+                            pageSize: limit - files.length,
+                            q,
+                            ...(token && { pageToken: token }),
+                        }),
+                    );
+
+                    files.push(...(data.files ?? []));
+                    pageToken = data.nextPageToken ?? undefined;
+                } while (pageToken && files.length < limit);
+
                 const out: GoogleDriveFile[] = [];
 
                 for (const item of files) {
@@ -621,6 +644,11 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             },
             { limit },
         );
+    }
+
+    /** Upload records by id from the meta storage: `list` only sees stored Drive files, which carry no creation time. */
+    protected override async listUploads(): Promise<GoogleDriveFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(

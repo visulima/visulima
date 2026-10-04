@@ -276,6 +276,7 @@ describe(GoogleDriveStorage, () => {
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "src-id" }] },
             });
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [] } });
             mockDrive.files.copy.mockResolvedValueOnce({
                 data: { id: "dst-id", mimeType: "video/mp4", size: "1024" },
             });
