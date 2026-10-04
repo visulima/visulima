@@ -85,6 +85,67 @@ describe(VercelBlobStorage, () => {
         });
     });
 
+    describe(".delete()", () => {
+        it("keeps the metadata when the blob delete fails", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, url: "https://blob.example/test.mp4" });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+
+            vi.mocked(del).mockRejectedValueOnce(new Error("Vercel Blob: service unavailable"));
+
+            await expect(storage.delete({ id: metafile.id }, { retries: 0 })).rejects.toThrow("service unavailable");
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("treats an already-missing blob as deleted", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, url: "https://blob.example/test.mp4" });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+
+            vi.mocked(del).mockRejectedValueOnce(new BlobNotFoundError());
+
+            await expect(storage.delete({ id: metafile.id })).resolves.toMatchObject({ status: "deleted" });
+            expect(deleteMeta).toHaveBeenCalledWith(metafile.id);
+        });
+
+        it("deletes the blob stored under the ID when there is no metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+
+            vi.mocked(head).mockResolvedValueOnce({
+                contentType: "video/mp4",
+                downloadUrl: "https://blob.example/video.mp4?download=1",
+                etag: "etag-1",
+                pathname: "video.mp4",
+                size: 321,
+                url: "https://blob.example/video.mp4",
+            } as Awaited<ReturnType<typeof head>>);
+
+            const result = await storage.delete({ id: "video.mp4" });
+
+            expect(del).toHaveBeenCalledWith("https://blob.example/video.mp4", expect.anything());
+            expect(result).toMatchObject({ id: "video.mp4", status: "deleted" });
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
+
+            await expect(storage.delete({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
+            expect(del).not.toHaveBeenCalled();
+        });
+    });
+
     describe(".exists()", () => {
         it("should return true when both metadata and Vercel Blob exist", async () => {
             expect.assertions(1);

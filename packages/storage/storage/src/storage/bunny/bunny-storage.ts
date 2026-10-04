@@ -275,10 +275,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -300,16 +297,19 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
             const path = file?.bunnyPath ?? toBunnyPath(file?.name ?? id);
 
-            // The Bunny SDK's `remove` returns `(await fetch(...)).ok` —
-            // `true` on 2xx, `false` on any non-2xx (incl. 404). It only
-            // throws on network errors. We treat `false` as "best-effort
-            // delete" (missing-or-failed) since the response status is
-            // unrecoverable from the boolean; idempotent delete is the
-            // intended contract here.
+            // The Bunny SDK's `remove` returns `(await fetch(...)).ok` — `false` on any non-2xx, 404
+            // included, and only throws on network errors. A `false` is only a success when the
+            // object is really gone, so look it up before dropping the metadata.
+            let removed: boolean;
+
             try {
-                await this.runOperation(options, () => BunnyStorageSDK.file.remove(this.client, path));
+                removed = await this.runOperation(options, () => BunnyStorageSDK.file.remove(this.client, path));
             } catch (error) {
                 throw wrapBunnyError(error, "delete");
+            }
+
+            if (!removed && (await this.getCompletedFile(fromBunnyPath(path), options)) !== undefined) {
+                return throwErrorCode(ERRORS.STORAGE_ERROR, `Bunny Storage: failed to delete "${path}"`);
             }
 
             if (file) {
@@ -333,7 +333,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only the object description is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -481,7 +481,9 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                     .map((entry) => {
                         const path =
                             entry.path.endsWith(entry.objectName) || !entry.objectName ? entry.path : `${entry.path.replace(/\/+$/u, "")}/${entry.objectName}`;
-                        const key = fromBunnyPath(path);
+                        // Bunny reports paths as `/{zone}/{key}`; ids carry only the key.
+                        const zonePrefix = `/${entry.storageZoneName || this.zoneName}/`;
+                        const key = fromBunnyPath(path.startsWith(zonePrefix) ? path.slice(zonePrefix.length) : path);
                         const file = new BunnyFile({
                             contentType: entry.contentType || "application/octet-stream",
                             metadata: {},
@@ -531,8 +533,6 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             "Bunny Storage: presigned PUT URLs are not supported — writes go through the Storage API with an AccessKey header. Upload server-side via the SDK or proxy through your application.",
         );
     }
-
-    private internalOnComplete = (file: BunnyFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default BunnyStorage;

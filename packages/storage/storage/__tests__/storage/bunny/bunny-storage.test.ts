@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
 import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
 import { ERRORS } from "../../../src/utils/errors";
-import { storageOptions } from "../../__helpers__/config";
+import { metafile, storageOptions } from "../../__helpers__/config";
 
 const makeStorageFile = (overrides: Record<string, unknown> = {}) => {
     return {
@@ -180,21 +180,41 @@ describe(BunnyStorage, () => {
             expect(result.status).toBe("deleted");
         });
 
-        it("treats a falsy SDK response as a best-effort delete (Bunny's remove returns boolean, never throws on 404)", async () => {
-            expect.assertions(2);
+        it("treats a falsy SDK response as deleted when the object is gone (Bunny's remove returns false on 404)", async () => {
+            expect.assertions(3);
 
             const storage = new BunnyStorage(baseOptions);
 
             vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
 
-            // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx
-            // (incl. 404). We rely on idempotent delete: missing key = success.
+            // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx (incl. 404).
             fileMock.remove.mockResolvedValueOnce(false);
+            fileMock.get.mockRejectedValueOnce(new Error("File not found"));
 
             const result = await storage.delete({ id: "user/file.mp4" });
 
             expect(fileMock.remove).toHaveBeenCalledWith(expect.anything(), "/user/file.mp4");
+            expect(fileMock.get).toHaveBeenCalledWith(expect.anything(), "/user/file.mp4");
             expect(result.status).toBe("deleted");
+        });
+
+        it("fails and keeps the metadata when remove reports failure and the object is still there", async () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue({
+                ...metafile,
+                bunnyPath: "/user/file.mp4",
+            });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+
+            fileMock.remove.mockResolvedValueOnce(false);
+            fileMock.get.mockResolvedValueOnce(makeStorageFile({ objectName: "file.mp4", path: "/zone/user/" }));
+
+            await expect(storage.delete({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: "StorageError" });
+            expect(deleteMeta).not.toHaveBeenCalled();
         });
 
         it("wraps network errors thrown by remove() via wrapBunnyError", async () => {
@@ -382,7 +402,8 @@ describe(BunnyStorage, () => {
 
             expect(fileMock.list).toHaveBeenCalledWith(expect.anything(), "/");
             expect(items).toHaveLength(2);
-            expect(items.map((f) => f.name)).toStrictEqual(["zone/a.bin", "zone/b.bin"]);
+            // The zone segment of Bunny's path is stripped, so the ids round-trip to get/delete.
+            expect(items.map((f) => f.id)).toStrictEqual(["a.bin", "b.bin"]);
             expect(items.some((f) => f.name?.includes("subdir"))).toBe(false);
         });
 
@@ -404,7 +425,7 @@ describe(BunnyStorage, () => {
             const items = await storage.list();
 
             expect(fileMock.list).toHaveBeenCalledTimes(1);
-            expect(items.map((f) => f.name)).toStrictEqual(["zone/top.bin"]);
+            expect(items.map((f) => f.name)).toStrictEqual(["top.bin"]);
         });
 
         it("respects the limit", async () => {

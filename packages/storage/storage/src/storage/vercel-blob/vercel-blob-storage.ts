@@ -3,6 +3,7 @@ import { BlobNotFoundError, copy, del, head, list, put } from "@vercel/blob";
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
@@ -253,10 +254,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -275,27 +273,34 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id);
+            const meta = await this.getMeta(id).catch(() => undefined);
+            // Without metadata, the blob is looked up by the ID as its pathname.
+            const file = meta ?? (await this.getCompletedFile(id, options));
 
-            if (!file.url) {
-                throw new Error(`File ${id} does not have a valid URL`);
+            if (!file) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
             const { url } = file;
+
+            if (!url) {
+                throw new Error(`File ${id} does not have a valid URL`);
+            }
 
             file.status = "deleted";
 
             try {
                 await this.runOperation(options, () => del(url, { ...this.credentials }));
             } catch (error) {
-                this.logger?.error("Failed to delete blob from Vercel Blob:", error);
-
-                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-                await this.onError(httpError);
+                if (!(error instanceof BlobNotFoundError)) {
+                    throw error;
+                }
             }
 
-            await this.deleteMeta(file.id);
+            // Only once the blob is gone, so a failed delete stays retryable.
+            if (meta) {
+                await this.deleteMeta(file.id);
+            }
 
             const deletedFile = { ...file };
 
@@ -335,7 +340,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     }
 
     /**
-     * Describes the blob stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the blob stored under an ID that has no upload metadata (an object written by other means).
      * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the upload's ID as its pathname.
      * @param id Upload ID.
      * @param options Operation options.
@@ -483,8 +488,6 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             { limit },
         );
     }
-
-    private internalOnComplete = (file: VercelBlobFile): Promise<void> => this.deleteMeta(file.id);
 
     /**
      * Determines if multipart upload should be used for the given file.

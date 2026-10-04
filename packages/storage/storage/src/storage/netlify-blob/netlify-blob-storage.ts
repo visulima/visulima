@@ -3,6 +3,7 @@ import { getStore } from "@netlify/blobs";
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
@@ -245,10 +246,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -267,31 +265,57 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id);
+            const meta = await this.getMeta(id).catch(() => undefined);
+            // Without metadata, the blob is looked up by the ID as its key.
+            const file = meta ?? (await this.getCompletedFile(id, options));
 
-            if (!file.pathname) {
+            if (!file) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            const { pathname } = file;
+
+            if (!pathname) {
                 throw new Error(`File ${id} does not have a valid pathname`);
             }
 
             file.status = "deleted";
 
-            try {
-                await this.runOperation(options, () => this.store.delete(file.pathname as string));
-            } catch (error) {
-                this.logger?.error("Failed to delete blob from Netlify Blob:", error);
+            // Netlify deletes are idempotent, so any error means the blob may still be there.
+            await this.runOperation(options, () => this.store.delete(pathname));
 
-                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-                await this.onError(httpError);
+            // Only once the blob is gone, so a failed delete stays retryable.
+            if (meta) {
+                await this.deleteMeta(file.id);
             }
-
-            await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
 
             await this.onDelete(deletedFile);
 
             return deletedFile;
+        });
+    }
+
+    /**
+     * Describes the blob stored under an ID that has no upload metadata (an object written by other means).
+     * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the ID as its key.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no blob exists. Any other failure throws, so a failed lookup never reads as absent.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<NetlifyBlobFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const entry = await this.runOperation(options, () => this.store.getMetadata(id));
+
+            if (!entry) {
+                return undefined;
+            }
+
+            const { contentType, ...metadata } = entry.metadata as Record<string, unknown>;
+            const file = new NetlifyBlobFile({ contentType: typeof contentType === "string" ? contentType : undefined, id, metadata });
+
+            return Object.assign(file, { ETag: entry.etag, name: id, pathname: id, status: "completed" as const, url: this.getBlobUrl(id) });
         });
     }
 
@@ -587,8 +611,6 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             { limit },
         );
     }
-
-    private internalOnComplete = (file: NetlifyBlobFile): Promise<void> => this.deleteMeta(file.id);
 
     /**
      * Generate a URL for a blob in Netlify Blob store

@@ -254,6 +254,53 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             await expect(storage.delete({ id: metafile.id })).rejects.toThrow(/pathname/);
         });
+
+        it("keeps the metadata when the store fails to delete the blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, pathname: metafile.name });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.delete as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Netlify Blobs has generated an internal error"));
+
+            await expect(storage.delete({ id: metafile.id }, { retries: 0 })).rejects.toThrow(/internal error/);
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("deletes the blob stored under the ID when there is no metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.getMetadata as ReturnType<typeof vi.fn>).mockResolvedValue({ etag: "e1", metadata: { contentType: "video/mp4" } });
+
+            const result = await storage.delete({ id: "video.mp4" });
+
+            expect(store.delete).toHaveBeenCalledWith("video.mp4");
+            expect(result).toMatchObject({ contentType: "video/mp4", id: "video.mp4", status: "deleted" });
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.getMetadata as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+            await expect(storage.delete({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
+            expect(store.delete).not.toHaveBeenCalled();
+        });
     });
 
     describe(".get()", () => {
