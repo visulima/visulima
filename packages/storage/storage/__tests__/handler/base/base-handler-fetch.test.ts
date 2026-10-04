@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import MemoryStorage from "../../../src/storage/memory/memory-storage";
+import type MediaTransformer from "../../../src/transformer/media-transformer";
 import { ERRORS, throwErrorCode } from "../../../src/utils/errors";
 import { waitForStorageReady } from "../../__helpers__/utils";
 
@@ -321,6 +322,105 @@ describe("baseHandlerFetch", () => {
             expect(response.headers.get("etag")).toBeNull();
             expect(response.headers.get("last-modified")).toMatch(/GMT$/u);
             await expect(response.json()).resolves.toStrictEqual(expect.objectContaining({ id: ID }));
+        });
+    });
+
+    describe("file resolution", () => {
+        const withTransformer = (handle: () => Promise<unknown>) => {
+            const storage = new MemoryStorage({ initial: { [ID]: BODY } });
+            const handler = new RestFetch({ mediaTransformer: { handle } as unknown as MediaTransformer, storage });
+
+            return handler;
+        };
+
+        it("should serve a transformed file with its media headers", async () => {
+            expect.assertions(4);
+
+            const handler = withTransformer(async () => {
+                return { buffer: Buffer.from("webp-bytes"), format: "webp", mediaType: "image", originalFile: { contentType: "image/png", ETag: "\"orig\"" }, size: 10 };
+            });
+            const response = await handler.fetch(new Request(`http://localhost/files/${ID}?width=100`));
+
+            expect(response.headers.get("content-type")).toBe("image/webp");
+            expect(response.headers.get("x-original-format")).toBe("png");
+            expect(response.headers.get("etag")).toBe("\"orig\"");
+            await expect(response.text()).resolves.toBe("webp-bytes");
+        });
+
+        it("should answer 400 for invalid transformation parameters and serve the original when a transformation fails", async () => {
+            expect.assertions(3);
+
+            const invalid = withTransformer(async () => {
+                throw Object.assign(new Error("width must be positive"), { name: "ValidationError" });
+            });
+            const rejected = await invalid.fetch(new Request(`http://localhost/files/${ID}?width=-1`));
+
+            expect(rejected.status).toBe(400);
+
+            const failing = withTransformer(async () => {
+                throw new Error("sharp missing");
+            });
+            const original = await failing.fetch(new Request(`http://localhost/files/${ID}?width=100`));
+
+            expect(original.status).toBe(200);
+            await expect(original.text()).resolves.toBe(BODY);
+        });
+
+        it("should fall back to a buffered read when streaming fails, but answer 404 when the file is gone", async () => {
+            expect.assertions(3);
+
+            const { handler, storage } = setup();
+
+            vi.spyOn(storage, "getStream").mockRejectedValueOnce(new Error("stream broke"));
+
+            const fallback = await handler.fetch(new Request(`http://localhost/files/${ID}`, { headers: { range: "bytes=0-4" } }));
+
+            expect(fallback.status).toBe(200);
+            await expect(fallback.text()).resolves.toBe(BODY);
+
+            vi.spyOn(storage, "getStream").mockImplementationOnce(async () => throwErrorCode(ERRORS.FILE_NOT_FOUND));
+
+            const gone = await handler.fetch(new Request(`http://localhost/files/${ID}`, { headers: { range: "bytes=0-4" } }));
+
+            expect(gone.status).toBe(404);
+        });
+
+        it("should answer 404 for the metadata of a missing file", async () => {
+            expect.assertions(1);
+
+            const { handler } = setup();
+            const response = await handler.fetch(new Request("http://localhost/files/b1b2c3d4-e5f6-4789-abcd-1234567890ab/metadata"));
+
+            expect(response.status).toBe(404);
+        });
+
+        it("should treat an unknown non-generated id as the collection, listed only when allowed", async () => {
+            expect.assertions(3);
+
+            const { handler } = setup();
+
+            await expect(handler.fetch(new Request("http://localhost/api/attachments"))).resolves.toStrictEqual(expect.objectContaining({ status: 404 }));
+
+            const listing = new RestFetch({ allowList: true, storage: new MemoryStorage({ initial: { [ID]: BODY } }) });
+            const listed = await listing.fetch(new Request("http://localhost/api/attachments"));
+
+            expect(listed.status).toBe(200);
+            await expect(listed.json()).resolves.toStrictEqual([expect.objectContaining({ id: ID })]);
+        });
+
+        it("should page a list and answer an empty page for an empty storage", async () => {
+            expect.assertions(2);
+
+            const listing = new RestFetch({ allowList: true, storage: new MemoryStorage({ initial: { [ID]: BODY } }) });
+            const page = await listing.fetch(new Request("http://localhost/files?page=1&limit=1"));
+
+            await expect(page.json()).resolves.toStrictEqual(expect.objectContaining({ data: [expect.objectContaining({ id: ID })] }));
+
+            const empty = new RestFetch({ allowList: true, storage: new MemoryStorage() });
+
+            const emptyPage = await empty.fetch(new Request("http://localhost/files?page=2"));
+
+            await expect(emptyPage.json()).resolves.toStrictEqual([]);
         });
     });
 });
