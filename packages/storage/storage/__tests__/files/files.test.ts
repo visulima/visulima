@@ -1377,6 +1377,7 @@ describe("capabilities", () => {
             metadata: true,
             range: true,
             readonly: false,
+            resumable: true,
             signedUploadPost: false,
         });
     });
@@ -1591,11 +1592,11 @@ describe("upload control", () => {
         expect(control.state).toBe("aborted");
     });
 
-    it("round-trips through serialize()/from()", () => {
+    it("round-trips through toJSON()/from()", () => {
         const control = new UploadControl({ key: "big.bin", loaded: 42 });
-        const token = control.serialize();
+        const token = control.toJSON();
 
-        expect(token).toStrictEqual({ key: "big.bin", loaded: 42, version: 1 });
+        expect(token).toStrictEqual({ key: "big.bin", loaded: 42, version: 2 });
 
         const restored = UploadControl.from(JSON.stringify(token));
 

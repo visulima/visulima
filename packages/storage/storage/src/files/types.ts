@@ -36,16 +36,35 @@ export type UploadProgressCallback = (event: UploadProgress) => void;
 export type UploadControlState = "aborted" | "completed" | "idle" | "paused" | "uploading";
 
 /**
- * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.serialize}
- * and accepted by {@link UploadControl.from}. Captures the key and bytes observed so a UI can
- * restore progress display across reloads. Note: byte-accurate *resume* of the transfer itself is
- * a protocol concern handled by the TUS / multipart handlers and `@visulima/storage-client`; a
- * rehydrated control restarts the body from the beginning.
+ * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.toJSON} and
+ * accepted by {@link UploadControl.from}. Persist it (a database row, a file, `localStorage`) and
+ * pass `UploadControl.from(token)` as `control` to {@link Files.upload} in a later process to
+ * continue the upload without re-sending the bytes already stored.
+ *
+ * Version 1 tokens (written before resumable uploads) only carry `key` and `loaded`; a control
+ * rebuilt from one starts the upload over.
  */
 export interface UploadControlToken {
+    /** Name of the adapter holding the upload session (e.g. `"s3"`); resuming on another adapter is rejected. */
+    adapter?: string;
+    /** Content type recorded when the upload started. */
+    contentType?: string;
+    /** Caller-facing key being uploaded. */
     key?: string;
+    /** Bytes the adapter confirmed stored (version 1: bytes observed leaving the facade). */
     loaded: number;
-    version: 1;
+    /** Custom metadata recorded when the upload started. */
+    metadata?: Record<string, unknown>;
+    /** Total size of the object in bytes. */
+    size?: number;
+
+    /**
+     * Id of the adapter's upload record. The provider session (S3 `UploadId` and parts, GCS
+     * resumable-session URI, Azure staged blocks, the partial file on disk) is kept in the
+     * adapter's metadata store under this id and reloaded from there on resume.
+     */
+    uploadId?: string;
+    version: 1 | 2;
 }
 
 /**
@@ -117,6 +136,15 @@ export interface UploadOptions {
      * fail the upload — exceptions are swallowed.
      */
     onProgress?: UploadProgressCallback;
+
+    /**
+     * Byte offset of the first byte of `body` within the object, when resuming with a `control`
+     * rebuilt from a token ({@link UploadControl.from}). Defaults to `0`: `body` is the full source
+     * and the bytes the adapter already stored are read and skipped. Pass the offset when `body`
+     * only holds the remainder (e.g. a file stream opened at `token.loaded`); it must not lie past
+     * the stored offset.
+     */
+    resumeOffset?: number;
 
     /**
      * Explicit byte length. Required for {@link NodeJS.ReadableStream} and Web `ReadableStream`
@@ -260,6 +288,14 @@ export interface StorageCapabilities {
     range: boolean;
     /** This `Files` view rejects every mutating operation. */
     readonly: boolean;
+
+    /**
+     * Uploads with a `control` are written in parts whose progress the adapter persists in its
+     * metadata store, so `UploadControl.toJSON()` can be resumed by another process (see
+     * {@link UploadControl.from}). `false`: the adapter stores objects in one request; a resume
+     * token is rejected with `METHOD_NOT_ALLOWED`.
+     */
+    resumable: boolean;
     /** {@link Files.signedUpload} can sign a size-limited `POST` policy (`maxSize` / `minSize`). */
     signedUploadPost: boolean;
     /** Longest `expiresIn` (seconds) the adapter can sign for, when the provider has a hard ceiling. */

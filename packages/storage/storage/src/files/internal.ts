@@ -64,6 +64,43 @@ export const normalizeBody = async (body: FileBody, sizeHint?: number): Promise<
     throw new TypeError(`Unsupported body type: ${Object.prototype.toString.call(body)}`);
 };
 
+/**
+ * Re-chunk `source` into parts of exactly `partSize` bytes (the last one may be shorter), after
+ * dropping its first `skip` bytes.
+ */
+export const readParts = async function* readParts(source: AsyncIterable<Buffer | Uint8Array | string>, partSize: number, skip = 0): AsyncGenerator<Buffer, void, void> {
+    let pending: Buffer[] = [];
+    let length = 0;
+    let toSkip = skip;
+
+    for await (const raw of source) {
+        let chunk = typeof raw === "string" ? Buffer.from(raw) : Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength);
+
+        if (toSkip > 0) {
+            const dropped = Math.min(toSkip, chunk.length);
+
+            chunk = chunk.subarray(dropped);
+            toSkip -= dropped;
+        }
+
+        pending.push(chunk);
+        length += chunk.length;
+
+        while (length >= partSize) {
+            const joined = Buffer.concat(pending);
+
+            yield joined.subarray(0, partSize);
+
+            pending = [joined.subarray(partSize)];
+            length -= partSize;
+        }
+    }
+
+    if (length > 0) {
+        yield Buffer.concat(pending);
+    }
+};
+
 export const toFileObject = (file: StorageFile, fallbackKey?: string): FileObject => {
     return {
         contentType: file.contentType ?? "application/octet-stream",

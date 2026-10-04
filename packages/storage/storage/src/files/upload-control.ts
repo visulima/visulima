@@ -8,8 +8,13 @@ import type { UploadControlState, UploadControlToken } from "./types";
  * `pause()` applies backpressure to the body stream; `resume()` releases it. This is effective for
  * streaming bodies feeding streaming adapters (S3, GCS, Azure, FTP/SFTP). Buffered adapters
  * (memory, disk) read the whole body in one shot and cannot be paused mid-transfer.
- * `abort()` cancels the operation through the merged {@link OperationOptions.signal}.
- * `serialize()` / {@link UploadControl.from} round-trip the key + bytes observed for UI continuity.
+ * `abort()` cancels the operation through the merged {@link OperationOptions.signal}; the
+ * adapter's upload session is kept, so the upload can still be resumed.
+ *
+ * On adapters with `capabilities.resumable`, an upload with a control is written in parts and
+ * {@link UploadControl.toJSON} describes the adapter's upload session. Persist the token and pass
+ * `UploadControl.from(token)` to `files.upload()` in another process to continue from the bytes
+ * the adapter confirmed. That process needs the same backend and metadata store.
  * @example
  * ```ts
  * const control = new UploadControl();
@@ -23,6 +28,9 @@ import type { UploadControlState, UploadControlToken } from "./types";
 export class UploadControl {
     /** Caller-facing key being uploaded; populated once the upload starts. */
     public key?: string;
+
+    /** Upload session of a resumable upload, from {@link UploadControl.from} or recorded when it starts. */
+    private session?: Omit<UploadControlToken, "key" | "loaded" | "version">;
 
     private readonly controller = new AbortController();
 
@@ -39,13 +47,20 @@ export class UploadControl {
     }
 
     /**
-     * Rehydrate a control from a {@link serialize} token (object or JSON string). The returned
-     * control is `idle` with its `loaded` counter pre-seeded for progress display.
+     * Rehydrate a control from a {@link UploadControl.toJSON} token (object or JSON string). The
+     * returned control is `idle` with its `loaded` counter pre-seeded. Passed to `files.upload()`,
+     * a token that carries an upload session (version 2) resumes that upload; a version 1 token
+     * only restores the progress display.
      */
     public static from(token: UploadControlToken | string): UploadControl {
-        const parsed = typeof token === "string" ? (JSON.parse(token) as UploadControlToken) : token;
+        const { key, loaded, version, ...session } = typeof token === "string" ? (JSON.parse(token) as UploadControlToken) : token;
+        const control = new UploadControl({ key, loaded });
 
-        return new UploadControl({ key: parsed.key, loaded: parsed.loaded });
+        if (version === 2 && session.uploadId !== undefined) {
+            control.session = session;
+        }
+
+        return control;
     }
 
     /** Abort signal merged into the upload operation. */
@@ -83,8 +98,33 @@ export class UploadControl {
         }
     }
 
+    /**
+     * Serializable resume token. Once a resumable upload has started it carries the upload session
+     * and the bytes the adapter confirmed; `JSON.stringify(control)` produces the same object.
+     */
+    public toJSON(): UploadControlToken {
+        return { key: this.key, loaded: this.loadedBytes, version: 2, ...this.session };
+    }
+
+    /** @deprecated Use {@link UploadControl.toJSON}. */
     public serialize(): UploadControlToken {
-        return { key: this.key, loaded: this.loadedBytes, version: 1 };
+        return this.toJSON();
+    }
+
+    /**
+     * The upload session this control resumes, if any.
+     * @internal
+     */
+    public get _session(): Omit<UploadControlToken, "key" | "loaded" | "version"> | undefined {
+        return this.session;
+    }
+
+    /**
+     * Record the session of a resumable upload that just started.
+     * @internal
+     */
+    public _startSession(session: Omit<UploadControlToken, "key" | "loaded" | "version">): void {
+        this.session = session;
     }
 
     /**

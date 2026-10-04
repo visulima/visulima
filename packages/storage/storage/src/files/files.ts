@@ -1,11 +1,10 @@
-import type { Readable } from "node:stream";
-import { PassThrough, pipeline } from "node:stream";
+import { PassThrough, pipeline, Readable } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
 import type { ConditionalOptions, ConditionalSupport, OperationOptions } from "../storage/types";
 import { assertValidETag } from "../storage/utils/etag";
-import type { FilePart } from "../storage/utils/file";
-import { ERRORS, throwErrorCode } from "../utils/errors";
+import type { File as StorageFile, FileInit, FilePart } from "../storage/utils/file";
+import { ERRORS, isUploadError, throwErrorCode } from "../utils/errors";
 import type { RetryConfig } from "../utils/retry";
 import {
     assertNoRelativeSegments,
@@ -13,6 +12,7 @@ import {
     mergeOperationOptions,
     normalizeBody,
     normalizePrefix,
+    readParts,
     runConcurrent,
     safeInvoke,
     toBulkError,
@@ -59,6 +59,7 @@ import type {
     UploadProgress,
     UploadProgressCallback,
 } from "./types";
+import type { UploadControl } from "./upload-control";
 
 /**
  * Provider-agnostic facade over a {@link BaseStorage} instance.
@@ -96,6 +97,9 @@ import type {
  * }
  * ```
  */
+/** Part size of a resumable upload when `multipart.partSize` is not set: above S3's 5 MiB minimum and a multiple of GCS's 256 KiB. */
+const DEFAULT_RESUMABLE_PART_SIZE = 8 * 1024 * 1024;
+
 export class Files<TStorage extends BaseStorage = BaseStorage> {
     public readonly adapter: TStorage;
 
@@ -129,6 +133,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             metadata: this.adapter.supportsMetadata,
             range: this.adapter.supportsRange,
             readonly: this.readonlyMode,
+            resumable: this.adapter.supportsResumableWrites,
             signedUploadPost: this.adapter.supportsUploadPost,
             ...(maxExpiresIn !== undefined && { signedUrlMaxExpiresIn: maxExpiresIn }),
         };
@@ -413,69 +418,81 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             // pipeline (not pipe) so a source error tears down the gate the adapter is reading.
             const stream: Readable = control ? pipeline(source, control._bind(key), () => {}) : source;
 
-            const file = await this.adapter.create(
-                {
-                    contentType: options?.contentType,
-                    id: resolved,
-                    metadata,
-                    originalName: resolved,
-                    size,
-                    storageClass: options?.storageClass,
-                },
-                operationOptions,
-            );
-
-            // If the caller wants progress and the adapter doesn't report its own, wrap the body
-            // in a PassThrough that emits per-chunk byte counts. For buffered bodies whose total
-            // length is known up-front, also emit a coarse start/done pair so a single callback
-            // can drive any UI without sniffing for chunk-level deltas.
-            // Wrap the body in a PassThrough that emits per-chunk byte counts when the caller wants
-            // progress (or a control is attached, which tracks bytes for serialize()) and the adapter
-            // doesn't report its own. For buffered bodies of known length, also emit a coarse
-            // start/done pair so a single callback can drive any UI without sniffing chunk deltas.
-            const reportsNatively = this.adapter.reportsUploadProgress;
-            const callback = options?.onProgress;
-            const wantsProgress = !!callback || !!control;
-            let progressStream: Readable = stream;
-
-            if (wantsProgress && !reportsNatively) {
-                let loaded = 0;
-                const passthrough = new PassThrough();
-
-                // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
-                // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
-                // happens to emit synchronously the moment we pipe.
-                if (size !== undefined && callback) {
-                    safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
-                }
-
-                stream.on("data", (chunk: Buffer | Uint8Array | string) => {
-                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
-
-                    loaded += chunkSize;
-                    control?._progress(loaded);
-
-                    if (callback) {
-                        safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
-                    }
-                });
-
-                stream.pipe(passthrough);
-                progressStream = passthrough;
-            }
-
-            const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
-                body: progressStream,
-                contentLength: size,
-                id: file.id,
-                start: 0,
-                ...(options?.checksum !== undefined && { checksum: options.checksum }),
-                ...(options?.checksumAlgorithm !== undefined && { checksumAlgorithm: options.checksumAlgorithm }),
-                ...(multipart !== undefined && { multipart }),
-                ...(reportsNatively && callback && { onProgress: callback }),
+            const fileInit = {
+                contentType: options?.contentType,
+                id: resolved,
+                metadata,
+                originalName: resolved,
+                size,
+                storageClass: options?.storageClass,
             };
 
-            const written = await this.adapter.write(part, operationOptions);
+            // With a control, write in parts the adapter records one by one, so another process can
+            // resume from the stored offset. A conditional or checksummed upload commits in one write.
+            const resumable = control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
+
+            if (control?._session && !resumable) {
+                throwErrorCode(
+                    this.adapter.supportsResumableWrites ? ERRORS.BAD_REQUEST : ERRORS.METHOD_NOT_ALLOWED,
+                    this.adapter.supportsResumableWrites
+                        ? "A resumed upload needs a known size and can't be conditional or checksummed"
+                        : `Adapter ${this.adapter.constructor.name} can't resume uploads`,
+                );
+            }
+
+            const writeWhole = async (): Promise<StorageFile> => {
+                const file = await this.adapter.create(fileInit, operationOptions);
+
+                // Wrap the body in a PassThrough that emits per-chunk byte counts when the caller wants
+                // progress (or a control is attached, which tracks the bytes sent) and the adapter
+                // doesn't report its own. For buffered bodies of known length, also emit a coarse
+                // start/done pair so a single callback can drive any UI without sniffing chunk deltas.
+                const reportsNatively = this.adapter.reportsUploadProgress;
+                const callback = options?.onProgress;
+                const wantsProgress = !!callback || !!control;
+                let progressStream: Readable = stream;
+
+                if (wantsProgress && !reportsNatively) {
+                    let loaded = 0;
+                    const passthrough = new PassThrough();
+
+                    // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
+                    // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
+                    // happens to emit synchronously the moment we pipe.
+                    if (size !== undefined && callback) {
+                        safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
+                    }
+
+                    stream.on("data", (chunk: Buffer | Uint8Array | string) => {
+                        const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
+
+                        loaded += chunkSize;
+                        control?._progress(loaded);
+
+                        if (callback) {
+                            safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
+                        }
+                    });
+
+                    stream.pipe(passthrough);
+                    progressStream = passthrough;
+                }
+
+                const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
+                    body: progressStream,
+                    contentLength: size,
+                    id: file.id,
+                    start: 0,
+                    ...(options?.checksum !== undefined && { checksum: options.checksum }),
+                    ...(options?.checksumAlgorithm !== undefined && { checksumAlgorithm: options.checksumAlgorithm }),
+                    ...(multipart !== undefined && { multipart }),
+                    ...(reportsNatively && callback && { onProgress: callback }),
+                };
+
+                return this.adapter.write(part, operationOptions);
+            };
+
+            const written = resumable ? await this.writeInParts(control, stream, fileInit, size, options, operationOptions) : await writeWhole();
 
             control?._complete();
 
@@ -488,6 +505,117 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             return result;
         });
+    }
+
+    /**
+     * Write `stream` as a series of adapter writes of one part each. The adapter persists its
+     * offset (and provider session) in its metadata store after every part, so when this process
+     * dies another one can resume from the token `control.toJSON()` returned. Resumes `control`'s
+     * session when it carries one, after checking it still exists and describes this upload.
+     */
+    private async writeInParts(
+        control: UploadControl,
+        stream: Readable,
+        fileInit: FileInit & { id: string },
+        size: number,
+        options: (OperationOptions & UploadOptions) | undefined,
+        operationOptions: OperationOptions | undefined,
+    ): Promise<StorageFile> {
+        const adapterName = this.adapter.constructor.name;
+        const session = control._session;
+        let id: string;
+        let offset = 0;
+
+        if (session) {
+            if (session.adapter !== adapterName || session.uploadId !== fileInit.id || session.size !== size) {
+                throwErrorCode(
+                    ERRORS.BAD_REQUEST,
+                    `The resume token describes ${String(session.size)} bytes of "${String(session.uploadId)}" on ${String(session.adapter)}, not ${String(size)} bytes of "${fileInit.id}" on ${adapterName}`,
+                );
+            }
+
+            const current = await this.loadUpload(fileInit.id, operationOptions);
+
+            if (current.size !== size) {
+                throwErrorCode(ERRORS.FILE_CONFLICT, `The stored upload "${fileInit.id}" is ${String(current.size)} bytes, the resumed body ${String(size)}`);
+            }
+
+            if (current.status === "completed") {
+                stream.destroy();
+                control._progress(size);
+
+                return current;
+            }
+
+            id = current.id;
+            offset = Number(current.bytesWritten) || 0;
+        } else {
+            const file = await this.adapter.create(fileInit, operationOptions);
+
+            id = file.id;
+            control._startSession({
+                adapter: adapterName,
+                ...(fileInit.contentType !== undefined && { contentType: fileInit.contentType }),
+                ...(options?.metadata !== undefined && { metadata: options.metadata }),
+                size,
+                uploadId: id,
+            });
+        }
+
+        const bodyStart = options?.resumeOffset ?? 0;
+
+        if (bodyStart > offset) {
+            stream.destroy();
+            throwErrorCode(ERRORS.BAD_REQUEST, `The body starts at byte ${String(bodyStart)}, past the ${String(offset)} bytes stored`);
+        }
+
+        const report = (loaded: number): void => {
+            control._progress(loaded);
+
+            if (options?.onProgress) {
+                safeInvoke(options.onProgress as (argument: unknown) => void, { loaded, total: size });
+            }
+        };
+
+        const partSize = typeof options?.multipart === "object" && options.multipart.partSize ? options.multipart.partSize : DEFAULT_RESUMABLE_PART_SIZE;
+        let written: StorageFile | undefined;
+
+        report(offset);
+
+        for await (const part of readParts(stream, partSize, offset - bodyStart)) {
+            control.signal.throwIfAborted();
+
+            written = await this.adapter.write({ body: Readable.from([part]), contentLength: part.length, id, start: offset }, operationOptions);
+            offset += part.length;
+            report(offset);
+        }
+
+        if (offset < size) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `The body ended after ${String(offset)} of ${String(size)} bytes; resume the upload with the rest`);
+        }
+
+        // An empty object is still created by one (empty) write.
+        return written ?? this.adapter.write({ body: Readable.from([]), contentLength: 0, id, start: offset }, operationOptions);
+    }
+
+    /**
+     * The stored state of upload `id`, for resuming it. Appending adapters (S3 parts, GCS sessions,
+     * Azure blocks) answer a write without a body with the provider's view of the upload; the
+     * others keep the offset in their metadata record.
+     */
+    private async loadUpload(id: string, options: OperationOptions | undefined): Promise<StorageFile> {
+        try {
+            return this.adapter.sequentialWrites ? await this.adapter.write({ id }, options) : await this.adapter.getMeta(id);
+        } catch (error: unknown) {
+            if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+                return throwErrorCode(
+                    ERRORS.FILE_NOT_FOUND,
+                    `The upload session "${id}" no longer exists (deleted, purged, or recorded in a metadata store this process can't reach); start the upload again`,
+                );
+            }
+
+            throw error;
+        }
     }
 
     private async uploadMany(items: BulkUploadItem[], bulkOptions: BulkUploadOptions | undefined): Promise<BulkUploadResult> {
