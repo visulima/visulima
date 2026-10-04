@@ -376,7 +376,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Gets upload status from server.
      */
-    const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; offset: number }> => {
+    const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; complete: boolean; offset: number }> => {
         const url = fileUrl(fileId);
 
         const response = await fetchWithRetry(url, {
@@ -405,7 +405,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             }
         }
 
-        return { chunks, offset };
+        return { chunks, complete: response.headers.get("X-Upload-Complete") === "true", offset };
     };
 
     /**
@@ -497,19 +497,20 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const totalChunks = Math.ceil(file.size / chunkSize);
 
         // Get current status from server (for resumability)
-        const { chunks: serverChunks } = await getUploadStatus(fileId);
+        const { chunks: serverChunks, complete: serverComplete } = await getUploadStatus(fileId);
 
-        // Mark server-reported chunks as uploaded
-        for (const chunk of serverChunks) {
-            uploadState.uploadedChunks.add(chunk.offset);
-        }
-
-        // Collect the chunks that still need uploading.
+        // Collect the chunks that still need uploading. A chunk the server already holds is one
+        // inside a reported range: ranges need not line up with this client's chunk size. A
+        // complete upload needs nothing more, whatever its chunk list says (#913).
         const pending: { endOffset: number; startOffset: number }[] = [];
 
         for (let i = 0; i < totalChunks; i += 1) {
             const startOffset = i * chunkSize;
             const endOffset = Math.min(startOffset + chunkSize, file.size);
+
+            if (serverComplete || serverChunks.some((chunk) => chunk.offset <= startOffset && chunk.offset + chunk.length >= endOffset)) {
+                uploadState.uploadedChunks.add(startOffset);
+            }
 
             // Skip if already uploaded
             if (uploadState.uploadedChunks.has(startOffset)) {
