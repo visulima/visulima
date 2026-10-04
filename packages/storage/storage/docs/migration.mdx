@@ -5,6 +5,15 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 
 # Migration Guide
 
+## Resumable `Files.upload` with `UploadControl`
+
+`UploadControl.toJSON()` now returns a version 2 token that another process can resume (see [Resumable uploads across processes](./files-facade#resumable-uploads-across-processes)). This changes a few behaviours for uploads that pass a `control`:
+
+- On adapters with `files.capabilities.resumable` (S3, aws-light, GCS, Azure, Disk, Memory), a `control` upload with a known `size` is written in parts of `multipart.partSize` bytes (default 8 MiB), one adapter `write` each, instead of in one `write`. On S3 that means a multipart upload with several parts. A `multipart.partSize` below 5 MiB, which used to be ignored, is now rejected by S3 for every part but the last one.
+- `onProgress` reports the bytes the adapter confirmed, once per part, instead of once per body chunk.
+- `serialize()` is deprecated in favour of `toJSON()`. Both return the version 2 token. A version 1 token (`{ key, loaded, version: 1 }`) still works with `UploadControl.from()`, but it carries no session, so the upload starts over as before.
+- `files.capabilities` gained `resumable`.
+
 ## Upgrading past 2.0.30: upload ids, `HEAD` and `PUT` (security fix)
 
 ### Summary

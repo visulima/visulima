@@ -43,7 +43,7 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
 | `signedUpload`    | `(key, opts?) → Promise<SignedUpload>`               | —                                               | PUT or size-limited POST contract (`maxSize` / `minSize`).        |
 | `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
-| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `signedUploadPost`, `readonly`.     |
+| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `resumable`, `readonly`, …          |
 | `readonly`        | `() → Files`                                         | —                                               | Locked view sharing adapter, prefix, defaults and hooks.          |
 
 Two top-level functions build on the same surface: `transfer(source, destination)` and `sync(source, destination)` (both covered below).
@@ -230,6 +230,57 @@ await files.upload("backups/db-2026-05.tar.gz", stream, {
 ```
 
 `multipart: true` uses the adapter's defaults; pass an object to tune the per-part size and the number of parts uploaded in parallel. Adapters that don't have a multipart primitive ignore the option.
+
+### Resumable uploads across processes
+
+Pass an `UploadControl` to `upload` to pause, resume or abort it. On adapters with `files.capabilities.resumable`, the upload is also written in parts (`multipart.partSize`, default 8 MiB), and the adapter records its progress after every part. `control.toJSON()` returns a small token describing that upload; persist it, and another process can pick the upload up after a crash, restart or redeploy without re-sending the bytes already stored:
+
+```ts
+import { Files, UploadControl } from "@visulima/storage";
+
+// Process A
+const control = new UploadControl();
+
+const upload = files.upload("backups/db.tar", createReadStream(path), { control, size, onProgress: () => saveToken(JSON.stringify(control)) });
+
+// Process B, after process A died
+const token = loadToken(); // { version: 2, key, uploadId, size, loaded, adapter, contentType?, metadata? }
+
+await files.upload("backups/db.tar", createReadStream(path), { control: UploadControl.from(token), size });
+```
+
+On resume the facade reloads the upload by `uploadId` and continues from the offset the adapter reports. That offset can be ahead of `token.loaded` but never behind it: S3 lists the parts it holds, GCS asks the resumable session, the others read their metadata record. The body can be either of these:
+
+- **The full source** (default). The bytes already stored are read and skipped.
+- **Only the rest**. Pass `resumeOffset` with the byte offset where `body` starts, for example `createReadStream(path, { start: token.loaded })` with `resumeOffset: token.loaded`. An offset past the stored one is rejected with `BAD_REQUEST`.
+
+The token only holds the upload id and the offset. The provider session (S3 `UploadId` and parts, GCS resumable-session URI, Azure staged blocks, the partial file on disk) stays in the adapter's **metadata store**, so cross-process resume needs a metadata store both processes can reach:
+
+| Adapter                        | `resumable` | Session kept in                                      | Across processes                                                     |
+| ------------------------------ | ----------- | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| `S3Storage`, `AwsLightStorage` | `true`      | Multipart upload (`UploadId`, parts via `ListParts`) | Yes, with the default bucket-backed meta store                       |
+| `GCStorage`                    | `true`      | Resumable session URI                                | Yes, with the default bucket-backed meta store                       |
+| `AzureStorage`                 | `true`      | Staged blocks, keyed by offset                       | Yes, with the default container-backed meta store                    |
+| `DiskStorage`                  | `true`      | The partial file plus its `.META` record             | Yes, when both processes use the same `directory` (or `metaStorage`) |
+| `MemoryStorage`                | `true`      | The adapter instance                                 | No: resumes only through the same `MemoryStorage` instance           |
+| Every other adapter            | `false`     | — (objects are stored in one request)                | No: a resume token rejects with `METHOD_NOT_ALLOWED`                 |
+
+Adapters with `resumable: false` include OneDrive, SharePoint, Box, Dropbox, Google Drive, WebDAV, FTP, SFTP, Firebase, Supabase, Vercel Blob, Netlify Blobs, UploadThing, PocketBase, Bunny, Cloudinary and Bun S3. A control still pauses and aborts the upload in-process there.
+
+A resume fails clearly instead of starting over or corrupting the object:
+
+- A token for another key, adapter or total size rejects with `BAD_REQUEST`.
+- An upload that no longer exists (deleted, purged after `expiration.maxAge`, or recorded in a meta store this process can't reach) rejects with `FILE_NOT_FOUND`. Start a fresh upload without the token.
+- A stored upload of a different size rejects with `FILE_CONFLICT`.
+- A body that ends before `size` rejects with `BAD_REQUEST`, and the upload stays resumable.
+- An upload that already completed resolves with the stored object.
+
+Some limits apply:
+
+- Parts need a known `size`. A conditional (`ifMatch` / `ifNoneMatch`) or checksummed upload is written in one request, so its token can't be resumed.
+- S3 parts must be at least 5 MiB except for the last one, and GCS parts a multiple of 256 KiB. The 8 MiB default fits both.
+- Parts are sent one after another, so `multipart.concurrency` doesn't apply.
+- `abort()` cancels the call but keeps the session, so the upload can still be resumed. Call `files.adapter.deleteUpload(token.uploadId)` to discard it.
 
 ### Mint a signed URL for a private object
 
@@ -481,7 +532,7 @@ await ro.download("a.txt"); // ok
 await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
 ```
 
-`files.capabilities` returns `{ range, metadata, cacheControl, conditional, signedUploadPost, signedUrlMaxExpiresIn?, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), whether `signedUpload()` can sign a size-limited POST policy, the longest `expiresIn` it can sign for (when the provider has a hard ceiling), plus whether this view is read-only. Branch on them before relying on an optional feature.
+`files.capabilities` returns `{ range, metadata, cacheControl, conditional, resumable, signedUploadPost, signedUrlMaxExpiresIn?, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), whether an upload with a `control` can be [resumed in another process](#resumable-uploads-across-processes) (`supportsResumableWrites`), whether `signedUpload()` can sign a size-limited POST policy, the longest `expiresIn` it can sign for (when the provider has a hard ceiling), plus whether this view is read-only. Branch on them before relying on an optional feature.
 
 A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`, `signedUpload`) before the adapter is touched; reads (including `search`) pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
 
