@@ -4,7 +4,7 @@
 
 ## Overview
 
-PocketBase is record-based. The adapter maps the object store onto one collection where each record holds exactly one file: a text field (`keyField`) holds the object key and a file field (`fileField`) holds the bytes. Uploads are sent as one multipart request.
+PocketBase is record-based. `PocketBaseStorage` maps the object store onto one collection where **each record holds exactly one file**: a text field (`keyField`, default `key`) holds the object key and a file field (`fileField`, default `file`) holds the bytes. Records are looked up with `getFirstListItem("key = {:k}")`. Writing an existing key updates that record; a new key creates one. Every upload is a single multipart request.
 
 ## Installation
 
@@ -20,43 +20,144 @@ yarn add pocketbase
 pnpm add pocketbase
 ```
 
-Create the collection first (the adapter doesn't): a text field `key` and a single-file field `file`, or your own names via `keyField` / `fileField`.
+The adapter authenticates superusers through the `_superusers` collection, which requires PocketBase **v0.23+** (server and `pocketbase` SDK).
 
-## Usage
+## Provider setup
+
+The adapter never creates the collection. In the PocketBase dashboard (`/_/`) create a **Base collection**, e.g. `uploads`, with:
+
+| Field  | Type | Settings                                                                                                                                                                                                       |
+| ------ | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `key`  | Text | **Required**. Add a **unique index** on it — the adapter assumes one record per key.                                                                                                                           |
+| `file` | File | **Max select 1**. Raise **Max file size** to at least your `maxUploadSize` (the field's default limit is small). Allowed MIME types: leave empty or match `allowMIME`. Enable **Protected** for private files. |
+
+Names other than `key` / `file` are fine; pass them as `keyField` / `fileField`.
+
+**Credentials**, pick one:
+
+- **Superuser email + password** (`adminEmail` / `adminPassword`) — the adapter signs in lazily and again when the token expires. Superusers bypass API rules. Create a dedicated superuser for the app.
+- **Auth token** (`authToken`) — a token you obtained yourself, e.g. a superuser [impersonation token](https://pocketbase.io/docs/authentication/) or a regular user's token. It is never refreshed.
+- **No credentials** — the collection's API rules alone decide what works.
+
+**API rules** for anything but a superuser: the adapter needs **List/Search** and **View** (lookups, `list()`, downloads), **Create** and **Update** (uploads), and **Delete**. For protected files, `getReadUrl()` requests a file token (`/api/files/token`), which requires an authenticated record or superuser.
+
+Browsers upload to your handler, not PocketBase, so CORS is configured on your own server. File URLs from `getReadUrl()` are served by PocketBase itself.
+
+## Configuration
 
 ```ts
 import { PocketBaseStorage } from "@visulima/storage/provider/pocketbase";
 
+// Minimal: URL and superuser from env (POCKETBASE_URL, POCKETBASE_ADMIN_EMAIL, POCKETBASE_ADMIN_PASSWORD)
+const storage = new PocketBaseStorage({ collection: "uploads" });
+```
+
+```ts
+// Production
 const storage = new PocketBaseStorage({
     url: process.env.POCKETBASE_URL,
     adminEmail: process.env.POCKETBASE_ADMIN_EMAIL,
     adminPassword: process.env.POCKETBASE_ADMIN_PASSWORD,
     collection: "uploads",
+    maxUploadSize: "50MB", // keep at or below the file field's Max file size; writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
 });
 ```
 
-## Configuration
+### Options
 
-| Option                | Type                      | Description                                                         | Default                     |
-| --------------------- | ------------------------- | ------------------------------------------------------------------- | --------------------------- |
-| `collection`          | `string`                  | Collection backing the store (required)                             | —                           |
-| `url`                 | `string`                  | PocketBase instance URL                                             | `POCKETBASE_URL`            |
-| `adminEmail`          | `string`                  | Superuser email for lazy authentication                             | `POCKETBASE_ADMIN_EMAIL`    |
-| `adminPassword`       | `string`                  | Superuser password                                                  | `POCKETBASE_ADMIN_PASSWORD` |
-| `authToken`           | `string`                  | Pre-saved auth token (instead of email/password)                    | `POCKETBASE_AUTH_TOKEN`     |
-| `client`              | `PocketBase`              | Pre-built client, used as-is without authenticating                 | —                           |
-| `keyField`            | `string`                  | Text field holding the object key                                   | `"key"`                     |
-| `fileField`           | `string`                  | File field holding the bytes                                        | `"file"`                    |
-| `publicBaseUrl`       | `string`                  | `getReadUrl` returns `${publicBaseUrl}/${key}` without a file token | —                           |
-| `defaultUrlExpiresIn` | `number`                  | Advisory only; PocketBase controls file-token lifetime              | `3600`                      |
-| `metaStorageConfig`   | `LocalMetaStorageOptions` | Where upload metadata is kept                                       | OS temp directory           |
+| Option                | Type                                                        | Default                     | Description                                                                                                                                                                                                             |
+| --------------------- | ----------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collection`          | `string`                                                    | — (required)                | Collection backing the store.                                                                                                                                                                                           |
+| `client`              | `PocketBase`                                                | —                           | Pre-built client, used as-is; the adapter performs no authentication. `url` and the credential options are then ignored.                                                                                                |
+| `url`                 | `string`                                                    | `POCKETBASE_URL`            | PocketBase instance URL. Required without `client`.                                                                                                                                                                     |
+| `authToken`           | `string`                                                    | `POCKETBASE_AUTH_TOKEN`     | Token saved to the client's `authStore`. Wins over email/password.                                                                                                                                                      |
+| `adminEmail`          | `string`                                                    | `POCKETBASE_ADMIN_EMAIL`    | Superuser email for lazy sign-in.                                                                                                                                                                                       |
+| `adminPassword`       | `string`                                                    | `POCKETBASE_ADMIN_PASSWORD` | Superuser password.                                                                                                                                                                                                     |
+| `keyField`            | `string`                                                    | `"key"`                     | Text field holding the object key.                                                                                                                                                                                      |
+| `fileField`           | `string`                                                    | `"file"`                    | File field holding the bytes.                                                                                                                                                                                           |
+| `publicBaseUrl`       | `string`                                                    | —                           | `getReadUrl(key)` returns `${publicBaseUrl}/${key}` without asking PocketBase. Only useful behind a proxy/CDN that maps keys to files — PocketBase's own file URLs are `/api/files/<collection>/<recordId>/<filename>`. |
+| `defaultUrlExpiresIn` | `number`                                                    | `3600`                      | Advisory only; PocketBase decides file-token lifetime.                                                                                                                                                                  |
+| `metaStorageConfig`   | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir                 | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                                                                                                                    |
 
-## URL Generation
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
 
-- `getReadUrl(key)` — `${publicBaseUrl}/${key}` when set; otherwise the record's file URL with a freshly requested file token. `responseContentDisposition` / `responseContentType` are rejected with `METHOD_NOT_ALLOWED`.
-- `getUploadUrl()` — not implemented; rejects with `METHOD_NOT_ALLOWED`.
+### Environment variables
 
-## Limitations
+| Variable                    | Fallback for    |
+| --------------------------- | --------------- |
+| `POCKETBASE_URL`            | `url`           |
+| `POCKETBASE_AUTH_TOKEN`     | `authToken`     |
+| `POCKETBASE_ADMIN_EMAIL`    | `adminEmail`    |
+| `POCKETBASE_ADMIN_PASSWORD` | `adminPassword` |
 
-- Uploads are single-shot: the part is buffered and sent in one request, so resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request.
-- Per-operation `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.
+None of them are read when `client` is passed.
+
+## Metadata storage
+
+Upload bookkeeping lives in a `LocalMetaStorage`: one JSON file per upload at `<directory>/<prefix><id><suffix>` (default `<os tmpdir>/Upload_meta/<id>.META`). The record in the collection only holds the key and the file.
+
+- **Finished uploads keep their record** (content type, original name, custom metadata); `delete()` removes it.
+- **Multi-instance deployments** must share the records: point `metaStorageConfig.directory` at a shared volume, or pass any `MetaStorage` as `metaStorage` (for example `S3MetaStorage` from `@visulima/storage/provider/aws`, or a Redis/database-backed subclass of `MetaStorage`).
+- **Expiration:** `purge()` walks the meta storage's records, so with `LocalMetaStorage` only uploads this storage created are purged. **Caution:** with a meta storage that can't list its records, `purge()` falls back to listing the collection, whose records do carry a creation date — every record older than `maxAge` would be deleted, including ones this storage never created. Don't combine `expiration` with such a meta storage on a shared collection.
+- Keys without a record (records created by other means) are read, deleted and checked directly by key.
+
+## Behaviour & limits
+
+| Topic                 | Behaviour                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chunked / resumable   | Not supported (`supportsResumableWrites: false`). A chunk that doesn't start at 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`. TUS and chunked REST clients must send the file in one request. |
+| Memory                | `write()`, `get()` and `copy()` buffer the whole file. Cap it with `maxUploadSize`.                                                                                                                                      |
+| Size limit            | The file field's **Max file size** is enforced by PocketBase; larger uploads fail with `400`.                                                                                                                            |
+| Range reads           | Not supported (`supportsRange: false`).                                                                                                                                                                                  |
+| `getReadUrl(key)`     | `${publicBaseUrl}/${key}` when set; otherwise the record's file URL with a freshly requested file token. `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.                                    |
+| `getUploadUrl()`      | Not implemented → `METHOD_NOT_ALLOWED`.                                                                                                                                                                                  |
+| `list()`              | Every record of the collection, paged with `getList` (≤ 500 per page) until `limit`. IDs are the `keyField` values (the record ID when the key is empty). No prefix filtering server-side.                               |
+| `copy()` / `move()`   | Download + re-upload under the new key; `move()` then deletes the source record and its upload record.                                                                                                                   |
+| Custom `filename`     | The returned name is the record's key; the upload record maps the upload ID to it. PocketBase may rename the stored file itself (it sanitizes and suffixes file names) — the key field is what the adapter uses.         |
+| Cancellation, retries | `signal`/`timeout` are best-effort — the SDK can't cancel an in-flight request. `retryConfig` applies (default: 3 retries with exponential backoff).                                                                     |
+
+## Using it with the handlers
+
+Because writes are single-request, prefer the multipart or REST handlers (or TUS clients that send the whole file in one `PATCH`).
+
+```ts
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle);
+```
+
+```ts
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export const handler = (request: Request): Promise<Response> => rest.fetch(request);
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("avatars/42.png", pngBuffer, { contentType: "image/png" });
+
+const url = await files.url("avatars/42.png"); // file URL with a short-lived file token
+```
+
+## Troubleshooting
+
+| Symptom                                                                  | Cause / fix                                                                                                          |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `PocketBase storage: \`url\` is required`                                | Set `url` or `POCKETBASE_URL`, or pass a `client`.                                                                   |
+| `404` on every lookup, although records exist                            | `keyField` doesn't match the collection's field name, or the List/View rule hides the records from the current auth. |
+| `400` with `validation_file_size_limit` / `validation_invalid_mime_type` | The file field's max size or MIME list is too strict.                                                                |
+| `403` on create/update/delete                                            | The collection's API rule denies it. Authenticate as a superuser or relax the rule.                                  |
+| `401` from `_superusers` / `authWithPassword`                            | Wrong superuser credentials, or a PocketBase server older than v0.23 (no `_superusers` collection).                  |
+| File URL answers `404`/`403`                                             | Protected file requested without a token — don't cache `getReadUrl()` results; file tokens are short-lived.          |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads`     | The client sent a partial chunk. Upload the whole file in one request.                                               |
