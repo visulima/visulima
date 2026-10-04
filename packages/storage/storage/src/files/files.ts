@@ -1078,9 +1078,9 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      *
      * `limit` is the initial page size (default 1000). Because `BaseStorage.list` has no cursor,
      * each further round re-lists with a doubled limit and yields only the new keys, until the
-     * adapter returns fewer objects than requested. Adapters whose `list(limit)` is capped by a
-     * single provider call (no internal paging) cannot be walked past that cap; when a full page
-     * brings no new keys, the walk throws instead of truncating silently.
+     * adapter returns fewer objects than requested. The built-in adapters page through their
+     * provider internally up to `limit`, so every object is reached; a custom adapter whose full
+     * page brings no new keys makes the walk throw instead of truncating silently.
      * @example
      * ```ts
      * for await (const file of files.listAll({ prefix: "avatars/" })) {
@@ -1098,7 +1098,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
         try {
             // `BaseStorage.list(limit)` has no cursor: every call restarts from the first object, and
-            // paging adapters (S3, GCS, Azure, Box, OneDrive) page internally up to `limit`. Re-asking
+            // the built-in adapters page through their provider internally up to `limit`. Re-asking
             // for the same `limit` would return the same first page forever, so grow the request each
             // round and yield only keys not seen yet. A page shorter than the request means the
             // listing is exhausted; a page longer than the request means the adapter ignores `limit`

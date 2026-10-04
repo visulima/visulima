@@ -20,6 +20,27 @@ class PagingStorage extends MemoryStorage {
     }
 }
 
+/**
+ * Adapter over a provider that answers at most two keys per call with an offset cursor (as Vercel
+ * Blob, UploadThing, Cloudinary, … cap their pages); `list(limit)` follows the cursor up to `limit`.
+ */
+class CappedPagingStorage extends MemoryStorage {
+    public providerCalls = 0;
+
+    public override async list(limit = 1000, options?: OperationOptions): Promise<MemoryFiles> {
+        const stored = await super.list(Number.MAX_SAFE_INTEGER, options);
+        const all = stored.toSorted((a, b) => a.id.localeCompare(b.id));
+        const listed: MemoryFiles = [];
+
+        for (let cursor = 0; listed.length < limit && cursor < all.length; cursor += 2) {
+            this.providerCalls += 1;
+            listed.push(...all.slice(cursor, cursor + Math.min(2, limit - listed.length)));
+        }
+
+        return listed;
+    }
+}
+
 /** Adapter whose full pages never advance: it repeats the same keys to fill any `limit`. */
 class RepeatingStorage extends MemoryStorage {
     public override async list(limit = 1000, options?: OperationOptions): Promise<MemoryFiles> {
@@ -78,6 +99,18 @@ describe("files regressions", () => {
         const files = new Files({ adapter: new PagingStorage({ initial }) });
 
         await expect(collect(files.listAll({ limit: 2 }))).resolves.toStrictEqual(["k0.txt", "k1.txt", "k2.txt", "k3.txt", "k4.txt"]);
+    });
+
+    it("listAll() walks every object of an adapter over a provider with capped pages", async () => {
+        expect.assertions(2);
+
+        const keys = Array.from({ length: 7 }, (_, index) => `k${String(index)}.txt`);
+        const adapter = new CappedPagingStorage({ initial: Object.fromEntries(keys.map((key) => [key, "x"])) });
+        const files = new Files({ adapter });
+
+        await expect(collect(files.listAll({ limit: 3 }))).resolves.toStrictEqual(keys);
+        // More provider calls than one per listAll round: each round pages through the capped provider.
+        expect(adapter.providerCalls).toBeGreaterThan(3);
     });
 
     it("listAll() throws instead of truncating when full pages stop advancing", async () => {
