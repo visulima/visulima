@@ -9,6 +9,7 @@ import {
     claudeGetFileMetadata,
     claudeGetFileUrl,
     claudeListFiles,
+    claudeSearchFiles,
     claudeSignUploadUrl,
     claudeUploadFile,
     createClaudeFileTools,
@@ -43,15 +44,22 @@ const runners: Record<string, (files: Files) => Run> = {
     },
     claude: (files) => {
         const tools = Object.fromEntries(
-            [claudeCopyFile, claudeDeleteFile, claudeDownloadFile, claudeGetFileMetadata, claudeGetFileUrl, claudeListFiles, claudeSignUploadUrl, claudeUploadFile].map((create) => {
+            [
+                claudeCopyFile,
+                claudeDeleteFile,
+                claudeDownloadFile,
+                claudeGetFileMetadata,
+                claudeGetFileUrl,
+                claudeListFiles,
+                claudeSearchFiles,
+                claudeSignUploadUrl,
+                claudeUploadFile,
+            ].map((create) => {
                 const tool = create(files);
 
                 return [tool.name, tool];
             }),
-        ) as Record<
-            string,
-            { handler: (input: unknown, extra: unknown) => Promise<{ content: { text: string }[]; isError?: boolean }> }
-        >;
+        ) as Record<string, { handler: (input: unknown, extra: unknown) => Promise<{ content: { text: string }[]; isError?: boolean }> }>;
 
         return async (name, input) => {
             const result = await tools[name]?.handler(input, {});
@@ -64,7 +72,10 @@ const runners: Record<string, (files: Files) => Run> = {
         };
     },
     "openai-agents": (files) => {
-        const tools = createAgentsFileTools({ files, requireApproval: false }) as unknown as Record<string, { invoke: (context: RunContext, input: string) => Promise<unknown> }>;
+        const tools = createAgentsFileTools({ files, requireApproval: false }) as unknown as Record<
+            string,
+            { invoke: (context: RunContext, input: string) => Promise<unknown> }
+        >;
 
         return async (name, input) => parse(await tools[name]?.invoke(new RunContext(), JSON.stringify(input)));
     },
@@ -78,7 +89,10 @@ const runners: Record<string, (files: Files) => Run> = {
         };
     },
     tanstack: (files) => {
-        const tools = createTanstackFileTools({ files, requireApproval: false }) as unknown as Record<string, { execute: (input: unknown, context: unknown) => Promise<unknown> }>;
+        const tools = createTanstackFileTools({ files, requireApproval: false }) as unknown as Record<
+            string,
+            { execute: (input: unknown, context: unknown) => Promise<unknown> }
+        >;
 
         return async (name, input) => tools[name]?.execute(input, undefined);
     },
@@ -91,22 +105,28 @@ describe.each(Object.keys(runners))("%s file tools", (integration) => {
         return { run: (runners[integration] as (files: Files) => Run)(new Files({ adapter: storage })), storage };
     };
 
-    it("should upload, describe, list and download a file", async () => {
-        expect.assertions(5);
+    it("should upload, describe, list, search and download a file", async () => {
+        expect.assertions(7);
 
         const { run } = setup();
 
-        await expect(run("uploadFile", { content: "aGVsbG8=", contentType: "text/plain", encoding: "base64", key: "docs/a.txt", metadata: { owner: "u1" } })).resolves.toStrictEqual(
-            expect.objectContaining({ key: "docs/a.txt", size: 5 }),
-        );
+        await expect(
+            run("uploadFile", { content: "aGVsbG8=", contentType: "text/plain", encoding: "base64", key: "docs/a.txt", metadata: { owner: "u1" } }),
+        ).resolves.toStrictEqual(expect.objectContaining({ key: "docs/a.txt", size: 5 }));
         await expect(run("getFileMetadata", { key: "docs/a.txt" })).resolves.toStrictEqual(
             expect.objectContaining({ contentType: "text/plain", key: "docs/a.txt", lastModified: expect.stringMatching(/^\d{4}-\d\d-\d\dT/u), size: 5 }),
         );
         await expect(run("listFiles", { prefix: "docs/" })).resolves.toStrictEqual({ items: [expect.objectContaining({ key: "docs/a.txt", size: 5 })] });
+        await expect(run("searchFiles", { pattern: "docs/*.txt" })).resolves.toStrictEqual({
+            items: [expect.objectContaining({ key: "docs/a.txt", size: 5 })],
+        });
+        await expect(run("searchFiles", { match: "substring", pattern: "nope" })).resolves.toStrictEqual({ items: [] });
         await expect(run("downloadFile", { key: "docs/a.txt" })).resolves.toStrictEqual(
             expect.objectContaining({ content: "hello", encoding: "text", key: "docs/a.txt", size: 5 }),
         );
-        await expect(run("downloadFile", { binary: true, key: "docs/a.txt" })).resolves.toStrictEqual(expect.objectContaining({ content: "aGVsbG8=", encoding: "base64" }));
+        await expect(run("downloadFile", { binary: true, key: "docs/a.txt" })).resolves.toStrictEqual(
+            expect.objectContaining({ content: "aGVsbG8=", encoding: "base64" }),
+        );
     });
 
     it("should copy and delete files, and sign URLs", async () => {
@@ -116,7 +136,9 @@ describe.each(Object.keys(runners))("%s file tools", (integration) => {
 
         await run("uploadFile", { content: "hello", key: "a.txt" });
 
-        await expect(run("copyFile", { from: "a.txt", to: "b.txt" })).resolves.toStrictEqual(expect.objectContaining({ copied: true, from: "a.txt", key: "b.txt", to: "b.txt" }));
+        await expect(run("copyFile", { from: "a.txt", to: "b.txt" })).resolves.toStrictEqual(
+            expect.objectContaining({ copied: true, from: "a.txt", key: "b.txt", to: "b.txt" }),
+        );
         await expect(run("deleteFile", { key: "a.txt" })).resolves.toStrictEqual({ deleted: true, key: "a.txt" });
         await expect(storage.exists({ id: "a.txt" })).resolves.toBe(false);
         await expect(run("getFileUrl", { key: "b.txt" })).resolves.toStrictEqual({ key: "b.txt", url: "memory://b.txt" });
@@ -149,7 +171,9 @@ describe("approval gating", () => {
         const responses = createResponsesFileTools({ files });
         const claude = createClaudeFileTools({ files });
         const gated = (check: (name: string) => boolean | undefined): string[] =>
-            ["copyFile", "deleteFile", "downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "signUploadUrl", "uploadFile"].filter((name) => check(name));
+            ["copyFile", "deleteFile", "downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "searchFiles", "signUploadUrl", "uploadFile"].filter(
+                (name) => check(name),
+            );
 
         expect(gated((name) => sdk[name]?.needsApproval)).toStrictEqual(writes);
         expect(gated((name) => tanstack[name]?.needsApproval)).toStrictEqual(writes);
@@ -157,7 +181,10 @@ describe("approval gating", () => {
         expect(gated((name) => claude.needsApproval(name))).toStrictEqual(writes);
 
         const denied = await claude.canUseTool("mcp__files__deleteFile", { key: "a.txt" }, { signal: new AbortController().signal, suggestions: [] });
-        const agents = createAgentsFileTools({ files }) as unknown as Record<string, { needsApproval: (context: RunContext, input: unknown) => Promise<boolean> }>;
+        const agents = createAgentsFileTools({ files }) as unknown as Record<
+            string,
+            { needsApproval: (context: RunContext, input: unknown) => Promise<boolean> }
+        >;
 
         expect(denied.behavior).toBe("deny");
         await expect(agents.deleteFile?.needsApproval(new RunContext(), { key: "a.txt" })).resolves.toBe(true);
@@ -166,14 +193,25 @@ describe("approval gating", () => {
     it("should drop write tools in read-only mode", () => {
         expect.assertions(3);
 
-        expect(Object.keys(createFileTools({ files, readOnly: true })).toSorted()).toStrictEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
-        expect(Object.keys(createTanstackFileTools({ files, readOnly: true })).toSorted()).toStrictEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
-        expect(createResponsesFileTools({ files, readOnly: true }).definitions.map(({ name }) => name).toSorted()).toStrictEqual([
+        expect(Object.keys(createFileTools({ files, readOnly: true })).toSorted()).toStrictEqual([
             "downloadFile",
             "getFileMetadata",
             "getFileUrl",
             "listFiles",
+            "searchFiles",
         ]);
+        expect(Object.keys(createTanstackFileTools({ files, readOnly: true })).toSorted()).toStrictEqual([
+            "downloadFile",
+            "getFileMetadata",
+            "getFileUrl",
+            "listFiles",
+            "searchFiles",
+        ]);
+        expect(
+            createResponsesFileTools({ files, readOnly: true })
+                .definitions.map(({ name }) => name)
+                .toSorted(),
+        ).toStrictEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "searchFiles"]);
     });
 
     it("should refuse to execute a write tool left out in read-only mode", async () => {

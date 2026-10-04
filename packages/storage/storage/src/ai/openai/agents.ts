@@ -10,6 +10,7 @@ import { TOOL_SCHEMAS, WRITE_TOOL_NAME_SET } from "../internal/schemas";
 import type { AgentsToolOverrides } from "./types";
 
 type ListFilesOutput = Awaited<ReturnType<typeof executors.listFiles>>;
+type SearchFilesOutput = Awaited<ReturnType<typeof executors.searchFiles>>;
 type GetFileMetadataOutput = Awaited<ReturnType<typeof executors.getFileMetadata>>;
 type DownloadFileOutput = Awaited<ReturnType<typeof executors.downloadFile>>;
 type GetFileUrlOutput = Awaited<ReturnType<typeof executors.getFileUrl>>;
@@ -19,6 +20,7 @@ type CopyFileOutput = Awaited<ReturnType<typeof executors.copyFile>>;
 type SignUploadUrlOutput = Awaited<ReturnType<typeof executors.signUploadUrl>>;
 
 type ListFilesParameters = typeof TOOL_SCHEMAS.listFiles.input;
+type SearchFilesParameters = typeof TOOL_SCHEMAS.searchFiles.input;
 type GetFileMetadataParameters = typeof TOOL_SCHEMAS.getFileMetadata.input;
 type DownloadFileParameters = typeof TOOL_SCHEMAS.downloadFile.input;
 type GetFileUrlParameters = typeof TOOL_SCHEMAS.getFileUrl.input;
@@ -37,6 +39,18 @@ export const agentsListFiles = (
         name: "listFiles",
         needsApproval,
         parameters: TOOL_SCHEMAS.listFiles.input,
+    });
+
+export const agentsSearchFiles = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, SearchFilesParameters, SearchFilesOutput> =>
+    tool({
+        description: TOOL_SCHEMAS.searchFiles.description,
+        execute: (input) => executors.searchFiles(files, input),
+        name: "searchFiles",
+        needsApproval,
+        parameters: TOOL_SCHEMAS.searchFiles.input,
     });
 
 export const agentsGetFileMetadata = (
@@ -130,6 +144,7 @@ export interface AgentsFileTools {
     getFileMetadata: ReturnType<typeof agentsGetFileMetadata>;
     getFileUrl: ReturnType<typeof agentsGetFileUrl>;
     listFiles: ReturnType<typeof agentsListFiles>;
+    searchFiles: ReturnType<typeof agentsSearchFiles>;
     signUploadUrl: ReturnType<typeof agentsSignUploadUrl>;
     uploadFile: ReturnType<typeof agentsUploadFile>;
 }
@@ -198,6 +213,7 @@ export function createAgentsFileTools({
         getFileMetadata: agentsGetFileMetadata(files, approval("getFileMetadata")),
         getFileUrl: agentsGetFileUrl(files, approval("getFileUrl")),
         listFiles: agentsListFiles(files, approval("listFiles")),
+        searchFiles: agentsSearchFiles(files, approval("searchFiles")),
         signUploadUrl: agentsSignUploadUrl(files, approval("signUploadUrl")),
         uploadFile: agentsUploadFile(files, approval("uploadFile")),
     };

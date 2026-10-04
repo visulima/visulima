@@ -185,6 +185,32 @@ export interface CopyOptions extends OperationOptions {
     storageClass?: string;
 }
 
+/** How {@link Files.search} interprets a string pattern. */
+export type SearchMatch = "exact" | "glob" | "regex" | "substring";
+
+export interface SearchOptions extends OperationOptions {
+    /** Match case-insensitively (any mode). Disables the automatic prefix push-down of a glob. */
+    caseInsensitive?: boolean;
+    /** Stop after this many matches; the walk stops fetching pages once it is reached. */
+    limit?: number;
+
+    /**
+     * How a string `pattern` is read. `glob` (default) anchors to the whole key, `*` stays within a
+     * path segment, `**` spans segments, and dotfiles match; `regex` is a regular expression
+     * (`RegExp` patterns always are); `substring` is "key contains"; `exact` is "key equals".
+     * @default "glob"
+     */
+    match?: SearchMatch;
+    /** Per-page size requested from the adapter while walking (see {@link Files.listAll}). */
+    pageSize?: number;
+
+    /**
+     * Only walk keys under this prefix. A glob or exact pattern with a literal head is scoped to that
+     * head automatically; pass `prefix` to bound `regex` / `substring` / case-insensitive searches.
+     */
+    prefix?: string;
+}
+
 export interface ListOptions {
     /**
      * Collapse keys that share a path segment into S3-style common prefixes ("directories").

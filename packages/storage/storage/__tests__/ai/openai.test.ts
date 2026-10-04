@@ -42,10 +42,10 @@ describe("openAI adapters", () => {
     });
 
     describe(createResponsesFileTools, () => {
-        it("emits function-tool definitions for all 8 tools", () => {
+        it("emits function-tool definitions for all 9 tools", () => {
             const { definitions } = createResponsesFileTools({ files });
 
-            expect(definitions).toHaveLength(8);
+            expect(definitions).toHaveLength(9);
             expect(definitions.map((definition) => definition.name).toSorted()).toEqual([
                 "copyFile",
                 "deleteFile",
@@ -53,6 +53,7 @@ describe("openAI adapters", () => {
                 "getFileMetadata",
                 "getFileUrl",
                 "listFiles",
+                "searchFiles",
                 "signUploadUrl",
                 "uploadFile",
             ]);
@@ -75,7 +76,13 @@ describe("openAI adapters", () => {
         it("omits writes when readOnly: true", () => {
             const { definitions } = createResponsesFileTools({ files, readOnly: true });
 
-            expect(definitions.map((definition) => definition.name).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
+            expect(definitions.map((definition) => definition.name).toSorted()).toEqual([
+                "downloadFile",
+                "getFileMetadata",
+                "getFileUrl",
+                "listFiles",
+                "searchFiles",
+            ]);
         });
 
         it("reports needsApproval for write tools", () => {
@@ -144,6 +151,7 @@ describe("openAI adapters", () => {
                 "getFileMetadata",
                 "getFileUrl",
                 "listFiles",
+                "searchFiles",
                 "signUploadUrl",
                 "uploadFile",
             ]);
@@ -163,7 +171,7 @@ describe("openAI adapters", () => {
         it("omits writes when readOnly: true", () => {
             const tools = createAgentsFileTools({ files, readOnly: true });
 
-            expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
+            expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "searchFiles"]);
         });
 
         it("keeps needsApproval callable when overridden", async () => {

@@ -31,6 +31,8 @@ export type {
     ListDirectoryResult,
     ListOptions,
     MultipartOptions,
+    SearchMatch,
+    SearchOptions,
     SignedReadUrlOptions,
     SignedUpload,
     SignedUploadOptions,

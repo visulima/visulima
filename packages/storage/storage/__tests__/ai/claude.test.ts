@@ -44,6 +44,7 @@ describe(createClaudeFileTools, () => {
             "mcp__files__getFileMetadata",
             "mcp__files__getFileUrl",
             "mcp__files__listFiles",
+            "mcp__files__searchFiles",
         ]);
 
         expectTypeOf(bundle.canUseTool).toBeFunction();
@@ -52,7 +53,7 @@ describe(createClaudeFileTools, () => {
     it("lists write tools in allowedTools only when they don't need approval", () => {
         const all = createClaudeFileTools({ files, requireApproval: false });
 
-        expect(all.allowedTools).toHaveLength(8);
+        expect(all.allowedTools).toHaveLength(9);
 
         const granular = createClaudeFileTools({ files, requireApproval: { copyFile: false, uploadFile: false } });
 
@@ -78,6 +79,7 @@ describe(createClaudeFileTools, () => {
             "mcp__files__getFileMetadata",
             "mcp__files__getFileUrl",
             "mcp__files__listFiles",
+            "mcp__files__searchFiles",
         ]);
     });
 

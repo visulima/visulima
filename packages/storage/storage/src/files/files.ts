@@ -18,6 +18,7 @@ import {
     toBulkError,
     toFileObject,
 } from "./internal";
+import { compileSearch, searchPrefix } from "./search";
 import type {
     BulkDeleteResult,
     BulkDownloadOptions,
@@ -48,6 +49,7 @@ import type {
     ListDirectoryResult,
     ListOptions,
     MultipartOptions,
+    SearchOptions,
     SignedReadUrlOptions,
     SignedUpload,
     SignedUploadOptions,
@@ -1258,6 +1260,58 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 this.emitError("listAll", { durationMs }, errored);
             } else {
                 this.emitAction("listAll", { durationMs });
+            }
+        }
+    }
+
+    /**
+     * Find objects whose key matches `pattern`, walking every page like {@link Files.listAll}. A
+     * streaming async iterable: it stays memory-bounded on large buckets, and leaving the loop (or
+     * reaching `limit`) stops fetching pages.
+     *
+     * A string is a glob by default (`*` within a segment, `**` across segments, `?`, `[a-z]`,
+     * `{a,b}`, `!negation`; anchored to the whole key; dotfiles match). Pass `match` for `regex`,
+     * `substring` or `exact`, or a `RegExp` directly. Keys are matched without the constructor
+     * prefix. A glob's (or exact pattern's) literal head is pushed down as the listing prefix, so
+     * `"uploads/2024/*.pdf"` only walks `uploads/2024`; other modes walk everything unless `prefix`
+     * bounds them.
+     * @throws {UploadError} BAD_REQUEST for an invalid regex, one that nests quantifiers (`(a+)+`), or an invalid `limit`
+     * @example
+     * ```ts
+     * for await (const file of files.search("avatars/**\/*.png", { limit: 50 })) {
+     *   console.log(file.key);
+     * }
+     * ```
+     */
+    public async *search(pattern: RegExp | string, options: SearchOptions = {}): AsyncGenerator<FileObject, void, void> {
+        const { caseInsensitive = false, limit, match = "glob", pageSize, prefix, ...operationOptions } = options;
+
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `Invalid search limit: ${String(limit)}`);
+        }
+
+        const test = compileSearch(pattern, match, caseInsensitive);
+        // The pattern's literal head is a narrower walk than a caller prefix it extends.
+        const inferred = searchPrefix(pattern, match, caseInsensitive);
+        const walkPrefix = inferred !== undefined && inferred.startsWith(prefix ?? "") ? inferred : prefix;
+        let found = 0;
+
+        for await (const file of this.listAll({
+            ...operationOptions,
+            ...(pageSize !== undefined && { limit: pageSize }),
+            ...(walkPrefix && { prefix: walkPrefix }),
+        })) {
+            operationOptions.signal?.throwIfAborted();
+
+            if (!test(file.key)) {
+                continue;
+            }
+
+            yield file;
+            found += 1;
+
+            if (found === limit) {
+                return;
             }
         }
     }

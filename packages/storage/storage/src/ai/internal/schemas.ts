@@ -24,6 +24,23 @@ export const listFilesInputSchema: z.ZodObject<{
     prefix: z.string().trim().optional().meta({ description: "Only return keys that start with this prefix" }),
 });
 
+export const searchFilesInputSchema: z.ZodObject<{
+    caseInsensitive: z.ZodOptional<z.ZodBoolean>;
+    limit: z.ZodOptional<z.ZodNumber>;
+    match: z.ZodOptional<z.ZodEnum<{ exact: "exact"; glob: "glob"; regex: "regex"; substring: "substring" }>>;
+    pattern: z.ZodString;
+    prefix: z.ZodOptional<z.ZodString>;
+}> = z.object({
+    caseInsensitive: z.boolean().optional().meta({ description: "Match case-insensitively" }),
+    limit: z.int().positive().max(1000).optional().meta({ description: "Maximum number of matches to return (default 100)" }),
+    match: z
+        .enum(["glob", "regex", "substring", "exact"])
+        .optional()
+        .meta({ description: 'How to read pattern: "glob" (default; * within a path segment, ** across segments), "regex", "substring" or "exact"' }),
+    pattern: z.string().trim().min(1).max(256).meta({ description: "Pattern the whole object key must match, e.g. reports/**/*.csv" }),
+    prefix: z.string().trim().optional().meta({ description: "Only search keys under this prefix (recommended for regex and substring searches)" }),
+});
+
 export const getFileMetadataInputSchema: z.ZodObject<{
     key: z.ZodString;
 }> = z.object({
@@ -116,6 +133,7 @@ export interface ToolSchemaMap {
     getFileMetadata: ToolSchema<typeof getFileMetadataInputSchema>;
     getFileUrl: ToolSchema<typeof getFileUrlInputSchema>;
     listFiles: ToolSchema<typeof listFilesInputSchema>;
+    searchFiles: ToolSchema<typeof searchFilesInputSchema>;
     signUploadUrl: ToolSchema<typeof signUploadUrlInputSchema>;
     uploadFile: ToolSchema<typeof uploadFileInputSchema>;
 }
@@ -147,6 +165,11 @@ export const TOOL_SCHEMAS: ToolSchemaMap = {
         description: "List files in the configured bucket, optionally filtered by key prefix.",
         input: listFilesInputSchema,
     },
+    searchFiles: {
+        description:
+            "Find files whose key matches a glob (default), regular expression, substring or exact pattern, walking the whole bucket. Returns at most limit matches.",
+        input: searchFilesInputSchema,
+    },
     signUploadUrl: {
         description:
             "Issue a presigned URL that lets a client upload directly to the configured bucket. Approval-gated by default — the URL grants upload permission until it expires.",
@@ -160,7 +183,7 @@ export const TOOL_SCHEMAS: ToolSchemaMap = {
 
 export type FileToolName = keyof ToolSchemaMap;
 
-export type FileReadToolName = "downloadFile" | "getFileMetadata" | "getFileUrl" | "listFiles";
+export type FileReadToolName = "downloadFile" | "getFileMetadata" | "getFileUrl" | "listFiles" | "searchFiles";
 
 export type FileWriteToolName = "copyFile" | "deleteFile" | "signUploadUrl" | "uploadFile";
 
@@ -169,6 +192,7 @@ export const WRITE_TOOL_NAMES: ReadonlyArray<FileWriteToolName> = ["uploadFile",
 export const WRITE_TOOL_NAME_SET: ReadonlySet<FileWriteToolName> = new Set(WRITE_TOOL_NAMES);
 
 export type ListFilesInput = z.infer<typeof listFilesInputSchema>;
+export type SearchFilesInput = z.infer<typeof searchFilesInputSchema>;
 export type GetFileMetadataInput = z.infer<typeof getFileMetadataInputSchema>;
 export type DownloadFileInput = z.infer<typeof downloadFileInputSchema>;
 export type GetFileUrlInput = z.infer<typeof getFileUrlInputSchema>;

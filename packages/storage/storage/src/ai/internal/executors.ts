@@ -1,4 +1,4 @@
-import type { Files } from "../../files";
+import type { FileObject, Files } from "../../files";
 import type {
     CopyFileInput,
     DeleteFileInput,
@@ -6,10 +6,14 @@ import type {
     GetFileMetadataInput,
     GetFileUrlInput,
     ListFilesInput,
+    SearchFilesInput,
     SignUploadUrlInput,
     UploadFileInput,
 } from "./schemas";
 import { DEFAULT_MAX_DOWNLOAD_BYTES, MAX_DOWNLOAD_BYTES } from "./schemas";
+
+/** Matches a `searchFiles` call returns when the input sets no `limit`. */
+const DEFAULT_SEARCH_LIMIT = 100;
 
 const serializeLastModified = (value: Date | number | string | undefined): string | undefined => {
     if (value === undefined) {
@@ -51,6 +55,16 @@ const readCapped = async (files: Files, key: string, maxBytes: number): Promise<
     }
 
     return Buffer.concat(chunks);
+};
+
+const toListItem = (item: FileObject): ListFilesItem => {
+    return {
+        contentType: item.contentType,
+        ...(item.etag ? { etag: item.etag } : {}),
+        key: item.key,
+        ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
+        ...(typeof item.size === "number" ? { size: item.size } : {}),
+    };
 };
 
 export interface CopyFileResult {
@@ -120,6 +134,7 @@ export interface Executors {
     getFileMetadata: (files: Files, input: GetFileMetadataInput) => Promise<FileMetadataResult>;
     getFileUrl: (files: Files, input: GetFileUrlInput) => Promise<FileUrlResult>;
     listFiles: (files: Files, input: ListFilesInput) => Promise<ListFilesResult>;
+    searchFiles: (files: Files, input: SearchFilesInput) => Promise<ListFilesResult>;
     signUploadUrl: (files: Files, input: SignUploadUrlInput) => Promise<SignUploadUrlResult>;
     uploadFile: (files: Files, input: UploadFileInput) => Promise<UploadFileResult>;
 }
@@ -165,9 +180,7 @@ export const executors: Executors = {
         const body = typeof head.size === "number" ? await files.download(key).then((result) => result.body) : await readCapped(files, key, limit + 1);
 
         if (body.byteLength > limit) {
-            throw new RangeError(
-                `downloadFile refused: "${key}" returned more than ${limit} bytes, which exceeds the maxBytes limit. Use getFileUrl instead.`,
-            );
+            throw new RangeError(`downloadFile refused: "${key}" returned more than ${limit} bytes, which exceeds the maxBytes limit. Use getFileUrl instead.`);
         }
 
         const size = head.size ?? body.byteLength;
@@ -203,17 +216,17 @@ export const executors: Executors = {
     listFiles: async (files: Files, { limit, prefix }: ListFilesInput): Promise<ListFilesResult> => {
         const results = await files.list({ limit, prefix });
 
-        return {
-            items: results.map((item): ListFilesItem => {
-                return {
-                    contentType: item.contentType,
-                    ...(item.etag ? { etag: item.etag } : {}),
-                    key: item.key,
-                    ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
-                    ...(typeof item.size === "number" ? { size: item.size } : {}),
-                };
-            }),
-        };
+        return { items: results.map((item) => toListItem(item)) };
+    },
+
+    searchFiles: async (files: Files, { caseInsensitive, limit, match, pattern, prefix }: SearchFilesInput): Promise<ListFilesResult> => {
+        const items: ListFilesItem[] = [];
+
+        for await (const item of files.search(pattern, { caseInsensitive, limit: limit ?? DEFAULT_SEARCH_LIMIT, match, prefix })) {
+            items.push(toListItem(item));
+        }
+
+        return { items };
     },
 
     signUploadUrl: async (files: Files, { contentType, expiresIn, key }: SignUploadUrlInput): Promise<SignUploadUrlResult> => {

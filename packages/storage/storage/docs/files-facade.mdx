@@ -1,6 +1,6 @@
 # `Files` facade
 
-Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `downloadStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
+Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `downloadStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `search`, `url`, `signedUploadUrl`, `signedUpload`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
 
 ```ts
 import { Files } from "@visulima/storage";
@@ -38,6 +38,7 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | `list`            | `(opts?) → Promise<FileObject[]>`                    | —                                               | Optional `prefix` filter and `limit`. Single page.                |
 | `list`            | `({ delimiter, … }) → Promise<ListDirectoryResult>`  | —                                               | Directory-style `{ files, prefixes }`.                            |
 | `listAll`         | `(opts?) → AsyncGenerator<FileObject>`               | —                                               | Pages internally; yields one at a time.                           |
+| `search`          | `(pattern, opts?) → AsyncGenerator<FileObject>`      | —                                               | Glob / regex / substring / exact key match over `listAll`.        |
 | `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
 | `signedUpload`    | `(key, opts?) → Promise<SignedUpload>`               | —                                               | PUT or size-limited POST contract (`maxSize` / `minSize`).        |
@@ -366,6 +367,32 @@ for await (const file of files.listAll({ prefix: "avatars/" })) {
 
 `listAll` pages internally so callers don't have to thread a cursor. Returned keys have any constructor prefix stripped off; out-of-namespace keys are filtered out, mirroring `list()`. Breaking out of the `for await` early still emits the terminal `onAction` / `onError` hook event.
 
+### Search keys
+
+```ts
+// Glob is the default: `*` stays inside a path segment, `**` spans segments.
+for await (const file of files.search("photos/**/*.jpg")) {
+    console.log(file.key);
+}
+
+const pdfs = await Array.fromAsync(files.search("invoices/2024/*.pdf"));
+
+files.search(String.raw`\.(png|jpe?g)$`, { match: "regex", prefix: "uploads/" });
+files.search(/\.(png|jpe?g)$/u); // a RegExp always matches as a regex
+files.search("report", { match: "substring" });
+files.search("invoices/2024/q1.pdf", { match: "exact" });
+files.search("*.PNG", { caseInsensitive: true, limit: 50 });
+```
+
+`search(pattern, options?)` walks every page through `listAll` and yields the objects whose **key** (with any constructor prefix stripped) matches. It is a lazy async iterable: `break`, or `limit`, stops the walk and fetching more pages; `signal` aborts it.
+
+- **`glob`** (default) — anchored to the whole key; `*` and `?` stay within a segment, `**` spans segments (`photos/**/*.jpg` matches at any depth, including none), `[a-z]` and `{a,b}` classes, `!pattern` negation; dotfiles match. A glob without wildcards is an exact match.
+- **`regex`** — a regular expression (a `RegExp` pattern always matches this way). An invalid regex, or one that nests quantifiers (`(a+)+`), rejects with `BAD_REQUEST` before the walk.
+- **`substring`** — the key contains the text. **`exact`** — the key equals the text.
+- **`caseInsensitive`** — any mode.
+
+A glob's (or exact pattern's) literal head is pushed down as the walk's `prefix`, so `"uploads/2024/*.pdf"` only walks `uploads/2024/`. Regex, substring and case-insensitive searches have no inferable prefix — pass `prefix` to bound them. Options: `match`, `caseInsensitive`, `prefix`, `limit` (maximum matches), `pageSize` (the `listAll` page size) plus `signal` / `timeout` / `retries`. The AI integrations expose it as the read-only `searchFiles` tool (at most 100 matches unless `limit` says otherwise).
+
 ### Copy and rename
 
 ```ts
@@ -456,7 +483,7 @@ await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
 
 `files.capabilities` returns `{ range, metadata, cacheControl, conditional, signedUploadPost, signedUrlMaxExpiresIn?, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), whether `signedUpload()` can sign a size-limited POST policy, the longest `expiresIn` it can sign for (when the provider has a hard ceiling), plus whether this view is read-only. Branch on them before relying on an optional feature.
 
-A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`, `signedUpload`) before the adapter is touched; reads pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
+A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`, `signedUpload`) before the adapter is touched; reads (including `search`) pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
 
 ## In-memory adapter for tests
 
