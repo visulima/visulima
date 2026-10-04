@@ -243,6 +243,13 @@ abstract class RestBase<TFile extends UploadFile> {
                     throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
                 }
 
+                // No metadata means no upload under this id, so an object already stored there was
+                // written by other means, or is a finished upload whose metadata the provider
+                // dropped. Creating would replace it (#919).
+                if (await this.storage.getCompletedFile?.(id)) {
+                    throw createHttpError(409, "A file with this ID already exists");
+                }
+
                 // Create new file under the ID from the URL (providers that assign their own IDs may still override it)
                 const newFile = await this.storage.create({ ...config, id });
 
@@ -469,28 +476,10 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async handleHead(id: string): Promise<ResponseFile<TFile>> {
-        let file: TFile;
-
-        try {
-            file = await this.storage.getMeta(id);
-        } catch (error) {
-            // Providers that drop the metadata on completion (S3) answer for the stored object
-            // instead, so resuming a finished upload sees it complete rather than a 404 (#915).
-            const completed = isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND ? await this.storage.getCompletedFile?.(id) : undefined;
-
-            if (!completed) {
-                throw error;
-            }
-
-            const size = completed.bytesWritten;
-            const completedFile: TFile = { ...completed, metadata: { ...completed.metadata, _chunks: size > 0 ? [{ length: size, offset: 0 }] : [] } };
-
-            return buildResponseFile(
-                completedFile,
-                { ...buildFileMetadataHeaders(completedFile), ...buildChunkedUploadHeaders(completedFile, true), "x-upload-offset": String(size) },
-                200,
-            );
-        }
+        // Answer from the upload's metadata only. Providers that drop it on completion (S3) answer
+        // 404 for a finished upload: the stored object under the same key can't be told apart from
+        // one the route never created, and describing it would disclose any object in the bucket (#918).
+        let file = await this.storage.getMeta(id);
 
         const isChunkedUploadFile = isChunkedUpload(file);
 

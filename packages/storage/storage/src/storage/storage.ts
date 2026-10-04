@@ -679,9 +679,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
-     * Describes an upload whose metadata is gone because it completed. Providers that drop the
-     * metadata on completion override this to answer from the stored object, so a client resuming
-     * a finished upload learns it is done instead of starting a new one (#915).
+     * Describes the object stored under an ID that has no upload metadata: a finished upload whose
+     * metadata the provider dropped, or an object written by other means. Providers that drop the
+     * metadata on completion override this, so the REST `PUT` doesn't create a file over an existing
+     * object (#919). Never expose the result to a caller: it answers for any object in the bucket (#918).
      * @param _id File ID of the upload.
      * @param _options Operation options.
      * @returns The completed file, or `undefined` when no stored object answers for the ID.

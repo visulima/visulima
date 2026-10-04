@@ -6,8 +6,8 @@ import AwsLightStorage from "../../../../src/storage/aws-light/aws-light-storage
 /**
  * In-memory path-style S3 (bucket "uploads") answering the requests AwsLightStorage makes.
  */
-const createS3Fake = (): { fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>; objects: Map<string, { body: Uint8Array }> } => {
-    const objects = new Map<string, { body: Uint8Array; headers: Record<string, string> }>();
+const createS3Fake = (): { fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>; objects: Map<string, { body: Uint8Array; headers?: Record<string, string> }> } => {
+    const objects = new Map<string, { body: Uint8Array; headers?: Record<string, string> }>();
     const uploads = new Map<string, { key: string; parts: Map<number, { body: Uint8Array; etag: string }> }>();
     let counter = 0;
 
@@ -104,6 +104,15 @@ const createS3Fake = (): { fetch: (input: RequestInfo | URL, init?: RequestInit)
     return { fetch: fake, objects };
 };
 
+const createStorage = (): AwsLightStorage =>
+    new AwsLightStorage({
+        accessKeyId: "id",
+        bucket: "uploads",
+        endpoint: "https://acct.r2.cloudflarestorage.com/uploads/",
+        region: "auto",
+        secretAccessKey: "secret",
+    });
+
 describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
@@ -116,14 +125,7 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
 
         vi.stubGlobal("fetch", s3.fetch);
 
-        const storage = new AwsLightStorage({
-            accessKeyId: "id",
-            bucket: "uploads",
-            endpoint: "https://acct.r2.cloudflarestorage.com/uploads/",
-            region: "auto",
-            secretAccessKey: "secret",
-        });
-        const rest = new RestFetch({ storage });
+        const rest = new RestFetch({ storage: createStorage() });
         const mib = 1024 * 1024;
         const bytes = new Uint8Array(11 * mib).map((_, index) => index % 251);
         const endpoint = "https://app.local/upload";
@@ -166,49 +168,57 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
         expect(stored?.byteLength).toBe(bytes.byteLength);
         expect(Buffer.from(stored as Uint8Array).equals(Buffer.from(bytes))).toBe(true);
     });
-    it("should answer HEAD for a completed upload whose metadata was deleted (#915)", async () => {
-        expect.assertions(6);
+    it("should not answer HEAD from objects without upload metadata (#918)", async () => {
+        expect.assertions(4);
 
-        vi.stubGlobal("fetch", createS3Fake().fetch);
+        const s3 = createS3Fake();
 
-        const storage = new AwsLightStorage({
-            accessKeyId: "id",
-            bucket: "uploads",
-            endpoint: "https://acct.r2.cloudflarestorage.com/uploads/",
-            region: "auto",
-            secretAccessKey: "secret",
-        });
-        const rest = new RestFetch({ storage });
-        const bytes = new Uint8Array(1024).map((_, index) => index % 251);
-        const endpoint = "https://app.local/upload";
+        vi.stubGlobal("fetch", s3.fetch);
 
-        const created = await rest.fetch(
-            new Request(endpoint, {
-                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": String(bytes.byteLength) },
-                method: "POST",
-            }),
-        );
-        const location = new URL(created.headers.get("location") as string, endpoint).href;
+        s3.objects.set("payroll-2026", { body: new Uint8Array(123) });
+        s3.objects.set("avatars/ceo", { body: new Uint8Array(42) });
 
-        const completed = await rest.fetch(
-            new Request(location, {
-                body: bytes,
-                headers: { "content-length": String(bytes.byteLength), "content-type": "application/octet-stream", "x-chunk-offset": "0" },
-                method: "PATCH",
-            }),
-        );
+        const rest = new RestFetch({ storage: createStorage() });
+        const statuses: number[] = [];
 
-        expect(completed.status).toBe(200);
+        for (const path of ["payroll-2026", "payroll-2026.pdf", "avatars%2Fceo"]) {
+            const response = await rest.fetch(new Request(`https://app.local/upload/${path}`, { method: "HEAD" }));
 
-        const head = await rest.fetch(new Request(location, { method: "HEAD" }));
+            statuses.push(response.status);
 
-        expect(head.status).toBe(200);
-        expect(head.headers.get("x-upload-complete")).toBe("true");
-        expect(head.headers.get("x-upload-offset")).toBe(String(bytes.byteLength));
-        expect(JSON.parse(head.headers.get("x-received-chunks") as string)).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
+            expect(response.headers.get("content-length")).not.toBe("123");
+        }
 
-        const unknown = await rest.fetch(new Request(`${endpoint}/does-not-exist`, { method: "HEAD" }));
+        expect(statuses).toStrictEqual([404, 404, 404]);
+    });
 
-        expect(unknown.status).toBe(404);
+    it("should refuse a PUT over an object without upload metadata (#919)", async () => {
+        expect.assertions(4);
+
+        const s3 = createS3Fake();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        s3.objects.set("payroll-2026", { body: new TextEncoder().encode("the real payroll") });
+
+        const rest = new RestFetch({ storage: createStorage() });
+        const put = async (path: string): Promise<Response> =>
+            rest.fetch(
+                new Request(`https://app.local/upload/${path}`, {
+                    body: "evil",
+                    headers: { "content-length": "4", "content-type": "text/plain" },
+                    method: "PUT",
+                }),
+            );
+
+        const refused = await put("payroll-2026.txt");
+
+        expect(refused.status).toBe(409);
+        expect(new TextDecoder().decode(s3.objects.get("payroll-2026")?.body)).toBe("the real payroll");
+
+        const created = await put("fresh.txt");
+
+        expect(created.status).toBe(201);
+        expect(new TextDecoder().decode(s3.objects.get("fresh")?.body)).toBe("evil");
     });
 });

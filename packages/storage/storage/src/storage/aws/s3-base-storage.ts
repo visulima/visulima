@@ -991,8 +991,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Answers for a completed upload from its object: the metadata is deleted on completion. The
-     * object is looked up under the upload's ID, which is its key unless a custom `filename` is set.
+     * Describes the object stored under an ID, which is its key unless a custom `filename` is set:
+     * the metadata of a completed upload is deleted on completion.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
         const s3Api = this.getS3Api();
