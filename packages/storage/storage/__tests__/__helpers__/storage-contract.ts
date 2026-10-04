@@ -402,6 +402,20 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             });
         });
 
+        it.skipIf(skip["REST lifecycle"] !== undefined)("should serve an upload without a content type by the extension in the URL", async () => {
+            expect.assertions(3);
+
+            const rest = new RestFetch({ storage: backend.createStorage() });
+            const created = await rest.fetch(new Request("https://app.test/files", { body: new TextEncoder().encode("hello"), headers: { "content-length": "5" }, method: "POST" }));
+            const { id } = (await created.json()) as { id: string };
+            const response = await rest.fetch(new Request(`https://app.test/files/${id}.png`));
+
+            expect(response.status).toBe(200);
+            // The extension never picks the type of an untyped file.
+            expect(response.headers.get("content-type")).toBe("application/octet-stream");
+            await expect(response.text()).resolves.toBe("hello");
+        });
+
         it.skipIf(skip["REST lifecycle"] !== undefined)("should serve a REST upload: POST, HEAD, PUT replace and DELETE", async () => {
             expect.assertions(5);
 

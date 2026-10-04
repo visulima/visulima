@@ -86,11 +86,16 @@ export const parseFilePath = (path: string): FileTarget | undefined => {
 
 /**
  * Refines an image content type from the extension given in the URL (e.g. `id.webp`).
- * @param contentType Stored content type
+ * @param contentType Stored content type; a provider may report none for an object stored without one
  * @param extension Extension from the URL
- * @returns The content type to serve
+ * @returns The content type to serve, `application/octet-stream` when none is known
  */
-export const resolveContentType = (contentType: string, extension: string | undefined): string => {
+export const resolveContentType = (contentType: string | undefined, extension: string | undefined): string => {
+    // The URL's extension never types an untyped file: "id.html" must not turn its bytes into a page.
+    if (!contentType) {
+        return "application/octet-stream";
+    }
+
     if (extension === undefined || !contentType.includes("image")) {
         return contentType;
     }
@@ -613,7 +618,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         const file = await this.storage.get({ id: fileMeta.id });
-        const contentType = resolveContentType(file.contentType, extension);
+        const contentType = resolveContentType(file.contentType || fileMeta.contentType, extension);
 
         return {
             ...file,
