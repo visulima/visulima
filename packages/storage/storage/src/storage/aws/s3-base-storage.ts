@@ -789,19 +789,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * metadata, the object stored under it. An unfinished upload has no object yet.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => {
-            let key = id;
-
-            try {
-                const file = await this.getMeta(id);
-
-                key = file.name;
-            } catch {
-                // No metadata: the object stored under the id.
-            }
-
-            return (await this.getCompletedFile(key, options)) !== undefined;
-        });
+        return this.instrumentOperation("exists", async () => (await this.getCompletedFile(await this.objectKey(id), options)) !== undefined);
     }
 
     /**
@@ -810,12 +798,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
+            const key = await this.objectKey(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
-                        Key: id,
+                        Key: key,
                         ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
@@ -863,8 +852,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 id,
                 metadata: meta,
                 modifiedAt: LastModified,
-                name: id,
-                originalName: originalName || id,
+                name: key,
+                originalName: originalName || key,
                 size: Number(ContentLength),
             };
         });
@@ -1066,6 +1055,20 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         const file = new (this.getFileClass())({ contentType: head.ContentType, id, metadata: {}, size });
 
         return Object.assign(file, { bytesWritten: size, ETag: head.ETag, name: id, status: "completed" as const });
+    }
+
+    /**
+     * The bucket key of an upload: the stored name its metadata records (a custom `filename`
+     * differs from the ID), or the ID itself for an object without metadata.
+     */
+    protected async objectKey(id: string): Promise<string> {
+        try {
+            const { name } = await this.getMeta(id);
+
+            return name;
+        } catch {
+            return id;
+        }
     }
 
     /**

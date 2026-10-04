@@ -374,7 +374,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             const resolvedUrl = new URL(encodeURI(destination), `file:///${this.bucket}/`);
             const [, bucket = this.bucket, ...pathSegments] = resolvedUrl.pathname.split("/");
             const filename = decodeURIComponent(pathSegments.join("/"));
-            const url = `${this.objectUrl(name)}/rewriteTo/b/${bucket}/o/${encodeURIComponent(filename)}`;
+            const url = `${this.objectUrl(await this.objectName(name))}/rewriteTo/b/${bucket}/o/${encodeURIComponent(filename)}`;
 
             let progress = {} as CopyProgress;
 
@@ -409,8 +409,8 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("move", async () => {
+            const url = this.objectUrl(await this.objectName(name));
             const copiedFile = await this.copy(name, destination, options);
-            const url = this.objectUrl(name);
 
             await this.makeRequest({ method: "DELETE" as const, url }, options);
             // An object written by other means has no metadata to drop.
@@ -429,7 +429,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const url = this.objectUrl(id);
+            const url = this.objectUrl(await this.objectName(id));
             const { data } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string; timeDeleted?: string; updated?: string }>(
                 { params: { alt: "json" }, url },
                 options,
@@ -491,13 +491,13 @@ class GCStorage extends BaseStorage<GCSFile> {
         return this.instrumentOperation("exists", async () => {
             try {
                 // First check if metadata exists
-                await this.getMeta(id);
+                const { name } = await this.getMeta(id);
 
                 // Then verify the actual GCS object exists using HEAD request
                 await this.makeRequest(
                     {
                         method: "HEAD",
-                        url: this.objectUrl(id),
+                        url: this.objectUrl(name),
                     },
                     options,
                 );
@@ -791,6 +791,17 @@ class GCStorage extends BaseStorage<GCSFile> {
     /** The JSON API takes the object name as one path segment, so a "/" in it must be encoded. */
     private objectUrl(name: string): string {
         return `${this.storageBaseURI}/${encodeURIComponent(name)}`;
+    }
+
+    /** The object an upload is stored as: the name its metadata records (a custom `filename` differs from the ID), or the ID itself without metadata. */
+    private async objectName(id: string): Promise<string> {
+        try {
+            const { name } = await this.getMeta(id);
+
+            return name ?? id;
+        } catch {
+            return id;
+        }
     }
 
     /** Upload metadata sidecars share the bucket with the files. */

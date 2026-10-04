@@ -334,6 +334,23 @@ describe("s3Storage against an in-memory S3", () => {
         await expect(readAll(stream)).resolves.toBe("789");
     });
 
+    it("should read an upload stored under a custom filename by its id", async () => {
+        expect.assertions(5);
+
+        const storage = createStorage({ filename: (file) => `user/123/${file.originalName}` });
+        const id = await upload(storage, "0123456789", { originalName: "digits.txt" });
+
+        expect(s3.objects.has("user/123/digits.txt")).toBe(true);
+        await expect(storage.exists({ id })).resolves.toBe(true);
+        await expect(storage.get({ id })).resolves.toMatchObject({ content: Buffer.from("0123456789"), id, name: "user/123/digits.txt" });
+
+        const { stream } = await storage.getStream({ id }, { range: { start: 7 } });
+
+        await expect(readAll(stream)).resolves.toBe("789");
+        // Without metadata the id is the key.
+        await expect(storage.get({ id: "user/123/digits.txt" })).resolves.toMatchObject({ size: 10 });
+    });
+
     it("should refuse an expired object", async () => {
         expect.assertions(1);
 

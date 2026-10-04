@@ -283,7 +283,8 @@ class AzureStorage extends BaseStorage {
 
             for (let offset = 0; offset < ids.length; offset += BATCH_LIMIT) {
                 const chunk = ids.slice(offset, offset + BATCH_LIMIT);
-                const blobClients = chunk.map((id) => this.containerClient.getBlockBlobClient(this.getFullPath(id)));
+                const names = await Promise.all(chunk.map(async (id) => this.blobName(id)));
+                const blobClients = names.map((name) => this.containerClient.getBlockBlobClient(this.getFullPath(name)));
 
                 const response = await this.runOperation(options, (signal) => batchClient.deleteBlobs(blobClients, { abortSignal: signal }));
 
@@ -329,8 +330,8 @@ class AzureStorage extends BaseStorage {
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<AzureFile> {
         return this.instrumentOperation("move", async () => {
+            const source = this.getFullPath(await this.blobName(name));
             const copiedFile = await this.copy(name, destination, options);
-            const source = this.getFullPath(name);
 
             await this.runOperation(options, (signal) => this.containerClient.getBlockBlobClient(source).deleteIfExists({ abortSignal: signal }));
             // The source upload is gone; drop its metadata so it does not linger as an orphan.
@@ -514,7 +515,7 @@ class AzureStorage extends BaseStorage {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
+            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.blobName(id)));
 
             const exists = await this.runOperation(options, (signal) => blobClient.exists({ abortSignal: signal }));
 
@@ -543,27 +544,12 @@ class AzureStorage extends BaseStorage {
     }
 
     /**
-     * Checks if a file exists by verifying both metadata and the actual Azure blob.
-     * Returns true only if both the metadata and the blob exist.
-     * @param query File query containing the file ID to check.
-     * @returns Promise resolving to true if both metadata and blob exist, false otherwise.
+     * Whether an upload's blob exists: the one its metadata names, or, for an ID without metadata
+     * (a copied blob, or one written by other means), the blob stored under it. Only a missing blob
+     * answers `false`; any other failure throws.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => {
-            try {
-                // First check if metadata exists
-                await this.getMeta(id);
-
-                // Then verify the actual blob exists
-                const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
-                const exists = await this.runOperation(options, (signal) => blobClient.exists({ abortSignal: signal }));
-
-                return exists;
-            } catch {
-                // Return false if metadata doesn't exist or blob doesn't exist
-                return false;
-            }
-        });
+        return this.instrumentOperation("exists", async () => (await this.getCompletedFile(await this.blobName(id), options)) !== undefined);
     }
 
     /**
@@ -575,7 +561,8 @@ class AzureStorage extends BaseStorage {
      */
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<AzureFile> {
         return this.instrumentOperation("copy", async () => {
-            const source = this.containerClient.getBlockBlobClient(this.getFullPath(name));
+            const sourceName = await this.blobName(name);
+            const source = this.containerClient.getBlockBlobClient(this.getFullPath(sourceName));
 
             const exists = await this.runOperation(options, (signal) => source.exists({ abortSignal: signal }));
 
@@ -590,7 +577,7 @@ class AzureStorage extends BaseStorage {
             let sourceUrl = source.url;
 
             if (this.signer?.kind === "userDelegation") {
-                sourceUrl = await buildAzureSasUrl(this.containerClient.getBlobClient(this.getFullPath(name)), this.signer, {
+                sourceUrl = await buildAzureSasUrl(this.containerClient.getBlobClient(this.getFullPath(sourceName)), this.signer, {
                     expiresIn: 300,
                     permissions: "r",
                 });
@@ -784,6 +771,17 @@ class AzureStorage extends BaseStorage {
         const prefix = [this.root, this.assetFolder].filter(Boolean).join("/");
 
         return prefix ? `${prefix}/${filePath}` : filePath;
+    }
+
+    /** The blob an upload is stored as: the name its metadata records (a custom `filename` differs from the ID), or the ID itself without metadata. */
+    private async blobName(id: string): Promise<string> {
+        try {
+            const { name } = await this.getMeta(id);
+
+            return name;
+        } catch {
+            return id;
+        }
     }
 
     private async hasMeta(id: string): Promise<boolean> {

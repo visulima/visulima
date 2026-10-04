@@ -63,47 +63,6 @@ describe(AzureStorage, () => {
         storage = new AzureStorage(options);
     });
 
-    describe(".exists()", () => {
-        it("should return true when both metadata and Azure blob exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
-
-            // Mock blob exists to return true
-            (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
-
-            const exists = await storage.exists({ id: metafile.id });
-
-            expect(exists).toBe(true);
-        });
-
-        it("should return false when metadata does not exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
-
-            const exists = await storage.exists({ id: "non-existent-id" });
-
-            expect(exists).toBe(false);
-        });
-
-        it("should return false when metadata exists but Azure blob does not exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
-
-            // Mock blob exists to return false
-            (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(false);
-
-            const exists = await storage.exists({ id: metafile.id });
-
-            expect(exists).toBe(false);
-        });
-    });
-
     describe(".getCompletedFile()", () => {
         it("answers from the blob properties without downloading", async () => {
             expect.assertions(5);
@@ -592,8 +551,9 @@ describe("azureStorage authentication & signed URLs", () => {
         await storage.exists({ id: "file.txt" });
         await storage.get({ id: "file.txt" });
 
-        expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith("uploads/file.txt");
-        expect(mockContainerClient.getBlockBlobClient).not.toHaveBeenCalledWith("file.txt");
+        // The metadata's stored name, under the asset folder.
+        expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(`uploads/${metafile.name}`);
+        expect(mockContainerClient.getBlockBlobClient).not.toHaveBeenCalledWith(metafile.name);
     });
 
     it("cannot produce signed URLs from a connection string without an account key", async () => {

@@ -353,6 +353,26 @@ describe("gcs against an in-memory GCS", () => {
         expect(gcs.objects.has(`${id}.META`)).toBe(false);
     });
 
+    it("should read, copy and move an upload stored under a custom filename by its id", async () => {
+        expect.assertions(6);
+
+        const storage = createStorage({ filename: (file) => `user/123/${file.originalName}` });
+        const id = await upload(storage, "named", "n.txt");
+
+        expect(gcs.objects.has("user/123/n.txt")).toBe(true);
+        await expect(storage.exists({ id })).resolves.toBe(true);
+        await expect(storage.get({ id })).resolves.toMatchObject({ content: Buffer.from("named") });
+
+        await storage.copy(id, "copied.txt");
+
+        expect(Buffer.from(gcs.objects.get("copied.txt")?.body ?? []).toString()).toBe("named");
+
+        await storage.move(id, "moved.txt");
+
+        expect(gcs.objects.has("user/123/n.txt")).toBe(false);
+        expect(Buffer.from(gcs.objects.get("moved.txt")?.body ?? []).toString()).toBe("named");
+    });
+
     it("should address nested object names as one encoded path segment", async () => {
         expect.assertions(5);
 

@@ -389,8 +389,8 @@ describe("azure storage against an in-memory container", () => {
         await expect(storage.get({ id: "never" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
     });
 
-    it("should check existence against both metadata and blob", async () => {
-        expect.assertions(6);
+    it("should check existence against the blob, with or without upload metadata", async () => {
+        expect.assertions(8);
 
         const storage = createStorage();
         const id = await upload(storage, "hello");
@@ -398,17 +398,48 @@ describe("azure storage against an in-memory container", () => {
         azure.blobs.set("foreign", { ...(azure.blobs.get(id) as Blob) });
 
         await expect(storage.exists({ id })).resolves.toBe(true);
-        await expect(storage.exists({ id: "foreign" })).resolves.toBe(false);
+        // A blob without upload metadata (copied, or written by other means) still exists.
+        await expect(storage.exists({ id: "foreign" })).resolves.toBe(true);
+        await expect(storage.exists({ id: "missing" })).resolves.toBe(false);
         await expect(storage.getCompletedFile("foreign")).resolves.toMatchObject({ id: "foreign", size: 5, status: "completed" });
         await expect(storage.getCompletedFile("missing")).resolves.toBeUndefined();
 
         azure.state.fail = (operation) => (operation === "getProperties" ? statusError(403, "AuthorizationFailure") : undefined);
 
         await expect(storage.getCompletedFile("foreign")).rejects.toThrow("AuthorizationFailure");
+        // Only a missing blob reads as absent; any other failure surfaces.
+        await expect(storage.exists({ id })).rejects.toThrow("AuthorizationFailure");
 
-        azure.state.fail = (operation) => (operation === "exists" ? statusError(500, "InternalError") : undefined);
+        azure.state.fail = undefined;
 
-        await expect(storage.exists({ id })).resolves.toBe(false);
+        await storage.copy(id, "copied");
+
+        await expect(storage.exists({ id: "copied" })).resolves.toBe(true);
+    });
+
+    it("should read, copy, move and batch-delete an upload stored under a custom filename", async () => {
+        expect.assertions(7);
+
+        const storage = createStorage({ filename: (file) => `named/${file.originalName}` });
+        const id = await upload(storage, "hello");
+
+        expect(azure.blobs.has("named/a.txt")).toBe(true);
+        await expect(storage.exists({ id })).resolves.toBe(true);
+        await expect(storage.get({ id })).resolves.toMatchObject({ content: Buffer.from("hello") });
+
+        await storage.copy(id, "copied");
+
+        expect(azure.blobs.get("copied")?.body.toString()).toBe("hello");
+
+        await storage.move(id, "moved");
+
+        expect([azure.blobs.has("named/a.txt"), azure.blobs.get("moved")?.body.toString()]).toStrictEqual([false, "hello"]);
+
+        const other = await upload(storage, "bye");
+        const result = await storage.deleteBatch([other]);
+
+        expect(result.successfulCount).toBe(1);
+        expect(azure.blobs.has("named/a.txt")).toBe(false);
     });
 
     it("should copy and move a blob, dropping the moved source's metadata", async () => {
