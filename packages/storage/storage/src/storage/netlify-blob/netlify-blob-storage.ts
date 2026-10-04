@@ -176,7 +176,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -184,7 +184,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -234,9 +234,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                         }),
                     );
 
-                    // Generate URL - Netlify Blob URLs are based on the store and key
                     file.pathname = file.name;
-                    file.url = this.getBlobUrl(file.name);
                     file.bytesWritten = buffer.length;
                 }
 
@@ -272,7 +270,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             const { pathname } = file;
 
             if (!pathname) {
-                throw new Error(`File ${id} does not have a valid pathname`);
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, `File ${id} has no content yet`);
             }
 
             file.status = "deleted";
@@ -305,7 +303,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         return {
             contentType: typeof contentType === "string" ? contentType : undefined,
             etag: entry.etag,
-            extra: { metadata, pathname: id, url: this.getBlobUrl(id) },
+            extra: { metadata, pathname: id },
         };
     }
 
@@ -341,7 +339,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             const file = await this.checkIfExpired(await this.getMeta(id));
 
             if (!file.pathname || file.pathname.length <= 0) {
-                throw new Error("File pathname not found");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "The upload has no content yet");
             }
 
             // Fetch the blob from Netlify Blob
@@ -349,7 +347,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             const blob = await this.runOperation(options, () => this.store.get(file.pathname as string, { type: "blob" }));
 
             if (!blob) {
-                throw new Error("File not found in Netlify Blob");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
             // Handle both Blob object and string types
@@ -413,14 +411,14 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             const sourceFile = await this.getMeta(name);
 
             if (!sourceFile.pathname) {
-                throw new Error("Source file pathname not found");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "The source upload has no content yet");
             }
 
             // Get the source blob
             const sourceBlob = await this.runOperation(options, () => this.store.get(sourceFile.pathname as string, { type: "blob" }));
 
             if (!sourceBlob) {
-                throw new Error("Source file not found in Netlify Blob");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
             // Get source metadata if available
@@ -470,7 +468,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                 id: destination,
                 name: destination,
                 pathname: destination,
-                url: this.getBlobUrl(destination),
+                url: undefined,
             };
 
             // Save metadata for the copied file
@@ -586,7 +584,6 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
                     file.name = blob.key;
                     file.pathname = blob.key;
                     file.size = blobWithDates.size;
-                    file.url = this.getBlobUrl(blob.key);
 
                     files.push(file);
 
@@ -600,18 +597,6 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
             },
             { limit },
         );
-    }
-
-    /**
-     * Generate a URL for a blob in Netlify Blob store
-     * Note: Netlify Blob doesn't provide direct public URLs like Vercel Blob
-     * In production, you would typically serve these through Netlify Functions or Edge Functions
-     */
-    private getBlobUrl(pathname: string): string {
-        // In a real implementation, you might want to return a URL that goes through
-        // a Netlify Function or Edge Function to serve the blob
-        // For now, we'll return a placeholder that indicates the blob path
-        return `/api/blobs/${this.storeName}/${pathname}`;
     }
 }
 

@@ -197,7 +197,8 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             expect(store.set).toHaveBeenCalledTimes(1);
             expect(result.bytesWritten).toBe(metafile.size);
-            expect(result.url).toBe(`/api/blobs/test-store/${metafile.name}`);
+            // Netlify Blobs has no public URL, so none is made up.
+            expect(result.url).toBeUndefined();
         });
 
         it("throws when part does not match (size mismatch)", async () => {
@@ -253,7 +254,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.delete({ id: metafile.id })).rejects.toThrow(/pathname/);
+            await expect(storage.delete({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
 
         it("keeps the metadata when the store fails to delete the blob", async () => {
@@ -359,7 +360,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.get({ id: metafile.id })).rejects.toThrow(/pathname/);
+            await expect(storage.get({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
 
         it("throws when blob is missing", async () => {
@@ -375,7 +376,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             (store.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-            await expect(storage.get({ id: metafile.id })).rejects.toThrow(/not found/);
+            await expect(storage.get({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
     });
 
@@ -414,7 +415,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.copy(metafile.id, "dest")).rejects.toThrow(/pathname/);
+            await expect(storage.copy(metafile.id, "dest")).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
 
         it("move() copies then deletes source", async () => {

@@ -67,6 +67,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **FTP without `rootFolderPath` lists the server root `/`**, where it writes, instead of the login directory.
 - **`DiskStorageWithChecksum` honours `checksum: false`**: it no longer hashes uploads or sets `file.hash`.
 - **Vercel Blob overwrites and supports private stores.** `put()` and `copy()` pass `allowOverwrite: true` (`@vercel/blob` 2.x refuses an existing pathname otherwise), `access: "private"` is accepted, and `get()`/`exists()` go through the SDK instead of fetching the blob URL. A part mismatch, an unsupported checksum and a read before any content now throw `UploadError`s (`FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`, `FILE_NOT_FOUND`).
+- **Netlify Blob records no longer carry a made-up `url`** (`/api/blobs/<store>/<key>`, which nothing served); `NetlifyBlobFile.url` is deprecated. Missing content and part/checksum errors throw `UploadError`s (`FILE_NOT_FOUND`, `FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`) instead of plain `Error`s.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

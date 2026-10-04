@@ -75,18 +75,18 @@ Upload records are JSON sidecar files on the **local disk** of the process: `<di
 
 ## Behaviour & limits
 
-| Topic              | Behaviour                                                                                                                                                                                                                     |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                                              |
-| Request size       | Uploads through a Netlify Function are bound by the platform's request payload limit.                                                                                                                                         |
-| Consistency        | The store uses Netlify's default (eventual) consistency, so a read right after a write may briefly miss it.                                                                                                                   |
-| Reads              | `get()` buffers the whole blob. No ranged reads.                                                                                                                                                                              |
-| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). The `url` on records is a placeholder path, `/api/blobs/<storeName>/<key>`, that you have to serve yourself (e.g. through your handler's `GET`). |
-| Listing            | `list(limit)` lists the whole store and fetches each entry's metadata (one extra request per blob).                                                                                                                           |
-| Copy / move        | Simulated: `copy()` downloads and re-uploads the blob; `move()` is copy + delete.                                                                                                                                             |
-| `update()`         | Updates the local record only; blob metadata is not rewritten.                                                                                                                                                                |
-| Expiration / purge | Listed blobs carry no creation time, so `purge()` currently removes nothing. Expired uploads are still refused on read (`GONE`).                                                                                              |
-| Retries            | Status 408/429/500/502/503/504 and `ECONNRESET`/`ETIMEDOUT`/`ENOTFOUND`/`ECONNREFUSED` are retried.                                                                                                                           |
+| Topic              | Behaviour                                                                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                             |
+| Request size       | Uploads through a Netlify Function are bound by the platform's request payload limit.                                                                                                                        |
+| Consistency        | The store uses Netlify's default (eventual) consistency, so a read right after a write may briefly miss it.                                                                                                  |
+| Reads              | `get()` buffers the whole blob. No ranged reads.                                                                                                                                                             |
+| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). Netlify Blobs has no public URL, so records carry no `url` (the field is deprecated); serve blobs through your handler's `GET`. |
+| Listing            | `list(limit)` lists the whole store and fetches each entry's metadata (one extra request per blob).                                                                                                          |
+| Copy / move        | Simulated: `copy()` downloads and re-uploads the blob; `move()` is copy + delete.                                                                                                                            |
+| `update()`         | Updates the local record only; blob metadata is not rewritten.                                                                                                                                               |
+| Expiration / purge | Listed blobs carry no creation time, so `purge()` currently removes nothing. Expired uploads are still refused on read (`GONE`).                                                                             |
+| Retries            | Status 408/429/500/502/503/504 and `ECONNRESET`/`ETIMEDOUT`/`ENOTFOUND`/`ECONNREFUSED` are retried.                                                                                                          |
 
 `storage.raw` returns the Netlify Blobs `Store`.
 
@@ -133,4 +133,3 @@ const { body } = await files.download("reports/q3.csv");
 | `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload | The adapter is single-shot. Send the whole file in one request.                                                              |
 | `404` on `PATCH`/`HEAD` right after `POST`                  | The local metadata lived on another instance. Use a single-request handler or a shared `metaStorage`.                        |
 | A just-written file reads as missing from another region    | Eventual consistency; retry the read.                                                                                        |
-| Record `url` returns 404                                    | It's a placeholder; route `/api/blobs/...` to your own handler or use the handler's `GET /files/:id`.                        |
