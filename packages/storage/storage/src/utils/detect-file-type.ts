@@ -1,5 +1,5 @@
 import type { Readable } from "node:stream";
-import { PassThrough, Transform } from "node:stream";
+import { PassThrough, pipeline, Transform } from "node:stream";
 
 import type { FileTypeResult } from "file-type";
 import { fileTypeFromBuffer } from "file-type";
@@ -86,19 +86,18 @@ export const detectFileTypeFromStream = async (
         },
     });
 
-    // Pipe streams
-    stream.pipe(peekStream).pipe(outputStream);
-
-    // Handle errors
-    stream.on("error", (error) => {
-        peekStream.destroy(error);
-        outputStream.destroy(error);
+    // An 'error' event without a listener crashes the process, and the caller attaches its own
+    // only after this function returns, so a source that fails during detection (e.g. a client
+    // dropping the connection) took the whole server down (#910). Keep a listener for the stream's
+    // lifetime: the caller still sees the error through pipeline()/finished(), for-await and
+    // `stream.errored`, which all report an error the stream already failed with.
+    outputStream.on("error", () => {
+        // Reported to the consumer through the stream's errored state
     });
 
-    peekStream.on("error", (error) => {
-        if (!outputStream.destroyed) {
-            outputStream.destroy(error);
-        }
+    // pipeline() forwards a failure of any stage to the others instead of throwing it.
+    pipeline(stream, peekStream, outputStream, () => {
+        // Errors reach the consumer through outputStream
     });
 
     // Wait for first chunk to arrive so detection can start

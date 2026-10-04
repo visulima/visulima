@@ -2,7 +2,15 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ChunkInfo } from "../../utils/chunked-upload";
-import { getChunks, getTotalSize, isChunkedUpload, isUploadComplete, trackChunk, validateChunk } from "../../utils/chunked-upload";
+import {
+    getChunkedUploadOffset,
+    getChunks,
+    getTotalSize,
+    isChunkedUpload,
+    isChunkedUploadComplete,
+    trackChunk,
+    validateChunk,
+} from "../../utils/chunked-upload";
 import { ERRORS, isUploadError } from "../../utils/errors";
 import { retry } from "../../utils/retry";
 import type { ResponseFile, ResponseList } from "../types";
@@ -98,15 +106,20 @@ const toCollectionUrl = (requestUrl: string): string => {
  */
 
 /**
- * The status a chunked upload has once `chunks` are recorded: "completed" when they cover the
- * file, and a "completed" the chunks don't back up reopened as "part".
+ * The status a chunked upload has once `chunks` are recorded: "completed" when every byte is
+ * stored, and a "completed" the stored bytes don't back up reopened as "part".
  */
-const reconcileChunkedStatus = (chunks: ChunkInfo[], totalSize: number, status: UploadFile["status"]): UploadFile["status"] => {
-    if (isUploadComplete(chunks, totalSize)) {
+const reconcileChunkedStatus = (
+    chunks: ChunkInfo[],
+    totalSize: number,
+    file: Pick<UploadFile, "bytesWritten" | "status">,
+    sequentialWrites: boolean,
+): UploadFile["status"] => {
+    if (isChunkedUploadComplete(chunks, totalSize, file.bytesWritten, sequentialWrites)) {
         return "completed";
     }
 
-    return status === "completed" ? "part" : status;
+    return file.status === "completed" ? "part" : file.status;
 };
 
 abstract class RestBase<TFile extends UploadFile> {
@@ -304,8 +317,10 @@ abstract class RestBase<TFile extends UploadFile> {
         // is stale: providers mark a file completed once the furthest byte is written, so the last
         // chunk arriving first sets it before earlier chunks exist. Reopen the upload instead of
         // answering "complete" for chunks that were never stored.
+        const sequentialWrites = this.storage.sequentialWrites === true;
+
         if (file.status === "completed") {
-            if (isUploadComplete(getChunks(file), totalSize)) {
+            if (isChunkedUploadComplete(getChunks(file), totalSize, file.bytesWritten, sequentialWrites)) {
                 const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
 
                 return buildResponseFile(
@@ -332,6 +347,23 @@ abstract class RestBase<TFile extends UploadFile> {
             start: chunkOffset,
         });
 
+        // An adapter that only appends finished the upload with this chunk; its "completed" is
+        // final, and it may have dropped the upload's metadata already (S3 deletes it on
+        // completion), so there is nothing left to record the chunk in (#908).
+        if (sequentialWrites && written.status === "completed") {
+            const completedFile: TFile = { ...written, bytesWritten: totalSize };
+
+            return buildResponseFile(
+                completedFile,
+                {
+                    ...buildFileHeaders(completedFile, this.buildFileUrl(toCollectionUrl(requestUrl), completedFile)),
+                    ...buildChunkedUploadHeaders(completedFile, true),
+                    "x-upload-offset": String(totalSize),
+                },
+                200,
+            );
+        }
+
         // The read-modify-write of `_chunks` must be serialized: two concurrent PATCHes for the same
         // file would otherwise each read the same `existingChunks`, append their own entry, and the
         // second write would overwrite the first — silently losing a chunk record. A distinct
@@ -340,27 +372,46 @@ abstract class RestBase<TFile extends UploadFile> {
         // The stored status is reconciled with the chunk list under the same lock: each provider
         // write sets it from its own view of the bytes, so concurrent PATCHes would otherwise leave
         // "part" behind on a finished upload (#902), or "completed" on an unfinished one.
+        // An adapter that only appends confirms how much it persisted, which can be less than the
+        // request carried (a GCS resumable upload may keep a shorter range); record only that.
+        const confirmedLength =
+            sequentialWrites && typeof written.bytesWritten === "number" && Number.isFinite(written.bytesWritten)
+                ? Math.min(contentLength, Math.max(0, written.bytesWritten - chunkOffset))
+                : contentLength;
+
+        let bytesWritten: number | undefined;
         let chunks: ChunkInfo[];
         let status: UploadFile["status"];
 
         try {
-            ({ chunks, status } = await retry(
+            ({ bytesWritten, chunks, status } = await retry(
                 async () =>
                     this.storage.withLock(`chunks:${id}`, async () => {
                         const current = await this.storage.getMeta(id);
-                        const merged = trackChunk(getChunks(current), {
-                            checksum: chunkChecksum,
-                            length: contentLength,
-                            offset: chunkOffset,
-                        });
+                        const merged =
+                            confirmedLength > 0
+                                ? trackChunk(getChunks(current), {
+                                      // The checksum covers the whole chunk, not a confirmed part of it.
+                                      checksum: confirmedLength === contentLength ? chunkChecksum : undefined,
+                                      length: confirmedLength,
+                                      offset: chunkOffset,
+                                  })
+                                : getChunks(current);
                         const saved = await this.storage.update(
                             { id },
-                            { metadata: { ...current.metadata, _chunks: merged }, status: reconcileChunkedStatus(merged, totalSize, current.status) },
+                            {
+                                metadata: { ...current.metadata, _chunks: merged },
+                                status: reconcileChunkedStatus(merged, totalSize, current, sequentialWrites),
+                            },
                         );
                         // The save may have merged in chunks another process recorded meanwhile.
                         const savedChunks = getChunks(saved);
 
-                        return { chunks: savedChunks, status: reconcileChunkedStatus(savedChunks, totalSize, current.status) };
+                        return {
+                            bytesWritten: saved.bytesWritten,
+                            chunks: savedChunks,
+                            status: reconcileChunkedStatus(savedChunks, totalSize, { ...saved, status: current.status }, sequentialWrites),
+                        };
                     }),
                 {
                     initialDelay: 10,
@@ -388,7 +439,7 @@ abstract class RestBase<TFile extends UploadFile> {
         const headers = {
             ...buildFileHeaders(finalFile, locationUrl),
             ...buildChunkedUploadHeaders(finalFile, isComplete),
-            "x-upload-offset": String(finalFile.bytesWritten || 0),
+            "x-upload-offset": String(isComplete ? totalSize : getChunkedUploadOffset(chunks, bytesWritten ?? written.bytesWritten, sequentialWrites)),
         };
 
         return buildResponseFile(finalFile, headers, isComplete ? 200 : 202);
@@ -416,12 +467,17 @@ abstract class RestBase<TFile extends UploadFile> {
             ...buildFileMetadataHeaders(file),
         };
 
-        // Add chunked upload progress headers
+        // Add chunked upload progress headers. The offset to resume from and completion come
+        // from the same source, so a client resuming at the offset can finish the upload (#909).
         if (isChunkedUploadFile) {
             const totalSize = getTotalSize(file) || file.size || 0;
-            const isComplete = isUploadComplete(getChunks(file), totalSize);
+            const sequentialWrites = this.storage.sequentialWrites === true;
+            const chunks = getChunks(file);
+            const isComplete = isChunkedUploadComplete(chunks, totalSize, file.bytesWritten, sequentialWrites);
 
-            Object.assign(headers, buildChunkedUploadHeaders(file, isComplete));
+            Object.assign(headers, buildChunkedUploadHeaders(file, isComplete), {
+                "x-upload-offset": String(isComplete ? totalSize : getChunkedUploadOffset(chunks, file.bytesWritten, sequentialWrites)),
+            });
         }
 
         return buildResponseFile(file, headers, 200);
@@ -498,6 +554,7 @@ abstract class RestBase<TFile extends UploadFile> {
         }>;
         getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
+        sequentialWrites?: boolean;
         update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
         withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
         write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;

@@ -152,6 +152,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     public override readonly supportsDelimiter: boolean = true;
 
+    /** Parts are appended in order (see assertContiguousWrite). */
+    public override readonly sequentialWrites: boolean = true;
+
     protected bucket: string;
 
     /** Set here for a caller-supplied or local meta storage, otherwise by the subclass constructor. */

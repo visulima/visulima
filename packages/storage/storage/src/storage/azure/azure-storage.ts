@@ -52,6 +52,9 @@ const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
 class AzureStorage extends BaseStorage {
     public static override readonly name: string = "azure";
 
+    /** Parts are appended in order (see assertContiguousWrite). */
+    public override readonly sequentialWrites: boolean = true;
+
     /** `md5` is verified by Azure per staged block (`transactionalContentMD5`, `Md5Mismatch` on failure). */
     public override checksumTypes: string[] = ["md5"];
 

@@ -6,58 +6,113 @@ import { AwsClient } from "aws4fetch";
 import type { Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
 import type { AwsLightClientConfig } from "./types";
 
+const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
+
+/** Decodes the predefined XML entities and numeric character references. */
+const decodeXmlText = (text: string): string =>
+    text.replaceAll(/&(#x[\da-f]+|#\d+|[a-z]+);/giu, (entity, name: string) => {
+        if (name.startsWith("#x") || name.startsWith("#X")) {
+            return String.fromCodePoint(Number.parseInt(name.slice(2), 16));
+        }
+
+        if (name.startsWith("#")) {
+            return String.fromCodePoint(Number.parseInt(name.slice(1), 10));
+        }
+
+        return XML_ENTITIES[name] ?? entity;
+    });
+
 /**
- * Simple XML parser for S3 API responses.
- * Uses regex-based parsing for simplicity and cross-platform compatibility.
+ * Minimal XML parser for S3 API responses. An element with child elements becomes an object, one
+ * with only text becomes its (trimmed, decoded) text, and repeated sibling elements (`&lt;Part>`,
+ * `&lt;Contents>`, `&lt;CommonPrefixes>`) become an array. Empty elements are left out. A single linear
+ * scan, so no regex backtracking on the response.
  */
-const parseXml = (text: string): Record<string, unknown> => {
-    const result: Record<string, unknown> = {};
+export const parseXml = (text: string): Record<string, unknown> => {
+    let position = 0;
 
-    // Remove XML declaration and namespaces
-    // Input is controlled (S3 API responses), safe from ReDoS
-    const cleanText = text.replaceAll(/<\?xml[^>]*\?>/g, "").replaceAll(/xmlns[^=]*="[^"]*"/g, "");
+    const parseContent = (): Record<string, unknown> | string => {
+        const element: Record<string, unknown> = {};
+        let content = "";
+        let hasChildren = false;
 
-    // Extract tags and their content
-    const tagRegex = /<([^>]+)>([^<]*)<\/\1>/g;
-    const matches = [...cleanText.matchAll(tagRegex)];
+        while (position < text.length) {
+            const tagStart = text.indexOf("<", position);
 
-    for (const match of matches) {
-        const [, tagName, content] = match;
+            if (tagStart === -1) {
+                content += text.slice(position);
+                position = text.length;
+                break;
+            }
 
-        if (tagName && content?.trim()) {
-            if (result[tagName]) {
-                // Multiple children with same tag - convert to array
-                if (!Array.isArray(result[tagName])) {
-                    result[tagName] = [result[tagName]];
-                }
+            content += text.slice(position, tagStart);
 
-                (result[tagName] as unknown[]).push(content.trim());
+            if (text.startsWith("<![CDATA[", tagStart)) {
+                const end = text.indexOf("]]>", tagStart);
+                const stop = end === -1 ? text.length : end;
+
+                // CDATA is literal text: keep it apart from entity decoding by escaping its ampersands.
+                content += text.slice(tagStart + 9, stop).replaceAll("&", "&amp;");
+                position = stop + 3;
+                continue;
+            }
+
+            const tagEnd = text.indexOf(">", tagStart);
+
+            if (tagEnd === -1) {
+                position = text.length;
+                break;
+            }
+
+            position = tagEnd + 1;
+
+            // Closing tag of the element being parsed.
+            if (text[tagStart + 1] === "/") {
+                break;
+            }
+
+            // XML declaration, comment or doctype.
+            if (text[tagStart + 1] === "?" || text[tagStart + 1] === "!") {
+                continue;
+            }
+
+            const tag = text.slice(tagStart + 1, tagEnd);
+            const selfClosing = tag.endsWith("/");
+            const [name] = (selfClosing ? tag.slice(0, -1) : tag).trim().split(/\s/u);
+            const value = selfClosing ? "" : parseContent();
+
+            hasChildren = true;
+
+            if (!name || value === "") {
+                continue;
+            }
+
+            const existing = element[name];
+
+            if (existing === undefined) {
+                element[name] = value;
+            } else if (Array.isArray(existing)) {
+                existing.push(value);
             } else {
-                result[tagName] = content.trim();
+                element[name] = [existing, value];
             }
         }
+
+        return hasChildren ? element : decodeXmlText(content.trim());
+    };
+
+    const root = parseContent();
+
+    return typeof root === "string" ? {} : root;
+};
+
+/** A repeated XML element as an array: absent → [], a single element → [element]. */
+const toArray = <T>(value: unknown): T[] => {
+    if (value === undefined) {
+        return [];
     }
 
-    // Handle nested structures
-    // Input is controlled (S3 API responses), safe from ReDoS
-
-    const nestedRegex = /<([^>]+)>([\s\S]*?)<\/\1>/g;
-    let nestedMatch;
-
-    // eslint-disable-next-line no-cond-assign
-    while ((nestedMatch = nestedRegex.exec(cleanText)) !== null) {
-        const [, tagName, innerContent] = nestedMatch;
-
-        if (tagName && innerContent?.includes("<")) {
-            const nested = parseXml(innerContent);
-
-            if (Object.keys(nested).length > 0) {
-                result[tagName] = nested;
-            }
-        }
-    }
-
-    return result;
+    return (Array.isArray(value) ? value : [value]) as T[];
 };
 
 /**
@@ -271,15 +326,10 @@ ${partsXml}
         }
 
         const xml = parseXml(xmlText);
-        const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        let parts: unknown[] = [];
-
-        if (listPartsResult.Part) {
-            parts = Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part];
-        }
+        const listPartsResult = (xml.ListPartsResult as Record<string, unknown> | undefined) ?? xml;
 
         return {
-            Parts: (parts as Record<string, unknown>[]).map((part: Record<string, unknown>) => {
+            Parts: toArray<Record<string, unknown>>(listPartsResult.Part).map((part) => {
                 return {
                     ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),
                     PartNumber: Number(part.PartNumber) || 0,
@@ -477,27 +527,18 @@ ${partsXml}
         }
 
         const xml = parseXml(xmlText);
-        const listResult = (xml.ListBucketResult as Record<string, unknown>) || xml;
-        const contents = listResult.Contents || (Array.isArray(listResult.Contents) ? listResult.Contents : []);
-
-        // The regex parseXml above can't preserve repeated <CommonPrefixes> siblings, so pull them
-        // straight from the raw XML. Input is a controlled S3 response, so the pattern is ReDoS-safe.
-        const commonPrefixes: { Prefix?: string }[] = [];
-
-        for (const match of xmlText.matchAll(/<CommonPrefixes>\s*<Prefix>([^<]*)<\/Prefix>\s*<\/CommonPrefixes>/g)) {
-            commonPrefixes.push({ Prefix: match[1] });
-        }
+        const listResult = (xml.ListBucketResult as Record<string, unknown> | undefined) ?? xml;
 
         return {
-            CommonPrefixes: commonPrefixes,
-            Contents: Array.isArray(contents)
-                ? (contents as Record<string, unknown>[]).map((item) => {
-                      return {
-                          Key: item.Key as string | undefined,
-                          LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
-                      };
-                  })
-                : [],
+            CommonPrefixes: toArray<Record<string, unknown>>(listResult.CommonPrefixes).map((prefix) => {
+                return { Prefix: prefix.Prefix as string | undefined };
+            }),
+            Contents: toArray<Record<string, unknown>>(listResult.Contents).map((item) => {
+                return {
+                    Key: item.Key as string | undefined,
+                    LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
+                };
+            }),
             IsTruncated: listResult.IsTruncated === "true" || listResult.IsTruncated === true,
             NextContinuationToken: listResult.NextContinuationToken as string | undefined,
         };
