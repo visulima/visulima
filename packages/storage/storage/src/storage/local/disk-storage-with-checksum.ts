@@ -1,5 +1,3 @@
-import { remove } from "@visulima/fs";
-
 import type { ERRORS } from "../../utils/errors";
 import RangeHasher from "../../utils/range-hasher";
 import type { DiskStorageWithChecksumOptions } from "../types";
@@ -18,30 +16,12 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         this.hashes = new RangeHasher(config?.checksum === "sha1" ? "sha1" : "md5");
     }
 
-    public override async delete({ id }: FileQuery): Promise<TFile> {
-        try {
-            const file = await this.getMeta(id);
-            const path = this.getFilePath(file.name);
+    public override async delete(query: FileQuery): Promise<TFile> {
+        const deleted = await super.delete(query);
 
-            this.hashes.delete(path);
+        this.hashes.delete(this.getFilePath(deleted.name));
 
-            await remove(path);
-            await this.deleteMeta(id);
-
-            const deletedFile = { ...file, status: "deleted" } as TFile;
-
-            await this.onDelete(deletedFile);
-
-            return deletedFile;
-        } catch (error) {
-            this.logger?.error("[error]: Could not delete file: %O", error);
-
-            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-            await this.onError(httpError);
-        }
-
-        return { id } as TFile;
+        return deleted;
     }
 
     /**

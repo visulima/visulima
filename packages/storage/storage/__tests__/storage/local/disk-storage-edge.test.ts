@@ -326,16 +326,34 @@ describe(DiskStorageWithChecksum, () => {
         await expect(reopened.saveMeta(meta)).resolves.toStrictEqual(expect.objectContaining({ hash: { algorithm: "sha1", value: expected } }));
     });
 
-    it("should report a failed delete to onError instead of throwing", async () => {
+    it("should fail a delete of a missing upload like DiskStorage", async () => {
         expect.assertions(2);
 
-        const onError = vi.fn();
-        const storage = new DiskStorageWithChecksum({ directory, onError });
+        const storage = new DiskStorageWithChecksum({ directory });
+        const plain = new DiskStorage({ directory });
+
+        await waitForStorageReady(storage);
+        await waitForStorageReady(plain);
+
+        const expected = await plain.delete({ id: "missing" }).catch((error: unknown) => error);
+
+        expect(expected).toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.FILE_NOT_FOUND }));
+        await expect(storage.delete({ id: "missing" })).rejects.toStrictEqual(expected);
+    });
+
+    it("should throw when deleting the metadata fails", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum({ directory });
 
         await waitForStorageReady(storage);
 
-        await expect(storage.delete({ id: "missing" })).resolves.toStrictEqual({ id: "missing" });
-        expect(onError).toHaveBeenCalledWith(expect.objectContaining({ statusCode: 500 }));
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 3 });
+
+        vi.spyOn(storage.meta, "delete").mockRejectedValueOnce(Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" }));
+
+        await expect(storage.delete({ id: file.id })).rejects.toThrow("EACCES");
+        await expect(storage.delete({ id: file.id })).resolves.toStrictEqual(expect.objectContaining({ id: file.id, status: "deleted" }));
     });
 
     it("should rethrow a failing body and forget the partial hash", async () => {
