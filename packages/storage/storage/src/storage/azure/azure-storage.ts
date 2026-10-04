@@ -83,8 +83,9 @@ class AzureStorage extends BaseStorage {
     public constructor(config: AzureStorageOptions) {
         super(config);
 
-        // Container name is required
-        if (!config.containerName) {
+        const containerName = config.containerName || process.env.AZURE_STORAGE_CONTAINER;
+
+        if (!containerName) {
             throw new Error("Missing required parameter: Azure container name.");
         }
 
@@ -95,7 +96,7 @@ class AzureStorage extends BaseStorage {
         this.sasToken = sasToken;
         this.anonymous = anonymous;
 
-        this.containerClient = this.client.getContainerClient(config.containerName);
+        this.containerClient = this.client.getContainerClient(containerName);
 
         this.root = config.root ? normalize(config.root).replaceAll(/^\/+|\/+$/g, "") : "";
 
@@ -135,7 +136,7 @@ class AzureStorage extends BaseStorage {
         if (config.metaStorage) {
             this.meta = config.metaStorage;
         } else {
-            let metaConfig = { ...config, ...config.metaStorageConfig, logger: this.logger };
+            let metaConfig = { ...config, containerName, ...config.metaStorageConfig, logger: this.logger };
 
             const localMeta = "directory" in metaConfig;
 

@@ -88,7 +88,7 @@ const storage = new AzureStorage({
 
 | Option                 | Type                                                 | Default                                              | Description                                                                                                           |
 | ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `containerName`        | `string`                                             | — (required)                                         | Container that holds the blobs (and, by default, the metadata sidecars). Not read from the environment.               |
+| `containerName`        | `string`                                             | `AZURE_STORAGE_CONTAINER`                            | Container that holds the blobs (and, by default, the metadata sidecars). Required, from the option or the variable.   |
 | `connectionString`     | `string`                                             | `AZURE_STORAGE_CONNECTION_STRING`                    | Full connection string. Takes precedence over every other auth option.                                                |
 | `accountName`          | `string`                                             | `AZURE_STORAGE_ACCOUNT`                              | Account name. Builds the endpoint `https://<account>.blob.core.windows.net` when `endpoint` is not set.               |
 | `accountKey`           | `string`                                             | `AZURE_STORAGE_ACCOUNT_KEY`                          | Shared key. Needs `accountName`.                                                                                      |
@@ -120,7 +120,7 @@ new AzureStorage({ containerName: "uploads", metaStorageConfig: { containerName:
 new AzureStorage({ containerName: "uploads", metaStorageConfig: { directory: "/var/lib/uploads-meta" } });
 ```
 
-`metaStorageConfig` also accepts `prefix` (default `""`) and `suffix` (default `".META"`). Pass a ready-made `MetaStorage` instance via `metaStorage` to bring your own store.
+`metaStorageConfig` also accepts `prefix` (default `""`) and `suffix` (default `".META"`). Pass a ready-made `MetaStorage` instance via `metaStorage` to bring your own store; the container-backed one is exported as `AzureMetaStorage` (the misspelled `AzureSMetaStorage` remains as a deprecated alias).
 
 ## Behaviour & limits
 
@@ -182,7 +182,7 @@ For on-demand image resizing on top of this storage, see [Transformers](../trans
 
 | Symptom                                                            | Cause and fix                                                                                                                                 |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Missing required parameter: Azure container name.`                | Pass `containerName`. It isn't read from `AZURE_STORAGE_CONTAINER`.                                                                           |
+| `Missing required parameter: Azure container name.`                | Pass `containerName` or set `AZURE_STORAGE_CONTAINER`.                                                                                        |
 | `Missing required Azure credentials…`                              | No connection string, key, credential, SAS token or account name was found. Set one of the options or `AZURE_STORAGE_*` variables.            |
 | `403 AuthorizationPermissionMismatch`                              | The Entra principal lacks a data role. Assign **Storage Blob Data Contributor**; role assignments can take a few minutes to apply.            |
 | `403 AuthorizationFailure` on startup with a SAS token             | The SAS can't read the container properties. Use an account SAS with `srt=co` and `sp=racwdl`, and check its expiry and allowed IPs.          |

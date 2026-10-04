@@ -38,7 +38,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             throw new Error("Missing required parameter: Azure container name.");
         }
 
-        this.containerClient = this.client.getContainerClient(metaConfig.containerName);
+        this.containerClient = this.client.getContainerClient(containerName);
     }
 
     public override async get(id: string): Promise<T> {

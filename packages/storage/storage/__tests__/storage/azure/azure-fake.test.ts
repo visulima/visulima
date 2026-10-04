@@ -301,6 +301,23 @@ describe("azure storage against an in-memory container", () => {
         },
     );
 
+    it("should take the container from AZURE_STORAGE_CONTAINER when none is passed", async () => {
+        expect.assertions(2);
+
+        vi.stubEnv("AZURE_STORAGE_CONTAINER", "from-env");
+
+        try {
+            const getContainerClient = vi.spyOn(azure.service, "getContainerClient");
+            const storage = createStorage({ containerName: undefined });
+
+            // The storage and its metadata sidecars both use it.
+            expect(getContainerClient.mock.calls).toStrictEqual([["from-env"], ["from-env"]]);
+            await expect(storage.exists({ id: (await upload(storage, "x")) })).resolves.toBe(true);
+        } finally {
+            vi.unstubAllEnvs();
+        }
+    });
+
     it("should write a chunked upload, resume after an interrupted chunk and keep its metadata", async () => {
         expect.assertions(7);
 
