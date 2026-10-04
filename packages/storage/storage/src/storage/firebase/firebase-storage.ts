@@ -121,14 +121,10 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -206,13 +202,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: FirebaseFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by id.
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.path ?? file?.name ?? id;
 
@@ -239,15 +229,8 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let path = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                path = meta.path ?? id;
-            } catch {
-                // direct path lookup
-            }
+            const meta = await this.findMeta(id);
+            const path = meta?.path ?? id;
 
             try {
                 const [exists] = await this.runOperation(options, () => this.bucket.file(path).exists());
@@ -276,13 +259,11 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;
-            let stored: FirebaseFile | undefined;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 path = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a bucket-relative path.
             }
 
             const gcsFile = this.bucket.file(path);

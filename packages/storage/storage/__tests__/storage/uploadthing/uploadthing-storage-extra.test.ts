@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UploadThingStorageOptions } from "../../../src/storage/uploadthing/types";
 import UploadThingFile from "../../../src/storage/uploadthing/uploadthing-file";
 import UploadThingStorage from "../../../src/storage/uploadthing/uploadthing-storage";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 const validToken = Buffer.from(JSON.stringify({ apiKey: "sk_test_abc", appId: "test-app" })).toString("base64");
@@ -79,7 +80,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const storage = new UploadThingStorage(buildOptions());
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const onCreateSpy = vi.fn();
@@ -273,7 +274,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const storage = new UploadThingStorage(buildOptions({ acl: "public-read" }));
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("missing"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.get({ id: "user/orphan.png" });
 

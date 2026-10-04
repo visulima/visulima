@@ -101,6 +101,15 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             expect(error).toHaveProperty("UploadErrorCode", ERRORS.GONE);
         });
 
+        it.skipIf(skip["expired upload"] !== undefined)("should answer GONE when reading an expired finished upload", async () => {
+            expect.assertions(1);
+
+            const storage = backend.createStorage({ expiration: { maxAge: "1h" } });
+            const id = await createdAgo(2 * HOUR, async () => upload(storage, "hello"));
+
+            await expect(storage.get({ id })).rejects.toHaveProperty("UploadErrorCode", ERRORS.GONE);
+        });
+
         it("should purge expired uploads and never an object without upload metadata", async () => {
             expect.assertions(3);
 

@@ -338,14 +338,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -424,13 +420,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: OneDriveFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — direct path delete
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.name ?? id;
 

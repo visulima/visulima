@@ -180,14 +180,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             const s3Api = this.getS3Api();
@@ -632,7 +628,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
-            const key = await this.storedName(id);
+            const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(

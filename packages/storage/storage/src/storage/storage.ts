@@ -780,6 +780,22 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
+     * {@link BaseStorage.storedName} for a read: an expired upload answers GONE instead of being served.
+     * @param id File ID of the upload.
+     * @returns The stored name.
+     * @throws {UploadError} If the upload has expired (ERRORS.GONE).
+     */
+    protected async readableName(id: string): Promise<string> {
+        const meta = await this.findMeta(id);
+
+        if (meta !== undefined) {
+            await this.checkIfExpired(meta);
+        }
+
+        return meta?.name ?? id;
+    }
+
+    /**
      * Retrieves upload metadata by file ID.
      * @param id File ID to retrieve metadata for.
      * @returns Promise resolving to the file metadata object.

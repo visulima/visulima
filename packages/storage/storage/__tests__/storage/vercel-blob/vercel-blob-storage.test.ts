@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VercelBlobStorageOptions } from "../../../src/storage/vercel-blob/types";
 import VercelBlobStorage from "../../../src/storage/vercel-blob/vercel-blob-storage";
-import { metafile, storageOptions } from "../../__helpers__/config";
 import { ERRORS, UploadError } from "../../../src/utils/errors";
+import { metafile, storageOptions } from "../../__helpers__/config";
 
 // Mock Vercel Blob SDK
 vi.mock(import("@vercel/blob"), () => {
@@ -172,7 +172,7 @@ describe(VercelBlobStorage, () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const exists = await storage.exists({ id: "non-existent-id" });
 

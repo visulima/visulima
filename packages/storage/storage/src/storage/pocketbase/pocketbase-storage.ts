@@ -157,14 +157,10 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -237,13 +233,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: PocketBaseFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by key.
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.path ?? file?.name ?? id;
 
@@ -280,15 +270,8 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let key = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                key = meta.path ?? id;
-            } catch {
-                // direct key lookup
-            }
+            const meta = await this.findMeta(id);
+            const key = meta?.path ?? id;
 
             await this.ensureAuth();
 

@@ -142,14 +142,10 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -232,13 +228,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: SupabaseFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by id.
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.path ?? file?.name ?? id;
 
@@ -270,15 +260,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let path = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                path = meta.path ?? id;
-            } catch {
-                // direct path lookup
-            }
+            const meta = await this.findMeta(id);
+            const path = meta?.path ?? id;
 
             const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).exists(path));
 
@@ -309,13 +292,11 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;
-            let stored: SupabaseFile | undefined;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 path = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a bucket-relative path.
             }
 
             const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).download(path));

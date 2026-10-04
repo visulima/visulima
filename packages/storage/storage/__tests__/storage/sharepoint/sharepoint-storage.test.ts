@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SharePointStorage from "../../../src/storage/sharepoint/sharepoint-storage";
 import type { SharePointStorageOptions } from "../../../src/storage/sharepoint/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const bodyStream = async function* (): AsyncIterableIterator<Buffer> {
@@ -110,7 +111,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({ driveId: "drive-1" }));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -137,7 +138,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({ siteId: "site-abc" }));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -168,7 +169,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({ documentLibrary: "Documents", siteId: "site-abc" }));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -204,7 +205,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({ siteUrl: "https://contoso.sharepoint.com/sites/Marketing" }));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -269,7 +270,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({}));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -295,7 +296,7 @@ describe(SharePointStorage, () => {
 
             const storage = new SharePointStorage(baseOptions({}));
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -352,7 +353,7 @@ describe(SharePointStorage, () => {
 
             const storage = driveStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.api
                 .mockImplementationOnce((url: string) => {
@@ -384,7 +385,7 @@ describe(SharePointStorage, () => {
 
             const storage = driveStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "del.mp4" });
 

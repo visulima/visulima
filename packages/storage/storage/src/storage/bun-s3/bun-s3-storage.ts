@@ -120,14 +120,10 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -204,13 +200,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("delete", async () => {
-            let file: BunS3File | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as key
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.bunS3Key ?? toKey(file?.name ?? id);
 
@@ -263,15 +253,13 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: BunS3File | undefined;
-            let key: string;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.bunS3Key ?? toKey(stored.name ?? id);
-            } catch {
-                key = toKey(id);
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored?.bunS3Key ?? toKey(stored?.name ?? id);
 
             const ref = this.client.file(key);
 
@@ -311,15 +299,13 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         options?: OperationOptions,
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
-            let stored: BunS3File | undefined;
-            let key: string;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.bunS3Key ?? toKey(stored.name ?? id);
-            } catch {
-                key = toKey(id);
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored?.bunS3Key ?? toKey(stored?.name ?? id);
 
             const ref = this.client.file(key);
 

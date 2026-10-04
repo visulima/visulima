@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
 import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
-import { ERRORS } from "../../../src/utils/errors";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 const makeStorageFile = (overrides: Record<string, unknown> = {}) => {
@@ -170,7 +170,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.remove.mockResolvedValueOnce(true);
 
@@ -185,7 +185,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx (incl. 404).
             fileMock.remove.mockResolvedValueOnce(false);
@@ -222,7 +222,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.remove.mockRejectedValueOnce(new TypeError("fetch failed"));
 
@@ -238,7 +238,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
 
@@ -254,7 +254,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             // The real SDK throws a plain `Error` whose message is
             // `File not found: ${path}` with NO status/statusCode field.
@@ -274,7 +274,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockRejectedValueOnce(new Error("Unauthorized access to storage zone: test-zone"));
 
@@ -293,7 +293,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockRejectedValueOnce(new Error("An unknown error has occurred during the request."));
 
@@ -349,7 +349,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
             fileMock.upload.mockRejectedValueOnce(new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"));
@@ -364,7 +364,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const sdkError = new Error("File not found: /missing");
 
@@ -471,7 +471,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
             fileMock.upload.mockResolvedValueOnce(true);

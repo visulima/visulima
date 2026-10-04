@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BoxStorage from "../../../src/storage/box/box-storage";
 import type { BoxStorageOptions } from "../../../src/storage/box/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeMockClient = () => {
@@ -178,7 +179,7 @@ describe(BoxStorage, () => {
                 developerToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.folders.getFolderItems.mockResolvedValueOnce({
                 entries: [{ id: "FID", name: "file.mp4", type: "file" }],
@@ -198,7 +199,7 @@ describe(BoxStorage, () => {
                 developerToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.folders.getFolderItems.mockResolvedValueOnce({
                 entries: [{ id: "FID", name: "file.mp4", type: "file" }],

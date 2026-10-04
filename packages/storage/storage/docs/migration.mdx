@@ -62,6 +62,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **GCS supports a deferred upload length** (TUS `Upload-Defer-Length`) instead of crashing in `create()`, and a `clientDirectUpload` upload now saves its metadata record and fires `onCreate`.
 - **Azure reads `AZURE_STORAGE_CONTAINER`** when `containerName` is not passed. The meta storage is exported as `AzureMetaStorage`; the misspelled `AzureSMetaStorage` is a deprecated alias.
 - **SharePoint only reads env credentials when no auth is passed in code**, so `oauth`/`clientCredentials` in code no longer clash with `SHAREPOINT_*`/`ONEDRIVE_*` variables. `expiration.purgeInterval` starts one purge timer, which `close()` stops; `exists()` and `getStream()` forward per-call options.
+- **Reading an expired upload answers `GONE` on every provider.** Google Drive, Bun S3, Supabase, Firebase, Cloudinary and UploadThing fell back to reading the raw key, and S3, aws-light, Azure and GCS never checked the upload's expiry on read. `create()`, `get()`, `delete()` and `exists()` of the remaining adapters no longer treat a failing metadata store as "no metadata" either.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

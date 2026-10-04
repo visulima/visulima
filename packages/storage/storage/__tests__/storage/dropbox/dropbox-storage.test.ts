@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DropboxStorage from "../../../src/storage/dropbox/dropbox-storage";
 import type { DropboxStorageOptions } from "../../../src/storage/dropbox/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeMockClient = () => {
@@ -146,7 +147,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.delete({ id: "folder/file.mp4" });
 
@@ -162,7 +163,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(new FakeDropboxResponseError(404, {}));
 
@@ -177,7 +178,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(
                 new FakeDropboxResponseError(409, {
@@ -394,7 +395,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(econnreset()).mockRejectedValueOnce(econnreset()).mockResolvedValueOnce({});
 
@@ -412,7 +413,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const controller = new AbortController();
 

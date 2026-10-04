@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GoogleDriveStorage from "../../../src/storage/google-drive/google-drive-storage";
 import type { GoogleDriveStorageOptions } from "../../../src/storage/google-drive/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 const makeMockDrive = () => {
@@ -182,7 +183,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },
@@ -209,7 +210,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },

@@ -147,14 +147,10 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -229,13 +225,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: CloudinaryFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by id.
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.path ?? file?.name ?? id;
 
@@ -267,15 +257,8 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let key = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                key = meta.path ?? id;
-            } catch {
-                // direct key lookup
-            }
+            const meta = await this.findMeta(id);
+            const key = meta?.path ?? id;
 
             try {
                 await this.runOperation(options, () =>
@@ -321,13 +304,11 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;
-            let stored: CloudinaryFile | undefined;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 key = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a Cloudinary public id.
             }
 
             const resource = await this.runOperation(options, () =>

@@ -187,14 +187,10 @@ class AzureStorage extends BaseStorage {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(file.name));
@@ -498,7 +494,7 @@ class AzureStorage extends BaseStorage {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.storedName(id)));
+            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.readableName(id)));
 
             const exists = await this.runOperation(options, (signal) => blobClient.exists({ abortSignal: signal }));
 

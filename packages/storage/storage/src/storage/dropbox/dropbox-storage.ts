@@ -284,14 +284,10 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -371,13 +367,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: DropboxFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — direct path delete
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.path ?? this.keyToPath(file?.name ?? id);
 
@@ -436,14 +426,8 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: DropboxFile | undefined;
+            const stored = await this.findMeta(id);
             let path = this.keyToPath(id);
-
-            try {
-                stored = await this.getMeta(id);
-            } catch {
-                // direct path lookup
-            }
 
             if (stored) {
                 // An expired upload answers GONE instead of falling back to a direct path lookup.

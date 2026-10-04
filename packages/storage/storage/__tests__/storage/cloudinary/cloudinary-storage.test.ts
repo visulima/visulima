@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CloudinaryStorage from "../../../src/storage/cloudinary/cloudinary-storage";
 import type { CloudinaryStorageOptions } from "../../../src/storage/cloudinary/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeMockClient = () => {
@@ -226,7 +227,7 @@ describe(CloudinaryStorage, () => {
 
             const storage = newStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.uploader.destroy.mockResolvedValueOnce({ result: "ok" });
 

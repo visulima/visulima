@@ -290,14 +290,10 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -384,13 +380,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BoxFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: BoxFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.name ?? id;
 
@@ -446,17 +436,8 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: BoxFile | undefined;
+            const stored = await this.findMeta(id);
             let key = id;
-
-            try {
-                stored = await this.getMeta(id);
-            } catch (error) {
-                // No metadata: look the id up directly. Any other failure must not read as absent.
-                if (!isMetaNotFound(error)) {
-                    throw error;
-                }
-            }
 
             if (stored) {
                 await this.checkIfExpired(stored);

@@ -92,14 +92,10 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.status === "completed") {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.status === "completed") {
+                return existing;
             }
 
             file.bytesWritten = 0;

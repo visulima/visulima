@@ -181,14 +181,10 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -287,13 +283,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: BunnyFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as path
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.bunnyPath ?? toBunnyPath(file?.name ?? id);
 
@@ -360,13 +350,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: BunnyFile | undefined;
-
-            try {
-                stored = await this.getMeta(id);
-            } catch {
-                // No metadata — treat `id` as the object key.
-            }
+            const stored = await this.findMeta(id);
 
             // Outside the try: an expired upload must answer GONE, not fall back to its object.
             if (stored) {

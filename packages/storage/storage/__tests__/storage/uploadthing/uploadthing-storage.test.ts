@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { UploadThingStorageOptions } from "../../../src/storage/uploadthing/types";
 import UploadThingStorage from "../../../src/storage/uploadthing/uploadthing-storage";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const validToken = Buffer.from(JSON.stringify({ apiKey: "sk_test_abc", appId: "test-app" })).toString("base64");
@@ -120,7 +121,7 @@ describe(UploadThingStorage, () => {
                 token: validToken,
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockUtapi.deleteFiles.mockResolvedValueOnce({ success: true });
 

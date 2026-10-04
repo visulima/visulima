@@ -10,6 +10,7 @@ import GCStorage from "../../../src/storage/gcs/gcs-storage";
 import type { ClientError, GCStorageOptions } from "../../../src/storage/gcs/types";
 import { buildContentRange, getRangeEnd } from "../../../src/storage/gcs/utils";
 import type { FilePart } from "../../../src/storage/utils/file";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
 const { mockFetch } = vi.hoisted(() => {
@@ -406,7 +407,7 @@ describe(GCStorage, async () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (file not found)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await expect(storage.delete(metafile)).rejects.toThrow();
         });
@@ -431,7 +432,7 @@ describe(GCStorage, async () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const exists = await storage.exists({ id: "non-existent-id" });
 

@@ -134,14 +134,10 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             // For Netlify Blob, we don't create an empty blob initially

@@ -134,14 +134,10 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -227,13 +223,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: UploadThingFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as customId
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.customId ?? file?.name ?? id;
 
@@ -279,14 +269,12 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: UploadThingFile | undefined;
+            const stored = await this.findMeta(id);
             let key = id;
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 key = stored.customId ?? stored.name ?? id;
-            } catch {
-                // direct fetch by id
             }
 
             const url = await this.resolveFetchUrl(key, options);

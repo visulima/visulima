@@ -63,7 +63,7 @@ describe(S3Storage, () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create(metafile);
@@ -87,7 +87,7 @@ describe(S3Storage, () => {
         it("should send error on invalid s3 response", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({});
 
             await expect(storage.create(metafile)).rejects.toMatchSnapshot();
@@ -96,7 +96,7 @@ describe(S3Storage, () => {
         it("should handle TTL option", async () => {
             expect.assertions(3);
 
-            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create({ ...metafile, ttl: "30d" });
@@ -606,7 +606,7 @@ describe("s3PresignedStorage", () => {
         it("should request api and set status and UploadId", async () => {
             expect.assertions(2);
 
-            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -619,7 +619,7 @@ describe("s3PresignedStorage", () => {
         it("should call the onCreate hook", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).rejects();
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -682,7 +682,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             // Set up mocks for create operation
-            s3Mock.on(HeadObjectCommand).rejects(); // File doesn't exist initially
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -722,7 +722,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             // Set up mocks for create operation
-            s3Mock.on(HeadObjectCommand).rejects(); // File doesn't exist initially
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 

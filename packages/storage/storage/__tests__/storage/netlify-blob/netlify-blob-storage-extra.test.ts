@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import NetlifyBlobFile from "../../../src/storage/netlify-blob/netlify-blob-file";
 import NetlifyBlobStorage from "../../../src/storage/netlify-blob/netlify-blob-storage";
 import type { NetlifyBlobStorageOptions } from "../../../src/storage/netlify-blob/types";
-import { metafile, storageOptions } from "../../__helpers__/config";
 import { ERRORS, UploadError } from "../../../src/utils/errors";
+import { metafile, storageOptions } from "../../__helpers__/config";
 
 // Mock Netlify Blobs SDK
 vi.mock(import("@netlify/blobs"), () => {
@@ -88,7 +88,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             storage.onCreate = onCreateSpy;
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const file = await storage.create({
@@ -123,7 +123,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
         it("supports TTL string in create config", async () => {
             expect.assertions(1);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const file = await storage.create({

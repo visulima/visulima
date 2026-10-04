@@ -270,14 +270,10 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findMeta(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined && existing.bytesWritten >= 0) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -406,13 +402,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<GoogleDriveFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: GoogleDriveFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // direct id lookup
-            }
+            const file = await this.findMeta(id);
 
             // write() stores the object under the upload's name.
             const key = file?.name || id;
@@ -475,15 +465,14 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: GoogleDriveFile | undefined;
-            let fileId: string;
+            // Outside any fallback: an expired upload answers GONE instead of being served by its id.
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                fileId = stored.driveFileId ?? (await this.resolveFileId(stored.name ?? id, options));
-            } catch {
-                fileId = await this.resolveFileId(id, options);
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const fileId = stored?.driveFileId ?? (await this.resolveFileId(stored?.name ?? id, options));
 
             const [metaResponse, mediaResponse] = await Promise.all([
                 this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })),

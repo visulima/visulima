@@ -427,7 +427,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const url = this.objectUrl(await this.storedName(id));
+            const url = this.objectUrl(await this.readableName(id));
             const { data } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string; timeDeleted?: string; updated?: string }>(
                 { params: { alt: "json" }, url },
                 options,
