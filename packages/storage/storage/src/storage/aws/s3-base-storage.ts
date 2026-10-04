@@ -991,8 +991,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Describes the object stored under an ID, which is its key unless a custom `filename` is set:
-     * the metadata of a completed upload is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload
+     * completes. The ID is the object key unless a custom `filename` is set. Only a missing object
+     * answers `undefined`; any other failure throws.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
         const s3Api = this.getS3Api();
@@ -1001,8 +1002,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
         try {
             head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
-        } catch {
-            return undefined;
+        } catch (error) {
+            // Only a missing object counts as absent: the result guards against overwriting one (#919).
+            if ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404) {
+                return undefined;
+            }
+
+            throw error;
         }
 
         const size = head.ContentLength ?? 0;

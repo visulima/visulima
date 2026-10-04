@@ -208,13 +208,17 @@ describe(BunS3Storage, () => {
         });
 
         it("returns undefined when the object is missing", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             const client = makeClient();
 
-            client.__fileRef.stat.mockRejectedValueOnce(new Error("NoSuchKey"));
+            client.__fileRef.stat.mockRejectedValueOnce(Object.assign(new Error("missing"), { code: "NoSuchKey" }));
 
             await expect(makeStorage(client).getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            client.__fileRef.stat.mockRejectedValueOnce(Object.assign(new Error("denied"), { code: "AccessDenied" }));
+
+            await expect(makeStorage(client).getCompletedFile("file.mp4")).rejects.toThrow("denied");
         });
     });
 

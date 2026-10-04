@@ -119,7 +119,7 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
     });
 
     it("should answer 200 to the chunk that completes a multi-part upload (#907, #908)", async () => {
-        expect.assertions(4);
+        expect.assertions(6);
 
         const s3 = createS3Fake();
 
@@ -167,9 +167,19 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
 
         expect(stored?.byteLength).toBe(bytes.byteLength);
         expect(Buffer.from(stored as Uint8Array).equals(Buffer.from(bytes))).toBe(true);
+
+        // The metadata is gone with completion, and the object alone can't prove the route created
+        // it: HEAD answers 404 (#918), and a PUT under the id must not replace it (#919).
+        const head = await rest.fetch(new Request(location, { method: "HEAD" }));
+        const put = await rest.fetch(
+            new Request(location, { body: "evil", headers: { "content-length": "4", "content-type": "text/plain" }, method: "PUT" }),
+        );
+
+        expect([head.status, put.status]).toStrictEqual([404, 409]);
+        expect(s3.objects.get(id)?.body.byteLength).toBe(bytes.byteLength);
     });
     it("should not answer HEAD from objects without upload metadata (#918)", async () => {
-        expect.assertions(4);
+        expect.assertions(1);
 
         const s3 = createS3Fake();
 
@@ -185,8 +195,6 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
             const response = await rest.fetch(new Request(`https://app.local/upload/${path}`, { method: "HEAD" }));
 
             statuses.push(response.status);
-
-            expect(response.headers.get("content-length")).not.toBe("123");
         }
 
         expect(statuses).toStrictEqual([404, 404, 404]);
@@ -220,5 +228,32 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
 
         expect(created.status).toBe(201);
         expect(new TextDecoder().decode(s3.objects.get("fresh")?.body)).toBe("evil");
+    });
+
+    it("should refuse a PUT when the existence check fails (#919)", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3Fake();
+
+        // Every object HEAD is refused, as for credentials without read access.
+        vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+            const request = input instanceof Request ? input : new Request(input, init);
+
+            return request.method === "HEAD" && new URL(request.url).pathname !== "/uploads/" ? new Response(null, { status: 403 }) : s3.fetch(request);
+        });
+
+        s3.objects.set("payroll-2026", { body: new TextEncoder().encode("the real payroll") });
+
+        const rest = new RestFetch({ storage: createStorage() });
+        const response = await rest.fetch(
+            new Request("https://app.local/upload/payroll-2026.txt", {
+                body: "evil",
+                headers: { "content-length": "4", "content-type": "text/plain" },
+                method: "PUT",
+            }),
+        );
+
+        expect(response.status).toBeGreaterThanOrEqual(500);
+        expect(new TextDecoder().decode(s3.objects.get("payroll-2026")?.body)).toBe("the real payroll");
     });
 });

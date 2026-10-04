@@ -462,11 +462,11 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<OneDriveFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -474,8 +474,12 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
             try {
                 item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(id)).get())) as DriveItem;
-            } catch {
-                return undefined;
+            } catch (error) {
+                if (isNotFoundError(error)) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
             const size = item.size ?? 0;

@@ -296,11 +296,11 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored resource, since the metadata is deleted on completion.
+     * Describes the resource stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only the Admin API resource details are requested — the content is never downloaded. The resource is looked up by the upload's ID as its public ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored resource exists or its size is unknown.
+     * @returns The completed file, or `undefined` when no stored resource exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<CloudinaryFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -313,15 +313,15 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                         type: this.deliveryType,
                     }),
                 );
-            } catch {
-                return undefined;
+            } catch (error) {
+                if (((error as { http_code?: number }).http_code ?? (error as { error?: { http_code?: number } }).error?.http_code) === 404) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
-            if (typeof resource.bytes !== "number") {
-                return undefined;
-            }
-
-            const size = resource.bytes;
+            const size = typeof resource.bytes === "number" ? resource.bytes : 0;
             const file = new CloudinaryFile({
                 contentType: resource.resource_type && resource.format ? `${resource.resource_type}/${resource.format}` : "application/octet-stream",
                 id,

@@ -466,11 +466,11 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GCSFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -478,8 +478,12 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             try {
                 ({ data: object } = await this.makeRequest<typeof object>({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` }, options));
-            } catch {
-                return undefined;
+            } catch (error) {
+                if (((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
             const size = Number(object?.size ?? 0) || 0;

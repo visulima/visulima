@@ -261,26 +261,24 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored file, since the metadata is deleted on completion.
+     * Describes the file stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only a `HEAD` request is made — the content is never downloaded. The file is looked up by the upload's ID as its custom ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored file exists.
+     * @returns The completed file, or `undefined` when no stored file exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<UploadThingFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
-            let response: Response;
+            const url = await this.resolveFetchUrl(id, options);
+            const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
 
-            try {
-                const url = await this.resolveFetchUrl(id, options);
-
-                response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
-            } catch {
+            // Only a missing object counts as absent: the result guards against overwriting one (#919).
+            if (response.status === 404) {
                 return undefined;
             }
 
             if (!response.ok) {
-                return undefined;
+                throw new Error(`UploadThing: HEAD ${url} answered ${String(response.status)}`);
             }
 
             const size = Number(response.headers.get("content-length") ?? 0) || 0;

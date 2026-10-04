@@ -310,32 +310,40 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored record, since the metadata is deleted on completion.
+     * Describes the record stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only the record and a `HEAD` request on its file URL are made — the content is never downloaded. The record is looked up by the upload's ID as its key.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored record exists or its size cannot be determined.
+     * @returns The completed file, or `undefined` when no stored record exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<PocketBaseFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
-            let response: Response;
+            await this.ensureAuth();
+
+            let record: PocketBaseRecord;
 
             try {
-                await this.ensureAuth();
+                record = await this.findRecord(id, options);
+            } catch (error) {
+                if (isNotFound(error)) {
+                    return undefined;
+                }
 
-                const record = await this.findRecord(id, options);
-                const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
+                throw error;
+            }
 
-                response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
-            } catch {
+            const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
+            const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+
+            if (response.status === 404) {
                 return undefined;
             }
 
-            const size = Number(response.headers.get("content-length"));
-
-            if (!response.ok || !Number.isFinite(size) || response.headers.get("content-length") === null) {
-                return undefined;
+            if (!response.ok) {
+                throw new Error(`PocketBase: HEAD ${url} answered ${String(response.status)}`);
             }
+
+            const size = Number(response.headers.get("content-length") ?? 0) || 0;
 
             const file = new PocketBaseFile({
                 contentType: response.headers.get("content-type") ?? "application/octet-stream",

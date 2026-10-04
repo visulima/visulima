@@ -290,25 +290,28 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SupabaseFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
-            let info;
+            const { data: info, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
 
-            try {
-                const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
+            if (error) {
+                // Only a missing object counts as absent: the result guards against overwriting one (#919).
+                const { status, statusCode } = error as { status?: number; statusCode?: string };
 
-                if (error || !data) {
+                if (status === 404 || statusCode === "404") {
                     return undefined;
                 }
 
-                info = data;
-            } catch {
+                throw error;
+            }
+
+            if (!info) {
                 return undefined;
             }
 

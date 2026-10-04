@@ -225,7 +225,7 @@ describe(SupabaseStorage, () => {
         });
 
         it("returns undefined when the object is missing", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             const storage = new SupabaseStorage({
                 ...(storageOptions as SupabaseStorageOptions),
@@ -233,10 +233,14 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            bucketApi.info.mockResolvedValueOnce({ data: null, error: new Error("not found") });
+            bucketApi.info.mockResolvedValueOnce({ data: null, error: Object.assign(new Error("Object not found"), { status: 400, statusCode: "404" }) });
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(bucketApi.download).not.toHaveBeenCalled();
+
+            bucketApi.info.mockResolvedValueOnce({ data: null, error: Object.assign(new Error("Unauthorized"), { status: 403, statusCode: "403" }) });
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("Unauthorized");
         });
     });
 

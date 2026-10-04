@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 
-import { copy, del, head, list, put } from "@vercel/blob";
+import { BlobNotFoundError, copy, del, head, list, put } from "@vercel/blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VercelBlobStorageOptions } from "../../../src/storage/vercel-blob/types";
@@ -10,6 +10,7 @@ import { metafile, storageOptions } from "../../__helpers__/config";
 // Mock Vercel Blob SDK
 vi.mock(import("@vercel/blob"), () => {
     return {
+        BlobNotFoundError: class extends Error {},
         copy: vi.fn(),
         del: vi.fn(),
         head: vi.fn(),
@@ -71,12 +72,16 @@ describe(VercelBlobStorage, () => {
         });
 
         it("returns undefined when the blob is missing", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
-            vi.mocked(head).mockRejectedValueOnce(new Error("not found"));
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(globalThis.fetch).not.toHaveBeenCalled();
+
+            vi.mocked(head).mockRejectedValueOnce(new Error("rate limited"));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("rate limited");
         });
     });
 

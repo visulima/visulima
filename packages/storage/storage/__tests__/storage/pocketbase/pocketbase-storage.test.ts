@@ -227,15 +227,19 @@ describe(PocketBaseStorage, () => {
             await expect(withClient().getCompletedFile("missing.mp4")).resolves.toBeUndefined();
         });
 
-        it("returns undefined when the size cannot be determined", async () => {
-            expect.assertions(1);
+        it("throws when the record lookup or the file HEAD fails", async () => {
+            expect.assertions(2);
+
+            collectionApi.getFirstListItem.mockRejectedValueOnce(new MockClientResponseError(500));
+
+            await expect(withClient().getCompletedFile("key.mp4")).rejects.toBeInstanceOf(MockClientResponseError);
 
             collectionApi.getFirstListItem.mockResolvedValue({ file: "stored.mp4", id: "rec1" });
             mockClient.files.getURL.mockReturnValue("https://pb.example.com/file");
 
-            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 503 }));
 
-            await expect(withClient().getCompletedFile("key.mp4")).resolves.toBeUndefined();
+            await expect(withClient().getCompletedFile("key.mp4")).rejects.toThrow("503");
 
             fetchSpy.mockRestore();
         });

@@ -208,11 +208,15 @@ describe(CloudinaryStorage, () => {
         });
 
         it("returns undefined when the resource is missing", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
-            mockClient.api.resource.mockRejectedValueOnce(new Error("Resource not found"));
+            mockClient.api.resource.mockRejectedValueOnce({ error: { http_code: 404, message: "Resource not found" } });
 
             await expect(newStorage().getCompletedFile("missing")).resolves.toBeUndefined();
+
+            mockClient.api.resource.mockRejectedValueOnce({ error: { http_code: 420, message: "Rate Limit Exceeded" } });
+
+            await expect(newStorage().getCompletedFile("file")).rejects.toMatchObject({ error: { http_code: 420 } });
         });
     });
 

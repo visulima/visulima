@@ -257,16 +257,20 @@ describe(DropboxStorage, () => {
         });
 
         it("returns undefined when the path is missing or not a file", async () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const storage = new DropboxStorage({
                 ...(storageOptions as DropboxStorageOptions),
                 accessToken: "tok",
             });
 
-            mockClient.filesGetMetadata.mockRejectedValueOnce(new Error("path/not_found"));
+            mockClient.filesGetMetadata.mockRejectedValueOnce(new FakeDropboxResponseError(409, { error: { ".tag": "path", path: { ".tag": "not_found" } } }));
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            mockClient.filesGetMetadata.mockRejectedValueOnce(new FakeDropboxResponseError(500, {}));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toBeInstanceOf(FakeDropboxResponseError);
 
             mockClient.filesGetMetadata.mockResolvedValueOnce({ result: { ".tag": "folder", name: "dir" } });
 

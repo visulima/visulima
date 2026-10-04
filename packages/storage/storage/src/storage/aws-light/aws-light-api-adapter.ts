@@ -424,7 +424,8 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to head object: ${response.status} ${text}`);
+            // The status in the SDK's shape, so callers can tell a missing object from a failure.
+            throw Object.assign(new Error(`Failed to head object: ${response.status} ${text}`), { $metadata: { httpStatusCode: response.status } });
         }
 
         const contentLength = response.headers.get("Content-Length");

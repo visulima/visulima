@@ -685,7 +685,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * object (#919). Never expose the result to a caller: it answers for any object in the bucket (#918).
      * @param _id File ID of the upload.
      * @param _options Operation options.
-     * @returns The completed file, or `undefined` when no stored object answers for the ID.
+     * @returns The stored object, or `undefined` when none exists. Overrides throw on any other
+     * failure, so a failed lookup never reads as "absent".
      */
     // eslint-disable-next-line class-methods-use-this
     public async getCompletedFile(_id: string, _options?: OperationOptions): Promise<TFile | undefined> {

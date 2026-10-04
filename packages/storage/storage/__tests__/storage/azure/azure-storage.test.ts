@@ -125,12 +125,16 @@ describe(AzureStorage, () => {
         });
 
         it("returns undefined when the blob does not exist", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
-            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("BlobNotFound"));
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("BlobNotFound"), { statusCode: 404 }));
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(mockBlobClient.downloadToBuffer).not.toHaveBeenCalled();
+
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("AuthorizationFailure"), { statusCode: 403 }));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("AuthorizationFailure");
         });
     });
 

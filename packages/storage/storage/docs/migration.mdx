@@ -5,6 +5,16 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 
 # Migration Guide
 
+## Upgrading past 2.0.30: REST `HEAD` and `PUT` on finished uploads (security fix)
+
+Cloud providers (S3 and compatibles, Azure, GCS, Firebase, Bun S3, Bunny, Box, Dropbox, OneDrive, Google Drive, Supabase, PocketBase, UploadThing, Cloudinary, Vercel Blob) delete an upload's metadata once it completes. The object left behind can't be told apart from one the upload route never created, so the `Rest` handler now treats it as foreign:
+
+- **`HEAD` on a finished upload answers `404`**, as it did before 2.0.30. In 2.0.30 it answered from the stored object, which disclosed the existence, size, type and ETag of any object in the bucket, nested keys via `%2F` included ([#918](https://github.com/visulima/visulima/issues/918)). `@visulima/storage-client` doesn't need this `HEAD`: it finishes on the `PATCH` that completes the upload.
+- **`PUT` under an id that already has a stored object answers `409`** instead of replacing it. This covers objects written to the bucket by other means and finished uploads ([#919](https://github.com/visulima/visulima/issues/919)). A `PUT` to an upload still in progress, or on a provider that keeps metadata (disk, memory), still replaces the file.
+- **`PUT` fails with `5xx` when the provider can't say whether the object exists**, for example when the credentials may not read it. On S3, a missing object answers `403` instead of `404` without `s3:ListBucket`, so grant it to keep creating files with `PUT`.
+
+With a custom `filename`, the object key differs from the id and the `PUT` check can't see the object. Use server-generated ids (`POST`) there.
+
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
 ### Summary

@@ -394,7 +394,7 @@ describe(OneDriveStorage, () => {
         });
 
         it("returns undefined when the drive item does not exist", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             const storage = new OneDriveStorage({
                 ...(storageOptions as OneDriveStorageOptions),
@@ -404,13 +404,24 @@ describe(OneDriveStorage, () => {
             mockClient.api.mockImplementationOnce((url: string) => {
                 const call = makeApi(url);
 
-                call.get.mockRejectedValue(new Error("itemNotFound"));
+                call.get.mockRejectedValue(Object.assign(new Error("itemNotFound"), { statusCode: 404 }));
                 apiCalls.push(call);
 
                 return call;
             });
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            mockClient.api.mockImplementationOnce((url: string) => {
+                const call = makeApi(url);
+
+                call.get.mockRejectedValue(Object.assign(new Error("accessDenied"), { statusCode: 403 }));
+                apiCalls.push(call);
+
+                return call;
+            });
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("accessDenied");
         });
     });
 

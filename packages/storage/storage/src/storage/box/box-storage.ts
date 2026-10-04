@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import type { BoxClient } from "box-typescript-sdk-gen";
 import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAuth, BoxOAuth, CcgConfig, JwtConfig, OAuthConfig } from "box-typescript-sdk-gen";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
@@ -421,11 +421,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BoxFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -437,8 +437,12 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
                 fileId = await this.resolveFileId(id, options);
                 item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
-            } catch {
-                return undefined;
+            } catch (error) {
+                if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
             const size = item.size ?? 0;
@@ -789,7 +793,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
         const child = await this.findChildByName(folderId, leaf, options);
 
         if (!child || child.type !== "file") {
-            throw new Error(`Box: file "${key}" not found`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Box: file "${key}" not found`);
         }
 
         this.fileIdCache.set(key, child.id);

@@ -478,11 +478,11 @@ class AzureStorage extends BaseStorage {
     }
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<AzureFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -491,8 +491,12 @@ class AzureStorage extends BaseStorage {
 
             try {
                 properties = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
-            } catch {
-                return undefined;
+            } catch (error) {
+                if ((error as { statusCode?: number }).statusCode === 404) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
             const size = properties.contentLength ?? 0;

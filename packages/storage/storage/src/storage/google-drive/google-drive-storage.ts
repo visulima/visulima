@@ -5,7 +5,7 @@ import type { drive_v3 } from "@googleapis/drive";
 import { drive } from "@googleapis/drive";
 import { GoogleAuth, JWT, OAuth2Client } from "google-auth-library";
 
-import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
@@ -431,11 +431,11 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     }
 
     /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
+     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
      */
     public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GoogleDriveFile | undefined> {
         return this.instrumentOperation("getCompletedFile", async () => {
@@ -445,8 +445,12 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                 const fileId = await this.resolveFileId(id, options);
 
                 ({ data } = await this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })));
-            } catch {
-                return undefined;
+            } catch (error) {
+                if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+                    return undefined;
+                }
+
+                throw error;
             }
 
             const props = (data.appProperties ?? {}) as Record<string, string>;
@@ -720,7 +724,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         const files = response.data.files ?? [];
 
         if (files.length === 0) {
-            throw new Error(`Google Drive: not found: ${key}`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Google Drive: not found: ${key}`);
         }
 
         if (files.length > 1) {
