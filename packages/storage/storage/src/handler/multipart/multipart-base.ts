@@ -2,6 +2,7 @@ import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ResponseFile } from "../types";
+import { withoutInternalKeys } from "../utils/request-parser";
 
 /**
  * Base class containing shared Multipart business logic.
@@ -48,7 +49,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
                     data = { [part.name]: part.text };
                 }
 
-                Object.assign(config.metadata, data);
+                Object.assign(config.metadata, withoutInternalKeys(data));
             }
         }
 

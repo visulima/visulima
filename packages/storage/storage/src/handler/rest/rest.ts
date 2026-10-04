@@ -58,7 +58,7 @@ class Rest<
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post", "put"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
 
     private readonly restBase: RestBase<TFile>;
 
@@ -140,7 +140,7 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
         const config = extractFileInit(request, contentLength, contentType);
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
+        const requestUrl = this.locationBaseOf(request);
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
@@ -187,10 +187,10 @@ class Rest<
             size: contentLength,
         };
 
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
+        const requestUrl = this.locationBaseOf(request);
         const bodyStream = getRequestStream(request);
 
-        return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
+        return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength);
     }
 
     /**
@@ -265,7 +265,7 @@ class Rest<
         }
 
         const chunkChecksum = getHeader(request, "x-chunk-checksum", true);
-        const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
+        const requestUrl = this.locationBaseOf(request);
         const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);

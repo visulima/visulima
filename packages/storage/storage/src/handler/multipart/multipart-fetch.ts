@@ -33,7 +33,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "options", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "options", "post"];
 
     private readonly multipartBase: MultipartBase<TFile>;
 
@@ -159,7 +159,8 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns Promise resolving to ResponseFile with deletion result
      */
     public async delete(request: Request): Promise<ResponseFile<TFile>> {
-        const id = getIdFromRequestUrl(request.url);
+        // The Location the POST answered carries the extension, as on Node.
+        const id = getIdFromRequestUrl(request.url, { stripExtension: true });
 
         if (!id) {
             throw createHttpError(404, "File not found");

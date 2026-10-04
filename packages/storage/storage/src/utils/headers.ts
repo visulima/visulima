@@ -120,21 +120,30 @@ export const HeaderUtilities = {
     },
 
     /**
-     * Create Content-Disposition header for file downloads with optional filename.
-     * @param options
-     * @param options.filename Filename for the download
-     * @param options.filenameSplat Alternative filename format
-     * @param options.type Disposition type ('inline' or 'attachment')
-     * @returns Content-Disposition header value string
+     * Create a Content-Disposition header value. A name that isn't plain printable ASCII gets an ASCII
+     * fallback in `filename` and its exact form in `filename*` (RFC 6266 / RFC 8187), so the header
+     * never carries raw non-Latin-1 text, quotes or line breaks.
+     * @param options.filename File name to suggest
+     * @param options.type `inline` or `attachment`
+     * @returns Content-Disposition header value
      */
-    createContentDisposition(options: { filename?: string; filenameSplat?: string; type: "inline" | "attachment" }): string {
-        const disposition = new ContentDisposition({
-            type: options.type,
-            ...(options.filename && { filename: options.filename }),
-            ...(options.filenameSplat && { filenameSplat: options.filenameSplat }),
-        });
+    createContentDisposition(options: { filename?: string; type: "inline" | "attachment" }): string {
+        const { filename, type } = options;
 
-        return disposition.toString();
+        if (!filename) {
+            return type;
+        }
+
+        const fallback = filename.replaceAll(/[^\u0020-\u007E]|["\\]/gu, "_");
+        const header = `${type}; filename="${fallback}"`;
+
+        if (fallback === filename) {
+            return header;
+        }
+
+        const encoded = encodeURIComponent(filename).replaceAll(/['()*]/gu, (character) => `%${(character.codePointAt(0) ?? 0).toString(16).toUpperCase()}`);
+
+        return `${header}; filename*=UTF-8''${encoded}`;
     },
 
     /**

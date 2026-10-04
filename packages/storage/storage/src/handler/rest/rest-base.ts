@@ -154,6 +154,11 @@ abstract class RestBase<TFile extends UploadFile> {
         bodyStream: unknown,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
+        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400.
+        if (isChunkedUpload && config.metadata._totalSize === undefined) {
+            throw createHttpError(400, "X-Total-Size is required for chunked uploads");
+        }
+
         // Validate total size for chunked uploads
         if (isChunkedUpload && config.size !== undefined) {
             const size = typeof config.size === "number" ? config.size : Number.parseInt(String(config.size), 10);
@@ -195,78 +200,57 @@ abstract class RestBase<TFile extends UploadFile> {
     }
 
     /**
-     * Handle file update or creation (PUT).
+     * Handle file replacement or creation (PUT).
      * @param id File ID from URL
-     * @param config File initialization config (for new files)
+     * @param config File initialization config (metadata, name, type and size from the request)
      * @param requestUrl Request URL for Location header
      * @param bodyStream Request body stream
      * @param contentLength Content length
-     * @param metadata Optional metadata to merge (for updates)
-     * @returns Promise resolving to ResponseFile with upload result
+     * @returns Promise resolving to ResponseFile with upload result (200 replaced, 201 created)
      */
-    public async handlePut(
-        id: string,
-        config: FileInit,
-        requestUrl: string,
-        bodyStream: unknown,
-        contentLength: number,
-        metadata?: Record<string, unknown>,
-    ): Promise<ResponseFile<TFile>> {
-        // Check if file exists
-        let file: TFile;
-        let isUpdate = false;
+    public async handlePut(id: string, config: FileInit, requestUrl: string, bodyStream: unknown, contentLength: number): Promise<ResponseFile<TFile>> {
+        let exists = true;
 
         try {
             await this.storage.getMeta(id);
-
-            // File exists, this is an update
-            isUpdate = true;
-
-            // Update file metadata if needed
-            if (metadata) {
-                await this.storage.update({ id }, { metadata });
-            }
-
-            // Overwrite file content
-            file = await this.storage.write({
-                body: bodyStream,
-                contentLength,
-                id,
-                start: 0,
-            });
         } catch (error: unknown) {
-            // File doesn't exist, create new one
             const errorWithCode = error as { code?: string; UploadErrorCode?: string };
 
-            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
-                if (!CLIENT_FILE_ID_PATTERN.test(id)) {
-                    throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
-                }
-
-                // No metadata means no upload under this id, so an object already stored there was
-                // written by other means, or is a finished upload whose metadata the provider
-                // dropped. Creating would replace it (#919).
-                if (await this.storage.getCompletedFile?.(id)) {
-                    throw createHttpError(409, "A file with this ID already exists");
-                }
-
-                // Create new file under the ID from the URL (providers that assign their own IDs may still override it)
-                const newFile = await this.storage.create({ ...config, id });
-
-                file = await this.storage.write({
-                    body: bodyStream,
-                    contentLength,
-                    id: newFile.id,
-                    start: 0,
-                });
-            } else {
+            if (errorWithCode.UploadErrorCode !== ERRORS.FILE_NOT_FOUND && errorWithCode.code !== "ENOENT") {
                 throw error;
+            }
+
+            exists = false;
+        }
+
+        if (exists) {
+            // Replace the upload: writing at offset 0 over it is a no-op once it completed, and leaves
+            // trailing bytes behind on one still in progress.
+            await this.storage.delete({ id });
+        } else {
+            if (!CLIENT_FILE_ID_PATTERN.test(id)) {
+                throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
+            }
+
+            // No metadata means no upload under this id, so an object already stored there was
+            // written by other means. Creating would replace it (#919).
+            if (await this.storage.getCompletedFile?.(id)) {
+                throw createHttpError(409, "A file with this ID already exists");
             }
         }
 
+        // Create the file under the ID from the URL (providers that assign their own IDs may still override it)
+        const created = await this.storage.create({ ...config, id });
+        const file = await this.storage.write({
+            body: bodyStream,
+            contentLength,
+            id: created.id,
+            start: 0,
+        });
+
         const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
 
-        return buildResponseFile(file, buildFileHeaders(file, locationUrl), isUpdate ? 200 : 201);
+        return buildResponseFile(file, buildFileHeaders(file, locationUrl), exists ? 200 : 201);
     }
 
     /**
@@ -557,7 +541,8 @@ abstract class RestBase<TFile extends UploadFile> {
             headers:
                 result.failedCount > 0
                     ? {
-                          "X-Delete-Errors": JSON.stringify(result.failed),
+                          // Header values must be Latin-1: escape the rest, the value stays valid JSON.
+                          "X-Delete-Errors": JSON.stringify(result.failed).replaceAll(/[^\u0020-\u007E]/g, (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`),
                           "X-Delete-Failed": String(result.failedCount),
                           "X-Delete-Successful": String(result.successfulCount),
                       }

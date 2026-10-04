@@ -78,7 +78,7 @@ describe("baseHandler", () => {
         uploader = new TestUploader({ storage: new DiskStorage({ ...storageOptions, directory, logger }) });
 
         expect(logger.debug).toHaveBeenCalledTimes(2);
-        expect(logger.debug).toHaveBeenCalledWith("Registered handler: %s", "GET, OPTIONS, DOWNLOAD");
+        expect(logger.debug).toHaveBeenCalledWith("Registered handler: %s", "GET, OPTIONS");
     });
 
     it("baseHandler.errorResponses setter updates internalErrorResponses correctly", () => {
@@ -413,123 +413,6 @@ describe("baseHandler", () => {
                 expect.assertions(1);
 
                 expect(uploader.parseRangeHeader(undefined, 1000)).toBeUndefined();
-            });
-        });
-
-        describe("download method", () => {
-            it("should handle download requests for files", async () => {
-                expect.assertions(2);
-
-                // Mock storage methods
-                const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
-                    bytesWritten: 100,
-                    contentType: "application/octet-stream",
-                    createdAt: new Date(),
-                    id: "test-file-aaaa",
-                    metadata: {},
-                    name: "test-file.txt",
-                    originalName: "test-file.txt",
-                    size: 100,
-                    status: "completed" as const,
-                });
-
-                const getStreamSpy = vi.spyOn(storage, "getStream").mockResolvedValue({
-                    headers: {
-                        "Content-Length": "100",
-                        "Content-Type": "application/octet-stream",
-                    },
-                    size: 100,
-                    stream: Readable.from(Buffer.from("test content")),
-                });
-
-                const request = createRequest({
-                    headers: { range: "bytes=0-49" },
-                    method: "GET",
-                    url: "/files/test-file-aaaa/download",
-                });
-                const response = createResponse();
-
-                // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation(() => response);
-
-                await uploader.download(request, response);
-
-                expect(getMetaSpy).toHaveBeenCalledWith("test-file-aaaa");
-                expect(getStreamSpy).toHaveBeenCalledWith({ id: "test-file-aaaa" });
-                // The response is now handled directly by sendStream
-                // Status code and headers are set by sendStream method
-
-                getMetaSpy.mockRestore();
-                getStreamSpy.mockRestore();
-            });
-
-            it("should return 404 for non-existent files", async () => {
-                expect.assertions(1);
-
-                const error = new Error("Not found") as Error & { UploadErrorCode?: string };
-
-                error.UploadErrorCode = "FileNotFound";
-
-                const getMetaSpy = vi.spyOn(storage, "getMeta").mockRejectedValue(error);
-
-                const request = createRequest({
-                    method: "GET",
-                    url: "/files/1234-5678-9012/download",
-                });
-                const response = createResponse();
-
-                // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation(() => response);
-
-                await uploader.download(request, response);
-
-                expect(response.statusCode).toBe(404);
-
-                getMetaSpy.mockRestore();
-            });
-
-            it("should return 501 when streaming is not supported", async () => {
-                expect.assertions(1);
-
-                // Mock storage without getStream method
-                const originalGetStream = storage.getStream;
-
-                (storage as unknown as { getStream?: typeof originalGetStream }).getStream = undefined;
-
-                const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
-                    bytesWritten: 100,
-                    contentType: "application/octet-stream",
-                    createdAt: new Date(),
-                    id: "test-file-aaaa",
-                    metadata: {},
-                    name: "test-file.txt",
-                    originalName: "test-file.txt",
-                    size: 100,
-                    status: "completed" as const,
-                });
-
-                const request = createRequest({
-                    method: "GET",
-                    url: "/files/test-file-aaaa/download",
-                });
-
-                const response = createResponse();
-
-                // Mock the listeners method to avoid undefined error
-                vi.spyOn(response, "listeners").mockReturnValue([]);
-                vi.spyOn(response, "on").mockImplementation(() => response);
-
-                try {
-                    await uploader.download(request, response);
-
-                    expect(response.statusCode).toBe(501);
-                } finally {
-                    // Restore getStream even if the test throws so later specs can spy on it.
-                    (storage as unknown as { getStream?: typeof originalGetStream }).getStream = originalGetStream;
-                    getMetaSpy.mockRestore();
-                }
             });
         });
 

@@ -210,6 +210,14 @@ export const handlePartialUpload = <TFile extends UploadFile, NodeResponse exten
         }
     }
 
+    // A list (batch delete) answers with its items, as on fetch runtimes.
+    const { data } = file as unknown as { data?: unknown };
+
+    if (Array.isArray(data) && statusCode !== 204) {
+        body = JSON.stringify(data);
+        responseHeaders["Content-Type"] ??= "application/json; charset=utf-8";
+    }
+
     // For HEAD requests, don't send body
     if (request.method === "HEAD") {
         body = "";

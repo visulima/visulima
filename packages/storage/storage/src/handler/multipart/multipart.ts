@@ -35,7 +35,7 @@ class Multipart<
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "options", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "options", "post"];
 
     private readonly multipartBase: MultipartBase<TFile>;
 
@@ -129,7 +129,7 @@ class Multipart<
                 throw createHttpError(400, "No file found in multipart request");
             }
 
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
+            const requestUrl = this.locationBaseOf(request);
 
             return this.multipartBase.handlePost(filePart, parts, requestUrl);
         } catch (error) {

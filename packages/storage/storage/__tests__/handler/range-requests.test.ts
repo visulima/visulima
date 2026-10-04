@@ -6,7 +6,9 @@ import { createRequest, createResponse } from "node-mocks-http";
 import { temporaryDirectory } from "tempy";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import RestFetch from "../../src/handler/rest/rest-fetch";
 import DiskStorage from "../../src/storage/local/disk-storage";
+import MemoryStorage from "../../src/storage/memory/memory-storage";
 import { storageOptions } from "../__helpers__/config";
 import TestUploader from "../__helpers__/handler/test-uploader";
 
@@ -314,43 +316,26 @@ describe("range request functionality", () => {
         });
     });
 
-    describe("download method with ranges", () => {
-        it("should handle range requests in download method", async () => {
-            expect.assertions(3);
+    describe("/:id/download", () => {
+        it("should serve a ranged download as an attachment with an RFC 8187 file name", async () => {
+            expect.assertions(4);
 
-            const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
-                bytesWritten: 1000,
-                contentType: "application/octet-stream",
-                createdAt: new Date(),
-                id: "download-range-test",
-                metadata: {},
-                name: "download-range-test.dat",
-                originalName: "download-range-test.dat",
-                size: 1000,
-                status: "completed" as const,
-            });
+            const memory = new MemoryStorage();
+            const rest = new RestFetch({ storage: memory });
+            const created = await rest.fetch(
+                new Request("http://localhost/files", {
+                    body: "x".repeat(1000),
+                    headers: { "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent("bericht ü.txt")}`, "content-length": "1000", "content-type": "text/plain" },
+                    method: "POST",
+                }),
+            );
+            const { id } = (await created.json()) as { id: string };
+            const response = await rest.fetch(new Request(`http://localhost/files/${id}/download`, { headers: { range: "bytes=0-99" } }));
 
-            const getStreamSpy = vi.spyOn(storage, "getStream").mockResolvedValue({
-                headers: { "content-type": "application/octet-stream" },
-                size: 1000,
-                stream: Readable.from(Buffer.from("x".repeat(1000))),
-            });
-
-            const request = createRequest({
-                headers: { range: "bytes=0-99" }, // First 100 bytes
-                method: "GET",
-                url: "/files/download-range-test/download",
-            });
-            const response = createResponse();
-
-            await uploader.download(request, response);
-
-            expect(response.statusCode).toBe(206); // Partial content for range requests
-            expect(response.getHeader("content-disposition")).toBe("attachment; filename=download-range-test.dat");
-            expect(response.getHeader("accept-ranges")).toBe("bytes");
-
-            getMetaSpy.mockRestore();
-            getStreamSpy.mockRestore();
+            expect(response.status).toBe(206);
+            expect(response.headers.get("content-range")).toBe("bytes 0-99/1000");
+            expect(response.headers.get("content-disposition")).toBe(`attachment; filename="bericht _.txt"; filename*=UTF-8''bericht%20%C3%BC.txt`);
+            await expect(response.text()).resolves.toHaveLength(100);
         });
     });
 });

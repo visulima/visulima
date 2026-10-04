@@ -74,7 +74,9 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         try {
             const file = await handler.call(this, request);
 
-            return this.handleFetchResponse(request, file);
+            // Awaited, so a failure while building the response (an onComplete hook, an invalid header
+            // value) still becomes an error response instead of a rejected fetch().
+            return await this.handleFetchResponse(request, file);
         } catch (error: unknown) {
             const errorObject = error instanceof Error ? error : new Error(String(error));
             const uError = pick(errorObject, ["name", ...(Object.getOwnPropertyNames(errorObject) as (keyof Error)[])]) as UploadError;
@@ -262,6 +264,15 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             convertedHeaders.location = String(headers.Location);
         } else if (headers.location && !convertedHeaders.location && !convertedHeaders.Location) {
             convertedHeaders.location = String(headers.location);
+        }
+
+        // A list (batch delete) answers with its items, as on Node.
+        if ("data" in file && Array.isArray(file.data) && statusCode !== 204) {
+            return this.createResponse({
+                body: JSON.stringify(file.data),
+                headers: { ...convertedHeaders, "Content-Type": "application/json; charset=utf-8" },
+                statusCode,
+            });
         }
 
         // For successful responses, include the file data in the body

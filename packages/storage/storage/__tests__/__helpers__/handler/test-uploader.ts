@@ -22,7 +22,6 @@ class TestUploader extends BaseHandlerNode<File> {
     protected compose(): void {
         this.registeredHandlers.set("GET", this.get.bind(this));
         this.registeredHandlers.set("OPTIONS", this.options.bind(this));
-        this.registeredHandlers.set("DOWNLOAD", this.download.bind(this));
 
         this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
     }

@@ -45,7 +45,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post", "put"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post", "put"];
 
     private readonly restBase: RestBase<TFile>;
 
@@ -180,7 +180,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         // Convert Web API ReadableStream to Node.js Readable stream
         const bodyStream = getRequestStream(request);
 
-        return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength, metadata);
+        return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength);
     }
 
     /**

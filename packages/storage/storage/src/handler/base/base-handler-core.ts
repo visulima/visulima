@@ -24,6 +24,8 @@ import { parseIntegerHeader } from "../utils/request-parser";
 export interface FileTarget {
     /** Extension given in the URL (`id.ext`), used to refine image content types. */
     ext?: string;
+    /** Whether `/:id/download` was requested (served as an attachment). */
+    isDownloadRequest: boolean;
     /** Whether `/:id/metadata` was requested. */
     isMetadataRequest: boolean;
     /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
@@ -59,7 +61,14 @@ export const parseFilePath = (path: string): FileTarget | undefined => {
 
     assertSafeUrlId(uuid);
 
-    return { ext: extensionMatch?.[2], isMetadataRequest: hasActionSegment && lastSegment === "metadata", isUuidLike: uuidRegex.test(uuid), uuid };
+    return {
+        ext: extensionMatch?.[2],
+        isDownloadRequest: hasActionSegment && lastSegment === "download",
+        isMetadataRequest: hasActionSegment && lastSegment === "metadata",
+        // Generated ids: UUID-like, or a 21-character nanoid.
+        isUuidLike: uuidRegex.test(uuid) || /^[\w-]{21}$/u.test(uuid),
+        uuid,
+    };
 };
 
 /**
@@ -433,7 +442,16 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         try {
-            return (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+            const response = (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+
+            if (target.isDownloadRequest) {
+                response.headers = {
+                    ...response.headers,
+                    "Content-Disposition": HeaderUtilities.createContentDisposition({ filename: fileMeta.originalName || target.uuid, type: "attachment" }),
+                };
+            }
+
+            return response;
         } catch (error: unknown) {
             if (isNotFound(error)) {
                 throw createHttpError(404, "File not found");

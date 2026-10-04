@@ -7,14 +7,14 @@ import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
-import { getRealPath, setHeaders } from "../../utils/http";
+import { getBaseUrl, getRealPath, setHeaders } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
 import type { ResponseBody, UploadResponse } from "../../utils/types";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
 import { applyRange, pipeWithBackpressure } from "../utils/stream-utils";
 import { handleCompletedUpload, handleGetRequest, handleHeadOptionsRequest, handlePartialUpload, handleUploadError } from "../utils/upload-handlers";
-import BaseHandlerCore, { parseFilePath, resolveContentType } from "./base-handler-core";
+import BaseHandlerCore from "./base-handler-core";
 
 const CONTENT_TYPE = "Content-Type";
 
@@ -375,66 +375,28 @@ abstract class BaseHandlerNode<
     }
 
     /**
-     * Streams download of a file with resumable support using HTTP range requests.
-     * @param request Node.js IncomingMessage with optional originalUrl and range header.
-     * @param response Node.js ServerResponse to stream the file to.
-     * @throws {HttpError} When file is not found or streaming is not supported.
+     * The request URL a Location header is built from. A Node request URL is only a path, so the
+     * origin comes from the Host / Forwarded headers unless relative locations are configured.
+     * @param request Node.js request
+     * @returns The request URL, absolute when the origin is known
      */
-    public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
-        const target = parseFilePath(getRealPath(request));
+    protected locationBaseOf(request: NodeRequest & { originalUrl?: string }): string {
+        const path = request.originalUrl || request.url || "";
 
-        if (!target || target.isMetadataRequest) {
-            throw createHttpError(404, "File not found");
+        if (this.storage.config.useRelativeLocation) {
+            return path;
         }
 
-        const { ext, uuid } = target;
+        const base = getBaseUrl(request);
 
-        try {
-            // Get file metadata first
-            const fileMeta = await this.storage.getMeta(uuid);
-
-            // Check if streaming is available
-            if (!this.storage.getStream) {
-                await this.sendError(response, createHttpError(501, "Streaming download not supported"));
-
-                return;
-            }
-
-            // Use streaming for better performance
-            const streamResult = await this.storage.getStream({ id: uuid });
-            const contentType = resolveContentType(streamResult.headers?.["Content-Type"] || fileMeta.contentType, ext);
-
-            // Parse range header for resumable downloads
-            const range = this.parseRangeHeader(request.headers.range, streamResult.size || 0);
-
-            // Stream the file directly to response
-            const headers = {
-                ...streamResult.headers,
-                "Accept-Ranges": "bytes",
-                "Content-Disposition": HeaderUtilities.createContentDisposition({
-                    filename: fileMeta.originalName || uuid,
-                    type: "attachment",
-                }),
-                "Content-Type": contentType,
-            };
-
-            this.sendStream(response, streamResult.stream, {
-                headers,
-                range: range || undefined,
-                size: streamResult.size,
-                statusCode: range ? 206 : 200,
-            });
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
-                await this.sendError(response, createHttpError(404, "File not found"));
-
-                return;
-            }
-
-            await this.sendError(response, error as Error);
+        if (!base.startsWith("//")) {
+            return `${base}${path}`;
         }
+
+        // No forwarded protocol: the connection's own.
+        const protocol = (request.socket as { encrypted?: boolean } | undefined)?.encrypted ? "https:" : "http:";
+
+        return `${protocol}${base}${path}`;
     }
 
     /**
