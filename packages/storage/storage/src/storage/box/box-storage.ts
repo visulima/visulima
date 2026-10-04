@@ -420,6 +420,41 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BoxFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let fileId: string;
+            let item: BoxFileLike;
+
+            try {
+                await this.authHandle.ensureReady();
+
+                fileId = await this.resolveFileId(id, options);
+                item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
+            } catch {
+                return undefined;
+            }
+
+            const size = item.size ?? 0;
+            const file = new BoxFile({ contentType: "application/octet-stream", metadata: {}, originalName: item.name ?? id, size });
+
+            return Object.assign(file, {
+                boxFileId: fileId,
+                bytesWritten: size,
+                ETag: item.etag ?? undefined,
+                id,
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BoxFile | undefined;

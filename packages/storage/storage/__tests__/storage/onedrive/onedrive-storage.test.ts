@@ -359,6 +359,61 @@ describe(OneDriveStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from the drive item without requesting its content", async () => {
+            expect.assertions(5);
+
+            const storage = new OneDriveStorage({
+                ...(storageOptions as OneDriveStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.api.mockImplementationOnce((url: string) => {
+                const call = makeApi(url);
+
+                call.get.mockResolvedValue({ eTag: "etag-1", file: { mimeType: "video/mp4" }, id: "ITEM1", name: "video.mp4", size: 321 });
+                apiCalls.push(call);
+
+                return call;
+            });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                driveItemId: "ITEM1",
+                ETag: "etag-1",
+                id: "video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(file?.contentType).toBe("video/mp4");
+            expect(apiCalls).toHaveLength(1);
+            expect(apiCalls[0]?.url).not.toMatch(/\/content$/);
+            expect(apiCalls[0]?.responseType).not.toHaveBeenCalled();
+        });
+
+        it("returns undefined when the drive item does not exist", async () => {
+            expect.assertions(1);
+
+            const storage = new OneDriveStorage({
+                ...(storageOptions as OneDriveStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.api.mockImplementationOnce((url: string) => {
+                const call = makeApi(url);
+
+                call.get.mockRejectedValue(new Error("itemNotFound"));
+                apiCalls.push(call);
+
+                return call;
+            });
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+        });
+    });
+
     describe(".move()", () => {
         it("patches with parentReference.path prefixed by /drive/root:", async () => {
             expect.assertions(2);
