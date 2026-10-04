@@ -128,6 +128,9 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 directory: expiredDirectory,
                 // Uploads are expired by moving the clock past maxAge, never by waiting for it.
                 expiration: { maxAge: "1h" },
+                // One file per upload: under the shared helper name, removing an expired upload (fire
+                // and forget) raced the next test's create of the same path.
+                filename: (file) => file.id,
             });
 
             // Wait for storage to be ready
