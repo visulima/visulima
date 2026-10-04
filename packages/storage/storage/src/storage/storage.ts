@@ -12,6 +12,7 @@ import { isFreshChunkedRecord, mergeChunkedProgress } from "../utils/chunked-upl
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
+import { toHttpDate } from "../utils/headers";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../utils/retry";
@@ -768,10 +769,21 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             if (maxAgeMs) {
                 const before = Date.now() - maxAgeMs;
+                const rollingMaxAgeMs = this.expiration?.rolling ? toMilliseconds(this.expiration.maxAge) : undefined;
+                const time = (value: unknown): number => Number(new Date(value as number | string));
+                // Rolling expiration prolongs an upload on every save (see updateTimestamps), not only on
+                // writes: the last save is its expiredAt minus maxAge.
+                const lastActive = (item: TFile): number => {
+                    if (!this.expiration?.rolling) {
+                        return time(item.createdAt);
+                    }
+
+                    const lastSave = item.expiredAt && rollingMaxAgeMs ? time(item.expiredAt) - rollingMaxAgeMs : 0;
+
+                    return Math.max(time(item.modifiedAt || item.createdAt), lastSave);
+                };
                 const list = await this.listUploads();
-                const expired = list.filter(
-                    (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
-                );
+                const expired = list.filter((item) => lastActive(item) < before);
 
                 for await (const { id, ...rest } of expired) {
                     try {
@@ -841,7 +853,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                     "Content-Length": String(file.size),
                     "Content-Type": file.contentType,
                     ...(file.ETag && { ETag: file.ETag }),
-                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
+                    ...(file.modifiedAt && { "Last-Modified": toHttpDate(file.modifiedAt) }),
                 },
                 size: typeof file.size === "number" ? file.size : undefined,
                 stream,
