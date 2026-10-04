@@ -3,11 +3,11 @@ import { open, rename, stat, unlink, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { setTimeout as sleep } from "node:timers/promises";
 
-import { ensureDir, readFile, remove, writeFile } from "@visulima/fs";
+import { ensureDir, readFile, remove, walk, writeFile } from "@visulima/fs";
 import { join, normalize } from "@visulima/path";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
-import MetaStorage, { setMetaVersion } from "../meta-storage";
+import MetaStorage, { isMetaNotFound, setMetaVersion } from "../meta-storage";
 import type { LocalMetaStorageOptions } from "../meta-storage-options";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
@@ -164,13 +164,34 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
                 throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
-            // Re-throw UploadError instances as-is
-            if (error instanceof Error && "UploadErrorCode" in error) {
-                throw error;
-            }
-
             throw error;
         }
+    }
+
+    public override async list(): Promise<T[]> {
+        await this.accessCheck();
+
+        // walk() yields native separators (backslashes on Windows); the ids use forward slashes.
+        const toPosix = (value: string): string => value.replaceAll("\\", "/");
+        const base = `${toPosix(this.directory).replace(/\/$/, "")}/${this.prefix}`;
+        const files: T[] = [];
+
+        for await (const { path } of walk(this.directory, { followSymlinks: false, includeDirs: false, includeFiles: true })) {
+            const posixPath = toPosix(path);
+
+            if (posixPath.startsWith(base) && posixPath.endsWith(this.suffix)) {
+                try {
+                    files.push(await this.get(posixPath.slice(base.length, -this.suffix.length)));
+                } catch (error) {
+                    // Deleted since the walk saw it.
+                    if (!isMetaNotFound(error)) {
+                        throw error;
+                    }
+                }
+            }
+        }
+
+        return files;
     }
 
     public override async delete(id: string): Promise<void> {

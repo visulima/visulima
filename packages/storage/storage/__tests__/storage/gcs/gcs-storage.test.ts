@@ -165,7 +165,7 @@ describe(GCStorage, async () => {
         it("should reject update operation when file is not found", async () => {
             expect.assertions(1);
 
-            mockAuthRequest.mockResolvedValue({});
+            mockAuthRequest.mockRejectedValue(Object.assign(new Error("Not Found"), { response: { status: 404 } }));
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import GCSMetaStorage from "../../../src/storage/gcs/gcs-meta-storage";
 import type { GCSMetaStorageOptions } from "../../../src/storage/gcs/types";
 import { getMetaVersion } from "../../../src/storage/meta-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { metafile } from "../../__helpers__/config";
 
 const mockAuthRequest = vi.fn();
@@ -123,6 +124,18 @@ describe(GCSMetaStorage, async () => {
             const file = await metaStorage.get(metafile.id);
 
             expect(file.metadata).toEqual({ foo: "bar" });
+        });
+
+        it("should report a missing object as not found and rethrow other failures", async () => {
+            expect.assertions(2);
+
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Not Found"), { response: { status: 404 } }));
+
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Backend Error"), { response: { status: 503 } }));
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Backend Error");
         });
     });
 

@@ -124,7 +124,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
                 directory: expiredDirectory,
                 expiration: {
                     maxAge: "50ms",
-                    purgeInterval: "100ms",
+                    // Long enough that the auto purge doesn't delete an expired upload before the 410 checks.
+                    purgeInterval: "1h",
                 },
             });
 

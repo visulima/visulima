@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import AwsLightMetaStorage from "../../../src/storage/aws-light/aws-light-meta-storage";
 import type { AwsLightMetaStorageOptions } from "../../../src/storage/aws-light/types";
 import { getMetaVersion } from "../../../src/storage/meta-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { metafile } from "../../__helpers__/config";
 
 const { checkBucketAccess } = vi.hoisted(() => {
@@ -159,9 +160,24 @@ describe(AwsLightMetaStorage, () => {
                 Metadata: { metadata },
             });
 
-            await expect(metaStorage.get(metafile.id)).rejects.toThrow(`Metafile ${metafile.id} not found`);
+            await expect(metaStorage.get(metafile.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
 
-            expect(adapterInstance?.deleteObject).toHaveBeenCalledTimes(1);
+            // The metafile itself, not `<id>.META.META`
+            expect(adapterInstance?.deleteObject).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ Key: `${metafile.id}.META` }));
+        });
+
+        it("should report a missing metafile as not found and rethrow other failures", async () => {
+            expect.assertions(2);
+
+            const adapterInstance = (metaStorage as { adapter?: { headObject?: ReturnType<typeof vi.fn> } }).adapter;
+
+            adapterInstance?.headObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 404"), { $metadata: { httpStatusCode: 404 } }));
+
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+
+            adapterInstance?.headObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 500"), { $metadata: { httpStatusCode: 500 } }));
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Failed to head object: 500");
         });
     });
 

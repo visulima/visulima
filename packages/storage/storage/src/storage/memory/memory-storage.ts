@@ -3,6 +3,7 @@ import { Readable } from "node:stream";
 import etag from "etag";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { isMetaNotFound } from "../meta-storage";
 import type { MetaStorageOptions } from "../meta-storage-options";
 import { BaseStorage } from "../storage";
 import type { BaseStorageOptions, OperationOptions } from "../types";
@@ -130,6 +131,21 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             file.bytesWritten = 0;
             file.status = getFileStatus(file);
+
+            // A create replaces whatever is stored under this id; its bytes must not trail the new upload.
+            const previous = await this.meta.get(file.id).catch((error: unknown) => {
+                if (isMetaNotFound(error)) {
+                    return undefined;
+                }
+
+                throw error;
+            });
+
+            if (previous !== undefined) {
+                this.store.delete(previous.name);
+            }
+
+            this.store.delete(file.name);
 
             await this.saveMeta(file);
             await this.onCreate(file);
@@ -351,6 +367,11 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             return moved;
         });
+    }
+
+    /** Upload records by id: `list` yields stored names, which differ from the ids under a custom `filename`. */
+    protected override async listUploads(): Promise<TFile[]> {
+        return this.meta.list();
     }
 
     public override async list(): Promise<TFile[]> {

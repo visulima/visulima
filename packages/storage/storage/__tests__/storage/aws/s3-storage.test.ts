@@ -128,6 +128,8 @@ describe(S3Storage, () => {
         it("should reject if not found", async () => {
             expect.assertions(1);
 
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });
 

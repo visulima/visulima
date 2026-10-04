@@ -9,7 +9,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, expectTypeOf, it, vi
 import DiskStorage from "../../../src/storage/local/disk-storage";
 import type { DiskStorageOptions } from "../../../src/storage/types";
 import type { File, FilePart } from "../../../src/storage/utils/file";
-import { ERRORS } from "../../../src/utils/errors";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 import RequestReadStream from "../../__helpers__/streams/request-read-stream";
 
@@ -131,8 +131,11 @@ describe(DiskStorage, () => {
 
             storage.onError = onErrorHook;
 
+            // A directory in place of the upload's file makes creating it fail.
+            await mkdir(join(directory, "anonymous", metafile.originalName), { recursive: true });
+
             try {
-                await storage.create({ ...metafile, size: 6e10 });
+                await storage.create({ ...metafile });
             } catch {
                 // Expected to throw
             }
@@ -205,7 +208,7 @@ describe(DiskStorage, () => {
             // Mock the meta storage get method to simulate file not found
             const mockMetaGet = vi.spyOn(storage.meta, "get");
 
-            mockMetaGet.mockRejectedValueOnce(new Error("File not found"));
+            mockMetaGet.mockRejectedValueOnce(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             try {
                 await storage.write({ id: metafile.id });
@@ -424,6 +427,7 @@ describe(DiskStorage, () => {
             expect(deletedFiles).toStrictEqual({
                 ...diskFile,
                 bytesWritten: 5,
+                modifiedAt: expect.any(String),
                 status: "deleted",
             });
             await expect(() => storage.getMeta(diskFile.id)).rejects.toThrow("Not found");
@@ -480,7 +484,20 @@ describe(DiskStorage, () => {
 
             // Verify the copied file has the correct destination name
             expect(copiedFile.name).toBe("newname1");
-            expect(copiedFile.id).toBe(metafile.id);
+            expect(copiedFile.id).toBe("newname1");
+        });
+
+        it("should store metadata for the copy, also in a new subfolder", async () => {
+            expect.assertions(3);
+
+            const source = await storage.create({ ...metafile, size: 5 });
+
+            await storage.write({ ...source, body: Readable.from("01234"), start: 0 });
+            await storage.copy(source.id, "sub/folder/copy");
+
+            await expect(storage.get({ id: "sub/folder/copy" })).resolves.toHaveProperty("content", Buffer.from("01234"));
+            await expect(storage.get({ id: source.id })).resolves.toHaveProperty("content", Buffer.from("01234"));
+            await expect(storage.getMeta("sub/folder/copy")).resolves.toHaveProperty("status", "completed");
         });
     });
 
@@ -498,7 +515,19 @@ describe(DiskStorage, () => {
 
             // Verify the moved file has the correct destination name
             expect(movedFile.name).toBe("newname2");
-            expect(movedFile.id).toBe(metafile.id);
+            expect(movedFile.id).toBe("newname2");
+        });
+
+        it("should move the metadata with the file, also into a new subfolder", async () => {
+            expect.assertions(2);
+
+            const source = await storage.create({ ...metafile, size: 5 });
+
+            await storage.write({ ...source, body: Readable.from("01234"), start: 0 });
+            await storage.move(source.id, "sub/folder/moved");
+
+            await expect(storage.get({ id: "sub/folder/moved" })).resolves.toHaveProperty("content", Buffer.from("01234"));
+            await expect(storage.getMeta(source.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
         });
     });
 
@@ -695,7 +724,7 @@ describe(DiskStorage, () => {
                 const { cleanup, storage: readonlyStorage } = await createReadonlyStorage();
 
                 try {
-                    await expect(readonlyStorage.create(metafile)).rejects.toThrow("permission denied");
+                    await expect(readonlyStorage.create(metafile)).rejects.toThrow(/permission denied|not permitted/i);
                 } finally {
                     await cleanup();
                 }
@@ -708,7 +737,8 @@ describe(DiskStorage, () => {
 
                 try {
                     // Try to write to readonly directory
-                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow("Not found");
+                    // An unreadable meta store is a failure, not a missing upload.
+                    await expect(readonlyStorage.write({ ...metafile, body: Readable.from("test") })).rejects.toThrow(/permission denied|not permitted/i);
                 } finally {
                     await cleanup();
                 }
@@ -1368,6 +1398,114 @@ describe(DiskStorage, () => {
                     statusCode: 418,
                 }),
             );
+        });
+    });
+
+    describe("regressions", () => {
+        it("should not complete an upload whose body is shorter than its Content-Length", async () => {
+            expect.assertions(3);
+
+            storage = new DiskStorage(options);
+
+            const file = await storage.create({ ...metafile, size: 10 });
+            const written = await storage.write({ ...file, body: Readable.from("01234"), contentLength: 10, start: 0 });
+
+            expect(written.bytesWritten).toBe(5);
+            expect(written.status).toBe("part");
+            await expect(storage.getMeta(file.id)).resolves.toMatchObject({ bytesWritten: 5, status: "part" });
+        });
+
+        it("should replace an existing upload when it is created again", async () => {
+            expect.assertions(4);
+
+            storage = new DiskStorage(options);
+
+            const first = await storage.create({ ...metafile, size: 5 });
+
+            await storage.write({ ...first, body: Readable.from("01234"), start: 0 });
+
+            const second = await storage.create({ ...metafile, size: 3 });
+
+            expect(second.status).toBe("created");
+            expect(second.bytesWritten).toBe(0);
+
+            const written = await storage.write({ ...second, body: Readable.from("abc"), start: 0 });
+
+            expect(written.status).toBe("completed");
+            await expect(storage.get({ id: second.id })).resolves.toHaveProperty("content", Buffer.from("abc"));
+        });
+
+        it("should drop the old bytes when an incomplete upload is created again", async () => {
+            expect.assertions(1);
+
+            storage = new DiskStorage(options);
+
+            const first = await storage.create({ ...metafile });
+
+            await storage.write({ ...first, body: Readable.from("0123456789"), start: 0 });
+
+            const second = await storage.create({ ...metafile, size: 2 });
+
+            await storage.write({ ...second, body: Readable.from("ab"), start: 0 });
+
+            await expect(storage.get({ id: second.id })).resolves.toHaveProperty("content", Buffer.from("ab"));
+        });
+
+        it("should rethrow meta storage failures instead of reporting the upload as missing", async () => {
+            expect.assertions(2);
+
+            storage = new DiskStorage(options);
+
+            const failure = new Error("disk unavailable");
+            const spy = vi.spyOn(storage.meta, "get").mockRejectedValueOnce(failure);
+
+            await expect(storage.getMeta(metafile.id)).rejects.toBe(failure);
+
+            spy.mockRestore();
+
+            await expect(storage.getMeta("missing-upload")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+        });
+
+        it("should purge uploads stored under a custom filename", async () => {
+            expect.assertions(3);
+
+            storage = new DiskStorage(options);
+
+            const file = await storage.create({ ...metafile, size: 5 });
+
+            await storage.write({ ...file, body: Readable.from("01234"), start: 0 });
+
+            vi.setSystemTime(new Date("2022-02-02T02:00:00Z"));
+
+            try {
+                const purged = await storage.purge("1h");
+
+                expect(purged.items.map(({ id }) => id)).toStrictEqual([file.id]);
+                await expect(storage.getMeta(file.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+                await expect(fsp.stat(join(directory, file.name))).rejects.toHaveProperty("code", "ENOENT");
+            } finally {
+                vi.setSystemTime(new Date("2022-02-02"));
+            }
+        });
+
+        it("should extend the expiry on every save with rolling expiration", async () => {
+            expect.assertions(2);
+
+            storage = new DiskStorage({ ...options, expiration: { maxAge: "1h", rolling: true } });
+
+            const file = await storage.create({ ...metafile });
+
+            expect(file.expiredAt).toBe(Date.parse("2022-02-02T01:00:00Z"));
+
+            vi.setSystemTime(new Date("2022-02-02T00:30:00Z"));
+
+            try {
+                await storage.write({ ...file, body: Readable.from("01234"), start: 0 });
+
+                await expect(storage.getMeta(file.id)).resolves.toHaveProperty("expiredAt", Date.parse("2022-02-02T01:30:00Z"));
+            } finally {
+                vi.setSystemTime(new Date("2022-02-02"));
+            }
         });
     });
 });

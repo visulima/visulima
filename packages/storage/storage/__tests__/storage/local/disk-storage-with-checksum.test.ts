@@ -5,6 +5,7 @@ import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import DiskStorageWithChecksum from "../../../src/storage/local/disk-storage-with-checksum";
+import { ERRORS } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 // Mock file-type
@@ -78,8 +79,10 @@ describe(DiskStorageWithChecksum, () => {
             bytesWritten: 5,
             hash: {
                 algorithm: "sha1",
-                value: "897988093208097ce65f78fd43e99208926103ea",
+                // sha1("01234"): the bytes of the replaced upload are gone
+                value: "11904a4e8b77f6242e2d288705023adad00a9310",
             },
+            modifiedAt: expect.any(String),
             status: "deleted",
         });
         await expect(() => storage.getMeta(diskFile.id)).rejects.toThrow("Not found");
@@ -267,5 +270,37 @@ describe(DiskStorageWithChecksum, () => {
             // fileTypeFromBuffer should not be called on second write
             expect(vi.mocked(fileTypeFromBuffer)).not.toHaveBeenCalled();
         }, 15_000);
+    });
+
+    it("should keep checksum error codes", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum(options);
+        const file = await storage.create({ ...metafile, size: 5 });
+
+        await expect(
+            storage.write({ ...file, body: Readable.from("01234"), checksum: "AAAAAAAAAAAAAAAAAAAAAAAAAAA=", checksumAlgorithm: "sha1", start: 0 }),
+        ).rejects.toHaveProperty("UploadErrorCode", ERRORS.CHECKSUM_MISMATCH);
+        await expect(storage.write({ ...file, body: Readable.from("01234"), checksum: "AAAA", checksumAlgorithm: "crc32", start: 0 })).rejects.toHaveProperty(
+            "UploadErrorCode",
+            ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM,
+        );
+    });
+
+    it("should store the real offset and hash after an aborted write", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum(options);
+        const file = await storage.create({ ...metafile, size: 10 });
+        const controller = new AbortController();
+
+        controller.abort();
+
+        const written = await storage.write({ ...file, body: Readable.from("01234"), signal: controller.signal, start: 0 } as Parameters<
+            typeof storage.write
+        >[0]);
+
+        expect(written.bytesWritten).toBe(0);
+        await expect(storage.getMeta(file.id)).resolves.toHaveProperty("bytesWritten", 0);
     });
 });

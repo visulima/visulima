@@ -1,5 +1,4 @@
 import { Readable } from "node:stream";
-import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
 import { parseBytes } from "@visulima/humanizer";
@@ -22,7 +21,7 @@ import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import { getMetaVersion, setMetaVersion } from "./meta-storage";
+import { getMetaVersion, isMetaNotFound, setMetaVersion } from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
 import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
 import { isExpired, updateMetadata } from "./utils/file";
@@ -51,6 +50,9 @@ const redactSecrets = (config: Record<string, unknown>): Record<string, unknown>
 
     return out;
 };
+
+/** How long an upload lock outlives its holder; a held lock is renewed well before this runs out. */
+const LOCK_TTL_MS = 30_000;
 
 /** Conditional saves of a chunked record before giving up on a record that keeps changing. */
 const CONDITIONAL_SAVE_ATTEMPTS = 20;
@@ -285,6 +287,9 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     protected locker: Locker;
 
+    /** Renewal timers of the held locks, by lock token. */
+    private readonly lockRenewals = new Map<string, ReturnType<typeof setInterval>>();
+
     /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
     private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
 
@@ -332,7 +337,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         this.locker = new Locker({
             max: 1000,
-            ttl: 30_000,
+            ttl: LOCK_TTL_MS,
             ttlAutopurge: true,
         });
 
@@ -697,7 +702,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Retrieves upload metadata by file ID.
      * @param id File ID to retrieve metadata for.
      * @returns Promise resolving to the file metadata object.
-     * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND).
+     * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND). Any other
+     * failure of the meta storage is rethrown as-is, so it never reads as a missing upload.
      * @remarks Caches the retrieved metadata for faster subsequent access.
      */
     public async getMeta(id: string, _options?: OperationOptions): Promise<TFile> {
@@ -717,7 +723,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             await this.onError(httpError);
 
-            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            if (isMetaNotFound(error)) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            throw error;
         }
     }
 
@@ -758,7 +768,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             if (maxAgeMs) {
                 const before = Date.now() - maxAgeMs;
-                const list = await this.list();
+                const list = await this.listUploads();
                 const expired = list.filter(
                     (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
                 );
@@ -786,6 +796,14 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             return purged;
         });
+    }
+
+    /**
+     * Uploads {@link BaseStorage.purge} checks for expiry, by upload id. Defaults to {@link BaseStorage.list};
+     * adapters whose `list` yields stored names rather than upload ids (a custom `filename`) override it.
+     */
+    protected async listUploads(): Promise<TFile[]> {
+        return this.list();
     }
 
     /**
@@ -1208,17 +1226,36 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 
-        return this.locker.lock(key);
+        const token = this.locker.lock(key);
+
+        // A write can outlast the lock TTL; renew the lock until it is released, so another
+        // request can't take it over mid-write. The TTL only frees locks of a holder that never unlocks.
+        const renewal = setInterval(() => {
+            if (this.locker.get(key) === token) {
+                this.locker.set(key, token);
+            } else {
+                clearInterval(renewal);
+                this.lockRenewals.delete(token);
+            }
+        }, LOCK_TTL_MS / 3);
+
+        renewal.unref?.();
+        this.lockRenewals.set(token, renewal);
+
+        return token;
     }
 
     protected async unlock(key: string, token?: string): Promise<void> {
         if (token === undefined) {
             // Legacy path: delete unconditionally. Newer callers should pass the token returned by lock().
+            // The renewal timer of the deleted lock stops on its next tick.
             this.locker.delete(key);
 
             return;
         }
 
+        clearInterval(this.lockRenewals.get(token));
+        this.lockRenewals.delete(token);
         this.locker.unlock(key, token);
     }
 
@@ -1322,8 +1359,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
 
-        if (maxAgeMs && !file.expiredAt) {
-            file.expiredAt = this.expiration?.rolling ? Date.now() + maxAgeMs : +new Date(file.createdAt) + maxAgeMs;
+        if (maxAgeMs && this.expiration?.rolling) {
+            // Rolling: every save extends the expiry, never shortening a longer one set explicitly (ttl).
+            file.expiredAt = Math.max(Date.now() + maxAgeMs, file.expiredAt ? +new Date(file.expiredAt) : 0);
+        } else if (maxAgeMs && !file.expiredAt) {
+            file.expiredAt = +new Date(file.createdAt) + maxAgeMs;
         }
 
         return file;
