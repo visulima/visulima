@@ -30,6 +30,19 @@ export const getFormatFromContentType = (contentType: string | undefined): strin
 };
 
 /**
+ * Check a content type against a list of supported formats. Matches any extension registered for
+ * the type, so `image/jpeg` (preferred extension `jpg`) matches `jpeg` and `audio/mpeg` matches `mp3`.
+ * @param contentType MIME content type string to check
+ * @param supportedFormats Supported format names (file extensions)
+ * @returns True if supported, or if the content type has no known extension to check
+ */
+export const isSupportedFormat = (contentType: string | undefined, supportedFormats: string[]): boolean => {
+    const extensions = contentType ? mime.getAllExtensions(contentType) : undefined;
+
+    return !extensions || extensions.size === 0 || supportedFormats.some((format) => extensions.has(format));
+};
+
+/**
  * Validate a media file for a specific type with size and format checks.
  * @param file File to validate
  * @param expectedType Expected media type ('image', 'video', or 'audio')
@@ -59,10 +72,8 @@ export const validateMediaFile = (
     }
 
     // Check format support
-    const format = getFormatFromContentType(file.contentType);
-
-    if (config?.supportedFormats && format && !config.supportedFormats.includes(format)) {
-        throw new Error(`Unsupported ${expectedType} format: ${format}`);
+    if (config?.supportedFormats && !isSupportedFormat(file.contentType, config.supportedFormats)) {
+        throw new Error(`Unsupported ${expectedType} format: ${getFormatFromContentType(file.contentType)}`);
     }
 };
 

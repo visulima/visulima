@@ -23,7 +23,7 @@ import type {
     VideoTransformOptions,
     VideoTransformResult,
 } from "./types";
-import { getFormatFromContentType, isValidMediaType } from "./utils";
+import { getFormatFromContentType, isSupportedFormat, isValidMediaType } from "./utils";
 
 /**
  * Video transformer that uses storage backends and Mediabunny library to retrieve and transform videos.
@@ -170,7 +170,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Apply transformations using Mediabunny
         const transformedBuffer = await this.applyTransformations(originalFile.content, steps);
 
-        const result = await this.createTransformResult(transformedBuffer, originalFile);
+        const result = await this.createTransformResult(transformedBuffer, originalFile, this.determineOutputFormat(steps).fileExtension.slice(1));
 
         await this.setCached(cacheKey, result);
 
@@ -278,7 +278,8 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
                     options.width = resizeOptions.width;
                     options.height = resizeOptions.height;
-                    options.fit = resizeOptions.fit;
+                    // Mediabunny rejects width + height without a fit; default like the image transformer.
+                    options.fit = resizeOptions.fit ?? "cover";
 
                     if (resizeOptions.position !== undefined) {
                         options.position = resizeOptions.position;
@@ -371,7 +372,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Check format support
         const format = getFormatFromContentType(file.contentType);
 
-        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && !isSupportedFormat(file.contentType, this.config.supportedFormats)) {
             throw new Error(`Unsupported video format: ${format}`);
         }
 
@@ -399,7 +400,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Video transformation result with metadata.
      * @private
      */
-    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<VideoTransformResult<TFileReturn>> {
+    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn, format: string): Promise<VideoTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
         // you might want to parse the transformed video to get accurate metadata
         const input = new Input({
@@ -414,7 +415,7 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
             bitrate: this.config.defaultBitrate,
             buffer,
             duration,
-            format: "mp4", // Default, would need to detect actual format
+            format,
             height: videoTrack?.displayHeight || 0,
             originalFile,
             size: buffer.length,

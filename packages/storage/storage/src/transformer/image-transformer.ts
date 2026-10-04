@@ -38,7 +38,7 @@ import type {
     TransformOptions,
     TransformResult,
 } from "./types";
-import { getFormatFromContentType, isValidMediaType } from "./utils";
+import { getFormatFromContentType, isSupportedFormat, isValidMediaType } from "./utils";
 
 // sharp ships as a CommonJS `export =` namespace; reference `Sharp` through an
 // import-type query so it resolves in type position under `verbatimModuleSyntax`
@@ -544,7 +544,15 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private async applyTransformations(buffer: Buffer, steps: TransformationStep[]): Promise<Buffer> {
         let sharpInstance: Sharp = this.openImage(buffer);
 
-        for (const step of steps) {
+        // Encoder options (quality, lossless, …) without a `format` keep the input's format: sharp
+        // can't set encoder options without choosing an output format. Sharp can't write SVG.
+        const { format: inputFormat } = await sharpInstance.metadata();
+        const keepFormat = (inputFormat === "svg" ? "png" : inputFormat) as ImageFormat;
+
+        for (const rawStep of steps) {
+            const needsFormat = !rawStep.options.format && Object.keys(this.getFormatOptions(rawStep.options)).length > 0;
+            const step = needsFormat ? ({ ...rawStep, options: { ...rawStep.options, format: keepFormat } } as TransformationStep) : rawStep;
+
             switch (step.type) {
                 case "affine": {
                     sharpInstance = this.applyAffine(sharpInstance, step.options as AffineOptions);
@@ -718,7 +726,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
             ...formatOptions
         } = options;
 
-        let resizeOptions: any = {
+        const resizeOptions: any = {
             background: background || "transparent",
             fastShrinkOnLoad,
             fit,
@@ -730,12 +738,14 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
             withoutReduction,
         };
 
+        const resizeInstance = sharpInstance.resize(resizeOptions);
+
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
-            resizeOptions = { ...resizeOptions, ...this.getFormatOptions(formatOptions) };
+            return this.applyFormatAndQuality(resizeInstance, formatOptions);
         }
 
-        return sharpInstance.resize(resizeOptions);
+        return resizeInstance;
     }
 
     /**
@@ -793,15 +803,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @private
      */
     private applySharpen(sharpInstance: Sharp, options: SharpenOptions): Sharp {
-        const { sigma, ...formatOptions } = options;
+        const { m1, m2, sigma, x1, y2, y3, ...formatOptions } = options;
 
-        const sharpenOptions: any = {};
-
-        if (sigma !== undefined) {
-            sharpenOptions.sigma = sigma;
-        }
-
-        let sharpenInstance = sharpInstance.sharpen(sharpenOptions);
+        // sharp requires `sigma` in the options object; without one, use its fast mild sharpen.
+        let sharpenInstance = sigma === undefined ? sharpInstance.sharpen() : sharpInstance.sharpen({ m1, m2, sigma, x1, y2, y3 });
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
@@ -981,7 +986,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyRecombine(sharpInstance: Sharp, options: RecombineOptions): Sharp {
         const { matrix, ...formatOptions } = options;
 
-        let recombineInstance = sharpInstance.recomb(matrix.flat() as any);
+        let recombineInstance = sharpInstance.recomb(matrix as Parameters<Sharp["recomb"]>[0]);
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
@@ -1001,12 +1006,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyModulate(sharpInstance: Sharp, options: ModulateOptions): Sharp {
         const { brightness, hue, lightness, saturation, ...formatOptions } = options;
 
-        let modulateInstance = sharpInstance.modulate({
-            brightness,
-            hue,
-            lightness,
-            saturation,
-        });
+        // sharp validates every key that is present, so leave out the ones not given.
+        let modulateInstance = sharpInstance.modulate(
+            Object.fromEntries(Object.entries({ brightness, hue, lightness, saturation }).filter(([, value]) => value !== undefined)),
+        );
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
@@ -1146,7 +1149,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyAffine(sharpInstance: Sharp, options: AffineOptions): Sharp {
         const { background, interpolation, matrix, ...formatOptions } = options;
 
-        let affineInstance = sharpInstance.affine(matrix as any, {
+        let affineInstance = sharpInstance.affine(matrix, {
             background: background || "transparent",
             interpolator: interpolation || "bicubic",
         });
@@ -1289,16 +1292,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyFormatAndQuality(sharpInstance: Sharp, options: TransformOptions): Sharp {
         const formatOptions = this.getFormatOptions(options);
 
-        if (options.format) {
-            return sharpInstance.toFormat(options.format, formatOptions);
-        }
-
-        // If no format specified but other options exist, apply them to current format
-        if (Object.keys(formatOptions).length > 0) {
-            return sharpInstance.jpeg(formatOptions).png(formatOptions).webp(formatOptions);
-        }
-
-        return sharpInstance;
+        // `applyTransformations` fills in the input's format whenever encoder options come without one.
+        return options.format ? sharpInstance.toFormat(options.format, formatOptions) : sharpInstance;
     }
 
     /**
@@ -1370,7 +1365,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Check format support
         const format = getFormatFromContentType(file.contentType);
 
-        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && !isSupportedFormat(file.contentType, this.config.supportedFormats)) {
             throw new Error(`Unsupported image format: ${format}`);
         }
 
@@ -1409,7 +1404,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         return {
             buffer,
-            format: metadata.format || "unknown",
+            // libvips reports AVIF as its HEIF container; name it the way clients asked for it.
+            format: metadata.format === "heif" && metadata.compression === "av1" ? "avif" : metadata.format || "unknown",
             height: metadata.height || 0,
             originalFile,
             size: buffer.length,
