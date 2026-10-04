@@ -1,3 +1,14 @@
+## @visulima/storage [2.0.28](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.27...@visulima/storage@2.0.28) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** chunked uploads over S3 and dropped clients ([#907](https://github.com/visulima/visulima/issues/907)-[#910](https://github.com/visulima/visulima/issues/910)) ([#911](https://github.com/visulima/visulima/issues/911)) ([e97f5fd](https://github.com/visulima/visulima/commit/e97f5fda30447dc880ecbd23074b4141ff3e1f34)), closes [#908](https://github.com/visulima/visulima/issues/908) [#909](https://github.com/visulima/visulima/issues/909) [#908](https://github.com/visulima/visulima/issues/908) [#909](https://github.com/visulima/visulima/issues/909) [#909](https://github.com/visulima/visulima/issues/909)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.27
+
 ## @visulima/storage [2.0.27](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.26...@visulima/storage@2.0.27) (2026-10-04)
 
 ### Bug Fixes
