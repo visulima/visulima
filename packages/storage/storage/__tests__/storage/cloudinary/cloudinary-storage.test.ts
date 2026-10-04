@@ -307,6 +307,27 @@ describe(CloudinaryStorage, () => {
             expect(mockClient.api.resources).toHaveBeenCalledWith(expect.objectContaining({ max_results: 50 }));
             expect(files[0]?.id).toBe("a.mp4");
         });
+
+        it("follows next_cursor across capped pages until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const storage = newStorage();
+            const ids = ["a", "b", "c", "d", "e"];
+
+            // An account that answers at most two resources per page (the Admin API caps pages at 500).
+            mockClient.api.resources.mockImplementation(async ({ max_results: maxResults, next_cursor: cursor }: { max_results: number; next_cursor?: string }) => {
+                const start = Number(cursor ?? 0);
+                const end = start + Math.min(maxResults, 2);
+
+                return {
+                    next_cursor: end < ids.length ? String(end) : undefined,
+                    resources: ids.slice(start, end).map((id) => { return { public_id: id }; }),
+                };
+            });
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
+        });
     });
 
     describe(".getReadUrl()", () => {

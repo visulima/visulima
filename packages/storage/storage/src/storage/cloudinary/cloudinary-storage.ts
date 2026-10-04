@@ -459,15 +459,30 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { resources } = await this.runOperation(options, () =>
-                    this.client.api.resources({
-                        max_results: limit,
-                        resource_type: this.resourceType,
-                        type: this.deliveryType,
-                    }),
-                );
+                const resources: CloudinaryResource[] = [];
+                let cursor: string | undefined;
 
-                return ((resources ?? []) as CloudinaryResource[]).map((entry) => {
+                // The Admin API caps a page at 500 resources, so follow `next_cursor` until `limit` is reached.
+                while (resources.length < limit) {
+                    const token = cursor;
+                    const page = (await this.runOperation(options, () =>
+                        this.client.api.resources({
+                            max_results: Math.min(limit - resources.length, 500),
+                            resource_type: this.resourceType,
+                            type: this.deliveryType,
+                            ...(token && { next_cursor: token }),
+                        }),
+                    )) as { next_cursor?: string; resources?: CloudinaryResource[] };
+
+                    resources.push(...(page.resources ?? []));
+                    cursor = page.next_cursor;
+
+                    if (!cursor) {
+                        break;
+                    }
+                }
+
+                return resources.slice(0, limit).map((entry) => {
                     const file = new CloudinaryFile({
                         contentType: entry.resource_type && entry.format ? `${entry.resource_type}/${entry.format}` : "application/octet-stream",
                         metadata: {},

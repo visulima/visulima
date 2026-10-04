@@ -477,9 +477,25 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.runOperation(options, () => list({ limit, ...this.credentials }));
+                const blobs: Awaited<ReturnType<typeof list>>["blobs"] = [];
+                let cursor: string | undefined;
 
-                return result.blobs.map((blob) => {
+                // A page holds at most 1000 blobs, so follow the cursor until `limit` is reached.
+                while (blobs.length < limit) {
+                    const token = cursor;
+                    const result = await this.runOperation(options, () =>
+                        list({ limit: Math.min(limit - blobs.length, 1000), ...(token && { cursor: token }), ...this.credentials }),
+                    );
+
+                    blobs.push(...result.blobs);
+                    cursor = result.hasMore ? result.cursor : undefined;
+
+                    if (!cursor) {
+                        break;
+                    }
+                }
+
+                return blobs.slice(0, limit).map((blob) => {
                     const file = new VercelBlobFile({
                         contentType: "application/octet-stream", // Default content type
                         metadata: {},

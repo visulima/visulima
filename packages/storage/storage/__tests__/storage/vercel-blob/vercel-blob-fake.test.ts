@@ -2,6 +2,7 @@ import { Readable } from "node:stream";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type { File } from "../../../src/storage/utils/file";
@@ -73,12 +74,15 @@ const blob = vi.hoisted(() => {
 
             return describeBlob(toPathname(urlOrPathname));
         },
-        list: async ({ limit = 1000 }: { limit?: number } = {}) => {
+        // A page holds at most two blobs (the service caps pages at 1000), so a listing must follow the cursor.
+        list: async ({ cursor, limit = 1000 }: { cursor?: string; limit?: number } = {}) => {
             failure("list");
 
             const blobs = [...store.keys()].toSorted().map((pathname) => describeBlob(pathname));
+            const start = Number(cursor ?? 0);
+            const end = start + Math.min(limit, 2);
 
-            return { blobs: blobs.slice(0, limit), hasMore: blobs.length > limit };
+            return { blobs: blobs.slice(start, end), cursor: end < blobs.length ? String(end) : undefined, hasMore: end < blobs.length };
         },
         put: async (pathname: string, body: Blob) => {
             failure("put");
@@ -278,7 +282,7 @@ describe("vercel-blob against an in-memory blob store", () => {
         expect(metaStore.has(id)).toBe(false);
     });
 
-    it("should list stored blobs only, up to the limit", async () => {
+    it("should list stored blobs only, across pages up to the limit", async () => {
         expect.assertions(3);
 
         const metaStore = new Map<string, File>();
@@ -294,6 +298,24 @@ describe("vercel-blob against an in-memory blob store", () => {
         expect(listed.map((file) => file.id)).toStrictEqual(["uploads/1.txt", "uploads/2.txt", "uploads/3.txt"]);
         expect(listed[2]).toMatchObject({ size: 5, url: `${blob.base}uploads/3.txt` });
         await expect(storage.list(2)).resolves.toHaveLength(2);
+    });
+
+    it("should let Files.listAll walk every blob past the provider's page cap", async () => {
+        expect.assertions(1);
+
+        const storage = createStorage();
+
+        for (const name of ["1.txt", "2.txt", "3.txt", "4.txt", "5.txt"]) {
+            await upload(storage, name, name);
+        }
+
+        const keys: string[] = [];
+
+        for await (const { key } of new Files({ adapter: storage }).listAll({ limit: 1 })) {
+            keys.push(key);
+        }
+
+        expect(keys).toStrictEqual(["uploads/1.txt", "uploads/2.txt", "uploads/3.txt", "uploads/4.txt", "uploads/5.txt"]);
     });
 
     it("should delete the blob and its metadata, and keep the metadata when the delete fails", async () => {

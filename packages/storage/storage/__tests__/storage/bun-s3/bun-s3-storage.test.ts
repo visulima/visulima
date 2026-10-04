@@ -323,6 +323,30 @@ describe(BunS3Storage, () => {
             expect(files[0]?.bunS3Key).toBe("anonymous/v.mp4");
             expect(files[0]?.ETag).toBe("etag-1");
         });
+
+        it("follows the continuation token until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const keys = ["a", "b", "c", "d", "e"];
+            const client = makeClient();
+
+            // A bucket that answers at most two keys per page, like S3 caps pages at 1000.
+            vi.mocked(client.list).mockImplementation(async ({ continuationToken, maxKeys = 1000 } = {}) => {
+                const start = Number(continuationToken ?? 0);
+                const end = start + Math.min(maxKeys, 2);
+
+                return {
+                    contents: keys.slice(start, end).map((key) => { return { key }; }),
+                    isTruncated: end < keys.length,
+                    nextContinuationToken: String(end),
+                };
+            });
+
+            const storage = makeStorage(client);
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
+        });
     });
 
     describe("uRL generation", () => {

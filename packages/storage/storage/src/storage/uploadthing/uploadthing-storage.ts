@@ -380,9 +380,21 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.runOperation(options, () => this.utapi.listFiles({ limit }));
+                const entries: Awaited<ReturnType<UTApi["listFiles"]>>["files"][number][] = [];
 
-                return result.files.map((entry) => {
+                // The service caps a page below `limit`, so follow the offset while it reports more.
+                while (entries.length < limit) {
+                    const offset = entries.length;
+                    const result = await this.runOperation(options, () => this.utapi.listFiles({ limit: limit - offset, offset }));
+
+                    entries.push(...result.files);
+
+                    if (!result.hasMore || result.files.length === 0) {
+                        break;
+                    }
+                }
+
+                return entries.slice(0, limit).map((entry) => {
                     const key = entry.customId ?? entry.key;
                     const file = new UploadThingFile({
                         contentType: "application/octet-stream",

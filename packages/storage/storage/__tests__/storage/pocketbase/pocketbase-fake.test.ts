@@ -74,10 +74,14 @@ const createPocketBase = () => {
 
             return row;
         },
-        getList: async (_page: number, perPage: number) => {
+        // The server caps a page at two records (PocketBase caps `perPage`), so listing must walk pages.
+        getList: async (page: number, perPage: number) => {
             take("getList");
 
-            return { items: [...records.values()].slice(0, perPage) };
+            const size = Math.min(perPage, 2);
+            const all = [...records.values()];
+
+            return { items: all.slice((page - 1) * size, page * size), totalPages: Math.ceil(all.length / size) };
         },
         update: async (id: string, form: unknown) => store(records.get(id) as Row, form as FormData),
     };
@@ -271,15 +275,14 @@ describe("pocketbase against an in-memory collection", () => {
         expect(content("moved.txt")).toBe("world");
     });
 
-    it("should list records by key, honouring the limit", async () => {
+    it("should list records by key across pages, honouring the limit", async () => {
         expect.assertions(2);
 
         const storage = createStorage();
-        const first = await upload(storage, "a");
-        const second = await upload(storage, "b");
+        const ids = [await upload(storage, "a"), await upload(storage, "b"), await upload(storage, "c")];
 
-        await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id: first }), expect.objectContaining({ id: second })]);
-        await expect(storage.list(1).then((files) => files.map((file) => file.id))).resolves.toStrictEqual([first]);
+        await expect(storage.list().then((files) => files.map((file) => file.id))).resolves.toStrictEqual(ids);
+        await expect(storage.list(1).then((files) => files.map((file) => file.id))).resolves.toStrictEqual([ids[0]]);
     });
 
     it("should delete the record and its metadata, and keep the metadata when the delete fails", async () => {

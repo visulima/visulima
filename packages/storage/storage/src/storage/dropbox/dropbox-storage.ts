@@ -558,7 +558,8 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
                 let { result } = await this.runOperation(options, () =>
                     this.client.filesListFolder({
-                        limit,
+                        // Dropbox rejects a per-request limit above 2000.
+                        limit: Math.min(limit, 2000),
                         path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
                         recursive: true,
                     }),

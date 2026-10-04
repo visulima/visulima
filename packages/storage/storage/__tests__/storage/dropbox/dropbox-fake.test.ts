@@ -109,6 +109,11 @@ const createDropbox = () => {
         filesListFolder: async ({ limit, path }: { limit: number; path: string }) => {
             guard("filesListFolder");
 
+            // Dropbox accepts a limit of 1 to 2000 only.
+            if (limit < 1 || limit > 2000) {
+                throw new Error("Error in call to API function \"files/list_folder\": request body: limit: 4000 is not within range [1, 2000]");
+            }
+
             listing = [
                 ...[...folders].filter((folder) => folder.startsWith(`${path}/`)).map((folder) => { return { ".tag": "folder", path_display: folder }; }),
                 ...[...objects]
@@ -340,7 +345,7 @@ describe("dropbox against an in-memory Dropbox", () => {
     });
 
     it("should list every page of the root folder as keys, skipping folders", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const dropbox = createDropbox();
         const { storage } = createStorage(dropbox);
@@ -357,6 +362,8 @@ describe("dropbox against an in-memory Dropbox", () => {
 
         expect(listed.map((file) => file.id).toSorted()).toStrictEqual(["a", "b", "c", "e", "nested/d"]);
         await expect(storage.list(3)).resolves.toHaveLength(3);
+        // A limit above Dropbox's per-request maximum still lists (Files.listAll asks for growing limits).
+        await expect(storage.list(4000)).resolves.toHaveLength(5);
     });
 
     it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {

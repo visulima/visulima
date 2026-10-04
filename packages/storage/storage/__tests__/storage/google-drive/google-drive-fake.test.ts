@@ -126,6 +126,11 @@ const createDrive = (pageLimit = 100) => {
             list: async (params: Params & { pageSize: number; pageToken?: string; q: string }) => {
                 guard("list", params);
 
+                // Drive accepts a pageSize of 1 to 1000 only.
+                if (params.pageSize < 1 || params.pageSize > 1000) {
+                    throw driveError(400);
+                }
+
                 const parent = unescape(/'((?:\\.|[^'\\])*)' in parents/u.exec(params.q)?.[1] ?? "");
                 const key = /value='((?:\\.|[^'\\])*)'/u.exec(params.q)?.[1];
                 const matching = [...files.values()].filter(
@@ -266,7 +271,7 @@ describe("google-drive against an in-memory Drive", () => {
     });
 
     it("should list every page of the root folder and skip foreign files", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         const drive = createDrive(2);
         const storage = createStorage(drive);
@@ -282,6 +287,8 @@ describe("google-drive against an in-memory Drive", () => {
 
         expect(listed.map((file) => file.id)).toStrictEqual(["dir/a", "dir/b", "dir/c", "dir/d", "dir/e"]);
         await expect(storage.list(3)).resolves.toHaveLength(3);
+        // A limit above Drive's page size maximum still lists (Files.listAll asks for growing limits).
+        await expect(storage.list(5000)).resolves.toHaveLength(5);
     });
 
     it("should delete the object with its metadata, and keep both when Drive fails", async () => {

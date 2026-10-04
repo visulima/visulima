@@ -404,5 +404,22 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             expect(result[0]?.id).toBe("user/file-a");
             expect(result[1]?.id).toBe("ufs-b");
         });
+
+        it("follows the offset across capped pages until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const storage = new UploadThingStorage(buildOptions());
+            const keys = ["a", "b", "c", "d", "e"];
+
+            // An app that answers at most two files per page.
+            mockUtapi.listFiles.mockImplementation(async ({ limit = 500, offset = 0 }: { limit?: number; offset?: number } = {}) => {
+                const end = offset + Math.min(limit, 2);
+
+                return { files: keys.slice(offset, end).map((key) => { return { key, size: 1 }; }), hasMore: end < keys.length };
+            });
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
+        });
     });
 });

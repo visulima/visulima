@@ -599,7 +599,8 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                         this.driveClient.files.list({
                             ...this.sharedDriveParams,
                             fields: `nextPageToken, files(${FILE_FIELDS})`,
-                            pageSize: limit - files.length,
+                            // Drive rejects a pageSize above 1000.
+                            pageSize: Math.min(limit - files.length, 1000),
                             q,
                             ...(token && { pageToken: token }),
                         }),

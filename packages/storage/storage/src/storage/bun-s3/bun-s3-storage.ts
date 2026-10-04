@@ -10,7 +10,7 @@ import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunS3File from "./bun-s3-file";
 import BunS3MetaStorage from "./bun-s3-meta-storage";
-import type { BunS3ClientLike, BunS3StorageOptions } from "./types";
+import type { BunS3ClientLike, BunS3ListEntry, BunS3StorageOptions } from "./types";
 
 const toKey = (key: string): string => key.replace(/^\/+/u, "");
 
@@ -412,16 +412,31 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         return this.instrumentOperation(
             "list",
             async () => {
-                let response: Awaited<ReturnType<BunS3ClientLike["list"]>>;
+                const entries: (BunS3ListEntry & { key: string })[] = [];
+                let continuationToken: string | undefined;
 
-                try {
-                    response = await this.runOperation(options, () => this.client.list({ maxKeys: limit }));
-                } catch (error) {
-                    throw wrapBunS3Error(error, "list");
+                // S3 caps a page at 1000 keys, so follow the continuation token until `limit` is reached.
+                while (entries.length < limit) {
+                    const token = continuationToken;
+                    let response: Awaited<ReturnType<BunS3ClientLike["list"]>>;
+
+                    try {
+                        response = await this.runOperation(options, () =>
+                            this.client.list({ maxKeys: limit - entries.length, ...(token && { continuationToken: token }) }),
+                        );
+                    } catch (error) {
+                        throw wrapBunS3Error(error, "list");
+                    }
+
+                    entries.push(...(response.contents ?? []).filter((entry): entry is BunS3ListEntry & { key: string } => Boolean(entry.key)));
+                    continuationToken = response.isTruncated ? response.nextContinuationToken : undefined;
+
+                    if (!continuationToken) {
+                        break;
+                    }
                 }
 
-                return (response.contents ?? [])
-                    .filter((entry): entry is typeof entry & { key: string } => Boolean(entry.key))
+                return entries
                     .slice(0, limit)
                     .map((entry) => {
                         const key = toKey(entry.key);

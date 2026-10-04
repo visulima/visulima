@@ -476,9 +476,26 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             async () => {
                 await this.ensureAuth();
 
-                const { items } = await this.runOperation(options, () => this.client.collection(this.collectionName).getList(1, limit));
+                const items: PocketBaseRecord[] = [];
+                const perPage = Math.min(limit, 500);
 
-                return (items ?? []).map((record) => {
+                let page = 0;
+
+                // The server caps `perPage`, so walk the pages until `limit` is reached.
+                while (items.length < limit) {
+                    page += 1;
+
+                    const current = page;
+                    const result = await this.runOperation(options, () => this.client.collection(this.collectionName).getList(current, perPage));
+
+                    items.push(...(result.items ?? []));
+
+                    if ((result.items ?? []).length === 0 || current >= (result.totalPages ?? current)) {
+                        break;
+                    }
+                }
+
+                return items.slice(0, limit).map((record) => {
                     const key = String(record[this.keyField] ?? record.id);
                     const filename = String(record[this.fileField] ?? "");
 
