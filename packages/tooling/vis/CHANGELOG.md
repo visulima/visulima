@@ -1,3 +1,18 @@
+## @visulima/vis [4.1.17](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.16...@visulima/vis@4.1.17) (2026-10-04)
+
+### Bug Fixes
+
+* **vis:** authenticate release git pushes with the CI token ([#904](https://github.com/visulima/visulima/issues/904)) ([c0220d1](https://github.com/visulima/visulima/commit/c0220d1eea9dd0f50dd5cf6d95735c405a9a9162))
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.26
+* **@visulima/tui-kit:** upgraded to 1.0.29
+* **@visulima/fs:** upgraded to 6.0.26
+* **@visulima/package:** upgraded to 5.0.39
+* **@visulima/tsconfig:** upgraded to 3.2.33
+
 ## @visulima/vis [4.1.16](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.15...@visulima/vis@4.1.16) (2026-10-03)
 
 
