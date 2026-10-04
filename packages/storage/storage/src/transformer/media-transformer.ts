@@ -18,7 +18,7 @@ import type {
     VideoTransformerConfig,
     VideoTransformResult,
 } from "./types";
-import { isKnownContentType } from "./utils";
+import { isKnownContentType, sourceVersion } from "./utils";
 import ValidationError from "./validation-error";
 
 /**
@@ -245,7 +245,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Check if we should save/load transformed files from storage
         if (this.config.saveTransformedFiles && this.hasTransformations(parsedQuery)) {
-            const transformedFileId = this.generateTransformedFileId(fileId, parsedQuery, mediaType);
+            const transformedFileId = this.generateTransformedFileId(fileId, parsedQuery, mediaType, sourceVersion(file));
 
             try {
                 // Try to get existing transformed file
@@ -302,7 +302,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Save transformed file to storage if enabled and transformations were applied
         if (this.config.saveTransformedFiles && this.hasTransformations(parsedQuery)) {
-            await this.saveTransformedFile(result, fileId, parsedQuery, mediaType);
+            await this.saveTransformedFile(result, fileId, parsedQuery, mediaType, sourceVersion(file));
         }
 
         return result;
@@ -677,11 +677,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param originalFileId The original file identifier.
      * @param query The transformation query parameters.
      * @param mediaType The media type (image, video, audio).
+     * @param version Fingerprint of the original (see `sourceVersion`), so a replaced original gets a fresh id.
      * @returns Unique deterministic identifier for the transformed file.
      * @private
      */
     // eslint-disable-next-line class-methods-use-this
-    private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string): string {
+    private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string, version: string): string {
         // Create a deterministic hash of the transformation parameters
         const transformParameters = Object.keys(query)
             .filter((key) => query[key as keyof MediaTransformQuery] !== undefined)
@@ -689,7 +690,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             .map((key) => `${key}:${query[key as keyof MediaTransformQuery]}`)
             .join("|");
 
-        const hashInput = `${originalFileId}|${mediaType}|${transformParameters}`;
+        const hashInput = `${originalFileId}|${version}|${mediaType}|${transformParameters}`;
         // 64 bits of cache-key entropy gave a 50% collision chance at ~5B entries (birthday bound) but
         // — more importantly — under attacker-controlled inputs a 64-bit prefix is well within
         // brute-force reach. 128 bits is comfortably collision-resistant while keeping the file id short.
@@ -785,12 +786,19 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param originalFileId The original file identifier.
      * @param query The transformation query parameters.
      * @param mediaType The media type (image, video, audio).
+     * @param version Fingerprint of the original the transform was made from.
      * @returns Promise that resolves when file is saved.
      * @private
      */
-    private async saveTransformedFile(result: MediaTransformResult, originalFileId: string, query: MediaTransformQuery, mediaType: string): Promise<void> {
+    private async saveTransformedFile(
+        result: MediaTransformResult,
+        originalFileId: string,
+        query: MediaTransformQuery,
+        mediaType: string,
+        version: string,
+    ): Promise<void> {
         try {
-            const transformedFileId = this.generateTransformedFileId(originalFileId, query, mediaType);
+            const transformedFileId = this.generateTransformedFileId(originalFileId, query, mediaType, version);
 
             // Create metadata for the transformed file
             const metadata: Record<string, any> = {

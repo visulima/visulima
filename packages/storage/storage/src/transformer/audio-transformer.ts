@@ -135,17 +135,13 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     public async transform(fileId: string, steps: AudioTransformationStep[]): Promise<AudioTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
-        const cacheKey = this.generateCacheKey(fileId, steps);
+        const cacheKey = await this.versionedCacheKey(fileId, this.generateCacheKey(fileId, steps));
+        const cached = await this.getCached(cacheKey);
 
-        // Check cache first
-        if (this.cache) {
-            const cached = await Promise.resolve(this.cache.get(cacheKey));
+        if (cached) {
+            this.logger?.debug("Returning cached transformed audio for %s", fileId);
 
-            if (cached) {
-                this.logger?.debug("Returning cached transformed audio for %s", fileId);
-
-                return cached;
-            }
+            return cached;
         }
 
         // Get original audio from storage
@@ -159,10 +155,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         const result = await this.createTransformResult(transformedBuffer, originalFile);
 
-        // Cache the result
-        if (this.cache) {
-            this.cache.set(cacheKey, result);
-        }
+        await this.setCached(cacheKey, result);
 
         return result;
     }

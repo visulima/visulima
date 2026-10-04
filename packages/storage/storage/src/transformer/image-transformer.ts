@@ -482,9 +482,9 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     public async transform(fileId: string, steps: TransformationStep[]): Promise<TransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
-        const cacheKey = this.generateCacheKey(fileId, steps);
+        const cacheKey = await this.versionedCacheKey(fileId, this.generateCacheKey(fileId, steps));
 
-        const cached = this.cache ? await Promise.resolve(this.cache.get(cacheKey)) : undefined;
+        const cached = await this.getCached(cacheKey);
 
         if (cached) {
             this.logger?.debug("Returning cached transformed image for %s", fileId);
@@ -503,10 +503,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         const result = await this.createTransformResult(transformedBuffer, originalFile);
 
-        // Cache the result
-        if (this.cache) {
-            this.cache.set(cacheKey, result);
-        }
+        await this.setCached(cacheKey, result);
 
         return result;
     }

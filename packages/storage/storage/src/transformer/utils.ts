@@ -78,3 +78,15 @@ export const isKnownContentType = (contentType: string | undefined): boolean => 
 
     return !!mime.getExtension(contentType);
 };
+
+/**
+ * Version fingerprint of a stored original (ETag, modification time, size). Folded into transform
+ * cache keys and persisted transform ids so replacing the original never serves a stale transform.
+ * @param meta Metadata of the original file
+ * @param meta.ETag Entity tag, when the adapter reports one
+ * @param meta.modifiedAt Last modification time, when the adapter reports one
+ * @param meta.size Size in bytes, when known
+ * @returns A `|`-joined fingerprint, with empty parts for metadata the adapter does not report
+ */
+export const sourceVersion = (meta: { ETag?: string; modifiedAt?: Date | number | string; size?: number | string }): string =>
+    [meta.ETag, meta.modifiedAt, meta.size].map((part) => (part instanceof Date ? part.toISOString() : String(part ?? ""))).join("|");

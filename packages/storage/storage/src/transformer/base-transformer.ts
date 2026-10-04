@@ -7,6 +7,7 @@ import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
 import type { BaseTransformerConfig } from "./transformer-config";
+import { sourceVersion } from "./utils";
 
 /**
  * Abstract base class for all media transformers.
@@ -25,6 +26,13 @@ abstract class BaseTransformer<
     protected logger?: Console;
 
     protected cache?: Cache<string, CacheValue>;
+
+    /**
+     * Expiry time of every entry this instance cached, oldest first. Enforces `cacheTtl` even on
+     * caches that ignore the `ttl` option (a plain `Map`) and evicts the oldest entries past
+     * `maxCacheSize`.
+     */
+    private readonly cacheExpiry = new Map<string, number>();
 
     /**
      * Creates a new BaseTransformer instance with common functionality.
@@ -82,16 +90,23 @@ abstract class BaseTransformer<
     /**
      * Clears cache for a specific file or all files.
      *
-     * Cache keys are `${fileId}:${stepsHash}` (see `generateCacheKey` in subclasses),
+     * Cache keys are `${fileId}:${stepsHash}@${version}` (see `generateCacheKey` in subclasses),
      * so per-file invalidation must iterate keys to find every transform of `fileId`.
      * Falls back to a full `clear()` when the underlying cache doesn't expose `keys()`.
      * @param fileId Optional file identifier to clear cache for specific file.
      */
     public clearCache(fileId?: string): void {
         if (!fileId) {
+            this.cacheExpiry.clear();
             this.cache?.clear?.();
 
             return;
+        }
+
+        for (const key of this.cacheExpiry.keys()) {
+            if (key.startsWith(`${fileId}:`)) {
+                this.cacheExpiry.delete(key);
+            }
         }
 
         if (!this.cache) {
@@ -122,9 +137,79 @@ abstract class BaseTransformer<
         // Default implementation - subclasses can override for more specific stats
         // Cache interface doesn't have a size property, so we return 0 as default
         return {
-            maxSize: -1, // -1 indicates unlimited or unknown max size
+            maxSize: this.config.maxCacheSize ?? -1, // -1 indicates unlimited or unknown max size
             size: (this.cache as any)?.size ?? 0,
         };
+    }
+
+    /**
+     * Turn a `${fileId}:${steps}` key into the key actually used in the cache by appending the
+     * original's version (ETag, modification time, size), so replacing the original misses the
+     * cache instead of serving a stale transform. Returns `undefined` — skip caching — when caching
+     * is disabled or the original's metadata can't be read.
+     */
+    protected async versionedCacheKey(fileId: string, cacheKey: string): Promise<string | undefined> {
+        if (!this.cache || this.cache instanceof NoOpCache) {
+            return undefined;
+        }
+
+        let meta: TFile;
+
+        try {
+            meta = await this.storage.getMeta(fileId);
+        } catch {
+            return undefined;
+        }
+
+        return `${cacheKey}@${sourceVersion(meta)}`;
+    }
+
+    /** Read a cached transform, treating entries older than `cacheTtl` as misses. */
+    protected async getCached(key: string | undefined): Promise<CacheValue | undefined> {
+        if (key === undefined || !this.cache) {
+            return undefined;
+        }
+
+        const expiresAt = this.cacheExpiry.get(key);
+
+        if (expiresAt !== undefined && expiresAt <= Date.now()) {
+            this.cacheExpiry.delete(key);
+            await this.cache.delete(key);
+
+            return undefined;
+        }
+
+        return this.cache.get(key);
+    }
+
+    /** Cache a transform with `cacheTtl`, evicting this instance's oldest entries past `maxCacheSize`. */
+    protected async setCached(key: string | undefined, value: CacheValue): Promise<void> {
+        if (key === undefined || !this.cache) {
+            return;
+        }
+
+        const ttlMs = this.config.cacheTtl ? this.config.cacheTtl * 1000 : undefined;
+
+        await this.cache.set(key, value, ttlMs ? { ttl: ttlMs } : undefined);
+
+        // Re-insert so the Map's insertion order stays oldest-first.
+        this.cacheExpiry.delete(key);
+        this.cacheExpiry.set(key, ttlMs ? Date.now() + ttlMs : Number.POSITIVE_INFINITY);
+
+        const max = this.config.maxCacheSize;
+
+        if (!max || max <= 0) {
+            return;
+        }
+
+        for (const oldest of this.cacheExpiry.keys()) {
+            if (this.cacheExpiry.size <= max) {
+                break;
+            }
+
+            this.cacheExpiry.delete(oldest);
+            await this.cache.delete(oldest);
+        }
     }
 
     /**
