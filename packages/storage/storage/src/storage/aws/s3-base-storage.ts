@@ -268,7 +268,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      */
     public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         // Taken before locking: a lock that can't be acquired must not strand the parked record.
-        const conditional = this.takeConditional(part.id);
+        const conditional = this.takeConditional(part.id, options);
         // Read the metadata under the lock: one read before it could be stale by the time a
         // concurrent write to the same upload released it.
         const write = async (): Promise<TFile> =>

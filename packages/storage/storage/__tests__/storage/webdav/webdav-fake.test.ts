@@ -306,6 +306,19 @@ describe("webdav storage against an in-memory WebDAV server", () => {
         expect(server.files.size).toBe(0);
     });
 
+    it("should refuse predicates it would not enforce when conditional is off", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+        const id = await upload(storage, "hello");
+        const notAllowed = expect.objectContaining({ UploadErrorCode: "MethodNotAllowed" });
+
+        await expect(storage.delete({ id }, { ifMatch: "x" })).rejects.toThrow(notAllowed);
+        await expect(storage.get({ id }, { ifMatch: "x" })).rejects.toThrow(notAllowed);
+        // Nothing was sent: the file is still there.
+        expect(server.files.size).toBe(1);
+    });
+
     it("should tell a missing file from a failing server", async () => {
         expect.assertions(7);
 

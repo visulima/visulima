@@ -36,7 +36,7 @@ import type {
     UploadPostOptions,
     UploadPostPolicy,
 } from "./types";
-import { assertCondition } from "./utils/etag";
+import { assertCondition, hasCondition } from "./utils/etag";
 import type { FileInit, FilePart, FileQuery } from "./utils/file";
 import { File, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -929,7 +929,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param id File ID of the upload.
      * @returns The record, or `undefined` when `id` has no conditional upload in flight.
      */
-    protected takeConditional(id: string): TFile | undefined {
+    protected takeConditional(id: string, options?: ConditionalOptions): TFile | undefined {
+        // Only a write that carries the predicate may commit a parked conditional upload: an
+        // unconditional writer racing for the same key must not commit it without the check.
+        if (!hasCondition(options)) {
+            return undefined;
+        }
+
         const file = this.pendingConditional.get(id);
 
         this.pendingConditional.delete(id);

@@ -207,7 +207,7 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
     public async write(part: FilePart | FileQuery | WebdavFile, options?: ConditionalOptions & OperationOptions): Promise<WebdavFile> {
         return this.instrumentOperation("write", async () => {
-            const conditional = this.takeConditional(part.id);
+            const conditional = this.takeConditional(part.id, options);
             let file: WebdavFile;
 
             if (conditional) {
@@ -274,6 +274,8 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
     public async get({ id }: FileQuery, options?: RangeOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
+            this.assertConditionSupported("read", options);
+
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
             const { range } = options ?? {};
@@ -312,6 +314,8 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         options?: RangeOptions,
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
+            this.assertConditionSupported("read", options);
+
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
             const range = options?.range;
@@ -346,6 +350,8 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
     public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<WebdavFile> {
         return this.instrumentOperation("delete", async () => {
+            this.assertConditionSupported("delete", options);
+
             const file = await this.getMeta(id);
             const path = file.path ?? this.keyToPath(file.name || id);
 
@@ -378,6 +384,8 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
     public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<WebdavFile> {
         return this.instrumentOperation("copy", async () => {
+            this.assertConditionSupported("copy", { ifMatch: options?.sourceIfMatch ?? options?.ifMatch, ifNoneMatch: options?.ifNoneMatch });
+
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
@@ -501,6 +509,18 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
             return entry !== undefined && !entry.isCollection;
         });
+    }
+
+    /**
+     * Refuses a predicate this adapter would not enforce: with `conditional` off, the headers
+     * reach servers that may ignore them, turning a compare-and-set into a plain write.
+     * @param kind Kind of operation
+     * @param options Predicates of the call
+     */
+    private assertConditionSupported(kind: keyof ConditionalSupport, options: ConditionalOptions | undefined): void {
+        if (hasCondition(options) && !this.conditionalSupport[kind]) {
+            throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `WebdavStorage was created without \`conditional: true\`; it does not enforce conditional ${kind}`);
+        }
     }
 
     private async request(method: string, path: string, signal: AbortSignal | undefined, init?: { body?: BodyInit; headers?: Record<string, string> }): Promise<Response> {

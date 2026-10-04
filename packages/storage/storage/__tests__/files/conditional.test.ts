@@ -1,4 +1,5 @@
 import { rm } from "node:fs/promises";
+import { Readable } from "node:stream";
 
 import { temporaryDirectory } from "tempy";
 import { afterEach, describe, expect, it } from "vitest";
@@ -139,6 +140,33 @@ describe.each(adapters)("conditional operations on %s", (_name, createAdapter) =
         await files.copy("src.txt", "taken.txt", { ifMatch: taken });
 
         await expect(text(files, "taken.txt")).resolves.toBe("source");
+    });
+
+    it("should evaluate a create-only predicate even when an unconditional write races it", async () => {
+        expect.assertions(2);
+
+        const adapter = createAdapter();
+        // Park a create-only upload, then let an unconditional upload of the same key land first.
+        const parked = await adapter.create({ contentType: "text/plain", id: "race.txt", metadata: {}, size: 3 }, { ifNoneMatch: "*" } as never);
+        const plain = new Files({ adapter });
+
+        await plain.upload("race.txt", "two");
+
+        // The parked upload must not commit without its check: the key now exists.
+        await expect(
+            adapter.write({ body: Readable.from([Buffer.from("one")]), contentLength: 3, id: parked.id, start: 0 }, { ifNoneMatch: "*" } as never),
+        ).rejects.toThrow(precondition);
+        await expect(plain.download("race.txt").then(({ body }) => Buffer.from(body).toString())).resolves.toBe("two");
+    });
+
+    it("should serve concurrent conditional reads of one key instead of answering 423", async () => {
+        expect.assertions(1);
+
+        const files = new Files({ adapter: createAdapter() });
+        const created = await files.upload("busy.txt", "data");
+        const reads = await Promise.all(Array.from({ length: 5 }, async () => files.head("busy.txt", { ifMatch: created.etag as string })));
+
+        expect(reads).toHaveLength(5);
     });
 
     it("should reject malformed predicates before any I/O", async () => {

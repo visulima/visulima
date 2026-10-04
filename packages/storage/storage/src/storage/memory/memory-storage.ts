@@ -178,7 +178,7 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     public async write(part: FilePart | FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
-            const conditional = this.takeConditional(part.id);
+            const conditional = this.takeConditional(part.id, options);
             // Also fails before the body of an unknown upload is read.
             const file = conditional ?? (await this.getMeta(part.id));
 

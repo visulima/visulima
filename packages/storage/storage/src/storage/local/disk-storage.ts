@@ -16,6 +16,7 @@ import { toHttpDate } from "../../utils/headers";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import { retry } from "../../utils/retry";
 import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import { isMetaNotFound } from "../meta-storage";
@@ -210,7 +211,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      */
     public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         // Taken before locking: a lock that can't be acquired must not strand the parked record.
-        const conditional = this.takeConditional(part.id);
+        const conditional = this.takeConditional(part.id, options);
 
         // Lock before reading the metadata, so the offset checked and extended is the one stored
         // after any earlier write finished.
@@ -434,7 +435,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             const { ifMatch, ...rest } = options;
 
             // The check and the read share the key's lock, so no conditional write lands in between.
-            return this.withLock(id, async () => {
+            return this.withLockWhenFree(id, async () => {
                 assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
 
                 return this.get({ id }, rest);
@@ -638,7 +639,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         if (options?.ifMatch !== undefined) {
             const { ifMatch } = options;
 
-            return this.withLock(id, async () => {
+            return this.withLockWhenFree(id, async () => {
                 assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
 
                 return this.delete({ id });
@@ -671,7 +672,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
         if (sourceIfMatch !== undefined || ifMatch !== undefined || ifNoneMatch !== undefined) {
             // Lock both keys, so neither changes between the checks and the copy.
-            return this.withLock(name, async () => {
+            return this.withLockWhenFree(name, async () => {
                 const check = async (): Promise<TFile> => {
                     assertCondition(await this.currentETag(await this.getMeta(name)), { ifMatch: sourceIfMatch });
                     assertCondition(await this.eTagOf(destination), { ifMatch, ifNoneMatch });
@@ -679,7 +680,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     return this.copy(name, destination);
                 };
 
-                return name === destination ? check() : this.withLock(destination, check);
+                return name === destination ? check() : this.withLockWhenFree(destination, check);
             });
         }
 
@@ -890,6 +891,22 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 resolve([part.start + destination.bytesWritten]);
             });
+        });
+    }
+
+    /**
+     * Runs `function_` under the key's lock, waiting briefly while another request holds it: the
+     * lock fails fast, and a conditional read or delete must not answer 423 for a concurrent one.
+     * @param key Lock key
+     * @param function_ Work to do under the lock
+     * @returns What `function_` returns
+     */
+    private async withLockWhenFree<R>(key: string, function_: () => Promise<R>): Promise<R> {
+        return retry(async () => this.withLock(key, function_), {
+            initialDelay: 1,
+            maxDelay: 50,
+            maxRetries: 20,
+            shouldRetry: (error) => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_LOCKED,
         });
     }
 
