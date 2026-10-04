@@ -3,7 +3,8 @@ import { inspect } from "node:util";
 
 import { parseBytes } from "@visulima/humanizer";
 import { isAbsolute, normalize } from "@visulima/path";
-import typeis from "type-is";
+import mimeTypes from "mime";
+import { DEFAULT_LOOKUP, TypeIs } from "type-is";
 
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
@@ -388,7 +389,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         const mime: Required<ValidatorConfig<TFile>> = {
             isValid(file) {
-                return !!typeis.is(file.contentType, this.value as string[]);
+                // type-is 3 resolves only the json/multipart/urlencoded shorthands; keep 2.x's file extensions ("png").
+                const lookup = (value: string): string | string[] | undefined => DEFAULT_LOOKUP(value) ?? mimeTypes.getType(value) ?? undefined;
+
+                return new TypeIs(this.value as string[], { lookup }).is(file.contentType) !== undefined;
             },
             // @TODO: add better error handling for mime types
             response: ErrorMap.UnsupportedMediaType,

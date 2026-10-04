@@ -331,7 +331,6 @@
         "@types/node": "catalog:types",
         "@types/ssh2-sftp-client": "9.0.6",
         "@types/supertest": "catalog:types",
-        "@types/type-is": "catalog:types",
         "@vercel/blob": "catalog:dev",
         "@visulima/fs": "6.0.28",
         "@visulima/humanizer": "4.0.0",

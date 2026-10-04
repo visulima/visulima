@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import createHttpError from "http-errors";
-import typeis, { hasBody } from "type-is";
+import { hasBody, TypeIs } from "type-is";
 
 import { BaseStorage } from "../storage/storage";
 import getLastOne from "./primitives/get-last-one";
@@ -14,6 +14,8 @@ import type { Header, Headers, IncomingMessageWithBody } from "./types";
  * @internal
  */
 export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
+
+const jsonType = new TypeIs(["json"]);
 
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>
@@ -177,7 +179,7 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
  * @returns Parsed metadata object, or empty object if not JSON
  */
 export const getMetadata = async (request: IncomingMessageWithBody<Record<string, unknown>>, limit = 16_777_216): Promise<Record<string, unknown>> => {
-    if (!typeis(request, ["json"])) {
+    if (jsonType.request(request) === undefined) {
         return {};
     }
 
