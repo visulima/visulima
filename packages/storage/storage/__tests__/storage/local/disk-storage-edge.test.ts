@@ -30,8 +30,9 @@ describe("diskStorage edge cases", () => {
     const create = async (storage: DiskStorage, size = 10, extra: Record<string, unknown> = {}): Promise<File> =>
         storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size, ...extra });
 
-    const part = (file: File, body: string, extra: Partial<FilePart> = {}): FilePart =>
-        { return { body: Readable.from([Buffer.from(body)]), contentLength: Buffer.byteLength(body), id: file.id, start: 0, ...extra }; };
+    const part = (file: File, body: string, extra: Partial<FilePart> = {}): FilePart => {
+        return { body: Readable.from([Buffer.from(body)]), contentLength: Buffer.byteLength(body), id: file.id, start: 0, ...extra };
+    };
 
     beforeEach(() => {
         directory = temporaryDirectory();
@@ -97,7 +98,14 @@ describe("diskStorage edge cases", () => {
             const file = await create(storage, 10);
             const body = new PassThrough();
             const controller = new AbortController();
-            const written = storage.write({ ...part(file, ""), body, checksum: md5("0123456789"), checksumAlgorithm: "md5", contentLength: 10, signal: controller.signal } as FilePart);
+            const written = storage.write({
+                ...part(file, ""),
+                body,
+                checksum: md5("0123456789"),
+                checksumAlgorithm: "md5",
+                contentLength: 10,
+                signal: controller.signal,
+            } as FilePart);
 
             body.write("01234");
             await new Promise((resolve) => {
@@ -139,9 +147,9 @@ describe("diskStorage edge cases", () => {
 
             controller.abort();
 
-            await expect(storage.write({ ...part(file, "0123456789"), checksum: md5("0123456789"), checksumAlgorithm: "md5", signal: controller.signal } as FilePart)).rejects.toStrictEqual(
-                expect.objectContaining({ UploadErrorCode: ERRORS.REQUEST_ABORTED }),
-            );
+            await expect(
+                storage.write({ ...part(file, "0123456789"), checksum: md5("0123456789"), checksumAlgorithm: "md5", signal: controller.signal } as FilePart),
+            ).rejects.toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.REQUEST_ABORTED }));
         });
 
         it("should reject when the request body fails", async () => {
@@ -183,7 +191,9 @@ describe("diskStorage edge cases", () => {
 
             await storage.write(part(file, "0123456789"));
 
-            await expect(storage.get({ id: file.id }, { range: { start: 10 } })).rejects.toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.BAD_REQUEST }));
+            await expect(storage.get({ id: file.id }, { range: { start: 10 } })).rejects.toStrictEqual(
+                expect.objectContaining({ UploadErrorCode: ERRORS.BAD_REQUEST }),
+            );
         });
 
         it("should answer FILE_NOT_FOUND when the content is gone but the metadata remains", async () => {
@@ -197,7 +207,9 @@ describe("diskStorage edge cases", () => {
             await rm(join(directory, file.name));
 
             await expect(storage.get({ id: file.id })).rejects.toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.FILE_NOT_FOUND }));
-            await expect(storage.get({ id: file.id }, { range: { start: 0 } })).rejects.toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.FILE_NOT_FOUND }));
+            await expect(storage.get({ id: file.id }, { range: { start: 0 } })).rejects.toStrictEqual(
+                expect.objectContaining({ UploadErrorCode: ERRORS.FILE_NOT_FOUND }),
+            );
             expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("ENOENT") }));
         });
     });
@@ -230,6 +242,30 @@ describe("diskStorage edge cases", () => {
             expect(copy.content.toString()).toBe("0123456789");
             expect(copy.metadata).toStrictEqual({ owner: "u1" });
             await expect(storage.exists({ id: file.id })).resolves.toBe(false);
+        });
+
+        it("should copy and move to nested ids with metadata in a separate directory", async () => {
+            expect.assertions(6);
+
+            const storage = await createStorage({ metaStorageConfig: { directory: join(directory, "meta") } });
+            const file = await create(storage, 10);
+
+            await storage.write(part(file, "0123456789"));
+            await storage.copy(file.id, "copies/deep/one");
+            await storage.move(file.id, "moved/two");
+
+            await expect(storage.get({ id: "copies/deep/one" })).resolves.toHaveProperty("content", Buffer.from("0123456789"));
+            await expect(storage.get({ id: "moved/two" })).resolves.toHaveProperty("content", Buffer.from("0123456789"));
+            await expect(storage.exists({ id: file.id })).resolves.toBe(false);
+
+            const listed = await storage.meta.list();
+
+            expect(listed.map(({ id }) => id).toSorted()).toStrictEqual(["copies/deep/one", "moved/two"]);
+
+            const purged = await storage.purge(-1);
+
+            expect(purged.items.map(({ id }) => id).toSorted()).toStrictEqual(["copies/deep/one", "moved/two"]);
+            await expect(storage.meta.list()).resolves.toStrictEqual([]);
         });
 
         it("should reject unsafe destinations", async () => {

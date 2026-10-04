@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { setTimeout as sleep } from "node:timers/promises";
 
 import { ensureDir, readFile, remove, walk, writeFile } from "@visulima/fs";
-import { join, normalize } from "@visulima/path";
+import { dirname, join, normalize } from "@visulima/path";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage, { isMetaNotFound, setMetaVersion } from "../meta-storage";
@@ -205,6 +205,9 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     // eslint-disable-next-line class-methods-use-this
     private async withFileLock<R>(path: string, function_: () => Promise<R>): Promise<R> {
         const lockPath = `${path}.lock`;
+
+        // A nested id (`a/b`) keeps its metafile in a subdirectory.
+        await ensureDir(dirname(path));
 
         for (let attempt = 1; ; attempt += 1) {
             try {
