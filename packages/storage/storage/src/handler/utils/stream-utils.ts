@@ -75,35 +75,44 @@ export const applyRange = (
 export const createRangeLimitedStream = (sourceStream: Readable, start: number, end: number): Readable => {
     let bytesRead = 0;
     let bytesSent = 0;
+    let finished = false;
     const contentLength = end - start + 1;
 
-    const passThrough = new PassThrough({
-        // Use appropriate high water mark for better backpressure handling
+    // Stop reading once the range is complete. Unpiping first means no write can follow end()
+    // (which would fail the response with ERR_STREAM_WRITE_AFTER_END); chunks already buffered are
+    // dropped by the `finished` check.
+    const finish = (): void => {
+        finished = true;
+        sourceStream.unpipe(passThrough);
+        passThrough.end();
+        sourceStream.destroy();
+    };
+
+    // Backpressure needs no handling here: the Transform holds back its callback while the readable
+    // side is full, and `pipe` pauses and resumes the source accordingly.
+    const passThrough: PassThrough = new PassThrough({
         highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
         transform(chunk: Buffer, _, callback) {
+            if (finished) {
+                callback();
+
+                return;
+            }
+
             const chunkSize = chunk.length;
             const currentPos = bytesRead;
             const endPos = currentPos + chunkSize - 1;
 
             bytesRead += chunkSize;
 
-            // Check if this chunk contains data we need
+            // Chunk is entirely before the range we want
             if (endPos < start) {
-                // Chunk is entirely before the range we want
                 callback();
 
                 return;
             }
 
-            if (currentPos > end) {
-                // Chunk is entirely after the range we want
-                this.end();
-                callback();
-
-                return;
-            }
-
-            // Calculate which part of this chunk to send
+            // The part of this chunk inside the range (a chunk after the range has none)
             const chunkStart = Math.max(0, start - currentPos);
             const chunkEnd = Math.min(chunkSize, end - currentPos + 1);
 
@@ -111,20 +120,11 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
                 const dataToSend = chunk.subarray(chunkStart, chunkEnd);
 
                 bytesSent += dataToSend.length;
-
-                // Push the data and handle backpressure
-                const canContinue = this.push(dataToSend);
-
-                if (!canContinue) {
-                    // Backpressure: pause the source stream
-                    sourceStream.pause();
-                }
+                this.push(dataToSend);
             }
 
-            // Check if we've sent all the requested data
-            if (bytesSent >= contentLength) {
-                this.end();
-                sourceStream.destroy();
+            if (bytesSent >= contentLength || currentPos > end) {
+                finish();
             }
 
             callback();

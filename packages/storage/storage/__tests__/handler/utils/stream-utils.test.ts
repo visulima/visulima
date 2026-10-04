@@ -2,7 +2,7 @@ import { PassThrough, Readable } from "node:stream";
 
 import { describe, expect, it } from "vitest";
 
-import { createRangeLimitedStream, createStreamResponse, pipeWithBackpressure } from "../../../src/handler/utils/stream-utils";
+import { applyRange, createRangeLimitedStream, createStreamResponse, pipeWithBackpressure, rangeIfCurrent } from "../../../src/handler/utils/stream-utils";
 
 const collect = (stream: Readable): Promise<Buffer> =>
     new Promise((resolve, reject) => {
@@ -207,6 +207,143 @@ describe("stream-utils", () => {
 
             expect(error.message).toBe("mid-stream");
             expect(sendErrorCalled).toBe(false);
+        });
+    });
+
+    describe(rangeIfCurrent, () => {
+        const headers = { ETag: "\"abc\"", "Last-Modified": "Thu, 01 Jan 2026 00:00:00 GMT" };
+
+        it("keeps the range without an If-Range validator, and has nothing to keep without a range", () => {
+            expect.assertions(2);
+
+            expect(rangeIfCurrent("bytes=0-1", undefined, headers)).toBe("bytes=0-1");
+            expect(rangeIfCurrent(undefined, "\"abc\"", headers)).toBeUndefined();
+        });
+
+        it("keeps the range for a matching strong ETag, whatever the header name's case", () => {
+            expect.assertions(2);
+
+            expect(rangeIfCurrent("bytes=0-1", " \"abc\" ", headers)).toBe("bytes=0-1");
+            expect(rangeIfCurrent("bytes=0-1", "\"abc\"", { etag: "\"abc\"" })).toBe("bytes=0-1");
+        });
+
+        it("drops the range for a different or weak ETag", () => {
+            expect.assertions(2);
+
+            expect(rangeIfCurrent("bytes=0-1", "\"other\"", headers)).toBeUndefined();
+            expect(rangeIfCurrent("bytes=0-1", "W/\"abc\"", { ETag: "W/\"abc\"" })).toBeUndefined();
+        });
+
+        it("compares a date validator with Last-Modified, and drops the range when the file has none", () => {
+            expect.assertions(3);
+
+            expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", headers)).toBe("bytes=0-1");
+            expect(rangeIfCurrent("bytes=0-1", "Fri, 02 Jan 2026 00:00:00 GMT", headers)).toBeUndefined();
+            expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", undefined)).toBeUndefined();
+        });
+    });
+
+    describe(applyRange, () => {
+        it("answers a full 200 without a range, with Content-Length only for a known size", () => {
+            expect.assertions(3);
+
+            const stream = Readable.from([]);
+
+            expect(applyRange(stream, 10, undefined)).toStrictEqual({ headers: { "Accept-Ranges": "bytes", "Content-Length": 10 }, partial: false, stream });
+            expect(applyRange(stream, undefined, undefined).headers).toStrictEqual({ "Accept-Ranges": "bytes" });
+            // A range on a stream of unknown size cannot be served partially
+            expect(applyRange(stream, undefined, { end: 1, start: 0 }).partial).toBe(false);
+        });
+
+        it("answers a partial response with Content-Range and the slice", async () => {
+            expect.assertions(2);
+
+            const ranged = applyRange(Readable.from(makeSequentialBuffer(10)), 10, { end: 5, start: 2 });
+
+            expect(ranged.headers).toStrictEqual({ "Accept-Ranges": "bytes", "Content-Length": 4, "Content-Range": "bytes 2-5/10" });
+            await expect(collect(ranged.stream)).resolves.toStrictEqual(makeSequentialBuffer(10).subarray(2, 6));
+        });
+    });
+
+    describe("createRangeLimitedStream across chunks", () => {
+        it("assembles a range spanning many small chunks and stops at its end", async () => {
+            expect.assertions(1);
+
+            const full = makeSequentialBuffer(100);
+            const chunks = Array.from({ length: 10 }, (_, index) => full.subarray(index * 10, index * 10 + 10));
+            const limited = createRangeLimitedStream(Readable.from(chunks), 15, 34);
+
+            await expect(collect(limited)).resolves.toStrictEqual(full.subarray(15, 35));
+        });
+
+        it("pauses the source while the consumer applies backpressure, and delivers everything once it reads", async () => {
+            expect.assertions(1);
+
+            const full = makeSequentialBuffer(256 * 1024);
+            const chunks = Array.from({ length: 16 }, (_, index) => full.subarray(index * 16_384, (index + 1) * 16_384));
+            const limited = createRangeLimitedStream(Readable.from(chunks), 0, full.length - 1);
+
+            // Nobody reads for a while: the buffer fills up and push() reports backpressure.
+            await new Promise((resolve) => {
+                setTimeout(resolve, 20);
+            });
+
+            await expect(collect(limited)).resolves.toStrictEqual(full);
+        });
+    });
+
+    describe("pipeWithBackpressure edge cases", () => {
+        it("resumes a paused source on drain", async () => {
+            expect.assertions(1);
+
+            const source = Readable.from([Buffer.alloc(64 * 1024, 1), Buffer.alloc(64 * 1024, 2), Buffer.alloc(64 * 1024, 3)]);
+            const destination = new PassThrough({ highWaterMark: 1024 });
+
+            pipeWithBackpressure(source, destination as unknown as never, async () => undefined);
+
+            const buffer = await collect(destination);
+
+            expect(buffer).toHaveLength(3 * 64 * 1024);
+        });
+
+        it("ignores a source error once the destination is closed", async () => {
+            expect.assertions(1);
+
+            const source = new PassThrough();
+            const destination = new PassThrough();
+            let sendErrorCalled = false;
+
+            source.on("error", () => undefined);
+            pipeWithBackpressure(source, destination as unknown as never, async () => {
+                sendErrorCalled = true;
+            });
+
+            destination.emit("close");
+            source.emit("error", new Error("late"));
+
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+
+            expect(sendErrorCalled).toBe(false);
+        });
+
+        it("destroys the destination when sending the error response fails", async () => {
+            expect.assertions(1);
+
+            const source = new PassThrough();
+            const destination = new PassThrough();
+            const destroyed = new Promise<Error>((resolve) => {
+                destination.on("error", resolve);
+            });
+
+            pipeWithBackpressure(source, destination as unknown as never, async () => {
+                throw new Error("headers already sent");
+            });
+
+            source.emit("error", new Error("read failed"));
+
+            await expect(destroyed).resolves.toStrictEqual(expect.objectContaining({ message: "read failed" }));
         });
     });
 });
