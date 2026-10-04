@@ -75,7 +75,7 @@ const storage = new BoxStorage({
 | `jwt`                 | `{ configFilePath }` \| `{ configJsonString }`              | —                     | JWT server auth, from the JSON config file downloaded from the developer console.                                                          |
 | `rootFolderId`        | `string`                                                    | `"0"`                 | Box folder that acts as the bucket root. Must exist; sub-folders inside it are created on demand.                                          |
 | `publicByDefault`     | `boolean`                                                   | `false`               | `write()` also creates an `open` shared link, and `getReadUrl()` returns the shared link instead of a short-lived download URL.            |
-| `defaultUrlExpiresIn` | `number`                                                    | `3600`                | Declared but currently not read by the adapter; Box decides download-URL lifetime.                                                         |
+| `defaultUrlExpiresIn` | `number`                                                    | —                     | **Deprecated, no effect.** Box decides download-URL lifetime, and expiring shared links need a paid plan.                                  |
 | `metaStorageConfig`   | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir           | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                                       |
 
 `developerToken`, `oauth`, `ccg` and `jwt` are mutually exclusive — passing more than one throws. Auth precedence is `client` → `developerToken` → `oauth` → `ccg` → `jwt` → env `BOX_DEVELOPER_TOKEN`.
