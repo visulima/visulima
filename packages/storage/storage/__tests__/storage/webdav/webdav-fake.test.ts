@@ -292,6 +292,19 @@ describe("webdav storage against an in-memory WebDAV server", () => {
         await expect(storage.get({ id }, { retries: 0 })).rejects.toThrow("502");
     });
 
+    it("should not create over an upload whose metadata it cannot read", async () => {
+        expect.assertions(2);
+
+        const metaStorage = new MemoryMetaStorage();
+        const storage = createStorage({ metaStorage });
+        const id = await upload(storage, "hello");
+
+        vi.spyOn(metaStorage, "get").mockRejectedValueOnce(new Error("meta store down"));
+
+        await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).rejects.toThrow("meta store down");
+        await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
+    });
+
     it("should describe a file written by other means", async () => {
         expect.assertions(2);
 
