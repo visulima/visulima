@@ -270,6 +270,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public readonly supportsResumableWrites: boolean = true;
 
+    /**
+     * Adapter capability flag: when `true`, the adapter only appends, so a write has to start
+     * where the stored upload ends ({@link BaseStorage.assertContiguousWrite}). Its `bytesWritten`
+     * is then always the length of the stored prefix, and a "completed" status it reports is
+     * final. Adapters that write at any offset keep `false`: their `bytesWritten` is only the
+     * furthest byte written, and a chunked upload's progress comes from its recorded chunks.
+     */
+    public readonly sequentialWrites: boolean = false;
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
@@ -527,7 +536,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             .catch(() => undefined)
             .then(async () => {
                 // A record that can't be read fails the save rather than overwriting its progress.
-                mergeChunkedProgress(file, await this.meta.get(file.id));
+                mergeChunkedProgress(file, await this.meta.get(file.id), this.sequentialWrites);
 
                 return this.persistMeta(file);
             });
@@ -569,7 +578,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 const stored = await this.meta.get(file.id);
                 const storedVersion = getMetaVersion(stored);
 
-                mergeChunkedProgress(file, stored);
+                mergeChunkedProgress(file, stored, this.sequentialWrites);
 
                 // The store gave no version to compare against (e.g. a service without ETags).
                 if (storedVersion === undefined) {
