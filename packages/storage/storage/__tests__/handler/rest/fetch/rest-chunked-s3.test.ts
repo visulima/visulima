@@ -166,4 +166,49 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
         expect(stored?.byteLength).toBe(bytes.byteLength);
         expect(Buffer.from(stored as Uint8Array).equals(Buffer.from(bytes))).toBe(true);
     });
+    it("should answer HEAD for a completed upload whose metadata was deleted (#915)", async () => {
+        expect.assertions(6);
+
+        vi.stubGlobal("fetch", createS3Fake().fetch);
+
+        const storage = new AwsLightStorage({
+            accessKeyId: "id",
+            bucket: "uploads",
+            endpoint: "https://acct.r2.cloudflarestorage.com/uploads/",
+            region: "auto",
+            secretAccessKey: "secret",
+        });
+        const rest = new RestFetch({ storage });
+        const bytes = new Uint8Array(1024).map((_, index) => index % 251);
+        const endpoint = "https://app.local/upload";
+
+        const created = await rest.fetch(
+            new Request(endpoint, {
+                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": String(bytes.byteLength) },
+                method: "POST",
+            }),
+        );
+        const location = new URL(created.headers.get("location") as string, endpoint).href;
+
+        const completed = await rest.fetch(
+            new Request(location, {
+                body: bytes,
+                headers: { "content-length": String(bytes.byteLength), "content-type": "application/octet-stream", "x-chunk-offset": "0" },
+                method: "PATCH",
+            }),
+        );
+
+        expect(completed.status).toBe(200);
+
+        const head = await rest.fetch(new Request(location, { method: "HEAD" }));
+
+        expect(head.status).toBe(200);
+        expect(head.headers.get("x-upload-complete")).toBe("true");
+        expect(head.headers.get("x-upload-offset")).toBe(String(bytes.byteLength));
+        expect(JSON.parse(head.headers.get("x-received-chunks") as string)).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
+
+        const unknown = await rest.fetch(new Request(`${endpoint}/does-not-exist`, { method: "HEAD" }));
+
+        expect(unknown.status).toBe(404);
+    });
 });

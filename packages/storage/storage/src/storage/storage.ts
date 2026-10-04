@@ -679,6 +679,19 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
+     * Describes an upload whose metadata is gone because it completed. Providers that drop the
+     * metadata on completion override this to answer from the stored object, so a client resuming
+     * a finished upload learns it is done instead of starting a new one (#915).
+     * @param _id File ID of the upload.
+     * @param _options Operation options.
+     * @returns The completed file, or `undefined` when no stored object answers for the ID.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public async getCompletedFile(_id: string, _options?: OperationOptions): Promise<TFile | undefined> {
+        return undefined;
+    }
+
+    /**
      * Retrieves upload metadata by file ID.
      * @param id File ID to retrieve metadata for.
      * @returns Promise resolving to the file metadata object.

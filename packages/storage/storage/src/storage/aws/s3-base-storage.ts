@@ -991,6 +991,27 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
+     * Answers for a completed upload from its object: the metadata is deleted on completion. The
+     * object is looked up under the upload's ID, which is its key unless a custom `filename` is set.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+        const s3Api = this.getS3Api();
+
+        let head: Awaited<ReturnType<S3ApiOperations["headObject"]>>;
+
+        try {
+            head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
+        } catch {
+            return undefined;
+        }
+
+        const size = head.ContentLength ?? 0;
+        const file = new (this.getFileClass())({ contentType: head.ContentType, id, metadata: {}, size });
+
+        return Object.assign(file, { bytesWritten: size, ETag: head.ETag, name: id, status: "completed" as const });
+    }
+
+    /**
      * Internal onComplete handler.
      */
     protected internalOnComplete = async (file: TFile): Promise<[{ ETag?: string; Location: string }, TFile]> => {
