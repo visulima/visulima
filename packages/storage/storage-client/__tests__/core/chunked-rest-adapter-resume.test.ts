@@ -99,6 +99,87 @@ describe("chunked-rest-adapter resume", () => {
         expect(removeSpy).toHaveBeenCalledTimes(1);
     });
 
+    const resumeWithServerState = async (size: number, headHeaders: Record<string, string>): Promise<string[]> => {
+        const urlStorage = new MemoryUrlStorage();
+        const file = new File(["x".repeat(size)], "test.bin", { type: "application/octet-stream" });
+        const fingerprint = defaultFingerprint({ endpoint: ENDPOINT, file, protocol: "chunked-rest" });
+
+        await urlStorage.addEntry({
+            createdAt: Date.now(),
+            endpoint: ENDPOINT,
+            fingerprint,
+            lastModified: file.lastModified,
+            protocol: "chunked-rest",
+            size: file.size,
+            uploadUrl: "existing-id",
+        });
+
+        let patched = false;
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            if (init?.method === "HEAD") {
+                const headers = patched ? { "X-Upload-Complete": "true", "X-Upload-Offset": String(size) } : headHeaders;
+
+                return { headers: new Headers(headers), ok: true, status: 200 };
+            }
+
+            if (init?.method === "PATCH") {
+                patched = true;
+
+                return {
+                    headers: new Headers({ "X-Upload-Complete": "true", "X-Upload-Offset": String(size) }),
+                    json: async () => {
+                        return {};
+                    },
+                    ok: true,
+                    status: 200,
+                };
+            }
+
+            return {
+                headers: new Headers(),
+                json: async () => {
+                    return { id: "existing-id", size, status: "completed" };
+                },
+                ok: true,
+                status: 200,
+            };
+        });
+
+        await createChunkedRestAdapter({ chunkSize: 10, endpoint: ENDPOINT, retry: false, urlStorage }).upload(file);
+
+        return mockFetch.mock.calls
+            .map((call) => captureFetchCall(call))
+            .map(({ headers, method }) => `${method ?? "GET"} ${headers["X-Chunk-Offset"] ?? ""}`.trim());
+    };
+
+    it("sends no chunk when resuming an upload the server reports complete (#913)", async () => {
+        expect.assertions(1);
+
+        const requests = await resumeWithServerState(30, {
+            "X-Received-Chunks": JSON.stringify([
+                { length: 10, offset: 0 },
+                { length: 10, offset: 10 },
+            ]),
+            "X-Upload-Complete": "true",
+            "X-Upload-Offset": "30",
+        });
+
+        expect(requests.filter((request) => request.startsWith("PATCH"))).toStrictEqual([]);
+    });
+
+    it("treats chunks inside a wider server-reported range as received", async () => {
+        expect.assertions(1);
+
+        const requests = await resumeWithServerState(40, {
+            "X-Received-Chunks": JSON.stringify([{ length: 30, offset: 0 }]),
+            "X-Upload-Complete": "false",
+            "X-Upload-Offset": "30",
+        });
+
+        expect(requests.filter((request) => request.startsWith("PATCH"))).toStrictEqual(["PATCH 30"]);
+    });
+
     it("skips POST and resumes when urlStorage has an entry for the fingerprint", async () => {
         expect.assertions(2);
 

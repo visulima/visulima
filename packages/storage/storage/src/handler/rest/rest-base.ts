@@ -349,9 +349,27 @@ abstract class RestBase<TFile extends UploadFile> {
 
         // An adapter that only appends finished the upload with this chunk; its "completed" is
         // final, and it may have dropped the upload's metadata already (S3 deletes it on
-        // completion), so there is nothing left to record the chunk in (#908).
+        // completion), so there may be nothing left to record the chunk in (#908). Where the
+        // metadata outlives completion, record the chunk anyway, so `X-Received-Chunks` agrees
+        // with `X-Upload-Complete` and a resuming client doesn't re-send it (#913).
         if (sequentialWrites && written.status === "completed") {
-            const completedFile: TFile = { ...written, bytesWritten: totalSize };
+            let completedChunks = getChunks(written);
+
+            try {
+                completedChunks = await this.storage.withLock(`chunks:${id}`, async () => {
+                    const current = await this.storage.getMeta(id);
+                    const merged = trackChunk(getChunks(current), { checksum: chunkChecksum, length: contentLength, offset: chunkOffset });
+
+                    await this.storage.update({ id }, { metadata: { ...current.metadata, _chunks: merged } });
+
+                    return merged;
+                });
+            } catch {
+                // Best effort: the bytes are stored and the upload is final; metadata the adapter
+                // already deleted, or a lock held by a concurrent request, must not fail it.
+            }
+
+            const completedFile: TFile = { ...written, bytesWritten: totalSize, metadata: { ...written.metadata, _chunks: completedChunks } };
 
             return buildResponseFile(
                 completedFile,
