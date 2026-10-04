@@ -4,12 +4,14 @@ Visulima Storage provides OpenAPI (Swagger) specifications for all upload handle
 
 ## Overview
 
-The package exports four OpenAPI specifications:
+The package exports four OpenAPI generators:
 
-- **`xhrOpenApiSpec`** - Multipart/form-data uploads (XHR)
-- **`tusOpenApiSpec`** - TUS resumable upload protocol
-- **`restOpenApiSpec`** - REST API for direct binary uploads
-- **`transformOpenApiSpec`** - Media transformation endpoints
+- **`xhrOpenApiSpec(origin, path, options?)`** - Multipart/form-data uploads
+- **`tusOpenApiSpec(path, options?)`** - TUS resumable upload protocol
+- **`restOpenApiSpec(origin, path, options?)`** - REST API for direct binary and chunked uploads
+- **`transformOpenApiSpec(path?, tags?)`** - Media transformation query parameters on `GET <path>/{id}`
+
+Each returns a complete OpenAPI 3.0.3 document (`openapi`, `info`, `paths`, `components`), so a single spec can be handed straight to Swagger UI. Override `info` (or add `servers`) by spreading the result.
 
 ## Installation
 
@@ -21,17 +23,17 @@ npm install @visulima/storage
 
 ## Basic Usage
 
-### Import OpenAPI Specs
-
 ```typescript
-import { xhrOpenApiSpec, tusOpenApiSpec, restOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
+import { restOpenApiSpec, transformOpenApiSpec, tusOpenApiSpec, xhrOpenApiSpec } from "@visulima/storage/openapi";
+
+const spec = {
+    ...xhrOpenApiSpec("http://localhost:3000", "/files"),
+    info: { title: "My upload API", version: "1.0.0" },
+    servers: [{ url: "http://localhost:3000" }],
+};
 ```
 
 ## XHR OpenAPI Spec (Multipart Uploads)
-
-Generate OpenAPI documentation for multipart/form-data upload endpoints.
-
-### Basic Example
 
 ```typescript
 import { xhrOpenApiSpec } from "@visulima/storage/openapi";
@@ -39,65 +41,38 @@ import { xhrOpenApiSpec } from "@visulima/storage/openapi";
 const spec = xhrOpenApiSpec("http://localhost:3000", "/files", {
     transformer: "image",
     supportedTransformerFormat: ["jpeg", "png", "webp", "avif"],
-});
-```
-
-### With Custom Tags
-
-```typescript
-const spec = xhrOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
     tags: ["File Upload", "Multipart"],
 });
 ```
 
+Documents `POST <path>` (200 with the stored file's metadata and a `Location: <path>/<id>.<ext>` header), `GET <path>/{id}`, `GET <path>/{id}/metadata`, `DELETE <path>/{id}`, and `GET <path>` (listing, only served with `allowList: true`).
+
 ### Options
 
 ```typescript
-interface XhrOpenApiSpecOptions {
-    /** Transformer type (e.g., "image", "video", "audio") */
-    transformer?: string;
-    /** Supported transformation formats */
+interface OpenApiSpecOptions {
+    /** Media transformer whose query parameters GET <path>/{id} accepts: "image", "video", "audio", or true for all */
+    transformer?: boolean | "image" | "video" | "audio";
+    /** Output formats offered by the transformer */
     supportedTransformerFormat?: string[];
-    /** Custom OpenAPI tags */
+    /** OpenAPI tags for the operations */
     tags?: string[];
 }
 ```
 
+`options` is optional for `xhrOpenApiSpec`, `restOpenApiSpec` and `tusOpenApiSpec`.
+
 ## TUS OpenAPI Spec (Resumable Uploads)
-
-Generate OpenAPI documentation for TUS resumable upload protocol endpoints.
-
-### Basic Example
 
 ```typescript
 import { tusOpenApiSpec } from "@visulima/storage/openapi";
 
-const spec = tusOpenApiSpec("/files-tus", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-});
+const spec = tusOpenApiSpec("/files-tus", { tags: ["TUS Upload"] });
 ```
 
-### Options
-
-```typescript
-interface TusOpenApiSpecOptions {
-    /** Transformer type */
-    transformer?: string;
-    /** Supported transformation formats */
-    supportedTransformerFormat?: string[];
-    /** Custom OpenAPI tags */
-    tags?: string[];
-}
-```
+Documents `OPTIONS`, `POST` (creation), `HEAD`, `PATCH`, `GET <path>/{id}` and `GET <path>/{id}/metadata` (both answer with the upload's metadata as JSON) and `DELETE`. TUS has no listing endpoint. `transformer` / `supportedTransformerFormat` are accepted but ignored, since TUS `GET` never returns file bytes.
 
 ## REST OpenAPI Spec (Direct Binary Uploads)
-
-Generate OpenAPI documentation for REST API endpoints supporting direct binary uploads and chunked uploads.
-
-### Basic Example
 
 ```typescript
 import { restOpenApiSpec } from "@visulima/storage/openapi";
@@ -110,18 +85,14 @@ const spec = restOpenApiSpec("http://localhost:3000", "/files", {
 
 ### Features Documented
 
-- POST - Upload file or initialize chunked upload
-- PUT - Create or update file
-- PATCH - Upload chunks for chunked uploads
-- GET - Retrieve a file, or list files when the handler is created with `allowList: true` (off by default)
-- DELETE - Delete single file or batch delete
-- HEAD - Get file metadata and upload progress
+- `POST` - Upload a file (201), or initialize a chunked upload (201 with `X-Upload-ID` and `X-Chunked-Upload: true`)
+- `PUT` - Replace an upload created through the route (200) or create one under a new ID (201); 400 for IDs not matching `^[\w-]{1,255}$`, 409 when an object without upload metadata already exists under that key
+- `PATCH` - Upload a chunk: 202 while incomplete, 200 with `X-Upload-Complete: true` for the completing chunk
+- `GET` - Retrieve a file, or list files when the handler is created with `allowList: true` (off by default)
+- `DELETE` - Delete a single file, or batch delete (204 / 207 / 404)
+- `HEAD` - File metadata and chunked upload progress
 
 ## Transform OpenAPI Spec (Media Transformations)
-
-Generate OpenAPI documentation for media transformation endpoints.
-
-### Basic Example
 
 ```typescript
 import { transformOpenApiSpec } from "@visulima/storage/openapi";
@@ -129,76 +100,53 @@ import { transformOpenApiSpec } from "@visulima/storage/openapi";
 const spec = transformOpenApiSpec("/files", ["Transform"]);
 ```
 
-### Options
-
-```typescript
-interface TransformOpenApiSpecOptions {
-    /** Custom OpenAPI tags */
-    tags?: string[];
-}
-```
+Documents the transformation query parameters of `GET <path>/{id}` (the handler's `GET` route with a `mediaTransformer` configured). Both arguments are optional (`path` defaults to `/`, tags to `["Transform"]`).
 
 ## Combining Multiple Specs
 
-Combine multiple OpenAPI specs into a single document for comprehensive API documentation.
+Specs for different paths can be merged by spreading `paths` and `components`. When two specs describe the **same path** (e.g. `xhrOpenApiSpec(…, "/files")` and `transformOpenApiSpec("/files")`), a plain spread replaces the whole path item, so `DELETE /files/{id}` from the multipart spec would disappear. Merge path items per method instead:
+
+```typescript
+import type { OpenAPIV3 } from "openapi-types";
+
+const mergeSpecs = (info: OpenAPIV3.InfoObject, ...specs: Partial<OpenAPIV3.Document>[]): OpenAPIV3.Document => {
+    const paths: OpenAPIV3.PathsObject = {};
+    const components: Record<string, Record<string, unknown>> = {};
+
+    for (const spec of specs) {
+        for (const [path, item] of Object.entries(spec.paths ?? {})) {
+            // Later specs win per method; other methods on the same path are kept
+            paths[path] = { ...paths[path], ...item };
+        }
+
+        for (const [section, entries] of Object.entries(spec.components ?? {})) {
+            components[section] = { ...components[section], ...entries };
+        }
+    }
+
+    return { components: components as OpenAPIV3.ComponentsObject, info, openapi: "3.0.3", paths };
+};
+```
 
 ### Express Example
 
 ```typescript
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { xhrOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
+import { transformOpenApiSpec, xhrOpenApiSpec } from "@visulima/storage/openapi";
 
 const app = express();
 
-// Generate OpenAPI specs
-const xhrSpec = xhrOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp", "avif"],
-});
+const spec = mergeSpecs(
+    { title: "Visulima Storage API", version: "1.0.0" },
+    xhrOpenApiSpec("http://localhost:3000", "/files", {
+        transformer: "image",
+        supportedTransformerFormat: ["jpeg", "png", "webp", "avif"],
+    }),
+    transformOpenApiSpec("/files", ["Transform"]),
+);
 
-const transformSpec = transformOpenApiSpec("/files", ["Transform"]);
-
-// Combine specs
-const swaggerSpec = {
-    openapi: "3.0.0",
-    info: {
-        title: "Visulima Storage API",
-        version: "1.0.0",
-        description: "File upload and transformation API",
-    },
-    servers: [
-        {
-            url: "http://localhost:3000",
-            description: "Development server",
-        },
-    ],
-    components: {
-        schemas: {
-            ...xhrSpec.components?.schemas,
-            ...transformSpec.components?.schemas,
-        },
-        examples: {
-            ...xhrSpec.components?.examples,
-            ...transformSpec.components?.examples,
-        },
-        responses: {
-            ...xhrSpec.components?.responses,
-            ...transformSpec.components?.responses,
-        },
-        parameters: {
-            ...xhrSpec.components?.parameters,
-            ...transformSpec.components?.parameters,
-        },
-    },
-    paths: {
-        ...xhrSpec.paths,
-        ...transformSpec.paths,
-    },
-};
-
-// Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec));
 
 app.listen(3000);
 ```
@@ -208,62 +156,17 @@ app.listen(3000);
 ```typescript
 import { Hono } from "hono";
 import { swaggerUI } from "@hono/swagger-ui";
-import { xhrOpenApiSpec, tusOpenApiSpec } from "@visulima/storage/openapi";
+import { tusOpenApiSpec, xhrOpenApiSpec } from "@visulima/storage/openapi";
 
 const app = new Hono();
 
-// Generate OpenAPI specs
-const xhrSpec = xhrOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-});
+const spec = mergeSpecs(
+    { title: "Visulima Storage API", description: "File upload API (Multipart & TUS)", version: "1.0.0" },
+    xhrOpenApiSpec("http://localhost:3000", "/files"),
+    tusOpenApiSpec("/files-tus"),
+);
 
-const tusSpec = tusOpenApiSpec("/files-tus", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-});
-
-// OpenAPI JSON endpoint
-app.get("/openapi.json", (c) => {
-    return c.json({
-        openapi: "3.0.0",
-        info: {
-            title: "Visulima Storage API",
-            version: "1.0.0",
-            description: "File upload API (Multipart & TUS)",
-        },
-        servers: [
-            {
-                url: "http://localhost:3000",
-                description: "Development server",
-            },
-        ],
-        components: {
-            schemas: {
-                ...xhrSpec.components?.schemas,
-                ...tusSpec.components?.schemas,
-            },
-            examples: {
-                ...xhrSpec.components?.examples,
-                ...tusSpec.components?.examples,
-            },
-            responses: {
-                ...xhrSpec.components?.responses,
-                ...tusSpec.components?.responses,
-            },
-            parameters: {
-                ...xhrSpec.components?.parameters,
-                ...tusSpec.components?.parameters,
-            },
-        },
-        paths: {
-            ...xhrSpec.paths,
-            ...tusSpec.paths,
-        },
-    });
-});
-
-// Swagger UI
+app.get("/openapi.json", (c) => c.json({ ...spec, servers: [{ url: "http://localhost:3000" }] }));
 app.get("/", swaggerUI({ url: "/openapi.json" }));
 
 export default app;
@@ -277,62 +180,30 @@ The OpenAPI specs include shared components that can be reused:
 import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList } from "@visulima/storage/openapi";
 ```
 
-### Available Shared Components
-
 - **`sharedErrorSchemaObject`** - Standard error response schema
 - **`sharedFileMetaExampleObject`** - Example file metadata
 - **`sharedFileMetaSchemaObject`** - File metadata schema
-- **`sharedGet`** - Standard GET operation definition
-- **`sharedGetList`** - Standard GET list operation definition
-
-### Using Shared Components
+- **`sharedGet(operationId, tags, transformer?, formats?)`** - Standard GET operation definition
+- **`sharedGetList(operationId, tags)`** - Standard GET list operation definition (array, or `{ data, meta }` when paginated)
 
 ```typescript
-import { sharedGet, sharedFileMetaSchemaObject } from "@visulima/storage/openapi";
+import { sharedErrorSchemaObject, sharedFileMetaSchemaObject, sharedGet } from "@visulima/storage/openapi";
 
 const customSpec = {
-    openapi: "3.0.0",
+    openapi: "3.0.3",
+    info: { title: "Custom API", version: "1.0.0" },
     paths: {
-        "/custom-endpoint": {
-            get: sharedGet("CustomGet", ["Custom"]),
+        "/custom-endpoint/{id}": {
+            get: sharedGet("customGet", ["Custom"]),
         },
     },
     components: {
         schemas: {
-            FileMeta: sharedFileMetaSchemaObject,
+            ...sharedErrorSchemaObject,
+            ...sharedFileMetaSchemaObject,
         },
     },
 };
-```
-
-## Customization
-
-### Custom Tags
-
-Add custom tags to organize your API documentation:
-
-```typescript
-const spec = xhrOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-    tags: ["File Management", "Upload"],
-});
-```
-
-### Multiple Transformers
-
-Document support for multiple transformer types:
-
-```typescript
-const xhrSpec = xhrOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp", "avif", "tiff", "gif"],
-});
-
-const restSpec = restOpenApiSpec("http://localhost:3000", "/files", {
-    transformer: "video",
-    supportedTransformerFormat: ["mp4", "webm", "mkv"],
-});
 ```
 
 ## Integration with Swagger UI
@@ -373,112 +244,40 @@ await fastify.register(fastifySwagger, {
 });
 ```
 
-## Best Practices
-
-1. **Combine Related Specs** - Merge multipart, TUS, and REST specs for comprehensive documentation
-2. **Use Consistent Tags** - Organize endpoints with meaningful tags
-3. **Document Transformers** - Include transformer information for media transformation endpoints
-4. **Version Your API** - Include version information in the OpenAPI info section
-5. **Add Examples** - The specs include examples, but you can add custom ones for your use case
-6. **Serve from Production URLs** - Update server URLs for production environments
-
 ## Complete Example
 
 ```typescript
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import { xhrOpenApiSpec, tusOpenApiSpec, restOpenApiSpec, transformOpenApiSpec } from "@visulima/storage/openapi";
+import { restOpenApiSpec, transformOpenApiSpec, tusOpenApiSpec, xhrOpenApiSpec } from "@visulima/storage/openapi";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BASE_URL = `http://localhost:${PORT}`;
 
-// Generate all OpenAPI specs
-const xhrSpec = xhrOpenApiSpec(BASE_URL, "/files", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp", "avif"],
-    tags: ["Multipart Upload"],
-});
+const spec = mergeSpecs(
+    { title: "Visulima Storage API", version: "1.0.0", description: "File upload and transformation API" },
+    xhrOpenApiSpec(BASE_URL, "/files", {
+        transformer: "image",
+        supportedTransformerFormat: ["jpeg", "png", "webp", "avif"],
+        tags: ["Multipart Upload"],
+    }),
+    tusOpenApiSpec("/files-tus", { tags: ["TUS Upload"] }),
+    restOpenApiSpec(BASE_URL, "/files-rest", { tags: ["REST Upload"] }),
+    transformOpenApiSpec("/files", ["Transform"]),
+);
 
-const tusSpec = tusOpenApiSpec("/files-tus", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-    tags: ["TUS Upload"],
-});
-
-const restSpec = restOpenApiSpec(BASE_URL, "/files-rest", {
-    transformer: "image",
-    supportedTransformerFormat: ["jpeg", "png", "webp"],
-    tags: ["REST Upload"],
-});
-
-const transformSpec = transformOpenApiSpec("/files", ["Transform"]);
-
-// Combine all specs
-const combinedSpec = {
-    openapi: "3.0.0",
-    info: {
-        title: "Visulima Storage API",
-        version: "1.0.0",
-        description: "Complete file upload and transformation API",
-        contact: {
-            name: "Visulima",
-            url: "https://github.com/visulima/visulima",
-        },
-    },
-    servers: [
-        {
-            url: BASE_URL,
-            description: "Development server",
-        },
-    ],
-    components: {
-        schemas: {
-            ...xhrSpec.components?.schemas,
-            ...tusSpec.components?.schemas,
-            ...restSpec.components?.schemas,
-            ...transformSpec.components?.schemas,
-        },
-        examples: {
-            ...xhrSpec.components?.examples,
-            ...tusSpec.components?.examples,
-            ...restSpec.components?.examples,
-            ...transformSpec.components?.examples,
-        },
-        responses: {
-            ...xhrSpec.components?.responses,
-            ...tusSpec.components?.responses,
-            ...restSpec.components?.responses,
-            ...transformSpec.components?.responses,
-        },
-        parameters: {
-            ...xhrSpec.components?.parameters,
-            ...tusSpec.components?.parameters,
-            ...restSpec.components?.parameters,
-            ...transformSpec.components?.parameters,
-        },
-    },
-    paths: {
-        ...xhrSpec.paths,
-        ...tusSpec.paths,
-        ...restSpec.paths,
-        ...transformSpec.paths,
-    },
-};
-
-// Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(combinedSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup({ ...spec, servers: [{ url: BASE_URL, description: "Development server" }] }));
 
 app.listen(PORT, () => {
-    console.log(`Server running on ${BASE_URL}`);
     console.log(`API docs available at ${BASE_URL}/api-docs`);
 });
 ```
 
-## Next Steps
+## Best Practices
 
-- Visit `/api-docs` to view interactive API documentation
-- Test endpoints directly from Swagger UI
-- Export OpenAPI spec for API clients
-- Integrate with API testing tools
-- Generate client SDKs from OpenAPI spec
+1. **Merge per method** - Use a per-path merge like `mergeSpecs` above when two specs share a path
+2. **Use Consistent Tags** - Organize endpoints with meaningful tags
+3. **Document Transformers** - Pass `transformer` to the multipart/REST specs when a `mediaTransformer` is configured
+4. **Set `info` and `servers`** - The defaults are generic; spread your own over the result
+5. **Serve from Production URLs** - Use your public origin for `origin` and `servers`

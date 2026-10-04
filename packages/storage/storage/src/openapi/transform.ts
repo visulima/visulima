@@ -1,12 +1,10 @@
-import { createHash } from "node:crypto";
-
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject } from "./shared";
+import { operationIdPrefix, sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject } from "./shared";
 
 const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Partial<OpenAPIV3.Document> => {
-    const pathHash = createHash("sha256").update(path).digest("base64");
+    const pathHash = operationIdPrefix(path);
 
     return {
         components: {
@@ -464,7 +462,7 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                 ...createPaginationSchemaObject(
                     "FileMetaPagination",
                     {
-                        $ref: "#/components/schemas/PaginationMeta",
+                        $ref: "#/components/schemas/FileMeta",
                     },
                     "#/components/schemas/PaginationMeta",
                 ),
@@ -591,101 +589,9 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                 },
             },
         },
+        info: { title: "Media transformation API", version: "1.0.0" },
+        openapi: "3.0.3",
         paths: {
-            [`${path.replace(/\/$/, "")}/{id}/transform`]: {
-                get: {
-                    description:
-                        "Get transformation metadata for a file without downloading. Returns information about supported transformations and current file properties.",
-                    operationId: `${pathHash}TransformGetMetadata`,
-                    parameters: [
-                        {
-                            $ref: "#/components/parameters/FileID",
-                        },
-                    ],
-                    responses: {
-                        200: {
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        description: "File transformation metadata",
-                                        properties: {
-                                            bitrate: {
-                                                description: "Current bitrate for video/audio",
-                                                type: "integer",
-                                            },
-                                            dimensions: {
-                                                description: "Dimensions for image/video",
-                                                properties: {
-                                                    height: {
-                                                        type: "integer",
-                                                    },
-                                                    width: {
-                                                        type: "integer",
-                                                    },
-                                                },
-                                                type: "object",
-                                            },
-                                            duration: {
-                                                description: "Duration for video/audio in seconds",
-                                                type: "number",
-                                            },
-                                            mediaType: {
-                                                description: "Detected media type",
-                                                enum: ["image", "video", "audio"],
-                                                type: "string",
-                                            },
-                                            numberOfChannels: {
-                                                description: "Current channel count for audio",
-                                                type: "integer",
-                                            },
-                                            originalFormat: {
-                                                description: "Original file format",
-                                                type: "string",
-                                            },
-                                            sampleRate: {
-                                                description: "Current sample rate for audio",
-                                                type: "integer",
-                                            },
-                                            supportedFormats: {
-                                                description: "Supported output formats for this media type",
-                                                items: {
-                                                    type: "string",
-                                                },
-                                                type: "array",
-                                            },
-                                            supportedParameters: {
-                                                description: "Supported transformation parameters",
-                                                items: {
-                                                    type: "string",
-                                                },
-                                                type: "array",
-                                            },
-                                        },
-                                        required: ["mediaType", "supportedFormats", "supportedParameters"],
-                                        type: "object",
-                                    },
-                                },
-                            },
-                            description: "Transformation metadata",
-                        },
-                        404: {
-                            $ref: "#/components/responses/404",
-                        },
-                        default: {
-                            content: {
-                                "application/json": {
-                                    schema: {
-                                        $ref: "#/components/schemas/Error",
-                                    },
-                                },
-                            },
-                            description: "Error",
-                        },
-                    },
-                    summary: "Get transformation metadata",
-                    tags,
-                },
-            },
             [`${path.replace(/\/$/, "")}/{id}`]: {
                 get: {
                     description:

@@ -7,11 +7,9 @@ exports[`openapi:tus > should match snapshot 1`] = `
       "FileMeta": {
         "value": [
           {
-            "value": {
-              "createdAt": "2022-12-16T10:35:17.466Z",
-              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-              "modifiedAt": "2022-12-16T10:35:17.470Z",
-            },
+            "createdAt": "2022-12-16T10:35:17.466Z",
+            "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+            "modifiedAt": "2022-12-16T10:35:17.470Z",
           },
         ],
       },
@@ -119,93 +117,6 @@ exports[`openapi:tus > should match snapshot 1`] = `
           },
         },
         "type": "object",
-      },
-      "FileMetaPagination": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/PaginationMeta",
-            },
-            "type": "array",
-            "xml": {
-              "name": "data",
-              "wrapped": true,
-            },
-          },
-          "meta": {
-            "$ref": "#/components/schemas/PaginationMeta",
-          },
-        },
-        "required": [
-          "data",
-          "meta",
-        ],
-        "type": "object",
-        "xml": {
-          "name": "FileMetaPagination",
-        },
-      },
-      "PaginationMeta": {
-        "properties": {
-          "firstPage": {
-            "description": "Returns the number for the first page. It is always 1",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "firstPageUrl": {
-            "description": "The URL for the first page",
-            "type": "string",
-          },
-          "lastPage": {
-            "description": "Returns the value for the last page by taking the total of rows into account",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "lastPageUrl": {
-            "description": "The URL for the last page",
-            "type": "string",
-          },
-          "nextPageUrl": {
-            "description": "The URL for the next page, or null when on the last page",
-            "nullable": true,
-            "type": "string",
-          },
-          "page": {
-            "description": "Current page number",
-            "minimum": 1,
-            "type": "integer",
-          },
-          "perPage": {
-            "description": "Returns the value for the limit passed to the paginate method",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "previousPageUrl": {
-            "description": "The URL for the previous page, or null when on the first page",
-            "nullable": true,
-            "type": "string",
-          },
-          "total": {
-            "description": "Holds the value for the total number of rows in the database",
-            "minimum": 0,
-            "type": "integer",
-          },
-        },
-        "required": [
-          "firstPage",
-          "firstPageUrl",
-          "lastPage",
-          "lastPageUrl",
-          "nextPageUrl",
-          "page",
-          "perPage",
-          "previousPageUrl",
-          "total",
-        ],
-        "type": "object",
-        "xml": {
-          "name": "PaginationMeta",
-        },
       },
       "Tus-Checksum-Algorithm": {
         "description": "Added by the checksum extension. The Tus-Checksum-Algorithm response header MUST be a comma-separated list of the checksum algorithms supported by the server.",
@@ -324,71 +235,15 @@ exports[`openapi:tus > should match snapshot 1`] = `
       },
     },
   },
+  "info": {
+    "title": "TUS upload API",
+    "version": "1.0.0",
+  },
+  "openapi": "3.0.3",
   "paths": {
     "/files": {
-      "get": {
-        "description": "List uploads. Only served when the handler is created with \`allowList: true\`; otherwise the server answers 404.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
-        "parameters": [
-          {
-            "description": "Maximum number of elements to retrieve (per page when \`page\` is set). Values above 1000 are capped; malformed values are ignored.",
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "maximum": 1000,
-              "minimum": 1,
-              "nullable": true,
-              "type": "integer",
-            },
-          },
-          {
-            "description": "Page number (1-based). Returns a paginated result over at most the first 1000 files.",
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "minimum": 1,
-              "nullable": true,
-              "type": "integer",
-            },
-          },
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Default": {
-                    "$ref": "#/components/examples/FileMeta",
-                  },
-                  "Pagination": {
-                    "$ref": "#/components/examples/FileMetaPagination",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/FileMeta",
-                },
-              },
-            },
-            "description": "OK",
-          },
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Error",
-          },
-        },
-        "summary": "List upload",
-        "tags": [
-          "Tus",
-        ],
-      },
       "options": {
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusOptions",
+        "operationId": "filesTusOptions",
         "responses": {
           "204": {
             "description": "Success",
@@ -428,7 +283,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
       },
       "post": {
         "description": "Endpoint for the Creation extension. Modified by the Creation With Upload extension.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusCreate",
+        "operationId": "filesTusCreate",
         "parameters": [
           {
             "description": "Must be 0 for creation extension. May be a positive number for Creation With Upload extension.",
@@ -448,6 +303,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
           {
             "in": "header",
             "name": "Tus-Resumable",
+            "required": true,
             "schema": {
               "$ref": "#/components/schemas/Tus-Resumable",
             },
@@ -633,7 +489,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
     "/files/{id}": {
       "delete": {
         "description": "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesDelete",
+        "operationId": "filesTusFilesDelete",
         "parameters": [
           {
             "in": "path",
@@ -692,8 +548,8 @@ exports[`openapi:tus > should match snapshot 1`] = `
         ],
       },
       "get": {
-        "description": "Get the uploaded file with optional media transformation support",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
+        "description": "Get the uploaded file metadata",
+        "operationId": "filesTusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -716,29 +572,14 @@ exports[`openapi:tus > should match snapshot 1`] = `
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "description": "File content",
-                  "format": "binary",
-                  "type": "string",
+                  "$ref": "#/components/schemas/FileMeta",
                 },
               },
             },
-            "description": "File retrieved successfully",
+            "description": "OK",
             "headers": {
-              "Content-Type": {
-                "description": "MIME type of the file",
-                "schema": {
-                  "type": "string",
-                },
-              },
-              "ETag": {
-                "description": "Upload ETag",
-                "schema": {
-                  "example": "d41d8cd98f00b204e9800998ecf8427e",
-                  "type": "string",
-                },
-              },
               "Last-Modified": {
                 "description": "Upload last modified date",
                 "schema": {
@@ -763,7 +604,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
                 "example": {
                   "error": {
                     "code": "FileNotFound",
-                    "message": "Not found",
+                    "message": "File metadata not found",
                   },
                 },
                 "schema": {
@@ -784,14 +625,14 @@ exports[`openapi:tus > should match snapshot 1`] = `
             "description": "Error",
           },
         },
-        "summary": "Get the uploaded file",
+        "summary": "Get the uploaded file metadata",
         "tags": [
           "Tus",
         ],
       },
       "head": {
         "description": "Used to determine the offset at which the upload should be continued.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesHead",
+        "operationId": "filesTusFilesHead",
         "parameters": [
           {
             "in": "path",
@@ -906,7 +747,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
       },
       "patch": {
         "description": "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilePatch",
+        "operationId": "filesTusFilePatch",
         "parameters": [
           {
             "in": "path",
@@ -977,7 +818,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
               },
               "Upload-Offset": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tus-Resumable",
+                  "$ref": "#/components/schemas/Upload-Offset",
                 },
               },
             },
@@ -1133,7 +974,7 @@ exports[`openapi:tus > should match snapshot 1`] = `
     "/files/{id}/metadata": {
       "get": {
         "description": "Get the uploaded file metadata",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFileMeta",
+        "operationId": "filesTusGetFileMeta",
         "parameters": [
           {
             "in": "path",
@@ -1226,11 +1067,9 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
       "FileMeta": {
         "value": [
           {
-            "value": {
-              "createdAt": "2022-12-16T10:35:17.466Z",
-              "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
-              "modifiedAt": "2022-12-16T10:35:17.470Z",
-            },
+            "createdAt": "2022-12-16T10:35:17.466Z",
+            "id": "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3",
+            "modifiedAt": "2022-12-16T10:35:17.470Z",
           },
         ],
       },
@@ -1338,93 +1177,6 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
           },
         },
         "type": "object",
-      },
-      "FileMetaPagination": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/PaginationMeta",
-            },
-            "type": "array",
-            "xml": {
-              "name": "data",
-              "wrapped": true,
-            },
-          },
-          "meta": {
-            "$ref": "#/components/schemas/PaginationMeta",
-          },
-        },
-        "required": [
-          "data",
-          "meta",
-        ],
-        "type": "object",
-        "xml": {
-          "name": "FileMetaPagination",
-        },
-      },
-      "PaginationMeta": {
-        "properties": {
-          "firstPage": {
-            "description": "Returns the number for the first page. It is always 1",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "firstPageUrl": {
-            "description": "The URL for the first page",
-            "type": "string",
-          },
-          "lastPage": {
-            "description": "Returns the value for the last page by taking the total of rows into account",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "lastPageUrl": {
-            "description": "The URL for the last page",
-            "type": "string",
-          },
-          "nextPageUrl": {
-            "description": "The URL for the next page, or null when on the last page",
-            "nullable": true,
-            "type": "string",
-          },
-          "page": {
-            "description": "Current page number",
-            "minimum": 1,
-            "type": "integer",
-          },
-          "perPage": {
-            "description": "Returns the value for the limit passed to the paginate method",
-            "minimum": 0,
-            "type": "integer",
-          },
-          "previousPageUrl": {
-            "description": "The URL for the previous page, or null when on the first page",
-            "nullable": true,
-            "type": "string",
-          },
-          "total": {
-            "description": "Holds the value for the total number of rows in the database",
-            "minimum": 0,
-            "type": "integer",
-          },
-        },
-        "required": [
-          "firstPage",
-          "firstPageUrl",
-          "lastPage",
-          "lastPageUrl",
-          "nextPageUrl",
-          "page",
-          "perPage",
-          "previousPageUrl",
-          "total",
-        ],
-        "type": "object",
-        "xml": {
-          "name": "PaginationMeta",
-        },
       },
       "Tus-Checksum-Algorithm": {
         "description": "Added by the checksum extension. The Tus-Checksum-Algorithm response header MUST be a comma-separated list of the checksum algorithms supported by the server.",
@@ -1543,71 +1295,15 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
       },
     },
   },
+  "info": {
+    "title": "TUS upload API",
+    "version": "1.0.0",
+  },
+  "openapi": "3.0.3",
   "paths": {
     "/files": {
-      "get": {
-        "description": "List uploads. Only served when the handler is created with \`allowList: true\`; otherwise the server answers 404.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetList",
-        "parameters": [
-          {
-            "description": "Maximum number of elements to retrieve (per page when \`page\` is set). Values above 1000 are capped; malformed values are ignored.",
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "maximum": 1000,
-              "minimum": 1,
-              "nullable": true,
-              "type": "integer",
-            },
-          },
-          {
-            "description": "Page number (1-based). Returns a paginated result over at most the first 1000 files.",
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "minimum": 1,
-              "nullable": true,
-              "type": "integer",
-            },
-          },
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Default": {
-                    "$ref": "#/components/examples/FileMeta",
-                  },
-                  "Pagination": {
-                    "$ref": "#/components/examples/FileMetaPagination",
-                  },
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/FileMeta",
-                },
-              },
-            },
-            "description": "OK",
-          },
-          "default": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error",
-                },
-              },
-            },
-            "description": "Error",
-          },
-        },
-        "summary": "List upload",
-        "tags": [
-          "Tus",
-        ],
-      },
       "options": {
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusOptions",
+        "operationId": "filesTusOptions",
         "responses": {
           "204": {
             "description": "Success",
@@ -1642,12 +1338,12 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Request to gather information about the Server's current configuration",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
       "post": {
         "description": "Endpoint for the Creation extension. Modified by the Creation With Upload extension.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusCreate",
+        "operationId": "filesTusCreate",
         "parameters": [
           {
             "description": "Must be 0 for creation extension. May be a positive number for Creation With Upload extension.",
@@ -1667,6 +1363,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
           {
             "in": "header",
             "name": "Tus-Resumable",
+            "required": true,
             "schema": {
               "$ref": "#/components/schemas/Tus-Resumable",
             },
@@ -1845,14 +1542,14 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "An empty POST request is used to create a new upload resource. The Upload-Length header indicates the size of the entire upload in bytes. If the Creation With Upload extension is available, the Client MAY include parts of the upload in the initial Creation request",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
     },
     "/files/{id}": {
       "delete": {
         "description": "When receiving a DELETE request for an existing upload the Server SHOULD free associated resources and MUST respond with the 204 No Content status confirming that the upload was terminated. For all future requests to this URL, the Server SHOULD respond with the 404 Not Found or 410 Gone status.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesDelete",
+        "operationId": "filesTusFilesDelete",
         "parameters": [
           {
             "in": "path",
@@ -1907,12 +1604,12 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Added by the Termination extension.",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
       "get": {
-        "description": "Get the uploaded file with optional media transformation support",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFile",
+        "description": "Get the uploaded file metadata",
+        "operationId": "filesTusGetFile",
         "parameters": [
           {
             "in": "path",
@@ -1935,29 +1632,14 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "description": "File content",
-                  "format": "binary",
-                  "type": "string",
+                  "$ref": "#/components/schemas/FileMeta",
                 },
               },
             },
-            "description": "File retrieved successfully",
+            "description": "OK",
             "headers": {
-              "Content-Type": {
-                "description": "MIME type of the file",
-                "schema": {
-                  "type": "string",
-                },
-              },
-              "ETag": {
-                "description": "Upload ETag",
-                "schema": {
-                  "example": "d41d8cd98f00b204e9800998ecf8427e",
-                  "type": "string",
-                },
-              },
               "Last-Modified": {
                 "description": "Upload last modified date",
                 "schema": {
@@ -1982,7 +1664,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
                 "example": {
                   "error": {
                     "code": "FileNotFound",
-                    "message": "Not found",
+                    "message": "File metadata not found",
                   },
                 },
                 "schema": {
@@ -2003,14 +1685,14 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
             "description": "Error",
           },
         },
-        "summary": "Get the uploaded file",
+        "summary": "Get the uploaded file metadata",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
       "head": {
         "description": "Used to determine the offset at which the upload should be continued.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilesHead",
+        "operationId": "filesTusFilesHead",
         "parameters": [
           {
             "in": "path",
@@ -2120,12 +1802,12 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Used to determine the offset at which the upload should be continued.",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
       "patch": {
         "description": "The Server SHOULD accept PATCH requests against any upload URL and apply the bytes contained in the message at the given offset specified by the Upload-Offset header. All PATCH requests MUST use Content-Type: application/offset+octet-stream, otherwise the server SHOULD return a 415 Unsupported Media Type status.",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusFilePatch",
+        "operationId": "filesTusFilePatch",
         "parameters": [
           {
             "in": "path",
@@ -2196,7 +1878,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
               },
               "Upload-Offset": {
                 "schema": {
-                  "$ref": "#/components/schemas/Tus-Resumable",
+                  "$ref": "#/components/schemas/Upload-Offset",
                 },
               },
             },
@@ -2345,14 +2027,14 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Used to resume the upload",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
     },
     "/files/{id}/metadata": {
       "get": {
         "description": "Get the uploaded file metadata",
-        "operationId": "9Kp55CmvPE2lcA5FYRZzNvM5L3PdRPjAoRmAKS63FmM=TusGetFileMeta",
+        "operationId": "filesTusGetFileMeta",
         "parameters": [
           {
             "in": "path",
@@ -2430,7 +2112,7 @@ exports[`openapi:tus > should match snapshot with custom options 1`] = `
         },
         "summary": "Get the uploaded file metadata",
         "tags": [
-          "Tus",
+          "test",
         ],
       },
     },
