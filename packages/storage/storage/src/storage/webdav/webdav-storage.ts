@@ -1,0 +1,633 @@
+import { Readable } from "node:stream";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
+
+import etag from "etag";
+
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { toHttpDate } from "../../utils/headers";
+import type MetaStorage from "../meta-storage";
+import { BaseStorage } from "../storage";
+import type { OperationOptions } from "../types";
+import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
+import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
+import type { WebdavStorageOptions } from "./types";
+import WebdavFile from "./webdav-file";
+import WebdavMetaStorage from "./webdav-meta-storage";
+
+type RangeOptions = OperationOptions & { range?: { end?: number; start: number } };
+
+interface DavEntry {
+    contentType?: string;
+    etag?: string;
+    isCollection: boolean;
+    modifiedAt?: string;
+    /** Path relative to the endpoint URL, decoded, without leading/trailing slashes. */
+    path: string;
+    size?: number;
+}
+
+const PROPFIND_BODY =
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?><d:propfind xmlns:d=\"DAV:\"><d:prop><d:resourcetype/><d:getcontentlength/><d:getlastmodified/><d:getcontenttype/><d:getetag/></d:prop></d:propfind>";
+
+const decodeEntities = (value: string): string =>
+    value.replaceAll(/&(#x[\da-f]+|#\d+|amp|lt|gt|quot|apos);/giu, (_match, entity: string) => {
+        const named: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: "\"" };
+        const lower = entity.toLowerCase();
+
+        if (lower.startsWith("#x")) {
+            return String.fromCodePoint(Number.parseInt(lower.slice(2), 16));
+        }
+
+        if (lower.startsWith("#")) {
+            return String.fromCodePoint(Number.parseInt(lower.slice(1), 10));
+        }
+
+        return named[lower] as string;
+    });
+
+/** Text of the first `name` element (with any namespace prefix), or `undefined`. */
+const elementText = (xml: string, name: string): string | undefined => {
+    const match = new RegExp(String.raw`<(?:[\w.-]+:)?${name}\b[^>]*?(?:/>|>([\s\S]*?)</(?:[\w.-]+:)?${name}\s*>)`, "iu").exec(xml);
+
+    if (!match) {
+        return undefined;
+    }
+
+    const text = decodeEntities((match[1] ?? "").trim());
+
+    return text || undefined;
+};
+
+/** Error carrying the HTTP status, so the retry policy treats 5xx/429 as transient. */
+const httpError = async (response: Response, method: string, path: string): Promise<Error> => {
+    await response.body?.cancel().catch(() => undefined);
+
+    return Object.assign(new Error(`WebDAV ${method} /${path} failed: ${String(response.status)} ${response.statusText}`.trim()), {
+        statusCode: response.status,
+    });
+};
+
+const toFile = (key: string, entry: DavEntry): WebdavFile => {
+    const file = new WebdavFile({
+        contentType: entry.contentType ?? "application/octet-stream",
+        metadata: {},
+        originalName: key.split("/").pop() ?? key,
+        size: entry.size,
+    });
+
+    return Object.assign(file, {
+        bytesWritten: entry.size ?? 0,
+        ETag: entry.etag,
+        id: key,
+        modifiedAt: entry.modifiedAt,
+        name: key,
+        path: entry.path,
+        status: "completed" as const,
+    });
+};
+
+/**
+ * WebDAV storage backend (Nextcloud, ownCloud, Apache `mod_dav`, nginx, rclone serve, …),
+ * implemented on plain `fetch` with `PROPFIND`/`PUT`/`GET`/`DELETE`/`COPY`/`MOVE`/`MKCOL`.
+ *
+ * Keys map onto paths under `rootFolderPath`, relative to `url`. WebDAV has no portable
+ * metadata store, so upload metadata is kept as sidecar JSON on the local disk (see
+ * `WebdavMetaStorage`).
+ *
+ * **Limitations**:
+ * - Partial `PUT` is not part of WebDAV (RFC 4918), so only a whole-file write at offset 0 is accepted; chunked writes are rejected with `METHOD_NOT_ALLOWED`. `write()` buffers the part in memory.
+ * - `getReadUrl` / `getUploadUrl` are not supported — a WebDAV `GET` needs credentials that can't be signed into a URL.
+ */
+class WebdavStorage extends BaseStorage<WebdavFile> {
+    public static override readonly name: string = "webdav";
+
+    /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
+    public override readonly supportsResumableWrites: boolean = false;
+
+    public override checksumTypes: string[] = [];
+
+    public override readonly supportsRange: boolean = true;
+
+    protected meta: MetaStorage<WebdavFile>;
+
+    private readonly baseUrl: URL;
+
+    private readonly basePath: string;
+
+    private readonly headers: Record<string, string>;
+
+    private readonly rootFolderPath: string;
+
+    public constructor(config: WebdavStorageOptions) {
+        super(config);
+
+        const url = config.url ?? process.env.WEBDAV_URL;
+
+        if (!url) {
+            throw new Error("WebDAV storage requires a `url` (or the WEBDAV_URL environment variable).");
+        }
+
+        this.baseUrl = new URL(url.endsWith("/") ? url : `${url}/`);
+        this.basePath = trimSlashes(decodeURIComponent(this.baseUrl.pathname));
+        this.rootFolderPath = trimSlashes(config.rootFolderPath ?? "");
+
+        const token = config.token ?? process.env.WEBDAV_TOKEN;
+        const username = config.username ?? process.env.WEBDAV_USERNAME;
+        const password = config.password ?? process.env.WEBDAV_PASSWORD;
+
+        this.headers = { ...config.headers };
+
+        if (token) {
+            this.headers.Authorization = `Bearer ${token}`;
+        } else if (username !== undefined) {
+            this.headers.Authorization = `Basic ${Buffer.from(`${username}:${password ?? ""}`).toString("base64")}`;
+        }
+
+        this.meta = config.metaStorage ?? new WebdavMetaStorage(config.metaStorageConfig);
+
+        this.isReady = true;
+    }
+
+    public async create(config: FileInit, _options?: OperationOptions): Promise<WebdavFile> {
+        return this.instrumentOperation("create", async () => {
+            const file = new WebdavFile(config);
+
+            file.name = this.namingFunction(file);
+            file.path = this.keyToPath(file.name);
+
+            await this.validate(file);
+
+            try {
+                const existing = await this.getMeta(file.id);
+
+                if (existing.status === "completed") {
+                    return existing;
+                }
+            } catch {
+                // new upload
+            }
+
+            file.bytesWritten = 0;
+            file.status = getFileStatus(file);
+
+            await this.saveMeta(file);
+            await this.onCreate(file);
+
+            return file;
+        });
+    }
+
+    public async write(part: FilePart | FileQuery | WebdavFile, options?: OperationOptions): Promise<WebdavFile> {
+        return this.instrumentOperation("write", async () => {
+            let file: WebdavFile;
+
+            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+                file = part;
+            } else {
+                file = await this.getMeta(part.id);
+                await this.checkIfExpired(file);
+            }
+
+            if (file.status === "completed") {
+                return file;
+            }
+
+            if (part.size !== undefined) {
+                updateSize(file, part.size);
+            }
+
+            if (!partMatch(part, file)) {
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            }
+
+            const lockToken = await this.lock(part.id);
+
+            try {
+                if (hasContent(part)) {
+                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                    }
+
+                    // WebDAV PUT replaces the whole resource; a non-initial chunk would
+                    // overwrite earlier bytes and silently lose data.
+                    this.assertWholeFileWrite(part, file);
+
+                    const buffer = await collectStream(part.body);
+
+                    this.assertWholeFileWrite(part, file, buffer.byteLength);
+
+                    const path = file.path ?? this.keyToPath(file.name || file.id);
+
+                    // `buffer` is fully materialized, so a retried attempt re-sends the same bytes.
+                    await this.runOperation(options, (signal) => this.put(path, buffer, file.contentType, signal));
+
+                    file.bytesWritten = buffer.length;
+                    file.size = buffer.length;
+                    file.path = path;
+                    file.ETag = etag(buffer);
+                }
+
+                file.status = getFileStatus(file);
+
+                await this.saveMeta(file);
+
+                return file;
+            } finally {
+                await this.unlock(part.id, lockToken);
+            }
+        });
+    }
+
+    public async get({ id }: FileQuery, options?: RangeOptions): Promise<FileReturn> {
+        return this.instrumentOperation("get", async () => {
+            const file = await this.checkIfExpired(await this.getMeta(id));
+            const path = file.path ?? this.keyToPath(file.name || id);
+            const { range } = options ?? {};
+
+            const content = await this.runOperation(options, async (signal) => {
+                const response = await this.download(path, range, signal);
+                const buffer = Buffer.from(await response.arrayBuffer());
+
+                if (!range || response.status === 206) {
+                    return buffer;
+                }
+
+                // A server that ignores `Range` answers 200 with the whole body; slice it here.
+                return buffer.subarray(range.start, range.end === undefined ? undefined : range.end + 1);
+            });
+
+            return {
+                content,
+                contentType: file.contentType,
+                ETag: file.ETag ?? etag(content),
+                expiredAt: file.expiredAt,
+                id,
+                metadata: file.metadata,
+                modifiedAt: file.modifiedAt,
+                name: file.name,
+                originalName: file.originalName,
+                size: range ? content.length : (file.size ?? content.length),
+            };
+        });
+    }
+
+    public override async getStream(
+        { id }: FileQuery,
+        options?: RangeOptions,
+    ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        return this.instrumentOperation("getStream", async () => {
+            const file = await this.checkIfExpired(await this.getMeta(id));
+            const path = file.path ?? this.keyToPath(file.name || id);
+            const range = options?.range;
+            const response = await this.runOperation(options, (signal) => this.download(path, range, signal));
+
+            if ((range && response.status !== 206) || !response.body) {
+                // Range ignored by the server: let `get` slice the full body.
+                await response.body?.cancel().catch(() => undefined);
+
+                return super.getStream({ id }, options);
+            }
+
+            const length = response.headers.get("content-length");
+            let size = length === null ? file.size : Number(length);
+
+            if (length === null && range && file.size !== undefined) {
+                size = Math.min(range.end ?? file.size - 1, file.size - 1) - range.start + 1;
+            }
+
+            return {
+                headers: {
+                    "Content-Type": file.contentType,
+                    ...(size !== undefined && { "Content-Length": String(size) }),
+                    ...(file.ETag && { ETag: file.ETag }),
+                    ...(file.modifiedAt && { "Last-Modified": toHttpDate(file.modifiedAt) }),
+                },
+                size,
+                stream: Readable.fromWeb(response.body as NodeReadableStream<Uint8Array>),
+            };
+        });
+    }
+
+    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<WebdavFile> {
+        return this.instrumentOperation("delete", async () => {
+            const file = await this.getMeta(id);
+            const path = file.path ?? this.keyToPath(file.name || id);
+
+            await this.runOperation(options, async (signal) => {
+                const response = await this.request("DELETE", path, signal);
+
+                // Idempotent: an already-missing resource is not an error.
+                if (!response.ok && response.status !== 404) {
+                    throw await httpError(response, "DELETE", path);
+                }
+
+                await response.body?.cancel().catch(() => undefined);
+            });
+
+            await this.deleteMeta(id);
+
+            const deletedFile = { ...file, status: "deleted" } as WebdavFile;
+
+            await this.onDelete(deletedFile);
+
+            return deletedFile;
+        });
+    }
+
+    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<WebdavFile> {
+        return this.instrumentOperation("copy", async () => {
+            const sourceFile = await this.getMeta(name);
+            const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
+            const targetPath = this.keyToPath(destination);
+
+            await this.runOperation(options, (signal) => this.transfer("COPY", sourcePath, targetPath, signal));
+
+            const copiedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as WebdavFile;
+
+            await this.saveMeta(copiedFile);
+
+            return copiedFile;
+        });
+    }
+
+    public async move(name: string, destination: string, options?: OperationOptions): Promise<WebdavFile> {
+        return this.instrumentOperation("move", async () => {
+            const sourceFile = await this.getMeta(name);
+            const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
+            const targetPath = this.keyToPath(destination);
+
+            await this.runOperation(options, (signal) => this.transfer("MOVE", sourcePath, targetPath, signal));
+
+            const movedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as WebdavFile;
+
+            await this.saveMeta(movedFile);
+
+            try {
+                await this.deleteMeta(name);
+            } catch {
+                // ignore
+            }
+
+            return movedFile;
+        });
+    }
+
+    /**
+     * Walks the tree under `rootFolderPath` with `Depth: 1` PROPFINDs (`Depth: infinity` is
+     * disabled on most servers), stopping once `limit` files are collected.
+     */
+    public override async list(limit = 1000, options?: OperationOptions): Promise<WebdavFile[]> {
+        return this.instrumentOperation("list", async () => {
+            const files: WebdavFile[] = [];
+            const queue = [this.keyToPath("")];
+            const { suffix } = this.meta;
+
+            while (queue.length > 0 && files.length < limit) {
+                const directory = queue.shift() as string;
+                const entries = await this.runOperation(options, (signal) => this.propfind(directory, "1", signal));
+
+                for (const entry of entries ?? []) {
+                    if (entry.path === directory) {
+                        continue;
+                    }
+
+                    if (entry.isCollection) {
+                        queue.push(entry.path);
+
+                        continue;
+                    }
+
+                    const key = this.pathToKey(entry.path);
+
+                    if (!key || (suffix && key.endsWith(suffix))) {
+                        continue;
+                    }
+
+                    files.push(toFile(key, entry));
+                }
+            }
+
+            return files.slice(0, limit);
+        });
+    }
+
+    /**
+     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
+     * Only properties are requested — the content is never downloaded.
+     * @param id Upload ID, used as the remote key.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when the server answers 404 (or the path is a collection). Any other failure throws, so a failed lookup never reads as absent.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<WebdavFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const path = this.keyToPath(id);
+            const [entry] = (await this.runOperation(options, (signal) => this.propfind(path, "0", signal))) ?? [];
+
+            if (!entry || entry.isCollection) {
+                return undefined;
+            }
+
+            return toFile(id, entry);
+        });
+    }
+
+    public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            let file: WebdavFile;
+
+            try {
+                file = await this.getMeta(id);
+            } catch {
+                return false;
+            }
+
+            const path = file.path ?? this.keyToPath(file.name || id);
+            const [entry] = (await this.runOperation(options, (signal) => this.propfind(path, "0", signal))) ?? [];
+
+            return entry !== undefined && !entry.isCollection;
+        });
+    }
+
+    /**
+     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
+     * without a `createdAt`, so purge would never match an expired upload through it.
+     */
+    protected override async listUploads(): Promise<WebdavFile[]> {
+        return (await this.meta.list()) ?? this.list();
+    }
+
+    private async request(method: string, path: string, signal: AbortSignal | undefined, init?: { body?: BodyInit; headers?: Record<string, string> }): Promise<Response> {
+        return fetch(this.toUrl(path), {
+            body: init?.body,
+            headers: { ...this.headers, ...init?.headers },
+            method,
+            signal,
+        });
+    }
+
+    private async download(path: string, range: RangeOptions["range"], signal: AbortSignal | undefined): Promise<Response> {
+        const response = await this.request(
+            "GET",
+            path,
+            signal,
+            range ? { headers: { Range: `bytes=${String(range.start)}-${range.end === undefined ? "" : String(range.end)}` } } : undefined,
+        );
+
+        if (response.status === 404) {
+            await response.body?.cancel().catch(() => undefined);
+
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        if (!response.ok) {
+            throw await httpError(response, "GET", path);
+        }
+
+        return response;
+    }
+
+    /** PUT, creating the missing parent collections when the server answers 409 (RFC 4918 §9.7.1). */
+    private async put(path: string, body: Buffer, contentType: string, signal: AbortSignal | undefined): Promise<void> {
+        const send = async (): Promise<Response> =>
+            this.request("PUT", path, signal, { body: new Uint8Array(body), headers: { "Content-Type": contentType } });
+
+        let response = await send();
+
+        if (response.status === 409) {
+            await response.body?.cancel().catch(() => undefined);
+            await this.ensureCollections(path, signal);
+            response = await send();
+        }
+
+        if (!response.ok) {
+            throw await httpError(response, "PUT", path);
+        }
+
+        await response.body?.cancel().catch(() => undefined);
+    }
+
+    /** Server-side COPY / MOVE with overwrite, creating missing parent collections of the target. */
+    private async transfer(method: "COPY" | "MOVE", from: string, to: string, signal: AbortSignal | undefined): Promise<void> {
+        const send = async (): Promise<Response> => this.request(method, from, signal, { headers: { Destination: this.toUrl(to), Overwrite: "T" } });
+
+        let response = await send();
+
+        if (response.status === 409) {
+            await response.body?.cancel().catch(() => undefined);
+            await this.ensureCollections(to, signal);
+            response = await send();
+        }
+
+        if (response.status === 404) {
+            await response.body?.cancel().catch(() => undefined);
+
+            throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        if (!response.ok) {
+            throw await httpError(response, method, from);
+        }
+
+        await response.body?.cancel().catch(() => undefined);
+    }
+
+    /** MKCOL every ancestor collection of `path`, top-down; 405 means it already exists. */
+    private async ensureCollections(path: string, signal: AbortSignal | undefined): Promise<void> {
+        const directory = posixDirname(path);
+        let current = "";
+
+        for (const segment of directory ? directory.split("/") : []) {
+            current = current ? `${current}/${segment}` : segment;
+
+            const response = await this.request("MKCOL", `${current}/`, signal);
+
+            if (!response.ok && response.status !== 405) {
+                throw await httpError(response, "MKCOL", current);
+            }
+
+            await response.body?.cancel().catch(() => undefined);
+        }
+    }
+
+    /**
+     * PROPFIND `path` at the given depth.
+     * @returns The entries, or `undefined` when the resource does not exist (404). Other failures throw.
+     */
+    private async propfind(path: string, depth: "0" | "1", signal: AbortSignal | undefined): Promise<DavEntry[] | undefined> {
+        const response = await this.request("PROPFIND", depth === "1" && path ? `${path}/` : path, signal, {
+            body: PROPFIND_BODY,
+            headers: { "Content-Type": "application/xml; charset=utf-8", Depth: depth },
+        });
+
+        if (response.status === 404) {
+            await response.body?.cancel().catch(() => undefined);
+
+            return undefined;
+        }
+
+        if (response.status !== 207) {
+            throw await httpError(response, "PROPFIND", path);
+        }
+
+        return this.parseMultistatus(await response.text());
+    }
+
+    private parseMultistatus(xml: string): DavEntry[] {
+        const entries: DavEntry[] = [];
+
+        for (const [, body = ""] of xml.matchAll(/<(?:[\w.-]+:)?response\b[^>]*>([\s\S]*?)<\/(?:[\w.-]+:)?response\s*>/giu)) {
+            const href = elementText(body, "href");
+
+            if (!href) {
+                continue;
+            }
+
+            const fullPath = trimSlashes(decodeURIComponent(new URL(href, this.baseUrl).pathname));
+
+            if (this.basePath && fullPath !== this.basePath && !fullPath.startsWith(`${this.basePath}/`)) {
+                continue;
+            }
+
+            const size = elementText(body, "getcontentlength");
+            const modified = elementText(body, "getlastmodified");
+
+            entries.push({
+                contentType: elementText(body, "getcontenttype"),
+                etag: elementText(body, "getetag"),
+                isCollection: /<(?:[\w.-]+:)?collection\b/iu.test(elementText(body, "resourcetype") ?? ""),
+                modifiedAt: modified ? new Date(modified).toISOString() : undefined,
+                path: this.basePath ? fullPath.slice(this.basePath.length + 1) : fullPath,
+                size: size === undefined ? undefined : Number(size),
+            });
+        }
+
+        return entries;
+    }
+
+    private toUrl(path: string): string {
+        return new URL(path.split("/").map((segment) => encodeURIComponent(segment)).join("/"), this.baseUrl).href;
+    }
+
+    private keyToPath(key: string): string {
+        const inner = trimSlashes(key);
+
+        if (inner) {
+            BaseStorage.assertSafeId(inner);
+        }
+
+        return [this.rootFolderPath, inner].filter(Boolean).join("/");
+    }
+
+    private pathToKey(path: string): string {
+        if (!this.rootFolderPath) {
+            return path;
+        }
+
+        const prefix = `${this.rootFolderPath}/`;
+
+        return path.startsWith(prefix) ? path.slice(prefix.length) : "";
+    }
+}
+
+export default WebdavStorage;

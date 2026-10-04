@@ -31,7 +31,7 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 `Files.url()` calls `getReadUrl()` and `Files.signedUploadUrl()` calls `getUploadUrl()`. Adapters that don't implement a method inherit the `BaseStorage` default, which rejects with `METHOD_NOT_ALLOWED`.
 
 | Adapter        | `getReadUrl()`                                                   | `getUploadUrl()`                       |
-| -------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| -------------- | ---------------------------------------------------------------- | -------------------------------------- | --- | --- | --- | ---------------------------------------------------------------- |
 | S3 / R2 / etc. | ✅ presigned `GET`                                               | ✅ presigned `PUT`                     |
 | S3 (light)     | ❌                                                               | ❌                                     |
 | Bun S3         | ✅ `presign` (`GET`)                                             | ✅ `presign` (`PUT`)                   |
@@ -53,6 +53,31 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | Cloudinary     | ✅ delivery URL, or `private_download_url` for non-public types  | ❌                                     |
 | PocketBase     | ✅ file URL (`publicBaseUrl` or a fresh file token)              | ❌                                     |
 | Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
+|                |                                                                  |                                        |     |     |     | parent of d81f21fef (feat(storage): add webdav storage provider) |
+| Adapter        | `getReadUrl()`                                                   | `getUploadUrl()`                       |
+| -------------- | ---------------------------------------------------------------  | -------------------------------------- |
+| S3 / R2 / etc. | ✅ presigned `GET`                                               | ✅ presigned `PUT`                     |
+| S3 (light)     | ❌                                                               | ❌                                     |
+| Bun S3         | ✅ `presign` (`GET`)                                             | ✅ `presign` (`PUT`)                   |
+| Azure Blob     | ✅ SAS                                                           | ✅ SAS (`cw` permissions)              |
+| GCS            | ❌                                                               | ❌ (resumable URLs handled internally) |
+| Firebase       | ✅ V4 signed URL, or `publicBaseUrl`                             | ✅ V4 signed `PUT`                     |
+| Vercel Blob    | ❌                                                               | ❌ (use Vercel client tokens)          |
+| Netlify Blobs  | ❌                                                               | ❌                                     |
+| Local (disk)   | ❌                                                               | ❌                                     |
+| FTP / SFTP     | ❌                                                               | ❌                                     |
+| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link                  | ❌                                     |
+| Google Drive   | 🟡 only when `publicByDefault: true`                             | ✅ resumable session URL               |
+| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`                | ✅ `createUploadSession`               |
+| SharePoint     | ✅ same as OneDrive                                              | ✅ same as OneDrive                    |
+| Box            | ✅ shared download link                                          | ❌                                     |
+| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                                     | ✅ `createSignedUploadUrl`             |
+| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private)         | ❌                                     |
+| Bunny Storage  | 🟡 only with `publicBaseUrl` (Pull Zone)                         | ❌                                     |
+| Cloudinary     | ✅ delivery URL, or `private_download_url` for non-public types  | ❌                                     |
+| PocketBase     | ✅ file URL (`publicBaseUrl` or a fresh file token)              | ❌                                     |
+| Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
+| WebDAV         | ❌                                                               | ❌                                     |
 
 ## URL options
 
@@ -73,7 +98,7 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 ## Server-side operations
 
 | Adapter        | `copy()`               | `move()`                                | `list()` prefix filter                |
-| -------------- | ---------------------- | --------------------------------------- | ------------------------------------- |
+| -------------- | ---------------------- | --------------------------------------- | ------------------------------------- | --- | --- | ---------------------------------------------------------------- |
 | S3 / R2 / etc. | ✅ CopyObject          | 🔁 copy + delete                        | ✅ `Prefix`                           |
 | Azure Blob     | ✅ Copy Blob           | 🔁 copy + delete                        | 🟡 configured `root` only             |
 | GCS            | ✅ copy                | 🔁 copy + delete                        | ✅ `prefix`                           |
@@ -93,11 +118,29 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | PocketBase     | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 client-side                        |
 | FTP / SFTP     | 🔁 download + reupload | ✅ rename (copy + delete fallback)      | 🟡 recursive walk, client-side        |
 | Memory         | ✅ Map clone           | ✅ copy + delete                        | ✅ in-memory prefix scan              |
+|                |                        |                                         |                                       |     |     | parent of d81f21fef (feat(storage): add webdav storage provider) |
+| Adapter        | `copy()`               | `move()`                                | `list()` prefix filter                |
+| -------------- | ---------------------- | --------------------                    | ------------------------------        |
+| S3 / R2 / etc. | ✅ CopyObject          | 🔁 copy + delete                        | ✅ `Prefix`                           |
+| Azure Blob     | ✅ Copy Blob           | 🔁 copy + delete                        | ✅ `prefix`                           |
+| GCS            | ✅ copy                | 🔁 copy + delete                        | ✅ `prefix`                           |
+| Vercel Blob    | ✅ copy                | 🔁 copy + delete                        | ✅ `prefix`                           |
+| Netlify Blobs  | 🔁 copy + delete       | 🔁 copy + delete                        | ✅ `prefix`                           |
+| Local (disk)   | ✅ fs.copyFile         | ✅ fs.rename                            | ✅ recursive scan                     |
+| Dropbox        | ✅ filesCopyV2         | ✅ filesMoveV2                          | 🟡 recursive listing of root          |
+| Google Drive   | ✅ files.copy          | 🔁 copy + delete                        | 🟡 virtual-key + appProperties        |
+| OneDrive       | ✅ async copy          | ✅ patch parent                         | 🟡 folder root, paginated             |
+| Box            | ✅ copyFile            | ✅ updateFile parent                    | 🟡 folder root, cached IDs            |
+| Supabase       | ✅ bucket.copy         | ✅ bucket.move                          | ❌ root only (per page limit)         |
+| UploadThing    | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 client-side prefix filter          |
+| Bunny Storage  | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 root listing, client-side          |
+| Memory         | ✅ Map clone           | ✅ copy + delete                        | ✅ in-memory prefix scan              |
+| WebDAV         | ✅ `COPY`              | ✅ `MOVE`                               | 🟡 `Depth: 1` walk of root            |
 
 ## Auth model
 
 | Adapter        | Auth shapes                                                                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | --- | --- | --- | ---------------------------------------------------------------- |
 | S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                                                                    |
 | Azure Blob     | connection string, account key, SAS token, AAD                                                                                                         |
 | GCS            | service-account JSON, ADC, key file, OAuth                                                                                                             |
@@ -117,6 +160,24 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | PocketBase     | superuser email + password (env `POCKETBASE_ADMIN_*`), auth token, pre-built client                                                                    |
 | FTP / SFTP     | connection options (password, key)                                                                                                                     |
 | Memory         | none (in-process only)                                                                                                                                 |
+|                |                                                                                                                                                        |     |     |     |     | parent of d81f21fef (feat(storage): add webdav storage provider) |
+| Adapter        | Auth shapes                                                                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------                                                   |
+| S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                                                                    |
+| Azure Blob     | connection string, account key, SAS token, AAD                                                                                                         |
+| GCS            | service-account JSON, ADC, key file, OAuth                                                                                                             |
+| Vercel Blob    | OIDC (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`, recommended on Vercel), `BLOB_READ_WRITE_TOKEN`                                                           |
+| Netlify Blobs  | env-injected on Netlify, explicit token otherwise                                                                                                      |
+| Local (disk)   | filesystem permissions                                                                                                                                 |
+| Dropbox        | access token, refresh token + app key (+ secret), pre-built `Dropbox`                                                                                  |
+| Google Drive   | service-account JSON, key file, OAuth (refresh token), JWT, env (`GOOGLE_APPLICATION_CREDENTIALS`)                                                     |
+| OneDrive       | static access token, client-credentials (app-only), refresh token + redirect, pre-built Graph client                                                   |
+| Box            | developer token, OAuth, CCG (enterprise / user), JWT, env                                                                                              |
+| Supabase       | service-role key (env or explicit), pre-built `StorageClient`                                                                                          |
+| UploadThing    | dashboard token (base64 JSON with `apiKey` + `appId`)                                                                                                  |
+| Bunny Storage  | zone + access key + region (env or explicit), pre-built `StorageZone`                                                                                  |
+| Memory         | none (in-process only)                                                                                                                                 |
+| WebDAV         | HTTP Basic (`username` + `password`), Bearer `token`, custom `headers`                                                                                 |
 
 ## Error normalization
 

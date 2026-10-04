@@ -35,6 +35,7 @@
         "uploadthing",
         "vercel-blob",
         "wasabi",
+        "webdav",
         "yandex-object-storage"
     ]
 }

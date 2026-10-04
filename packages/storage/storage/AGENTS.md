@@ -10,7 +10,7 @@ Server-side file storage abstraction (`@visulima/storage`). Exposes two surfaces
 
 ### Provider adapters (`src/storage/<provider>/`)
 
-Each provider implements `BaseStorage` (see `src/storage/storage.ts`). Available: `aws`, `aws-light`, `azure`, `box`, `bunny`, `bun-s3`, `cloudinary`, `dropbox`, `firebase`, `ftp`, `gcs`, `google-drive`, `local` (DiskStorage / DiskStorageWithChecksum), `memory` (in-process, useful for tests), `netlify-blob`, `onedrive`, `pocketbase`, `sftp`, `sharepoint`, `supabase`, `uploadthing`, `vercel-blob`. Each is exported as a sub-path (`@visulima/storage/provider/<name>`).
+Each provider implements `BaseStorage` (see `src/storage/storage.ts`). Available: `aws`, `aws-light`, `azure`, `box`, `bunny`, `bun-s3`, `cloudinary`, `dropbox`, `firebase`, `ftp`, `gcs`, `google-drive`, `local` (DiskStorage / DiskStorageWithChecksum), `memory` (in-process, useful for tests), `netlify-blob`, `onedrive`, `pocketbase`, `sftp`, `sharepoint`, `supabase`, `uploadthing`, `vercel-blob`, `webdav`. Each is exported as a sub-path (`@visulima/storage/provider/<name>`).
 
 ### HTTP handlers (`src/handler/http/`)
 
