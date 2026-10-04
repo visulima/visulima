@@ -168,7 +168,7 @@ class S3Storage extends S3BaseStorage {
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
-            const key = await this.objectKey(id);
+            const key = await this.storedName(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(

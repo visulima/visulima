@@ -8,7 +8,7 @@ import { retry } from "../../utils/retry";
 import { isMetaNotFound } from "../meta-storage";
 import type { MetaStorageOptions } from "../meta-storage-options";
 import { BaseStorage } from "../storage";
-import type { BaseStorageOptions, OperationOptions } from "../types";
+import type { BaseStorageOptions, OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
@@ -58,22 +58,10 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
-    /**
-     * Describes the bytes stored under an ID that has no upload metadata, so a REST `PUT` doesn't
-     * create over them (#919).
-     * @param id Upload ID, the entry's name with the default `filename`
-     * @returns The stored file, or `undefined` when none exists.
-     */
-    public override async getCompletedFile(id: string): Promise<TFile | undefined> {
+    protected override async statObject(id: string): Promise<StoredObject | undefined> {
         const entry = this.store.get(id);
 
-        if (!entry) {
-            return undefined;
-        }
-
-        const file = new File({ contentType: entry.contentType, id, metadata: {}, size: entry.bytes.length }) as TFile;
-
-        return Object.assign(file, { bytesWritten: entry.bytes.length, ETag: entry.eTag, name: id, status: "completed" as const });
+        return entry && { contentType: entry.contentType, etag: entry.eTag, size: entry.bytes.length };
     }
 
     /** No checksum is verified against the written bytes, so none is advertised. */
@@ -405,11 +393,6 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
         await this.saveMeta(file);
 
         return file;
-    }
-
-    /** Upload records by id: `list` yields stored names, which differ from the ids under a custom `filename`. */
-    protected override async listUploads(): Promise<TFile[]> {
-        return this.meta.list();
     }
 
     public override async list(): Promise<TFile[]> {

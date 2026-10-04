@@ -8,7 +8,7 @@ import { GoogleAuth, JWT, OAuth2Client } from "google-auth-library";
 import { ERRORS, isUploadError, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import GoogleDriveFile from "./google-drive-file";
@@ -447,43 +447,29 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GoogleDriveFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let data: drive_v3.Schema$File;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let data: drive_v3.Schema$File;
 
-            try {
-                const fileId = await this.resolveFileId(id, options);
+        try {
+            const fileId = await this.resolveFileId(id, options);
 
-                ({ data } = await this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })));
-            } catch (error) {
-                if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
-                    return undefined;
-                }
-
-                throw error;
+            ({ data } = await this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })));
+        } catch (error) {
+            if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+                return undefined;
             }
 
-            const props = (data.appProperties ?? {}) as Record<string, string>;
-            const contentType = props[CONTENT_TYPE_PROP] ?? data.mimeType ?? undefined;
-            const size = Number(data.size ?? 0) || 0;
-            const file = new GoogleDriveFile({ contentType, id, metadata: {}, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bytesWritten: size,
-                driveFileId: data.id ?? undefined,
-                ETag: data.md5Checksum ?? undefined,
-                mimeType: data.mimeType ?? undefined,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        const props = (data.appProperties ?? {}) as Record<string, string>;
+
+        return {
+            contentType: props[CONTENT_TYPE_PROP] ?? data.mimeType ?? undefined,
+            etag: data.md5Checksum ?? undefined,
+            extra: { driveFileId: data.id ?? undefined, mimeType: data.mimeType ?? undefined },
+            size: Number(data.size ?? 0) || 0,
+        };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -645,11 +631,6 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             },
             { limit },
         );
-    }
-
-    /** Upload records by id from the meta storage: `list` only sees stored Drive files, which carry no creation time. */
-    protected override async listUploads(): Promise<GoogleDriveFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(

@@ -4,7 +4,7 @@ import { StorageClient } from "@supabase/storage-js";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import SupabaseFile from "./supabase-file";
@@ -290,45 +290,20 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SupabaseFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const { data: info, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const { data: info, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
 
-            if (error) {
-                // Only a missing object counts as absent: the result guards against overwriting one (#919).
-                const { status, statusCode } = error as { status?: number; statusCode?: string };
+        if (error) {
+            const { status, statusCode } = error as { status?: number; statusCode?: string };
 
-                if (status === 404 || statusCode === "404") {
-                    return undefined;
-                }
-
-                throw error;
-            }
-
-            if (!info) {
+            if (status === 404 || statusCode === "404") {
                 return undefined;
             }
 
-            const size = info.size ?? 0;
-            const file = new SupabaseFile({ contentType: info.contentType ?? "application/octet-stream", id, metadata: {}, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bucket: this.bucket,
-                bytesWritten: size,
-                ETag: info.etag,
-                id,
-                name: id,
-                path: id,
-                status: "completed" as const,
-            });
-        });
+        return info ? { contentType: info.contentType ?? undefined, etag: info.etag, extra: { bucket: this.bucket, path: id }, size: info.size ?? 0 } : undefined;
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -368,7 +343,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<SupabaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
             const target = destination;
 
@@ -395,7 +370,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async move(name: string, destination: string, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("move", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).move(source, destination));
@@ -526,14 +501,6 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         file.ETag = entry.metadata?.eTag ?? entry.id ?? undefined;
 
         return file;
-    }
-
-    private async getMetaSafe(id: string): Promise<SupabaseFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
     }
 }
 

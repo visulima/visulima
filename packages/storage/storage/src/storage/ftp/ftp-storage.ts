@@ -6,7 +6,7 @@ import etag from "etag";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -359,38 +359,23 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
-    /**
-     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
-     * Only the size is requested — the content is never downloaded.
-     * @param id Upload ID, used as the remote key.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when the server reports no such file. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<FtpFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const path = this.keyToPath(id);
-            const size = await this.runOperation(options, (signal) =>
-                this.run(signal, async (client) => {
-                    try {
-                        return await client.size(path);
-                    } catch (error) {
-                        if (isNotFoundError(error)) {
-                            return undefined;
-                        }
-
-                        throw error;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        const size = await this.runOperation(options, (signal) =>
+            this.run(signal, async (client) => {
+                try {
+                    return await client.size(path);
+                } catch (error) {
+                    if (isNotFoundError(error)) {
+                        return undefined;
                     }
-                }),
-            );
 
-            if (size === undefined) {
-                return undefined;
-            }
+                    throw error;
+                }
+            }),
+        );
 
-            const file = new FtpFile({ contentType: "application/octet-stream", metadata: {}, originalName: id, size });
-
-            return Object.assign(file, { bytesWritten: size, id, name: id, path, status: "completed" as const });
-        });
+        return size === undefined ? undefined : { extra: { path }, size };
     }
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
@@ -421,14 +406,6 @@ class FtpStorage extends BaseStorage<FtpFile> {
                 }),
             );
         });
-    }
-
-    /**
-     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
-     * without a `createdAt`, so purge would never match an expired upload through it.
-     */
-    protected override async listUploads(): Promise<FtpFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     private async walkList(client: Client, directory: string, files: FtpFile[]): Promise<void> {

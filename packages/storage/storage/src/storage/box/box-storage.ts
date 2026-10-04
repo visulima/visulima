@@ -7,7 +7,7 @@ import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAu
 import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BoxFile from "./box-file";
@@ -423,43 +423,24 @@ class BoxStorage extends BaseStorage<BoxFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BoxFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let fileId: string;
-            let item: BoxFileLike;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let fileId: string;
+        let item: BoxFileLike;
 
-            try {
-                await this.authHandle.ensureReady();
+        try {
+            await this.authHandle.ensureReady();
 
-                fileId = await this.resolveFileId(id, options);
-                item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
-            } catch (error) {
-                if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
-                    return undefined;
-                }
-
-                throw error;
+            fileId = await this.resolveFileId(id, options);
+            item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
+        } catch (error) {
+            if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+                return undefined;
             }
 
-            const size = item.size ?? 0;
-            const file = new BoxFile({ contentType: "application/octet-stream", metadata: {}, originalName: item.name ?? id, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                boxFileId: fileId,
-                bytesWritten: size,
-                ETag: item.etag ?? undefined,
-                id,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        return { etag: item.etag ?? undefined, extra: { boxFileId: fileId, originalName: item.name ?? id }, size: item.size ?? 0 };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -651,11 +632,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
             },
             { limit },
         );
-    }
-
-    /** Upload records by id: `list` yields stored names without creation dates, so purge could never match them. */
-    protected override async listUploads(): Promise<BoxFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(

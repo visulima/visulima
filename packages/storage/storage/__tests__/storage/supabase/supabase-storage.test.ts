@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
 import type { SupabaseStorageOptions } from "../../../src/storage/supabase/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeBucketApi = () => {
@@ -113,7 +114,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({ data: [{ name: "file.mp4" }], error: null });
 
@@ -132,7 +133,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
@@ -151,7 +152,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
@@ -172,7 +173,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.copy.mockResolvedValueOnce({ data: { path: "dest.mp4" }, error: null });
 
@@ -193,7 +194,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.move.mockResolvedValueOnce({ data: { path: "renamed.mp4" }, error: null });
 

@@ -19,7 +19,7 @@ import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
-import type { DiskStorageOptions, OperationOptions } from "../types";
+import type { DiskStorageOptions, OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
@@ -503,13 +503,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         });
     }
 
-    /**
-     * Describes the file stored under an ID that has no upload metadata, so a REST `PUT` doesn't
-     * create over (and truncate) a file put in the directory by other means (#919).
-     * @param id Upload ID, the file's path below the directory with the default `filename`
-     * @returns The stored file, or `undefined` when none exists; any other failure throws.
-     */
-    public override async getCompletedFile(id: string): Promise<TFile | undefined> {
+    protected override async statObject(id: string): Promise<StoredObject | undefined> {
         let stats: Awaited<ReturnType<typeof stat>>;
 
         try {
@@ -522,13 +516,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             throw error;
         }
 
-        if (!stats.isFile()) {
-            return undefined;
-        }
-
-        const file = new File({ id, metadata: {}, size: stats.size }) as TFile;
-
-        return Object.assign(file, { bytesWritten: stats.size, name: id, status: "completed" as const });
+        return stats.isFile() ? { size: stats.size } : undefined;
     }
 
     /**
@@ -621,14 +609,6 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             return moved;
         });
-    }
-
-    /**
-     * Upload records from the meta storage: `list` yields stored names, which differ from the
-     * upload ids under a custom `filename`.
-     */
-    protected override async listUploads(): Promise<TFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     /**

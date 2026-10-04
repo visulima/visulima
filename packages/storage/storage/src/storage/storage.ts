@@ -24,9 +24,8 @@ import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import { getMetaVersion, isMetaNotFound, setMetaVersion } from "./meta-storage";
-import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
+import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList, StoredObject } from "./types";
 import type { FileInit, FilePart, FileQuery } from "./utils/file";
-
 import { File, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
@@ -705,17 +704,75 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     /**
      * Describes the object stored under an ID that has no upload metadata: a finished upload whose
-     * metadata the provider dropped, or an object written by other means. Providers that drop the
-     * metadata on completion override this, so the REST `PUT` doesn't create a file over an existing
-     * object (#919). Never expose the result to a caller: it answers for any object in the bucket (#918).
-     * @param _id File ID of the upload.
+     * metadata the provider dropped, or an object written by other means. Used so the REST `PUT`
+     * doesn't create a file over an existing object (#919). Never expose the result to a caller: it
+     * answers for any object in the bucket (#918).
+     * @param id Key of the object.
+     * @param options Operation options.
+     * @returns The stored object as a completed file, or `undefined` when none exists. Any other
+     * failure throws, so a failed lookup never reads as "absent".
+     */
+    public async findStoredObject(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+        return this.instrumentOperation("findStoredObject", async () => {
+            const object = await this.statObject(id, options);
+
+            if (object === undefined) {
+                return undefined;
+            }
+
+            const file = new File({ contentType: object.contentType, id, metadata: {}, size: object.size }) as TFile;
+
+            return Object.assign(file, { bytesWritten: object.size ?? Number.NaN, ETag: object.etag, name: id, status: "completed" as const }, object.extra);
+        });
+    }
+
+    /**
+     * @deprecated Use {@link BaseStorage.findStoredObject}.
+     */
+    public async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+        return this.findStoredObject(id, options);
+    }
+
+    /**
+     * Reports the object stored under `id`, for {@link BaseStorage.findStoredObject}. Providers that
+     * can describe an object without reading it override this; the default reports none.
+     * @param _id Key of the object.
      * @param _options Operation options.
-     * @returns The stored object, or `undefined` when none exists. Overrides throw on any other
-     * failure, so a failed lookup never reads as "absent".
+     * @returns The object, or `undefined` only when none is stored; any other failure throws.
      */
     // eslint-disable-next-line class-methods-use-this
-    public async getCompletedFile(_id: string, _options?: OperationOptions): Promise<TFile | undefined> {
+    protected async statObject(_id: string, _options?: OperationOptions): Promise<StoredObject | undefined> {
         return undefined;
+    }
+
+    /**
+     * The upload's metadata, or `undefined` when it has none.
+     * @param id File ID of the upload.
+     * @returns The metadata, or `undefined` when there is none. Any other failure of the meta
+     * storage throws, so it never reads as a missing upload.
+     */
+    protected async findMeta(id: string): Promise<TFile | undefined> {
+        try {
+            return await this.getMeta(id);
+        } catch (error: unknown) {
+            if (isMetaNotFound(error)) {
+                return undefined;
+            }
+
+            throw error;
+        }
+    }
+
+    /**
+     * The name an upload is stored under: the one its metadata records (a custom `filename` differs
+     * from the ID), or the ID itself for an object without metadata.
+     * @param id File ID of the upload.
+     * @returns The stored name.
+     */
+    protected async storedName(id: string): Promise<string> {
+        const meta = await this.findMeta(id);
+
+        return meta?.name ?? id;
     }
 
     /**
@@ -830,11 +887,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
-     * Uploads {@link BaseStorage.purge} checks for expiry, by upload id. Defaults to {@link BaseStorage.list};
-     * adapters whose `list` yields stored names rather than upload ids (a custom `filename`) override it.
+     * Uploads {@link BaseStorage.purge} checks for expiry, by upload id: the records of the meta
+     * storage, or {@link BaseStorage.list} when it can't enumerate them. `list` yields stored names,
+     * which differ from the upload ids under a custom `filename`, and often no `createdAt`.
      */
     protected async listUploads(): Promise<TFile[]> {
-        return this.list();
+        return (await this.meta.list()) ?? this.list();
     }
 
     /**
@@ -988,6 +1046,48 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @throws {UploadError} If the file metadata cannot be found.
      */
     public abstract delete(query: FileQuery, options?: OperationOptions): Promise<TFile>;
+
+    /**
+     * Deletes an upload this storage created. Unlike {@link BaseStorage.delete}, which some
+     * providers apply to any object stored under a key, an ID without upload metadata is refused:
+     * it may name an object the upload routes never created.
+     * @param id File ID of the upload.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns The deleted file.
+     * @throws {UploadError} FILE_NOT_FOUND when the ID has no upload metadata.
+     */
+    public async deleteUpload(id: string, options?: OperationOptions): Promise<TFile> {
+        if ((await this.findMeta(id)) === undefined) {
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        return this.delete({ id }, options);
+    }
+
+    /**
+     * {@link BaseStorage.deleteBatch} for uploads this storage created: IDs without upload metadata
+     * fail as not found instead of being deleted (see {@link BaseStorage.deleteUpload}).
+     * @param ids File IDs of the uploads.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns The deleted files and the failures, untracked IDs first.
+     */
+    public async deleteUploads(ids: string[], options?: OperationOptions): Promise<BatchOperationResponse<TFile>> {
+        const metas = await Promise.all(ids.map(async (id) => this.findMeta(id)));
+        const known = ids.filter((_, index) => metas[index] !== undefined);
+        const untracked = ids
+            .filter((_, index) => metas[index] === undefined)
+            .map((id) => {
+                return { error: "File not found", id };
+            });
+        const deleted = known.length > 0 ? await this.deleteBatch(known, options) : { failed: [], failedCount: 0, successful: [], successfulCount: 0 };
+
+        return {
+            failed: [...untracked, ...deleted.failed],
+            failedCount: untracked.length + deleted.failedCount,
+            successful: deleted.successful,
+            successfulCount: deleted.successfulCount,
+        };
+    }
 
     /**
      * Copies an upload file to a new location.

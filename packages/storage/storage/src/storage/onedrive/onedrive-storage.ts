@@ -5,7 +5,7 @@ import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import OneDriveFile from "./onedrive-file";
@@ -459,50 +459,26 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<OneDriveFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let item: DriveItem;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let item: DriveItem;
 
-            try {
-                item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(id)).get())) as DriveItem;
-            } catch (error) {
-                if (isNotFoundError(error)) {
-                    return undefined;
-                }
-
-                throw error;
+        try {
+            item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(id)).get())) as DriveItem;
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return undefined;
             }
 
-            const size = item.size ?? 0;
-            const file = new OneDriveFile({
-                contentType: item.file?.mimeType ?? "application/octet-stream",
-                metadata: {},
-                originalName: item.name ?? id,
-                size,
-            });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bytesWritten: size,
-                driveItemId: item.id,
-                ETag: item.eTag,
-                id,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        return { contentType: item.file?.mimeType, etag: item.eTag, extra: { driveItemId: item.id, originalName: item.name ?? id }, size: item.size ?? 0 };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             // No metadata: direct path lookup.
-            const stored = await this.getMeta(id).catch(() => undefined);
+            const stored = await this.findMeta(id);
 
             // Outside the catch, so an expired upload answers GONE instead of falling back to the path lookup.
             if (stored) {
@@ -670,11 +646,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             },
             { limit },
         );
-    }
-
-    /** Upload records from the meta storage: drive items carry no `createdAt`, so `purge` would never find them expired. */
-    protected override async listUploads(): Promise<OneDriveFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(

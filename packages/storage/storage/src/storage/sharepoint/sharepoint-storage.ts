@@ -204,21 +204,16 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
         return inner.exists(query);
     }
 
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SharePointFile | undefined> {
+    public override async findStoredObject(id: string, options?: OperationOptions): Promise<SharePointFile | undefined> {
         const inner = await this.getInner();
 
-        return inner.getCompletedFile(id, options);
+        return inner.findStoredObject(id, options);
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<SharePointFile[]> {
         const inner = await this.getInner();
 
         return inner.list(limit, options);
-    }
-
-    /** Upload records from the shared meta storage: drive items carry no `createdAt`, so `purge` would never find them expired. */
-    protected override async listUploads(): Promise<SharePointFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async update(query: FileQuery, metadata: Partial<SharePointFile>, _options?: OperationOptions): Promise<SharePointFile> {

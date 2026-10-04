@@ -3,7 +3,7 @@ import { UTApi, UTFile } from "uploadthing/server";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { UploadThingStorageOptions } from "./types";
@@ -257,44 +257,24 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
-    /**
-     * Describes the file stored under an ID that has no upload metadata (an object written by other means).
-     * Only a `HEAD` request is made — the content is never downloaded. The file is looked up by the upload's ID as its custom ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored file exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<UploadThingFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const url = await this.resolveFetchUrl(id, options);
-            const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const url = await this.resolveFetchUrl(id, options);
+        const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
 
-            // Only a missing object counts as absent: the result guards against overwriting one (#919).
-            if (response.status === 404) {
-                return undefined;
-            }
+        if (response.status === 404) {
+            return undefined;
+        }
 
-            if (!response.ok) {
-                throw new Error(`UploadThing: HEAD ${url} answered ${String(response.status)}`);
-            }
+        if (!response.ok) {
+            throw new Error(`UploadThing: HEAD ${url} answered ${String(response.status)}`);
+        }
 
-            const size = Number(response.headers.get("content-length") ?? 0) || 0;
-            const file = new UploadThingFile({
-                contentType: response.headers.get("content-type") ?? "application/octet-stream",
-                id,
-                metadata: {},
-                size,
-            });
-
-            return Object.assign(file, {
-                bytesWritten: size,
-                customId: id,
-                ETag: response.headers.get("etag") ?? undefined,
-                id,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        return {
+            contentType: response.headers.get("content-type") ?? undefined,
+            etag: response.headers.get("etag") ?? undefined,
+            extra: { customId: id },
+            size: Number(response.headers.get("content-length") ?? 0) || 0,
+        };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {

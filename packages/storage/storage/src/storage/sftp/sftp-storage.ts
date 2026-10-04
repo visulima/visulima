@@ -4,7 +4,7 @@ import SftpClient from "ssh2-sftp-client";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -353,38 +353,23 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
-    /**
-     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
-     * Only the file attributes are requested — the content is never downloaded.
-     * @param id Upload ID, used as the remote key.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when the server reports no such file. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SftpFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const path = this.keyToPath(id);
-            const stats = await this.runOperation(options, (signal) =>
-                this.run(signal, async (client) => {
-                    try {
-                        return await client.stat(path);
-                    } catch (error) {
-                        if (isNotFoundError(error)) {
-                            return undefined;
-                        }
-
-                        throw error;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        const stats = await this.runOperation(options, (signal) =>
+            this.run(signal, async (client) => {
+                try {
+                    return await client.stat(path);
+                } catch (error) {
+                    if (isNotFoundError(error)) {
+                        return undefined;
                     }
-                }),
-            );
 
-            if (stats === undefined) {
-                return undefined;
-            }
+                    throw error;
+                }
+            }),
+        );
 
-            const file = new SftpFile({ contentType: "application/octet-stream", metadata: {}, originalName: id, size: stats.size });
-
-            return Object.assign(file, { bytesWritten: stats.size, id, name: id, path, status: "completed" as const });
-        });
+        return stats === undefined ? undefined : { extra: { path }, size: stats.size };
     }
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
@@ -409,14 +394,6 @@ class SftpStorage extends BaseStorage<SftpFile> {
                 }),
             );
         });
-    }
-
-    /**
-     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
-     * without a `createdAt`, so purge would never match an expired upload through it.
-     */
-    protected override async listUploads(): Promise<SftpFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     private async walkList(client: SftpClient, directory: string, files: SftpFile[]): Promise<void> {

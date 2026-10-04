@@ -14,7 +14,7 @@ import type { HttpError } from "../../utils/types";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import FetchError from "./fetch-error";
@@ -183,7 +183,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             await this.validate(file);
 
-            const existing = await this.getMeta(file.id).catch(() => undefined);
+            const existing = await this.findMeta(file.id);
 
             if (existing) {
                 // Errors from the resumed session propagate: swallowing them would open a second session for the same upload.
@@ -374,7 +374,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             const resolvedUrl = new URL(encodeURI(destination), `file:///${this.bucket}/`);
             const [, bucket = this.bucket, ...pathSegments] = resolvedUrl.pathname.split("/");
             const filename = decodeURIComponent(pathSegments.join("/"));
-            const url = `${this.objectUrl(await this.objectName(name))}/rewriteTo/b/${bucket}/o/${encodeURIComponent(filename)}`;
+            const url = `${this.objectUrl(await this.storedName(name))}/rewriteTo/b/${bucket}/o/${encodeURIComponent(filename)}`;
 
             let progress = {} as CopyProgress;
 
@@ -394,7 +394,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             } while (progress.rewriteToken);
 
             // The copy is an object only: it has no upload metadata of its own.
-            const source = await this.getMeta(name).catch(() => undefined);
+            const source = await this.findMeta(name);
 
             return { ...source, id: destination, name: destination } as GCSFile;
         });
@@ -409,7 +409,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("move", async () => {
-            const url = this.objectUrl(await this.objectName(name));
+            const url = this.objectUrl(await this.storedName(name));
             const copiedFile = await this.copy(name, destination, options);
 
             await this.makeRequest({ method: "DELETE" as const, url }, options);
@@ -429,7 +429,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const url = this.objectUrl(await this.objectName(id));
+            const url = this.objectUrl(await this.storedName(id));
             const { data } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string; timeDeleted?: string; updated?: string }>(
                 { params: { alt: "json" }, url },
                 options,
@@ -459,32 +459,18 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @returns Promise resolving to true if both metadata and GCS object exist, false otherwise.
      */
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GCSFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let object: { contentType?: string; etag?: string; size?: number | string };
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        try {
+            const { data: object } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string }>({ params: { alt: "json" }, url: this.objectUrl(id) }, options);
 
-            try {
-                ({ data: object } = await this.makeRequest<typeof object>({ params: { alt: "json" }, url: this.objectUrl(id) }, options));
-            } catch (error) {
-                if (((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404) {
-                    return undefined;
-                }
-
-                throw error;
+            return { contentType: object?.contentType, etag: object?.etag, size: Number(object?.size ?? 0) || 0 };
+        } catch (error) {
+            if (((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404) {
+                return undefined;
             }
 
-            const size = Number(object?.size ?? 0) || 0;
-            const file = new GCSFile({ contentType: object?.contentType, id, metadata: {}, size });
-
-            return Object.assign(file, { bytesWritten: size, ETag: object?.etag, name: id, status: "completed" as const });
-        });
+            throw error;
+        }
     }
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
@@ -791,17 +777,6 @@ class GCStorage extends BaseStorage<GCSFile> {
     /** The JSON API takes the object name as one path segment, so a "/" in it must be encoded. */
     private objectUrl(name: string): string {
         return `${this.storageBaseURI}/${encodeURIComponent(name)}`;
-    }
-
-    /** The object an upload is stored as: the name its metadata records (a custom `filename` differs from the ID), or the ID itself without metadata. */
-    private async objectName(id: string): Promise<string> {
-        try {
-            const { name } = await this.getMeta(id);
-
-            return name ?? id;
-        } catch {
-            return id;
-        }
     }
 
     /** Upload metadata sidecars share the bucket with the files. */

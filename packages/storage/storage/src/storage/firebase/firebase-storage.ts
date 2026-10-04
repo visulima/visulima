@@ -7,7 +7,7 @@ import { getStorage } from "firebase-admin/storage";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import FirebaseFile from "./firebase-file";
@@ -259,39 +259,18 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<FirebaseFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let metadata: Awaited<ReturnType<ReturnType<typeof this.bucket.file>["getMetadata"]>>[0];
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        try {
+            const [metadata] = await this.runOperation(options, () => this.bucket.file(id).getMetadata());
 
-            try {
-                [metadata] = await this.runOperation(options, () => this.bucket.file(id).getMetadata());
-            } catch (error) {
-                if ((error as { code?: number }).code === 404) {
-                    return undefined;
-                }
-
-                throw error;
+            return { contentType: metadata.contentType, etag: metadata.etag, extra: { bucket: this.bucketName, path: id }, size: Number(metadata.size ?? 0) || 0 };
+        } catch (error) {
+            if ((error as { code?: number }).code === 404) {
+                return undefined;
             }
 
-            const size = Number(metadata.size ?? 0) || 0;
-            const file = new FirebaseFile({ contentType: metadata.contentType, id, metadata: {}, size });
-
-            return Object.assign(file, {
-                bucket: this.bucketName,
-                bytesWritten: size,
-                ETag: metadata.etag,
-                name: id,
-                path: id,
-                status: "completed" as const,
-            });
-        });
+            throw error;
+        }
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -334,7 +313,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FirebaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.runOperation(options, () => this.bucket.file(source).copy(this.bucket.file(destination)));
@@ -356,7 +335,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
     public async move(name: string, destination: string, options?: OperationOptions): Promise<FirebaseFile> {
         return this.instrumentOperation("move", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.runOperation(options, () => this.bucket.file(source).move(destination));
@@ -510,14 +489,6 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             },
             appName,
         );
-    }
-
-    private async getMetaSafe(id: string): Promise<FirebaseFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
     }
 }
 

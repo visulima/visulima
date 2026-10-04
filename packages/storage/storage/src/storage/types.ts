@@ -23,6 +23,16 @@ export type OnDelete<TFile extends File = File> = (file: TFile) => Promise<void>
 
 export type OnError<TBody = HttpErrorBody> = (error: HttpError<TBody>) => Promise<void> | void;
 
+/** What a provider reports about an object it stores, see `BaseStorage.findStoredObject`. */
+export interface StoredObject {
+    contentType?: string;
+    etag?: string;
+    /** Provider-specific fields of the described file. */
+    extra?: Record<string, unknown>;
+    /** Size in bytes, when the provider reports it. */
+    size?: number;
+}
+
 export interface PurgeList {
     items: UploadFile[];
     maxAgeMs: number;

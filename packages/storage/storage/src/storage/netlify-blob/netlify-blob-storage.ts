@@ -8,9 +8,8 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateMetadata, updateSize } from "../utils/file";
 import NetlifyBlobFile from "./netlify-blob-file";
@@ -266,9 +265,9 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const meta = await this.getMeta(id).catch((error: unknown) => (isMetaNotFound(error) ? undefined : Promise.reject(error)));
+            const meta = await this.findMeta(id);
             // Without metadata, the blob is looked up by the ID as its key.
-            const file = meta ?? (await this.getCompletedFile(id, options));
+            const file = meta ?? (await this.findStoredObject(id, options));
 
             if (!file) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -298,26 +297,20 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
         });
     }
 
-    /**
-     * Describes the blob stored under an ID that has no upload metadata (an object written by other means).
-     * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the ID as its key.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no blob exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<NetlifyBlobFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const entry = await this.runOperation(options, () => this.store.getMetadata(id));
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const entry = await this.runOperation(options, () => this.store.getMetadata(id));
 
-            if (!entry) {
-                return undefined;
-            }
+        if (!entry) {
+            return undefined;
+        }
 
-            const { contentType, ...metadata } = entry.metadata as Record<string, unknown>;
-            const file = new NetlifyBlobFile({ contentType: typeof contentType === "string" ? contentType : undefined, id, metadata });
+        const { contentType, ...metadata } = entry.metadata as Record<string, unknown>;
 
-            return Object.assign(file, { ETag: entry.etag, name: id, pathname: id, status: "completed" as const, url: this.getBlobUrl(id) });
-        });
+        return {
+            contentType: typeof contentType === "string" ? contentType : undefined,
+            etag: entry.etag,
+            extra: { metadata, pathname: id, url: this.getBlobUrl(id) },
+        };
     }
 
     /**

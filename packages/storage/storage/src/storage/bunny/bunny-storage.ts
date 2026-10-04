@@ -4,7 +4,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunnyFile from "./bunny-file";
@@ -308,7 +308,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
                 throw wrapBunnyError(error, "delete");
             }
 
-            if (!removed && (await this.getCompletedFile(fromBunnyPath(path), options)) !== undefined) {
+            if (!removed && (await this.findStoredObject(fromBunnyPath(path), options)) !== undefined) {
                 return throwErrorCode(ERRORS.STORAGE_ERROR, `Bunny Storage: failed to delete "${path}"`);
             }
 
@@ -332,46 +332,30 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only the object description is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BunnyFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const path = toBunnyPath(id);
-            let entry: BunnyStorageSDK.file.StorageFile;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = toBunnyPath(id);
+        let entry: BunnyStorageSDK.file.StorageFile;
 
-            try {
-                entry = await this.runOperation(options, () => BunnyStorageSDK.file.get(this.client, path));
-            } catch (error) {
-                if (/^file not found/iu.test((error as { message?: string } | null)?.message ?? "")) {
-                    return undefined;
-                }
-
-                throw error;
-            }
-
-            if (entry.isDirectory) {
+        try {
+            entry = await this.runOperation(options, () => BunnyStorageSDK.file.get(this.client, path));
+        } catch (error) {
+            if (/^file not found/iu.test((error as { message?: string } | null)?.message ?? "")) {
                 return undefined;
             }
 
-            const size = typeof entry.length === "number" ? entry.length : 0;
-            const file = new BunnyFile({ contentType: entry.contentType ?? "application/octet-stream", id, metadata: {}, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bunnyChecksum: entry.checksum ?? undefined,
-                bunnyPath: path,
-                bytesWritten: size,
-                ETag: entry.checksum ?? undefined,
-                id,
-                modifiedAt: entry.lastChanged?.toISOString(),
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        if (entry.isDirectory) {
+            return undefined;
+        }
+
+        return {
+            contentType: entry.contentType ?? undefined,
+            etag: entry.checksum ?? undefined,
+            extra: { bunnyChecksum: entry.checksum ?? undefined, bunnyPath: path, modifiedAt: entry.lastChanged?.toISOString() },
+            size: typeof entry.length === "number" ? entry.length : 0,
+        };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -466,11 +450,6 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
             return file;
         });
-    }
-
-    /** Purge by upload id: `list` yields stored names, which differ from ids under a custom `filename`. */
-    protected override async listUploads(): Promise<BunnyFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<BunnyFile[]> {

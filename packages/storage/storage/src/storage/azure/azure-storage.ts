@@ -19,7 +19,7 @@ import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { BatchOperationResponse, OperationOptions } from "../types";
+import type { BatchOperationResponse, OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import { collectStream } from "../utils/remote";
@@ -283,7 +283,7 @@ class AzureStorage extends BaseStorage {
 
             for (let offset = 0; offset < ids.length; offset += BATCH_LIMIT) {
                 const chunk = ids.slice(offset, offset + BATCH_LIMIT);
-                const names = await Promise.all(chunk.map(async (id) => this.blobName(id)));
+                const names = await Promise.all(chunk.map(async (id) => this.storedName(id)));
                 const blobClients = names.map((name) => this.containerClient.getBlockBlobClient(this.getFullPath(name)));
 
                 const response = await this.runOperation(options, (signal) => batchClient.deleteBlobs(blobClients, { abortSignal: signal }));
@@ -330,7 +330,7 @@ class AzureStorage extends BaseStorage {
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<AzureFile> {
         return this.instrumentOperation("move", async () => {
-            const source = this.getFullPath(await this.blobName(name));
+            const source = this.getFullPath(await this.storedName(name));
             const copiedFile = await this.copy(name, destination, options);
 
             await this.runOperation(options, (signal) => this.containerClient.getBlockBlobClient(source).deleteIfExists({ abortSignal: signal }));
@@ -479,49 +479,31 @@ class AzureStorage extends BaseStorage {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<AzureFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
-            let properties: Awaited<ReturnType<typeof blobClient.getProperties>>;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
 
-            try {
-                properties = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
-            } catch (error) {
-                if ((error as { statusCode?: number }).statusCode === 404) {
-                    return undefined;
-                }
+        try {
+            const properties = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
 
-                throw error;
+            return { contentType: properties.contentType, etag: properties.etag, size: properties.contentLength ?? 0 };
+        } catch (error) {
+            if ((error as { statusCode?: number }).statusCode === 404) {
+                return undefined;
             }
 
-            const size = properties.contentLength ?? 0;
-            const file = new AzureFile({ contentType: properties.contentType, id, metadata: {}, size });
-
-            return Object.assign(file, {
-                bytesWritten: size,
-                ETag: properties.etag,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+            throw error;
+        }
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.blobName(id)));
+            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.storedName(id)));
 
             const exists = await this.runOperation(options, (signal) => blobClient.exists({ abortSignal: signal }));
 
             if (!exists) {
                 // Metadata without a blob: the file was deleted (GONE), otherwise it never existed (NOT_FOUND).
-                return throwErrorCode(await this.hasMeta(id) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
+                return throwErrorCode((await this.findMeta(id)) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
             }
 
             const response = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
@@ -549,7 +531,7 @@ class AzureStorage extends BaseStorage {
      * answers `false`; any other failure throws.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => (await this.getCompletedFile(await this.blobName(id), options)) !== undefined);
+        return this.instrumentOperation("exists", async () => (await this.findStoredObject(await this.storedName(id), options)) !== undefined);
     }
 
     /**
@@ -561,13 +543,13 @@ class AzureStorage extends BaseStorage {
      */
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<AzureFile> {
         return this.instrumentOperation("copy", async () => {
-            const sourceName = await this.blobName(name);
+            const sourceName = await this.storedName(name);
             const source = this.containerClient.getBlockBlobClient(this.getFullPath(sourceName));
 
             const exists = await this.runOperation(options, (signal) => source.exists({ abortSignal: signal }));
 
             if (!exists) {
-                return throwErrorCode(await this.hasMeta(name) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
+                return throwErrorCode((await this.findMeta(name)) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
             }
 
             const target = this.containerClient.getBlockBlobClient(this.getFullPath(destination));
@@ -590,7 +572,7 @@ class AzureStorage extends BaseStorage {
             await this.runOperation(options, () => poller.pollUntilDone());
 
             // A blob written by other means has no upload metadata; describe it from its properties.
-            const sourceFile = (await this.getMeta(name).catch(async () => this.getCompletedFile(name, options))) as AzureFile;
+            const sourceFile = ((await this.findMeta(name)) ?? (await this.findStoredObject(name, options))) as AzureFile;
 
             return { ...sourceFile, id: destination, name: destination };
         });
@@ -660,14 +642,6 @@ class AzureStorage extends BaseStorage {
             },
             { limit },
         );
-    }
-
-    /**
-     * Upload records from the meta storage: `list` yields stored names, which differ from the
-     * upload ids under a custom `filename`.
-     */
-    protected override async listUploads(): Promise<AzureFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     /**
@@ -771,24 +745,6 @@ class AzureStorage extends BaseStorage {
         const prefix = [this.root, this.assetFolder].filter(Boolean).join("/");
 
         return prefix ? `${prefix}/${filePath}` : filePath;
-    }
-
-    /** The blob an upload is stored as: the name its metadata records (a custom `filename` differs from the ID), or the ID itself without metadata. */
-    private async blobName(id: string): Promise<string> {
-        try {
-            const { name } = await this.getMeta(id);
-
-            return name;
-        } catch {
-            return id;
-        }
-    }
-
-    private async hasMeta(id: string): Promise<boolean> {
-        return this.getMeta(id).then(
-            () => true,
-            () => false,
-        );
     }
 
     /**

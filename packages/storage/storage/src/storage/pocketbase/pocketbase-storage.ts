@@ -3,7 +3,7 @@ import PocketBase, { ClientResponseError } from "pocketbase";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import PocketBaseFile from "./pocketbase-file";
@@ -306,64 +306,43 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
-    /**
-     * Describes the record stored under an ID that has no upload metadata (an object written by other means).
-     * Only the record and a `HEAD` request on its file URL are made — the content is never downloaded. The record is looked up by the upload's ID as its key.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored record exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<PocketBaseFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            await this.ensureAuth();
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        await this.ensureAuth();
 
-            let record: PocketBaseRecord;
+        let record: PocketBaseRecord;
 
-            try {
-                record = await this.findRecord(id, options);
-            } catch (error) {
-                if (isNotFound(error)) {
-                    return undefined;
-                }
-
-                throw error;
-            }
-
-            const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
-            const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
-
-            if (response.status === 404) {
+        try {
+            record = await this.findRecord(id, options);
+        } catch (error) {
+            if (isNotFound(error)) {
                 return undefined;
             }
 
-            if (!response.ok) {
-                throw new Error(`PocketBase: HEAD ${url} answered ${String(response.status)}`);
-            }
+            throw error;
+        }
 
-            const size = Number(response.headers.get("content-length") ?? 0) || 0;
+        const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
+        const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
 
-            const file = new PocketBaseFile({
-                contentType: response.headers.get("content-type") ?? "application/octet-stream",
-                id,
-                metadata: {},
-                size,
-            });
+        if (response.status === 404) {
+            return undefined;
+        }
 
-            return Object.assign(file, {
-                bucket: this.collectionName,
-                bytesWritten: size,
-                id,
-                name: id,
-                path: id,
-                status: "completed" as const,
-            });
-        });
+        if (!response.ok) {
+            throw new Error(`PocketBase: HEAD ${url} answered ${String(response.status)}`);
+        }
+
+        return {
+            contentType: response.headers.get("content-type") ?? undefined,
+            extra: { bucket: this.collectionName, path: id },
+            size: Number(response.headers.get("content-length") ?? 0) || 0,
+        };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             // No metadata — treat `id` as a logical key.
-            const stored = await this.getMetaSafe(id);
+            const stored = await this.findMeta(id);
 
             // Outside the lookup: an expired upload must answer GONE, not fall back to its record.
             if (stored) {
@@ -402,7 +381,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<PocketBaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
@@ -440,7 +419,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public async move(name: string, destination: string, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("move", async () => {
             const file = await this.copy(name, destination, options);
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
@@ -463,11 +442,6 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
             return file;
         });
-    }
-
-    /** Purge by upload id: `list` yields record keys, which differ from ids under a custom `filename`. */
-    protected override async listUploads(): Promise<PocketBaseFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<PocketBaseFile[]> {
@@ -538,7 +512,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         await this.ensureAuth();
 
         let lookupKey = key;
-        const meta = await this.getMetaSafe(key);
+        const meta = await this.findMeta(key);
 
         if (meta?.path) {
             lookupKey = meta.path;
@@ -581,14 +555,6 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             }
 
             await this.runOperation(options, () => this.client.collection(this.collectionName).create(form));
-        }
-    }
-
-    private async getMetaSafe(id: string): Promise<PocketBaseFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
         }
     }
 }

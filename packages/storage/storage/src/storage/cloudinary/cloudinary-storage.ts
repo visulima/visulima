@@ -3,7 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import CloudinaryFile from "./cloudinary-file";
@@ -292,49 +292,30 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
-    /**
-     * Describes the resource stored under an ID that has no upload metadata (an object written by other means).
-     * Only the Admin API resource details are requested — the content is never downloaded. The resource is looked up by the upload's ID as its public ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored resource exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<CloudinaryFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let resource: Awaited<ReturnType<typeof cloudinary.api.resource>>;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let resource: Awaited<ReturnType<typeof cloudinary.api.resource>>;
 
-            try {
-                resource = await this.runOperation(options, () =>
-                    this.client.api.resource(id, {
-                        resource_type: this.resourceType,
-                        type: this.deliveryType,
-                    }),
-                );
-            } catch (error) {
-                if (((error as { http_code?: number }).http_code ?? (error as { error?: { http_code?: number } }).error?.http_code) === 404) {
-                    return undefined;
-                }
-
-                throw error;
+        try {
+            resource = await this.runOperation(options, () =>
+                this.client.api.resource(id, {
+                    resource_type: this.resourceType,
+                    type: this.deliveryType,
+                }),
+            );
+        } catch (error) {
+            if (((error as { http_code?: number }).http_code ?? (error as { error?: { http_code?: number } }).error?.http_code) === 404) {
+                return undefined;
             }
 
-            const size = typeof resource.bytes === "number" ? resource.bytes : 0;
-            const file = new CloudinaryFile({
-                contentType: resource.resource_type && resource.format ? `${resource.resource_type}/${resource.format}` : "application/octet-stream",
-                id,
-                metadata: {},
-                size,
-            });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bytesWritten: size,
-                ETag: resource.version === undefined ? undefined : String(resource.version),
-                id,
-                name: id,
-                path: id,
-                status: "completed" as const,
-            });
-        });
+        return {
+            contentType: resource.resource_type && resource.format ? `${resource.resource_type}/${resource.format}` : undefined,
+            etag: resource.version === undefined ? undefined : String(resource.version),
+            extra: { path: id },
+            size: typeof resource.bytes === "number" ? resource.bytes : 0,
+        };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -392,7 +373,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<CloudinaryFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             const sourceUrl = this.client.url(source, {
@@ -426,7 +407,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async move(name: string, destination: string, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("move", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.runOperation(options, () =>
@@ -559,14 +540,6 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
             stream.end(buffer);
         });
-    }
-
-    private async getMetaSafe(id: string): Promise<CloudinaryFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
     }
 }
 

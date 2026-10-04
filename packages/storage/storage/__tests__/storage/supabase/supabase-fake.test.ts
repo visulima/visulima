@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
@@ -295,11 +295,9 @@ describe("supabase against an in-memory Storage API", () => {
 
         await expect(storage.purge()).resolves.toMatchObject({ items: [] });
 
-        for (const object of supabase.objects.values()) {
-            object.created = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-        }
+        vi.useFakeTimers({ now: Date.now() + 2 * 60 * 60 * 1000, toFake: ["Date"] });
 
-        const purged = await storage.purge();
+        const purged = await storage.purge().finally(() => vi.useRealTimers());
 
         expect(purged.items.map((item) => item.id)).toStrictEqual([file.id]);
         expect(supabase.objects.size).toBe(0);

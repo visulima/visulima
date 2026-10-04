@@ -7,9 +7,8 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { VercelBlobStorageOptions } from "./types";
@@ -274,9 +273,9 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const meta = await this.getMeta(id).catch((error: unknown) => (isMetaNotFound(error) ? undefined : Promise.reject(error)));
+            const meta = await this.findMeta(id);
             // Without metadata, the blob is looked up by the ID as its pathname.
-            const file = meta ?? (await this.getCompletedFile(id, options));
+            const file = meta ?? (await this.findStoredObject(id, options));
 
             if (!file) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -339,40 +338,23 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         });
     }
 
-    /**
-     * Describes the blob stored under an ID that has no upload metadata (an object written by other means).
-     * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the upload's ID as its pathname.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored blob exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<VercelBlobFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let blob;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        try {
+            const blob = await this.runOperation(options, () => head(id, this.credentials));
 
-            try {
-                blob = await this.runOperation(options, () => head(id, this.credentials));
-            } catch (error) {
-                if (error instanceof BlobNotFoundError) {
-                    return undefined;
-                }
-
-                throw error;
+            return {
+                contentType: blob.contentType,
+                etag: blob.etag,
+                extra: { downloadUrl: blob.downloadUrl, pathname: blob.pathname, url: blob.url },
+                size: blob.size,
+            };
+        } catch (error) {
+            if (error instanceof BlobNotFoundError) {
+                return undefined;
             }
 
-            const file = new VercelBlobFile({ contentType: blob.contentType, id, metadata: {}, size: blob.size });
-
-            return Object.assign(file, {
-                bytesWritten: blob.size,
-                downloadUrl: blob.downloadUrl,
-                ETag: blob.etag,
-                id,
-                name: id,
-                pathname: blob.pathname,
-                status: "completed" as const,
-                url: blob.url,
-            });
-        });
+            throw error;
+        }
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -467,11 +449,6 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
             return copiedFile;
         });
-    }
-
-    /** Upload records by id: `list` yields blob pathnames, which differ from the ids under a custom `filename`. */
-    protected override async listUploads(): Promise<VercelBlobFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<VercelBlobFile[]> {

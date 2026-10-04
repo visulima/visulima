@@ -11,9 +11,9 @@ import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import { getMetaVersion, isMetaNotFound, setMetaVersion } from "../meta-storage";
+import { getMetaVersion, setMetaVersion } from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { BaseStorageOptions, OperationOptions, PurgeList } from "../types";
+import type { BaseStorageOptions, OperationOptions, StoredObject } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
@@ -566,78 +566,47 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Deletes expired uploads: finished ones by the age of their object, unfinished multipart
-     * uploads (which no object listing shows) by the time they were started, or last written to
-     * with `expiration.rolling`.
+     * The uploads {@link BaseStorage.purge} checks: finished ones from the object listing, and
+     * unfinished multipart uploads, which no object listing shows. Only this storage's own: the
+     * bucket may hold objects and multipart uploads of other clients, and `delete` removes any
+     * object stored under a key. Untracked leftovers are for an S3 lifecycle rule
+     * (AbortIncompleteMultipartUpload). An upload is as old as its object, or its multipart upload.
      */
-    public override async purge(maxAge?: number | string): Promise<PurgeList> {
-        return this.instrumentOperation("purge", async () => {
-            const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
-            const purged = { items: [], maxAgeMs } as PurgeList;
+    protected override async listUploads(): Promise<TFile[]> {
+        const uploads: TFile[] = [];
 
-            if (!maxAgeMs) {
-                return purged;
+        // Metadata is looked up by the object key, which is the upload id unless a custom `filename` is set.
+        for (const { createdAt, id } of await this.list()) {
+            const file = await this.findMeta(id);
+
+            if (file) {
+                uploads.push({ ...file, createdAt });
             }
+        }
 
-            const before = Date.now() - maxAgeMs;
+        const s3Api = this.getS3Api();
+        let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
 
-            const purge = async (id: string, file: Partial<TFile>): Promise<void> => {
-                try {
-                    purged.items.push({ ...(await this.delete({ id })), ...file });
-                } catch (error: unknown) {
-                    this.logger?.warn(`Failed to delete file ${id} during purge: ${error instanceof Error ? error.message : String(error)}`);
+        while (marker) {
+            const previous: { KeyMarker?: string; UploadIdMarker?: string } = marker;
+            const page = await this.runOperation(undefined, (signal) => s3Api.listMultipartUploads({ Bucket: this.bucket, ...previous }, { signal }));
+
+            for (const { Initiated, Key, UploadId } of page.Uploads ?? []) {
+                const file = Key === undefined ? undefined : await this.findMeta(Key);
+
+                if (UploadId !== undefined && file?.UploadId === UploadId) {
+                    uploads.push({ ...file, createdAt: Initiated });
                 }
-            };
-
-            // Only uploads: the bucket may hold objects the storage never created, and `delete`
-            // removes any object stored under a key.
-            for (const { id, ...rest } of await this.list()) {
-                if (Number(rest.createdAt) < before && (await this.getMeta(id).then(() => true, () => false))) {
-                    await purge(id, rest as Partial<TFile>);
-                }
             }
 
-            const s3Api = this.getS3Api();
-            let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
+            // A truncated page without new markers would loop forever; stop instead.
+            marker =
+                page.IsTruncated && (page.NextKeyMarker !== previous.KeyMarker || page.NextUploadIdMarker !== previous.UploadIdMarker)
+                    ? { KeyMarker: page.NextKeyMarker, UploadIdMarker: page.NextUploadIdMarker }
+                    : undefined;
+        }
 
-            while (marker) {
-                const previous: { KeyMarker?: string; UploadIdMarker?: string } = marker;
-                const page = await this.runOperation(undefined, (signal) => s3Api.listMultipartUploads({ Bucket: this.bucket, ...previous }, { signal }));
-
-                for (const { Initiated, Key, UploadId } of page.Uploads ?? []) {
-                    if (Key === undefined || UploadId === undefined) {
-                        continue;
-                    }
-
-                    // ponytail: metadata is looked up by the object key, which is the upload id unless a custom `filename` is set.
-                    const file = await this.getMeta(Key).catch(() => undefined);
-                    const lastActive = (this.expiration?.rolling && file?.modifiedAt) || Initiated;
-
-                    if (lastActive === undefined || Number(new Date(lastActive)) >= before) {
-                        continue;
-                    }
-
-                    // Only this storage's own uploads: another client's multipart upload in a shared
-                    // bucket is not ours to abort. Untracked leftovers are for an S3 lifecycle rule
-                    // (AbortIncompleteMultipartUpload).
-                    if (file?.UploadId === UploadId) {
-                        await purge(Key, {});
-                    }
-                }
-
-                // A truncated page without new markers would loop forever; stop instead.
-                marker =
-                    page.IsTruncated && (page.NextKeyMarker !== previous.KeyMarker || page.NextUploadIdMarker !== previous.UploadIdMarker)
-                        ? { KeyMarker: page.NextKeyMarker, UploadIdMarker: page.NextUploadIdMarker }
-                        : undefined;
-            }
-
-            if (purged.items.length > 0) {
-                this.logger?.info(`Purge: removed ${purged.items.length} uploads`);
-            }
-
-            return purged;
-        });
+        return uploads;
     }
 
     /**
@@ -784,7 +753,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * metadata, the object stored under it. An unfinished upload has no object yet.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => (await this.getCompletedFile(await this.objectKey(id), options)) !== undefined);
+        return this.instrumentOperation("exists", async () => (await this.findStoredObject(await this.storedName(id), options)) !== undefined);
     }
 
     /**
@@ -793,7 +762,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
-            const key = await this.objectKey(id);
+            const key = await this.storedName(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
@@ -1025,44 +994,19 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         }
     }
 
-    /**
-     * Describes the object stored under a key that may have no upload metadata (an upload
-     * completed by an older version, which dropped it, or an object written by other means). Only
-     * a missing object answers `undefined`; any other failure throws.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
         const s3Api = this.getS3Api();
 
-        let head: Awaited<ReturnType<S3ApiOperations["headObject"]>>;
-
         try {
-            head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
+            const head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
+
+            return { contentType: head.ContentType, etag: head.ETag, size: head.ContentLength ?? 0 };
         } catch (error) {
-            // Only a missing object counts as absent: the result guards against overwriting one (#919).
             if (isNotFound(error)) {
                 return undefined;
             }
 
             throw error;
-        }
-
-        const size = head.ContentLength ?? 0;
-        const file = new (this.getFileClass())({ contentType: head.ContentType, id, metadata: {}, size });
-
-        return Object.assign(file, { bytesWritten: size, ETag: head.ETag, name: id, status: "completed" as const });
-    }
-
-    /**
-     * The bucket key of an upload: the stored name its metadata records (a custom `filename`
-     * differs from the ID), or the ID itself for an object without metadata.
-     */
-    protected async objectKey(id: string): Promise<string> {
-        try {
-            const { name } = await this.getMeta(id);
-
-            return name;
-        } catch {
-            return id;
         }
     }
 
@@ -1083,22 +1027,15 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     protected async findUpload(id: string, options?: OperationOptions): Promise<{ file: TFile; tracked: boolean }> {
         S3BaseStorage.assertSafeId(id);
 
-        try {
-            return { file: await this.getMeta(id), tracked: true };
-        } catch (error: unknown) {
-            // Only a missing record means "no metadata"; a failing meta store must not read as it.
-            if (!isMetaNotFound(error)) {
-                throw error;
-            }
+        const meta = await this.findMeta(id);
 
-            const file = await this.getCompletedFile(id, options);
-
-            if (file === undefined) {
-                throw error;
-            }
-
-            return { file, tracked: false };
+        if (meta) {
+            return { file: meta, tracked: true };
         }
+
+        const file = await this.findStoredObject(id, options);
+
+        return file === undefined ? throwErrorCode(ERRORS.FILE_NOT_FOUND) : { file, tracked: false };
     }
 
     /**

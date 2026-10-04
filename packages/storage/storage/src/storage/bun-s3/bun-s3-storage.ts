@@ -5,7 +5,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunS3File from "./bun-s3-file";
@@ -244,40 +244,21 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BunS3File | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const key = toKey(id);
-            let stat: Awaited<ReturnType<BunS3ClientLike["stat"]>>;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const key = toKey(id);
+        let stat: Awaited<ReturnType<BunS3ClientLike["stat"]>>;
 
-            try {
-                stat = await this.runOperation(options, () => this.client.file(key).stat());
-            } catch (error) {
-                if (isNotFoundError(error)) {
-                    return undefined;
-                }
-
-                throw error;
+        try {
+            stat = await this.runOperation(options, () => this.client.file(key).stat());
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return undefined;
             }
 
-            const size = stat.size ?? 0;
-            const file = new BunS3File({ contentType: stat.type, id, metadata: {}, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bunS3ETag: stat.etag ?? undefined,
-                bunS3Key: key,
-                bytesWritten: size,
-                ETag: stat.etag ?? undefined,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        return { contentType: stat.type, etag: stat.etag ?? undefined, extra: { bunS3ETag: stat.etag ?? undefined, bunS3Key: key }, size: stat.size ?? 0 };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {

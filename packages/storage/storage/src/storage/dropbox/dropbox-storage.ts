@@ -5,7 +5,7 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import DropboxFile from "./dropbox-file";
@@ -409,48 +409,29 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
-    /**
-     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists. Any other failure throws, so a failed lookup never reads as absent.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<DropboxFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const path = this.keyToPath(id);
-            let data: files.FileMetadataReference | files.FolderMetadataReference | files.DeletedMetadataReference;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        let data: files.FileMetadataReference | files.FolderMetadataReference | files.DeletedMetadataReference;
 
-            try {
-                await this.authHandle.ensureAccessToken();
+        try {
+            await this.authHandle.ensureAccessToken();
 
-                const response = await this.runOperation(options, () => this.client.filesGetMetadata({ path }));
+            const response = await this.runOperation(options, () => this.client.filesGetMetadata({ path }));
 
-                data = response.result;
-            } catch (error) {
-                if (isNotFoundError(error)) {
-                    return undefined;
-                }
-
-                throw error;
-            }
-
-            if (data[".tag"] !== "file") {
+            data = response.result;
+        } catch (error) {
+            if (isNotFoundError(error)) {
                 return undefined;
             }
 
-            const size = data.size ?? 0;
-            const file = new DropboxFile({ contentType: "application/octet-stream", metadata: {}, originalName: data.name, size });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bytesWritten: size,
-                ETag: data.rev,
-                id,
-                name: id,
-                path,
-                status: "completed" as const,
-            });
-        });
+        if (data[".tag"] !== "file") {
+            return undefined;
+        }
+
+        return { etag: data.rev, extra: { originalName: data.name, path }, size: data.size ?? 0 };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
@@ -618,7 +599,10 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         );
     }
 
-    /** Upload records by id: `list` yields stored paths without `createdAt`, so purge could never match them. */
+    /**
+     * Upload records only, never {@link DropboxStorage.list}: its entries carry `modifiedAt`, so with
+     * `expiration.rolling` purge would delete any file in the folder, not only uploads.
+     */
     protected override async listUploads(): Promise<DropboxFile[]> {
         return (await this.meta.list()) ?? [];
     }
