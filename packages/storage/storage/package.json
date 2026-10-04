@@ -286,6 +286,7 @@
         "lint:types": "tsc --noEmit --project tsconfig.json",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
+        "test:live": "vitest run --config vitest.live.config.ts",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },

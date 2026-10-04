@@ -8,10 +8,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Multipart as MultipartFetch, Rest as RestFetch, Tus as TusFetch } from "../../src/handler/http/fetch";
 import { Multipart as MultipartNode, Rest as RestNode, Tus as TusNode } from "../../src/handler/http/node";
 import MemoryMetaStorage from "../../src/storage/memory/memory-meta-storage";
+import type MetaStorage from "../../src/storage/meta-storage";
 import type { BaseStorage } from "../../src/storage/storage";
 import type { ExpirationOptions } from "../../src/storage/types";
 import type { File } from "../../src/storage/utils/file";
-import { createdAgo, HOUR } from "./clock";
+import { HOUR } from "./clock";
 import type { Send } from "./handler/flows";
 import { MULTIPART_FLOW_ASSERTIONS, multipartFlow, REST_FLOW_ASSERTIONS, restFlow, TUS_FLOW_ASSERTIONS, tusFlow } from "./handler/flows";
 
@@ -91,6 +92,19 @@ const upload = async (storage: BaseStorage, content: string): Promise<string> =>
     await storage.write({ body: Readable.from([Buffer.from(content)]), contentLength: content.length, id: file.id, start: 0 });
 
     return file.id;
+};
+
+/**
+ * Moves an upload's timestamps `ms` into the past, as if it was created and last written then. The
+ * record is rewritten rather than the clock faked: a real service refuses requests signed with a
+ * clock hours off (RequestTimeTooSkewed).
+ */
+const age = async (storage: BaseStorage, id: string, ms: number): Promise<void> => {
+    const { meta } = storage as unknown as { meta: MetaStorage };
+    const file = await meta.get(id);
+    const back = (date: File["createdAt"]): string | undefined => (date === undefined ? undefined : new Date(Number(new Date(date)) - ms).toISOString());
+
+    await meta.save(id, { ...file, createdAt: back(file.createdAt), expiredAt: back(file.expiredAt), modifiedAt: back(file.modifiedAt) });
 };
 
 const listen = async (servers: Server[], handle: (request: IncomingMessage, response: ServerResponse) => Promise<void>): Promise<Send> => {
@@ -296,7 +310,9 @@ export const describeMatrix = (provider: MatrixProvider): void => {
             expect.assertions(1);
 
             const send = await mount(storage, handler, runtime, servers);
-            const id = await createdAgo(2 * HOUR, async () => upload(storage, "hello"));
+            const id = await upload(storage, "hello");
+
+            await age(storage, id, 2 * HOUR);
 
             await expect(send(`${BASE}/${id}`, { headers: TUS, method: handler === "tus" ? "HEAD" : "GET" })).resolves.toHaveProperty("status", 410);
         });
@@ -304,12 +320,13 @@ export const describeMatrix = (provider: MatrixProvider): void => {
         it.runIf(expiration !== undefined && purgeGap === undefined)("should purge only its own expired uploads", async () => {
             expect.assertions(4);
 
-            const old = await createdAgo(2 * HOUR, async () => {
-                await backend.putObject("foreign-object", "app data");
+            await backend.putObject("foreign-object", "app data");
 
-                return upload(storage, "old");
-            });
+            const old = await upload(storage, "old");
             const fresh = await upload(storage, "new");
+
+            await age(storage, old, 2 * HOUR);
+
             const { items } = await storage.purge();
 
             expect(items.map((item) => item.id)).toStrictEqual([old]);

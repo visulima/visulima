@@ -35,6 +35,23 @@ Every provider/runtime SDK is an **optional** peer (see `peerDependenciesMeta` i
 
 `@remix-run/multipart-parser`, `@visulima/pagination`, `file-type`, `lru-cache`, `mime`, `nanoid`, `openapi-types`, `type-is`. `zod` is an optional peer used only by the AI entries (`src/ai/`). Implicit Nx deps: `api/pagination`, `data-manipulation/humanizer`, `filesystem/path`, `filesystem/fs`.
 
+## Tests
+
+- `pnpm run test` runs everything against in-memory fakes. Provider fakes shared between suites live in `__tests__/__helpers__/fakes/`; `describeStorageContract` (`__tests__/__helpers__/storage-contract.ts`) is the behaviour every adapter shares.
+- `__tests__/matrix/` (`describeMatrix`, `__tests__/__helpers__/matrix.ts`) runs the cross-product: providers (memory, disk, S3, aws-light, Azure, GCS, FTP, SFTP) × naming (default id, custom `filename`) × expiration (none, `maxAge`, rolling) × meta store (provider default, shared `MemoryMetaStorage`) × handler (REST, TUS, multipart) × runtime (node http server, fetch). Add a provider there when it gets a fake.
+
+### Live tests
+
+`__tests__/live/` runs the storage contract and a slice of the matrix against real services: MinIO (S3Storage, AwsLightStorage; `pgsty/minio`, as MinIO no longer publishes images), Azurite, fake-gcs-server, an SFTP server (atmoz/sftp) and an FTP server (vsftpd). They are skipped unless `LIVE_TESTS=1`, and excluded from `pnpm run test`.
+
+```bash
+docker compose -f docker-compose.live.yml up -d --wait
+LIVE_TESTS=1 pnpm run test:live
+docker compose -f docker-compose.live.yml down --volumes
+```
+
+Every test gets a fresh bucket, container or directory. The connection settings default to the compose services and can be pointed elsewhere with `LIVE_S3_ENDPOINT`, `LIVE_S3_ACCESS_KEY`, `LIVE_S3_SECRET_KEY`, `LIVE_S3_REGION`, `LIVE_AZURE_CONNECTION_STRING`, `LIVE_GCS_ENDPOINT`, `LIVE_SFTP_HOST`/`_PORT`/`_USER`/`_PASSWORD` and `LIVE_FTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_HOME` (see `__tests__/live/backends.ts`). CI runs them in `.github/workflows/storage-live.yml` on pull requests touching this package and on `main`.
+
 ## Related
 
 - `@visulima/storage-client` — browser-side upload client that talks to this package's HTTP handlers (TUS / multipart / chunked REST).

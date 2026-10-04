@@ -19,13 +19,13 @@ export interface StorageContractSetup {
     failBackend: (failing: boolean) => void;
 
     /** Whether the backend stores an object under `key`. */
-    hasObject: (key: string) => boolean;
+    hasObject: (key: string) => Promise<boolean> | boolean;
 
     /** Stores an object under `key` as an app sharing the backend would: without upload metadata. */
     putObject: (key: string, content: string) => Promise<void> | void;
 }
 
-export type StorageContractScenario = "copy and move" | "expired upload" | "REST lifecycle";
+export type StorageContractScenario = "copy and move" | "expired upload" | "failing meta store" | "purge" | "REST lifecycle";
 
 const upload = async (storage: BaseStorage, content: string): Promise<string> => {
     const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: content.length });
@@ -79,7 +79,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
 
             await expect(storage.get({ id: "copied" })).resolves.toHaveProperty("content", Buffer.from("hello"));
             await expect(storage.get({ id: "moved" })).resolves.toHaveProperty("content", Buffer.from("hello"));
-            expect(backend.hasObject(id)).toBe(false);
+            await expect(Promise.resolve(backend.hasObject(id))).resolves.toBe(false);
         });
 
         it.skipIf(skip["expired upload"] !== undefined)("should answer GONE for an expired upload instead of writing or serving it", async () => {
@@ -110,7 +110,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(storage.get({ id })).rejects.toHaveProperty("UploadErrorCode", ERRORS.GONE);
         });
 
-        it("should purge expired uploads and never an object without upload metadata", async () => {
+        it.skipIf(skip.purge !== undefined)("should purge expired uploads and never an object without upload metadata", async () => {
             expect.assertions(3);
 
             const storage = backend.createStorage({ expiration: { maxAge: "1h" } });
@@ -124,7 +124,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             const purged = await storage.purge();
 
             expect(purged.items.map((item) => item.id)).toStrictEqual([old]);
-            expect(backend.hasObject("foreign-object")).toBe(true);
+            await expect(Promise.resolve(backend.hasObject("foreign-object"))).resolves.toBe(true);
             await expect(storage.exists({ id: fresh })).resolves.toBe(true);
         });
 
@@ -157,7 +157,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(storage.findStoredObject("missing")).rejects.toBeDefined();
         });
 
-        it("should not read a failing meta store as a missing upload", async () => {
+        it.skipIf(skip["failing meta store"] !== undefined)("should not read a failing meta store as a missing upload", async () => {
             expect.assertions(3);
 
             const storage = backend.createStorage({ expiration: { maxAge: "1h" } });
@@ -168,7 +168,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(storage.deleteUpload(id)).rejects.toThrow("meta store down");
             // Purge either fails or skips the upload, whose record it can't read; it never deletes it.
             await expect(storage.purge().then(({ items }) => items, () => [])).resolves.toStrictEqual([]);
-            expect(backend.hasObject(id)).toBe(true);
+            await expect(Promise.resolve(backend.hasObject(id))).resolves.toBe(true);
         });
 
         it.skipIf(skip["REST lifecycle"] !== undefined)("should serve a REST upload: POST, HEAD, PUT replace and DELETE", async () => {
