@@ -92,6 +92,9 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with deletion result
      */
     public async handleDelete(id: string): Promise<ResponseFile<TFile>> {
+        // Only uploads: an id without upload metadata may name an object the route never created.
+        await this.storage.getMeta(id);
+
         const file = await this.storage.delete({ id });
 
         if (file.status === undefined) {
@@ -108,6 +111,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
     protected get storage(): {
         create: (config: FileInit) => Promise<TFile>;
         delete: (options: { id: string }) => Promise<TFile>;
+        getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
         write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
     } {

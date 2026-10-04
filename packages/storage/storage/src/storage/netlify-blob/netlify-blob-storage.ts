@@ -8,6 +8,7 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
+import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
@@ -265,7 +266,7 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<NetlifyBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const meta = await this.getMeta(id).catch(() => undefined);
+            const meta = await this.getMeta(id).catch((error: unknown) => (isMetaNotFound(error) ? undefined : Promise.reject(error)));
             // Without metadata, the blob is looked up by the ID as its key.
             const file = meta ?? (await this.getCompletedFile(id, options));
 

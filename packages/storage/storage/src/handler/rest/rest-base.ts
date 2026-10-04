@@ -74,6 +74,17 @@ const verifyChunk = async (body: unknown, contentLength: number, checksum: strin
 };
 
 /**
+ * Whether a metadata lookup failed because the upload doesn't exist.
+ * @param error Lookup error
+ * @returns `true` for a missing upload
+ */
+const isMetaNotFoundError = (error: unknown): boolean => {
+    const { code, UploadErrorCode } = error as { code?: string; UploadErrorCode?: string };
+
+    return UploadErrorCode === ERRORS.FILE_NOT_FOUND || code === "ENOENT";
+};
+
+/**
  * Validates a list of ids for batch deletion.
  * @param ids Candidate ids
  * @returns The ids
@@ -175,6 +186,10 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with deletion result
      */
     public async deleteSingle(id: string): Promise<ResponseFile<TFile>> {
+        // Only uploads: some providers delete any object stored under a key, and an id without
+        // upload metadata may name an object the route never created.
+        await this.storage.getMeta(id);
+
         const file = await this.storage.delete({ id });
 
         if (file.status === undefined) {
@@ -270,6 +285,9 @@ abstract class RestBase<TFile extends UploadFile> {
         }
 
         if (exists) {
+            // Validate the replacement first: a rejected PUT must leave the existing file in place.
+            await this.storage.validateInit({ ...config, id });
+
             // Replace the upload: writing at offset 0 over it is a no-op once it completed, and leaves
             // trailing bytes behind on one still in progress.
             await this.storage.delete({ id });
@@ -571,8 +589,18 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseList with deletion results
      */
     public async deleteBatch(ids: string[]): Promise<ResponseList<TFile>> {
-        // Use storage-level batch delete if available, otherwise fall back to individual deletes
-        const result = await this.storage.deleteBatch(ids);
+        // Only uploads, as for a single delete: ids without upload metadata fail as not found.
+        const known = await Promise.all(ids.map(async (id) => this.storage.getMeta(id).then(() => true, (error: unknown) => (isMetaNotFoundError(error) ? false : Promise.reject(error)))));
+        const tracked = ids.filter((_, index) => known[index]);
+        const untracked = ids.filter((_, index) => !known[index]).map((id) => ({ error: "File not found", id }));
+        const deleted =
+            tracked.length > 0 ? await this.storage.deleteBatch(tracked) : { failed: [], failedCount: 0, successful: [] as TFile[], successfulCount: 0 };
+        const result = {
+            failed: [...untracked, ...deleted.failed],
+            failedCount: untracked.length + deleted.failedCount,
+            successful: deleted.successful,
+            successfulCount: deleted.successfulCount,
+        };
 
         // If all deletions failed, return error
         if (result.successfulCount === 0 && result.failedCount > 0) {
@@ -616,6 +644,7 @@ abstract class RestBase<TFile extends UploadFile> {
         getCompletedFile?: (id: string) => Promise<TFile | undefined>;
         getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
+        validateInit: (config: FileInit) => Promise<void>;
         sequentialWrites?: boolean;
         update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
         withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;

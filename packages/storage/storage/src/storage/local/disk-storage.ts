@@ -504,6 +504,34 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     }
 
     /**
+     * Describes the file stored under an ID that has no upload metadata, so a REST `PUT` doesn't
+     * create over (and truncate) a file put in the directory by other means (#919).
+     * @param id Upload ID, the file's path below the directory with the default `filename`
+     * @returns The stored file, or `undefined` when none exists; any other failure throws.
+     */
+    public override async getCompletedFile(id: string): Promise<TFile | undefined> {
+        let stats: Awaited<ReturnType<typeof stat>>;
+
+        try {
+            stats = await stat(this.getFilePath(id));
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === "ENOENT") {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        if (!stats.isFile()) {
+            return undefined;
+        }
+
+        const file = new File({ id, metadata: {}, size: stats.size }) as TFile;
+
+        return Object.assign(file, { bytesWritten: stats.size, name: id, status: "completed" as const });
+    }
+
+    /**
      * Deletes an upload and its metadata.
      * @param query File query containing the file ID to delete.
      * @param query.id File ID to delete.

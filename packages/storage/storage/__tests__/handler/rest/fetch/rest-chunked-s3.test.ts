@@ -235,6 +235,26 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
         expect(new TextDecoder().decode(s3.objects.get("fresh")?.body)).toBe("evil");
     });
 
+    it("should not let DELETE remove objects without upload metadata", async () => {
+        expect.assertions(3);
+
+        const s3 = createS3Fake();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        s3.objects.set("payroll-2026", { body: new TextEncoder().encode("the real payroll") });
+
+        const rest = new RestFetch({ storage: createStorage() });
+        const single = await rest.fetch(new Request("https://app.local/upload/payroll-2026", { method: "DELETE" }));
+        const batch = await rest.fetch(
+            new Request("https://app.local/upload", { body: JSON.stringify(["payroll-2026"]), headers: { "content-type": "application/json" }, method: "DELETE" }),
+        );
+
+        expect(single.status).toBe(404);
+        expect(batch.status).toBe(404);
+        expect(s3.objects.has("payroll-2026")).toBe(true);
+    });
+
     it("should refuse a PUT when the existence check fails (#919)", async () => {
         expect.assertions(2);
 

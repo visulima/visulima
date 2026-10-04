@@ -499,7 +499,7 @@ describe("s3Storage against an in-memory S3", () => {
         expect(s3.objects.has(`${file.id}.META`)).toBe(false);
     });
 
-    it("should purge expired objects and stale multipart uploads, including orphans", async () => {
+    it("should purge its own expired uploads and leave other clients' objects and multipart uploads", async () => {
         expect.assertions(3);
 
         const storage = createStorage();
@@ -510,7 +510,9 @@ describe("s3Storage against an in-memory S3", () => {
 
         s3.objects.get(finished)!.lastModified = old;
         s3.objects.get(`${finished}.META`)!.lastModified = old;
+        // Another client's multipart upload and an app file in the same bucket: not ours to purge.
         s3.uploads.set("orphan", { initiated: old, key: "orphan-key", metadata: {}, parts: new Map() });
+        s3.objects.set("app-file", { body: Buffer.from("app"), lastModified: old, metadata: {} } as never);
 
         for (const pending of s3.uploads.values()) {
             pending.initiated = old;
@@ -518,9 +520,9 @@ describe("s3Storage against an in-memory S3", () => {
 
         const purged = await storage.purge("1h");
 
-        expect(purged.items.map(({ id }) => id).toSorted()).toStrictEqual([finished, "orphan-key", unfinished.id].toSorted());
-        expect(s3.uploads.size).toBe(0);
-        expect([...s3.objects.keys()].toSorted()).toStrictEqual([fresh, `${fresh}.META`].toSorted());
+        expect(purged.items.map(({ id }) => id).toSorted()).toStrictEqual([finished, unfinished.id].toSorted());
+        expect([...s3.uploads.keys()]).toStrictEqual(["orphan"]);
+        expect([...s3.objects.keys()].toSorted()).toStrictEqual(["app-file", fresh, `${fresh}.META`].toSorted());
     });
 
     it("should fail create, write and completion when S3 answers without the expected ids", async () => {

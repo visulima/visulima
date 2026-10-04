@@ -25,8 +25,9 @@ import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import { getMetaVersion, isMetaNotFound, setMetaVersion } from "./meta-storage";
 import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
-import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
-import { isExpired, updateMetadata } from "./utils/file";
+import type { FileInit, FilePart, FileQuery } from "./utils/file";
+
+import { File, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
 const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
@@ -52,6 +53,9 @@ const redactSecrets = (config: Record<string, unknown>): Record<string, unknown>
 
     return out;
 };
+
+/** Longest a lock is renewed for; after that it expires LOCK_TTL_MS later like an abandoned one. */
+const LOCK_MAX_HOLD_MS = 15 * 60 * 1000;
 
 /** How long an upload lock outlives its holder; a held lock is renewed well before this runs out. */
 const LOCK_TTL_MS = 30_000;
@@ -464,6 +468,20 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async validate(file: TFile): Promise<void> {
         await this.validation.verify(file);
+    }
+
+    /**
+     * Validates an upload before it is created, named as `create` would name it, so a caller can
+     * refuse it before touching an existing file (e.g. a REST `PUT` replacing one).
+     * @param config Upload to validate.
+     * @throws {ValidationError} When the upload is not allowed.
+     */
+    public async validateInit(config: FileInit): Promise<void> {
+        const file = new File(config) as TFile;
+
+        file.name = this.namingFunction(file);
+
+        await this.validate(file);
     }
 
     /**
@@ -1254,9 +1272,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         const token = this.locker.lock(key);
 
         // A write can outlast the lock TTL; renew the lock until it is released, so another
-        // request can't take it over mid-write. The TTL only frees locks of a holder that never unlocks.
+        // request can't take it over mid-write. Renewal stops after LOCK_MAX_HOLD_MS, so a hung
+        // holder (a stalled body, a provider call without timeout) can't lock the upload for good.
+        const lockedAt = Date.now();
         const renewal = setInterval(() => {
-            if (this.locker.get(key) === token) {
+            if (this.locker.get(key) === token && Date.now() - lockedAt < LOCK_MAX_HOLD_MS) {
                 this.locker.set(key, token);
             } else {
                 clearInterval(renewal);

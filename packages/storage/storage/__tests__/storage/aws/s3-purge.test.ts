@@ -36,14 +36,18 @@ describe("s3Storage purge", () => {
         logger = { debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn() };
     });
 
-    it("should delete expired objects and abort stale multipart uploads, tracked or not", async () => {
+    it("should delete its own expired uploads and leave objects and multipart uploads it didn't create", async () => {
         expect.assertions(6);
 
         await metaStorage.save("tracked", { contentType: "text/plain", createdAt: ago(2 * HOUR).toISOString(), id: "tracked", metadata: {}, name: "tracked", UploadId: "U1" } as S3File);
+        await metaStorage.save("old", { contentType: "text/plain", createdAt: ago(2 * HOUR).toISOString(), id: "old", metadata: {}, name: "old", status: "completed" } as S3File);
+        await metaStorage.save("failing", { contentType: "text/plain", createdAt: ago(2 * HOUR).toISOString(), id: "failing", metadata: {}, name: "failing", UploadId: "U4" } as S3File);
 
         s3Mock.on(ListObjectsV2Command).resolves({
             Contents: [
                 { Key: "old", LastModified: ago(2 * HOUR) },
+                // An app file sharing the bucket: no upload metadata, never purged.
+                { Key: "app-file", LastModified: ago(2 * HOUR) },
                 { Key: "new", LastModified: ago(60_000) },
             ],
         });
@@ -68,12 +72,13 @@ describe("s3Storage purge", () => {
 
         const purged = await createStorage().purge();
 
-        expect(purged.items.map(({ id }) => id).toSorted()).toStrictEqual(["old", "orphan", "tracked"]);
+        expect(purged.items.map(({ id }) => id).toSorted()).toStrictEqual(["old", "tracked"]);
         expect(s3Mock.commandCalls(DeleteObjectCommand).map(({ args }) => args[0].input.Key)).toStrictEqual(["old"]);
-        expect(s3Mock.commandCalls(AbortMultipartUploadCommand).map(({ args }) => args[0].input.UploadId)).toStrictEqual(["U1", "U2", "U4"]);
+        // The orphan U2 belongs to another client; U4 is ours but its abort fails.
+        expect(s3Mock.commandCalls(AbortMultipartUploadCommand).map(({ args }) => args[0].input.UploadId)).toStrictEqual(["U1", "U4"]);
         expect(s3Mock.commandCalls(ListMultipartUploadsCommand)).toHaveLength(2);
         await expect(metaStorage.get("tracked")).rejects.toBeDefined();
-        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to abort multipart upload U4 during purge: access denied"));
+        expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining("Failed to delete file failing during purge"));
     });
 
     it("should keep a multipart upload written to recently with rolling expiration", async () => {

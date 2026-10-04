@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { VercelBlobStorageOptions } from "../../../src/storage/vercel-blob/types";
 import VercelBlobStorage from "../../../src/storage/vercel-blob/vercel-blob-storage";
 import { metafile, storageOptions } from "../../__helpers__/config";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 
 // Mock Vercel Blob SDK
 vi.mock(import("@vercel/blob"), () => {
@@ -115,7 +116,7 @@ describe(VercelBlobStorage, () => {
         it("deletes the blob stored under the ID when there is no metadata", async () => {
             expect.assertions(3);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const deleteMeta = vi.spyOn(storage, "deleteMeta");
 
@@ -138,7 +139,7 @@ describe(VercelBlobStorage, () => {
         it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
             expect.assertions(2);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
 
             await expect(storage.delete({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });

@@ -58,6 +58,24 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
+    /**
+     * Describes the bytes stored under an ID that has no upload metadata, so a REST `PUT` doesn't
+     * create over them (#919).
+     * @param id Upload ID, the entry's name with the default `filename`
+     * @returns The stored file, or `undefined` when none exists.
+     */
+    public override async getCompletedFile(id: string): Promise<TFile | undefined> {
+        const entry = this.store.get(id);
+
+        if (!entry) {
+            return undefined;
+        }
+
+        const file = new File({ contentType: entry.contentType, id, metadata: {}, size: entry.bytes.length }) as TFile;
+
+        return Object.assign(file, { bytesWritten: entry.bytes.length, ETag: entry.eTag, name: id, status: "completed" as const });
+    }
+
     /** No checksum is verified against the written bytes, so none is advertised. */
     public override checksumTypes: string[] = [];
 

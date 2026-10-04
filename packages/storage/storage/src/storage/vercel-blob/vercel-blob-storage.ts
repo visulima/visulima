@@ -7,6 +7,7 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
+import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
@@ -273,7 +274,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const meta = await this.getMeta(id).catch(() => undefined);
+            const meta = await this.getMeta(id).catch((error: unknown) => (isMetaNotFound(error) ? undefined : Promise.reject(error)));
             // Without metadata, the blob is looked up by the ID as its pathname.
             const file = meta ?? (await this.getCompletedFile(id, options));
 

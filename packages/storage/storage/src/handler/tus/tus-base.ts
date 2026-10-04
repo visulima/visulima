@@ -279,12 +279,11 @@ export class TusBase<TFile extends UploadFile> {
         const id = request.resolveId();
 
         try {
-            if (this.config.disableTerminationForFinishedUploads()) {
-                const existing = await this.storage.getMeta(id);
+            // Only uploads: an id without upload metadata may name an object the route never created.
+            const existing = await this.storage.getMeta(id);
 
-                if (existing.status === "completed") {
-                    throw createHttpError(400, "Termination of finished uploads is disabled");
-                }
+            if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
+                throw createHttpError(400, "Termination of finished uploads is disabled");
             }
 
             const file = await this.storage.delete({ id });

@@ -11,7 +11,7 @@ import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
-import { getMetaVersion, setMetaVersion } from "../meta-storage";
+import { getMetaVersion, isMetaNotFound, setMetaVersion } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { BaseStorageOptions, OperationOptions, PurgeList } from "../types";
 import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
@@ -589,8 +589,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 }
             };
 
+            // Only uploads: the bucket may hold objects the storage never created, and `delete`
+            // removes any object stored under a key.
             for (const { id, ...rest } of await this.list()) {
-                if (Number(rest.createdAt) < before) {
+                if (Number(rest.createdAt) < before && (await this.getMeta(id).then(() => true, () => false))) {
                     await purge(id, rest as Partial<TFile>);
                 }
             }
@@ -615,18 +617,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                         continue;
                     }
 
+                    // Only this storage's own uploads: another client's multipart upload in a shared
+                    // bucket is not ours to abort. Untracked leftovers are for an S3 lifecycle rule
+                    // (AbortIncompleteMultipartUpload).
                     if (file?.UploadId === UploadId) {
                         await purge(Key, {});
-                    } else {
-                        try {
-                            await this.abortMultipartUpload({ name: Key, UploadId } as TFile);
-
-                            purged.items.push({ id: Key, name: Key } as TFile);
-                        } catch (error: unknown) {
-                            this.logger?.warn(
-                                `Failed to abort multipart upload ${UploadId} during purge: ${error instanceof Error ? error.message : String(error)}`,
-                            );
-                        }
                     }
                 }
 
@@ -1091,6 +1086,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         try {
             return { file: await this.getMeta(id), tracked: true };
         } catch (error: unknown) {
+            // Only a missing record means "no metadata"; a failing meta store must not read as it.
+            if (!isMetaNotFound(error)) {
+                throw error;
+            }
+
             const file = await this.getCompletedFile(id, options);
 
             if (file === undefined) {

@@ -6,6 +6,7 @@ import NetlifyBlobFile from "../../../src/storage/netlify-blob/netlify-blob-file
 import NetlifyBlobStorage from "../../../src/storage/netlify-blob/netlify-blob-storage";
 import type { NetlifyBlobStorageOptions } from "../../../src/storage/netlify-blob/types";
 import { metafile, storageOptions } from "../../__helpers__/config";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 
 // Mock Netlify Blobs SDK
 vi.mock(import("@netlify/blobs"), () => {
@@ -273,7 +274,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
         it("deletes the blob stored under the ID when there is no metadata", async () => {
             expect.assertions(3);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const deleteMeta = vi.spyOn(storage, "deleteMeta");
             const { getStore } = await import("@netlify/blobs");
@@ -291,7 +292,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
         it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
             expect.assertions(2);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const { getStore } = await import("@netlify/blobs");
             const store = getStore({ name: "test-store" });

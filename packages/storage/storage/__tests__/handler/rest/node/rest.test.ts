@@ -236,8 +236,8 @@ describe("http Rest", () => {
             expect(Buffer.from(download.body as Buffer).toString()).toBe("updated content");
         });
 
-        it("should validate the replacement like a new upload", async () => {
-            expect.assertions(1);
+        it("should validate the replacement like a new upload, keeping the original when refused", async () => {
+            expect.assertions(2);
 
             const createResponse = await create();
 
@@ -248,6 +248,31 @@ describe("http Rest", () => {
                 .send(Buffer.from("text"));
 
             expect(response.status).toBe(415);
+
+            const original = await supertest(app).get(`${basePath}/${createResponse.body.id}`);
+
+            expect(original.status).toBe(200);
+        });
+
+        it("should answer 409 for a PUT over a file stored without upload metadata", async () => {
+            expect.assertions(2);
+
+            const { writeFile } = await import("node:fs/promises");
+            const { join } = await import("node:path");
+
+            await writeFile(join(directory, "untracked-file"), "the real file");
+
+            response = await supertest(app)
+                .put(`${basePath}/untracked-file`)
+                .set("Content-Type", "application/octet-stream")
+                .set("Content-Length", "4")
+                .send(Buffer.from("evil"));
+
+            expect(response.status).toBe(409);
+
+            const { readFile } = await import("node:fs/promises");
+
+            await expect(readFile(join(directory, "untracked-file"), "utf8")).resolves.toBe("the real file");
         });
 
         it("should return 400 when no body is provided", async () => {
