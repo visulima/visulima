@@ -401,7 +401,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Strong ETag of the file stored under `name` (the one {@link DiskStorage.get} reports), or
      * `undefined` when there is none.
      */
-    // ponytail: hashes the whole file per conditional check; persist the ETag on write if this gets hot.
+    // Limitation: hashes the whole file per conditional check; persisting the ETag on write would avoid it.
     private async eTagOf(name: string): Promise<string | undefined> {
         try {
             return etag(await readFile(this.getFilePath(name), { buffer: true }));
