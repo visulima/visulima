@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 98,966 | ✅ | 0.25s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.40s (1.3 MB) |
-| FGRibreau/mailchecker | 56,331 | ✅ | 0.10s (846.3 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.24s (388.0 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.14s (144.0 KB) |
-| 7c/fakefilter | 10,497 | ✅ | 0.07s (144.4 KB) |
-| disposable-email-domains/disposable-email-domains | 9,199 | ✅ | 0.11s (127.2 KB) |
-| groundcat/disposable-email-domain-list | 6,022 | ✅ | 0.30s (83.5 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.12s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.07s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.28s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.11s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.03s (13.7 KB) |
-| jespernissen/disposable-maildomain-list | 984 | ✅ | 0.28s (12.7 KB) |
+| disposable/disposable-email-domains | 98,966 | ✅ | 0.53s (1.5 MB) |
+| willwhite/freemail | 88,162 | ✅ | 0.47s (1.3 MB) |
+| FGRibreau/mailchecker | 56,331 | ✅ | 0.15s (846.3 KB) |
+| wesbos/burner-email-providers | 27,277 | ✅ | 0.03s (388.0 KB) |
+| sublime-security/static-files | 10,522 | ✅ | 0.27s (144.0 KB) |
+| 7c/fakefilter | 10,502 | ✅ | 0.01s (144.5 KB) |
+| disposable-email-domains/disposable-email-domains | 9,203 | ✅ | 0.15s (127.3 KB) |
+| groundcat/disposable-email-domain-list | 6,022 | ✅ | 0.08s (83.5 KB) |
+| eser/sanitizer-svc | 3,855 | ✅ | 0.15s (48.9 KB) |
+| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
+| MattKetmo/EmailChecker | 2,515 | ✅ | 0.20s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.13s (15.4 KB) |
+| castle/disposable-email-domains | 1,000 | ✅ | 0.14s (13.7 KB) |
+| jespernissen/disposable-maildomain-list | 984 | ✅ | 0.14s (12.7 KB) |
 | TheDahoom/disposable-email | 18 | ✅ | 0.14s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-10-03_
+_Last updated: 2026-10-04_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
