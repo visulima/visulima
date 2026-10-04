@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { executors } from "../../src/ai/internal/executors";
 import { downloadFileInputSchema, MAX_DOWNLOAD_BYTES } from "../../src/ai/internal/schemas";
@@ -19,5 +19,37 @@ describe("downloadFile maxBytes cap", () => {
         const files = new Files({ adapter: new MemoryStorage({}) });
 
         await expect(executors.downloadFile(files, { key: "a.txt", maxBytes: MAX_DOWNLOAD_BYTES + 1 })).rejects.toThrow(/exceeds the maximum/u);
+    });
+
+    describe("when head() reports no size", () => {
+        class SizelessStorage extends MemoryStorage {
+            public override async getMeta(...arguments_: Parameters<MemoryStorage["getMeta"]>): ReturnType<MemoryStorage["getMeta"]> {
+                const { size: _size, ...rest } = await super.getMeta(...arguments_);
+
+                return rest;
+            }
+        }
+
+        it("reads only maxBytes + 1 via a ranged read before refusing", async () => {
+            const adapter = new SizelessStorage({ initial: { "big.bin": "x".repeat(100) } });
+            const get = vi.spyOn(adapter, "get");
+            const files = new Files({ adapter });
+
+            await expect(executors.downloadFile(files, { key: "big.bin", maxBytes: 10 })).rejects.toThrow(RangeError);
+            expect(get).toHaveBeenCalledWith({ id: "big.bin" }, expect.objectContaining({ range: { end: 10, start: 0 } }));
+        });
+
+        it("streams with a byte cap when the adapter has no range support", async () => {
+            const adapter = new SizelessStorage({ initial: { "big.bin": "x".repeat(100), "small.txt": "hello" } });
+
+            Object.defineProperty(adapter, "supportsRange", { value: false });
+
+            const get = vi.spyOn(adapter, "get");
+            const files = new Files({ adapter });
+
+            await expect(executors.downloadFile(files, { key: "big.bin", maxBytes: 10 })).rejects.toThrow(RangeError);
+            await expect(executors.downloadFile(files, { key: "small.txt", maxBytes: 10 })).resolves.toMatchObject({ content: "hello", size: 5 });
+            expect(get).not.toHaveBeenCalled();
+        });
     });
 });

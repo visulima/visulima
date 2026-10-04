@@ -74,7 +74,9 @@ export interface ClaudeFileToolsOptions {
 export interface ClaudeFileTools {
     /**
      * Pass into `query({ options: { allowedTools: tools.allowedTools } })`.
-     * Each entry is of the form `mcp__&lt;serverName>__&lt;toolName>`.
+     * Each entry is of the form `mcp__&lt;serverName>__&lt;toolName>`. Lists only the tools that
+     * don't need approval: the SDK auto-approves every `allowedTools` entry without calling
+     * `canUseTool`, so approval-gated write tools are left for `canUseTool` to decide.
      */
     allowedTools: string[];
 
@@ -230,7 +232,9 @@ export const createClaudeFileTools = ({
     });
 
     return {
-        allowedTools: includedTools.map(([name]) => `${prefix}${name}`),
+        // `allowedTools` auto-approves without consulting `canUseTool`, so approval-gated tools must
+        // stay off it or `requireApproval` is silently bypassed.
+        allowedTools: includedTools.filter(([name]) => !needsApproval(name)).map(([name]) => `${prefix}${name}`),
         canUseTool,
         mcpServers: { [serverName]: server },
         needsApproval,

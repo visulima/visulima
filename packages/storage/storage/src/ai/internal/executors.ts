@@ -23,6 +23,36 @@ const serializeLastModified = (value: Date | number | string | undefined): strin
     return typeof value === "number" ? new Date(value).toISOString() : value;
 };
 
+/**
+ * Read at most about `maxBytes` of an object without buffering the rest: a ranged read when the
+ * adapter supports it, otherwise a stream abandoned once the cap is reached.
+ */
+const readCapped = async (files: Files, key: string, maxBytes: number): Promise<Buffer> => {
+    if (files.capabilities.range) {
+        const { body } = await files.download(key, { range: { end: maxBytes - 1, start: 0 } });
+
+        return body;
+    }
+
+    const { body } = await files.downloadStream(key);
+    const chunks: Buffer[] = [];
+    let total = 0;
+
+    // Leaving the loop early destroys the stream, so the remainder is never read.
+    for await (const chunk of body) {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string);
+
+        chunks.push(buffer);
+        total += buffer.byteLength;
+
+        if (total >= maxBytes) {
+            break;
+        }
+    }
+
+    return Buffer.concat(chunks);
+};
+
 export interface CopyFileResult {
     copied: true;
     etag: string | undefined;
@@ -130,30 +160,24 @@ export const executors: Executors = {
             );
         }
 
-        const result = await files.download(key);
+        // Unknown size: never pull the whole object just to measure it. Read at most limit + 1 bytes
+        // (a ranged read, or a streamed read cut off at the cap) — one byte over proves it's too big.
+        const body = typeof head.size === "number" ? await files.download(key).then((result) => result.body) : await readCapped(files, key, limit + 1);
 
-        if (result.body.byteLength > limit) {
+        if (body.byteLength > limit) {
             throw new RangeError(
-                `downloadFile refused: "${key}" returned ${result.body.byteLength} bytes which exceeds the maxBytes limit of ${limit}. Use getFileUrl instead.`,
+                `downloadFile refused: "${key}" returned more than ${limit} bytes, which exceeds the maxBytes limit. Use getFileUrl instead.`,
             );
         }
 
-        if (binary) {
-            return {
-                content: result.body.toString("base64"),
-                contentType: result.contentType,
-                encoding: "base64",
-                key: result.key,
-                ...(typeof result.size === "number" ? { size: result.size } : {}),
-            };
-        }
+        const size = head.size ?? body.byteLength;
 
         return {
-            content: result.body.toString("utf8"),
-            contentType: result.contentType,
-            encoding: "text",
-            key: result.key,
-            ...(typeof result.size === "number" ? { size: result.size } : {}),
+            content: body.toString(binary ? "base64" : "utf8"),
+            contentType: head.contentType,
+            encoding: binary ? "base64" : "text",
+            key: head.key,
+            size,
         };
     },
 

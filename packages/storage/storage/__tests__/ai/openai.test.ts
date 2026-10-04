@@ -165,5 +165,19 @@ describe("openAI adapters", () => {
 
             expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
         });
+
+        it("keeps needsApproval callable when overridden", async () => {
+            const tools = createAgentsFileTools({
+                files,
+                overrides: { deleteFile: { description: "Remove a file", needsApproval: false }, listFiles: { needsApproval: true } },
+            });
+            const approve = (candidate: { needsApproval: unknown }): Promise<boolean> =>
+                (candidate.needsApproval as (...arguments_: unknown[]) => Promise<boolean>)({}, {}, "call-id");
+
+            expect(tools.deleteFile.description).toBe("Remove a file");
+            await expect(approve(tools.deleteFile)).resolves.toBe(false);
+            await expect(approve(tools.listFiles)).resolves.toBe(true);
+            await expect(approve(tools.uploadFile)).resolves.toBe(true);
+        });
     });
 });

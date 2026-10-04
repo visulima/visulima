@@ -37,18 +37,29 @@ describe(createClaudeFileTools, () => {
         expect(bundle.serverName).toBe("files");
         expect(bundle.mcpServers).toHaveProperty("files");
         expect(bundle.server).toBe(bundle.mcpServers.files);
+        // Approval-gated write tools stay off allowedTools: the SDK auto-approves every entry
+        // without consulting canUseTool.
         expect(bundle.allowedTools.toSorted()).toEqual([
-            "mcp__files__copyFile",
-            "mcp__files__deleteFile",
             "mcp__files__downloadFile",
             "mcp__files__getFileMetadata",
             "mcp__files__getFileUrl",
             "mcp__files__listFiles",
-            "mcp__files__signUploadUrl",
-            "mcp__files__uploadFile",
         ]);
 
         expectTypeOf(bundle.canUseTool).toBeFunction();
+    });
+
+    it("lists write tools in allowedTools only when they don't need approval", () => {
+        const all = createClaudeFileTools({ files, requireApproval: false });
+
+        expect(all.allowedTools).toHaveLength(8);
+
+        const granular = createClaudeFileTools({ files, requireApproval: { copyFile: false, uploadFile: false } });
+
+        expect(granular.allowedTools).toContain("mcp__files__copyFile");
+        expect(granular.allowedTools).toContain("mcp__files__uploadFile");
+        expect(granular.allowedTools).not.toContain("mcp__files__deleteFile");
+        expect(granular.allowedTools).not.toContain("mcp__files__signUploadUrl");
     });
 
     it("honours a custom serverName in the MCP prefix", () => {
@@ -60,7 +71,7 @@ describe(createClaudeFileTools, () => {
     });
 
     it("omits write tools when readOnly: true", () => {
-        const bundle = createClaudeFileTools({ files, readOnly: true });
+        const bundle = createClaudeFileTools({ files, readOnly: true, requireApproval: false });
 
         expect(bundle.allowedTools.toSorted()).toEqual([
             "mcp__files__downloadFile",
