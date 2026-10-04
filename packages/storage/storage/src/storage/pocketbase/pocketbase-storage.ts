@@ -35,7 +35,8 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, "PocketBase: client has no files.getURL()");
     }
 
-    return resolver(record, filename, options);
+    // The SDK's FileService reads its client off `this`.
+    return resolver.call(client.files, record, filename, options);
 };
 
 /**

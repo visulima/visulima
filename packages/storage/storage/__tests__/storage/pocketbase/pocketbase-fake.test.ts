@@ -93,14 +93,19 @@ const createPocketBase = () => {
         update: async (id: string, form: unknown) => store(records.get(id) as Row, form as FormData),
     };
 
+    // Like the SDK's FileService, getURL reads the base URL off `this`, so it must be called as a method.
+    const files = {
+        baseURL: "https://pb.test",
+        getToken: async () => "file-token",
+        getURL(this: { baseURL: string }, record: PocketBaseRecord, filename: string, options?: { token?: string }): string {
+            return `${this.baseURL}/api/files/uploads/${record.id}/${filename}${options?.token ? `?token=${options.token}` : ""}`;
+        },
+    };
+
     const client: PocketBaseClientLike = {
         authStore: { isValid: true, save: () => undefined },
         collection: () => collection,
-        files: {
-            getToken: async () => "file-token",
-            getURL: (record, filename, options) =>
-                `https://pb.test/api/files/uploads/${record.id}/${filename}${options?.token ? `?token=${options.token}` : ""}`,
-        },
+        files,
         // The fake matches on the bound key itself rather than parsing PocketBase's filter syntax.
         filter: (_raw, parameters) => String(parameters?.k),
     };
