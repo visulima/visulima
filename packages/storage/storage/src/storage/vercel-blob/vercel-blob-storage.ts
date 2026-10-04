@@ -283,17 +283,16 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
             const { url } = file;
 
-            if (!url) {
-                throw new Error(`File ${id} does not have a valid URL`);
-            }
-
             file.status = "deleted";
 
-            try {
-                await this.runOperation(options, () => del(url, { ...this.credentials }));
-            } catch (error) {
-                if (!(error instanceof BlobNotFoundError)) {
-                    throw error;
+            // An upload that never received content has no blob to delete, only its metadata.
+            if (url) {
+                try {
+                    await this.runOperation(options, () => del(url, { ...this.credentials }));
+                } catch (error) {
+                    if (!(error instanceof BlobNotFoundError)) {
+                        throw error;
+                    }
                 }
             }
 
@@ -390,6 +389,15 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             // and let the client download it, but for compatibility with the interface,
             // we'll fetch the content
             const response = await this.runOperation(options, () => fetch(url));
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+                }
+
+                throw new Error(`Vercel Blob: fetching ${url} failed with status ${String(response.status)}`);
+            }
+
             const content = Buffer.from(await this.runOperation(options, () => response.arrayBuffer()));
 
             return {
@@ -458,6 +466,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
             return copiedFile;
         });
+    }
+
+    /** Upload records by id: `list` yields blob pathnames, which differ from the ids under a custom `filename`. */
+    protected override async listUploads(): Promise<VercelBlobFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<VercelBlobFile[]> {
