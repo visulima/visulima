@@ -146,6 +146,21 @@ describe(BunS3Storage, () => {
             expect(result.bytesWritten).toBe(5);
             expect(result.size).toBe(5);
         });
+
+        it("refuses a part that doesn't match the upload with FILE_CONFLICT", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage(makeClient());
+            const file = new BunS3File({ contentType: "video/mp4", metadata: {}, originalName: "v.mp4", size: 5 });
+
+            file.bytesWritten = 0;
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue(file);
+
+            await expect(storage.write({ body: Readable.from([Buffer.from("hello")]), contentLength: 5, id: file.id, start: 3 })).rejects.toMatchObject({
+                UploadErrorCode: ERRORS.FILE_CONFLICT,
+            });
+        });
     });
 
     describe(".get()", () => {

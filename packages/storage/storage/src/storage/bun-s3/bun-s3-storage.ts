@@ -156,7 +156,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -164,7 +164,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -245,7 +245,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
                 return undefined;
             }
 
-            throw error;
+            throw wrapBunS3Error(error, "stat");
         }
 
         return { contentType: stat.type, etag: stat.etag ?? undefined, extra: { bunS3ETag: stat.etag ?? undefined, bunS3Key: key }, size: stat.size ?? 0 };

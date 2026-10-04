@@ -4,7 +4,7 @@ import type { App } from "firebase-admin/app";
 import { cert, getApp, getApps, initializeApp } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
@@ -15,6 +15,13 @@ import FirebaseMetaStorage from "./firebase-meta-storage";
 import type { FirebaseBucket, FirebaseStorageOptions } from "./types";
 
 const DEFAULT_URL_EXPIRES_IN = 3600;
+
+/** Rethrows a Firebase (GCS) SDK error as an UploadError; its numeric `code` is the HTTP status (404 → FILE_NOT_FOUND). */
+const toUploadError =
+    (operation: string) =>
+    (error: unknown): never => {
+        throw wrapStorageError(error, { adapter: "Firebase", operation });
+    };
 
 const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promise<Buffer> => {
     const chunks: Buffer[] = [];
@@ -157,7 +164,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -165,7 +172,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -181,7 +188,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
                             contentType: file.contentType,
                             resumable: false,
                         }),
-                    );
+                    ).catch(toUploadError("write"));
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
@@ -206,7 +213,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
             const path = file?.path ?? file?.name ?? id;
 
-            await this.runOperation(options, () => this.bucket.file(path).delete({ ignoreNotFound: true }));
+            await this.runOperation(options, () => this.bucket.file(path).delete({ ignoreNotFound: true })).catch(toUploadError("delete"));
 
             if (file) {
                 file.status = "deleted";
@@ -252,7 +259,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
                 return undefined;
             }
 
-            throw error;
+            return toUploadError("stat")(error);
         }
     }
 
@@ -267,7 +274,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             }
 
             const gcsFile = this.bucket.file(path);
-            const [content] = await this.runOperation(options, () => gcsFile.download());
+            const [content] = await this.runOperation(options, () => gcsFile.download()).catch(toUploadError("get"));
 
             let metadata: Awaited<ReturnType<typeof gcsFile.getMetadata>>[0] = {};
 
@@ -297,7 +304,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
-            await this.runOperation(options, () => this.bucket.file(source).copy(this.bucket.file(destination)));
+            await this.runOperation(options, () => this.bucket.file(source).copy(this.bucket.file(destination))).catch(toUploadError("copy"));
 
             const file = new FirebaseFile({
                 contentType: "application/octet-stream",
@@ -319,7 +326,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
-            await this.runOperation(options, () => this.bucket.file(source).move(destination));
+            await this.runOperation(options, () => this.bucket.file(source).move(destination)).catch(toUploadError("move"));
 
             const file = new FirebaseFile({
                 contentType: "application/octet-stream",
@@ -346,7 +353,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const [files] = await this.runOperation(options, () => this.bucket.getFiles({ maxResults: limit }));
+                const [files] = await this.runOperation(options, () => this.bucket.getFiles({ maxResults: limit })).catch(toUploadError("list"));
 
                 return (files ?? []).map((entry) => {
                     const file = new FirebaseFile({

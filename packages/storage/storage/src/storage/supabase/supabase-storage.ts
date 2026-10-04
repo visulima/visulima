@@ -1,7 +1,8 @@
 import type { FileObject } from "@supabase/storage-js";
 import { StorageClient } from "@supabase/storage-js";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import type { UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
@@ -15,6 +16,16 @@ const MAX_SIGNED_URL_SECONDS = 60 * 60 * 24 * 7;
 
 /** Entries per `list` request; a shorter page ends a folder. */
 const LIST_PAGE_SIZE = 1000;
+
+/**
+ * A Supabase storage error as an UploadError. Supabase answers some failures (a missing object)
+ * with HTTP 400 and the real status as a string `statusCode` ("404"), which wins.
+ */
+const toUploadError = (error: unknown, operation: string): UploadError => {
+    const { status, statusCode } = (error ?? {}) as { status?: number; statusCode?: string };
+
+    return wrapStorageError(error, { adapter: "Supabase", operation, status: Number(statusCode) || status });
+};
 
 /**
  * Translate a `responseContentDisposition` header value into Supabase's
@@ -178,7 +189,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -186,7 +197,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -205,7 +216,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                     );
 
                     if (error) {
-                        throw error;
+                        throw toUploadError(error, "write");
                     }
 
                     file.bytesWritten = buffer.length;
@@ -236,7 +247,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             // Supabase returns no error for missing files; surface upstream errors only.
             if (error && error.message && !/not.*found/i.test(error.message)) {
-                throw error;
+                throw toUploadError(error, "delete");
             }
 
             if (file) {
@@ -283,7 +294,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                 return undefined;
             }
 
-            throw error;
+            throw toUploadError(error, "stat");
         }
 
         return info ? { contentType: info.contentType ?? undefined, etag: info.etag, extra: { bucket: this.bucket, path: id }, size: info.size ?? 0 } : undefined;
@@ -301,8 +312,12 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).download(path));
 
-            if (error || !data) {
-                throw error ?? new Error(`Supabase: object not found at "${path}"`);
+            if (error) {
+                throw toUploadError(error, "get");
+            }
+
+            if (!data) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Supabase: object not found at "${path}"`);
             }
 
             const content = Buffer.from(await this.runOperation(options, () => data.arrayBuffer()));
@@ -331,7 +346,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).copy(source, target));
 
             if (error) {
-                throw error;
+                throw toUploadError(error, "copy");
             }
 
             const file = new SupabaseFile({
@@ -357,7 +372,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).move(source, destination));
 
             if (error) {
-                throw error;
+                throw toUploadError(error, "move");
             }
 
             const file = new SupabaseFile({
@@ -401,7 +416,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                         );
 
                         if (error) {
-                            throw error;
+                            throw toUploadError(error, "list");
                         }
 
                         const entries = data ?? [];

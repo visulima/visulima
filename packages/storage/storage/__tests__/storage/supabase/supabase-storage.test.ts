@@ -159,7 +159,7 @@ describe(SupabaseStorage, () => {
                 error: { message: "Bucket forbidden" },
             });
 
-            await expect(storage.delete({ id: "file.mp4" })).rejects.toMatchObject({ message: "Bucket forbidden" });
+            await expect(storage.delete({ id: "file.mp4" })).rejects.toMatchObject({ message: expect.stringContaining("Bucket forbidden"), UploadErrorCode: ERRORS.STORAGE_ERROR });
         });
     });
 

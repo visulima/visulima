@@ -217,6 +217,17 @@ describe(FirebaseStorage, () => {
             expect(result.content.toString()).toBe("hello");
             expect(result.contentType).toBe("video/mp4");
         });
+
+        it("reports a missing object as FILE_NOT_FOUND", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage();
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+            gcsFile.download.mockRejectedValueOnce(Object.assign(new Error("No such object"), { code: 404 }));
+
+            await expect(storage.get({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
+        });
     });
 
     describe(".getCompletedFile()", () => {

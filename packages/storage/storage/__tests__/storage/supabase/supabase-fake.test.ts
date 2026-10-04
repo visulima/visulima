@@ -7,6 +7,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type SupabaseFile from "../../../src/storage/supabase/supabase-file";
 import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Uint8Array; contentType: string; created: string; id: string };
@@ -216,8 +217,14 @@ describe("supabase against an in-memory Storage API", () => {
 
         supabase.state.override = () => Response.json({ error: "forbidden", message: "Access denied", statusCode: "403" }, { status: 403 });
 
-        await expect(storage.getCompletedFile("foreign")).rejects.toMatchObject({ status: 403 });
+        await expect(storage.getCompletedFile("foreign")).rejects.toMatchObject({ UploadErrorCode: ERRORS.FORBIDDEN });
         await expect(storage.get({ id: "foreign" })).rejects.toThrow("Access denied");
+    });
+
+    it("should report a missing object as FILE_NOT_FOUND", async () => {
+        expect.assertions(1);
+
+        await expect(createStorage(createSupabase()).get({ id: "nope" })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
     });
 
     it("should copy and move stored objects", async () => {
