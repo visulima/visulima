@@ -54,7 +54,7 @@ const storage = new DiskStorageWithChecksum({
 | -------------------- | ---------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `directory`          | `string`                     | —                                     | **Required.** Where uploaded files are written.                                                                                             |
 | `metaStorageConfig`  | `LocalMetaStorageOptions`    | `{ directory: <directory> }`          | `directory` / `prefix` (default `""`) / `suffix` (default `".META"`) for the metadata files. By default they sit in the upload `directory`. |
-| `checksum`           | `boolean \| "md5" \| "sha1"` | `md5`                                 | `DiskStorageWithChecksum` only. Hash algorithm for `file.hash`. Any value other than `"sha1"` uses MD5.                                     |
+| `checksum`           | `boolean \| "md5" \| "sha1"` | `md5`                                 | `DiskStorageWithChecksum` only. Hash algorithm for `file.hash`: `"sha1"` uses SHA-1, `false` turns hashing off, anything else uses MD5.     |
 | `fileNameValidation` | `(name: string) => boolean`  | `defaultFilesystemFileNameValidation` | Rejects names shorter than 3 or longer than 255 characters, absolute paths, and names containing `" * : < > ? \ \|`, `../` or a null byte.  |
 
 Other options from `BaseStorageOptions` with their defaults:

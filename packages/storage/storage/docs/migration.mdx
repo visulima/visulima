@@ -65,6 +65,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **Reading an expired upload answers `GONE` on every provider.** Google Drive, Bun S3, Supabase, Firebase, Cloudinary and UploadThing fell back to reading the raw key, and S3, aws-light, Azure and GCS never checked the upload's expiry on read. On the other adapters, `create()`, `get()` and `delete()` no longer treat a failing metadata store as "no metadata" either.
 - **Cloudinary `get()` and `copy()` work for `private` / `authenticated` assets**: they use the signed `private_download_url` that `getReadUrl()` returns instead of the unsigned delivery URL.
 - **FTP without `rootFolderPath` lists the server root `/`**, where it writes, instead of the login directory.
+- **`DiskStorageWithChecksum` honours `checksum: false`**: it no longer hashes uploads or sets `file.hash`.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

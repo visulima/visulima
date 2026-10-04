@@ -58,6 +58,17 @@ describe(DiskStorageWithChecksum, () => {
         expect(file).toMatchSnapshot("file_readable");
     });
 
+    it("should not hash with checksum: false", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum({ ...options, checksum: false });
+        const diskFile = await storage.create({ ...metafile, id: "no-checksum" });
+        const file = await storage.write({ ...diskFile, body: Readable.from("01234"), start: 0 });
+
+        expect(file.bytesWritten).toBe(5);
+        await expect(storage.getMeta(file.id)).resolves.not.toHaveProperty("hash");
+    });
+
     it("should delete file and metadata successfully", async () => {
         expect.assertions(2);
 
