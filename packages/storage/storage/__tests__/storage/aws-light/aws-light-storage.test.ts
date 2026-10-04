@@ -22,6 +22,11 @@ vi.mock(import("aws4fetch"), () => {
             public get fetch() {
                 return sharedMockFetch;
             }
+
+            // eslint-disable-next-line class-methods-use-this
+            public async sign(url: string): Promise<Request> {
+                return new Request(`${url}&X-Amz-Signature=signed`);
+            }
         },
     };
 });

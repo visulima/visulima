@@ -269,7 +269,7 @@ With `expiration: { maxAge }`, an upload older than `maxAge` (from creation, or 
 
 ### Retries
 
-Defaults: `maxRetries: 3`, `initialDelay: 1000`, `maxDelay: 30000`, `backoffMultiplier: 2` (exponential backoff with jitter). Retried: HTTP 408, 429, 500, 502, 503, 504, AWS server faults (`$fault: "server"`), errors the SDK marks retryable, and network errors. Aborted and timed-out calls are never retried. `S3Storage` installs its own `shouldRetry`, so a `shouldRetry` you pass in `retryConfig` is replaced; the numeric fields and `onRetry`/`calculateDelay` apply. The AWS SDK's own retry (`maxAttempts`, part of `S3ClientConfig`) runs underneath.
+Defaults: `maxRetries: 3`, `initialDelay: 1000`, `maxDelay: 30000`, `backoffMultiplier: 2` (exponential backoff with jitter). Retried: HTTP 408, 429, 500, 502, 503, 504, AWS server faults (`$fault: "server"`), errors the SDK marks retryable, and network errors. Aborted and timed-out calls are never retried. A `shouldRetry` you pass in `retryConfig` is asked first; returning `undefined` falls back to these defaults, and `retryableStatusCodes` replaces the status list. The AWS SDK's own retry (`maxAttempts`, part of `S3ClientConfig`) runs underneath.
 
 ### Direct uploads
 

@@ -1,3 +1,6 @@
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Readable } from "node:stream";
 import { text } from "node:stream/consumers";
 
@@ -335,6 +338,91 @@ describe("aws-light against an in-memory S3", () => {
         expect(s3.objects.size).toBe(0);
         // Each metadata record is deleted once, with its upload, not purged as an object of its own.
         expect(deletedKeys.filter((path) => path.endsWith(".META"))).toHaveLength(2);
+    });
+});
+
+describe("aws-light configuration", () => {
+    afterEach(() => {
+        vi.unstubAllGlobals();
+    });
+
+    it("should hand out query-signed part URLs for clientDirectUpload that the bucket accepts", async () => {
+        expect.assertions(4);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const file = (await createStorage({ clientDirectUpload: true }).create({
+            contentType: "text/plain",
+            metadata: {},
+            originalName: "a.txt",
+            size: 5,
+        })) as { partsUrls?: string[] };
+        const url = new URL(file.partsUrls?.[0] as string);
+
+        expect(url.searchParams.get("partNumber")).toBe("1");
+        expect(url.searchParams.get("X-Amz-Algorithm")).toBe("AWS4-HMAC-SHA256");
+        expect(url.searchParams.get("X-Amz-Signature")).toMatch(/^[\da-f]{64}$/u);
+
+        // A client PUTs the part with no credentials of its own.
+        await expect(fetch(url, { body: "hello", method: "PUT" })).resolves.toHaveProperty("ok", true);
+    });
+
+    it("should fail the startup check for a missing bucket", async () => {
+        expect.assertions(2);
+
+        vi.stubGlobal("fetch", async () => new Response(null, { status: 404 }));
+
+        const storage = createStorage();
+
+        await expect(storage.ensureReady()).rejects.toThrow("Failed to access bucket: 404");
+        expect(storage.isReady).toBe(false);
+    });
+
+    it("should keep a local meta storage configured with a directory", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const directory = await mkdtemp(join(tmpdir(), "aws-light-meta-"));
+
+        try {
+            const storage = createStorage({ metaStorageConfig: { directory } });
+            const id = await upload(storage, "hello");
+
+            expect(s3.objects.has(`${id}.META`)).toBe(false);
+            await expect(readdir(directory)).resolves.toContain(`${id}.META`);
+        } finally {
+            await rm(directory, { force: true, recursive: true });
+        }
+    });
+
+    it("should consult the user's shouldRetry before the default status codes", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3();
+        let failures = 0;
+
+        vi.stubGlobal("fetch", s3.fetch);
+        s3.state.override = (request, key) => {
+            if (request.method !== "GET" || key !== "k" || failures >= 1) {
+                return undefined;
+            }
+
+            failures += 1;
+
+            return new Response("<Error><Code>Teapot</Code></Error>", { status: 418 });
+        };
+        s3.put("k", Buffer.from("x"));
+
+        const shouldRetry = vi.fn((error: unknown) => ((error as { statusCode?: number }).statusCode === 418 ? true : undefined));
+        const storage = createStorage({ retryConfig: { initialDelay: 0, maxRetries: 1, shouldRetry } });
+
+        await expect(storage.get({ id: "k" })).resolves.toHaveProperty("content", Buffer.from("x"));
+        expect(shouldRetry).toHaveBeenCalledWith(expect.objectContaining({ statusCode: 418 }));
     });
 });
 

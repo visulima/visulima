@@ -13,9 +13,9 @@
 | Credentials                                              | AWS credential chain or static | static keys (+ optional session token)    |
 | Resumable multipart uploads, range reads                 | ✅                             | ✅                                        |
 | `getReadUrl()` / `getUploadUrl()`                        | ✅ presigned                   | ❌ `METHOD_NOT_ALLOWED`                   |
-| `clientDirectUpload`                                     | ✅                             | ❌ (part URLs are not signed)             |
+| `clientDirectUpload`                                     | ✅                             | ✅ (query-signed part URLs)               |
 | `acl`                                                    | ✅                             | ❌                                        |
-| Local-directory metadata (`metaStorageConfig.directory`) | ✅                             | ❌ (bucket or custom `metaStorage` only)  |
+| Local-directory metadata (`metaStorageConfig.directory`) | ✅                             | ✅                                        |
 
 ## Installation
 
@@ -42,7 +42,7 @@ compatibility_flags = ["nodejs_compat"]
 Bucket creation, the [minimum IAM policy](./amazon-s3.mdx#2-grant-the-minimum-iam-permissions), [CORS](./amazon-s3.mdx#3-cors-only-for-browser-direct-traffic) and the [abort-incomplete-multipart lifecycle rule](./amazon-s3.mdx#4-lifecycle-rule-for-abandoned-multipart-uploads) are the same as for Amazon S3. Two differences:
 
 - Credentials must be **static keys** (an IAM user's access key, or temporary credentials with `sessionToken`) — there is no credential chain, instance role or SSO.
-- `s3:PutObjectAcl` is never needed (no `acl` support). CORS only matters if the browser reads objects cross-origin; this adapter issues no presigned URLs.
+- `s3:PutObjectAcl` is never needed (no `acl` support). CORS only matters if the browser reads objects cross-origin or uploads parts itself (`clientDirectUpload`).
 
 For S3-compatible services follow the provider's page ([R2](./cloudflare-r2.mdx), [MinIO](./minio.mdx), [Spaces](./digital-ocean-spaces.mdx), …) for bucket and key creation, then pass `endpoint` + `bucket` as shown [below](#s3-compatible-services).
 
@@ -50,18 +50,18 @@ For S3-compatible services follow the provider's page ([R2](./cloudflare-r2.mdx)
 
 `AwsLightStorageOptions` = the [common storage options](./amazon-s3.mdx#common-storage-options) + these:
 
-| Option               | Type                         | Default                                      | Description                                                                                                                                       |
-| -------------------- | ---------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bucket`             | `string`                     | `S3_BUCKET` or `AWS_S3_BUCKET` env var       | Bucket name. Required.                                                                                                                            |
-| `region`             | `string`                     | —                                            | Signing region. Required (no env fallback). `"auto"` for R2.                                                                                      |
-| `accessKeyId`        | `string`                     | —                                            | Access key. Required (no env fallback).                                                                                                           |
-| `secretAccessKey`    | `string`                     | —                                            | Secret key. Required (no env fallback).                                                                                                           |
-| `sessionToken`       | `string`                     | —                                            | Session token for temporary (STS) credentials.                                                                                                    |
-| `endpoint`           | `string`                     | `https://<bucket>.s3.<region>.amazonaws.com` | S3 API root of an S3-compatible service, **without** the bucket. See [S3-compatible services](#s3-compatible-services).                           |
-| `service`            | `string`                     | `"s3"`                                       | SigV4 service name.                                                                                                                               |
-| `partSize`           | `number \| string`           | `"16MB"`                                     | Only used by `clientDirectUpload`; must be ≥ 5 MB.                                                                                                |
-| `clientDirectUpload` | `boolean`                    | `false`                                      | **Don't enable**: the part URLs it returns are not presigned, so the client can't upload to them.                                                 |
-| `metaStorageConfig`  | `AwsLightMetaStorageOptions` | metadata in the same bucket                  | `{ bucket?, prefix?, suffix?, accessKeyId?, secretAccessKey?, region?, endpoint?, sessionToken?, service? }` — overrides for the metadata bucket. |
+| Option               | Type                                                    | Default                                      | Description                                                                                                                                                                               |
+| -------------------- | ------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bucket`             | `string`                                                | `S3_BUCKET` or `AWS_S3_BUCKET` env var       | Bucket name. Required.                                                                                                                                                                    |
+| `region`             | `string`                                                | —                                            | Signing region. Required (no env fallback). `"auto"` for R2.                                                                                                                              |
+| `accessKeyId`        | `string`                                                | —                                            | Access key. Required (no env fallback).                                                                                                                                                   |
+| `secretAccessKey`    | `string`                                                | —                                            | Secret key. Required (no env fallback).                                                                                                                                                   |
+| `sessionToken`       | `string`                                                | —                                            | Session token for temporary (STS) credentials.                                                                                                                                            |
+| `endpoint`           | `string`                                                | `https://<bucket>.s3.<region>.amazonaws.com` | S3 API root of an S3-compatible service, **without** the bucket. See [S3-compatible services](#s3-compatible-services).                                                                   |
+| `service`            | `string`                                                | `"s3"`                                       | SigV4 service name.                                                                                                                                                                       |
+| `partSize`           | `number \| string`                                      | `"16MB"`                                     | Only used by `clientDirectUpload`; must be ≥ 5 MB.                                                                                                                                        |
+| `clientDirectUpload` | `boolean`                                               | `false`                                      | Return SigV4 query-signed part URLs (`partsUrls`) the client `PUT`s to directly; they expire with `expiration.maxAge` (default 6 h).                                                      |
+| `metaStorageConfig`  | `AwsLightMetaStorageOptions \| LocalMetaStorageOptions` | metadata in the same bucket                  | `{ bucket?, prefix?, suffix?, accessKeyId?, secretAccessKey?, region?, endpoint?, sessionToken?, service? }` — overrides for the metadata bucket; `{ directory }` keeps it on local disk. |
 
 ### Minimal example
 
@@ -130,14 +130,14 @@ The `@visulima/storage/provider/aws/s3/clients` helpers return an AWS SDK `S3Cli
 
 ## Metadata storage
 
-Records are zero-byte `<id>.META` objects in the bucket (user-metadata header, 2 KB S3 limit), exactly as with [`S3Storage`](./amazon-s3.mdx#metadata-storage): shared by every instance, written with `If-Match` conditional saves, hidden from `list()`, kept after an upload completes. Use `metaStorageConfig: { bucket: "my-uploads-meta" }` (plus credentials/endpoint if they differ) for a separate bucket, or pass your own `metaStorage` (KV, D1, Redis, …). A local `directory` is not supported here.
+Records are zero-byte `<id>.META` objects in the bucket (user-metadata header, 2 KB S3 limit), exactly as with [`S3Storage`](./amazon-s3.mdx#metadata-storage): shared by every instance, written with `If-Match` conditional saves, hidden from `list()`, kept after an upload completes. Use `metaStorageConfig: { bucket: "my-uploads-meta" }` (plus credentials/endpoint if they differ) for a separate bucket, or pass your own `metaStorage` (KV, D1, Redis, …). `metaStorageConfig: { directory }` keeps the records on local disk (Node.js only; single instance or a shared directory).
 
 ## Behaviour & limits
 
-Identical to [`S3Storage`](./amazon-s3.mdx#behaviour--limits): sequential chunks of ≥ 5 MiB (except the last), at most 10,000 parts, `md5` checksums, range reads, native `listDirectory()`, recursive `list(limit)` paged up to `limit`, server-side copy, [custom-filename](./amazon-s3.mdx#custom-filename) and [purge](./amazon-s3.mdx#expiration-and-purge) rules, and the same retry defaults (`shouldRetry` is replaced by the adapter's own). Differences:
+Identical to [`S3Storage`](./amazon-s3.mdx#behaviour--limits): sequential chunks of ≥ 5 MiB (except the last), at most 10,000 parts, `md5` checksums, range reads, native `listDirectory()`, recursive `list(limit)` paged up to `limit`, server-side copy, [custom-filename](./amazon-s3.mdx#custom-filename) and [purge](./amazon-s3.mdx#expiration-and-purge) rules, and the same retry defaults (a custom `shouldRetry` is asked first; returning `undefined` falls back to `retryableStatusCodes`). Differences:
 
 - No `getReadUrl()` / `getUploadUrl()` — `files.url()` and `files.signedUploadUrl()` reject with `METHOD_NOT_ALLOWED`. Stream downloads through your handler (`GET /files/:id`) or use `S3Storage` / [`BunS3Storage`](./bun-s3.mdx) where presigned URLs are needed.
-- The startup check is a `HEAD` on the bucket URL; a `404` there is accepted, so a misspelt bucket only fails on the first real operation.
+- The startup check is a `HEAD` on the bucket URL; any non-2xx answer, including `404` for a missing bucket, fails it and is retried on the next request.
 - `storage.raw` is the `AwsClient` from `aws4fetch` — use `raw.fetch()` for signed requests the adapter doesn't wrap.
 
 ## Using it with the handlers
@@ -183,7 +183,7 @@ const { body } = await files.download("reports/2025.pdf", { range: { start: 0, e
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `S3 region is not defined` / `accessKeyId is required` | These options have no env fallback — pass them explicitly (e.g. from Worker `env`).                                                                       |
 | `SignatureDoesNotMatch`                                | `region` doesn't match the bucket (use `"auto"` for R2), wrong secret, or the endpoint includes the bucket in an unexpected form. Pass the bare API root. |
-| `NoSuchBucket` / `404` on every request                | Bucket name wrong, or the endpoint points to another account/region. The startup check doesn't catch a missing bucket.                                    |
+| `NoSuchBucket` / `404` on every request                | Bucket name wrong, or the endpoint points to another account/region. The startup check reports `Failed to access bucket: 404`.                            |
 | `403` for a missing file instead of `404`              | Key lacks `s3:ListBucket` (or the provider's equivalent "list" permission).                                                                               |
 | `No such module "node:stream"` on Workers              | Add `compatibility_flags = ["nodejs_compat"]`.                                                                                                            |
 | `METHOD_NOT_ALLOWED` from `files.url()`                | Not supported by this adapter; see [Behaviour & limits](#behaviour--limits).                                                                              |

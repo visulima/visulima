@@ -38,10 +38,10 @@ import type { AwsError, S3StorageOptions } from "./types";
  *
  * ## Retry Behavior
  * - All S3 API calls are wrapped with configurable retry logic via `retryConfig` option
- * - Default retryable status codes: 408 (Request Timeout), 429 (Too Many Requests),
+ * - Default retryable status codes (`retryConfig.retryableStatusCodes`): 408 (Request Timeout), 429 (Too Many Requests),
  * 500 (Internal Server Error), 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout)
  * - Retries server-side faults ($fault === "server") automatically
- * - Custom `shouldRetry` function can be provided for advanced retry logic
+ * - A custom `shouldRetry` is consulted first; returning `undefined` defers to the defaults
  * - Default retry configuration: maxRetries: 3, initialDelay: 1000ms, maxDelay: 30000ms, backoffMultiplier: 2 (exponential backoff)
  * - Retry wrapper handles transient network errors and rate limiting
  *
@@ -55,8 +55,8 @@ import type { AwsError, S3StorageOptions } from "./types";
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and S3 object)
- * - ❌ getUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
- * - ❌ getUploadUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
+ * - ✅ getReadUrl / getUploadUrl: presigned GET / PUT URLs (`@aws-sdk/s3-request-presigner`)
+ * - ✅ clientDirectUpload: presigned part URLs for direct client uploads
  */
 class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
@@ -93,29 +93,6 @@ class S3Storage extends S3BaseStorage {
             ...config,
             bucket,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
-            retryConfig: {
-                ...config.retryConfig,
-                shouldRetry: (error: unknown) => {
-                    // AWS SDK v3 errors
-                    const errorWithMetadata = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean };
-
-                    if (errorWithMetadata.$metadata) {
-                        const statusCode = errorWithMetadata.$metadata.httpStatusCode;
-
-                        if (statusCode && [408, 429, 500, 502, 503, 504].includes(statusCode)) {
-                            return true;
-                        }
-
-                        if (errorWithMetadata.$fault === "server") {
-                            return true;
-                        }
-                    }
-
-                    // Defer to the retry engine's built-in heuristics unless the SDK
-                    // explicitly flagged the error retryable.
-                    return errorWithMetadata.retryable === true ? true : undefined;
-                },
-            },
         });
 
         this.s3Api = new S3ClientAdapter(client, bucket);

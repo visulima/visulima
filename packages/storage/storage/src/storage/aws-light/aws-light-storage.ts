@@ -38,8 +38,8 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  *
  * ## Retry Behavior
  * - All S3 API calls are wrapped with configurable retry logic via `retryConfig` option
- * - Default retryable status codes: 408, 429, 500, 502, 503, 504
- * - Custom `shouldRetry` function can be provided for advanced retry logic
+ * - Default retryable status codes: 408, 429, 500, 502, 503, 504 (`retryConfig.retryableStatusCodes`)
+ * - A custom `shouldRetry` is consulted first; returning `undefined` defers to the defaults
  *
  * ## Multipart Uploads
  * - Large files are automatically split into multipart uploads
@@ -51,7 +51,7 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and S3 object)
- * - ⚠️ getUrl/getUploadUrl: Limited presigned URL support (uses aws4fetch signing)
+ * - ✅ clientDirectUpload: part URLs are SigV4 query-signed (aws4fetch `signQuery`)
  */
 class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
@@ -83,20 +83,6 @@ class AwsLightStorage extends S3BaseStorage {
             ...config,
             bucket,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
-            retryConfig: {
-                ...config.retryConfig,
-                shouldRetry: (error: unknown) => {
-                    const errorWithStatus = error as { retryable?: boolean; statusCode?: number };
-
-                    if (errorWithStatus.statusCode && [408, 429, 500, 502, 503, 504].includes(errorWithStatus.statusCode)) {
-                        return true;
-                    }
-
-                    // Defer to the retry engine's built-in heuristics unless the SDK
-                    // explicitly flagged the error retryable.
-                    return errorWithStatus.retryable === true ? true : undefined;
-                },
-            },
         });
 
         this.s3Api = new AwsLightApiAdapter({
@@ -109,13 +95,15 @@ class AwsLightStorage extends S3BaseStorage {
             sessionToken: config.sessionToken,
         });
 
-        // Override meta storage to use AwsLightMetaStorage
+        // Bucket-backed metadata unless a meta storage, or a local one (`directory`), was configured.
         const { metaStorage, metaStorageConfig } = config;
 
         if (!metaStorage) {
             const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
 
-            this.meta = new AwsLightMetaStorage(metaConfig);
+            if (!("directory" in metaConfig)) {
+                this.meta = new AwsLightMetaStorage(metaConfig);
+            }
         }
 
         this.startAccessCheck(async () => this.accessCheck());

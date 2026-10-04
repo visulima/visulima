@@ -100,25 +100,34 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("Minimum allowed partSize value is 5MB");
         }
 
-        // Initialize retry wrapper with config or defaults
+        const retryableStatusCodes = config.retryConfig?.retryableStatusCodes ?? [408, 429, 500, 502, 503, 504];
+        const userShouldRetry = config.retryConfig?.shouldRetry;
+
+        // The user's predicate decides first; `undefined` falls through to the S3 defaults.
         const retryConfig: RetryConfig = {
             backoffMultiplier: 2,
             initialDelay: 1000,
             maxDelay: 30_000,
             maxRetries: 3,
-            retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+            ...config.retryConfig,
+            retryableStatusCodes,
             shouldRetry: (error: unknown) => {
-                const errorWithMetadata = error as { retryable?: boolean; statusCode?: number };
+                const decision = userShouldRetry?.(error);
 
-                if (errorWithMetadata.statusCode && [408, 429, 500, 502, 503, 504].includes(errorWithMetadata.statusCode)) {
+                if (decision !== undefined) {
+                    return decision;
+                }
+
+                const sdkError = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean; statusCode?: number };
+                const statusCode = sdkError.statusCode ?? sdkError.$metadata?.httpStatusCode;
+
+                if ((statusCode !== undefined && retryableStatusCodes.includes(statusCode)) || sdkError.$fault === "server" || sdkError.retryable === true) {
                     return true;
                 }
 
-                // Defer to the retry engine's built-in heuristics unless the SDK
-                // explicitly flagged the error retryable.
-                return errorWithMetadata.retryable === true ? true : undefined;
+                // Defer to the retry engine's built-in heuristics.
+                return undefined;
             },
-            ...config.retryConfig,
         };
 
         this.retry = createRetryWrapper(retryConfig);

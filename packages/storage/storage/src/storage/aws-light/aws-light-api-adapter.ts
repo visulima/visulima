@@ -626,23 +626,16 @@ ${partsXml}
         };
     }
 
+    /** A SigV4 query-signed `PUT` URL for one part, usable without credentials until it expires. */
     public async getPresignedUrl(params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }): Promise<string> {
-        // aws4fetch doesn't have built-in presigned URL support
-        // For now, we'll construct a URL that can be signed on-demand
-        // Note: This is a limitation - full presigned URL support would require
-        // implementing AWS Signature Version 4 query string authentication
-        const queryParams: Record<string, string> = {
+        const url = this.buildUrl(params.Key, {
             partNumber: String(params.PartNumber),
             uploadId: params.UploadId,
             "X-Amz-Expires": String(params.expiresIn),
-        };
+        });
+        const signed = await this.aws.sign(url, { aws: { signQuery: true }, method: "PUT" });
 
-        const url = this.buildUrl(params.Key, queryParams);
-
-        // TODO: Implement proper presigned URL generation
-        // For now, return the URL - actual signing will happen when the request is made
-        // This means presigned URLs won't work for clientDirectUpload without additional work
-        return url;
+        return signed.url;
     }
 
     public async putObject(params: {
@@ -704,13 +697,13 @@ ${partsXml}
     }
 
     public async checkBucketAccess(_params: { Bucket: string }): Promise<void> {
-        // Simple HEAD request to check bucket access
+        // HEAD on the bucket: a 404 means it doesn't exist, which must fail the startup check.
         const url = this.buildUrl("");
         const response = await this.aws.fetch(url, {
             method: "HEAD",
         });
 
-        if (!response.ok && response.status !== 404) {
+        if (!response.ok) {
             const text = await response.text();
 
             throw requestError("Failed to access bucket", response.status, text);
