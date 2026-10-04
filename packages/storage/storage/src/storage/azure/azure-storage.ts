@@ -43,7 +43,7 @@ const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
  * - ✅ Resumable writes: each chunk is staged as a block (`md5` verified via `transactionalContentMD5`), the ordered block list is committed on completion
  * - ✅ Batch operations: deleteBatch (native Blob Batch API, 256/request), copyBatch + moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Azure blob)
- * - ❌ getStream: Not implemented (use get() for file retrieval)
+ * - ❌ getStream: Not implemented natively (falls back to get())
  * - ✅ getReadUrl / getUploadUrl: service SAS (shared key / connection string) or User Delegation SAS (Microsoft Entra credential). SAS-token adapters append the pre-issued token. Anonymous (public-container) adapters serve unsigned read URLs only — uploads are rejected.
  *
  * ## Authentication

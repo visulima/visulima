@@ -30,9 +30,8 @@ import type { NetlifyBlobStorageOptions } from "./types";
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Netlify Blob)
  * - ✅ update: Implemented (updates metadata file, Netlify Blob API doesn't support blob metadata updates)
- * - ❌ getStream: Not implemented (use get() for file retrieval)
- * - ❌ getUrl: Not implemented (Netlify Blob URLs available via Netlify Blob API)
- * - ❌ getUploadUrl: Not implemented (Netlify Blob upload URLs handled internally)
+ * - ❌ getStream: Not implemented natively (falls back to get())
+ * - ❌ getReadUrl / getUploadUrl: Not implemented (Netlify Blobs has no public or signed URLs)
  */
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
     public static override readonly name: string = "netlify-blob";

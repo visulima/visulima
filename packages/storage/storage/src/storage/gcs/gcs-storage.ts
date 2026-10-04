@@ -42,12 +42,13 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
  * ```
  * @remarks
  * ## Supported Operations
- * - ✅ create, write, delete, get, list, update, copy, move
+ * - ✅ create, write, delete, get, list, listDirectory (native delimiter), update, copy, move
+ * - ✅ Deferred upload length (TUS creation-defer-length): the session learns the total from the last chunk
+ * - ✅ clientDirectUpload: `create()` returns the resumable session URI as `GCSUploadURI`
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and GCS object)
- * - ❌ getStream: Not implemented (use get() for file retrieval)
- * - ❌ getUrl: Not implemented (GCS public URLs not supported)
- * - ❌ getUploadUrl: Not implemented (resumable upload URLs handled internally)
+ * - ❌ getStream: Not implemented natively (falls back to get())
+ * - ❌ getReadUrl / getUploadUrl: Not implemented
  */
 class GCStorage extends BaseStorage<GCSFile> {
     public static override readonly name: string = "gcs";
