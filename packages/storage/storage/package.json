@@ -297,8 +297,7 @@
         "mime": "catalog:prod",
         "nanoid": "catalog:prod",
         "openapi-types": "catalog:prod",
-        "type-is": "catalog:prod",
-        "zod": "catalog:utils"
+        "type-is": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -375,7 +374,8 @@
         "tempy": "catalog:dev",
         "typescript": "catalog:tsc",
         "uploadthing": "7.7.4",
-        "vitest": "catalog:test"
+        "vitest": "catalog:test",
+        "zod": "catalog:utils"
     },
     "peerDependencies": {
         "@anthropic-ai/claude-agent-sdk": ">=0.2.0",
@@ -414,7 +414,8 @@
         "pocketbase": ">=0.23.0",
         "sharp": ">=0.34.5",
         "ssh2-sftp-client": ">=11.0.0",
-        "uploadthing": ">=7.0.0"
+        "uploadthing": ">=7.0.0",
+        "zod": ">=4.0.0"
     },
     "peerDependenciesMeta": {
         "@anthropic-ai/claude-agent-sdk": {
@@ -526,6 +527,9 @@
             "optional": true
         },
         "uploadthing": {
+            "optional": true
+        },
+        "zod": {
             "optional": true
         }
     },

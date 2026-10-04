@@ -56,6 +56,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **`getCompletedFile()` is deprecated**; use `findStoredObject()`. Custom adapters implement the protected `statObject()` instead of overriding it.
 - **S3 metadata lookups need `s3:ListBucket`**: without it a missing record answers `403`, which now surfaces as a `500` instead of being read as "not found".
 - **Locks are renewed while held**, for at most 15 minutes; a holder that hangs longer loses the lock 30 seconds later.
+- **`zod` is an optional peer dependency.** Only the AI entries (`@visulima/storage/ai/*`) use it, so it is no longer installed with the package. If you use them, install `zod` 4 (`npm install zod`); the AI SDKs those entries wrap usually bring it already.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
