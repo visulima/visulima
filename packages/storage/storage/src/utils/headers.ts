@@ -19,6 +19,14 @@ export const toHttpDate = (value: Date | number | string): string => {
 };
 
 /**
+ * Replaces what a header value can't carry as-is: every UTF-16 code unit outside printable ASCII.
+ * @param value Header value
+ * @param replace Replacement of one code unit
+ * @returns The value, safe to send
+ */
+export const toLatin1Safe = (value: string, replace: (unit: string) => string): string => value.replaceAll(/[^\u0020-\u007E]/g, replace);
+
+/**
  * Cache-Control directive options
  */
 export interface CacheControlOptions {
@@ -145,7 +153,7 @@ export const HeaderUtilities = {
             return type;
         }
 
-        const fallback = filename.replaceAll(/[^\u0020-\u007E]|["\\]/gu, "_");
+        const fallback = toLatin1Safe(filename, () => "_").replaceAll(/["\\]/gu, "_");
         const header = `${type}; filename="${fallback}"`;
 
         if (fallback === filename) {

@@ -1,6 +1,3 @@
-/* eslint-disable max-classes-per-file */
-import { Readable } from "node:stream";
-
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
 import createHttpError from "http-errors";
@@ -54,52 +51,10 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         this.maxFileSize = options.maxFileSize ?? Math.min(this.storage.maxUploadSize, 1024 * 1024 * 1024);
         this.maxHeaderSize = options.maxHeaderSize ?? 64 * 1024; // 64KB default
 
-        // Create MultipartBase instance with access to this MultipartFetch instance
-        const multipartInstance = this;
-
-        this.multipartBase = new (class extends MultipartBase<TFile> {
-            // eslint-disable-next-line class-methods-use-this
-            protected override get storage() {
-                return multipartInstance.storage;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get maxFileSize() {
-                return multipartInstance.maxFileSize;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get maxHeaderSize() {
-                return multipartInstance.maxHeaderSize;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override buildFileUrl(requestUrl: string, file: TFile): string {
-                return multipartInstance.buildFileUrl({ url: requestUrl } as Request, file);
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override createStreamFromBytes(bytes: unknown): unknown {
-                // For Fetch API, convert to Node.js Readable stream for storage.write
-                // storage.write expects a Node.js Readable stream, not Uint8Array
-                if (bytes instanceof Uint8Array) {
-                    return Readable.from(Buffer.from(bytes));
-                }
-
-                if (bytes instanceof ArrayBuffer) {
-                    return Readable.from(Buffer.from(bytes));
-                }
-
-                // For other types, convert to empty stream
-                return Readable.from(new Uint8Array(0));
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected createEmptyStream(): unknown {
-                // Return Node.js Readable stream, not Uint8Array
-                return Readable.from(new Uint8Array(0));
-            }
-        })();
+        this.multipartBase = new MultipartBase<TFile>({
+            buildFileUrl: (source, file) => this.buildFileUrlFromString(source.url, file),
+            storage: () => this.storage,
+        });
     }
 
     /**
@@ -133,9 +88,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
                 throw createHttpError(400, "No file found in multipart request");
             }
 
-            const requestUrl = request.url;
-
-            return this.multipartBase.handlePost(filePart, parts, requestUrl);
+            return this.multipartBase.handlePost(filePart, parts, { url: request.url });
         } catch (error) {
             if (error instanceof MaxFileSizeExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
@@ -166,18 +119,7 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(404, "File not found");
         }
 
-        try {
-            // Awaited, so the catch below maps its errors.
-            return await this.multipartBase.handleDelete(id);
-        } catch (error: unknown) {
-            const errorWithCode = error as { code?: string };
-
-            if (errorWithCode.code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
-
-            throw error;
-        }
+        return this.multipartBase.handleDelete(id);
     }
 
     /**

@@ -49,7 +49,11 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **Azure `root` now prefixes every blob path** (`<root>/<assetFolder>/<name>`). It used to scope only `list()`, so blobs written before were stored without it. If you set `root`, move existing blobs under it (for example with `azcopy`) or drop the option. **SFTP** treats an absolute `rootFolderPath` as absolute instead of relative to the home directory.
 - **`X-Chunk-Checksum` is verified**, so a checksummed chunk may be at most 64 MiB (`413` above) and must use a known format (`400` otherwise). See [Chunked uploads](./chunked-uploads).
 - **The Node handlers' `download()` method is gone**, and `DOWNLOAD` is no longer listed in `Access-Control-Allow-Methods`. `GET /<id>/download` serves the file as an attachment.
-- **Node handlers send an absolute `Location`** built from the `Host` / `Forwarded` headers, like the fetch handlers. Set `useRelativeLocation: true` to keep relative ones.
+- **Node handlers send an absolute `Location`** built from the `Host` / `Forwarded` headers, like the fetch handlers. This now includes the Node `Tus` handler. Set `useRelativeLocation: true` to keep relative ones.
+- **`purge()` only deletes uploads.** On every provider it skips ids without upload metadata and ages an upload by its metadata (`createdAt`, or `modifiedAt` with `rolling`), not by the provider listing. Before, adapters whose metadata store can't list (and Supabase, Cloudinary, UploadThing, Bun S3, GCS, Firebase, Netlify by default) purged any object in the bucket old enough, while Firebase, Netlify and Bun S3 purged nothing because their listings carry no dates. S3 `purge()` now sees every object, not only the first 1000.
+- **A failing metadata store fails the operation.** Reads, deletes, copies and purges used to treat any metadata error as "no metadata" and fall back to the raw key; now only a missing record does.
+- **`PUT` replacing an upload deletes the old one before writing the new one.** If that write fails (the body breaks off, the provider errors), no file is left under the id; the client has to `PUT` again.
+- **`getCompletedFile()` is deprecated**; use `findStoredObject()`. Custom adapters implement the protected `statObject()` instead of overriding it.
 - **S3 metadata lookups need `s3:ListBucket`**: without it a missing record answers `403`, which now surfaces as a `500` instead of being read as "not found".
 - **Locks are renewed while held**, for at most 15 minutes; a holder that hangs longer loses the lock 30 seconds later.
 

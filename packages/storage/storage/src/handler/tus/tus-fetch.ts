@@ -4,6 +4,7 @@ import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
 import { getIdFromRequestUrl, getRequestStream } from "../../utils/http";
+import type { LocationSource } from "../base/base-handler-core";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import type { TusRequest } from "./tus-base";
@@ -41,7 +42,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         this.disableTerminationForFinishedUploads = options.disableTerminationForFinishedUploads ?? false;
         this.allowMethodOverride = options.allowMethodOverride ?? true;
         this.tusBase = new TusBase<TFile>({
-            buildFileUrl: (requestUrl, file) => this.buildFileUrlForTus(requestUrl, file),
+            buildFileUrl: (request, file) => this.buildFileUrlForTus(request, file),
             disableTerminationForFinishedUploads: () => this.disableTerminationForFinishedUploads ?? false,
             maxChecksumBufferSize: options.maxChecksumBufferSize,
             storage: () => this.storage,
@@ -167,16 +168,14 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
     /**
      * Build file URL for TUS uploads (without file extension).
-     * @param requestUrl Request URL string
+     * @param request Request the upload was created by
      * @param file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
-    protected buildFileUrlForTus(requestUrl: string, file: TFile): string {
-        const url = new URL(requestUrl);
-        const { pathname, search } = url;
-        const relative = `${pathname}/${file.id}${search}`;
+    protected buildFileUrlForTus(request: LocationSource, file: TFile): string {
+        const { pathname, search } = new URL(request.url);
 
-        return this.storage.config.useRelativeLocation ? relative : url.origin + relative;
+        return `${this.locationOrigin(request.url)}${pathname}/${file.id}${search}`;
     }
 
     /**

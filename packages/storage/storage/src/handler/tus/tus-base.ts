@@ -6,8 +6,9 @@ import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
 import StreamLength from "../../utils/pipes/stream-length";
 import type { Headers } from "../../utils/types";
+import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
-import { computeChecksum, getHandlerChecksumAlgorithms, readBoundedBody } from "./tus-checksum";
+import { computeChecksum, getHandlerChecksumAlgorithms, readBoundedBody } from "../utils/checksum";
 import {
     isNonNegativeInteger,
     parseFinalConcatIds,
@@ -27,7 +28,7 @@ export const DEFAULT_MAX_CHECKSUM_BUFFER_SIZE: number = 64 * 1024 * 1024;
 /**
  * A TUS request, independent of the runtime (Node.js `IncomingMessage` or Web `Request`).
  */
-export interface TusRequest {
+export interface TusRequest extends LocationSource {
     /** Request body stream. */
     body: unknown;
 
@@ -36,9 +37,6 @@ export interface TusRequest {
 
     /** Resolves the upload ID from the URL; throws a 404 HttpError when there is none. */
     resolveId: () => string;
-
-    /** Request URL, used to build `Location`. */
-    url: string;
 }
 
 /**
@@ -62,8 +60,8 @@ export interface TusStorage<TFile extends UploadFile> {
 }
 
 export interface TusBaseConfig<TFile extends UploadFile> {
-    /** Builds the `Location` of an upload from the creation request's URL. */
-    buildFileUrl: (requestUrl: string, file: TFile) => string;
+    /** Builds the `Location` of an upload from the creation request. */
+    buildFileUrl: (request: LocationSource, file: TFile) => string;
 
     /** Whether DELETE is refused for finished uploads. */
     disableTerminationForFinishedUploads: () => boolean;
@@ -278,28 +276,21 @@ export class TusBase<TFile extends UploadFile> {
 
         const id = request.resolveId();
 
-        try {
-            // Only uploads: an id without upload metadata may name an object the route never created.
-            const existing = await this.storage.getMeta(id);
+        // Only uploads: an id without upload metadata may name an object the route never created.
+        // The metadata is read anyway, for the status of the upload.
+        const existing = await this.storage.getMeta(id);
 
-            if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
-                throw createHttpError(400, "Termination of finished uploads is disabled");
-            }
-
-            const file = await this.storage.delete({ id });
-
-            if (file.status === undefined) {
-                throw createHttpError(404, "File not found");
-            }
-
-            return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
-        } catch (error: unknown) {
-            if ((error as { code?: string }).code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
-
-            throw error;
+        if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
+            throw createHttpError(400, "Termination of finished uploads is disabled");
         }
+
+        const file = await this.storage.delete({ id });
+
+        if (file.status === undefined) {
+            throw createHttpError(404, "File not found");
+        }
+
+        return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
     }
 
     /**
@@ -368,7 +359,7 @@ export class TusBase<TFile extends UploadFile> {
 
         file = TusBase.holdPartialUpload(file);
 
-        const headers: Headers = { ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }), ...extraHeaders };
+        const headers: Headers = { ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request, file) }), ...extraHeaders };
 
         if (file.bytesWritten > 0) {
             headers["Upload-Offset"] = file.bytesWritten.toString();
@@ -402,7 +393,7 @@ export class TusBase<TFile extends UploadFile> {
         await this.concatenateFiles(file, partialFiles);
 
         const headers: Headers = {
-            ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }),
+            ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request, file) }),
             "Upload-Concat": uploadConcat,
         };
 

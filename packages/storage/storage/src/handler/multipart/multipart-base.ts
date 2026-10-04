@@ -1,15 +1,37 @@
+import { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
+import type { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
+import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
 import { withoutInternalKeys } from "../utils/request-parser";
 
 /**
- * Base class containing shared Multipart business logic.
- * Platform-agnostic - contains no Node.js or Web API specific code.
+ * The part of a storage adapter the multipart handler uses.
+ */
+export type MultipartStorage<TFile extends UploadFile> = Pick<BaseStorage<TFile>, "create" | "deleteUpload" | "write">;
+
+export interface MultipartBaseConfig<TFile extends UploadFile> {
+    /** Builds the `Location` of a file from the request that uploaded it. */
+    buildFileUrl: (request: LocationSource, file: TFile) => string;
+
+    /** The storage adapter. */
+    storage: () => MultipartStorage<TFile>;
+}
+
+/**
+ * Shared multipart logic for the Node.js and Web (fetch) handlers.
  * @template TFile The file type used by this handler.
  */
-abstract class MultipartBase<TFile extends UploadFile> {
+class MultipartBase<TFile extends UploadFile> {
+    public constructor(private readonly config: MultipartBaseConfig<TFile>) {}
+
+    private get storage(): MultipartStorage<TFile> {
+        return this.config.storage();
+    }
+
     /**
      * Handle multipart POST (upload file).
      * @param filePart File part from multipart parser
@@ -18,14 +40,13 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @param filePart.mediaType Content type
      * @param filePart.size File size in bytes
      * @param metadataParts All parts from multipart parser (for extracting metadata)
-     * @param requestUrl Request URL for Location header
+     * @param request Request the Location header is built from
      * @returns Promise resolving to ResponseFile with upload result
      */
-
     public async handlePost(
-        filePart: { bytes: unknown; filename?: string; mediaType?: string; size: number },
+        filePart: { bytes: Uint8Array; filename?: string; mediaType?: string; size: number },
         metadataParts: { isFile: boolean; name?: string; text?: string }[],
-        requestUrl: string,
+        request: LocationSource,
     ): Promise<ResponseFile<TFile>> {
         const config: FileInit = {
             contentType: filePart.mediaType || "application/octet-stream",
@@ -55,8 +76,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
 
         const file = await this.storage.create(config);
 
-        // Create a stream from the bytes data
-        const stream = this.createStreamFromBytes(filePart.bytes);
+        const stream = Readable.from(Buffer.from(filePart.bytes));
 
         // Multipart uploads ship the full body in a single request, so a single write covers the
         // entire payload. The adapter's `write` flips `status` to `completed` automatically when
@@ -73,7 +93,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
         // originalName from fields like `title` or `name`, while the file part's filename wins.
         const finalFile = completedFile;
 
-        const locationUrl = this.buildFileUrl(requestUrl, finalFile);
+        const locationUrl = this.config.buildFileUrl(request, finalFile);
 
         return {
             ...finalFile,
@@ -92,10 +112,7 @@ abstract class MultipartBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with deletion result
      */
     public async handleDelete(id: string): Promise<ResponseFile<TFile>> {
-        // Only uploads: an id without upload metadata may name an object the route never created.
-        await this.storage.getMeta(id);
-
-        const file = await this.storage.delete({ id });
+        const file = await this.storage.deleteUpload(id);
 
         if (file.status === undefined) {
             throw createHttpError(404, "File not found");
@@ -103,56 +120,6 @@ abstract class MultipartBase<TFile extends UploadFile> {
 
         return { ...file, headers: {}, statusCode: 204 };
     }
-
-    /**
-     * Storage instance for file operations.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected get storage(): {
-        create: (config: FileInit) => Promise<TFile>;
-        delete: (options: { id: string }) => Promise<TFile>;
-        getMeta: (id: string) => Promise<TFile>;
-        maxUploadSize: number;
-        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
-    } {
-        // This will be overridden by subclasses
-        throw new Error("storage must be implemented");
-    }
-
-    /**
-     * Maximum file size allowed for multipart uploads
-     */
-    protected abstract get maxFileSize(): number;
-
-    /**
-     * Maximum header size allowed for multipart parser
-     */
-    protected abstract get maxHeaderSize(): number;
-
-    /**
-     * Build file URL from request URL and file data.
-     * @param _requestUrl Request URL string
-     * @param _file File object containing ID and content type
-     * @returns Constructed file URL with extension based on content type
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
-        // This will be overridden by subclasses
-        throw new Error("buildFileUrl must be implemented");
-    }
-
-    /**
-     * Create a stream from bytes data.
-     * @param bytes Bytes data (Uint8Array, Buffer, or other)
-     * @returns Stream object
-     */
-    protected abstract createStreamFromBytes(bytes: unknown): unknown;
-
-    /**
-     * Create an empty stream for signaling completion.
-     * @returns Empty stream object
-     */
-    protected abstract createEmptyStream(): unknown;
 }
 
 export default MultipartBase;

@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
-import type { IncomingMessage } from "node:http";
+import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
+import type { Readable } from "node:stream";
 import { format } from "node:url";
 
 import { paginate } from "@visulima/pagination";
@@ -18,6 +19,17 @@ import type { HttpError, ResponseBody, ResponseBodyType, UploadResponse } from "
 import { isValidationError } from "../../utils/validator";
 import type { ResponseFile, ResponseList, UploadOptions } from "../types";
 import { parseIntegerHeader } from "../utils/request-parser";
+import { rangeIfCurrent } from "../utils/stream-utils";
+
+/**
+ * What a `Location` is built from: the request URL, plus on Node the headers and connection its
+ * origin is recovered from (a Node request URL is only a path).
+ */
+export interface LocationSource {
+    headers?: IncomingHttpHeaders;
+    socket?: { encrypted?: boolean };
+    url: string;
+}
 
 /**
  * A file addressed by a GET/download path.
@@ -27,10 +39,10 @@ export interface FileTarget {
     ext?: string;
     /** Whether `/:id/download` was requested (served as an attachment). */
     isDownloadRequest: boolean;
+    /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
+    isGeneratedId: boolean;
     /** Whether `/:id/metadata` was requested. */
     isMetadataRequest: boolean;
-    /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
-    isUuidLike: boolean;
     /** The file id. */
     uuid: string;
 }
@@ -65,9 +77,9 @@ export const parseFilePath = (path: string): FileTarget | undefined => {
     return {
         ext: extensionMatch?.[2],
         isDownloadRequest: hasActionSegment && lastSegment === "download",
-        isMetadataRequest: hasActionSegment && lastSegment === "metadata",
         // Generated ids: UUID-like, or a 21-character nanoid.
-        isUuidLike: uuidRegex.test(uuid) || /^[\w-]{21}$/u.test(uuid),
+        isGeneratedId: uuidRegex.test(uuid) || /^[\w-]{21}$/u.test(uuid),
+        isMetadataRequest: hasActionSegment && lastSegment === "metadata",
         uuid,
     };
 };
@@ -248,38 +260,85 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
     }
 
     /**
+     * The byte range a GET of a streamed file asks for: its `Range` header, dropped when an
+     * `If-Range` no longer matches the file. The file's stream is destroyed when the range can't be
+     * satisfied, since no response will consume it.
+     * @param file Streamed file response.
+     * @param rangeHeader `Range` header value.
+     * @param ifRange `If-Range` header value.
+     * @param headers Headers of the file response, compared against `If-Range`.
+     * @returns The range to send, or `undefined` for the whole file.
+     * @throws {HttpError} 416 when no requested byte exists.
+     */
+    public resolveRange(
+        file: { size?: number; stream: Readable },
+        rangeHeader: string | undefined,
+        ifRange: string | undefined,
+        headers: Record<string, unknown>,
+    ): { end: number; start: number } | undefined {
+        try {
+            return this.parseRangeHeader(rangeIfCurrent(rangeHeader, ifRange, headers), file.size || 0);
+        } catch (error) {
+            file.stream.destroy();
+
+            throw error;
+        }
+    }
+
+    /**
      * Build file URL from request and file data.
      * Platform-agnostic version that accepts URL string.
      *
      * When `useRelativeLocation` is `false` (the default) the absolute origin is resolved from, in
      * order: an absolute `requestUrl` (the fetch runtimes pass `request.url`, which carries the
-     * origin), then the host/proto derived from `requestHeaders` (the Node runtimes pass the request
-     * headers, since `request.url` there is only a path). If neither yields a host the Location
-     * stays relative rather than emitting a bogus `http://localhost` origin.
+     * origin), then the host/proto derived from the headers of `request` (the Node runtimes pass it,
+     * since `request.url` there is only a path), with the connection's protocol when no proxy header
+     * names one. If neither yields a host the Location stays relative rather than emitting a bogus
+     * `http://localhost` origin.
      * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
      * @param file File object containing ID and content type
-     * @param requestHeaders Optional request headers used to recover host/proto on Node runtimes.
+     * @param request Headers and connection of a Node request, to recover its host/proto.
      * @returns Constructed file URL with extension based on content type
      */
-    protected buildFileUrlFromString(requestUrl: string, file: TFile, requestHeaders?: IncomingMessage["headers"]): string {
+    protected buildFileUrlFromString(requestUrl: string, file: TFile, request?: Omit<LocationSource, "url">): string {
         const url = new URL(requestUrl, "http://localhost");
         const { pathname } = url;
         const query = Object.fromEntries(url.searchParams.entries());
         const relative = format({ pathname: `${pathname.replace(/\/$/, "")}/${file.id}`, query });
 
-        let baseUrl = "";
+        return `${this.locationOrigin(requestUrl, request)}${relative}.${mime.getExtension(file.contentType)}`;
+    }
 
-        if (!this.storage.config.useRelativeLocation) {
-            // An absolute requestUrl (fetch runtimes) already carries the origin.
-            if (/^https?:\/\//iu.test(requestUrl)) {
-                baseUrl = url.origin;
-            } else if (requestHeaders) {
-                // Node runtimes: request.url is a path, so recover host/proto from the headers.
-                baseUrl = getBaseUrl({ headers: requestHeaders } as IncomingMessage);
-            }
+    /**
+     * The origin an absolute `Location` starts with, or `""` for a relative one: `useRelativeLocation`
+     * is set, or neither an absolute `requestUrl` nor the request headers name a host.
+     * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
+     * @param request Headers and connection of a Node request.
+     * @returns The origin, or `""`.
+     */
+    protected locationOrigin(requestUrl: string, request?: Omit<LocationSource, "url">): string {
+        if (this.storage.config.useRelativeLocation) {
+            return "";
         }
 
-        return `${baseUrl}${relative}.${mime.getExtension(file.contentType)}`;
+        // An absolute requestUrl (fetch runtimes) already carries the origin.
+        if (/^https?:\/\//iu.test(requestUrl)) {
+            return new URL(requestUrl).origin;
+        }
+
+        if (!request?.headers) {
+            return "";
+        }
+
+        // Node runtimes: request.url is a path, so recover host/proto from the headers.
+        const base = getBaseUrl({ headers: request.headers } as IncomingMessage);
+
+        if (!base.startsWith("//")) {
+            return base;
+        }
+
+        // No forwarded protocol: the connection's own.
+        return `${request.socket?.encrypted ? "https:" : "http:"}${base}`;
     }
 
     /**
@@ -333,44 +392,23 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
             httpError = { ...httpError, message: ErrorMap.UnknownError.message };
         }
 
-        // Format error response - if body is not set, format it into body.error structure
-        let errorResponse: UploadResponse;
-
-        if (httpError.body) {
-            // If body is already an object, use it directly
-            // If body is a string, wrap it in error structure for consistency
-            if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
-            } else {
-                // Body is a string, wrap it in error structure
-                errorResponse = {
-                    body: {
-                        error: {
-                            code: httpError.code || httpError.name || "Error",
-                            message: httpError.body || httpError.message || "Unknown error",
-                            name: httpError.name || "Error",
-                        },
-                    },
-                    headers: httpError.headers,
-                    statusCode: httpError.statusCode || 500,
-                };
-            }
-        } else {
-            // Format the error properties into a body.error structure
-            errorResponse = {
-                body: {
-                    error: {
-                        code: httpError.code || httpError.name || "Error",
-                        message: httpError.message || "Unknown error",
-                        name: httpError.name || "Error",
-                    },
-                },
-                headers: httpError.headers,
-                statusCode: httpError.statusCode || 500,
-            };
+        // A body object set by onError is sent as-is; otherwise the error is formatted into
+        // `body.error`, with a string body as its message.
+        if (typeof httpError.body === "object" && httpError.body !== null) {
+            return { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
         }
 
-        return errorResponse;
+        return {
+            body: {
+                error: {
+                    code: httpError.code || httpError.name || "Error",
+                    message: httpError.body || httpError.message || "Unknown error",
+                    name: httpError.name || "Error",
+                },
+            },
+            headers: httpError.headers,
+            statusCode: httpError.statusCode || 500,
+        };
     }
 
     /**
@@ -434,7 +472,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 throw error;
             }
 
-            if (!target.isUuidLike) {
+            if (!target.isGeneratedId) {
                 // Ambiguous segment that is not a stored file - treat as list request
                 return undefined;
             }

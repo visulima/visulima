@@ -4,8 +4,9 @@ import { Readable } from "node:stream";
 import type { BoxClient } from "box-typescript-sdk-gen";
 import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAuth, BoxOAuth, CcgConfig, JwtConfig, OAuthConfig } from "box-typescript-sdk-gen";
 
-import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
+import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
@@ -433,7 +434,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
             fileId = await this.resolveFileId(id, options);
             item = (await this.runOperation(options, () => this.client.files.getFileById(fileId))) as BoxFileLike;
         } catch (error) {
-            if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+            if (isNotFoundError(error) || isMetaNotFound(error)) {
                 return undefined;
             }
 
@@ -452,7 +453,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 stored = await this.getMeta(id);
             } catch (error) {
                 // No metadata: look the id up directly. Any other failure must not read as absent.
-                if (!isUploadError(error) || error.UploadErrorCode !== ERRORS.FILE_NOT_FOUND) {
+                if (!isMetaNotFound(error)) {
                     throw error;
                 }
             }

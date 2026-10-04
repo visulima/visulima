@@ -5,8 +5,9 @@ import type { drive_v3 } from "@googleapis/drive";
 import { drive } from "@googleapis/drive";
 import { GoogleAuth, JWT, OAuth2Client } from "google-auth-library";
 
-import { ERRORS, isUploadError, throwErrorCode, wrapStorageError } from "../../utils/errors";
+import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
+import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
@@ -423,7 +424,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                 this.fileIdCache.delete(key);
             } catch (error) {
                 // An upload that never received bytes has no Drive file.
-                if (!isNotFoundError(error) && !(isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+                if (!isNotFoundError(error) && !isMetaNotFound(error)) {
                     throw error;
                 }
 
@@ -455,7 +456,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
             ({ data } = await this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })));
         } catch (error) {
-            if (isNotFoundError(error) || (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
+            if (isNotFoundError(error) || isMetaNotFound(error)) {
                 return undefined;
             }
 
@@ -728,7 +729,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         try {
             return await this.resolveFileId(key, options);
         } catch (error) {
-            if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+            if (isMetaNotFound(error)) {
                 return undefined;
             }
 

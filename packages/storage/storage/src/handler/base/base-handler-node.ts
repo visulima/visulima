@@ -7,13 +7,14 @@ import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
-import { getBaseUrl, getRealPath, setHeaders } from "../../utils/http";
+import { getRealPath, setHeaders } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
 import type { ResponseBody, UploadResponse } from "../../utils/types";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
 import { applyRange, pipeWithBackpressure } from "../utils/stream-utils";
 import { handleCompletedUpload, handleGetRequest, handleHeadOptionsRequest, handlePartialUpload, handleUploadError } from "../utils/upload-handlers";
+import type { LocationSource } from "./base-handler-core";
 import BaseHandlerCore from "./base-handler-core";
 
 const CONTENT_TYPE = "Content-Type";
@@ -117,7 +118,7 @@ abstract class BaseHandlerNode<
                         next,
                         this.send.bind(this),
                         this.sendStream.bind(this),
-                        this.parseRangeHeader.bind(this),
+                        this.resolveRange.bind(this),
                     );
                 }
             } else {
@@ -319,9 +320,9 @@ abstract class BaseHandlerNode<
      * @returns Constructed file URL with extension based on content type
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
-        // On Node, request.url is path-only — pass the headers so the base can recover host/proto and
-        // emit an absolute Location when useRelativeLocation is false.
-        return this.buildFileUrlFromString(request.originalUrl || (request.url as string), file, request.headers);
+        const source = this.locationOf(request);
+
+        return this.buildFileUrlFromString(source.url, file, source);
     }
 
     /**
@@ -375,28 +376,14 @@ abstract class BaseHandlerNode<
     }
 
     /**
-     * The request URL a Location header is built from. A Node request URL is only a path, so the
-     * origin comes from the Host / Forwarded headers unless relative locations are configured.
+     * What a Location header is built from: a Node request URL is only a path, so its origin comes
+     * from the Host / Forwarded headers and the connection.
      * @param request Node.js request
-     * @returns The request URL, absolute when the origin is known
+     * @returns The location source
      */
-    protected locationBaseOf(request: NodeRequest & { originalUrl?: string }): string {
-        const path = request.originalUrl || request.url || "";
-
-        if (this.storage.config.useRelativeLocation) {
-            return path;
-        }
-
-        const base = getBaseUrl(request);
-
-        if (!base.startsWith("//")) {
-            return `${base}${path}`;
-        }
-
-        // No forwarded protocol: the connection's own.
-        const protocol = (request.socket as { encrypted?: boolean } | undefined)?.encrypted ? "https:" : "http:";
-
-        return `${protocol}${base}${path}`;
+    // eslint-disable-next-line class-methods-use-this
+    protected locationOf(request: NodeRequest & { originalUrl?: string }): LocationSource {
+        return { headers: request.headers, socket: request.socket as LocationSource["socket"], url: request.originalUrl || request.url || "" };
     }
 
     /**

@@ -47,13 +47,6 @@ export const requirePositiveContentLength = (value: string | null | undefined): 
 };
 
 /**
- * Parses the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
- * `null`, arrays and primitives yield `undefined`.
- * @param value Raw header value
- * @returns The metadata object, or `undefined` when the header is missing or not a JSON object
- */
-
-/**
  * Drops the `_`-prefixed keys the server keeps its own upload state in (`_totalSize`, `_chunks`, …):
  * a client setting them could size an upload past `maxUploadSize` or forge received chunks.
  * @param metadata Client-supplied metadata
@@ -62,6 +55,12 @@ export const requirePositiveContentLength = (value: string | null | undefined): 
 export const withoutInternalKeys = (metadata: Record<string, unknown>): Record<string, unknown> =>
     Object.fromEntries(Object.entries(metadata).filter(([key]) => !key.startsWith("_")));
 
+/**
+ * Parses the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
+ * `null`, arrays and primitives yield `undefined`.
+ * @param value Raw header value
+ * @returns The metadata object, or `undefined` when the header is missing or not a JSON object
+ */
 export const parseMetadataHeader = (value: string | null | undefined): Record<string, unknown> | undefined => {
     if (!value) {
         return undefined;

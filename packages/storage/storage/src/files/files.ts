@@ -1103,8 +1103,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             // round and yield only keys not seen yet. A page shorter than the request means the
             // listing is exhausted; a page longer than the request means the adapter ignores `limit`
             // (memory, disk, FTP) and already returned everything.
-            // ponytail: re-lists from the start each round (~2x total listing work, O(n) key memory);
-            // replace with a cursor once BaseStorage.list grows one.
+            // Limitation: each round re-lists from the start (about twice the listing work, every key held
+            // in memory). A cursor on BaseStorage.list would avoid it.
             let requested = pageSize;
 
             while (true) {

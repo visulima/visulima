@@ -1,9 +1,9 @@
-/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
+import { isMetaNotFound } from "../../storage/meta-storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import { getHeader, getIdFromRequestUrl, getRealPath, getRequestStream, readBody } from "../../utils/http";
 import BaseHandlerNode from "../base/base-handler-node";
@@ -64,36 +64,10 @@ class Rest<
 
     public constructor(options: UploadOptions<TFile>) {
         super(options);
-        // Create RestBase instance with access to this Rest instance
-        const restInstance = this;
-
-        this.restBase = new (class extends RestBase<TFile> {
-            // eslint-disable-next-line class-methods-use-this
-            protected override get storage() {
-                return restInstance.storage as unknown as {
-                    create: (config: FileInit) => Promise<TFile>;
-                    delete: (options: { id: string }) => Promise<TFile>;
-                    deleteBatch: (ids: string[]) => Promise<{
-                        failed: { error: string; id: string }[];
-                        failedCount: number;
-                        successful: TFile[];
-                        successfulCount: number;
-                    }>;
-                    getMeta: (id: string) => Promise<TFile>;
-                    maxUploadSize: number;
-                    validateInit: (config: FileInit) => Promise<void>;
-                    sequentialWrites?: boolean;
-                    update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
-                    withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
-                    write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
-                };
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override buildFileUrl(requestUrl: string, file: TFile): string {
-                return restInstance.buildFileUrlForRest(requestUrl, file);
-            }
-        })();
+        this.restBase = new RestBase<TFile>({
+            buildFileUrl: (source, file) => this.buildFileUrlFromString(source.url, file, source),
+            storage: () => this.storage,
+        });
     }
 
     /**
@@ -109,16 +83,6 @@ class Rest<
         this.registeredHandlers.set("OPTIONS", this.options.bind(this));
 
         this.logger?.debug("Registered handler: %s", [...this.registeredHandlers.keys()].join(", "));
-    }
-
-    /**
-     * Build file URL from request and file data.
-     * @param requestUrl Request URL string
-     * @param file File object containing ID and content type
-     * @returns Constructed file URL with extension based on content type
-     */
-    protected buildFileUrlForRest(requestUrl: string, file: TFile): string {
-        return this.buildFileUrl({ url: requestUrl } as NodeRequest & { originalUrl?: string }, file);
     }
 
     /**
@@ -141,10 +105,9 @@ class Rest<
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
         const config = extractFileInit(request, contentLength, contentType);
 
-        const requestUrl = this.locationBaseOf(request);
-        const bodyStream = getRequestStream(request);
+                const bodyStream = getRequestStream(request);
 
-        return this.restBase.handlePost(config, isChunkedUpload, requestUrl, bodyStream, contentLength);
+        return this.restBase.handlePost(config, isChunkedUpload, this.locationOf(request), bodyStream, contentLength);
     }
 
     /**
@@ -188,10 +151,9 @@ class Rest<
             size: contentLength,
         };
 
-        const requestUrl = this.locationBaseOf(request);
-        const bodyStream = getRequestStream(request);
+                const bodyStream = getRequestStream(request);
 
-        return this.restBase.handlePut(id, config, requestUrl, bodyStream, contentLength);
+        return this.restBase.handlePut(id, config, this.locationOf(request), bodyStream, contentLength);
     }
 
     /**
@@ -229,7 +191,7 @@ class Rest<
         try {
             return await this.restBase.deleteSingle(id);
         } catch (error: unknown) {
-            if ((error as { code?: string }).code === "ENOENT" || (error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND") {
+            if (isMetaNotFound(error)) {
                 throw createHttpError(404, "File not found");
             }
 
@@ -266,10 +228,9 @@ class Rest<
         }
 
         const chunkChecksum = getHeader(request, "x-chunk-checksum", true);
-        const requestUrl = this.locationBaseOf(request);
-        const bodyStream = getRequestStream(request);
+                const bodyStream = getRequestStream(request);
 
-        return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, requestUrl, bodyStream);
+        return this.restBase.handlePatch(id, chunkOffset, contentLength, chunkChecksum, this.locationOf(request), bodyStream);
     }
 
     /**
@@ -288,7 +249,7 @@ class Rest<
         try {
             return await this.restBase.handleHead(id);
         } catch (error: unknown) {
-            if ((error as { UploadErrorCode?: string }).UploadErrorCode === "FILE_NOT_FOUND" || (error as { code?: string }).code === "ENOENT") {
+            if (isMetaNotFound(error)) {
                 throw createHttpError(404, "File not found");
             }
 

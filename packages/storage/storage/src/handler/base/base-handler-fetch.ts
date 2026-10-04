@@ -8,7 +8,7 @@ import pick from "../../utils/primitives/pick";
 import type { UploadResponse } from "../../utils/types";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
-import { applyRange, rangeIfCurrent } from "../utils/stream-utils";
+import { applyRange } from "../utils/stream-utils";
 import BaseHandlerCore from "./base-handler-core";
 
 /**
@@ -165,19 +165,12 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 body = JSON.stringify(file.data);
             } else if (file.stream) {
                 // Streaming response, with range support for partial content requests
-                let range: { end: number; start: number } | undefined;
-
-                try {
-                    range = this.parseRangeHeader(
-                        rangeIfCurrent(request.headers.get("range") ?? undefined, request.headers.get("if-range") ?? undefined, responseHeaders),
-                        file.size || 0,
-                    );
-                } catch (error) {
-                    file.stream.destroy();
-
-                    throw error;
-                }
-
+                const range = this.resolveRange(
+                    { size: file.size, stream: file.stream },
+                    request.headers.get("range") ?? undefined,
+                    request.headers.get("if-range") ?? undefined,
+                    responseHeaders,
+                );
                 const ranged = applyRange(file.stream, file.size, range);
 
                 Object.assign(responseHeaders, ranged.headers);
@@ -266,13 +259,9 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             convertedHeaders.location = String(headers.location);
         }
 
-        // A list (batch delete) answers with its items, as on Node.
-        if ("data" in file && Array.isArray(file.data) && statusCode !== 204) {
-            return this.createResponse({
-                body: JSON.stringify(file.data),
-                headers: { ...convertedHeaders, "Content-Type": "application/json; charset=utf-8" },
-                statusCode,
-            });
+        // A response that carries its body (a batch delete) sends it as-is, as on Node.
+        if ("body" in file && typeof file.body === "string") {
+            return this.createResponse({ body: file.body, headers: convertedHeaders, statusCode });
         }
 
         // For successful responses, include the file data in the body
