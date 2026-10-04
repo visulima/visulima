@@ -318,15 +318,9 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                 }),
             );
 
-            const response = await this.runOperation(options, () =>
-                fetch(
-                    this.client.url(key, {
-                        resource_type: this.resourceType,
-                        secure: this.secure,
-                        type: this.deliveryType,
-                    }),
-                ),
-            );
+            // A private/authenticated asset is only served through a signed URL.
+            const url = await this.getReadUrl(key);
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 throw new Error(`Cloudinary: object not found at "${key}"`);
@@ -357,11 +351,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
             const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
-            const sourceUrl = this.client.url(source, {
-                resource_type: this.resourceType,
-                secure: this.secure,
-                type: this.deliveryType,
-            });
+            const sourceUrl = await this.getReadUrl(source);
 
             await this.runOperation(options, () =>
                 this.client.uploader.upload(sourceUrl, {

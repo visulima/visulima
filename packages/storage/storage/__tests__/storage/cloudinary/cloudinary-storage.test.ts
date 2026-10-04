@@ -181,6 +181,32 @@ describe(CloudinaryStorage, () => {
         });
     });
 
+    describe("private assets", () => {
+        it("reads and copies them through signed download URLs", async () => {
+            expect.assertions(3);
+
+            const storage = newStorage({ type: "private" });
+            const signed = "https://api.cloudinary.com/v1_1/demo/raw/download?signature=abc";
+
+            mockClient.utils.private_download_url.mockReturnValue(signed);
+            mockClient.api.resource.mockResolvedValueOnce({ bytes: 4, format: "mp4", resource_type: "raw", version: 7 });
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+                arrayBuffer: async () => Buffer.from("data"),
+                ok: true,
+            } as unknown as Response);
+
+            await expect(storage.get({ id: "secret.mp4" })).resolves.toHaveProperty("content", Buffer.from("data"));
+            expect(fetchSpy).toHaveBeenCalledWith(signed);
+
+            await storage.copy("secret.mp4", "copy.mp4");
+
+            expect(mockClient.uploader.upload).toHaveBeenCalledWith(signed, expect.objectContaining({ public_id: "copy.mp4", type: "private" }));
+
+            fetchSpy.mockRestore();
+        });
+    });
+
     describe(".getCompletedFile()", () => {
         it("answers from the resource details without downloading the content", async () => {
             expect.assertions(5);
