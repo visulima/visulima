@@ -4,111 +4,198 @@
 
 ## Overview
 
-Google Cloud Storage is a unified object storage for developers and enterprises, from live data serving to data analytics/ML to data archiving. It integrates seamlessly with Visulima upload's image transformation capabilities.
+`GCStorage` talks to the GCS JSON API directly (through `google-auth-library` + `gaxios`, not `@google-cloud/storage`). Each upload opens a GCS **resumable upload session**; chunks are appended to that session in order, and GCS finalizes the object when the last byte arrives. Upload metadata is kept as `<id>.META` objects in the same bucket by default.
 
 ## Installation
 
-> Note: If you hit this error: "TypeError: Expected signal to be an instanceof AbortSignal" [#784](https://github.com/node-fetch/node-fetch/issues/784).
-
 ```sh
-npm install @google-cloud/storage gaxios
+npm install google-auth-library gaxios
 ```
 
 ```sh
-yarn add @google-cloud/storage gaxios
+yarn add google-auth-library gaxios
 ```
 
 ```sh
-pnpm add @google-cloud/storage gaxios
+pnpm add google-auth-library gaxios
 ```
 
-## Usage
+> If you hit `TypeError: Expected signal to be an instanceof AbortSignal`, see [node-fetch#784](https://github.com/node-fetch/node-fetch/issues/784).
 
-```ts
-import { Files } from "@visulima/storage";
-import { LRUCache } from "lru-cache";
-import { GCStorage } from "@visulima/storage/provider/gcs";
-import ImageTransformer from "@visulima/storage/transformer/image";
+## Provider setup
 
-const storage = new GCStorage({
-    bucket: "upload",
-    projectId: "test",
-    maxUploadSize: "1GB",
-    logger: console,
-    expiration: { maxAge: "1h", purgeInterval: "15min" },
-});
+1. **Create a bucket** (`gcloud storage buckets create gs://my-uploads --location=EU --uniform-bucket-level-access`). Uniform bucket-level access is recommended; the adapter uses IAM only, no ACLs.
+2. **Create a service account** for the server, or use the workload's identity on Cloud Run / GKE / GCE.
+3. **Grant the minimum permissions** on the bucket:
 
-// Initialize cache for transformed images
-const cache = new LRUCache({
-    max: 1000, // Maximum number of cached items
-    ttl: 3600000, // 1 hour in milliseconds
-});
+| Permission               | Used for                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| `storage.buckets.get`    | Startup access check (`GET /b/<bucket>`)                                         |
+| `storage.objects.create` | Resumable sessions, metadata sidecars, copy destinations                         |
+| `storage.objects.delete` | `delete`/`move`/`purge`, and **overwriting** the `.META` sidecars on every chunk |
+| `storage.objects.get`    | `get`, `exists`, reading sidecars, copy sources                                  |
+| `storage.objects.list`   | `list()`, `listDirectory()`                                                      |
 
-// Initialize image transformer for on-demand transformations
-const imageTransformer = new ImageTransformer(storage, {
-    cache,
-    maxImageSize: 10 * 1024 * 1024, // 10MB
-    cacheTtl: 3600, // 1 hour
-});
+The predefined **Storage Object User** role (`roles/storage.objectUser`) covers the object permissions; add `storage.buckets.get` through a custom role or **Storage Legacy Bucket Reader** (`roles/storage.legacyBucketReader`). Grant them on the bucket, not the project:
 
-// Upload a file (the key doubles as the file id)
-const files = new Files({ adapter: storage });
-
-await files.upload("image.jpg", fileBuffer, { contentType: "image/jpeg" });
-
-// Transform the uploaded image
-const thumbnail = await imageTransformer.resize("image.jpg", {
-    width: 300,
-    height: 200,
-    fit: "cover",
-    quality: 80,
-});
+```sh
+gcloud storage buckets add-iam-policy-binding gs://my-uploads \
+  --member=serviceAccount:uploader@my-project.iam.gserviceaccount.com \
+  --role=roles/storage.objectUser
+gcloud storage buckets add-iam-policy-binding gs://my-uploads \
+  --member=serviceAccount:uploader@my-project.iam.gserviceaccount.com \
+  --role=roles/storage.legacyBucketReader
 ```
 
-## Image Transformations
+4. **Credentials.** On Google Cloud, Application Default Credentials pick up the attached service account. Elsewhere, create a JSON key (_IAM → Service accounts → Keys_) and point `GOOGLE_APPLICATION_CREDENTIALS` or `keyFilename` at it.
 
-Google Cloud Storage works seamlessly with Visulima upload's image transformation features:
+### CORS
 
-```ts
-// Resize images
-const resized = await imageTransformer.resize("file-id", {
-    width: 800,
-    height: 600,
-    fit: "cover",
-});
+Only needed when a browser talks to GCS directly, for example with `clientDirectUpload` or when it fetches objects cross-origin. Uploads through your own handler don't need it.
 
-// Convert formats: `transform` takes an array of steps
-const webp = await imageTransformer.transform("file-id", [{ type: "format", options: { format: "webp", quality: 85 } }]);
-
-// Or the shorthand
-const avif = await imageTransformer.convertFormat("file-id", "avif", { quality: 60 });
-
-// Crop images
-const cropped = await imageTransformer.crop("file-id", {
-    width: 400,
-    height: 300,
-    left: 100,
-    top: 50,
-});
+```json
+[
+    {
+        "origin": ["https://app.example.com"],
+        "method": ["GET", "HEAD", "PUT", "POST", "OPTIONS"],
+        "responseHeader": ["Content-Type", "Content-Range", "Range", "x-goog-resumable"],
+        "maxAgeSeconds": 3600
+    }
+]
 ```
+
+```sh
+gcloud storage buckets update gs://my-uploads --cors-file=cors.json
+```
+
+GCS applies CORS to a resumable session based on the `Origin` of the request that started it. The adapter starts sessions server-side, so test a browser `clientDirectUpload` flow end to end before relying on it.
+
+### Lifecycle
+
+An abandoned resumable session expires on the GCS side after a week and never becomes an object. Its `.META` sidecar stays until you delete the upload. Don't add a lifecycle rule that removes `.META` objects: finished uploads keep theirs.
 
 ## Configuration
 
-| Name          | Type   | Description                               | Default |
-| :------------ | :----- | :---------------------------------------- | :------ |
-| bucket        | string | The name of the bucket to use             |         |
-| projectId     | string | Google Cloud project ID                   |         |
-| maxUploadSize | string | Maximum upload size (e.g., "1GB", "10MB") |         |
-| expiration    | object | File expiration configuration             |         |
-| logger        | Logger | Logger instance                           |         |
+```ts
+import { GCStorage } from "@visulima/storage/provider/gcs";
 
-## Performance Considerations
+// Minimal: Application Default Credentials
+const storage = new GCStorage({ bucket: "my-uploads", projectId: "my-project" });
+```
 
-1. **Global CDN**: GCS automatically serves files through Google's global CDN
-2. **Caching**: Enable transformation caching to reduce processing overhead
-3. **Private files**: `GCStorage` does not implement `getReadUrl()` / `getUploadUrl()`; serve private files through your upload handler's `GET` route
-4. **Lifecycle Policies**: Configure automatic cleanup of temporary transformations
+```ts
+import { GCStorage } from "@visulima/storage/provider/gcs";
 
-## Signed URLs
+// Production
+const storage = new GCStorage({
+    bucket: "my-uploads",
+    projectId: "my-project",
+    keyFilename: "/run/secrets/gcs-uploader.json",
+    maxUploadSize: "10GB",
+    allowMIME: ["image/*", "video/*"],
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    retryOptions: { retry: 5 },
+    logger: console,
+});
+```
 
-`GCStorage` does not implement `getReadUrl()` or `getUploadUrl()`, so `files.url()` and `files.signedUploadUrl()` reject with `METHOD_NOT_ALLOWED`. Serve private files through your upload handler's `GET` route (or a `MediaTransformer` for transformed variants). If you need V4 signed URLs on a Google Cloud bucket, the [Firebase adapter](./firebase.mdx) implements both.
+| Option                      | Type                                               | Default                                              | Description                                                                                                                                        |
+| --------------------------- | -------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bucket`                    | `string`                                           | `GCS_BUCKET`                                         | Bucket name. Required.                                                                                                                             |
+| `projectId`                 | `string`                                           | — (required)                                         | Google Cloud project ID. Not read from the environment.                                                                                            |
+| `keyFilename` / `keyFile`   | `string`                                           | `GOOGLE_APPLICATION_CREDENTIALS` (via ADC)           | Path to a service-account key. Any other `GoogleAuthOptions` (`credentials`, `clientOptions`, …) is passed through too.                            |
+| `credentials`               | `CredentialBody`                                   | —                                                    | Inline service-account credentials (`client_email`, `private_key`).                                                                                |
+| `scopes`                    | `string \| string[]`                               | `iam`, `cloud-platform`, `devstorage.full_control`   | OAuth scopes requested for the token.                                                                                                              |
+| `clientDirectUpload`        | `boolean`                                          | `false`                                              | `create()` returns the resumable session URI as `GCSUploadURI` for the client to upload to directly. No metadata record is saved for such uploads. |
+| `storageAPI`                | `string`                                           | `https://storage.googleapis.com/storage/v1/b`        | JSON API base, e.g. a `fake-gcs-server` emulator.                                                                                                  |
+| `uploadAPI`                 | `string`                                           | `https://storage.googleapis.com/upload/storage/v1/b` | Upload API base.                                                                                                                                   |
+| `useAuthWithCustomEndpoint` | `boolean`                                          | `false`                                              | Send credentials to a custom `storageAPI` host. Off by default, so emulators get unauthenticated requests.                                         |
+| `userProject`               | `string`                                           | —                                                    | Project billed for requests to a Requester Pays bucket.                                                                                            |
+| `retryOptions`              | gaxios `RetryConfig`                               | `retry: 3`; 1xx, 408, 429, 5xx, rate-limit reasons   | Retry policy. GCS retries through gaxios; the generic `retryConfig` option is not used by this adapter.                                            |
+| `metaStorageConfig`         | `GCSMetaStorageOptions \| LocalMetaStorageOptions` | sidecars in `bucket`                                 | Where upload metadata lives, see [Metadata storage](#metadata-storage).                                                                            |
+
+All adapters also take the shared `BaseStorageOptions`: `allowMIME` (default `["*/*"]`), `maxUploadSize` (`"5TB"`), `maxMetadataSize` (`"8MB"`), `filename`, `fileNameValidation`, `expiration`, `metaStorage`, `cache`, `logger`, `metrics`, `validation`, `useRelativeLocation` and the lifecycle hooks.
+
+## Metadata storage
+
+By default upload records are JSON objects named `<id>.META` in the upload bucket, written with the same credentials. Concurrent chunk writes are merged with `ifGenerationMatch` preconditions.
+
+- **Multi-instance deployments work out of the box**: every instance reads the same sidecars.
+- **Finished uploads keep their record**: it maps the upload ID to the object name and tracks the resumable session while the upload is in flight.
+- `list()` and `listDirectory()` skip `.META` objects.
+
+```ts
+// Separate bucket (needs the same permissions as above)
+new GCStorage({ bucket: "my-uploads", projectId: "my-project", metaStorageConfig: { bucket: "my-uploads-meta", projectId: "my-project" } });
+
+// Local disk: single instance, or a directory every instance shares
+new GCStorage({ bucket: "my-uploads", projectId: "my-project", metaStorageConfig: { directory: "/var/lib/uploads-meta" } });
+```
+
+When `metaStorageConfig` names the same bucket and project, the adapter's auth client is reused. A different bucket gets its own `GoogleAuth` client built from the merged options. `prefix` (default `""`) and `suffix` (default `".META"`) are configurable too.
+
+## Behaviour & limits
+
+| Topic              | Behaviour                                                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resumable uploads  | Supported, **sequential only**: a chunk must start at the offset GCS confirmed, otherwise `409 FILE_CONFLICT`. Chunks are streamed to the session and never retried mid-stream.                     |
+| Upload length      | `create` sends the total size to GCS when it opens the session, so the client must know the size up front.                                                                                          |
+| Checksums          | None: GCS verifies whole-object hashes only, so `Upload-Checksum` on a chunk is rejected as unsupported.                                                                                            |
+| Reads              | `get()` downloads the whole object into memory. Ranged reads aren't supported (`supportsRange` is `false`).                                                                                         |
+| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented and reject with `METHOD_NOT_ALLOWED`. Serve files through your handler's `GET`, or use the [Firebase adapter](./firebase.mdx) for signed URLs. |
+| Listing            | `list(limit)` pages through the whole bucket (1000 per page, recursive). `listDirectory()` pushes `delimiter`/`prefix` down to GCS (`supportsDelimiter` is `true`).                                 |
+| Copy / move        | Server-side `rewriteTo`, looping until done. A destination of `/<other-bucket>/<name>` copies into another bucket. `move` is copy + delete.                                                         |
+| `exists()`         | Needs the upload's metadata record; an object written by other means reports `false`.                                                                                                               |
+| Custom `filename`  | The object is stored under the returned name; the record maps the ID to it.                                                                                                                         |
+| Expiration / purge | `purge()` lists finished objects older than `maxAge` and deletes those with a metadata record, so foreign objects are skipped. Unfinished sessions aren't objects yet and aren't purged.            |
+| Delete             | Needs the metadata record. An unfinished upload's session is cancelled; a finished one's object is deleted.                                                                                         |
+
+`storage.raw` returns the `GoogleAuth` client, ready for any JSON API call.
+
+## Using it with the handlers
+
+```ts
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const tus = new Tus({ storage });
+
+app.use("/files", tus.handle);
+```
+
+```ts
+import { Hono } from "hono";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const app = new Hono();
+const rest = new Rest({ storage });
+
+app.all("/files", (c) => rest.fetch(c.req.raw));
+app.all("/files/:id", (c) => rest.fetch(c.req.raw));
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("reports/2026-q3.pdf", buffer, { contentType: "application/pdf" });
+
+const { files: children, prefixes } = await files.list({ prefix: "reports/", delimiter: "/" });
+```
+
+For on-demand image resizing on top of this storage, see [Transformers](../transformers.mdx).
+
+## Troubleshooting
+
+| Symptom                                                             | Cause and fix                                                                                                                               |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GCS bucket is not defined`                                         | Pass `bucket` or set `GCS_BUCKET`.                                                                                                          |
+| `Sorry, we cannot connect to Cloud Services without a project ID.`  | Pass `projectId`; it isn't detected from the environment.                                                                                   |
+| `403` on startup or every call                                      | The identity lacks `storage.buckets.get` or object permissions on this bucket. Check the bindings above.                                    |
+| `403 … does not have storage.objects.delete access` while uploading | Every chunk overwrites the `.META` sidecar, and an overwrite needs `storage.objects.delete`. **Storage Object Creator** alone isn't enough. |
+| `Could not load the default credentials`                            | Off Google Cloud: set `GOOGLE_APPLICATION_CREDENTIALS` or `keyFilename`.                                                                    |
+| `409` on a `PATCH`                                                  | The chunk didn't start at the confirmed offset. Have the client `HEAD` the upload and resume from the returned offset.                      |
+| Requests to an emulator fail with auth errors                       | Point `storageAPI`/`uploadAPI` at the emulator and leave `useAuthWithCustomEndpoint` off.                                                   |
+| `files.url()` rejects with `METHOD_NOT_ALLOWED`                     | Expected: the adapter mints no signed URLs. Use the handler's `GET` route or `FirebaseStorage`.                                             |

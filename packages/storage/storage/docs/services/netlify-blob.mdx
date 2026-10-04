@@ -4,7 +4,7 @@
 
 ## Overview
 
-Netlify Blob Storage is a serverless object storage service for Netlify deployments. It provides persistent storage for edge functions and serverless applications.
+`NetlifyBlobStorage` stores each upload as one entry in a Netlify Blobs store (`getStore({ name })`), keyed by the upload's name, with the content type and user metadata attached as blob metadata. Uploads are single-shot: the body is buffered and written with one `store.set()`. Upload metadata is kept on local disk.
 
 ## Installation
 
@@ -20,125 +20,117 @@ yarn add @netlify/blobs
 pnpm add @netlify/blobs
 ```
 
-## Usage
+## Provider setup
 
-```typescript
-import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
+1. **Stores need no provisioning.** Netlify Blobs is enabled per site; a store is created on its first write. Pick a `storeName` per purpose (e.g. `uploads`).
+2. **Credentials:**
+    - **Inside Netlify Functions and Edge Functions** the runtime provides the store context, so `storeName` is enough.
+    - **Anywhere else** (local scripts, CI, another host) pass `siteID` and `token`: the site ID is under _Site configuration → General → Site details_; create a personal access token under _User settings → Applications → Personal access tokens_. The token acts with your user's rights on every site you can access, so keep it server-side.
+3. **Permissions.** Netlify Blobs has no per-store scopes: the runtime context and the access token both grant full read/write on the site's stores.
 
-const storage = new NetlifyBlobStorage({
-    storeName: "uploads",
-    siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_TOKEN,
-    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
-});
-```
+### CORS
+
+Not applicable: blobs are only reachable through the API, never by a public URL, so browsers never talk to Netlify Blobs directly.
 
 ## Configuration
 
-### Environment Variables
+```ts
+import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
 
-```typescript
-// Set NETLIFY_SITE_ID and NETLIFY_TOKEN
-process.env.NETLIFY_SITE_ID = "your-site-id";
-process.env.NETLIFY_TOKEN = "your-token";
-
-const storage = new NetlifyBlobStorage({
-    storeName: "uploads",
-    // Site ID and token are automatically read from environment
-});
+// Minimal, inside a Netlify Function
+const storage = new NetlifyBlobStorage({ storeName: "uploads" });
 ```
 
-### With Credentials
+```ts
+import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
 
-```typescript
-const storage = new NetlifyBlobStorage({
-    storeName: "uploads",
-    siteID: "your-site-id",
-    token: "your-token",
-});
-```
-
-### Advanced Configuration
-
-```typescript
+// Off Netlify, production
 const storage = new NetlifyBlobStorage({
     storeName: "uploads",
     siteID: process.env.NETLIFY_SITE_ID,
     token: process.env.NETLIFY_TOKEN,
-    retryConfig: {
-        maxRetries: 3,
-        initialDelay: 1000,
-    },
-    expiration: {
-        maxAge: "7d",
-        purgeInterval: "1h",
-    },
+    maxUploadSize: "50MB",
+    retryConfig: { maxRetries: 5 },
+    metaStorageConfig: { directory: "/var/lib/uploads-meta" },
 });
 ```
 
-## Features
+| Option              | Type                      | Default                                              | Description                                                               |
+| ------------------- | ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
+| `storeName`         | `string`                  | `"default"`                                          | Netlify Blobs store name.                                                 |
+| `siteID`            | `string`                  | `NETLIFY_SITE_ID`                                    | Site ID. Needed outside the Netlify runtime.                              |
+| `token`             | `string`                  | `NETLIFY_TOKEN`                                      | Personal access token. Needed outside the Netlify runtime.                |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | `<os tmpdir>/Upload_meta`                            | Where upload metadata is kept, see [Metadata storage](#metadata-storage). |
+| `retryConfig`       | `RetryConfig`             | 3 retries, 1 s → 30 s backoff, 408/429/5xx + network | Merged over the defaults.                                                 |
 
-- **Serverless**: Optimized for Netlify Edge Functions
-- **Persistent Storage**: Reliable storage for serverless applications
-- **Automatic Retry**: Built-in retry mechanism for transient failures
-- **Metadata Support**: Rich metadata for file organization
+All adapters also take the shared `BaseStorageOptions`: `allowMIME`, `maxUploadSize`, `maxMetadataSize`, `filename`, `fileNameValidation`, `expiration`, `metaStorage`, `logger`, `metrics` and the lifecycle hooks.
 
-## Basic Operations
+## Metadata storage
 
-```typescript
-// Create a file
-const file = await storage.create({
-    contentType: "image/jpeg",
-    metadata: { filename: "photo.jpg" },
-});
+Upload records are JSON sidecar files on the **local disk** of the process: `<directory>/<id>.META`, by default under `os.tmpdir()/Upload_meta`.
 
-// Write data
-await storage.write({
-    id: file.id,
-    body: imageStream,
-    contentLength: imageSize,
-});
+- **In Netlify Functions** the disk is per invocation environment and short-lived. Use the multipart or REST handler so an upload is created and written in one request, or pass a shared store via `metaStorage`.
+- **Several long-running instances:** share `metaStorageConfig.directory`, or use a shared `metaStorage`.
+- **Finished uploads keep their record.** `get()`, `copy()` and `exists()` need it; `delete()` falls back to the blob stored under the ID as key. `copy()` also writes a record for the destination.
 
-// Get file
-const fileData = await storage.get({ id: file.id });
+## Behaviour & limits
 
-// Delete file
-await storage.delete({ id: file.id });
-```
+| Topic              | Behaviour                                                                                                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                                              |
+| Request size       | Uploads through a Netlify Function are bound by the platform's request payload limit.                                                                                                                                         |
+| Consistency        | The store uses Netlify's default (eventual) consistency, so a read right after a write may briefly miss it.                                                                                                                   |
+| Reads              | `get()` buffers the whole blob. No ranged reads.                                                                                                                                                                              |
+| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). The `url` on records is a placeholder path, `/api/blobs/<storeName>/<key>`, that you have to serve yourself (e.g. through your handler's `GET`). |
+| Listing            | `list(limit)` lists the whole store and fetches each entry's metadata (one extra request per blob).                                                                                                                           |
+| Copy / move        | Simulated: `copy()` downloads and re-uploads the blob; `move()` is copy + delete.                                                                                                                                             |
+| `update()`         | Updates the local record only; blob metadata is not rewritten.                                                                                                                                                                |
+| Expiration / purge | Listed blobs carry no creation time, so `purge()` currently removes nothing. Expired uploads are still refused on read (`GONE`).                                                                                              |
+| Retries            | Status 408/429/500/502/503/504 and `ECONNRESET`/`ETIMEDOUT`/`ENOTFOUND`/`ECONNREFUSED` are retried.                                                                                                                           |
 
-## URL Generation
+`storage.raw` returns the Netlify Blobs `Store`.
 
-Netlify Blob generates URLs based on your deployment:
+## Using it with the handlers
 
-```typescript
-const file = await storage.get({ id: "file-id" });
-
-// file.url - Generated URL (typically via Netlify Function)
-// file.pathname - File pathname
-```
-
-## Netlify Edge Functions
-
-Use with Netlify Edge Functions:
-
-```typescript
+```ts
+// netlify/functions/files.ts
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 import { NetlifyBlobStorage } from "@visulima/storage/provider/netlify";
 
-export default async (request: Request, context: any) => {
-    const storage = new NetlifyBlobStorage({
-        storeName: "uploads",
-        // Credentials are automatically available in Netlify context
-    });
+const multipart = new Multipart({ storage: new NetlifyBlobStorage({ storeName: "uploads" }) });
 
-    // Use storage...
-    return new Response("OK");
-};
+export default async (request: Request) => multipart.fetch(request);
+
+export const config = { path: ["/files", "/files/*"] };
 ```
 
-## Best Practices
+```ts
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
 
-1. **Use environment variables** - Store credentials securely
-2. **Configure retry** - Handle transient failures
-3. **Use appropriate store names** - Organize files by store
-4. **Monitor usage** - Track storage usage in Netlify dashboard
-5. **Handle errors gracefully** - Netlify Blob may have rate limits
+const app = express();
+const rest = new Rest({ storage });
+
+app.use("/files", rest.handle);
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("reports/q3.csv", csv, { contentType: "text/csv" });
+
+const { body } = await files.download("reports/q3.csv");
+```
+
+## Troubleshooting
+
+| Symptom                                                     | Cause and fix                                                                                                                |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `MissingBlobsEnvironmentError`                              | Running outside the Netlify runtime without credentials. Pass `siteID` and `token` (or `NETLIFY_SITE_ID` / `NETLIFY_TOKEN`). |
+| `401` / `403`                                               | The token was revoked or belongs to a user without access to the site.                                                       |
+| `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload | The adapter is single-shot. Send the whole file in one request.                                                              |
+| `404` on `PATCH`/`HEAD` right after `POST`                  | The local metadata lived on another instance. Use a single-request handler or a shared `metaStorage`.                        |
+| A just-written file reads as missing from another region    | Eventual consistency; retry the read.                                                                                        |
+| Record `url` returns 404                                    | It's a placeholder; route `/api/blobs/...` to your own handler or use the handler's `GET /files/:id`.                        |

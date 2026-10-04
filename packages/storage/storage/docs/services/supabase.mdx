@@ -4,7 +4,7 @@
 
 ## Overview
 
-The Supabase adapter wraps `@supabase/storage-js`'s `StorageClient` with the `BaseStorage` contract. Each adapter instance is bound to a single bucket — for multi-bucket apps, instantiate one adapter per bucket. Both `getReadUrl()` (signed URLs) and `getUploadUrl()` (signed upload URLs) are natively supported.
+`SupabaseStorage` wraps `@supabase/storage-js`'s `StorageClient` with the `BaseStorage` contract. Each instance is bound to one bucket; for several buckets, create one adapter per bucket. Uploads are single-shot (the SDK `upload()` posts the full body), and both signed read URLs and signed upload URLs are supported. Upload metadata is kept on local disk.
 
 ## Installation
 
@@ -20,98 +20,153 @@ yarn add @supabase/storage-js
 pnpm add @supabase/storage-js
 ```
 
-## Usage
+## Provider setup
+
+1. **Create a bucket** in the dashboard (_Storage → New bucket_) or with SQL. The adapter never creates or deletes buckets. A _private_ bucket serves files only through signed URLs; a _public_ one also serves them unauthenticated.
+2. **Bucket restrictions.** Optional per-bucket _file size limit_ and _allowed MIME types_ are enforced by Supabase on top of the adapter's `maxUploadSize` / `allowMIME`. Keep them consistent so errors come from the adapter first.
+3. **Get the credentials**: _Project Settings → API_. Use the project URL and the **`service_role`** secret key on the server. It bypasses Row Level Security, so never ship it to a browser.
+4. **Using a non-service key?** Then RLS applies to `storage.objects`. The adapter needs policies for the bucket that allow `SELECT` (download, list, exists), `INSERT` and `UPDATE` (every write is an upsert) and `DELETE`.
+
+### CORS
+
+The Supabase Storage API answers browser preflights itself; there is no bucket-level CORS setting to configure for signed read or upload URLs.
+
+## Configuration
 
 ```ts
 import { SupabaseStorage } from "@visulima/storage/provider/supabase";
 
+// Minimal: SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from the environment
+const storage = new SupabaseStorage({ bucket: "avatars" });
+```
+
+```ts
+import { SupabaseStorage } from "@visulima/storage/provider/supabase";
+
+// Production
 const storage = new SupabaseStorage({
     url: process.env.SUPABASE_URL!,
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
     bucket: "avatars",
+    defaultUrlExpiresIn: 600,
+    maxUploadSize: "50MB",
+    allowMIME: ["image/*"],
+    metaStorageConfig: { directory: "/var/lib/uploads-meta" },
 });
-```
-
-## Configuration
-
-### Environment variables
-
-```ts
-// Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)
-process.env.SUPABASE_URL = "https://xyz.supabase.co";
-process.env.SUPABASE_SERVICE_ROLE_KEY = "eyJ...";
-
-const storage = new SupabaseStorage({ bucket: "avatars" });
 ```
 
 The adapter normalizes the URL: pass either `https://xyz.supabase.co` or `https://xyz.supabase.co/storage/v1`.
 
-### Pre-built client
+| Option                | Type                      | Default                                      | Description                                                                                  |
+| --------------------- | ------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `bucket`              | `string`                  | — (required)                                 | Bucket name.                                                                                 |
+| `url`                 | `string`                  | `SUPABASE_URL`                               | Project URL. `/storage/v1` is appended when missing. Ignored with `client`.                  |
+| `serviceKey`          | `string`                  | `SUPABASE_SERVICE_ROLE_KEY` → `SUPABASE_KEY` | Key sent as `apikey` and `Authorization: Bearer …`. Ignored with `client`.                   |
+| `client`              | `StorageClient`           | —                                            | Pre-built client (shared instance, custom headers). Replaces `url` / `serviceKey` / `fetch`. |
+| `fetch`               | `typeof fetch`            | global `fetch`                               | Custom transport. Ignored with `client`.                                                     |
+| `defaultUrlExpiresIn` | `number`                  | `3600`                                       | Default expiry in seconds for `getReadUrl()`, capped at 604 800 (7 days).                    |
+| `metaStorageConfig`   | `LocalMetaStorageOptions` | `<os tmpdir>/Upload_meta`                    | Where upload metadata is kept, see [Metadata storage](#metadata-storage).                    |
+
+All adapters also take the shared `BaseStorageOptions`: `allowMIME`, `maxUploadSize`, `maxMetadataSize`, `filename`, `fileNameValidation`, `expiration`, `retryConfig` (retry-engine defaults: 3 retries, exponential backoff from 1 s), `metaStorage`, `logger`, `metrics` and the lifecycle hooks.
+
+Pre-built client:
 
 ```ts
 import { StorageClient } from "@supabase/storage-js";
 
-const storageClient = new StorageClient(/* … */);
+const storageClient = new StorageClient(`${process.env.SUPABASE_URL}/storage/v1`, {
+    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+});
 const storage = new SupabaseStorage({ client: storageClient, bucket: "avatars" });
 ```
 
-### Custom fetch
+## Metadata storage
 
-For environments without a global `fetch` or with custom transport requirements:
+Upload records are JSON sidecar files on the **local disk** of the process: `<directory>/<id>.META`, by default under `os.tmpdir()/Upload_meta`. Nothing besides the files is written to the bucket.
 
-```ts
-const storage = new SupabaseStorage({
-    url: process.env.SUPABASE_URL!,
-    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    bucket: "avatars",
-    fetch: customFetch,
-});
-```
+- **Single instance:** point `metaStorageConfig.directory` at a persistent path.
+- **Several instances or serverless:** each instance only sees its own records. Use a directory every instance mounts, or pass a shared store via `metaStorage` (for example an `S3MetaStorage` from `@visulima/storage/provider/aws`).
+- **Finished uploads keep their record.** It maps the upload ID to the object path. Reads and deletes by a key without a record fall back to the bucket path of the same name.
 
-### Default URL lifetime
+## Behaviour & limits
 
-```ts
-new SupabaseStorage({
-    /* … */
-    defaultUrlExpiresIn: 3600, // seconds; capped at 7 days (604_800)
-});
-```
+| Topic              | Behaviour                                                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uploads            | Single-shot: the body is buffered in memory and uploaded with `upsert: true`, so writing an existing path replaces it. Chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. |
+| Large files        | Have the client upload directly with `getUploadUrl()`.                                                                                                                                                              |
+| Reads              | `get()` downloads the whole object. No ranged reads.                                                                                                                                                                |
+| Read URLs          | `getReadUrl()` calls `createSignedUrl(key, expiresIn, { download })`; `expiresIn` is capped at 7 days. `responseContentDisposition` maps to Supabase's `download` option (see below).                               |
+| Upload URLs        | `getUploadUrl()` calls `createSignedUploadUrl(key)`. Supabase fixes the validity (2 hours), so `expiresIn` has no effect. `contentType` / `contentLength` are rejected with `BAD_REQUEST`.                          |
+| Listing            | `list(limit)` walks the bucket folder by folder (Supabase lists one level at a time), 1000 entries per request, until `limit` files are collected. Keys are full paths.                                             |
+| Copy / move        | Server-side `copy()` / `move()` within the bucket.                                                                                                                                                                  |
+| Expiration / purge | ⚠️ `purge()` lists the **whole bucket** and deletes every object older than `maxAge`, including objects this storage didn't create. Only enable `expiration` on a bucket dedicated to this adapter.                 |
+| Cancellation       | Per-call `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.                                                                                                    |
 
-## URL Generation
+`responseContentDisposition` handling in `getReadUrl()`:
 
-### `getReadUrl(key, options?)`
-
-Calls `bucket.createSignedUrl(key, expiresIn, { download })`. `expiresIn` is clamped to the Supabase 7-day max. `responseContentDisposition` translates to Supabase's `download` option:
-
-- `attachment; filename=report.pdf` (or quoted, or RFC 5987 `filename*=UTF-8''…`) → `download: "report.pdf"` (filename round-trips to the browser)
-- `attachment` (no filename) → `download: true` (browser saves under the bucket key)
-- `inline` or omitted → `download: undefined` (browser renders inline)
+- `attachment; filename=report.pdf` (quoted, or RFC 5987 `filename*=UTF-8''…`) → `download: "report.pdf"`, so the filename reaches the browser.
+- `attachment` without a filename → `download: true`; the browser saves under the bucket key.
+- `inline` or omitted → the browser renders inline.
 
 ```ts
 const url = await storage.getReadUrl("avatar.png", { expiresIn: 600 });
 const downloadUrl = await storage.getReadUrl("doc.pdf", {
     responseContentDisposition: 'attachment; filename="Q1 Report.pdf"',
 });
+
+// The browser PUTs the file body to this URL; no Authorization header needed
+const uploadUrl = await storage.getUploadUrl("avatar.png");
 ```
 
-### `getUploadUrl(key)`
+`storage.raw` returns the `StorageClient`.
 
-Calls `bucket.createSignedUploadUrl(key)`. The returned URL accepts a `PUT` from the browser with the file body — no Authorization header needed.
+## Using it with the handlers
+
+Prefer the multipart or REST handler, which create and write an upload in one request. TUS sends `POST` and `PATCH` separately, so with local metadata both must reach the same instance.
 
 ```ts
-const url = await storage.getUploadUrl("avatar.png");
-// PUT this URL from the browser
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle);
 ```
 
-## Features
+```ts
+import { Hono } from "hono";
+import { Rest } from "@visulima/storage/handler/http/fetch";
 
-- **Native signed URLs** — both read and write, no extra plumbing.
-- **Service-role auth** — set the key once; the adapter wires it into every request as `Authorization: Bearer …` and `apikey: …`.
-- **Bucket-scoped** — each adapter instance targets a single bucket; multi-bucket apps run multiple adapters.
-- **Auto upsert** — `write()` calls Supabase's `upload` with `upsert: true`, so re-writing a key replaces the object.
+const app = new Hono();
+const rest = new Rest({ storage });
 
-## Limitations
+app.all("/files", (c) => rest.fetch(c.req.raw));
+app.all("/files/:id", (c) => rest.fetch(c.req.raw));
+```
 
-- Single-shot uploads — Supabase's TUS endpoint exists but the JS SDK uses `POST` with the full body. For large files use `getUploadUrl()` and stream the `PUT` from the client.
-- Signed URLs cap at 7 days.
-- `list()` always lists the bucket root with the configured page limit (default 1000). For deep prefixes or pagination, drop to `storage.raw`.
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("users/1/avatar.png", buffer, { contentType: "image/png" });
+
+for await (const file of files.listAll({ prefix: "users/1/" })) {
+    console.log(file.key);
+}
+```
+
+## Troubleshooting
+
+| Symptom                                                     | Cause and fix                                                                                                                                                               |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `` `url` is required `` / `` `serviceKey` is required ``    | Pass them or set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (or `SUPABASE_KEY`).                                                                                        |
+| `new row violates row-level security policy` / `403`        | The key isn't the `service_role` key and RLS has no matching policy. Use the service key on the server, or add `SELECT`/`INSERT`/`UPDATE`/`DELETE` policies for the bucket. |
+| `Bucket not found`                                          | The bucket doesn't exist or the name is misspelled; the adapter never creates it.                                                                                           |
+| `413` / `Payload too large` from Supabase                   | The file exceeds the bucket's or the project's upload limit. Raise it in the dashboard or use `getUploadUrl()`.                                                             |
+| `invalid_mime_type` from Supabase                           | The bucket's allowed MIME types reject the file. Align them with `allowMIME`.                                                                                               |
+| `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload | The adapter is single-shot. Send the whole file in one request or use `getUploadUrl()`.                                                                                     |
+| `404` on `PATCH`/`HEAD` right after `POST`                  | The request reached another instance with its own local metadata. Share the metadata store.                                                                                 |
+| Objects you uploaded elsewhere disappeared                  | `expiration` purges every old object in the bucket. Use a dedicated bucket or disable `expiration`.                                                                         |
