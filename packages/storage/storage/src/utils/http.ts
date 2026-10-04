@@ -312,6 +312,14 @@ export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
 export const COMMON_PATH_NAMES: ReadonlyArray<string> = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
 
 /**
+ * Drops a trailing `/metadata` or `/download` action segment, which addresses the id before it.
+ * @param segments Non-empty path segments
+ * @returns The segments without the action
+ */
+const withoutActionSegment = (segments: string[]): string[] =>
+    segments.length >= 2 && ["download", "metadata"].includes(segments.at(-1) as string) ? segments.slice(0, -1) : segments;
+
+/**
  * Validates an id taken from a URL path segment. The raw segment is the id, but its URL-decoded
  * form is checked too, so an encoded traversal such as `..%2F..%2Fetc` is rejected even if a
  * storage backend or proxy decodes the id later.
@@ -337,84 +345,23 @@ export const assertSafeUrlId = (id: string): void => {
 };
 
 /**
- * Extracts a UUID identifier from the request URL path.
- * Uses regex pattern to match UUID-like strings in the URL.
+ * Extracts the file id from a Node request: the last path segment with its extension stripped, as
+ * {@link getIdFromRequestUrl} reads it. An earlier "UUID-like" segment is never taken instead: a
+ * mount path such as `/files-by-user` has that shape and would win over a nanoid id.
  * @internal
  * @param request HTTP request object
- * @returns The extracted UUID identifier
- * @throws TypeError if no valid ID is found in the path
- */
-export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => getIdFromPath(getRealPath(request));
-
-/**
- * Extracts a file identifier from a URL path.
- * Skips common path names (`files`, `upload`, …) and rejects segments shorter than 8 characters.
- * @internal
- * @param realPath URL path (without query string)
  * @returns The extracted identifier
- * @throws Error("Invalid request URL") if no valid ID is found in the path
+ * @throws Error("Invalid request URL") if the path does not address a file
+ * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
  */
-export const getIdFromPath = (realPath: string): string => {
-    // Extract UUID from the path by finding the last UUID-like segment
-    const segments = realPath.split("/").filter(Boolean);
+export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
+    const id = getIdFromRequestUrl(getRealPath(request), { stripExtension: true });
 
-    if (segments.length === 0) {
+    if (!id) {
         throw new Error("Invalid request URL");
     }
 
-    // Try to find a UUID-like segment first (check from the end)
-    for (let index = segments.length - 1; index >= 0; index -= 1) {
-        const segment = segments[index];
-
-        if (!segment) {
-            continue;
-        }
-
-        // Remove file extension if present
-        const cleanSegment = segment.replace(/\.[^/.]+$/, "");
-
-        // Skip common path names
-        if (COMMON_PATH_NAMES.includes(cleanSegment.toLowerCase())) {
-            continue;
-        }
-
-        if (uuidRegex.test(cleanSegment)) {
-            BaseStorage.assertSafeId(cleanSegment);
-
-            return cleanSegment;
-        }
-    }
-
-    // If no UUID found, check if the last segment looks like a valid ID
-    const lastSegment = segments[segments.length - 1];
-
-    if (!lastSegment) {
-        throw new Error("Invalid request URL");
-    }
-
-    const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
-
-    // Reject if it's a common path name
-    if (COMMON_PATH_NAMES.includes(cleanLastSegment.toLowerCase())) {
-        throw new Error("Invalid request URL");
-    }
-
-    // Reject if too short (less than 8 characters) - this catches paths like "/3"
-    if (cleanLastSegment.length < 8) {
-        throw new Error("Invalid request URL");
-    }
-
-    // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
-    // This allows non-UUID IDs (like nanoid) to work
-    if (segments.length > 1) {
-        BaseStorage.assertSafeId(cleanLastSegment);
-
-        return cleanLastSegment;
-    }
-
-    // Single segment paths that aren't UUIDs and aren't common names but are >= 8 chars
-    // These could be valid IDs, but we're conservative and reject them unless they match UUID pattern
-    throw new Error("Invalid request URL");
+    return id;
 };
 
 /**
@@ -431,7 +378,7 @@ export const getIdFromRequestUrl = (url: string, { stripExtension = false }: { s
     let lastSegment: string | undefined;
 
     try {
-        lastSegment = new URL(url, "http://localhost").pathname.split("/").findLast(Boolean);
+        lastSegment = withoutActionSegment(new URL(url, "http://localhost").pathname.split("/").filter(Boolean)).at(-1);
     } catch {
         return undefined;
     }

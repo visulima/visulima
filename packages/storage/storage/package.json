@@ -287,7 +287,6 @@
     },
     "dependencies": {
         "@remix-run/multipart-parser": "catalog:prod",
-        "@sindresorhus/fnv1a": "catalog:prod",
         "@visulima/pagination": "7.0.2",
         "file-type": "catalog:prod",
         "lru-cache": "catalog:prod",

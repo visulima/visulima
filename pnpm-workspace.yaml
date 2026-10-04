@@ -506,7 +506,6 @@ catalogs:
     '@remix-run/multipart-parser': 0.16.3
     '@shikijs/cli': 4.4.3
     '@shikijs/langs': ^4.4.3
-    '@sindresorhus/fnv1a': 3.1.0
     '@sindresorhus/slugify': ^3.0.0
     '@sindresorhus/transliterate': 2.3.1
     '@tanstack/router-plugin': 1.168.29

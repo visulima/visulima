@@ -194,13 +194,18 @@ describe("utils", () => {
             ["/3/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
 
             ["/files/391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3.png", "391c9157ec481ac6-f72b2d884632d7e6-cdeb2056546033e3"],
+
+            // A dashed mount path must not win over a nanoid id.
+            ["/files-deferred-expired/BXy9pkoIth6JGq4y0LlPQ", "BXy9pkoIth6JGq4y0LlPQ"],
+            ["/files/BXy9pkoIth6JGq4y0LlPQ/metadata", "BXy9pkoIth6JGq4y0LlPQ"],
+            ["/3", "3"],
         ])("should extract ID from Node.js-style request URL: %p -> %p", (url, id) => {
             expect.assertions(1);
 
             expect(getIdFromRequest({ url } as IncomingMessage)).toBe(id);
         });
 
-        it.each([["/"], ["/files"], ["/3"], ["/files/files"]])("should throw error for invalid Express-style URLs: %p", (url) => {
+        it.each([["/"], ["/files"], ["/files/files"]])("should throw error for invalid Express-style URLs: %p", (url) => {
             expect.assertions(1);
 
             expect(() => getIdFromRequest(createRequest({ url }))).toThrow("Invalid request URL");

@@ -143,7 +143,8 @@ describe("http Tus", () => {
 
             expect(response.status).toBe(200);
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
-            expect(response.header["upload-offset"]).toStrictEqual(metadata.size.toString());
+            // A fresh upload: creating the same file again no longer resumes another upload (#921).
+            expect(response.header["upload-offset"]).toBe("0");
             expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-metadata"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-length"]).toStrictEqual(expect.stringMatching(/\d*/));

@@ -1,12 +1,9 @@
-import fnv1a from "@sindresorhus/fnv1a";
 import { nanoid } from "nanoid";
 
 import type { Metadata } from "./metadata";
 import type { FileInit, UploadEventType } from "./types";
 
 type DateType = Date | number | string;
-
-const hash = (value: string) => fnv1a(value, { size: 64 }).toString(16);
 
 /**
  * Extracts the MIME type from metadata object, checking multiple possible keys.
@@ -50,17 +47,6 @@ const extractOriginalName = (meta: Metadata): string | undefined => {
     return undefined;
 };
 
-const generateFileId = (file: File): string => {
-    const { metadata, originalName, size } = file;
-    const mtime = String(metadata.lastModified ?? Date.now());
-
-    return [originalName, size, mtime]
-        .filter(Boolean)
-        .map(String)
-        .map((value) => hash(value))
-        .join("-");
-};
-
 class File implements FileInit {
     public bytesWritten: number = Number.NaN;
 
@@ -96,19 +82,10 @@ class File implements FileInit {
     public constructor({ contentType, expiredAt, id, metadata, originalName, size }: FileInit) {
         this.metadata = metadata;
 
-        let resolvedId: string | undefined = id || undefined;
-        let resolvedOriginalName = originalName || extractOriginalName(metadata);
-
-        if (!resolvedOriginalName) {
-            resolvedId ??= nanoid();
-            resolvedOriginalName = resolvedId;
-        }
-
-        if (resolvedId !== undefined) {
-            this.id = resolvedId;
-        }
-
-        this.originalName = resolvedOriginalName;
+        // Generated, never derived from what the client sends: an id built from the file's name, size
+        // and lastModified let a second client with an "identical" file take over the upload (#921).
+        this.id = id || nanoid();
+        this.originalName = originalName || extractOriginalName(metadata) || this.id;
         this.contentType = contentType || extractMimeType(metadata) || "application/octet-stream";
         this.expiredAt = expiredAt;
 
@@ -121,8 +98,6 @@ class File implements FileInit {
         if (typeof this.size === "number" && this.size <= 0) {
             this.size = undefined;
         }
-
-        this.id ||= generateFileId(this);
     }
 }
 

@@ -70,6 +70,32 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             await expect(last.text()).resolves.toBe("");
         });
 
+        it("should give a second client creating an identical file its own upload (#921)", async () => {
+            expect.assertions(6);
+
+            const { create, patch, storage } = setup();
+            const sameFile = { "Upload-Metadata": `filename ${b64("contract.pdf")},lastModified ${b64("1700000000000")}` };
+            const alice = await create(10, sameFile);
+
+            await patch(alice, 0, "ALICE");
+
+            const bob = await create(10, sameFile);
+
+            expect(bob).not.toBe(alice);
+
+            await patch(bob, 0, "BOB!!");
+
+            const done = await patch(alice, 5, "ALICE");
+
+            expect(done.status).toBe(204);
+
+            const id = new URL(alice).pathname.split("/").pop() as string;
+            const stored = await storage.get({ id });
+
+            expect(Buffer.from(stored.content).toString()).toBe("ALICEALICE");
+            await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
+        });
+
         it("should answer 409 without modifying the upload when Upload-Offset does not match", async () => {
             expect.assertions(4);
 
