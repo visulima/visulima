@@ -435,7 +435,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                     throw error;
                 }
 
-                return (data ?? []).map((entry) => {
+                // Folders come back as entries with a null `id`; they are not files.
+                return (data ?? []).filter((entry) => entry.id !== null).map((entry) => {
                     const file = new SupabaseFile({
                         contentType: entry.metadata?.mimetype ?? "application/octet-stream",
                         metadata: entry.metadata ?? {},
