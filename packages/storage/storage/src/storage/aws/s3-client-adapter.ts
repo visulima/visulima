@@ -149,10 +149,14 @@ class S3ClientAdapter implements S3ApiOperations {
         await this.client.send(command, sendOptions(options));
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
+    public async listParts(
+        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }> {
         const command = new ListPartsCommand({
             Bucket: params.Bucket,
             Key: params.Key,
+            PartNumberMarker: params.PartNumberMarker,
             UploadId: params.UploadId,
         });
 
@@ -172,7 +176,7 @@ class S3ClientAdapter implements S3ApiOperations {
             }
         }
 
-        return { Parts: parts.length > 0 ? parts : undefined };
+        return { IsTruncated: response.IsTruncated, NextPartNumberMarker: response.NextPartNumberMarker, Parts: parts.length > 0 ? parts : undefined };
     }
 
     public async getObject(

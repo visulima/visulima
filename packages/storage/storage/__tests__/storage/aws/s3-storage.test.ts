@@ -251,6 +251,24 @@ describe(S3Storage, () => {
             expect(decodeSavedMeta()[0]?.bytesWritten).toBe(5);
         });
 
+        it("pages through ListParts when the parts don't fit in one response (#916)", async () => {
+            expect.assertions(3);
+
+            s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock
+                .on(ListPartsCommand)
+                .resolvesOnce({ IsTruncated: true, NextPartNumberMarker: "1", Parts: [{ ETag: "1", PartNumber: 1, Size: 5 }] })
+                .resolvesOnce({ IsTruncated: false, Parts: [{ ETag: "2", PartNumber: 2, Size: 3 }] });
+            s3Mock.on(PutObjectCommand).resolves({});
+
+            await expect(storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: "FileConflict",
+            });
+
+            expect(s3Mock.commandCalls(ListPartsCommand).map((call) => call.args[0].input.PartNumberMarker)).toStrictEqual([undefined, "1"]);
+            expect(decodeSavedMeta()[0]?.bytesWritten).toBe(8);
+        });
+
         it("forwards an md5 checksum as ContentMD5 on UploadPart", async () => {
             expect.assertions(1);
 

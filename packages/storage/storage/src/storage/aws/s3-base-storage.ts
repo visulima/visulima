@@ -118,7 +118,10 @@ export interface S3ApiOperations {
         NextContinuationToken?: string;
     }>;
 
-    listParts: (params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions) => Promise<{ Parts?: Part[] }>;
+    listParts: (
+        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
+        options?: S3CallOptions,
+    ) => Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }>;
 
     uploadPart: (
         params: {
@@ -887,18 +890,36 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("UploadId is required");
         }
 
-        const { Parts = [] } = await this.runOperation(undefined, (signal) =>
-            s3Api.listParts(
-                {
-                    Bucket: this.bucket,
-                    Key: file.name,
-                    UploadId: uploadId,
-                },
-                { signal },
-            ),
-        );
+        // ListParts answers at most 1,000 parts per call; page through the rest (#916).
+        const parts: Part[] = [];
+        let partNumberMarker: string | undefined;
 
-        return Parts;
+        do {
+            const marker = partNumberMarker;
+
+            const {
+                IsTruncated,
+                NextPartNumberMarker,
+                Parts = [],
+            } = await this.runOperation(undefined, (signal) =>
+                s3Api.listParts(
+                    {
+                        Bucket: this.bucket,
+                        Key: file.name,
+                        PartNumberMarker: marker,
+                        UploadId: uploadId,
+                    },
+                    { signal },
+                ),
+            );
+
+            parts.push(...Parts);
+
+            // A truncated page without a usable marker would loop forever; stop instead.
+            partNumberMarker = IsTruncated && NextPartNumberMarker && NextPartNumberMarker !== marker ? NextPartNumberMarker : undefined;
+        } while (partNumberMarker !== undefined);
+
+        return parts;
     }
 
     /**
