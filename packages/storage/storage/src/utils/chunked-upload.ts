@@ -134,13 +134,66 @@ export const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.
 export const isFreshChunkedRecord = (file: UploadFile): boolean => getChunks(file).length === 0 && !file.bytesWritten;
 
 /**
+ * End of the stored prefix of a chunked upload as its recorded chunks show it: the first byte not
+ * covered by chunks starting at offset 0.
+ * @param chunks Recorded chunks
+ * @returns Byte offset to resume from
+ */
+export const getContiguousEnd = (chunks: ChunkInfo[]): number => {
+    let end = 0;
+
+    for (const chunk of [...chunks].toSorted((a, b) => a.offset - b.offset)) {
+        if (chunk.offset > end) {
+            break;
+        }
+
+        end = Math.max(end, chunk.offset + chunk.length);
+    }
+
+    return end;
+};
+
+/**
+ * Whether a chunked upload holds every byte. For an adapter that only appends
+ * ({@link BaseStorage.sequentialWrites}) its stored prefix decides: it confirms what was
+ * persisted, which can be less than a request sent (a GCS resumable upload may keep a shorter
+ * range), and it also covers a chunk whose request broke off after some bytes were stored (#909).
+ * Otherwise the recorded chunks have to cover the file.
+ * @param chunks Recorded chunks
+ * @param totalSize Total size of the upload
+ * @param bytesWritten The adapter's `bytesWritten`
+ * @param sequentialWrites Whether the adapter only appends
+ * @returns True if every byte is stored
+ */
+export const isChunkedUploadComplete = (chunks: ChunkInfo[], totalSize: number, bytesWritten: number | undefined, sequentialWrites: boolean): boolean => {
+    if (sequentialWrites && typeof bytesWritten === "number" && Number.isFinite(bytesWritten)) {
+        return totalSize > 0 && bytesWritten >= totalSize;
+    }
+
+    return isUploadComplete(chunks, totalSize);
+};
+
+/**
+ * Byte offset a client should resume a chunked upload from. An adapter that only appends knows
+ * its stored prefix; for one that writes at any offset `bytesWritten` is only the furthest byte
+ * written, so the recorded chunks decide (#909): a broken-off chunk is sent again from its start.
+ * @param chunks Recorded chunks
+ * @param bytesWritten The adapter's `bytesWritten`
+ * @param sequentialWrites Whether the adapter only appends
+ * @returns Byte offset to resume from
+ */
+export const getChunkedUploadOffset = (chunks: ChunkInfo[], bytesWritten: number | undefined, sequentialWrites: boolean): number =>
+    sequentialWrites ? Math.max(bytesWritten ?? 0, 0) : getContiguousEnd(chunks);
+
+/**
  * Merges the progress of the stored record of a chunked upload into `file`, a copy that may be
  * stale: the recorded chunks are combined, the larger `bytesWritten` kept (chunks land at their
  * offsets, so an earlier write can carry a smaller extent), and the status set from the chunks.
  * @param file The record about to be saved; updated in place
  * @param stored The record currently stored
+ * @param sequentialWrites Whether the adapter only appends ({@link isChunkedUploadComplete})
  */
-export const mergeChunkedProgress = (file: File, stored: File): void => {
+export const mergeChunkedProgress = (file: File, stored: File, sequentialWrites = false): void => {
     // Stored first, so a checksum the incoming record carries for the same chunk wins, and one
     // it lacks is kept from the stored record.
     const chunks = mergeChunks(getChunks(stored), getChunks(file));
@@ -153,7 +206,7 @@ export const mergeChunkedProgress = (file: File, stored: File): void => {
 
     const totalSize = typeof file.metadata._totalSize === "number" ? file.metadata._totalSize : file.size;
 
-    if (typeof totalSize === "number" && isUploadComplete(chunks, totalSize)) {
+    if (typeof totalSize === "number" && isChunkedUploadComplete(chunks, totalSize, file.bytesWritten, sequentialWrites)) {
         file.status = "completed";
     } else if (file.status === "completed") {
         file.status = "part";
