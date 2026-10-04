@@ -175,7 +175,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
      * @returns Full URL path to the metafile in GCS
      */
     private getMetaPath(id: string): string {
-        return `${this.storageBaseURI}/${this.getMetaName(id)}`;
+        return `${this.storageBaseURI}/${encodeURIComponent(this.getMetaName(id))}`;
     }
 
     private async makeRequest<Data = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {

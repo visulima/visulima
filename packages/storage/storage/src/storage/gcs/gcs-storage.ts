@@ -306,7 +306,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 file.status = getFileStatus(file);
 
                 if (file.status === "completed") {
-                    file.uri = `${this.storageBaseURI}/${file.name}`;
+                    file.uri = this.objectUrl(file.name);
                 }
 
                 // Completed uploads keep their metadata. Persist the offset after every partial write: HEAD
@@ -370,12 +370,11 @@ class GCStorage extends BaseStorage<GCSFile> {
                 totalBytesRewritten: number;
             }
 
-            const baseUrl = new URL(`/${this.bucket}/${name}`, "file://");
-            const resolvedUrl = new URL(encodeURI(destination), baseUrl);
-            const newPath = resolvedUrl.pathname;
-            const [, bucket, ...pathSegments] = newPath.split("/");
-            const filename = pathSegments.join("/");
-            const url = `${this.storageBaseURI}/${name}/rewriteTo/b/${bucket}/o/${filename}`;
+            // A relative destination is a name in the same bucket, "/<bucket>/<name>" one in another bucket.
+            const resolvedUrl = new URL(encodeURI(destination), `file:///${this.bucket}/`);
+            const [, bucket = this.bucket, ...pathSegments] = resolvedUrl.pathname.split("/");
+            const filename = decodeURIComponent(pathSegments.join("/"));
+            const url = `${this.objectUrl(name)}/rewriteTo/b/${bucket}/o/${encodeURIComponent(filename)}`;
 
             let progress = {} as CopyProgress;
 
@@ -394,8 +393,10 @@ class GCStorage extends BaseStorage<GCSFile> {
                 progress = response.data || ({} as CopyProgress);
             } while (progress.rewriteToken);
 
-            // Return the copied file metadata
-            return await this.getMeta(destination);
+            // The copy is an object only: it has no upload metadata of its own.
+            const source = await this.getMeta(name).catch(() => undefined);
+
+            return { ...source, id: destination, name: destination } as GCSFile;
         });
     }
 
@@ -409,9 +410,11 @@ class GCStorage extends BaseStorage<GCSFile> {
     public async move(name: string, destination: string, options?: OperationOptions): Promise<GCSFile> {
         return this.instrumentOperation("move", async () => {
             const copiedFile = await this.copy(name, destination, options);
-            const url = `${this.storageBaseURI}/${name}`;
+            const url = this.objectUrl(name);
 
             await this.makeRequest({ method: "DELETE" as const, url }, options);
+            // An object written by other means has no metadata to drop.
+            await this.deleteMeta(name).catch(() => undefined);
 
             return copiedFile;
         });
@@ -426,35 +429,25 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            const { data } = await this.makeRequest<{ timeDeleted?: string; uri?: string }>(
-                { params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` },
+            const url = this.objectUrl(id);
+            const { data } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string; timeDeleted?: string; updated?: string }>(
+                { params: { alt: "json" }, url },
                 options,
             );
 
             await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
-            if (!data.uri) {
-                throw new Error("File URI not found");
-            }
-
-            const response = await this.makeRequest<{ data: unknown }>({ params: { alt: "media" }, url: data.uri }, options);
-
-            const responseData = response.data;
-            let bufferData: Buffer;
-
-            if (typeof responseData === "string") {
-                bufferData = Buffer.from(responseData, "utf8");
-            } else if (responseData && typeof responseData === "object" && "data" in responseData) {
-                const dataValue = responseData.data;
-
-                bufferData = Buffer.from(dataValue as ArrayLike<number>);
-            } else {
-                bufferData = Buffer.from(responseData as unknown as ArrayLike<number>);
-            }
+            // The object resource carries no download URI of ours; the media is served from the object URL itself.
+            const response = await this.makeRequest<ArrayBuffer>({ params: { alt: "media" }, responseType: "arraybuffer", url }, options);
+            const content = Buffer.from(response.data);
 
             return {
                 ...data,
-                content: bufferData,
+                content,
+                ETag: data.etag,
+                id,
+                modifiedAt: data.updated,
+                size: content.byteLength,
             } as FileReturn;
         });
     }
@@ -478,7 +471,7 @@ class GCStorage extends BaseStorage<GCSFile> {
             let object: { contentType?: string; etag?: string; size?: number | string };
 
             try {
-                ({ data: object } = await this.makeRequest<typeof object>({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` }, options));
+                ({ data: object } = await this.makeRequest<typeof object>({ params: { alt: "json" }, url: this.objectUrl(id) }, options));
             } catch (error) {
                 if (((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404) {
                     return undefined;
@@ -504,7 +497,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 await this.makeRequest(
                     {
                         method: "HEAD",
-                        url: `${this.storageBaseURI}/${id}`,
+                        url: this.objectUrl(id),
                     },
                     options,
                 );
@@ -546,6 +539,10 @@ class GCStorage extends BaseStorage<GCSFile> {
                         for (const { name, timeCreated, updated } of data?.items || []) {
                             if (items.length >= limit) {
                                 break;
+                            }
+
+                            if (this.isMetaObject(name)) {
+                                continue;
                             }
 
                             items.push({
@@ -624,6 +621,10 @@ class GCStorage extends BaseStorage<GCSFile> {
                         for (const { name, timeCreated, updated } of data?.items || []) {
                             if (files.length >= limit) {
                                 break;
+                            }
+
+                            if (this.isMetaObject(name)) {
+                                continue;
                             }
 
                             files.push({ createdAt: timeCreated, id: name, modifiedAt: updated } as GCSFile);
@@ -785,6 +786,16 @@ class GCStorage extends BaseStorage<GCSFile> {
         }
 
         return this.authClient.request(data);
+    }
+
+    /** The JSON API takes the object name as one path segment, so a "/" in it must be encoded. */
+    private objectUrl(name: string): string {
+        return `${this.storageBaseURI}/${encodeURIComponent(name)}`;
+    }
+
+    /** Upload metadata sidecars share the bucket with the files. */
+    private isMetaObject(name: string): boolean {
+        return this.meta instanceof GCSMetaStorage && name.endsWith(this.meta.suffix);
     }
 
     private async accessCheck(): Promise<GaxiosResponse> {

@@ -25,37 +25,44 @@ export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => 
     return `bytes */${part.size ?? "*"}`;
 };
 
+/**
+ * A custom `shouldRetry` replaces gaxios' own check entirely, so the attempt cap, the per-request
+ * `retry: false` (single-use stream bodies), the retryable methods and status codes are applied here.
+ */
 export const shouldRetry = (error: GaxiosError): boolean => {
-    if (error.response !== undefined) {
-        const { response } = error;
+    const { config, response } = error;
+    const retryConfig = config.retryConfig ?? {};
+    const attempt = retryConfig.currentRetryAttempt ?? 0;
 
-        // Gaxios types `data` as `{}`, so the error envelope's shape is stated
-        // here rather than inferred.
-        const data = response.data as { error?: { errors?: { reason?: string }[] } } | undefined;
-
-        return data?.error?.errors
-            ?.map(({ reason = "" }) => {
-                if (reason === "rateLimitExceeded") {
-                    return true;
-                }
-
-                if (reason === "userRateLimitExceeded") {
-                    return true;
-                }
-
-                return !!(reason && reason.includes("EAI_AGAIN"));
-            })
-            .includes(true)
-            // The optional chain yields `undefined` when the envelope carries no
-            // errors, which is simply "do not retry".
-            ?? false;
+    if (config.retry === false || config.signal?.aborted || attempt >= (retryConfig.retry ?? 0)) {
+        return false;
     }
 
-    return false;
+    if (!(retryConfig.httpMethodsToRetry ?? []).includes((config.method ?? "GET").toUpperCase())) {
+        return false;
+    }
+
+    // No response: a network failure (ETIMEDOUT, EAI_AGAIN, ...).
+    if (response === undefined) {
+        return true;
+    }
+
+    // Gaxios types `data` as `{}`, so the error envelope's shape is stated here rather than inferred.
+    const data = response.data as { error?: { errors?: { reason?: string }[] } } | undefined;
+    const rateLimited = data?.error?.errors?.some(
+        ({ reason = "" }) => reason === "rateLimitExceeded" || reason === "userRateLimitExceeded" || reason.includes("EAI_AGAIN"),
+    );
+
+    return rateLimited === true || (retryConfig.statusCodesToRetry ?? []).some(([min = 0, max = min]) => response.status >= min && response.status <= max);
 };
 
 export const retryOptions: RetryConfig = {
     retry: 3,
     shouldRetry,
-    statusCodesToRetry: [[408, 429, 500, 502, 503, 504], [100, 199], [429], [500, 599]],
+    statusCodesToRetry: [
+        [100, 199],
+        [408, 408],
+        [429, 429],
+        [500, 599],
+    ],
 };

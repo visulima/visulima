@@ -512,7 +512,7 @@ describe(GCStorage, async () => {
                     retry: true,
                     timeout: 60_000,
 
-                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files%2F%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
                 }),
             );
         });
@@ -552,7 +552,7 @@ describe(GCStorage, async () => {
                     params: {},
                     retry: true,
                     timeout: 60_000,
-                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/backup.txt",
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files%2Fbackup.txt",
                 }),
             );
         });
