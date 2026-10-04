@@ -183,14 +183,14 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.getMeta(file.id).catch(() => undefined);
 
+            if (existing) {
+                // Errors from the resumed session propagate: swallowing them would open a second session for the same upload.
                 existing.bytesWritten = await this.internalWrite(existing, options);
 
                 return existing;
-                // eslint-disable-next-line no-empty
-            } catch {}
+            }
 
             const headers: Record<string, string> = {
                 "Content-Type": "application/json; charset=utf-8",
@@ -307,10 +307,11 @@ class GCStorage extends BaseStorage<GCSFile> {
 
                 if (file.status === "completed") {
                     file.uri = `${this.storageBaseURI}/${file.name}`;
+                }
 
-                    await this.internalOnComplete(file);
-                } else if (hasContent(part)) {
-                    // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
+                // Completed uploads keep their metadata. Persist the offset after every partial write: HEAD
+                // reports it and the next PATCH is checked against it.
+                if (file.status === "completed" || hasContent(part)) {
                     await this.saveMeta(file);
                 }
             } finally {
@@ -466,7 +467,7 @@ class GCStorage extends BaseStorage<GCSFile> {
      */
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -658,7 +659,8 @@ class GCStorage extends BaseStorage<GCSFile> {
     protected async internalWrite(part: GCSFile & Partial<FilePart>, callOptions?: OperationOptions): Promise<number> {
         const { body, bytesWritten, size, uri = "" } = part;
         const contentRange = buildContentRange(part);
-        const requestOptions: Record<string, unknown> = { method: "PUT" };
+        // GCS answers an incomplete chunk with 308, which gaxios rejects by default.
+        const requestOptions: Record<string, unknown> = { method: "PUT", validateStatus };
 
         if (body?.on) {
             const abortController = new AbortController();
@@ -689,7 +691,7 @@ class GCStorage extends BaseStorage<GCSFile> {
                 return range ? getRangeEnd(range) : 0;
             }
 
-            if (response.status === 200) {
+            if (response.status === 200 || response.status === 201) {
                 this.logger?.debug("uploaded %O", response.data);
 
                 return size as number;
@@ -705,8 +707,6 @@ class GCStorage extends BaseStorage<GCSFile> {
             throw error;
         }
     }
-
-    private internalOnComplete = (file: GCSFile): Promise<void> => this.deleteMeta(file.id);
 
     /**
      * Merge a body-level abort signal with the caller's per-operation

@@ -103,6 +103,19 @@ describe(GCStorage, async () => {
             expect(gcsFile).toMatchSnapshot();
         });
 
+        it("should not open a new session when resuming the existing one fails", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, uri });
+
+            const mockMakeRequest = vi.fn().mockRejectedValue(Object.assign(new Error("Service Unavailable"), { status: 503 }));
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            await expect(storage.create(metafile)).rejects.toThrow("Service Unavailable");
+            expect(mockMakeRequest).toHaveBeenCalledTimes(1);
+        });
+
         it("should reject when API returns an error", async () => {
             expect.assertions(1);
 
@@ -225,10 +238,48 @@ describe(GCStorage, async () => {
                     retry: false,
                     signal: expect.any(AbortSignal),
                     url: uri,
+                    validateStatus: expect.any(Function),
                 },
                 undefined,
             );
             expect(gcsFile).toMatchSnapshot();
+        });
+
+        it("accepts the 308 GCS answers for an incomplete chunk instead of rejecting it", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+
+            const mockMakeRequest = vi.fn().mockResolvedValue({ data: "", headers: { get: () => "bytes=0-9" }, status: 308 });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            await storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 });
+
+            const { validateStatus } = mockMakeRequest.mock.calls[0]?.[0] as { validateStatus: (status: number) => boolean };
+
+            expect(validateStatus(308)).toBe(true);
+            expect(validateStatus(201)).toBe(true);
+            expect(validateStatus(400)).toBe(false);
+        });
+
+        it("completes on a 201 and keeps the upload metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
+
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+            const mockMakeRequest = vi.fn().mockResolvedValue({ data: {}, headers: { get: () => undefined }, status: 201 });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            const gcsFile = await storage.write({ body: Readable.from(Buffer.alloc(64)), contentLength: 64, id: metafile.id, start: 0 });
+
+            expect(gcsFile.status).toBe("completed");
+            expect(saveMeta).toHaveBeenCalledWith(expect.objectContaining({ id: metafile.id, status: "completed" }));
+            expect(deleteMeta).not.toHaveBeenCalled();
         });
 
         it("should send normalized error for API failures", async () => {
