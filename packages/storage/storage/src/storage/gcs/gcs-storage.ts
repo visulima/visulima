@@ -196,15 +196,17 @@ class GCStorage extends BaseStorage<GCSFile> {
                 "Content-Type": "application/json; charset=utf-8",
                 "X-Goog-Upload-Command": "start",
                 "X-Goog-Upload-Protocol": "resumable",
-                "X-Upload-Content-Length": (file.size as number).toString(),
                 "X-Upload-Content-Type": file.contentType,
+                // A deferred length (TUS creation-defer-length) is left open: the session takes the
+                // total from the Content-Range of the last chunk ("bytes x-y/total").
+                ...(file.size === undefined ? {} : { "X-Upload-Content-Length": String(file.size) }),
             };
 
             const requestOptions: GaxiosOptions = {
                 body: JSON.stringify({ metadata: file.metadata }),
                 headers,
                 method: "POST" as const,
-                params: { name: file.name, size: file.size, uploadType: "resumable" },
+                params: { name: file.name, uploadType: "resumable" },
                 url: this.uploadBaseURI,
             };
             const response = await this.makeRequest(requestOptions, options);
@@ -225,10 +227,6 @@ class GCStorage extends BaseStorage<GCSFile> {
                 file.GCSUploadURI = file.uri;
 
                 this.logger?.debug("send uploadURI to client: %s", file.GCSUploadURI);
-
-                file.status = "created";
-
-                return file;
             }
 
             file.bytesWritten = 0;

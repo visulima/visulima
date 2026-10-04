@@ -59,6 +59,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **`zod` is an optional peer dependency.** Only the AI entries (`@visulima/storage/ai/*`) use it, so it is no longer installed with the package. If you use them, install `zod` 4 (`npm install zod`); the AI SDKs those entries wrap usually bring it already.
 - **aws-light `clientDirectUpload` works**: part URLs are SigV4 query-signed. Its startup check now fails on a missing bucket (`404`), and `metaStorageConfig.directory` keeps metadata on local disk instead of being ignored.
 - **S3 and aws-light layer a custom `retryConfig.shouldRetry`** over their defaults instead of discarding it: it is asked first, and `undefined` falls back to `retryableStatusCodes` (now honoured too).
+- **GCS supports a deferred upload length** (TUS `Upload-Defer-Length`) instead of crashing in `create()`, and a `clientDirectUpload` upload now saves its metadata record and fires `onCreate`.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

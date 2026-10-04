@@ -1,7 +1,7 @@
 import { Readable } from "node:stream";
 
 import { instance } from "gaxios";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import GCStorage from "../../../src/storage/gcs/gcs-storage";
@@ -15,7 +15,7 @@ type Stored = { body: Uint8Array; contentType: string; generation: number; updat
  */
 const createGcs = () => {
     const objects = new Map<string, Stored>();
-    const sessions = new Map<string, { contentType: string; name: string; received: Uint8Array; size: number }>();
+    const sessions = new Map<string, { contentType: string; name: string; received: Uint8Array; size?: number }>();
     const requests: { method: string; url: string }[] = [];
     const state: { generation: number; override?: (method: string, url: URL) => Response | undefined; pageSize?: number } = { generation: 0 };
 
@@ -96,13 +96,18 @@ const createGcs = () => {
             }
 
             const chunk = await readBody(init.body);
-            const range = /bytes (\d+)-\d+\//u.exec(headers.get("content-range") ?? "");
+            const range = /bytes (\d+)-\d+\/(\d+|\*)/u.exec(headers.get("content-range") ?? "");
 
             if (range && Number(range[1]) === session.received.byteLength) {
                 session.received = Buffer.concat([session.received, chunk]);
             }
 
-            if (session.received.byteLength >= session.size) {
+            // A session started without a length learns it from the last chunk's range.
+            if (range?.[2] !== undefined && range[2] !== "*") {
+                session.size ??= Number(range[2]);
+            }
+
+            if (session.size !== undefined && session.received.byteLength >= session.size) {
                 sessions.delete(pathname);
 
                 return json(resource(session.name, put(session.name, session.received, session.contentType)));
@@ -124,7 +129,7 @@ const createGcs = () => {
                     contentType: headers.get("x-upload-content-type") ?? "application/octet-stream",
                     name,
                     received: new Uint8Array(0),
-                    size: Number(headers.get("x-upload-content-length")),
+                    size: headers.has("x-upload-content-length") ? Number(headers.get("x-upload-content-length")) : undefined,
                 });
 
                 return new Response(null, { headers: { location: `https://gcs.test${location}`, "x-goog-upload-status": "active" } });
@@ -291,6 +296,32 @@ describe("gcs against an in-memory GCS", () => {
         expect(Buffer.from(gcs.objects.get(file.name)?.body ?? []).toString()).toBe("0123456789");
         await expect(storage.getMeta(file.id)).resolves.toMatchObject({ metadata: { owner: "me" }, status: "completed" });
         expect(gcs.sessions.size).toBe(0);
+    });
+
+    it("should start an upload whose length is deferred and finish it once the length is known", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt" });
+
+        expect(file).toMatchObject({ bytesWritten: 0, status: "created" });
+
+        await storage.update({ id: file.id }, { size: 5 });
+
+        await expect(storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 })).resolves.toMatchObject({ status: "completed" });
+        expect(Buffer.from(gcs.objects.get(file.name)?.body ?? []).toString()).toBe("hello");
+    });
+
+    it("should save the metadata and fire onCreate for a clientDirectUpload", async () => {
+        expect.assertions(3);
+
+        const onCreate = vi.fn();
+        const storage = createStorage({ clientDirectUpload: true, onCreate });
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 5 });
+
+        expect(file.GCSUploadURI).toMatch(/^https:\/\/gcs\.test\/session\//u);
+        expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ id: file.id }));
+        await expect(storage.getMeta(file.id)).resolves.toMatchObject({ GCSUploadURI: file.GCSUploadURI });
     });
 
     it("should resume an interrupted upload at the offset GCS confirmed", async () => {
