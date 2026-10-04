@@ -1,6 +1,7 @@
 {
     "title": "Storage Services",
     "pages": [
+        "index",
         "capabilities",
         "amazon-s3",
         "aws-light",
