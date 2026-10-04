@@ -448,8 +448,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * untracked leftovers are for an S3 lifecycle rule (AbortIncompleteMultipartUpload).
      */
     protected override async listUploads(): Promise<TFile[]> {
-        // Metadata is looked up by the object key, which is the upload id unless a custom `filename` is set.
-        const uploads = await this.list(Number.POSITIVE_INFINITY);
+        // Finished uploads: the records of a meta store that enumerates them (local, memory), which
+        // also finds those stored under a custom `filename`. Otherwise the objects, whose metadata is
+        // looked up by key: the upload id unless a custom `filename` is set.
+        const records = await this.meta.list();
+        const uploads = records === undefined ? await this.list(Number.POSITIVE_INFINITY) : records.filter(({ status }) => status === "completed");
         const s3Api = this.getS3Api();
         let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
 
