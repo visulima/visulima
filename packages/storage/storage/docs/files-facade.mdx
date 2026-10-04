@@ -41,7 +41,7 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
 | `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
-| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | `{ range, metadata, cacheControl, readonly }`.                    |
+| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `readonly`.                         |
 | `readonly`        | `() → Files`                                         | —                                               | Locked view sharing adapter, prefix, defaults and hooks.          |
 
 Two top-level functions build on the same surface: `transfer(source, destination)` and `sync(source, destination)` (both covered below).
@@ -254,6 +254,51 @@ return Response.json({ uploadUrl });
 
 Not every adapter supports presigned PUT. Adapters without a primitive (UploadThing, Bunny) throw `UploadError(METHOD_NOT_ALLOWED)` with a message pointing to the supported alternative.
 
+### Conditional (ETag) operations
+
+Conditional operations put an ETag predicate into the provider request itself, so create-only writes and compare-and-set updates are safe against concurrent writers — the facade never emulates them with a `head()` followed by an unconditional write.
+
+```ts
+// Create only when the key is absent.
+const created = await files.upload("reports/q3.json", body, { ifNoneMatch: "*" });
+
+// Replace only the generation the create returned.
+const replaced = await files.upload("reports/q3.json", nextBody, { ifMatch: created.etag! });
+
+// Read or delete exactly that generation.
+const exact = await files.download("reports/q3.json", { ifMatch: replaced.etag! });
+await files.head("reports/q3.json", { ifMatch: replaced.etag! });
+await files.delete("reports/q3.json", { ifMatch: exact.etag! });
+
+// Copy only if the source is still the staged generation, and only if nothing is published yet.
+const staged = await files.head("staging/report.json");
+await files.copy("staging/report.json", "published/report.json", { ifNoneMatch: "*", sourceIfMatch: staged.etag! });
+```
+
+| Option                | Methods            | Meaning                                                     |
+| --------------------- | ------------------ | ----------------------------------------------------------- |
+| `ifNoneMatch: "*"`    | `upload`, `copy`   | Write only when nothing exists under the (destination) key. |
+| `ifMatch: etag`       | `upload`, `copy`   | Replace only the (destination) object with this ETag.       |
+| `ifMatch: etag`       | `download`, `head` | Exact read: answer only for this generation.                |
+| `ifMatch: etag`       | `delete`           | Delete only this generation.                                |
+| `sourceIfMatch: etag` | `copy`             | Copy only while the source still has this ETag.             |
+
+A predicate that does not hold rejects with `UploadError(ERRORS.PRECONDITION_FAILED)` (HTTP 412) and leaves the stored object untouched — a failed conditional upload also leaves the object's metadata record as it was. ETags compare with or without their surrounding quotes; empty, weak (`W/…`), wildcard and comma-separated values reject with `BAD_REQUEST` before any I/O.
+
+Each primitive is reported separately under `files.capabilities.conditional` (`{ create, replace, read, delete, copy }`). A predicate whose flag is `false` rejects with `METHOD_NOT_ALLOWED` before the adapter is touched — it is never ignored. Conditional uploads are committed in one request: the body is written in a single `write`, so they don't combine with resumable/chunked handler uploads.
+
+| Adapter             | create | replace | read | delete | copy | How                                                                                                                           |
+| ------------------- | ------ | ------- | ---- | ------ | ---- | ----------------------------------------------------------------------------------------------------------------------------- |
+| S3 (`S3Storage`)    | ✅     | ✅      | ✅   | ✅     | ✅   | `If-None-Match` / `If-Match` on CompleteMultipartUpload, GetObject, DeleteObject, CopyObject (+ `x-amz-copy-source-if-match`) |
+| S3 (light)          | ✅     | ✅      | ✅   | ✅     | ✅   | same headers via `aws4fetch`                                                                                                  |
+| Azure Blob          | ❌     | ❌      | ✅   | ✅     | ✅   | access conditions on Get Blob / Delete Blob / Copy Blob                                                                       |
+| WebDAV              | 🟡     | 🟡      | 🟡   | 🟡     | 🟡   | opt-in (`conditional: true`): `If-Match` / `If-None-Match`, `Overwrite: F` and a tagged `If` header on `COPY`                 |
+| Local (disk)        | ✅     | ✅      | ✅   | ✅     | ✅   | compare under the storage lock + atomic rename (process-local lock)                                                           |
+| Memory              | ✅     | ✅      | ✅   | ✅     | ✅   | compare-and-set in one synchronous step                                                                                       |
+| every other adapter | ❌     | ❌      | ❌   | ❌     | ❌   | rejects with `METHOD_NOT_ALLOWED`                                                                                             |
+
+The S3 adapters only claim support against AWS itself: with a custom `endpoint` (MinIO, R2, …) every flag is `false`, because S3-compatible services differ in which conditional headers they honour. Set `conditional: true` (or `false`) in the adapter options to override the detection. `clientDirectUpload` turns conditional support off. WebDAV servers differ the same way, so `WebdavStorage` only sends predicates with `conditional: true`.
+
 ### List a single page
 
 ```ts
@@ -372,7 +417,7 @@ await ro.download("a.txt"); // ok
 await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
 ```
 
-`files.capabilities` returns `{ range, metadata, cacheControl, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags plus whether this view is read-only. Branch on them before relying on an optional feature.
+`files.capabilities` returns `{ range, metadata, cacheControl, conditional, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), plus whether this view is read-only. Branch on them before relying on an optional feature.
 
 A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`) before the adapter is touched; reads pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
 
@@ -417,7 +462,7 @@ try {
 }
 ```
 
-Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_FOUND` (404), `FORBIDDEN` (401/403), `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (unsupported primitive), `STORAGE_ERROR` (everything else). The original error is preserved on `UploadError.detail`.
+Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_FOUND` (404), `FORBIDDEN` (401/403), `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (unsupported primitive), `PRECONDITION_FAILED` (412, a conditional predicate did not hold), `STORAGE_ERROR` (everything else). The original error is preserved on `UploadError.detail`.
 
 → See [Error handling](./error-handling.mdx) for the full enum and how to wrap your own adapter errors.
 

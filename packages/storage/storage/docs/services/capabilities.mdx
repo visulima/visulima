@@ -55,6 +55,21 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
 | WebDAV         | ❌                                                               | ❌                                     |
 
+## Conditional (ETag) operations
+
+Reported per primitive under `files.capabilities.conditional`; a predicate the adapter cannot evaluate natively rejects with `METHOD_NOT_ALLOWED`, and a predicate that does not hold with `PRECONDITION_FAILED` (412). See [Conditional (ETag) operations](../files-facade.mdx#conditional-etag-operations).
+
+| Adapter         | create (`ifNoneMatch: "*"`)       | replace (`ifMatch`) | read (`ifMatch`) | delete (`ifMatch`) | copy (`sourceIfMatch` + dest) |
+| --------------- | --------------------------------- | ------------------- | ---------------- | ------------------ | ----------------------------- |
+| S3 (AWS)        | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| S3 (light)      | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| S3-compatible   | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Azure Blob      | ❌                                | ❌                  | ✅               | ✅                 | ✅                            |
+| WebDAV          | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Local (disk)    | ✅ (process-local lock)           | ✅                  | ✅               | ✅                 | ✅                            |
+| Memory          | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| everything else | ❌                                | ❌                  | ❌               | ❌                 | ❌                            |
+
 ## URL options
 
 | Adapter        | `expiresIn` cap | `responseContentDisposition`                                                |
@@ -135,6 +150,7 @@ Mapping rule of thumb:
 | 405         | `METHOD_NOT_ALLOWED`       |
 | 409         | `FILE_CONFLICT`            |
 | 410         | `GONE`                     |
+| 412         | `PRECONDITION_FAILED`      |
 | 413         | `REQUEST_ENTITY_TOO_LARGE` |
 | 415         | `UNSUPPORTED_MEDIA_TYPE`   |
 | 422         | `UNPROCESSABLE_ENTITY`     |

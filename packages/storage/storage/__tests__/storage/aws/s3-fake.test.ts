@@ -18,8 +18,10 @@ import {
 } from "@aws-sdk/client-s3";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { createS3State } from "../../__helpers__/s3-state";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
@@ -83,7 +85,14 @@ const createS3 = () => {
             return { Parts: parts.map(([number, part]) => { return { ETag: part.etag, PartNumber: number, Size: part.body.byteLength }; }) };
         }
 
+        const holds = (target: string): boolean => bucket.holds(target, { ifMatch: input.IfMatch as string, ifNoneMatch: input.IfNoneMatch as string });
+
         if (command instanceof CompleteMultipartUploadCommand) {
+            // Conditional writes: the predicate is evaluated against the key at completion.
+            if (!holds(key)) {
+                throw s3Error("PreconditionFailed", 412);
+            }
+
             const requested = (input.MultipartUpload as { Parts: { PartNumber: number }[] }).Parts;
             const completed = bucket.complete(uploadId, requested.map(({ PartNumber }) => PartNumber));
 
@@ -133,7 +142,13 @@ const createS3 = () => {
         }
 
         if (command instanceof CopyObjectCommand) {
-            if (!bucket.copy(decodeURIComponent((input.CopySource as string).slice("bucket/".length)), key)) {
+            const source = decodeURIComponent((input.CopySource as string).slice("bucket/".length));
+
+            if (bucket.objects.has(source) && (!bucket.holds(source, { ifMatch: input.CopySourceIfMatch as string }) || !holds(key))) {
+                throw s3Error("PreconditionFailed", 412);
+            }
+
+            if (!bucket.copy(source, key)) {
                 throw s3Error("NoSuchKey", 404);
             }
 
@@ -141,6 +156,10 @@ const createS3 = () => {
         }
 
         if (command instanceof DeleteObjectCommand) {
+            if (!holds(key)) {
+                throw s3Error("PreconditionFailed", 412);
+            }
+
             bucket.objects.delete(key);
 
             return {};
@@ -151,6 +170,10 @@ const createS3 = () => {
 
             if (!read) {
                 throw s3Error(command instanceof HeadObjectCommand ? "NotFound" : "NoSuchKey", 404);
+            }
+
+            if (!holds(key)) {
+                throw s3Error("PreconditionFailed", 412);
             }
 
             return {
@@ -554,5 +577,34 @@ describe("s3Storage against an in-memory S3", () => {
 
         expect(deleted.status).toBeLessThan(300);
         expect([...s3.objects.keys()]).toStrictEqual([]);
+    });
+
+    it("should send conditions as S3 headers and abort a losing conditional upload", async () => {
+        expect.assertions(4);
+
+        const files = new Files({ adapter: createStorage() });
+        const created = await files.upload("a.txt", "one", { ifNoneMatch: "*" });
+
+        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        // The losing multipart upload is aborted; the stored object and its record stay as they were.
+        expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
+        await expect(files.head("a.txt")).resolves.toMatchObject({ etag: created.etag, size: 3 });
+
+        await files.copy("a.txt", "b.txt", { ifNoneMatch: "*", sourceIfMatch: created.etag as string });
+        await files.delete("b.txt", { ifMatch: s3.objects.get("b.txt")?.etag as string });
+
+        expect(
+            s3.sent
+                .filter(({ input }) => input.IfMatch !== undefined || input.IfNoneMatch !== undefined || input.CopySourceIfMatch !== undefined)
+                .map(({ name }) => name),
+        ).toStrictEqual(["CompleteMultipartUploadCommand", "CompleteMultipartUploadCommand", "CopyObjectCommand", "DeleteObjectCommand"]);
+    });
+
+    it("should not claim conditional support for a custom endpoint unless told to", () => {
+        expect.assertions(3);
+
+        expect(new Files({ adapter: createStorage({ endpoint: "https://minio.local" }) }).capabilities.conditional.create).toBe(false);
+        expect(new Files({ adapter: createStorage({ conditional: true, endpoint: "https://minio.local" }) }).capabilities.conditional.create).toBe(true);
+        expect(new Files({ adapter: createStorage({ clientDirectUpload: true, conditional: true }) }).capabilities.conditional.read).toBe(false);
     });
 });

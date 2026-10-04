@@ -50,6 +50,8 @@ export interface S3ApiOperations {
     completeMultipartUpload: (
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -57,7 +59,10 @@ export interface S3ApiOperations {
         options?: S3CallOptions,
     ) => Promise<{ ETag?: string; Location: string }>;
 
-    copyObject: (params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions) => Promise<void>;
+    copyObject: (
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ) => Promise<void>;
 
     createMultipartUpload: (
         params: {
@@ -70,10 +75,10 @@ export interface S3ApiOperations {
         options?: S3CallOptions,
     ) => Promise<{ UploadId: string }>;
 
-    deleteObject: (params: { Bucket: string; Key: string }, options?: S3CallOptions) => Promise<void>;
+    deleteObject: (params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions) => Promise<void>;
 
     getObject: (
-        params: { Bucket: string; Key: string; Range?: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ) => Promise<{
         Body?: ReadableStream | Readable;

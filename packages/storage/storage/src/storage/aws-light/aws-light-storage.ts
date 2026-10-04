@@ -82,6 +82,8 @@ class AwsLightStorage extends S3BaseStorage {
         super({
             ...config,
             bucket,
+            // A custom endpoint is an S3-compatible service, whose support for conditional headers is unknown.
+            conditional: config.conditional ?? config.endpoint === undefined,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
         });
 

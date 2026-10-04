@@ -7,7 +7,8 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { toHttpDate } from "../../utils/headers";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions, StoredObject } from "../types";
+import type { ConditionalOptions, ConditionalSupport, CopyConditionalOptions, OperationOptions, StoredObject } from "../types";
+import { hasCondition, quoteETag } from "../utils/etag";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -15,7 +16,7 @@ import type { WebdavStorageOptions } from "./types";
 import WebdavFile from "./webdav-file";
 import WebdavMetaStorage from "./webdav-meta-storage";
 
-type RangeOptions = OperationOptions & { range?: { end?: number; start: number } };
+type RangeOptions = ConditionalOptions & OperationOptions & { range?: { end?: number; start: number } };
 
 interface DavEntry {
     contentType?: string;
@@ -59,9 +60,21 @@ const elementText = (xml: string, name: string): string | undefined => {
     return text || undefined;
 };
 
-/** Error carrying the HTTP status, so the retry policy treats 5xx/429 as transient. */
+/** `If-Match` / `If-None-Match` request headers of a predicate. */
+const conditionHeaders = (condition: ConditionalOptions | undefined): Record<string, string> => {
+    return {
+        ...(condition?.ifMatch !== undefined && { "If-Match": quoteETag(condition.ifMatch) }),
+        ...(condition?.ifNoneMatch !== undefined && { "If-None-Match": condition.ifNoneMatch }),
+    };
+};
+
+/** Error carrying the HTTP status, so the retry policy treats 5xx/429 as transient; 412 is a failed predicate. */
 const httpError = async (response: Response, method: string, path: string): Promise<Error> => {
     await response.body?.cancel().catch(() => undefined);
+
+    if (response.status === 412) {
+        return throwErrorCode(ERRORS.PRECONDITION_FAILED, `WebDAV ${method} /${path}: precondition failed`);
+    }
 
     return Object.assign(new Error(`WebDAV ${method} /${path} failed: ${String(response.status)} ${response.statusText}`.trim()), {
         statusCode: response.status,
@@ -109,6 +122,9 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
     public override readonly supportsRange: boolean = true;
 
+    /** Every predicate goes to the server as request headers; opt-in through the `conditional` option. */
+    public override readonly conditionalSupport: ConditionalSupport;
+
     protected meta: MetaStorage<WebdavFile>;
 
     private readonly baseUrl: URL;
@@ -146,10 +162,14 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
         this.meta = config.metaStorage ?? new WebdavMetaStorage(config.metaStorageConfig);
 
+        const conditional = config.conditional === true;
+
+        this.conditionalSupport = { copy: conditional, create: conditional, delete: conditional, read: conditional, replace: conditional };
+
         this.isReady = true;
     }
 
-    public async create(config: FileInit, _options?: OperationOptions): Promise<WebdavFile> {
+    public async create(config: FileInit, options?: ConditionalOptions & OperationOptions): Promise<WebdavFile> {
         return this.instrumentOperation("create", async () => {
             const file = new WebdavFile(config);
 
@@ -157,6 +177,17 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             file.path = this.keyToPath(file.name);
 
             await this.validate(file);
+
+            // A conditional upload leaves the stored file and record alone: the server evaluates the
+            // predicate on the PUT, and the record is only saved once that succeeded.
+            if (hasCondition(options)) {
+                file.bytesWritten = 0;
+                file.status = getFileStatus(file);
+                this.parkConditional(file);
+                await this.onCreate(file);
+
+                return file;
+            }
 
             const existing = await this.findMeta(file.id);
 
@@ -174,11 +205,14 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         });
     }
 
-    public async write(part: FilePart | FileQuery | WebdavFile, options?: OperationOptions): Promise<WebdavFile> {
+    public async write(part: FilePart | FileQuery | WebdavFile, options?: ConditionalOptions & OperationOptions): Promise<WebdavFile> {
         return this.instrumentOperation("write", async () => {
+            const conditional = this.takeConditional(part.id);
             let file: WebdavFile;
 
-            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            if (conditional) {
+                file = conditional;
+            } else if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
                 file = part;
             } else {
                 file = await this.getMeta(part.id);
@@ -216,12 +250,15 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
                     const path = file.path ?? this.keyToPath(file.name || file.id);
 
                     // `buffer` is fully materialized, so a retried attempt re-sends the same bytes.
-                    await this.runOperation(options, (signal) => this.put(path, buffer, file.contentType, signal));
+                    const stored = await this.runOperation(options, (signal) =>
+                        this.put(path, buffer, file.contentType, signal, conditional ? conditionHeaders(options) : undefined),
+                    );
 
                     file.bytesWritten = buffer.length;
                     file.size = buffer.length;
                     file.path = path;
-                    file.ETag = etag(buffer);
+                    // Predicates compare against the server's validator, so report that one when they are on.
+                    file.ETag = stored ?? (this.conditionalSupport.replace ? await this.storedETag(file.name, options) : undefined) ?? etag(buffer);
                 }
 
                 file.status = getFileStatus(file);
@@ -241,22 +278,24 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             const path = file.path ?? this.keyToPath(file.name || id);
             const { range } = options ?? {};
 
-            const content = await this.runOperation(options, async (signal) => {
-                const response = await this.download(path, range, signal);
+            const { content, served } = await this.runOperation(options, async (signal) => {
+                const response = await this.download(path, range, signal, options);
                 const buffer = Buffer.from(await response.arrayBuffer());
+                const tag = response.headers.get("etag") ?? undefined;
 
                 if (!range || response.status === 206) {
-                    return buffer;
+                    return { content: buffer, served: tag };
                 }
 
                 // A server that ignores `Range` answers 200 with the whole body; slice it here.
-                return buffer.subarray(range.start, range.end === undefined ? undefined : range.end + 1);
+                return { content: buffer.subarray(range.start, range.end === undefined ? undefined : range.end + 1), served: tag };
             });
 
             return {
                 content,
                 contentType: file.contentType,
-                ETag: file.ETag ?? etag(content),
+                // The server's validator, when it sends one, is the one conditional requests compare against.
+                ETag: (this.conditionalSupport.read ? served : undefined) ?? file.ETag ?? etag(content),
                 expiredAt: file.expiredAt,
                 id,
                 metadata: file.metadata,
@@ -276,7 +315,7 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             const file = await this.checkIfExpired(await this.getMeta(id));
             const path = file.path ?? this.keyToPath(file.name || id);
             const range = options?.range;
-            const response = await this.runOperation(options, (signal) => this.download(path, range, signal));
+            const response = await this.runOperation(options, (signal) => this.download(path, range, signal, options));
 
             if ((range && response.status !== 206) || !response.body) {
                 // Range ignored by the server: let `get` slice the full body.
@@ -305,15 +344,21 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         });
     }
 
-    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<WebdavFile> {
+    public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<WebdavFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
             const path = file.path ?? this.keyToPath(file.name || id);
 
             await this.runOperation(options, async (signal) => {
-                const response = await this.request("DELETE", path, signal);
+                const response = await this.request("DELETE", path, signal, { headers: conditionHeaders({ ifMatch: options?.ifMatch }) });
 
-                // Idempotent: an already-missing resource is not an error.
+                // Idempotent: an already-missing resource is not an error, unless a predicate expected one.
+                if (response.status === 404 && options?.ifMatch !== undefined) {
+                    await response.body?.cancel().catch(() => undefined);
+
+                    throwErrorCode(ERRORS.PRECONDITION_FAILED, "There is no stored file to match");
+                }
+
                 if (!response.ok && response.status !== 404) {
                     throw await httpError(response, "DELETE", path);
                 }
@@ -331,15 +376,28 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         });
     }
 
-    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<WebdavFile> {
+    public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<WebdavFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceFile = await this.getMeta(name);
             const sourcePath = sourceFile.path ?? this.keyToPath(sourceFile.name || name);
             const targetPath = this.keyToPath(destination);
+            const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+            // `If-Match` applies to the request URI, the source. The destination is conditioned by
+            // `Overwrite: F` (create-only) or a tagged `If` header (RFC 4918 §10.4).
+            const headers: Record<string, string> = {
+                ...conditionHeaders({ ifMatch: sourceIfMatch }),
+                ...(ifNoneMatch !== undefined && { Overwrite: "F" }),
+                ...(ifMatch !== undefined && { If: `<${this.toUrl(targetPath)}> ([${quoteETag(ifMatch)}])` }),
+            };
 
-            await this.runOperation(options, (signal) => this.transfer("COPY", sourcePath, targetPath, signal));
+            await this.runOperation(options, (signal) => this.transfer("COPY", sourcePath, targetPath, signal, headers));
 
             const copiedFile = { ...sourceFile, id: destination, name: destination, path: targetPath } as WebdavFile;
+
+            // The copy is a new resource with its own validator.
+            if (this.conditionalSupport.copy) {
+                copiedFile.ETag = await this.storedETag(destination, options);
+            }
 
             await this.saveMeta(copiedFile);
 
@@ -425,6 +483,11 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         return { contentType: entry.contentType, etag: entry.etag, extra: { modifiedAt: entry.modifiedAt, path: entry.path }, size: entry.size ?? 0 };
     }
 
+    /** Asks the server for the file's ETag: the record's may predate a write by another client. */
+    protected override async currentETag(file: WebdavFile, options?: OperationOptions): Promise<string | undefined> {
+        return this.storedETag(file.name, options);
+    }
+
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             const file = await this.findMeta(id);
@@ -449,13 +512,13 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         });
     }
 
-    private async download(path: string, range: RangeOptions["range"], signal: AbortSignal | undefined): Promise<Response> {
-        const response = await this.request(
-            "GET",
-            path,
-            signal,
-            range ? { headers: { Range: `bytes=${String(range.start)}-${range.end === undefined ? "" : String(range.end)}` } } : undefined,
-        );
+    private async download(path: string, range: RangeOptions["range"], signal: AbortSignal | undefined, condition?: ConditionalOptions): Promise<Response> {
+        const response = await this.request("GET", path, signal, {
+            headers: {
+                ...conditionHeaders({ ifMatch: condition?.ifMatch }),
+                ...(range && { Range: `bytes=${String(range.start)}-${range.end === undefined ? "" : String(range.end)}` }),
+            },
+        });
 
         if (response.status === 404) {
             await response.body?.cancel().catch(() => undefined);
@@ -470,10 +533,13 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         return response;
     }
 
-    /** PUT, creating the missing parent collections when the server answers 409 (RFC 4918 §9.7.1). */
-    private async put(path: string, body: Buffer, contentType: string, signal: AbortSignal | undefined): Promise<void> {
+    /**
+     * PUT, creating the missing parent collections when the server answers 409 (RFC 4918 §9.7.1).
+     * @returns The ETag the server answered with, if any.
+     */
+    private async put(path: string, body: Buffer, contentType: string, signal: AbortSignal | undefined, headers?: Record<string, string>): Promise<string | undefined> {
         const send = async (): Promise<Response> =>
-            this.request("PUT", path, signal, { body: new Uint8Array(body), headers: { "Content-Type": contentType } });
+            this.request("PUT", path, signal, { body: new Uint8Array(body), headers: { "Content-Type": contentType, ...headers } });
 
         let response = await send();
 
@@ -488,11 +554,14 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
         }
 
         await response.body?.cancel().catch(() => undefined);
+
+        return response.headers.get("etag") ?? undefined;
     }
 
     /** Server-side COPY / MOVE with overwrite, creating missing parent collections of the target. */
-    private async transfer(method: "COPY" | "MOVE", from: string, to: string, signal: AbortSignal | undefined): Promise<void> {
-        const send = async (): Promise<Response> => this.request(method, from, signal, { headers: { Destination: this.toUrl(to), Overwrite: "T" } });
+    private async transfer(method: "COPY" | "MOVE", from: string, to: string, signal: AbortSignal | undefined, headers?: Record<string, string>): Promise<void> {
+        const send = async (): Promise<Response> =>
+            this.request(method, from, signal, { headers: { Destination: this.toUrl(to), Overwrite: "T", ...headers } });
 
         let response = await send();
 

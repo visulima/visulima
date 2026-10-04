@@ -6,8 +6,10 @@ import { text } from "node:stream/consumers";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-adapter";
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { createS3State } from "../../__helpers__/s3-state";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
@@ -23,6 +25,7 @@ const createS3 = () => {
 
     const xml = (body: string): Response => new Response(`<?xml version="1.0" encoding="UTF-8"?>${body}`);
     const missing = (code = "NoSuchKey"): Response => new Response(`<Error><Code>${code}</Code></Error>`, { status: 404 });
+    const preconditionFailed = (): Response => new Response("<Error><Code>PreconditionFailed</Code></Error>", { status: 412 });
 
     const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
         const request = input instanceof Request ? input : new Request(input, init);
@@ -38,6 +41,8 @@ const createS3 = () => {
         }
 
         const uploadId = url.searchParams.get("uploadId");
+        const holds = (target: string): boolean =>
+            bucket.holds(target, { ifMatch: request.headers.get("if-match"), ifNoneMatch: request.headers.get("if-none-match") });
 
         if (key === "") {
             if (url.searchParams.has("uploads")) {
@@ -86,6 +91,11 @@ const createS3 = () => {
             }
 
             if (request.method === "POST") {
+                // A failed predicate leaves the multipart upload in place, as S3 does.
+                if (bucket.uploads.has(uploadId) && !holds(key)) {
+                    return preconditionFailed();
+                }
+
                 const completed = bucket.complete(uploadId);
 
                 return completed === undefined ? missing("NoSuchUpload") : xml(`<CompleteMultipartUploadResult><ETag>${completed.etag}</ETag></CompleteMultipartUploadResult>`);
@@ -98,6 +108,12 @@ const createS3 = () => {
             const source = request.headers.get("x-amz-copy-source");
 
             if (source !== null) {
+                const sourceKey = decodeURIComponent(source.slice("uploads/".length));
+
+                if (bucket.objects.has(sourceKey) && (!bucket.holds(sourceKey, { ifMatch: request.headers.get("x-amz-copy-source-if-match") }) || !holds(key))) {
+                    return preconditionFailed();
+                }
+
                 return bucket.copy(decodeURIComponent(source.slice("uploads/".length)), key) ? xml("<CopyObjectResult/>") : missing();
             }
 
@@ -108,6 +124,10 @@ const createS3 = () => {
         }
 
         if (request.method === "DELETE") {
+            if (!holds(key)) {
+                return preconditionFailed();
+            }
+
             bucket.objects.delete(key);
 
             return new Response(null, { status: 204 });
@@ -119,8 +139,12 @@ const createS3 = () => {
             return request.method === "HEAD" ? new Response(null, { status: 404 }) : missing();
         }
 
+        if (!holds(key)) {
+            return preconditionFailed();
+        }
+
         return new Response(request.method === "HEAD" ? null : read.body, {
-            headers: { ...read.object.metadata, "content-length": String(read.body.byteLength) },
+            headers: { ...read.object.metadata, "content-length": String(read.body.byteLength), etag: read.object.etag },
             status: read.partial ? 206 : 200,
         });
     };
@@ -159,7 +183,8 @@ describe("aws-light against an in-memory S3", () => {
             vi.stubGlobal("fetch", s3.fetch);
 
             return {
-                createStorage,
+                // The fake honours the conditional headers, which a custom endpoint doesn't advertise by default.
+                createStorage: (options) => createStorage({ conditional: true, ...options }),
                 failBackend: (failing) => {
                     s3.state.override = failing ? () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) : undefined;
                 },
@@ -338,6 +363,30 @@ describe("aws-light against an in-memory S3", () => {
         expect(s3.objects.size).toBe(0);
         // Each metadata record is deleted once, with its upload, not purged as an object of its own.
         expect(deletedKeys.filter((path) => path.endsWith(".META"))).toHaveLength(2);
+    });
+
+    it("should abort a losing conditional upload and leave the stored object alone", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const files = new Files({ adapter: createStorage({ conditional: true }) });
+
+        await files.upload("a.txt", "one", { ifNoneMatch: "*" });
+
+        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
+    });
+
+    it("should only claim conditional support for AWS itself unless told to", () => {
+        expect.assertions(2);
+
+        vi.stubGlobal("fetch", createS3().fetch);
+
+        expect(new Files({ adapter: createStorage() }).capabilities.conditional.read).toBe(false);
+        expect(new Files({ adapter: createStorage({ endpoint: undefined, region: "us-east-1" }) }).capabilities.conditional.read).toBe(true);
     });
 });
 

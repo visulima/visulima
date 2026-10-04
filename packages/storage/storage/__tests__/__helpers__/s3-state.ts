@@ -87,6 +87,13 @@ export const createS3State = () => {
         },
 
         /**
+         * Whether `If-Match` / `If-None-Match` predicates hold for what `key` stores; S3 answers
+         * 412 PreconditionFailed when one does not.
+         */
+        holds: (key: string, { ifMatch, ifNoneMatch }: { ifMatch?: string | null; ifNoneMatch?: string | null }): boolean =>
+            !(ifNoneMatch === "*" && objects.has(key)) && (ifMatch === undefined || ifMatch === null || ifMatch === objects.get(key)?.etag),
+
+        /**
          * One page of the keys under `prefix`, keys sharing a `delimiter` level collapsed into prefixes.
          * @param options Listing options; `pageSize` caps a page like a real bucket may.
          */

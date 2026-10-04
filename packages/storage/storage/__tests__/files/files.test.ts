@@ -1373,6 +1373,7 @@ describe("capabilities", () => {
 
         expect(facade.capabilities).toStrictEqual({
             cacheControl: false,
+            conditional: { copy: true, create: true, delete: true, read: true, replace: true },
             metadata: true,
             range: true,
             readonly: false,

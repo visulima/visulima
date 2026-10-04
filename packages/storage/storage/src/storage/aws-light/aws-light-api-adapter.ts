@@ -275,6 +275,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -298,6 +300,8 @@ ${partsXml}
             body: xmlBody,
             headers: {
                 "Content-Type": "application/xml",
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
             },
             method: "POST",
             signal: options?.signal,
@@ -420,7 +424,7 @@ ${partsXml}
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string; Range?: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -433,7 +437,10 @@ ${partsXml}
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
-            ...(params.Range !== undefined && { headers: { Range: params.Range } }),
+            headers: {
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.Range !== undefined && { Range: params.Range }),
+            },
             method: "GET",
             signal: options?.signal,
         });
@@ -525,9 +532,10 @@ ${partsXml}
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            ...(params.IfMatch !== undefined && { headers: { "If-Match": params.IfMatch } }),
             method: "DELETE",
             signal: options?.signal,
         });
@@ -539,9 +547,15 @@ ${partsXml}
         }
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const headers: Record<string, string> = {
             "x-amz-copy-source": params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
         };
 
         if (params.StorageClass) {

@@ -92,6 +92,9 @@ class S3Storage extends S3BaseStorage {
         super({
             ...config,
             bucket,
+            // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
+            // support for conditional headers is unknown.
+            conditional: config.conditional ?? (config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL),
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
         });
 

@@ -3,10 +3,11 @@ import { text } from "node:stream/consumers";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../src/files";
 import RestFetch from "../../src/handler/rest/rest-fetch";
 import type MetaStorage from "../../src/storage/meta-storage";
 import type { BaseStorage } from "../../src/storage/storage";
-import type { ExpirationOptions } from "../../src/storage/types";
+import type { ConditionalSupport, ExpirationOptions } from "../../src/storage/types";
 import { ERRORS } from "../../src/utils/errors";
 import { createdAgo, HOUR } from "./clock";
 
@@ -36,6 +37,20 @@ const upload = async (storage: BaseStorage, content: string): Promise<string> =>
 };
 
 const metaOf = (storage: BaseStorage): MetaStorage => (storage as unknown as { meta: MetaStorage }).meta;
+
+const precondition = expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED });
+
+const etagOf = async (files: Files, key: string): Promise<string> => {
+    const { etag } = await files.download(key);
+
+    return etag as string;
+};
+
+const textOf = async (files: Files, key: string): Promise<string> => {
+    const { body } = await files.download(key);
+
+    return body.toString();
+};
 
 /**
  * The behaviour every storage adapter shares, run against a provider's in-memory backend. Call it
@@ -169,6 +184,93 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             // Purge either fails or skips the upload, whose record it can't read; it never deletes it.
             await expect(storage.purge().then(({ items }) => items, () => [])).resolves.toStrictEqual([]);
             expect(backend.hasObject(id)).toBe(true);
+        });
+
+        describe("conditional operations, where the adapter claims them", () => {
+            /** A `Files` facade over a fresh storage, or a skipped test when the adapter doesn't claim `kind`. */
+            const facade = (kind: keyof ConditionalSupport, skipTest: (note: string) => void): Files => {
+                const storage = backend.createStorage();
+
+                if (!storage.conditionalSupport[kind]) {
+                    skipTest(`no conditional ${kind}`);
+                }
+
+                return new Files({ adapter: storage });
+            };
+
+            it("should create only when the key is absent", async ({ skip: skipTest }) => {
+                expect.assertions(3);
+
+                const files = facade("create", skipTest);
+                const created = await files.upload("created.txt", "one", { ifNoneMatch: "*" });
+
+                await expect(files.upload("created.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(precondition);
+                await expect(textOf(files, "created.txt")).resolves.toBe("one");
+                await expect(etagOf(files, "created.txt")).resolves.toBe(created.etag);
+            });
+
+            it("should replace only the expected generation", async ({ skip: skipTest }) => {
+                expect.assertions(3);
+
+                const files = facade("replace", skipTest);
+
+                await files.upload("replaced.txt", "first");
+
+                const first = await etagOf(files, "replaced.txt");
+
+                await files.upload("replaced.txt", "second", { ifMatch: first });
+
+                await expect(textOf(files, "replaced.txt")).resolves.toBe("second");
+                await expect(files.upload("replaced.txt", "third", { ifMatch: first })).rejects.toThrow(precondition);
+                await expect(textOf(files, "replaced.txt")).resolves.toBe("second");
+            });
+
+            it("should read and head only the expected generation", async ({ skip: skipTest }) => {
+                expect.assertions(3);
+
+                const files = facade("read", skipTest);
+
+                await files.upload("read.txt", "hello");
+
+                const etag = await etagOf(files, "read.txt");
+
+                await expect(files.download("read.txt", { ifMatch: etag })).resolves.toHaveProperty("body", Buffer.from("hello"));
+                await expect(files.download("read.txt", { ifMatch: "stale" })).rejects.toThrow(precondition);
+                await expect(files.head("read.txt", { ifMatch: "stale" })).rejects.toThrow(precondition);
+            });
+
+            it("should delete only the expected generation", async ({ skip: skipTest }) => {
+                expect.assertions(2);
+
+                const files = facade("delete", skipTest);
+
+                await files.upload("deleted.txt", "hello");
+
+                await expect(files.delete("deleted.txt", { ifMatch: "stale" })).rejects.toThrow(precondition);
+
+                await files.delete("deleted.txt", { ifMatch: await etagOf(files, "deleted.txt") });
+
+                await expect(files.exists("deleted.txt")).resolves.toBe(false);
+            });
+
+            it("should copy only when the source and destination predicates hold", async ({ skip: skipTest }) => {
+                expect.assertions(4);
+
+                const files = facade("copy", skipTest);
+
+                await files.upload("source.txt", "source");
+                await files.upload("taken.txt", "taken");
+
+                const source = await etagOf(files, "source.txt");
+
+                await expect(files.copy("source.txt", "target.txt", { sourceIfMatch: "stale" })).rejects.toThrow(precondition);
+                await expect(files.copy("source.txt", "taken.txt", { ifNoneMatch: "*", sourceIfMatch: source })).rejects.toThrow(precondition);
+                await expect(textOf(files, "taken.txt")).resolves.toBe("taken");
+
+                await files.copy("source.txt", "target.txt", { ifNoneMatch: "*", sourceIfMatch: source });
+
+                await expect(files.download("target.txt").then(({ body }) => body.toString())).resolves.toBe("source");
+            });
         });
 
         it.skipIf(skip["REST lifecycle"] !== undefined)("should serve a REST upload: POST, HEAD, PUT replace and DELETE", async () => {

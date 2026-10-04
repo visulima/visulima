@@ -2,7 +2,8 @@ import type { Readable } from "node:stream";
 import { PassThrough, pipeline } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
-import type { OperationOptions } from "../storage/types";
+import type { ConditionalOptions, ConditionalSupport, OperationOptions } from "../storage/types";
+import { assertValidETag } from "../storage/utils/etag";
 import type { FilePart } from "../storage/utils/file";
 import { ERRORS, throwErrorCode } from "../utils/errors";
 import type { RetryConfig } from "../utils/retry";
@@ -30,6 +31,8 @@ import type {
     BulkUploadItem,
     BulkUploadOptions,
     BulkUploadResult,
+    CopyOptions,
+    DeleteOptions,
     DownloadOptions,
     DownloadRange,
     DownloadResult,
@@ -38,6 +41,7 @@ import type {
     FileObject,
     FilesHooks,
     FilesOptions,
+    HeadOptions,
     HookActionType,
     HookEvent,
     ListAllOptions,
@@ -115,6 +119,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     public get capabilities(): StorageCapabilities {
         return {
             cacheControl: this.adapter.supportsCacheControl,
+            conditional: { ...this.adapter.conditionalSupport },
             metadata: this.adapter.supportsMetadata,
             range: this.adapter.supportsRange,
             readonly: this.readonlyMode,
@@ -141,6 +146,39 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             prefix: this.prefix,
             readonly: true,
         });
+    }
+
+    /**
+     * Validate the ETag predicates of a call and fail closed with `METHOD_NOT_ALLOWED` when the adapter
+     * cannot evaluate `kind` natively — a predicate is never silently dropped.
+     */
+    private assertConditional(kind: keyof ConditionalSupport, etags: Record<string, string | undefined>): void {
+        for (const [name, value] of Object.entries(etags)) {
+            if (value !== undefined) {
+                assertValidETag(value, name);
+            }
+        }
+
+        if (!this.adapter.conditionalSupport[kind]) {
+            throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not support conditional ${kind}`);
+        }
+    }
+
+    /** Destination predicate of an upload or copy: `ifMatch` (replace) or `ifNoneMatch: "*"` (create). */
+    private static writeCondition(ifMatch: string | undefined, ifNoneMatch: string | undefined): ConditionalOptions | undefined {
+        if (ifMatch !== undefined && ifNoneMatch !== undefined) {
+            throwErrorCode(ERRORS.BAD_REQUEST, "Pass either ifMatch or ifNoneMatch, not both");
+        }
+
+        if (ifNoneMatch !== undefined && ifNoneMatch !== "*") {
+            throwErrorCode(ERRORS.BAD_REQUEST, 'ifNoneMatch only accepts "*"');
+        }
+
+        if (ifNoneMatch !== undefined) {
+            return { ifNoneMatch: "*" };
+        }
+
+        return ifMatch === undefined ? undefined : { ifMatch };
     }
 
     /** Fail closed before any adapter mutation when this view is read-only. */
@@ -319,6 +357,12 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not persist custom metadata`);
         }
 
+        const condition = Files.writeCondition(options?.ifMatch, options?.ifNoneMatch);
+
+        if (condition) {
+            this.assertConditional(condition.ifNoneMatch ? "create" : "replace", { ifMatch: condition.ifMatch });
+        }
+
         const control = options?.control;
 
         return this.withHooks("upload", { key }, async () => {
@@ -343,7 +387,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 ? { ...options, signal: options?.signal ? AbortSignal.any([options.signal, control.signal]) : control.signal }
                 : options;
 
-            const operationOptions = this.mergeOptions(perCall, { key, type: "upload" });
+            const merged = this.mergeOptions(perCall, { key, type: "upload" });
+            // The predicate travels to both adapter calls: `create` must not replace what it is about,
+            // and `write` evaluates it when the bytes are committed.
+            const operationOptions = condition ? { ...merged, ...condition } : merged;
             const multipart = options?.multipart;
 
             // pipeline (not pipe) so a source error tears down the gate the adapter is reading.
@@ -515,8 +562,18 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             BaseStorage.assertSafeId(resolved);
             this.assertRangeSupported(options?.range);
 
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("read", { ifMatch });
+            }
+
             const merged = this.mergeOptions(options, { key, type: "download" }) ?? {};
-            const adapterOptions = options?.range ? { ...merged, range: options.range } : merged;
+            const adapterOptions = {
+                ...merged,
+                ...(options?.range && { range: options.range }),
+                ...(ifMatch !== undefined && { ifMatch }),
+            };
 
             const file = await this.adapter.get({ id: resolved }, adapterOptions);
 
@@ -606,11 +663,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * Fetch metadata for a single object, or — when passed an array of keys — bulk-head many in
      * one call with bounded concurrency.
      */
-    public head(key: string, options?: OperationOptions): Promise<FileObject>;
+    public head(key: string, options?: HeadOptions): Promise<FileObject>;
 
     public head(keys: string[], options?: BulkOptions): Promise<BulkHeadResult>;
 
-    public async head(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkHeadResult | FileObject> {
+    public async head(keyOrKeys: string[] | string, options?: BulkOptions | HeadOptions): Promise<BulkHeadResult | FileObject> {
         if (Array.isArray(keyOrKeys)) {
             return this.headMany(keyOrKeys, options);
         }
@@ -618,13 +675,20 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return this.headOne(keyOrKeys, options);
     }
 
-    private async headOne(key: string, options: OperationOptions | undefined): Promise<FileObject> {
+    private async headOne(key: string, options: HeadOptions | undefined): Promise<FileObject> {
         return this.withHooks("head", { key }, async () => {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
 
-            const file = await this.adapter.getMeta(resolved, this.mergeOptions(options, { key, type: "head" }));
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("read", { ifMatch });
+            }
+
+            const merged = this.mergeOptions(options, { key, type: "head" });
+            const file = await this.adapter.getMeta(resolved, ifMatch === undefined ? merged : { ...merged, ifMatch });
             const result = toFileObject(file, resolved);
 
             result.key = key;
@@ -733,11 +797,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * `DeleteObjects`, Supabase's `remove`, UploadThing's `deleteFiles`) use it via
      * {@link BaseStorage.deleteBatch}; otherwise the keys are fanned out with bounded concurrency.
      */
-    public delete(key: string, options?: OperationOptions): Promise<void>;
+    public delete(key: string, options?: DeleteOptions): Promise<void>;
 
     public delete(keys: string[], options?: BulkOptions): Promise<BulkDeleteResult>;
 
-    public async delete(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDeleteResult | void> {
+    public async delete(keyOrKeys: string[] | string, options?: BulkOptions | DeleteOptions): Promise<BulkDeleteResult | void> {
         this.assertWritable();
 
         if (Array.isArray(keyOrKeys)) {
@@ -749,13 +813,21 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return undefined;
     }
 
-    private async deleteOne(key: string, options: OperationOptions | undefined): Promise<void> {
+    private async deleteOne(key: string, options: DeleteOptions | undefined): Promise<void> {
         await this.withHooks("delete", { key }, async () => {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
 
-            await this.adapter.delete({ id: resolved }, this.mergeOptions(options, { key, type: "delete" }));
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("delete", { ifMatch });
+            }
+
+            const merged = this.mergeOptions(options, { key, type: "delete" });
+
+            await this.adapter.delete({ id: resolved }, ifMatch === undefined ? merged : { ...merged, ifMatch });
         });
     }
 
@@ -837,8 +909,15 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * Copy `source` to `destination` (both resolved under any constructor prefix). Returns the
      * destination object's metadata with the caller-facing (un-prefixed) key.
      */
-    public async copy(source: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FileObject> {
+    public async copy(source: string, destination: string, options?: CopyOptions): Promise<FileObject> {
         this.assertWritable();
+
+        const { sourceIfMatch } = options ?? {};
+        const condition = Files.writeCondition(options?.ifMatch, options?.ifNoneMatch);
+
+        if (condition || sourceIfMatch !== undefined) {
+            this.assertConditional("copy", { ifMatch: condition?.ifMatch, sourceIfMatch });
+        }
 
         return this.withHooks("copy", { from: source, to: destination }, async () => {
             const resolvedSource = this.resolveKey(source);
@@ -849,6 +928,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             const file = await this.adapter.copy(resolvedSource, resolvedDestination, {
                 ...this.mergeOptions(options, { from: source, to: destination, type: "copy" }),
+                ...condition,
+                ...(sourceIfMatch !== undefined && { sourceIfMatch }),
                 storageClass: options?.storageClass,
             });
             const result = toFileObject(file, resolvedDestination);

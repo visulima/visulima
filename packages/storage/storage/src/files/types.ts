@@ -1,7 +1,7 @@
 import type { Readable } from "node:stream";
 
 import type { BaseStorage } from "../storage/storage";
-import type { OperationOptions } from "../storage/types";
+import type { ConditionalSupport, OperationOptions } from "../storage/types";
 import type { UploadControl } from "./upload-control";
 
 /**
@@ -84,6 +84,22 @@ export interface UploadOptions {
      * merged {@link OperationOptions.signal}. See {@link UploadControl}.
      */
     control?: UploadControl;
+
+    /**
+     * Replace-if-match: store the body only when the object currently under the key has this ETag.
+     * Evaluated natively by the adapter at commit time; a mismatch (or a missing object) rejects with
+     * `PRECONDITION_FAILED` (412) and leaves the stored object untouched. Requires
+     * `capabilities.conditional.replace`, otherwise the call rejects with `METHOD_NOT_ALLOWED` before
+     * any I/O. Cannot be combined with {@link UploadOptions.ifNoneMatch}.
+     */
+    ifMatch?: string;
+
+    /**
+     * `"*"`: create-only. Store the body only when nothing exists under the key yet; otherwise reject
+     * with `PRECONDITION_FAILED` (412). Requires `capabilities.conditional.create`.
+     */
+    ifNoneMatch?: "*";
+
     metadata?: Record<string, unknown>;
 
     /**
@@ -122,6 +138,34 @@ export interface SignedUploadUrlOptions {
     expiresIn?: number;
 }
 
+/** Exact-read / conditional-delete predicate. */
+export interface IfMatchOptions {
+    /**
+     * Proceed only when the stored object's ETag equals this value; otherwise reject with
+     * `PRECONDITION_FAILED` (412). Requires the matching `capabilities.conditional` flag
+     * (`read` for `download`/`head`, `delete` for `delete`).
+     */
+    ifMatch?: string;
+}
+
+export interface HeadOptions extends IfMatchOptions, OperationOptions {}
+
+export interface DeleteOptions extends IfMatchOptions, OperationOptions {}
+
+export interface CopyOptions extends OperationOptions {
+    /** Copy only when the destination currently has this ETag (replace-if-match). */
+    ifMatch?: string;
+    /** `"*"`: copy only when the destination does not exist yet (create-only). */
+    ifNoneMatch?: "*";
+
+    /**
+     * Copy only when the source still has this ETag. Any of the three predicates requires
+     * `capabilities.conditional.copy`; the adapter evaluates them in the same native request.
+     */
+    sourceIfMatch?: string;
+    storageClass?: string;
+}
+
 export interface ListOptions {
     /**
      * Collapse keys that share a path segment into S3-style common prefixes ("directories").
@@ -158,6 +202,13 @@ export interface ListAllOptions {
 export interface StorageCapabilities {
     /** The adapter honours an object `cacheControl` directive on write. */
     cacheControl: boolean;
+
+    /**
+     * Which ETag predicates the adapter evaluates natively: create-only and replace-if-match
+     * uploads, exact reads, conditional deletes, and conditional copies. A predicate whose flag is
+     * `false` rejects with `METHOD_NOT_ALLOWED` before any I/O.
+     */
+    conditional: ConditionalSupport;
     /** The adapter persists and returns user-supplied key/value metadata. */
     metadata: boolean;
     /** The adapter honours byte-range downloads (`download({ range })`). */
@@ -166,7 +217,7 @@ export interface StorageCapabilities {
     readonly: boolean;
 }
 
-export interface DownloadOptions extends OperationOptions {
+export interface DownloadOptions extends IfMatchOptions, OperationOptions {
     /**
      * Fetch a contiguous byte slice instead of the whole object. Throws
      * `METHOD_NOT_ALLOWED` when the underlying adapter has `supportsRange =

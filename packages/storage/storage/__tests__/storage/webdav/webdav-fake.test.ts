@@ -2,6 +2,7 @@ import { Readable } from "node:stream";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type { WebdavStorageOptions } from "../../../src/storage/webdav/types";
@@ -16,16 +17,30 @@ const BASE_PATH = "/remote.php/dav/files/alice";
  * In-memory WebDAV server behind a `fetch` stub: a tree of collections and files that answers
  * the RFC 4918 verbs the adapter uses. PUT/COPY/MOVE into a missing collection answer 409 like
  * a real server, MKCOL on an existing collection 405. `fail` forces a status for one method,
- * `ignoreRange` makes GET answer 200 with the whole body.
+ * `ignoreRange` makes GET answer 200 with the whole body. `If-Match` / `If-None-Match`,
+ * `Overwrite: F` and tagged `If` headers answer 412 when they do not hold.
  */
 const server = {
     auth: `Basic ${Buffer.from("alice:secret").toString("base64")}`,
     dirs: new Set<string>([""]),
     fail: {} as Record<string, number>,
-    files: new Map<string, { body: Buffer; contentType: string; modifiedAt: Date }>(),
+    files: new Map<string, { body: Buffer; contentType: string; etag?: string; modifiedAt: Date }>(),
+    generation: 0,
     ignoreRange: false,
     requests: [] as string[],
 };
+
+const etagOf = (path: string): string => server.files.get(path)?.etag ?? `"e-${path}"`;
+
+const nextETag = (): string => {
+    server.generation += 1;
+
+    return `"g${String(server.generation)}"`;
+};
+
+/** Whether an `If-Match` / `If-None-Match` predicate fails for what `path` stores. */
+const failsCondition = (path: string, ifMatch: string | null, ifNoneMatch: string | null): boolean =>
+    (ifNoneMatch === "*" && server.files.has(path)) || (ifMatch !== null && (!server.files.has(path) || etagOf(path) !== ifMatch));
 
 const parent = (path: string): string => path.split("/").slice(0, -1).join("/");
 const toPath = (url: string): string => decodeURIComponent(new URL(url).pathname.slice(BASE_PATH.length)).replaceAll(/^\/+|\/+$/gu, "");
@@ -35,7 +50,7 @@ const propResponse = (path: string): string => {
     const file = server.files.get(path);
     const href = `${BASE_PATH}/${encode(path)}${file ? "" : "/"}`.replace(/\/\/$/u, "/");
     const props = file
-        ? `<D:resourcetype/><D:getcontentlength>${String(file.body.length)}</D:getcontentlength><D:getcontenttype>${file.contentType}</D:getcontenttype><D:getlastmodified>${file.modifiedAt.toUTCString()}</D:getlastmodified><D:getetag>"e-${path}"</D:getetag>`
+        ? `<D:resourcetype/><D:getcontentlength>${String(file.body.length)}</D:getcontentlength><D:getcontenttype>${file.contentType}</D:getcontenttype><D:getlastmodified>${file.modifiedAt.toUTCString()}</D:getlastmodified><D:getetag>${etagOf(path)}</D:getetag>`
         : "<D:resourcetype><D:collection/></D:resourcetype>";
 
     return `<D:response><D:href>${href}</D:href><D:propstat><D:prop>${props}</D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat></D:response>`;
@@ -61,16 +76,25 @@ const handle = async (url: string, init: RequestInit = {}): Promise<Response> =>
         case "MOVE": {
             const source = server.files.get(path);
             const target = toPath(headers.get("destination") as string);
+            const tagged = /^<([^>]+)> \(\[("[^"]*")\]\)$/u.exec(headers.get("if") ?? "");
 
             if (!source) {
-                return new Response(null, { status: 404 });
+                return new Response(null, { status: failsCondition(path, headers.get("if-match"), null) ? 412 : 404 });
+            }
+
+            if (
+                failsCondition(path, headers.get("if-match"), null) ||
+                (headers.get("overwrite") === "F" && server.files.has(target)) ||
+                (tagged !== null && failsCondition(toPath(tagged[1] as string), tagged[2] as string, null))
+            ) {
+                return new Response(null, { status: 412 });
             }
 
             if (!server.dirs.has(parent(target))) {
                 return new Response(null, { status: 409 });
             }
 
-            server.files.set(target, { ...source });
+            server.files.set(target, { ...source, etag: method === "COPY" ? nextETag() : source.etag });
 
             if (method === "MOVE") {
                 server.files.delete(path);
@@ -79,6 +103,10 @@ const handle = async (url: string, init: RequestInit = {}): Promise<Response> =>
             return new Response(null, { status: 201 });
         }
         case "DELETE": {
+            if (server.files.has(path) && failsCondition(path, headers.get("if-match"), null)) {
+                return new Response(null, { status: 412 });
+            }
+
             return new Response(null, { status: server.files.delete(path) ? 204 : 404 });
         }
         case "GET": {
@@ -88,15 +116,19 @@ const handle = async (url: string, init: RequestInit = {}): Promise<Response> =>
                 return new Response(null, { status: 404 });
             }
 
+            if (failsCondition(path, headers.get("if-match"), null)) {
+                return new Response(null, { status: 412 });
+            }
+
             const range = /^bytes=(\d+)-(\d*)$/u.exec(headers.get("range") ?? "");
 
             if (range && !server.ignoreRange) {
                 const end = range[2] ? Number(range[2]) + 1 : undefined;
 
-                return new Response(new Uint8Array(file.body.subarray(Number(range[1]), end)), { status: 206 });
+                return new Response(new Uint8Array(file.body.subarray(Number(range[1]), end)), { headers: { etag: etagOf(path) }, status: 206 });
             }
 
-            return new Response(new Uint8Array(file.body), { headers: { "content-length": String(file.body.length) }, status: 200 });
+            return new Response(new Uint8Array(file.body), { headers: { "content-length": String(file.body.length), etag: etagOf(path) }, status: 200 });
         }
         case "MKCOL": {
             if (server.dirs.has(path) || server.files.has(path)) {
@@ -129,9 +161,14 @@ const handle = async (url: string, init: RequestInit = {}): Promise<Response> =>
                 return new Response(null, { status: 409 });
             }
 
+            if (failsCondition(path, headers.get("if-match"), headers.get("if-none-match"))) {
+                return new Response(null, { status: 412 });
+            }
+
             const body = Buffer.from(await new Response(init.body).arrayBuffer());
 
-            server.files.set(path, { body, contentType: headers.get("content-type") ?? "application/octet-stream", modifiedAt: new Date() });
+            // Like Apache mod_dav, no ETag on the PUT response: the adapter asks with PROPFIND.
+            server.files.set(path, { body, contentType: headers.get("content-type") ?? "application/octet-stream", etag: nextETag(), modifiedAt: new Date() });
 
             return new Response(null, { status: 201 });
         }
@@ -185,7 +222,7 @@ describe("webdav storage against an in-memory WebDAV server", () => {
 
     describeStorageContract(() => {
         return {
-            createStorage: (options) => createStorage({ retryConfig: { maxRetries: 0 }, ...options }),
+            createStorage: (options) => createStorage({ conditional: true, retryConfig: { maxRetries: 0 }, ...options }),
             failBackend: (failing) => {
                 server.fail = failing ? Object.fromEntries(["COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "PROPFIND", "PUT"].map((method) => [method, 500])) : {};
             },
@@ -290,6 +327,33 @@ describe("webdav storage against an in-memory WebDAV server", () => {
         server.fail = { GET: 502 };
 
         await expect(storage.get({ id }, { retries: 0 })).rejects.toThrow("502");
+    });
+
+    it("should only send conditions when told to, and condition a copy destination with a tagged If header", async () => {
+        expect.assertions(4);
+
+        expect(new Files({ adapter: createStorage() }).capabilities.conditional).toStrictEqual({
+            copy: false,
+            create: false,
+            delete: false,
+            read: false,
+            replace: false,
+        });
+
+        const files = new Files({ adapter: createStorage({ conditional: true }) });
+
+        await files.upload("source.txt", "source");
+        await files.upload("taken.txt", "taken");
+
+        const { etag } = await files.download("taken.txt");
+
+        await expect(files.copy("source.txt", "taken.txt", { ifMatch: "stale" })).rejects.toMatchObject({ UploadErrorCode: ERRORS.PRECONDITION_FAILED });
+
+        await files.copy("source.txt", "taken.txt", { ifMatch: etag as string });
+
+        expect(server.files.get("uploads/taken.txt")?.body.toString()).toBe("source");
+        // The copy is a new generation: its record carries the server's new validator.
+        await expect(files.head("taken.txt")).resolves.toHaveProperty("etag", etagOf("uploads/taken.txt"));
     });
 
     it("should not create over an upload whose metadata it cannot read", async () => {

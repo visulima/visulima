@@ -1,5 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
-import { copyFile, open, stat, truncate } from "node:fs/promises";
+import { copyFile, open, rename, stat, truncate } from "node:fs/promises";
 import type { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream";
 
@@ -19,7 +20,8 @@ import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
 import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
-import type { DiskStorageOptions, OperationOptions, StoredObject } from "../types";
+import type { ConditionalOptions, ConditionalSupport, CopyConditionalOptions, DiskStorageOptions, OperationOptions, StoredObject } from "../types";
+import { assertCondition, hasCondition } from "../utils/etag";
 import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
@@ -49,6 +51,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public override checksumTypes: string[] = ["md5", "sha1"];
 
     public override readonly supportsRange: boolean = true;
+
+    /**
+     * Predicates are compared under the storage lock of the key, and a conditional upload lands
+     * through an atomic rename. The lock is process-local: writers in another process are not
+     * excluded.
+     */
+    public override readonly conditionalSupport: ConditionalSupport = { copy: true, create: true, delete: true, read: true, replace: true };
 
     public override get raw(): { directory: string } {
         return { directory: this.directory };
@@ -101,7 +110,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * An upload already stored under the same id is replaced: its content is discarded and the
      * new upload starts empty.
      */
-    public async create(fileInit: FileInit): Promise<TFile> {
+    public async create(fileInit: FileInit, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...fileInit };
@@ -137,6 +146,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             await this.validate(file as TFile);
 
             DiskStorage.assertSafeId(file.id);
+
+            // A conditional upload leaves the stored file and record alone: its write stores the body
+            // next to the target and renames it into place once the predicate holds.
+            if (hasCondition(options)) {
+                assertCondition(await this.eTagOf(file.name), options);
+                file.bytesWritten = 0;
+                file.status = getFileStatus(file);
+                this.parkConditional(file as TFile);
+                await this.onCreate(file as TFile);
+
+                return file as TFile;
+            }
 
             const path = this.getFilePath(file.name);
             let previous: TFile | undefined;
@@ -187,11 +208,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Uses file locking to prevent concurrent writes.
      * Updates file status to "completed" when all bytes are written.
      */
-    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
+    public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        // Taken before locking: a lock that can't be acquired must not strand the parked record.
+        const conditional = this.takeConditional(part.id);
+
         // Lock before reading the metadata, so the offset checked and extended is the one stored
         // after any earlier write finished.
         return this.instrumentOperation("write", async () =>
             this.withLock(part.id, async () => {
+                if (conditional) {
+                    return this.writeConditional(conditional, part, options);
+                }
+
                 let file: TFile;
 
                 const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
@@ -322,6 +350,75 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     }
 
     /**
+     * Store the body of a conditional upload in a sibling file, then — still under the key's lock —
+     * check the predicate and rename it over the target. A failed predicate leaves the target and
+     * its record untouched.
+     */
+    private async writeConditional(file: TFile, part: FilePart | FileQuery | TFile, options: ConditionalOptions | undefined): Promise<TFile> {
+        const target = file.name;
+        const staged = { ...file, name: `${target}.${randomUUID()}.conditional` } as TFile;
+        const stagedPath = this.getFilePath(staged.name);
+
+        try {
+            if (!hasContent(part)) {
+                return throwErrorCode(ERRORS.BAD_REQUEST, "A conditional upload needs a body");
+            }
+
+            if (part.size !== undefined) {
+                updateSize(staged, part.size);
+            }
+
+            await ensureFile(stagedPath);
+
+            const [bytesWritten, errorCode] = await this.lazyWrite({ ...staged, ...part, body: part.body, name: staged.name, start: 0 });
+
+            if (errorCode) {
+                return throwErrorCode(errorCode);
+            }
+
+            staged.bytesWritten = bytesWritten;
+            staged.status = getFileStatus(staged);
+
+            if (staged.status !== "completed") {
+                return throwErrorCode(ERRORS.FILE_CONFLICT, "A conditional upload has to be written in one request");
+            }
+
+            assertCondition(await this.eTagOf(target), options);
+            await ensureDir(dirname(this.getFilePath(target)));
+            await rename(stagedPath, this.getFilePath(target));
+        } finally {
+            await remove(stagedPath);
+        }
+
+        staged.name = target;
+        staged.ETag = await this.eTagOf(target);
+        staged.modifiedAt = new Date().toISOString();
+
+        return this.saveMeta(staged);
+    }
+
+    /**
+     * Strong ETag of the file stored under `name` (the one {@link DiskStorage.get} reports), or
+     * `undefined` when there is none.
+     */
+    // ponytail: hashes the whole file per conditional check; persist the ETag on write if this gets hot.
+    private async eTagOf(name: string): Promise<string | undefined> {
+        try {
+            return etag(await readFile(this.getFilePath(name), { buffer: true }));
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === "ENOENT") {
+                return undefined;
+            }
+
+            throw error;
+        }
+    }
+
+    protected override async currentETag(file: TFile): Promise<string | undefined> {
+        return this.eTagOf(file.name);
+    }
+
+    /**
      * Gets an uploaded file by ID.
      * @param query File query containing the file ID to retrieve.
      * @param query.id File ID to retrieve.
@@ -332,7 +429,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * For large files, consider using getStream() instead.
      * Includes ETag (MD5 hash) for content verification.
      */
-    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
+        if (options?.ifMatch !== undefined) {
+            const { ifMatch, ...rest } = options;
+
+            // The check and the read share the key's lock, so no conditional write lands in between.
+            return this.withLock(id, async () => {
+                assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
+
+                return this.get({ id }, rest);
+            });
+        }
+
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.meta.get(id));
             const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
@@ -526,7 +634,17 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery): Promise<TFile> {
+    public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        if (options?.ifMatch !== undefined) {
+            const { ifMatch } = options;
+
+            return this.withLock(id, async () => {
+                assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
+
+                return this.delete({ id });
+            });
+        }
+
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -548,7 +666,23 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string): Promise<TFile> {
+    public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions): Promise<TFile> {
+        const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+
+        if (sourceIfMatch !== undefined || ifMatch !== undefined || ifNoneMatch !== undefined) {
+            // Lock both keys, so neither changes between the checks and the copy.
+            return this.withLock(name, async () => {
+                const check = async (): Promise<TFile> => {
+                    assertCondition(await this.currentETag(await this.getMeta(name)), { ifMatch: sourceIfMatch });
+                    assertCondition(await this.eTagOf(destination), { ifMatch, ifNoneMatch });
+
+                    return this.copy(name, destination);
+                };
+
+                return name === destination ? check() : this.withLock(destination, check);
+            });
+        }
+
         return this.instrumentOperation("copy", async () => {
             DiskStorage.assertSafeId(name);
             DiskStorage.assertSafeId(destination);

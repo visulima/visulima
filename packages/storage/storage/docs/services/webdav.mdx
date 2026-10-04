@@ -43,6 +43,7 @@ const storage = new WebdavStorage({
 | `headers`           | `Record<string, string>`  | Extra headers sent with every request                                                   | —                 |
 | `rootFolderPath`    | `string`                  | Collection acting as the bucket root; missing collections are created on write          | the `url` itself  |
 | `metaStorageConfig` | `LocalMetaStorageOptions` | Where the sidecar metadata is kept                                                      | OS temp directory |
+| `conditional`       | `boolean`                 | Send the `Files` ETag predicates to the server (see below)                              | `false`           |
 
 ## Behaviour
 
@@ -54,4 +55,5 @@ const storage = new WebdavStorage({
 - **Not found vs. failure**: only a `404` reads as a missing file (`getCompletedFile()` → `undefined`, `exists()` → `false`, `get()` → `FILE_NOT_FOUND`). Any other status throws. `5xx` / `429` answers are retried under the retry policy.
 - **Expiry**: completed uploads keep their metadata. `purge()` deletes expired uploads, both the remote file and the metadata.
 - **No URLs**: `getReadUrl()` / `getUploadUrl()` reject with `METHOD_NOT_ALLOWED`; a WebDAV `GET` needs credentials that can't be signed into a URL.
+- **Conditional requests** (`conditional: true`): `ifNoneMatch: "*"` / `ifMatch` uploads go out as `If-None-Match` / `If-Match` on the `PUT`, exact reads and deletes as `If-Match`, and `copy` sends `sourceIfMatch` as `If-Match`, `ifNoneMatch: "*"` as `Overwrite: F` and a destination `ifMatch` as a tagged `If` header (RFC 4918 §10.4). A 412 answers `PRECONDITION_FAILED`. Reported ETags are then the server's (from the response, or a `PROPFIND` when the `PUT` answer has none). It is opt-in because some servers ignore these headers, which would turn a compare-and-set into a plain write; Nextcloud, ownCloud and Apache `mod_dav` honour them.
 - **Auth**: HTTP Basic or Bearer. Digest auth is not supported; pass a pre-computed `Authorization` through `headers` if your server needs another scheme.

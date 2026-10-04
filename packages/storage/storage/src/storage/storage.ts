@@ -24,7 +24,17 @@ import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
 import { getMetaVersion, isMetaNotFound, setMetaVersion } from "./meta-storage";
-import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList, StoredObject } from "./types";
+import type {
+    BaseStorageOptions,
+    BatchOperationResponse,
+    ConditionalOptions,
+    ConditionalSupport,
+    CopyConditionalOptions,
+    OperationOptions,
+    PurgeList,
+    StoredObject,
+} from "./types";
+import { assertCondition } from "./utils/etag";
 import type { FileInit, FilePart, FileQuery } from "./utils/file";
 import { File, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
@@ -286,6 +296,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public readonly sequentialWrites: boolean = false;
 
+    /**
+     * Adapter capability flags: which ETag predicates ({@link ConditionalOptions}) the adapter
+     * evaluates natively. All `false` by default; the `Files` facade rejects a predicate whose flag
+     * is off with `METHOD_NOT_ALLOWED` and surfaces the flags as `Files.capabilities.conditional`.
+     */
+    public readonly conditionalSupport: ConditionalSupport = { copy: false, create: false, delete: false, read: false, replace: false };
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
@@ -294,6 +311,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
     private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
+
+    /**
+     * Upload records of in-flight conditional uploads, by id. A conditional `create` parks its record
+     * here instead of saving it over the one the predicate is about; the `write` that commits the
+     * bytes takes it back, so a failed predicate leaves the stored record untouched.
+     */
+    private readonly pendingConditional = new Map<string, TFile>();
 
     protected namingFunction: (file: TFile) => string;
 
@@ -801,20 +825,22 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to the file metadata object.
      * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND). Any other
      * failure of the meta storage is rethrown as-is, so it never reads as a missing upload.
-     * @remarks Caches the retrieved metadata for faster subsequent access.
+     * @remarks Caches the retrieved metadata for faster subsequent access. With `ifMatch` (an exact
+     * read, only set by the `Files` facade on adapters declaring `conditionalSupport.read`) it
+     * answers only for the expected generation, see {@link BaseStorage.currentETag}.
      */
-    public async getMeta(id: string, _options?: OperationOptions): Promise<TFile> {
+    public async getMeta(id: string, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        let copy: TFile;
+
         try {
             const file = await this.meta.get(id);
 
             this.cache.set(file.id, file);
 
-            const copy = { ...file };
+            copy = { ...file };
 
             // Keep the version the record was read at, so saving the copy can be conditional.
             setMetaVersion(copy, getMetaVersion(file));
-
-            return copy;
         } catch (error: unknown) {
             const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
@@ -826,6 +852,63 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             throw error;
         }
+
+        if (options?.ifMatch !== undefined) {
+            assertCondition(await this.currentETag(copy, options), { ifMatch: options.ifMatch });
+        }
+
+        return copy;
+    }
+
+    /**
+     * The ETag of the object an upload record describes, as the conditional checks see it. Defaults
+     * to the ETag the record stores; adapters whose records may be stale (another client can write
+     * the object) override this to ask the object itself.
+     * @param file Upload record.
+     * @param _options Per-call signal/timeout/retries.
+     * @returns The current ETag, or `undefined` when nothing is stored.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected async currentETag(file: TFile, _options?: OperationOptions): Promise<string | undefined> {
+        return file.ETag;
+    }
+
+    /**
+     * The ETag of the object stored under `name`, as {@link BaseStorage.statObject} reports it.
+     * @param name Key of the object.
+     * @param options Per-call signal/timeout/retries.
+     * @returns The ETag, or `undefined` when nothing is stored.
+     */
+    protected async storedETag(name: string, options?: OperationOptions): Promise<string | undefined> {
+        const object = await this.statObject(name, options);
+
+        return object?.etag;
+    }
+
+    /**
+     * Park the record of a conditional upload until its commit (see {@link BaseStorage.takeConditional}).
+     * @param file Record of the conditional upload.
+     * @throws {UploadError} FILE_LOCKED when another conditional upload of the same id is in flight
+     */
+    protected parkConditional(file: TFile): void {
+        if (this.pendingConditional.has(file.id)) {
+            throwErrorCode(ERRORS.FILE_LOCKED, `A conditional upload of ${file.id} is already in progress`);
+        }
+
+        this.pendingConditional.set(file.id, file);
+    }
+
+    /**
+     * Take back the parked record of a conditional upload.
+     * @param id File ID of the upload.
+     * @returns The record, or `undefined` when `id` has no conditional upload in flight.
+     */
+    protected takeConditional(id: string): TFile | undefined {
+        const file = this.pendingConditional.get(id);
+
+        this.pendingConditional.delete(id);
+
+        return file;
     }
 
     /**
@@ -932,7 +1015,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      * @remarks This method loads the entire file content into memory. For large files, use getStream() instead.
      */
-    public abstract get({ id }: FileQuery, options?: OperationOptions): Promise<TFileReturn>;
+    public abstract get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFileReturn>;
 
     /**
      * Gets an uploaded file as a readable stream for efficient large file handling.
@@ -1045,7 +1128,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the created file object.
      */
-    public abstract create(file: FileInit, options?: OperationOptions): Promise<TFile>;
+    public abstract create(file: FileInit, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
 
     /**
      * Writes part and/or returns status of an upload.
@@ -1053,7 +1136,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the updated file object.
      */
-    public abstract write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile>;
+    public abstract write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
 
     /**
      * Deletes an upload and its metadata.
@@ -1063,7 +1146,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public abstract delete(query: FileQuery, options?: OperationOptions): Promise<TFile>;
+    public abstract delete(query: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
 
     /**
      * Deletes an upload this storage created. Unlike {@link BaseStorage.delete}, which some
@@ -1115,7 +1198,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public abstract copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile>;
+    public abstract copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<TFile>;
 
     /**
      * Moves an upload file to a new location.

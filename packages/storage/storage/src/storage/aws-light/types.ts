@@ -27,6 +27,14 @@ export type AwsLightStorageOptions = AwsLightClientConfig &
         clientDirectUpload?: boolean;
 
         /**
+         * Send conditional (ETag) requests and advertise them in `Files.capabilities.conditional`.
+         * Defaults to `true` for AWS S3 and `false` when a custom `endpoint` is set, because S3-compatible
+         * services differ in which `If-Match` / `If-None-Match` headers they honour. Always `false` with
+         * `clientDirectUpload`.
+         */
+        conditional?: boolean;
+
+        /**
          * Configure metafiles storage
          */
         metaStorageConfig?: AwsLightMetaStorageOptions;

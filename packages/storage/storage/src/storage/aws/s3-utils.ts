@@ -42,6 +42,18 @@ export const withoutParts = <T extends { Parts?: unknown }>(file: T): T => {
 export const isNotFound = (error: unknown): boolean => (error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 404;
 
 /**
+ * Rethrows an S3 `412 Precondition Failed` (a conditional header that did not hold) as
+ * `ERRORS.PRECONDITION_FAILED`; any other error unchanged.
+ */
+export const rethrowPreconditionFailed = (error: unknown): never => {
+    if ((error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 412) {
+        throwErrorCode(ERRORS.PRECONDITION_FAILED, (error as Error).message);
+    }
+
+    throw error;
+};
+
+/**
  * Whether an UploadPart failure is S3 rejecting the `Content-MD5` digest.
  */
 export const isBadDigest = (error: unknown): boolean => {
