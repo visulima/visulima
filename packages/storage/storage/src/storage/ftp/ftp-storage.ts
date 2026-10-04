@@ -359,6 +359,40 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
+    /**
+     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
+     * Only the size is requested — the content is never downloaded.
+     * @param id Upload ID, used as the remote key.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when the server reports no such file. Any other failure throws, so a failed lookup never reads as absent.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<FtpFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const path = this.keyToPath(id);
+            const size = await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        return await client.size(path);
+                    } catch (error) {
+                        if (isNotFoundError(error)) {
+                            return undefined;
+                        }
+
+                        throw error;
+                    }
+                }),
+            );
+
+            if (size === undefined) {
+                return undefined;
+            }
+
+            const file = new FtpFile({ contentType: "application/octet-stream", metadata: {}, originalName: id, size });
+
+            return Object.assign(file, { bytesWritten: size, id, name: id, path, status: "completed" as const });
+        });
+    }
+
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let file: FtpFile;

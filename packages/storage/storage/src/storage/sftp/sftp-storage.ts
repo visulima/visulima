@@ -349,6 +349,40 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
+    /**
+     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
+     * Only the file attributes are requested — the content is never downloaded.
+     * @param id Upload ID, used as the remote key.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when the server reports no such file. Any other failure throws, so a failed lookup never reads as absent.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SftpFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const path = this.keyToPath(id);
+            const stats = await this.runOperation(options, (signal) =>
+                this.run(signal, async (client) => {
+                    try {
+                        return await client.stat(path);
+                    } catch (error) {
+                        if (isNotFoundError(error)) {
+                            return undefined;
+                        }
+
+                        throw error;
+                    }
+                }),
+            );
+
+            if (stats === undefined) {
+                return undefined;
+            }
+
+            const file = new SftpFile({ contentType: "application/octet-stream", metadata: {}, originalName: id, size: stats.size });
+
+            return Object.assign(file, { bytesWritten: stats.size, id, name: id, path, status: "completed" as const });
+        });
+    }
+
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let file: SftpFile;

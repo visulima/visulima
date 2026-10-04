@@ -204,6 +204,12 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
         return inner.exists(query);
     }
 
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SharePointFile | undefined> {
+        const inner = await this.getInner();
+
+        return inner.getCompletedFile(id, options);
+    }
+
     public override async list(limit = 1000, options?: OperationOptions): Promise<SharePointFile[]> {
         const inner = await this.getInner();
 

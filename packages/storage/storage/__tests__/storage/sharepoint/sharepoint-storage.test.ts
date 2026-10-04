@@ -393,6 +393,27 @@ describe(SharePointStorage, () => {
             expect(deleteCall?.url).toBe("/drives/drive-1/root:/del.mp4");
         });
 
+        it("getCompletedFile delegates to the inner Graph client", async () => {
+            expect.assertions(2);
+
+            const storage = driveStorage();
+
+            mockClient.api.mockImplementationOnce((url: string) => {
+                const call = makeApi(url);
+
+                call.get.mockResolvedValue({ file: { mimeType: "video/mp4" }, id: "item-1", name: "existing.mp4", size: 4 });
+
+                apiCalls.push(call);
+
+                return call;
+            });
+
+            const file = await storage.getCompletedFile("existing.mp4");
+
+            expect(apiCalls[0]?.url).toBe("/drives/drive-1/root:/existing.mp4");
+            expect(file).toMatchObject({ driveItemId: "item-1", id: "existing.mp4", size: 4, status: "completed" });
+        });
+
         it("copy delegates to the inner Graph client", async () => {
             expect.assertions(2);
 

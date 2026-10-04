@@ -11,7 +11,7 @@ import type { FtpStorageOptions } from "../../../src/storage/ftp/types";
 import { metadata, storageOptions, testfile } from "../../__helpers__/config";
 
 const { control, store } = vi.hoisted(() => {
-    return { control: { renameThrows: false, uploadFailures: 0, uploadThrows: false }, store: new Map<string, Buffer>() };
+    return { control: { renameThrows: false, sizeThrows: false, uploadFailures: 0, uploadThrows: false }, store: new Map<string, Buffer>() };
 });
 
 vi.mock(import("basic-ftp"), () => {
@@ -99,6 +99,10 @@ vi.mock(import("basic-ftp"), () => {
 
         // eslint-disable-next-line class-methods-use-this
         public async size(path: string): Promise<number> {
+            if (control.sizeThrows) {
+                throw new Error("530 Not logged in");
+            }
+
             const data = store.get(normalize(path));
 
             if (!data) {
@@ -141,6 +145,7 @@ describe(FtpStorage, () => {
     beforeEach(() => {
         store.clear();
         control.renameThrows = false;
+        control.sizeThrows = false;
         control.uploadThrows = false;
         control.uploadFailures = 0;
         metaDirectory = join(tmpdir(), `ftp-meta-${Math.random().toString(36).slice(2)}`);
@@ -180,6 +185,27 @@ describe(FtpStorage, () => {
 
         expect(deleted.status).toBe("deleted");
         await expect(storage.exists({ id: created.id })).resolves.toBe(false);
+    });
+
+    it("describes a file stored without upload metadata", async () => {
+        expect.assertions(2);
+
+        store.set("uploads/existing.bin", testfile.asBuffer);
+
+        await expect(storage.getCompletedFile("existing.bin")).resolves.toMatchObject({
+            id: "existing.bin",
+            size: testfile.asBuffer.length,
+            status: "completed",
+        });
+        await expect(storage.getCompletedFile("missing.bin")).resolves.toBeUndefined();
+    });
+
+    it("fails the existence lookup closed when the server errors", async () => {
+        expect.assertions(1);
+
+        control.sizeThrows = true;
+
+        await expect(storage.getCompletedFile("existing.bin", { retries: 0 })).rejects.toThrow("530 Not logged in");
     });
 
     it("copies and moves a file and keeps both retrievable", async () => {
