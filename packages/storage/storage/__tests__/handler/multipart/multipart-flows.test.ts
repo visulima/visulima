@@ -97,10 +97,28 @@ describe.each(Object.entries(mounts))("multipart %s handler", (_name, mount) => 
         expect(body.metadata).toStrictEqual({ label: "kept" });
     });
 
+    it.each([
+        ["memory", () => new MemoryStorage()],
+        ["disk", () => new DiskStorage({ directory })],
+    ])("should keep the file part's filename over name-like fields on %s storage", async (_storage, createStorage) => {
+        expect.assertions(4);
+
+        const storage = createStorage();
+        const response = await upload(await mount(storage), { metadata: JSON.stringify({ name: "from-json.txt" }), title: "My title" });
+        const body = (await response.json()) as { id: string; metadata: Record<string, unknown>; originalName: string };
+
+        expect(response.status).toBe(200);
+        expect(body.originalName).toBe("hello.txt");
+        expect(body.metadata).toStrictEqual({ name: "from-json.txt", title: "My title" });
+        await expect(storage.getMeta(body.id)).resolves.toHaveProperty("originalName", "hello.txt");
+    });
+
     it("should reject a request that is not multipart", async () => {
         expect.assertions(2);
 
-        const response = await (await mount(new MemoryStorage()))("/files", {
+        const response = await (
+            await mount(new MemoryStorage())
+        )("/files", {
             body: JSON.stringify({ file: "x" }),
             headers: { "content-type": "application/json" },
             method: "POST",
@@ -126,7 +144,9 @@ describe.each(Object.entries(mounts))("multipart %s handler", (_name, mount) => 
     it("should reject a malformed multipart body", async () => {
         expect.assertions(1);
 
-        const response = await (await mount(new MemoryStorage()))("/files", {
+        const response = await (
+            await mount(new MemoryStorage())
+        )("/files", {
             body: "garbage without boundaries",
             headers: { "content-type": "multipart/form-data; boundary=abc" },
             method: "POST",

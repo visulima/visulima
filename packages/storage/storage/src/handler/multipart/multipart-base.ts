@@ -69,18 +69,9 @@ abstract class MultipartBase<TFile extends UploadFile> {
             start: 0,
         });
 
-        // Update completed file with metadata if any was provided
-        let finalFile = completedFile;
-
-        if (Object.keys(config.metadata).length > 0) {
-            const mergedMetadata = {
-                ...completedFile.metadata,
-                ...config.metadata,
-            };
-            const updatedFile = await this.storage.update({ id: completedFile.id }, { metadata: mergedMetadata });
-
-            finalFile = { ...updatedFile, status: completedFile.status };
-        }
+        // The form fields were stored by `create`. No metadata update follows: it would derive
+        // originalName from fields like `title` or `name`, while the file part's filename wins.
+        const finalFile = completedFile;
 
         const locationUrl = this.buildFileUrl(requestUrl, finalFile);
 
@@ -118,7 +109,6 @@ abstract class MultipartBase<TFile extends UploadFile> {
         create: (config: FileInit) => Promise<TFile>;
         delete: (options: { id: string }) => Promise<TFile>;
         maxUploadSize: number;
-        update: (options: { id: string }, updates: { metadata?: Record<string, unknown> }) => Promise<TFile>;
         write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
     } {
         // This will be overridden by subclasses
