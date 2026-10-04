@@ -148,11 +148,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             const { headers, statusCode } = file as ResponseFile<TFile>;
 
             return new Response(undefined, {
-                headers: this.convertHeaders({
-                    ...headers,
-                    "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
-                }),
+                headers: this.convertHeaders({ ...headers }),
                 status: statusCode,
             });
         }
@@ -192,8 +188,6 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             return new Response(body, {
                 headers: this.convertHeaders({
                     ...responseHeaders,
-                    "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
                 }),
                 status,
             });
@@ -254,8 +248,6 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         };
         const convertedHeaders = this.convertHeaders({
             ...allHeaders,
-            "Access-Control-Expose-Headers":
-                "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
             ...(basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value }),
         });
 
@@ -309,9 +301,23 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     // eslint-disable-next-line class-methods-use-this
     protected convertHeaders(headers: Record<string, number | string | string[]>): Record<string, string> {
         const result: Record<string, string> = {};
+        const exposed: string[] = [];
 
         for (const [key, value] of Object.entries(headers)) {
-            result[key] = Array.isArray(value) ? value.join(", ") : String(value);
+            const text = Array.isArray(value) ? value.join(", ") : String(value);
+
+            if (key.toLowerCase() === "access-control-expose-headers") {
+                exposed.unshift(text);
+            } else {
+                result[key] = text;
+                exposed.push(key.toLowerCase());
+            }
+        }
+
+        // Expose every header the response sets, as the Node handlers do, so a cross-origin client
+        // can read each one, the response that completes an upload included.
+        if (exposed.length > 0) {
+            result["Access-Control-Expose-Headers"] = exposed.join(",");
         }
 
         return result;

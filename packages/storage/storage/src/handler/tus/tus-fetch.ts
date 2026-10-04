@@ -1,7 +1,9 @@
+import { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { getIdFromRequestUrl } from "../../utils/http";
+import { getIdFromRequestUrl, getRequestStream } from "../../utils/http";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import type { TusRequest } from "./tus-base";
@@ -63,6 +65,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const headers = new Headers(response.headers);
 
         headers.set("Tus-Resumable", TUS_RESUMABLE);
+        headers.append("Access-Control-Expose-Headers", "tus-resumable");
 
         return new Response(response.body, {
             headers,
@@ -182,8 +185,15 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
      * @returns TUS request
      */
     private static toTusRequest(request: Request): TusRequest {
+        let body: Readable | undefined;
+
         return {
-            body: request.body,
+            // Storages read Node streams; an empty PATCH (finishing a deferred upload) has no body at all.
+            get body() {
+                body ??= request.body ? getRequestStream(request) : Readable.from([]);
+
+                return body;
+            },
             header: (name) => request.headers.get(name) ?? undefined,
             resolveId: () => {
                 const id = getIdFromRequestUrl(request.url);

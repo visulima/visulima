@@ -119,7 +119,7 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
     });
 
     it("should answer 200 to the chunk that completes a multi-part upload (#907, #908)", async () => {
-        expect.assertions(6);
+        expect.assertions(7);
 
         const s3 = createS3Fake();
 
@@ -157,6 +157,8 @@ describe("fetch RestFetch chunked uploads over AwsLightStorage", () => {
 
             if (end === bytes.byteLength) {
                 expect(response.headers.get("x-upload-complete")).toBe("true");
+                // A cross-origin client must be able to read it on the completing PATCH.
+                expect(response.headers.get("access-control-expose-headers")).toContain("x-upload-complete");
             }
         }
 
