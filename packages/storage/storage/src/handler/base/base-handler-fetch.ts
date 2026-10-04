@@ -1,17 +1,14 @@
 import { Readable } from "node:stream";
 
-import { isHttpError } from "http-errors";
-
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
-import { ERRORS, isUploadError } from "../../utils/errors";
+import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
 import pick from "../../utils/primitives/pick";
-import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
-import { isValidationError } from "../../utils/validator";
+import type { UploadResponse } from "../../utils/types";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
-import { applyRange } from "../utils/stream-utils";
+import { applyRange, rangeIfCurrent } from "../utils/stream-utils";
 import BaseHandlerCore from "./base-handler-core";
 
 /**
@@ -170,7 +167,20 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 body = JSON.stringify(file.data);
             } else if (file.stream) {
                 // Streaming response, with range support for partial content requests
-                const ranged = applyRange(file.stream, file.size, this.parseRangeHeader(request.headers.get("range") ?? undefined, file.size || 0));
+                let range: { end: number; start: number } | undefined;
+
+                try {
+                    range = this.parseRangeHeader(
+                        rangeIfCurrent(request.headers.get("range") ?? undefined, request.headers.get("if-range") ?? undefined, responseHeaders),
+                        file.size || 0,
+                    );
+                } catch (error) {
+                    file.stream.destroy();
+
+                    throw error;
+                }
+
+                const ranged = applyRange(file.stream, file.size, range);
 
                 Object.assign(responseHeaders, ranged.headers);
                 status = ranged.partial ? 206 : statusCode;
@@ -357,65 +367,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
      * @returns Web API Response object with error details
      */
     protected async createErrorResponse(error: Error): Promise<globalThis.Response> {
-        let httpError: HttpError;
-
-        if (isUploadError(error)) {
-            httpError = this.internalErrorResponses[error.UploadErrorCode] as HttpError;
-        } else if (!isValidationError(error) && !isHttpError(error)) {
-            httpError = this.storage.normalizeError(error);
-        } else {
-            // For http-errors, pass through without body - onError will format it
-            httpError = {
-                ...error,
-                code: (error as HttpError).code || error.name,
-                headers: (error as HttpError).headers || {},
-                message: error.message,
-                name: error.name,
-                statusCode: (error as HttpError).statusCode || 500,
-            };
-        }
-
-        // Call onError hook - user can modify the error object in place
-        await this.storage.onError(httpError);
-
-        // Format error response - if body is not set, format it into body.error structure
-        let errorResponse: UploadResponse;
-
-        if (httpError.body) {
-            // If body is already an object, use it directly
-            // If body is a string, wrap it in error structure for consistency
-            if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
-            } else {
-                // Body is a string, wrap it in error structure
-                errorResponse = {
-                    body: {
-                        error: {
-                            code: httpError.code || httpError.name || "Error",
-                            message: httpError.body || httpError.message || "Unknown error",
-                            name: httpError.name || "Error",
-                        },
-                    },
-                    headers: httpError.headers,
-                    statusCode: httpError.statusCode || 500,
-                };
-            }
-        } else {
-            // Format the error properties into a body.error structure
-            errorResponse = {
-                body: {
-                    error: {
-                        code: httpError.code || httpError.name || "Error",
-                        message: httpError.message || "Unknown error",
-                        name: httpError.name || "Error",
-                    },
-                },
-                headers: httpError.headers,
-                statusCode: httpError.statusCode || 500,
-            };
-        }
-
-        return this.createResponse(errorResponse);
+        return this.createResponse(await this.buildErrorResponse(error));
     }
 
     /**

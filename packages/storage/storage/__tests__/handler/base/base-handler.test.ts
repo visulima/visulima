@@ -290,7 +290,8 @@ describe("baseHandler", () => {
             body: {
                 error: {
                     code: "Error",
-                    message: "[disk] Error Message",
+                    // An unexpected error's message stays server-side.
+                    message: "Something went wrong",
                     name: "Error",
                 },
             },
@@ -383,18 +384,27 @@ describe("baseHandler", () => {
 
         describe("parseRangeHeader", () => {
             it("should parse valid range headers correctly", () => {
-                expect.assertions(3);
+                expect.assertions(4);
 
                 expect(uploader.parseRangeHeader("bytes=0-99", 1000)).toStrictEqual({ end: 99, start: 0 });
                 expect(uploader.parseRangeHeader("bytes=100-", 1000)).toStrictEqual({ end: 999, start: 100 });
                 expect(uploader.parseRangeHeader("bytes=-50", 1000)).toStrictEqual({ end: 999, start: 950 });
+                // An end past the file is the remainder of the file (RFC 9110 §14.1.2).
+                expect(uploader.parseRangeHeader("bytes=0-1999", 1000)).toStrictEqual({ end: 999, start: 0 });
+            });
+
+            it("should answer 416 when no requested byte exists", () => {
+                expect.assertions(2);
+
+                expect(() => uploader.parseRangeHeader("bytes=1000-1100", 1000)).toThrow(expect.objectContaining({ status: 416 }));
+                expect(() => uploader.parseRangeHeader("bytes=-0", 1000)).toThrow(expect.objectContaining({ headers: { "Content-Range": "bytes */1000" } }));
             });
 
             it("should return null for invalid range headers", () => {
                 expect.assertions(4);
 
                 expect(uploader.parseRangeHeader("bytes=100-50", 1000)).toBeUndefined(); // Start > End
-                expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeUndefined(); // Start >= fileSize
+                expect(uploader.parseRangeHeader("bytes=1x-5", 1000)).toBeUndefined(); // Malformed number
                 expect(uploader.parseRangeHeader("invalid", 1000)).toBeUndefined(); // Invalid format
                 expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeUndefined(); // Multiple ranges
             });

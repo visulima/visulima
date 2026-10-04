@@ -7,6 +7,7 @@ import pick from "../../utils/primitives/pick";
 import type { IncomingMessageWithBody, ResponseBody, UploadResponse } from "../../utils/types";
 import type { ResponseFile, ResponseList } from "../types";
 import { convertHeadersToString } from "./response-builder";
+import { rangeIfCurrent } from "./stream-utils";
 
 /**
  * Handles HEAD/OPTIONS requests.
@@ -59,7 +60,15 @@ export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends 
             next();
         } else {
             // Parse range header for partial content requests
-            const range = parseRangeHeader(request.headers.range, streamingFile.size || 0);
+            let range: { end: number; start: number } | undefined;
+
+            try {
+                range = parseRangeHeader(rangeIfCurrent(request.headers.range, request.headers["if-range"] as string | undefined, headers), streamingFile.size || 0);
+            } catch (error) {
+                streamingFile.stream.destroy();
+
+                throw error;
+            }
 
             // Stream the response directly
             sendStream(response, streamingFile.stream, {

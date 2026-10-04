@@ -15,6 +15,14 @@ Cloud providers (S3 and compatibles, Azure, GCS, Firebase, Bun S3, Bunny, Box, D
 
 With a custom `filename`, the object key differs from the id and the `PUT` check can't see the object. Use server-generated ids (`POST`) there.
 
+### Upload ids are random
+
+Every handler (`Tus`, `Multipart`, `Rest` `POST`) now gives each new upload a random id. The id used to be hashed from the file's name, size and `lastModified`, all sent by the client, so a second client creating an "identical" file got the same id, reset the first client's upload and mixed its bytes into it ([#921](https://github.com/visulima/visulima/issues/921)).
+
+Creating the same file twice now starts two uploads. To resume, keep the upload URL from the first create, as tus clients (including `@visulima/storage-client`) already do. Ids you choose yourself with `PUT` or `storage.create({ id })` are unchanged.
+
+The Node `Tus` and `Multipart` handlers read the id from the last path segment, as the fetch handlers and the Node `Rest` handler already do. A mount path shaped like an id (for example `/files-by-user`) is no longer taken as the id, and `/<id>/metadata` resolves to `<id>`.
+
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
 ### Summary

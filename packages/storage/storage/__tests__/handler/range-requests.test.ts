@@ -63,8 +63,9 @@ describe("range request functionality", () => {
             expect.assertions(6);
 
             expect(uploader.parseRangeHeader("bytes=200-100", 1000)).toBeUndefined(); // Start > End
-            expect(uploader.parseRangeHeader("bytes=1000-1100", 1000)).toBeUndefined(); // Start >= fileSize
-            expect(uploader.parseRangeHeader("bytes=500-1500", 1000)).toBeUndefined(); // End >= fileSize
+            // Start >= fileSize is unsatisfiable (416); an end past the file is the remainder (RFC 9110 §14.1.2).
+            expect(() => uploader.parseRangeHeader("bytes=1000-1100", 1000)).toThrow(expect.objectContaining({ status: 416 }));
+            expect(uploader.parseRangeHeader("bytes=500-1500", 1000)).toStrictEqual({ end: 999, start: 500 });
             expect(uploader.parseRangeHeader("invalid", 1000)).toBeUndefined(); // Invalid format
             expect(uploader.parseRangeHeader("bytes=0-99,100-199", 1000)).toBeUndefined(); // Multiple ranges
             expect(uploader.parseRangeHeader("range=0-99", 1000)).toBeUndefined(); // Wrong prefix

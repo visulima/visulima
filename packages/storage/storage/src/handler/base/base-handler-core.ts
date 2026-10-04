@@ -3,17 +3,18 @@ import type { IncomingMessage } from "node:http";
 import { format } from "node:url";
 
 import { paginate } from "@visulima/pagination";
-import createHttpError from "http-errors";
+import createHttpError, { isHttpError } from "http-errors";
 import mime from "mime";
 
 import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
 import type { ErrorResponses } from "../../utils/errors";
-import { ErrorMap, ERRORS } from "../../utils/errors";
+import { ErrorMap, ERRORS, isUploadError } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
 import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
-import type { ResponseBodyType } from "../../utils/types";
+import type { HttpError, ResponseBody, ResponseBodyType, UploadResponse } from "../../utils/types";
+import { isValidationError } from "../../utils/validator";
 import type { ResponseFile, ResponseList, UploadOptions } from "../types";
 import { parseIntegerHeader } from "../utils/request-parser";
 
@@ -192,60 +193,45 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
 
     /**
      * Parses HTTP Range header and returns start/end byte positions for partial content requests.
+     * A malformed or multi-range header is ignored (the full file is sent); an end past the file is
+     * read as the remainder of the file (RFC 9110 §14.1.2).
      * @param rangeHeader HTTP Range header value (e.g., "bytes=0-1023").
      * @param fileSize Total size of the file in bytes.
-     * @returns Object with start and end positions, or undefined if range is invalid.
+     * @returns Object with start and end positions, or undefined if the range is to be ignored.
+     * @throws {HttpError} 416 with `Content-Range: bytes *\/size` when no requested byte exists.
      */
     // eslint-disable-next-line class-methods-use-this
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
-        if (!rangeHeader?.startsWith("bytes=")) {
+        const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader?.trim() ?? "");
+
+        // Callers pass 0 for an unknown size: send the whole file then.
+        if (!match || (!match[1] && !match[2]) || fileSize <= 0) {
             return undefined;
         }
 
-        const ranges = rangeHeader.slice(6).split(",");
-
-        if (ranges.length !== 1) {
-            // Multiple ranges not supported
-            return undefined;
-        }
-
-        const range = ranges[0]?.trim();
-
-        if (!range) {
-            return undefined;
-        }
-
-        const parts = range.split("-");
-
-        if (parts.length !== 2) {
-            return undefined;
-        }
-
-        const [startString, endString] = parts;
+        const [, startString, endString] = match;
         let start: number;
-        let end: number;
+        let end = fileSize - 1;
 
-        if (startString && endString) {
-            // bytes=start-end
-            start = Number.parseInt(startString, 10);
-            end = Number.parseInt(endString, 10);
-        } else if (startString && !endString) {
-            // bytes=start- (open-ended range)
-            start = Number.parseInt(startString, 10);
-            end = fileSize - 1;
-        } else if (!startString && endString) {
-            // bytes=-end (suffix range)
-            const suffixLength = Number.parseInt(endString, 10);
+        if (startString) {
+            start = Number(startString);
 
-            start = Math.max(0, fileSize - suffixLength);
-            end = fileSize - 1;
+            if (endString) {
+                end = Math.min(Number(endString), fileSize - 1);
+
+                if (Number(endString) < start) {
+                    return undefined;
+                }
+            }
         } else {
-            return undefined; // Invalid range (both empty)
+            // bytes=-N: the last N bytes
+            const suffixLength = Number(endString);
+
+            start = suffixLength === 0 ? fileSize : Math.max(0, fileSize - suffixLength);
         }
 
-        // Validate range
-        if (Number.isNaN(start) || Number.isNaN(end) || start >= fileSize || end >= fileSize || start > end) {
-            return undefined;
+        if (start >= fileSize) {
+            throw createHttpError(416, "Range not satisfiable", { headers: { "Content-Range": `bytes */${String(fileSize)}` } });
         }
 
         return { end, start };
@@ -300,6 +286,81 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         return HeaderUtilities.getPreferredMediaType(acceptHeader, supportedTypes);
+    }
+
+    /**
+     * Converts an error into the response sent to the client, after the storage's onError hook ran.
+     * @param error Error to convert
+     * @returns The error response
+     */
+    protected async buildErrorResponse(error: Error): Promise<UploadResponse> {
+        let httpError: HttpError;
+        let unexpected = false;
+
+        if (isUploadError(error)) {
+            // A custom code (throwErrorCode accepts any string) has no mapped response.
+            httpError = (this.internalErrorResponses[error.UploadErrorCode] ?? this.internalErrorResponses[ERRORS.UNKNOWN_ERROR]) as HttpError;
+        } else if (!isValidationError(error) && !isHttpError(error)) {
+            httpError = this.storage.normalizeError(error);
+            unexpected = true;
+        } else {
+            // For http-errors, pass through without body - onError will format it
+            httpError = {
+                ...error,
+                code: (error as HttpError).code || error.name,
+                headers: (error as HttpError).headers || {},
+                message: error.message,
+                name: error.name,
+                statusCode: (error as HttpError).statusCode || 500,
+            };
+        }
+
+        // Call onError hook - user can modify the error object in place
+        await this.storage.onError(httpError);
+
+        // An unexpected error's message carries internals (paths, SDK text); onError has seen it, the client doesn't.
+        if (unexpected && (httpError.statusCode ?? 500) >= 500 && httpError.body === undefined) {
+            httpError = { ...httpError, message: ErrorMap.UnknownError.message };
+        }
+
+        // Format error response - if body is not set, format it into body.error structure
+        let errorResponse: UploadResponse;
+
+        if (httpError.body) {
+            // If body is already an object, use it directly
+            // If body is a string, wrap it in error structure for consistency
+            if (typeof httpError.body === "object" && httpError.body !== null) {
+                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
+            } else {
+                // Body is a string, wrap it in error structure
+                errorResponse = {
+                    body: {
+                        error: {
+                            code: httpError.code || httpError.name || "Error",
+                            message: httpError.body || httpError.message || "Unknown error",
+                            name: httpError.name || "Error",
+                        },
+                    },
+                    headers: httpError.headers,
+                    statusCode: httpError.statusCode || 500,
+                };
+            }
+        } else {
+            // Format the error properties into a body.error structure
+            errorResponse = {
+                body: {
+                    error: {
+                        code: httpError.code || httpError.name || "Error",
+                        message: httpError.message || "Unknown error",
+                        name: httpError.name || "Error",
+                    },
+                },
+                headers: httpError.headers,
+                statusCode: httpError.statusCode || 500,
+            };
+        }
+
+        return errorResponse;
     }
 
     /**

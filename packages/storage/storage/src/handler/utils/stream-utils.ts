@@ -3,6 +3,37 @@ import type { Readable } from "node:stream";
 import { PassThrough } from "node:stream";
 
 /**
+ * Picks the Range header to honour: none when an `If-Range` validator doesn't match the file's
+ * strong ETag or its Last-Modified date, so a resumed download never mixes two versions of a file
+ * (RFC 9110 §13.1.5).
+ * @param range Range request header
+ * @param ifRange If-Range request header
+ * @param headers Response headers carrying the file's ETag / Last-Modified
+ * @returns The Range header to parse, or `undefined` to send the whole file
+ */
+export const rangeIfCurrent = (
+    range: string | undefined,
+    ifRange: string | undefined,
+    headers: Record<string, unknown> | undefined,
+): string | undefined => {
+    if (!range || !ifRange) {
+        return range;
+    }
+
+    const header = (name: string): string | undefined => {
+        const entry = Object.entries(headers ?? {}).find(([key]) => key.toLowerCase() === name);
+
+        return entry === undefined ? undefined : String(entry[1]);
+    };
+    const validator = ifRange.trim();
+
+    // An entity-tag validator must match strongly; anything else is an HTTP-date.
+    const matches = validator.startsWith("\"") ? !validator.startsWith("W/") && validator === header("etag") : validator === header("last-modified");
+
+    return matches ? range : undefined;
+};
+
+/**
  * Applies an (already parsed) byte range to a file stream.
  * Shared by the Node and Fetch handlers so both send identical 200/206 responses.
  * @param stream Full file stream
