@@ -5,16 +5,17 @@ import type { CreateWasabiClientParameters } from "./types";
 /**
  * Create a Wasabi client, compatible with the S3 API.
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `WASABI_REGION`
- * - `AWS_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY`
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `WASABI_ACCESS_KEY_ID` / `WASABI_ACCESS_KEY`, then `AWS_ACCESS_KEY_ID`
+ * - `WASABI_REGION`, then `AWS_REGION`
+ * - `WASABI_SECRET_ACCESS_KEY` / `WASABI_SECRET_KEY`, then `AWS_SECRET_ACCESS_KEY`
  */
 const wasabi = (parameters?: CreateWasabiClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.WASABI_ACCESS_KEY_ID ?? process.env.WASABI_ACCESS_KEY;
-    const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.WASABI_REGION;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.WASABI_ACCESS_KEY_ID ?? process.env.WASABI_ACCESS_KEY ?? process.env.AWS_ACCESS_KEY_ID;
+    const region = parameters?.region ?? process.env.WASABI_REGION ?? process.env.AWS_REGION;
     const secretAccessKey =
-        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.WASABI_SECRET_ACCESS_KEY ?? process.env.WASABI_SECRET_KEY;
+        parameters?.secretAccessKey ?? process.env.WASABI_SECRET_ACCESS_KEY ?? process.env.WASABI_SECRET_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!region || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Wasabi client.");

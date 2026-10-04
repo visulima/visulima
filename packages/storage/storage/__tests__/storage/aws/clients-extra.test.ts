@@ -83,6 +83,21 @@ describe("additional aws s3-compatible client presets", () => {
                 region: "eu-central-003",
             });
         });
+
+        it("prefers B2_ environment variables over the generic AWS_ ones", () => {
+            process.env.AWS_ACCESS_KEY_ID = "aws-ak";
+            process.env.AWS_SECRET_ACCESS_KEY = "aws-sk";
+            process.env.AWS_REGION = "us-east-1";
+            process.env.B2_APP_KEY_ID = "env-ak";
+            process.env.B2_APP_KEY = "env-sk";
+            process.env.B2_REGION = "eu-central-003";
+
+            expect(backblaze()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "https://s3.eu-central-003.backblazeb2.com",
+                region: "eu-central-003",
+            });
+        });
     });
 
     describe(cloudflare, () => {
@@ -117,7 +132,8 @@ describe("additional aws s3-compatible client presets", () => {
             expect(() => digitalOcean({ key: "ak", region: "nyc3" } as never)).toThrow(/Missing required parameters/);
         });
 
-        it("reads SPACES_* env vars", () => {
+        it("reads SPACES_* env vars, over the generic AWS_* ones", () => {
+            process.env.AWS_REGION = "us-east-1";
             process.env.SPACES_KEY = "env-ak";
             process.env.SPACES_SECRET = "env-sk";
             process.env.SPACES_REGION = "ams3";

@@ -46,8 +46,8 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter         | Type     | Required | Env fallback (in order)                                                  |
 | ----------------- | -------- | -------- | ------------------------------------------------------------------------ |
-| `accessKeyId`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `TIGRIS_ACCESS_KEY_ID`, `TIGRIS_ACCESS_KEY`         |
-| `secretAccessKey` | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `TIGRIS_SECRET_ACCESS_KEY`, `TIGRIS_SECRET_KEY` |
+| `accessKeyId`     | `string` | yes      | `TIGRIS_ACCESS_KEY_ID`, `TIGRIS_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `TIGRIS_SECRET_ACCESS_KEY`, `TIGRIS_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 | `endpoint`        | `string` | no       | `TIGRIS_ENDPOINT`; default `https://t3.storage.dev`                      |
 
 All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).

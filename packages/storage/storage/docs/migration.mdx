@@ -69,6 +69,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **Vercel Blob overwrites and supports private stores.** `put()` and `copy()` pass `allowOverwrite: true` (`@vercel/blob` 2.x refuses an existing pathname otherwise), `access: "private"` is accepted, and `get()`/`exists()` go through the SDK instead of fetching the blob URL. A part mismatch, an unsupported checksum and a read before any content now throw `UploadError`s (`FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`, `FILE_NOT_FOUND`).
 - **Netlify Blob records no longer carry a made-up `url`** (`/api/blobs/<store>/<key>`, which nothing served); `NetlifyBlobFile.url` is deprecated. Missing content and part/checksum errors throw `UploadError`s (`FILE_NOT_FOUND`, `FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`) instead of plain `Error`s.
 - **Firebase, Supabase and Bun S3 throw `UploadError`s**: SDK failures map to codes by HTTP status (`404` → `FILE_NOT_FOUND`, `403` → `FORBIDDEN`, …), and a part mismatch or unsupported checksum answers `FILE_CONFLICT` / `UNSUPPORTED_CHECKSUM_ALGORITHM` instead of a plain `Error` (a `500`).
+- **S3-compatible client helpers prefer provider-specific environment variables** (`B2_REGION`, `SPACES_REGION`, `WASABI_REGION`, `MINIO_*`, …) over the generic `AWS_*` ones, which are now only a fallback. Before, an `AWS_REGION` set for AWS silently overrode them.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

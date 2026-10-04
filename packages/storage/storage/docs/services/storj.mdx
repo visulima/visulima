@@ -31,8 +31,8 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter         | Type     | Required | Env fallback (in order)                                                |
 | ----------------- | -------- | -------- | ---------------------------------------------------------------------- |
-| `accessKeyId`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `STORJ_ACCESS_KEY_ID`, `STORJ_ACCESS_KEY`         |
-| `secretAccessKey` | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `STORJ_SECRET_ACCESS_KEY`, `STORJ_SECRET_KEY` |
+| `accessKeyId`     | `string` | yes      | `STORJ_ACCESS_KEY_ID`, `STORJ_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `STORJ_SECRET_ACCESS_KEY`, `STORJ_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 | `endpoint`        | `string` | no       | `STORJ_ENDPOINT`; default `https://gateway.storjshare.io`              |
 
 All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).

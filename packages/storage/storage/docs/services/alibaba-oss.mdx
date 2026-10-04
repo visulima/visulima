@@ -53,8 +53,8 @@ pnpm add @visulima/storage aws4fetch
 | Parameter         | Type     | Required | Env fallback (in order)                                            |
 | ----------------- | -------- | -------- | ------------------------------------------------------------------ |
 | `region`          | `string` | yes      | `ALIBABA_REGION` (deliberately not `AWS_REGION`)                   |
-| `accessKeyId`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `ALIBABA_ACCESS_KEY_ID`                       |
-| `secretAccessKey` | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `ALIBABA_ACCESS_KEY_SECRET`               |
+| `accessKeyId`     | `string` | yes      | `ALIBABA_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_ID`                       |
+| `secretAccessKey` | `string` | yes      | `ALIBABA_ACCESS_KEY_SECRET`, `AWS_SECRET_ACCESS_KEY`               |
 | `endpoint`        | `string` | no       | `ALIBABA_ENDPOINT`; default `https://s3.oss-<region>.aliyuncs.com` |
 
 All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).

@@ -51,8 +51,8 @@ pnpm add @visulima/storage aws4fetch
 | Parameter         | Type                         | Required | Env fallback (in order)                                                    |
 | ----------------- | ---------------------------- | -------- | -------------------------------------------------------------------------- |
 | `location`        | `"fsn1" \| "hel1" \| "nbg1"` | yes      | `HETZNER_LOCATION`                                                         |
-| `accessKeyId`     | `string`                     | yes      | `AWS_ACCESS_KEY_ID`, `HETZNER_ACCESS_KEY_ID`, `HETZNER_ACCESS_KEY`         |
-| `secretAccessKey` | `string`                     | yes      | `AWS_SECRET_ACCESS_KEY`, `HETZNER_SECRET_ACCESS_KEY`, `HETZNER_SECRET_KEY` |
+| `accessKeyId`     | `string`                     | yes      | `HETZNER_ACCESS_KEY_ID`, `HETZNER_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string`                     | yes      | `HETZNER_SECRET_ACCESS_KEY`, `HETZNER_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 
 Any other location throws `Invalid Hetzner location`. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 

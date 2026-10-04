@@ -363,7 +363,7 @@ export type CreateAlibabaClientParameters = {
 
     /**
      * Override the endpoint. When unset, defaults to
-     * `https://oss-${region}.aliyuncs.com`.
+     * `https://s3.oss-${region}.aliyuncs.com`.
      */
     endpoint?: string;
 

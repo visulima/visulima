@@ -48,11 +48,11 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter          | Type     | Required | Env fallback (in order)                                      |
 | ------------------ | -------- | -------- | ------------------------------------------------------------ |
-| `region`           | `string` | yes      | `AWS_REGION`, `B2_REGION`, `BACKBLAZE_REGION`                |
-| `applicationKeyId` | `string` | yes      | `AWS_ACCESS_KEY_ID`, `B2_APP_KEY_ID`, `BACKBLAZE_APP_KEY_ID` |
-| `applicationKey`   | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `B2_APP_KEY`, `BACKBLAZE_APP_KEY`   |
+| `region`           | `string` | yes      | `B2_REGION`, `BACKBLAZE_REGION`, `AWS_REGION`                |
+| `applicationKeyId` | `string` | yes      | `B2_APP_KEY_ID`, `BACKBLAZE_APP_KEY_ID`, `AWS_ACCESS_KEY_ID` |
+| `applicationKey`   | `string` | yes      | `B2_APP_KEY`, `BACKBLAZE_APP_KEY`, `AWS_SECRET_ACCESS_KEY`   |
 
-Note that `AWS_*` variables win over `B2_*` ones: if your environment already has `AWS_REGION` set for AWS, pass `region` explicitly. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+The `B2_*` / `BACKBLAZE_*` variables win over the generic `AWS_*` ones. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 
 ### Minimal
 

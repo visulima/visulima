@@ -67,11 +67,11 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter         | Type     | Required | Env fallback (in order)                                                  |
 | ----------------- | -------- | -------- | ------------------------------------------------------------------------ |
-| `region`          | `string` | yes      | `AWS_REGION`, `WASABI_REGION`                                            |
-| `accessKeyId`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `WASABI_ACCESS_KEY_ID`, `WASABI_ACCESS_KEY`         |
-| `secretAccessKey` | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `WASABI_SECRET_ACCESS_KEY`, `WASABI_SECRET_KEY` |
+| `region`          | `string` | yes      | `WASABI_REGION`, `AWS_REGION`                                            |
+| `accessKeyId`     | `string` | yes      | `WASABI_ACCESS_KEY_ID`, `WASABI_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `WASABI_SECRET_ACCESS_KEY`, `WASABI_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 
-`AWS_REGION` wins over `WASABI_REGION`. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+`WASABI_REGION` wins over `AWS_REGION`. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 
 ### Minimal
 
@@ -155,9 +155,9 @@ await files.upload("media/clip.mp4", buffer, { contentType: "video/mp4" });
 
 ## Troubleshooting
 
-| Symptom                                              | Cause / fix                                                                    |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `403` on missing keys / not ready                    | The sub-user policy lacks `s3:ListBucket` on the bucket.                       |
-| `PermanentRedirect` / `AuthorizationHeaderMalformed` | `region` doesn't match the bucket's region (an `AWS_REGION` set for AWS wins). |
-| Browser CORS errors                                  | Add CORS rules for your origin with `PUT`.                                     |
-| `400` "chunks of at least 5 MiB" / `409`             | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.     |
+| Symptom                                              | Cause / fix                                                                                                |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `403` on missing keys / not ready                    | The sub-user policy lacks `s3:ListBucket` on the bucket.                                                   |
+| `PermanentRedirect` / `AuthorizationHeaderMalformed` | `region` doesn't match the bucket's region (without `WASABI_REGION`, an `AWS_REGION` set for AWS is used). |
+| Browser CORS errors                                  | Add CORS rules for your origin with `PUT`.                                                                 |
+| `400` "chunks of at least 5 MiB" / `409`             | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                                 |

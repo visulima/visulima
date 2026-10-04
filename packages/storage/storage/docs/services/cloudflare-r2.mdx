@@ -47,8 +47,8 @@ pnpm add @visulima/storage aws4fetch
 | Parameter         | Type                | Required | Env fallback (in order)                                                          |
 | ----------------- | ------------------- | -------- | -------------------------------------------------------------------------------- |
 | `accountId`       | `string`            | yes      | `CLOUDFLARE_ACCOUNT_ID`                                                          |
-| `accessKeyId`     | `string`            | yes      | `AWS_ACCESS_KEY_ID`, `CLOUDFLARE_ACCESS_KEY_ID`, `CLOUDFLARE_ACCESS_KEY`         |
-| `secretAccessKey` | `string`            | yes      | `AWS_SECRET_ACCESS_KEY`, `CLOUDFLARE_SECRET_ACCESS_KEY`, `CLOUDFLARE_SECRET_KEY` |
+| `accessKeyId`     | `string`            | yes      | `CLOUDFLARE_ACCESS_KEY_ID`, `CLOUDFLARE_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string`            | yes      | `CLOUDFLARE_SECRET_ACCESS_KEY`, `CLOUDFLARE_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 | `jurisdiction`    | `"eu" \| "fedramp"` | no       | `CLOUDFLARE_JURISDICTION`, `CLOUDFLARE_R2_JURISDICTION`                          |
 
 Resulting endpoint: `https://<accountId>.[<jurisdiction>.]r2.cloudflarestorage.com`. The helper throws `Missing required parameters for Cloudflare R2 client.` when a required value is missing.

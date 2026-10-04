@@ -57,10 +57,10 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter         | Type     | Required | Env fallback (in order)                                                |
 | ----------------- | -------- | -------- | ---------------------------------------------------------------------- |
-| `endpoint`        | `string` | yes      | `AWS_ENDPOINT`, `MINIO_ENDPOINT`                                       |
-| `region`          | `string` | yes      | `AWS_REGION`, `MINIO_REGION`                                           |
-| `accessKeyId`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `MINIO_ACCESS_KEY_ID`, `MINIO_ACCESS_KEY`         |
-| `secretAccessKey` | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `MINIO_SECRET_ACCESS_KEY`, `MINIO_SECRET_KEY` |
+| `endpoint`        | `string` | yes      | `MINIO_ENDPOINT`, `AWS_ENDPOINT`                                       |
+| `region`          | `string` | yes      | `MINIO_REGION`, `AWS_REGION`                                           |
+| `accessKeyId`     | `string` | yes      | `MINIO_ACCESS_KEY_ID`, `MINIO_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `MINIO_SECRET_ACCESS_KEY`, `MINIO_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 
 `region` must match the server's configured region (`MINIO_SITE_REGION`, default `us-east-1`) or requests fail signature checks. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 

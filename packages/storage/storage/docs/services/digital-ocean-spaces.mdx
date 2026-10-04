@@ -56,11 +56,11 @@ pnpm add @visulima/storage aws4fetch
 
 | Parameter | Type     | Required | Env fallback (in order)                  |
 | --------- | -------- | -------- | ---------------------------------------- |
-| `region`  | `string` | yes      | `AWS_REGION`, `SPACES_REGION`            |
-| `key`     | `string` | yes      | `AWS_ACCESS_KEY_ID`, `SPACES_KEY`        |
-| `secret`  | `string` | yes      | `AWS_SECRET_ACCESS_KEY`, `SPACES_SECRET` |
+| `region`  | `string` | yes      | `SPACES_REGION`, `AWS_REGION`            |
+| `key`     | `string` | yes      | `SPACES_KEY`, `AWS_ACCESS_KEY_ID`        |
+| `secret`  | `string` | yes      | `SPACES_SECRET`, `AWS_SECRET_ACCESS_KEY` |
 
-`region` only picks the endpoint subdomain. `AWS_REGION` wins over `SPACES_REGION`, so pass `region` explicitly if `AWS_REGION` is set to an AWS region. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+`region` only picks the endpoint subdomain. `SPACES_REGION` wins over `AWS_REGION`, which is only used when `SPACES_REGION` is unset. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 
 ### Minimal
 
@@ -142,10 +142,10 @@ const url = await files.url("images/hero.jpg", { expiresIn: 3600 });
 
 ## Troubleshooting
 
-| Symptom                                  | Cause / fix                                                                                   |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `403` on missing keys / not ready        | A limited key without access to this bucket, or without list rights. Grant Read/Write/Delete. |
-| `SignatureDoesNotMatch`                  | Signing region isn't `us-east-1` (set by the helper), or wrong secret.                        |
-| Requests go to the wrong datacenter      | `AWS_REGION` overrode `SPACES_REGION`; pass `region`.                                         |
-| Browser CORS errors                      | Add CORS rules for your origin with `PUT`.                                                    |
-| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                    |
+| Symptom                                  | Cause / fix                                                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `403` on missing keys / not ready        | A limited key without access to this bucket, or without list rights. Grant Read/Write/Delete.              |
+| `SignatureDoesNotMatch`                  | Signing region isn't `us-east-1` (set by the helper), or wrong secret.                                     |
+| Requests go to the wrong datacenter      | `SPACES_REGION` is unset, so an `AWS_REGION` meant for AWS was used; set `SPACES_REGION` or pass `region`. |
+| Browser CORS errors                      | Add CORS rules for your origin with `PUT`.                                                                 |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                                 |
