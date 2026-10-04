@@ -19,7 +19,8 @@ import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { BatchOperationResponse, OperationOptions, StoredObject } from "../types";
+import type { BatchOperationResponse, ConditionalOptions, ConditionalSupport, CopyConditionalOptions, OperationOptions, StoredObject } from "../types";
+import { quoteETag } from "../utils/etag";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch } from "../utils/file";
 import { collectStream } from "../utils/remote";
@@ -34,6 +35,15 @@ const BLOCK_ID_PREFIX = "visulima-";
 
 /** Largest block Put Block accepts (4000 MiB); a chunk becomes exactly one block. */
 const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
+
+/** Rethrows an Azure `412` (`ConditionNotMet`, `SourceConditionNotMet`) as `ERRORS.PRECONDITION_FAILED`. */
+const rethrowConditionNotMet = (error: unknown): never => {
+    if ((error as { statusCode?: number } | undefined)?.statusCode === 412) {
+        throwErrorCode(ERRORS.PRECONDITION_FAILED, (error as Error).message);
+    }
+
+    throw error;
+};
 
 /**
  * Azure Blob Storage implementation.
@@ -57,6 +67,13 @@ class AzureStorage extends BaseStorage {
 
     /** `md5` is verified by Azure per staged block (`transactionalContentMD5`, `Md5Mismatch` on failure). */
     public override checksumTypes: string[] = ["md5"];
+
+    /**
+     * Exact reads, conditional deletes and conditional copies go out as Azure access conditions
+     * (`If-Match`, `If-None-Match`, `x-ms-source-if-match`). Conditional uploads are not offered:
+     * `create` stores an empty blob before the body arrives, so there is no single commit to condition.
+     */
+    public override readonly conditionalSupport: ConditionalSupport = { copy: true, create: false, delete: true, read: true, replace: false };
 
     public override get raw(): BlobServiceClient {
         return this.client;
@@ -232,17 +249,25 @@ class AzureStorage extends BaseStorage {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<AzureFile> {
+    public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<AzureFile> {
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
+            const ifMatch = options?.ifMatch;
 
             file.status = "deleted";
 
             // Sequence the blob delete before the metadata delete so a partial failure leaves a recoverable
             // metadata orphan instead of an unreachable block blob that keeps consuming storage.
-            await this.runOperation(options, (signal) =>
-                this.containerClient.getBlockBlobClient(this.getFullPath(file.name)).deleteIfExists({ abortSignal: signal }),
-            );
+            const { succeeded } = await this.runOperation(options, (signal) =>
+                this.containerClient
+                    .getBlockBlobClient(this.getFullPath(file.name))
+                    .deleteIfExists({ abortSignal: signal, ...(ifMatch !== undefined && { conditions: { ifMatch: quoteETag(ifMatch) } }) }),
+            ).catch(rethrowConditionNotMet);
+
+            if (ifMatch !== undefined && !succeeded) {
+                return throwErrorCode(ERRORS.PRECONDITION_FAILED, "There is no stored blob to match");
+            }
+
             await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
@@ -492,7 +517,12 @@ class AzureStorage extends BaseStorage {
         }
     }
 
-    public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
+    /** Asks Azure for the blob's ETag: the record's may predate a write by another client. */
+    protected override async currentETag(file: AzureFile, options?: OperationOptions): Promise<string | undefined> {
+        return this.storedETag(file.name, options);
+    }
+
+    public async get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(await this.readableName(id)));
 
@@ -503,12 +533,19 @@ class AzureStorage extends BaseStorage {
                 return throwErrorCode((await this.findMeta(id)) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
             }
 
-            const response = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
+            // An exact read conditions both requests, so properties and content are of one generation.
+            const conditions = options?.ifMatch === undefined ? undefined : { ifMatch: quoteETag(options.ifMatch) };
+            const response = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal, conditions })).catch(
+                rethrowConditionNotMet,
+            );
 
             const { contentLength, contentType, etag, expiresOn, lastModified, metadata } = response;
+            const content = await this.runOperation(options, (signal) => blobClient.downloadToBuffer(0, undefined, { abortSignal: signal, conditions })).catch(
+                rethrowConditionNotMet,
+            );
 
             return {
-                content: await this.runOperation(options, (signal) => blobClient.downloadToBuffer(0, undefined, { abortSignal: signal })),
+                content,
                 contentType: contentType as string,
                 ETag: etag,
                 expiredAt: expiresOn,
@@ -538,7 +575,7 @@ class AzureStorage extends BaseStorage {
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<AzureFile> {
+    public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<AzureFile> {
         return this.instrumentOperation("copy", async () => {
             const sourceName = await this.storedName(name);
             const source = this.containerClient.getBlockBlobClient(this.getFullPath(sourceName));
@@ -564,7 +601,16 @@ class AzureStorage extends BaseStorage {
                 sourceUrl = appendSasToken(source.url, this.sasToken);
             }
 
-            const poller = await this.runOperation(options, (signal) => target.beginCopyFromURL(sourceUrl, { abortSignal: signal }));
+            const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+            const poller = await this.runOperation(options, (signal) =>
+                target.beginCopyFromURL(sourceUrl, {
+                    abortSignal: signal,
+                    ...((ifMatch !== undefined || ifNoneMatch !== undefined) && {
+                        conditions: { ...(ifMatch !== undefined && { ifMatch: quoteETag(ifMatch) }), ...(ifNoneMatch !== undefined && { ifNoneMatch }) },
+                    }),
+                    ...(sourceIfMatch !== undefined && { sourceConditions: { ifMatch: quoteETag(sourceIfMatch) } }),
+                }),
+            ).catch(rethrowConditionNotMet);
 
             await this.runOperation(options, () => poller.pollUntilDone());
 

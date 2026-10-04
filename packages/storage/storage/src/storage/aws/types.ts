@@ -35,6 +35,14 @@ export type S3StorageOptions = BaseStorageOptions &
         clientDirectUpload?: boolean;
 
         /**
+         * Send conditional (ETag) requests and advertise them in `Files.capabilities.conditional`.
+         * Defaults to `true` for AWS S3 and `false` when a custom `endpoint` is set, because S3-compatible
+         * services differ in which `If-Match` / `If-None-Match` headers they honour. Set it explicitly to
+         * override the detection. Always `false` with `clientDirectUpload`.
+         */
+        conditional?: boolean;
+
+        /**
          * @deprecated Use standard auth providers
          */
         keyFile?: string;

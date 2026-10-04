@@ -61,15 +61,16 @@ Records live in a `MemoryMetaStorage` (another `Map`) in the same process. They 
 
 ## Behaviour & limits
 
-| Aspect                     | Behaviour                                                                                                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Chunked / resumable writes | ✅ Writes at any offset; out-of-order chunks don't overwrite each other. A `PUT` from byte 0 to a completed upload replaces it. |
-| Checksums                  | None advertised (`checksumTypes: []`).                                                                                          |
-| Range reads                | ✅ `supportsRange: true`. An invalid range on `get()` → `BAD_REQUEST`.                                                          |
-| URLs                       | `getReadUrl(key)` / `getUploadUrl(key)` return a synthetic `memory://${key}`. Nothing listens on that scheme.                   |
-| `list()`                   | Every stored entry, with size, content type and timestamps. `limit` is ignored.                                                 |
-| `copy()` / `move()`        | Buffer copy. Move is copy followed by delete.                                                                                   |
-| Isolation                  | Per instance. Two `MemoryStorage` objects never see each other's bytes, even when they share a `metaStorage`.                   |
+| Aspect                     | Behaviour                                                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes | ✅ Writes at any offset; out-of-order chunks don't overwrite each other. A `PUT` from byte 0 to a completed upload replaces it.                |
+| Checksums                  | None advertised (`checksumTypes: []`).                                                                                                         |
+| Range reads                | ✅ `supportsRange: true`. An invalid range on `get()` → `BAD_REQUEST`.                                                                         |
+| URLs                       | `getReadUrl(key)` / `getUploadUrl(key)` return a synthetic `memory://${key}`. Nothing listens on that scheme.                                  |
+| `list()`                   | Every stored entry, with size, content type and timestamps. `limit` is ignored.                                                                |
+| `copy()` / `move()`        | Buffer copy. Move is copy followed by delete.                                                                                                  |
+| Conditional ops            | ✅ every `Files` ETag predicate, checked and applied in one synchronous step. Handy for testing compare-and-set code before pointing it at S3. |
+| Isolation                  | Per instance. Two `MemoryStorage` objects never see each other's bytes, even when they share a `metaStorage`.                                  |
 
 ## Seed the store
 

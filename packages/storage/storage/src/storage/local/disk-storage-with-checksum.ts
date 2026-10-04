@@ -1,6 +1,6 @@
 import type { ERRORS } from "../../utils/errors";
 import RangeHasher from "../../utils/range-hasher";
-import type { DiskStorageWithChecksumOptions } from "../types";
+import type { ConditionalOptions, DiskStorageWithChecksumOptions, OperationOptions } from "../types";
 import type { File, FilePart, FileQuery } from "../utils/file";
 import DiskStorage from "./disk-storage";
 
@@ -19,8 +19,8 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
         }
     }
 
-    public override async delete(query: FileQuery): Promise<TFile> {
-        const deleted = await super.delete(query);
+    public override async delete(query: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        const deleted = await super.delete(query, options);
 
         this.hashes?.delete(this.getFilePath(deleted.name));
 

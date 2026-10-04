@@ -3,7 +3,7 @@ import type { ApprovalConfig } from "../internal/approval";
 import { resolveApproval } from "../internal/approval";
 import type { FileReadToolName, FileToolName, FileWriteToolName } from "../internal/schemas";
 import { WRITE_TOOL_NAME_SET } from "../internal/schemas";
-import { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, signUploadUrl, uploadFile } from "./tools";
+import { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, searchFiles, signUploadUrl, uploadFile } from "./tools";
 import type { ToolOverrides } from "./types";
 
 export type { ApprovalConfig } from "../internal/approval";
@@ -44,6 +44,7 @@ export interface TanstackFileTools {
     getFileMetadata: ReturnType<typeof getFileMetadata>;
     getFileUrl: ReturnType<typeof getFileUrl>;
     listFiles: ReturnType<typeof listFiles>;
+    searchFiles: ReturnType<typeof searchFiles>;
     signUploadUrl: ReturnType<typeof signUploadUrl>;
     uploadFile: ReturnType<typeof uploadFile>;
 }
@@ -97,6 +98,7 @@ export function createTanstackFileTools({
         getFileMetadata: getFileMetadata(files),
         getFileUrl: getFileUrl(files),
         listFiles: listFiles(files),
+        searchFiles: searchFiles(files),
         signUploadUrl: signUploadUrl(files, approval("signUploadUrl")),
         uploadFile: uploadFile(files, approval("uploadFile")),
     };
@@ -120,5 +122,5 @@ export function createTanstackFileTools({
     return Object.fromEntries(Object.entries(allTools).filter(([name]) => !WRITE_TOOL_NAME_SET.has(name as FileWriteToolName))) as ReadOnlyTanstackFileTools;
 }
 
-export { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, signUploadUrl, uploadFile } from "./tools";
+export { copyFile, deleteFile, downloadFile, getFileMetadata, getFileUrl, listFiles, searchFiles, signUploadUrl, uploadFile } from "./tools";
 export type { ToolOptions, ToolOverrides } from "./types";

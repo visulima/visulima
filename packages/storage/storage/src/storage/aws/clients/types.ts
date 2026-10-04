@@ -429,3 +429,58 @@ export type CreateYandexClientParameters = {
      */
     secretAccessKey: string;
 };
+
+export type CreateNeonClientParameters = {
+    /**
+     * Neon storage access key ID. Set it together with `secretAccessKey`; when both are
+     * omitted (and unset in the environment) the AWS SDK credential chain resolves them.
+     */
+    accessKeyId?: string;
+
+    /**
+     * S3 endpoint of the Neon branch (Neon injects it as `AWS_ENDPOINT_URL_S3`).
+     */
+    endpoint?: string;
+
+    /**
+     * SigV4 signing region.
+     * @default `us-east-1`
+     */
+    region?: string;
+
+    /**
+     * Neon storage secret access key.
+     */
+    secretAccessKey?: string;
+};
+
+export type CreateRustFsClientParameters = {
+    /**
+     * RustFS access key.
+     */
+    accessKeyId: string;
+
+    /**
+     * RustFS S3 API endpoint.
+     * @default `http://localhost:9000`
+     */
+    endpoint?: string;
+
+    /**
+     * Use path-style addressing (`/{bucket}/{key}`). Pass `false` only after configuring
+     * `RUSTFS_SERVER_DOMAINS` and wildcard DNS on the server.
+     * @default true
+     */
+    forcePathStyle?: boolean;
+
+    /**
+     * SigV4 signing region; must match the server's `RUSTFS_REGION`.
+     * @default `us-east-1`
+     */
+    region?: string;
+
+    /**
+     * RustFS secret key.
+     */
+    secretAccessKey: string;
+};

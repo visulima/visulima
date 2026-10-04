@@ -53,6 +53,32 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | Cloudinary     | ✅ delivery URL, or `private_download_url` for non-public types  | ❌                                     |
 | PocketBase     | ✅ file URL (`publicBaseUrl` or a fresh file token)              | ❌                                     |
 | Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
+| WebDAV         | ❌                                                               | ❌                                     |
+
+## Presigned POST (size-limited uploads)
+
+`Files.signedUpload(key, { maxSize, minSize })` signs a browser-form POST policy whose `content-length-range` the provider enforces. Adapters without one reject a size limit with `METHOD_NOT_ALLOWED`; `files.capabilities.signedUploadPost` reports which is which.
+
+| Adapter        | `getUploadPost()`                             | `signedUrlMaxExpiresIn` |
+| -------------- | --------------------------------------------- | ----------------------- |
+| S3 / R2 / etc. | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
+| S3 (light)     | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
+| every other    | ❌ `METHOD_NOT_ALLOWED`                       | —                       |
+
+## Conditional (ETag) operations
+
+Reported per primitive under `files.capabilities.conditional`; a predicate the adapter cannot evaluate natively rejects with `METHOD_NOT_ALLOWED`, and a predicate that does not hold with `PRECONDITION_FAILED` (412). See [Conditional (ETag) operations](../files-facade.mdx#conditional-etag-operations).
+
+| Adapter         | create (`ifNoneMatch: "*"`)       | replace (`ifMatch`) | read (`ifMatch`) | delete (`ifMatch`) | copy (`sourceIfMatch` + dest) |
+| --------------- | --------------------------------- | ------------------- | ---------------- | ------------------ | ----------------------------- |
+| S3 (AWS)        | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| S3 (light)      | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| S3-compatible   | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Azure Blob      | ❌                                | ❌                  | ✅               | ✅                 | ✅                            |
+| WebDAV          | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Local (disk)    | ✅ (process-local lock)           | ✅                  | ✅               | ✅                 | ✅                            |
+| Memory          | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
+| everything else | ❌                                | ❌                  | ❌               | ❌                 | ❌                            |
 
 ## URL options
 
@@ -93,6 +119,7 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | PocketBase     | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 client-side                        |
 | FTP / SFTP     | 🔁 download + reupload | ✅ rename (copy + delete fallback)      | 🟡 recursive walk, client-side        |
 | Memory         | ✅ Map clone           | ✅ copy + delete                        | ✅ in-memory prefix scan              |
+| WebDAV         | ✅ `COPY`              | ✅ `MOVE`                               | 🟡 `Depth: 1` walk of root            |
 
 ## Auth model
 
@@ -117,6 +144,7 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | PocketBase     | superuser email + password (env `POCKETBASE_ADMIN_*`), auth token, pre-built client                                                                    |
 | FTP / SFTP     | connection options (password, key)                                                                                                                     |
 | Memory         | none (in-process only)                                                                                                                                 |
+| WebDAV         | HTTP Basic (`username` + `password`), Bearer `token`, custom `headers`                                                                                 |
 
 ## Error normalization
 
@@ -132,6 +160,7 @@ Mapping rule of thumb:
 | 405         | `METHOD_NOT_ALLOWED`       |
 | 409         | `FILE_CONFLICT`            |
 | 410         | `GONE`                     |
+| 412         | `PRECONDITION_FAILED`      |
 | 413         | `REQUEST_ENTITY_TOO_LARGE` |
 | 415         | `UNSUPPORTED_MEDIA_TYPE`   |
 | 422         | `UNPROCESSABLE_ENTITY`     |

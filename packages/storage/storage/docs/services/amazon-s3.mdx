@@ -137,18 +137,19 @@ Pick `DaysAfterInitiation` longer than the longest time a client may pause a res
 
 ### S3-specific options
 
-| Option               | Type                                              | Default                  | Description                                                                                                                                                                |
-| -------------------- | ------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bucket`             | `string`                                          | `process.env.S3_BUCKET`  | Bucket name. Required (throws `S3 bucket is not defined`).                                                                                                                 |
-| `region`             | `string`                                          | `process.env.S3_REGION`  | Bucket region. Required (throws `S3 region is not defined`). `AWS_REGION` is **not** read for this check.                                                                  |
-| `credentials`        | `AwsCredentialIdentity \| Provider`               | AWS SDK default chain    | Static keys or a provider (`fromSSO()`, `fromNodeProviderChain()`, …). Omit it to use env vars / shared config / IAM role.                                                 |
-| `endpoint`           | `string`                                          | AWS                      | S3 API endpoint of an S3-compatible service. Usually set by a [client helper](#s3-compatible-services).                                                                    |
-| `forcePathStyle`     | `boolean`                                         | `false`                  | Path-style addressing (`https://host/bucket/key`), needed by MinIO and some self-hosted services.                                                                          |
-| `acl`                | `ObjectCannedACL`                                 | —                        | Canned ACL sent on `CreateMultipartUpload` (e.g. `"public-read"`). Requires `s3:PutObjectAcl` and a bucket with ACLs enabled (Object Ownership ≠ "Bucket owner enforced"). |
-| `partSize`           | `number \| string`                                | `"16MB"`                 | Part size used for presigned part URLs with `clientDirectUpload`. Must be ≥ 5 MB (throws otherwise).                                                                       |
-| `clientDirectUpload` | `boolean`                                         | `false`                  | `create()`/`update()` return `partsUrls` — presigned `UploadPart` URLs — so the client uploads the parts to S3 itself. See [Direct uploads](#direct-uploads).              |
-| `metaStorageConfig`  | `LocalMetaStorageOptions \| S3MetaStorageOptions` | metadata in the bucket   | Where upload metadata lives. See [Metadata storage](#metadata-storage).                                                                                                    |
-| `keyFile`            | `string`                                          | `process.env.S3_KEYFILE` | **Deprecated.** Path of a shared credentials file, loaded with `fromIni`.                                                                                                  |
+| Option               | Type                                              | Default                  | Description                                                                                                                                                                                                     |
+| -------------------- | ------------------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bucket`             | `string`                                          | `process.env.S3_BUCKET`  | Bucket name. Required (throws `S3 bucket is not defined`).                                                                                                                                                      |
+| `region`             | `string`                                          | `process.env.S3_REGION`  | Bucket region. Required (throws `S3 region is not defined`). `AWS_REGION` is **not** read for this check.                                                                                                       |
+| `credentials`        | `AwsCredentialIdentity \| Provider`               | AWS SDK default chain    | Static keys or a provider (`fromSSO()`, `fromNodeProviderChain()`, …). Omit it to use env vars / shared config / IAM role.                                                                                      |
+| `endpoint`           | `string`                                          | AWS                      | S3 API endpoint of an S3-compatible service. Usually set by a [client helper](#s3-compatible-services).                                                                                                         |
+| `forcePathStyle`     | `boolean`                                         | `false`                  | Path-style addressing (`https://host/bucket/key`), needed by MinIO and some self-hosted services.                                                                                                               |
+| `acl`                | `ObjectCannedACL`                                 | —                        | Canned ACL sent on `CreateMultipartUpload` (e.g. `"public-read"`). Requires `s3:PutObjectAcl` and a bucket with ACLs enabled (Object Ownership ≠ "Bucket owner enforced").                                      |
+| `partSize`           | `number \| string`                                | `"16MB"`                 | Part size used for presigned part URLs with `clientDirectUpload`. Must be ≥ 5 MB (throws otherwise).                                                                                                            |
+| `clientDirectUpload` | `boolean`                                         | `false`                  | `create()`/`update()` return `partsUrls` — presigned `UploadPart` URLs — so the client uploads the parts to S3 itself. See [Direct uploads](#direct-uploads).                                                   |
+| `metaStorageConfig`  | `LocalMetaStorageOptions \| S3MetaStorageOptions` | metadata in the bucket   | Where upload metadata lives. See [Metadata storage](#metadata-storage).                                                                                                                                         |
+| `keyFile`            | `string`                                          | `process.env.S3_KEYFILE` | **Deprecated.** Path of a shared credentials file, loaded with `fromIni`.                                                                                                                                       |
+| `conditional`        | `boolean`                                         | `true` for AWS           | Send the `Files` ETag predicates and advertise them in `capabilities.conditional`. `false` by default with a custom `endpoint` (or `AWS_ENDPOINT_URL[_S3]`). See [Conditional requests](#conditional-requests). |
 
 ### Common storage options
 
@@ -274,6 +275,21 @@ Defaults: `maxRetries: 3`, `initialDelay: 1000`, `maxDelay: 30000`, `backoffMult
 ### Direct uploads
 
 With `clientDirectUpload: true` the server never sees the file bytes: `create()` (TUS `POST` / REST `POST`) starts the multipart upload and returns `partsUrls` — one presigned `UploadPart` URL per `partSize` chunk, valid for `expiration.maxAge` (default 6 h). The client `PUT`s each part to its URL, then calls the handler again (`PATCH`/`PUT` without a body) — the adapter lists the parts and completes the upload once their sizes add up to the file size. Requires the [CORS rule](#3-cors-only-for-browser-direct-traffic) with `ExposeHeaders: ["ETag"]`.
+
+### Size-limited presigned uploads (POST policy)
+
+`files.signedUpload(key, { maxSize, minSize })` signs a SigV4 POST policy with a `content-length-range` condition, so S3 itself rejects a body outside the range (`EntityTooLarge` / `EntityTooSmall`). The policy is signed locally from the client's credentials; no extra package is needed. `expiresIn` is capped at 7 days (`files.capabilities.signedUrlMaxExpiresIn`).
+
+```ts
+const upload = await files.signedUpload("avatars/1.png", { contentType: "image/png", maxSize: 5 * 1024 * 1024 });
+// → { method: "POST", url: "https://bucket.s3.us-east-1.amazonaws.com/", fields: { key, Policy, "X-Amz-Signature", … } }
+```
+
+### Conditional requests
+
+`S3Storage` sends the `Files` ETag predicates natively: `ifNoneMatch: "*"` / `ifMatch` uploads on `CompleteMultipartUpload`, exact reads on `GetObject`, `DeleteObject` with `If-Match`, and `CopyObject` with `x-amz-copy-source-if-match` plus a destination `If-None-Match` / `If-Match`. A 412 becomes `UploadError(ERRORS.PRECONDITION_FAILED)`; a failed conditional upload aborts its multipart upload and keeps the stored object's metadata record.
+
+The claim is made for AWS only: with a custom `endpoint` (or `AWS_ENDPOINT_URL[_S3]` in the environment) every `capabilities.conditional` flag is `false`, because S3-compatible services differ in which of these headers they honour. Pass `conditional: true` when your service supports them, or `false` to opt out. `clientDirectUpload` disables conditional requests.
 
 ## S3-compatible services
 

@@ -1,10 +1,10 @@
-import type { Readable } from "node:stream";
-import { PassThrough, pipeline } from "node:stream";
+import { PassThrough, pipeline, Readable } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
-import type { OperationOptions } from "../storage/types";
-import type { FilePart } from "../storage/utils/file";
-import { ERRORS, throwErrorCode } from "../utils/errors";
+import type { ConditionalOptions, ConditionalSupport, OperationOptions } from "../storage/types";
+import { assertValidETag } from "../storage/utils/etag";
+import type { File as StorageFile, FileInit, FilePart } from "../storage/utils/file";
+import { ERRORS, isUploadError, throwErrorCode } from "../utils/errors";
 import type { RetryConfig } from "../utils/retry";
 import {
     assertNoRelativeSegments,
@@ -12,11 +12,13 @@ import {
     mergeOperationOptions,
     normalizeBody,
     normalizePrefix,
+    readParts,
     runConcurrent,
     safeInvoke,
     toBulkError,
     toFileObject,
 } from "./internal";
+import { compileSearch, searchPrefix } from "./search";
 import type {
     BulkDeleteResult,
     BulkDownloadOptions,
@@ -30,6 +32,8 @@ import type {
     BulkUploadItem,
     BulkUploadOptions,
     BulkUploadResult,
+    CopyOptions,
+    DeleteOptions,
     DownloadOptions,
     DownloadRange,
     DownloadResult,
@@ -38,19 +42,24 @@ import type {
     FileObject,
     FilesHooks,
     FilesOptions,
+    HeadOptions,
     HookActionType,
     HookEvent,
     ListAllOptions,
     ListDirectoryResult,
     ListOptions,
     MultipartOptions,
+    SearchOptions,
     SignedReadUrlOptions,
+    SignedUpload,
+    SignedUploadOptions,
     SignedUploadUrlOptions,
     StorageCapabilities,
     UploadOptions,
     UploadProgress,
     UploadProgressCallback,
 } from "./types";
+import type { UploadControl } from "./upload-control";
 
 /**
  * Provider-agnostic facade over a {@link BaseStorage} instance.
@@ -88,6 +97,9 @@ import type {
  * }
  * ```
  */
+/** Part size of a resumable upload when `multipart.partSize` is not set: above S3's 5 MiB minimum and a multiple of GCS's 256 KiB. */
+const DEFAULT_RESUMABLE_PART_SIZE = 8 * 1024 * 1024;
+
 export class Files<TStorage extends BaseStorage = BaseStorage> {
     public readonly adapter: TStorage;
 
@@ -113,11 +125,17 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * hitting a `MethodNotAllowed` mid-flight. `readonly` reflects this view, not the adapter.
      */
     public get capabilities(): StorageCapabilities {
+        const maxExpiresIn = this.adapter.maxSignedUrlExpiresIn;
+
         return {
             cacheControl: this.adapter.supportsCacheControl,
+            conditional: { ...this.adapter.conditionalSupport },
             metadata: this.adapter.supportsMetadata,
             range: this.adapter.supportsRange,
             readonly: this.readonlyMode,
+            resumable: this.adapter.supportsResumableWrites,
+            signedUploadPost: this.adapter.supportsUploadPost,
+            ...(maxExpiresIn !== undefined && { signedUrlMaxExpiresIn: maxExpiresIn }),
         };
     }
 
@@ -141,6 +159,48 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             prefix: this.prefix,
             readonly: true,
         });
+    }
+
+    /**
+     * Validate the ETag predicates of a call and fail closed with `METHOD_NOT_ALLOWED` when the adapter
+     * cannot evaluate `kind` natively — a predicate is never silently dropped.
+     */
+    private assertConditional(kind: keyof ConditionalSupport, etags: Record<string, string | undefined>): void {
+        for (const [name, value] of Object.entries(etags)) {
+            if (value !== undefined) {
+                assertValidETag(value, name);
+            }
+        }
+
+        if (!this.adapter.conditionalSupport[kind]) {
+            throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not support conditional ${kind}`);
+        }
+    }
+
+    /** Destination predicate of an upload or copy: `ifMatch` (replace) or `ifNoneMatch: "*"` (create). */
+    private static writeCondition(ifMatch: string | undefined, ifNoneMatch: string | undefined): ConditionalOptions | undefined {
+        if (ifMatch !== undefined && ifNoneMatch !== undefined) {
+            throwErrorCode(ERRORS.BAD_REQUEST, "Pass either ifMatch or ifNoneMatch, not both");
+        }
+
+        if (ifNoneMatch !== undefined && ifNoneMatch !== "*") {
+            throwErrorCode(ERRORS.BAD_REQUEST, 'ifNoneMatch only accepts "*"');
+        }
+
+        if (ifNoneMatch !== undefined) {
+            return { ifNoneMatch: "*" };
+        }
+
+        return ifMatch === undefined ? undefined : { ifMatch };
+    }
+
+    /** Reject an `expiresIn` the adapter cannot sign for, before it is handed to the provider. */
+    private assertExpiresIn(expiresIn: number | undefined): void {
+        const max = this.adapter.maxSignedUrlExpiresIn;
+
+        if (expiresIn !== undefined && max !== undefined && expiresIn > max) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`);
+        }
     }
 
     /** Fail closed before any adapter mutation when this view is read-only. */
@@ -319,6 +379,12 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not persist custom metadata`);
         }
 
+        const condition = Files.writeCondition(options?.ifMatch, options?.ifNoneMatch);
+
+        if (condition) {
+            this.assertConditional(condition.ifNoneMatch ? "create" : "replace", { ifMatch: condition.ifMatch });
+        }
+
         const control = options?.control;
 
         return this.withHooks("upload", { key }, async () => {
@@ -343,75 +409,90 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 ? { ...options, signal: options?.signal ? AbortSignal.any([options.signal, control.signal]) : control.signal }
                 : options;
 
-            const operationOptions = this.mergeOptions(perCall, { key, type: "upload" });
+            const merged = this.mergeOptions(perCall, { key, type: "upload" });
+            // The predicate travels to both adapter calls: `create` must not replace what it is about,
+            // and `write` evaluates it when the bytes are committed.
+            const operationOptions = condition ? { ...merged, ...condition } : merged;
             const multipart = options?.multipart;
 
             // pipeline (not pipe) so a source error tears down the gate the adapter is reading.
             const stream: Readable = control ? pipeline(source, control._bind(key), () => {}) : source;
 
-            const file = await this.adapter.create(
-                {
-                    contentType: options?.contentType,
-                    id: resolved,
-                    metadata,
-                    originalName: resolved,
-                    size,
-                    storageClass: options?.storageClass,
-                },
-                operationOptions,
-            );
-
-            // If the caller wants progress and the adapter doesn't report its own, wrap the body
-            // in a PassThrough that emits per-chunk byte counts. For buffered bodies whose total
-            // length is known up-front, also emit a coarse start/done pair so a single callback
-            // can drive any UI without sniffing for chunk-level deltas.
-            // Wrap the body in a PassThrough that emits per-chunk byte counts when the caller wants
-            // progress (or a control is attached, which tracks bytes for serialize()) and the adapter
-            // doesn't report its own. For buffered bodies of known length, also emit a coarse
-            // start/done pair so a single callback can drive any UI without sniffing chunk deltas.
-            const reportsNatively = this.adapter.reportsUploadProgress;
-            const callback = options?.onProgress;
-            const wantsProgress = !!callback || !!control;
-            let progressStream: Readable = stream;
-
-            if (wantsProgress && !reportsNatively) {
-                let loaded = 0;
-                const passthrough = new PassThrough();
-
-                // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
-                // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
-                // happens to emit synchronously the moment we pipe.
-                if (size !== undefined && callback) {
-                    safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
-                }
-
-                stream.on("data", (chunk: Buffer | Uint8Array | string) => {
-                    const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
-
-                    loaded += chunkSize;
-                    control?._progress(loaded);
-
-                    if (callback) {
-                        safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
-                    }
-                });
-
-                stream.pipe(passthrough);
-                progressStream = passthrough;
-            }
-
-            const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
-                body: progressStream,
-                contentLength: size,
-                id: file.id,
-                start: 0,
-                ...(options?.checksum !== undefined && { checksum: options.checksum }),
-                ...(options?.checksumAlgorithm !== undefined && { checksumAlgorithm: options.checksumAlgorithm }),
-                ...(multipart !== undefined && { multipart }),
-                ...(reportsNatively && callback && { onProgress: callback }),
+            const fileInit = {
+                contentType: options?.contentType,
+                id: resolved,
+                metadata,
+                originalName: resolved,
+                size,
+                storageClass: options?.storageClass,
             };
 
-            const written = await this.adapter.write(part, operationOptions);
+            // With a control, write in parts the adapter records one by one, so another process can
+            // resume from the stored offset. A conditional or checksummed upload commits in one write.
+            const resumable = control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
+
+            if (control?._session && !resumable) {
+                throwErrorCode(
+                    this.adapter.supportsResumableWrites ? ERRORS.BAD_REQUEST : ERRORS.METHOD_NOT_ALLOWED,
+                    this.adapter.supportsResumableWrites
+                        ? "A resumed upload needs a known size and can't be conditional or checksummed"
+                        : `Adapter ${this.adapter.constructor.name} can't resume uploads`,
+                );
+            }
+
+            const writeWhole = async (): Promise<StorageFile> => {
+                const file = await this.adapter.create(fileInit, operationOptions);
+
+                // Wrap the body in a PassThrough that emits per-chunk byte counts when the caller wants
+                // progress (or a control is attached, which tracks the bytes sent) and the adapter
+                // doesn't report its own. For buffered bodies of known length, also emit a coarse
+                // start/done pair so a single callback can drive any UI without sniffing chunk deltas.
+                const reportsNatively = this.adapter.reportsUploadProgress;
+                const callback = options?.onProgress;
+                const wantsProgress = !!callback || !!control;
+                let progressStream: Readable = stream;
+
+                if (wantsProgress && !reportsNatively) {
+                    let loaded = 0;
+                    const passthrough = new PassThrough();
+
+                    // Emit the synthetic `loaded: 0` start event **before** attaching the data listener so
+                    // callers always see the ordering start → chunk[1] → chunk[2] → ... — even if a stream
+                    // happens to emit synchronously the moment we pipe.
+                    if (size !== undefined && callback) {
+                        safeInvoke(callback as (argument: unknown) => void, { loaded: 0, total: size });
+                    }
+
+                    stream.on("data", (chunk: Buffer | Uint8Array | string) => {
+                        const chunkSize = typeof chunk === "string" ? Buffer.byteLength(chunk) : chunk.byteLength;
+
+                        loaded += chunkSize;
+                        control?._progress(loaded);
+
+                        if (callback) {
+                            safeInvoke(callback as (argument: unknown) => void, { loaded, total: size });
+                        }
+                    });
+
+                    stream.pipe(passthrough);
+                    progressStream = passthrough;
+                }
+
+                const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
+                    body: progressStream,
+                    contentLength: size,
+                    id: file.id,
+                    start: 0,
+                    ...(options?.checksum !== undefined && { checksum: options.checksum }),
+                    ...(options?.checksumAlgorithm !== undefined && { checksumAlgorithm: options.checksumAlgorithm }),
+                    ...(multipart !== undefined && { multipart }),
+                    ...(reportsNatively && callback && { onProgress: callback }),
+                };
+
+                return this.adapter.write(part, operationOptions);
+            };
+
+            const written = resumable ? await this.writeInParts(control, stream, fileInit, size, options, operationOptions) : await writeWhole();
 
             control?._complete();
 
@@ -424,6 +505,117 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             return result;
         });
+    }
+
+    /**
+     * Write `stream` as a series of adapter writes of one part each. The adapter persists its
+     * offset (and provider session) in its metadata store after every part, so when this process
+     * dies another one can resume from the token `control.toJSON()` returned. Resumes `control`'s
+     * session when it carries one, after checking it still exists and describes this upload.
+     */
+    private async writeInParts(
+        control: UploadControl,
+        stream: Readable,
+        fileInit: FileInit & { id: string },
+        size: number,
+        options: (OperationOptions & UploadOptions) | undefined,
+        operationOptions: OperationOptions | undefined,
+    ): Promise<StorageFile> {
+        const adapterName = this.adapter.constructor.name;
+        const session = control._session;
+        let id: string;
+        let offset = 0;
+
+        if (session) {
+            if (session.adapter !== adapterName || session.uploadId !== fileInit.id || session.size !== size) {
+                throwErrorCode(
+                    ERRORS.BAD_REQUEST,
+                    `The resume token describes ${String(session.size)} bytes of "${String(session.uploadId)}" on ${String(session.adapter)}, not ${String(size)} bytes of "${fileInit.id}" on ${adapterName}`,
+                );
+            }
+
+            const current = await this.loadUpload(fileInit.id, operationOptions);
+
+            if (current.size !== size) {
+                throwErrorCode(ERRORS.FILE_CONFLICT, `The stored upload "${fileInit.id}" is ${String(current.size)} bytes, the resumed body ${String(size)}`);
+            }
+
+            if (current.status === "completed") {
+                stream.destroy();
+                control._progress(size);
+
+                return current;
+            }
+
+            id = current.id;
+            offset = Number(current.bytesWritten) || 0;
+        } else {
+            const file = await this.adapter.create(fileInit, operationOptions);
+
+            id = file.id;
+            control._startSession({
+                adapter: adapterName,
+                ...(fileInit.contentType !== undefined && { contentType: fileInit.contentType }),
+                ...(options?.metadata !== undefined && { metadata: options.metadata }),
+                size,
+                uploadId: id,
+            });
+        }
+
+        const bodyStart = options?.resumeOffset ?? 0;
+
+        if (bodyStart > offset) {
+            stream.destroy();
+            throwErrorCode(ERRORS.BAD_REQUEST, `The body starts at byte ${String(bodyStart)}, past the ${String(offset)} bytes stored`);
+        }
+
+        const report = (loaded: number): void => {
+            control._progress(loaded);
+
+            if (options?.onProgress) {
+                safeInvoke(options.onProgress as (argument: unknown) => void, { loaded, total: size });
+            }
+        };
+
+        const partSize = typeof options?.multipart === "object" && options.multipart.partSize ? options.multipart.partSize : DEFAULT_RESUMABLE_PART_SIZE;
+        let written: StorageFile | undefined;
+
+        report(offset);
+
+        for await (const part of readParts(stream, partSize, offset - bodyStart)) {
+            control.signal.throwIfAborted();
+
+            written = await this.adapter.write({ body: Readable.from([part]), contentLength: part.length, id, start: offset }, operationOptions);
+            offset += part.length;
+            report(offset);
+        }
+
+        if (offset < size) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `The body ended after ${String(offset)} of ${String(size)} bytes; resume the upload with the rest`);
+        }
+
+        // An empty object is still created by one (empty) write.
+        return written ?? this.adapter.write({ body: Readable.from([]), contentLength: 0, id, start: offset }, operationOptions);
+    }
+
+    /**
+     * The stored state of upload `id`, for resuming it. Appending adapters (S3 parts, GCS sessions,
+     * Azure blocks) answer a write without a body with the provider's view of the upload; the
+     * others keep the offset in their metadata record.
+     */
+    private async loadUpload(id: string, options: OperationOptions | undefined): Promise<StorageFile> {
+        try {
+            return this.adapter.sequentialWrites ? await this.adapter.write({ id }, options) : await this.adapter.getMeta(id);
+        } catch (error: unknown) {
+            if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+                return throwErrorCode(
+                    ERRORS.FILE_NOT_FOUND,
+                    `The upload session "${id}" no longer exists (deleted, purged, or recorded in a metadata store this process can't reach); start the upload again`,
+                );
+            }
+
+            throw error;
+        }
     }
 
     private async uploadMany(items: BulkUploadItem[], bulkOptions: BulkUploadOptions | undefined): Promise<BulkUploadResult> {
@@ -515,8 +707,18 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             BaseStorage.assertSafeId(resolved);
             this.assertRangeSupported(options?.range);
 
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("read", { ifMatch });
+            }
+
             const merged = this.mergeOptions(options, { key, type: "download" }) ?? {};
-            const adapterOptions = options?.range ? { ...merged, range: options.range } : merged;
+            const adapterOptions = {
+                ...merged,
+                ...(options?.range && { range: options.range }),
+                ...(ifMatch !== undefined && { ifMatch }),
+            };
 
             const file = await this.adapter.get({ id: resolved }, adapterOptions);
 
@@ -606,11 +808,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * Fetch metadata for a single object, or — when passed an array of keys — bulk-head many in
      * one call with bounded concurrency.
      */
-    public head(key: string, options?: OperationOptions): Promise<FileObject>;
+    public head(key: string, options?: HeadOptions): Promise<FileObject>;
 
     public head(keys: string[], options?: BulkOptions): Promise<BulkHeadResult>;
 
-    public async head(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkHeadResult | FileObject> {
+    public async head(keyOrKeys: string[] | string, options?: BulkOptions | HeadOptions): Promise<BulkHeadResult | FileObject> {
         if (Array.isArray(keyOrKeys)) {
             return this.headMany(keyOrKeys, options);
         }
@@ -618,13 +820,20 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return this.headOne(keyOrKeys, options);
     }
 
-    private async headOne(key: string, options: OperationOptions | undefined): Promise<FileObject> {
+    private async headOne(key: string, options: HeadOptions | undefined): Promise<FileObject> {
         return this.withHooks("head", { key }, async () => {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
 
-            const file = await this.adapter.getMeta(resolved, this.mergeOptions(options, { key, type: "head" }));
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("read", { ifMatch });
+            }
+
+            const merged = this.mergeOptions(options, { key, type: "head" });
+            const file = await this.adapter.getMeta(resolved, ifMatch === undefined ? merged : { ...merged, ifMatch });
             const result = toFileObject(file, resolved);
 
             result.key = key;
@@ -733,11 +942,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * `DeleteObjects`, Supabase's `remove`, UploadThing's `deleteFiles`) use it via
      * {@link BaseStorage.deleteBatch}; otherwise the keys are fanned out with bounded concurrency.
      */
-    public delete(key: string, options?: OperationOptions): Promise<void>;
+    public delete(key: string, options?: DeleteOptions): Promise<void>;
 
     public delete(keys: string[], options?: BulkOptions): Promise<BulkDeleteResult>;
 
-    public async delete(keyOrKeys: string[] | string, options?: BulkOptions | OperationOptions): Promise<BulkDeleteResult | void> {
+    public async delete(keyOrKeys: string[] | string, options?: BulkOptions | DeleteOptions): Promise<BulkDeleteResult | void> {
         this.assertWritable();
 
         if (Array.isArray(keyOrKeys)) {
@@ -749,13 +958,21 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         return undefined;
     }
 
-    private async deleteOne(key: string, options: OperationOptions | undefined): Promise<void> {
+    private async deleteOne(key: string, options: DeleteOptions | undefined): Promise<void> {
         await this.withHooks("delete", { key }, async () => {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
 
-            await this.adapter.delete({ id: resolved }, this.mergeOptions(options, { key, type: "delete" }));
+            const ifMatch = options?.ifMatch;
+
+            if (ifMatch !== undefined) {
+                this.assertConditional("delete", { ifMatch });
+            }
+
+            const merged = this.mergeOptions(options, { key, type: "delete" });
+
+            await this.adapter.delete({ id: resolved }, ifMatch === undefined ? merged : { ...merged, ifMatch });
         });
     }
 
@@ -837,8 +1054,15 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * Copy `source` to `destination` (both resolved under any constructor prefix). Returns the
      * destination object's metadata with the caller-facing (un-prefixed) key.
      */
-    public async copy(source: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<FileObject> {
+    public async copy(source: string, destination: string, options?: CopyOptions): Promise<FileObject> {
         this.assertWritable();
+
+        const { sourceIfMatch } = options ?? {};
+        const condition = Files.writeCondition(options?.ifMatch, options?.ifNoneMatch);
+
+        if (condition || sourceIfMatch !== undefined) {
+            this.assertConditional("copy", { ifMatch: condition?.ifMatch, sourceIfMatch });
+        }
 
         return this.withHooks("copy", { from: source, to: destination }, async () => {
             const resolvedSource = this.resolveKey(source);
@@ -849,6 +1073,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             const file = await this.adapter.copy(resolvedSource, resolvedDestination, {
                 ...this.mergeOptions(options, { from: source, to: destination, type: "copy" }),
+                ...condition,
+                ...(sourceIfMatch !== undefined && { sourceIfMatch }),
                 storageClass: options?.storageClass,
             });
             const result = toFileObject(file, resolvedDestination);
@@ -1166,11 +1392,64 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
     }
 
+    /**
+     * Find objects whose key matches `pattern`, walking every page like {@link Files.listAll}. A
+     * streaming async iterable: it stays memory-bounded on large buckets, and leaving the loop (or
+     * reaching `limit`) stops fetching pages.
+     *
+     * A string is a glob by default (`*` within a segment, `**` across segments, `?`, `[a-z]`,
+     * `{a,b}`, `!negation`; anchored to the whole key; dotfiles match). Pass `match` for `regex`,
+     * `substring` or `exact`, or a `RegExp` directly. Keys are matched without the constructor
+     * prefix. A glob's (or exact pattern's) literal head is pushed down as the listing prefix, so
+     * `"uploads/2024/*.pdf"` only walks `uploads/2024`; other modes walk everything unless `prefix`
+     * bounds them.
+     * @throws {UploadError} BAD_REQUEST for an invalid regex, one that nests quantifiers (`(a+)+`), or an invalid `limit`
+     * @example
+     * ```ts
+     * for await (const file of files.search("avatars/**\/*.png", { limit: 50 })) {
+     *   console.log(file.key);
+     * }
+     * ```
+     */
+    public async *search(pattern: RegExp | string, options: SearchOptions = {}): AsyncGenerator<FileObject, void, void> {
+        const { caseInsensitive = false, limit, match = "glob", pageSize, prefix, ...operationOptions } = options;
+
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `Invalid search limit: ${String(limit)}`);
+        }
+
+        const test = compileSearch(pattern, match, caseInsensitive);
+        // The pattern's literal head is a narrower walk than a caller prefix it extends.
+        const inferred = searchPrefix(pattern, match, caseInsensitive);
+        const walkPrefix = inferred !== undefined && inferred.startsWith(prefix ?? "") ? inferred : prefix;
+        let found = 0;
+
+        for await (const file of this.listAll({
+            ...operationOptions,
+            ...(pageSize !== undefined && { limit: pageSize }),
+            ...(walkPrefix && { prefix: walkPrefix }),
+        })) {
+            operationOptions.signal?.throwIfAborted();
+
+            if (!test(file.key)) {
+                continue;
+            }
+
+            yield file;
+            found += 1;
+
+            if (found === limit) {
+                return;
+            }
+        }
+    }
+
     public async url(key: string, options?: OperationOptions & SignedReadUrlOptions): Promise<string> {
         return this.withHooks("url", { key }, async () => {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
 
             // Spread only the URL fields over the merged options: spreading the whole per-call object
             // would clobber the default signal and the hooks.onRetry wrapper.
@@ -1192,6 +1471,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
 
             const { contentLength, contentType, expiresIn } = options ?? {};
 
@@ -1201,6 +1481,78 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 ...(contentType !== undefined && { contentType }),
                 ...(expiresIn !== undefined && { expiresIn }),
             });
+        });
+    }
+
+    /**
+     * Sign a direct browser upload of `key` and return the full contract instead of a bare URL.
+     *
+     * Without `maxSize` / `minSize` this is a presigned `PUT` (`{ method: "PUT", url, headers }`),
+     * the same URL {@link Files.signedUploadUrl} returns, plus the headers the client must send. With
+     * either limit it is a presigned `POST` policy (`{ method: "POST", url, fields }`) carrying a
+     * `content-length-range` condition, so the provider itself rejects a body outside the range — a
+     * PUT URL cannot do that. Adapters without POST policy support
+     * (`capabilities.signedUploadPost === false`) reject a size limit with `METHOD_NOT_ALLOWED`
+     * rather than sign an unbounded upload.
+     * @example
+     * ```ts
+     * const upload = await files.signedUpload("avatars/1.png", { contentType: "image/png", maxSize: 5 * 1024 * 1024 });
+     *
+     * if (upload.method === "POST") {
+     *   const form = new FormData();
+     *
+     *   for (const [name, value] of Object.entries(upload.fields)) form.append(name, value);
+     *   form.append("file", blob);
+     *   await fetch(upload.url, { body: form, method: "POST" });
+     * }
+     * ```
+     */
+    public async signedUpload(key: string, options?: OperationOptions & SignedUploadOptions): Promise<SignedUpload> {
+        this.assertWritable();
+
+        return this.withHooks("signedUploadUrl", { key }, async () => {
+            const resolved = this.resolveKey(key);
+
+            BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
+
+            const { contentLength, contentType, expiresIn, maxSize, minSize } = options ?? {};
+            const merged = this.mergeOptions(options, { key, type: "signedUploadUrl" });
+
+            if (maxSize === undefined && minSize === undefined) {
+                const url = await this.adapter.getUploadUrl(resolved, {
+                    ...merged,
+                    ...(contentLength !== undefined && { contentLength }),
+                    ...(contentType !== undefined && { contentType }),
+                    ...(expiresIn !== undefined && { expiresIn }),
+                });
+
+                return {
+                    headers: {
+                        ...(contentType !== undefined && { "Content-Type": contentType }),
+                        ...(contentLength !== undefined && { "Content-Length": String(contentLength) }),
+                    },
+                    method: "PUT",
+                    url,
+                };
+            }
+
+            if (!this.adapter.supportsUploadPost) {
+                return throwErrorCode(
+                    ERRORS.METHOD_NOT_ALLOWED,
+                    `Adapter ${this.adapter.constructor.name} cannot enforce maxSize/minSize on a signed upload (no presigned POST support)`,
+                );
+            }
+
+            const { fields, url } = await this.adapter.getUploadPost(resolved, {
+                ...merged,
+                ...(contentType !== undefined && { contentType }),
+                ...(expiresIn !== undefined && { expiresIn }),
+                ...(maxSize !== undefined && { maxSize }),
+                ...(minSize !== undefined && { minSize }),
+            });
+
+            return { fields, method: "POST", url };
         });
     }
 }

@@ -1,17 +1,18 @@
 import type { Readable } from "node:stream";
 
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, UploadPostOptions, UploadPostPolicy } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import { S3BaseStorage } from "./s3-base-storage";
 import S3ClientAdapter from "./s3-client-adapter";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
+import { createS3PostPolicy } from "./s3-post-policy";
 import { buildRangeHeader } from "./s3-utils";
 import type { AwsError, S3StorageOptions } from "./types";
 
@@ -61,6 +62,9 @@ import type { AwsError, S3StorageOptions } from "./types";
 class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
 
+    /** Signs SigV4 POST policies, so `Files.signedUpload` can enforce a size range. */
+    public override readonly supportsUploadPost: boolean = true;
+
     private s3Api: S3ClientAdapter;
 
     private rawClient: S3Client;
@@ -92,6 +96,9 @@ class S3Storage extends S3BaseStorage {
         super({
             ...config,
             bucket,
+            // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
+            // support for conditional headers is unknown.
+            conditional: config.conditional ?? (config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL),
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
         });
 
@@ -205,6 +212,29 @@ class S3Storage extends S3BaseStorage {
         });
 
         return getSignedUrl(this.rawClient, command, { expiresIn: options?.expiresIn ?? 3600 });
+    }
+
+    public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        S3Storage.assertSafeId(key);
+
+        const { accessKeyId, secretAccessKey, sessionToken } = await this.rawClient.config.credentials();
+        // Let the SDK resolve the bucket URL (virtual-hosted or path-style, custom endpoint): presign a
+        // bucket-level request and keep only its origin and path.
+        const bucketUrl = new URL(await getSignedUrl(this.rawClient, new ListObjectsV2Command({ Bucket: this.bucket }), { expiresIn: 60 }));
+
+        return createS3PostPolicy({
+            accessKeyId,
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region: await this.rawClient.config.region(),
+            secretAccessKey,
+            sessionToken,
+            url: bucketUrl.origin + bucketUrl.pathname,
+        });
     }
 
     protected getS3Api(): S3ClientAdapter {

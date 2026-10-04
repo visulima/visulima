@@ -13,6 +13,7 @@ import {
     claudeGetFileMetadata,
     claudeGetFileUrl,
     claudeListFiles,
+    claudeSearchFiles,
     claudeSignUploadUrl,
     claudeUploadFile,
 } from "./tools";
@@ -180,6 +181,7 @@ export const createClaudeFileTools = ({
         getFileMetadata: claudeGetFileMetadata(files),
         getFileUrl: claudeGetFileUrl(files),
         listFiles: claudeListFiles(files),
+        searchFiles: claudeSearchFiles(files),
         signUploadUrl: claudeSignUploadUrl(files),
         uploadFile: claudeUploadFile(files),
     };
@@ -253,6 +255,7 @@ export {
     claudeGetFileMetadata,
     claudeGetFileUrl,
     claudeListFiles,
+    claudeSearchFiles,
     claudeSignUploadUrl,
     claudeUploadFile,
 } from "./tools";

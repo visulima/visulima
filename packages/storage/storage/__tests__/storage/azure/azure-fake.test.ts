@@ -4,8 +4,10 @@ import { buffer } from "node:stream/consumers";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import AzureStorage from "../../../src/storage/azure/azure-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
@@ -62,6 +64,17 @@ const createAzure = () => {
         });
     };
 
+    type Conditions = { ifMatch?: string; ifNoneMatch?: string };
+
+    /** Azure's access conditions: `ConditionNotMet` (412) when one does not hold for `name`. */
+    const assertConditions = (name: string, conditions: Conditions | undefined, code = "ConditionNotMet"): void => {
+        const blob = blobs.get(name);
+
+        if ((conditions?.ifNoneMatch === "*" && blob) || (conditions?.ifMatch !== undefined && conditions.ifMatch !== blob?.etag)) {
+            throw statusError(412, code);
+        }
+    };
+
     const blobClient = (name: string) => {
         const guard = (operation: string): void => {
             const error = state.fail?.(operation, name);
@@ -81,14 +94,18 @@ const createAzure = () => {
         };
 
         return {
-            beginCopyFromURL: async (url: string) => {
+            beginCopyFromURL: async (url: string, options?: { conditions?: Conditions; sourceConditions?: Conditions }) => {
                 guard("copy");
 
-                const source = blobs.get(decodeURIComponent(url.slice(ORIGIN.length)));
+                const sourceName = decodeURIComponent(url.slice(ORIGIN.length));
+                const source = blobs.get(sourceName);
 
                 if (!source) {
                     throw statusError(404, "CannotVerifyCopySource");
                 }
+
+                assertConditions(sourceName, options?.sourceConditions, "SourceConditionNotMet");
+                assertConditions(name, options?.conditions);
 
                 put(name, Buffer.from(source.body), { ...source.metadata }, source.contentType);
 
@@ -113,13 +130,24 @@ const createAzure = () => {
 
                 return { etag: blobs.get(name)?.etag, succeeded: true };
             },
-            deleteIfExists: async () => {
+            deleteIfExists: async (options?: { conditions?: Conditions }) => {
                 guard("delete");
+
+                if (blobs.has(name)) {
+                    assertConditions(name, options?.conditions);
+                }
+
                 staged.delete(name);
 
                 return { succeeded: blobs.delete(name) };
             },
-            downloadToBuffer: async () => Buffer.from(existing().body),
+            downloadToBuffer: async (_offset?: number, _count?: number, options?: { conditions?: Conditions }) => {
+                const { body } = existing();
+
+                assertConditions(name, options?.conditions);
+
+                return Buffer.from(body);
+            },
             exists: async () => {
                 guard("exists");
 
@@ -132,10 +160,12 @@ const createAzure = () => {
                     }),
                 };
             },
-            getProperties: async () => {
+            getProperties: async (options?: { conditions?: Conditions }) => {
                 guard("getProperties");
 
                 const blob = existing();
+
+                assertConditions(name, options?.conditions);
 
                 return {
                     contentLength: blob.body.byteLength,
@@ -604,5 +634,15 @@ describe("azure storage against an in-memory container", () => {
 
         expect(deleted.status).toBeLessThan(300);
         expect([azure.blobs.has(id), azure.blobs.has(`${id}.META`)]).toStrictEqual([false, false]);
+    });
+
+    it("should refuse conditional uploads it cannot commit atomically", async () => {
+        expect.assertions(3);
+
+        const files = new Files({ adapter: createStorage() });
+
+        expect(files.capabilities.conditional).toStrictEqual({ copy: true, create: false, delete: true, read: true, replace: false });
+        await expect(files.upload("a.txt", "x", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }));
+        expect(azure.blobs.has("a.txt")).toBe(false);
     });
 });

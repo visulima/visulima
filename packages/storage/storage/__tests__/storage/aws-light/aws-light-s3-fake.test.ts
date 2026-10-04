@@ -6,9 +6,13 @@ import { text } from "node:stream/consumers";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { Files } from "../../../src/files";
 import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-adapter";
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import type { S3PostError } from "../../__helpers__/s3-post";
+import { acceptS3Post } from "../../__helpers__/s3-post";
 import { createS3State } from "../../__helpers__/s3-state";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
@@ -23,6 +27,7 @@ const createS3 = () => {
 
     const xml = (body: string): Response => new Response(`<?xml version="1.0" encoding="UTF-8"?>${body}`);
     const missing = (code = "NoSuchKey"): Response => new Response(`<Error><Code>${code}</Code></Error>`, { status: 404 });
+    const preconditionFailed = (): Response => new Response("<Error><Code>PreconditionFailed</Code></Error>", { status: 412 });
 
     const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
         const request = input instanceof Request ? input : new Request(input, init);
@@ -38,8 +43,29 @@ const createS3 = () => {
         }
 
         const uploadId = url.searchParams.get("uploadId");
+        const holds = (target: string): boolean =>
+            bucket.holds(target, { ifMatch: request.headers.get("if-match"), ifNoneMatch: request.headers.get("if-none-match") });
 
         if (key === "") {
+            // Browser-form POST upload, checked against its signed policy like S3 does.
+            if (request.method === "POST") {
+                const form = await request.formData();
+                const file = form.get("file") as Blob;
+                const fields = Object.fromEntries([...form].filter(([name]) => name !== "file")) as Record<string, string>;
+
+                try {
+                    const accepted = acceptS3Post(fields, Buffer.from(await file.arrayBuffer()), { bucket: "uploads", secretAccessKey: "secret" });
+
+                    bucket.put(accepted.key, accepted.body, { contentType: accepted.contentType });
+
+                    return new Response(null, { status: 204 });
+                } catch (error: unknown) {
+                    const { code, status } = error as S3PostError;
+
+                    return new Response(`<Error><Code>${code}</Code></Error>`, { status });
+                }
+            }
+
             if (url.searchParams.has("uploads")) {
                 return xml(
                     `<ListMultipartUploadsResult>${[...bucket.uploads]
@@ -86,6 +112,11 @@ const createS3 = () => {
             }
 
             if (request.method === "POST") {
+                // A failed predicate leaves the multipart upload in place, as S3 does.
+                if (bucket.uploads.has(uploadId) && !holds(key)) {
+                    return preconditionFailed();
+                }
+
                 const completed = bucket.complete(uploadId);
 
                 return completed === undefined ? missing("NoSuchUpload") : xml(`<CompleteMultipartUploadResult><ETag>${completed.etag}</ETag></CompleteMultipartUploadResult>`);
@@ -98,6 +129,12 @@ const createS3 = () => {
             const source = request.headers.get("x-amz-copy-source");
 
             if (source !== null) {
+                const sourceKey = decodeURIComponent(source.slice("uploads/".length));
+
+                if (bucket.objects.has(sourceKey) && (!bucket.holds(sourceKey, { ifMatch: request.headers.get("x-amz-copy-source-if-match") }) || !holds(key))) {
+                    return preconditionFailed();
+                }
+
                 return bucket.copy(decodeURIComponent(source.slice("uploads/".length)), key) ? xml("<CopyObjectResult/>") : missing();
             }
 
@@ -108,6 +145,10 @@ const createS3 = () => {
         }
 
         if (request.method === "DELETE") {
+            if (!holds(key)) {
+                return preconditionFailed();
+            }
+
             bucket.objects.delete(key);
 
             return new Response(null, { status: 204 });
@@ -119,8 +160,12 @@ const createS3 = () => {
             return request.method === "HEAD" ? new Response(null, { status: 404 }) : missing();
         }
 
+        if (!holds(key)) {
+            return preconditionFailed();
+        }
+
         return new Response(request.method === "HEAD" ? null : read.body, {
-            headers: { ...read.object.metadata, "content-length": String(read.body.byteLength) },
+            headers: { ...read.object.metadata, "content-length": String(read.body.byteLength), etag: read.object.etag },
             status: read.partial ? 206 : 200,
         });
     };
@@ -159,7 +204,8 @@ describe("aws-light against an in-memory S3", () => {
             vi.stubGlobal("fetch", s3.fetch);
 
             return {
-                createStorage,
+                // The fake honours the conditional headers, which a custom endpoint doesn't advertise by default.
+                createStorage: (options) => createStorage({ conditional: true, ...options }),
                 failBackend: (failing) => {
                     s3.state.override = failing ? () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) : undefined;
                 },
@@ -338,6 +384,62 @@ describe("aws-light against an in-memory S3", () => {
         expect(s3.objects.size).toBe(0);
         // Each metadata record is deleted once, with its upload, not purged as an object of its own.
         expect(deletedKeys.filter((path) => path.endsWith(".META"))).toHaveLength(2);
+    });
+
+    it("should abort a losing conditional upload and leave the stored object alone", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const files = new Files({ adapter: createStorage({ conditional: true }) });
+
+        await files.upload("a.txt", "one", { ifNoneMatch: "*" });
+
+        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
+    });
+
+    it("should sign a POST policy whose size range the bucket enforces", async () => {
+        expect.assertions(5);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const files = new Files({ adapter: createStorage() });
+        const signed = await files.signedUpload("in/up.txt", { contentType: "text/plain", maxSize: 8 });
+
+        expect(signed).toMatchObject({ method: "POST", url: "https://s3.test/uploads/" });
+
+        const post = async (body: string): Promise<number> => {
+            const form = new FormData();
+
+            for (const [name, value] of Object.entries((signed as { fields: Record<string, string> }).fields)) {
+                form.append(name, value);
+            }
+
+            form.append("file", new Blob([body]));
+
+            const response = await fetch(signed.url, { body: form, method: "POST" });
+
+            return response.status;
+        };
+
+        await expect(post("too large!")).resolves.toBe(400);
+        expect(s3.objects.has("in/up.txt")).toBe(false);
+        await expect(post("fits")).resolves.toBe(204);
+        expect(s3.objects.get("in/up.txt")?.body.toString()).toBe("fits");
+    });
+
+    it("should only claim conditional support for AWS itself unless told to", () => {
+        expect.assertions(2);
+
+        vi.stubGlobal("fetch", createS3().fetch);
+
+        expect(new Files({ adapter: createStorage() }).capabilities.conditional.read).toBe(false);
+        expect(new Files({ adapter: createStorage({ endpoint: undefined, region: "us-east-1" }) }).capabilities.conditional.read).toBe(true);
     });
 });
 

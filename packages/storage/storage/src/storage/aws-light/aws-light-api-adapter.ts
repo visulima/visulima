@@ -4,6 +4,8 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { AwsClient } from "aws4fetch";
 
 import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-api";
+import { createS3PostPolicy } from "../aws/s3-post-policy";
+import type { UploadPostOptions, UploadPostPolicy } from "../types";
 import type { AwsLightClientConfig } from "./types";
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
@@ -140,6 +142,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     /** Bucket URL without a trailing slash; object keys are appended to it. */
     private readonly baseUrl: string;
 
+    private readonly credentials: AwsLightClientConfig;
+
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
 
@@ -153,6 +157,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         this.baseUrl = endpoint.origin + path;
+        this.credentials = config;
 
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
@@ -275,6 +280,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -298,6 +305,8 @@ ${partsXml}
             body: xmlBody,
             headers: {
                 "Content-Type": "application/xml",
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
             },
             method: "POST",
             signal: options?.signal,
@@ -420,7 +429,7 @@ ${partsXml}
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string; Range?: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -433,7 +442,10 @@ ${partsXml}
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
-            ...(params.Range !== undefined && { headers: { Range: params.Range } }),
+            headers: {
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.Range !== undefined && { Range: params.Range }),
+            },
             method: "GET",
             signal: options?.signal,
         });
@@ -525,9 +537,10 @@ ${partsXml}
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            ...(params.IfMatch !== undefined && { headers: { "If-Match": params.IfMatch } }),
             method: "DELETE",
             signal: options?.signal,
         });
@@ -539,9 +552,15 @@ ${partsXml}
         }
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const headers: Record<string, string> = {
             "x-amz-copy-source": params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
         };
 
         if (params.StorageClass) {
@@ -708,6 +727,28 @@ ${partsXml}
 
             throw requestError("Failed to access bucket", response.status, text);
         }
+    }
+
+    /**
+     * Signs a browser-form POST policy for `key` against this bucket's URL.
+     */
+    public presignPost(key: string, options?: UploadPostOptions): UploadPostPolicy {
+        const { accessKeyId, region, secretAccessKey, service, sessionToken } = this.credentials;
+
+        return createS3PostPolicy({
+            accessKeyId,
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region,
+            secretAccessKey,
+            service,
+            sessionToken,
+            url: `${this.baseUrl}/`,
+        });
     }
 
     /**

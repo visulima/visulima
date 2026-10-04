@@ -218,6 +218,64 @@ export interface OperationOptions {
 }
 
 /**
+ * ETag predicates for a conditional operation. Adapters evaluate them natively (an `If-Match` /
+ * `If-None-Match` request header, or a compare under the storage lock) and fail with
+ * `ERRORS.PRECONDITION_FAILED` (412) when the predicate does not hold. ETags compare without their
+ * surrounding quotes, so `"abc"` and `abc` are the same validator.
+ */
+export interface ConditionalOptions {
+    /** Proceed only when the stored object's ETag equals this value. */
+    ifMatch?: string;
+    /** `"*"`: proceed only when nothing is stored under the key (create-only write). */
+    ifNoneMatch?: "*";
+}
+
+/**
+ * Conditional predicates for `BaseStorage.copy`: the source must still carry `sourceIfMatch`;
+ * `ifMatch` / `ifNoneMatch` apply to the copy destination.
+ */
+export interface CopyConditionalOptions extends ConditionalOptions {
+    sourceIfMatch?: string;
+}
+
+/**
+ * Which conditional primitives an adapter evaluates natively. The `Files` facade rejects a
+ * predicate the adapter cannot honour with `METHOD_NOT_ALLOWED` instead of ignoring it.
+ */
+export interface ConditionalSupport {
+    /** `copy` with `sourceIfMatch` and an optional destination predicate. */
+    copy: boolean;
+    /** Create-only upload (`ifNoneMatch: "*"`). */
+    create: boolean;
+    /** `delete` with `ifMatch`. */
+    delete: boolean;
+    /** `download` / `head` with `ifMatch`. */
+    read: boolean;
+    /** Replace-if-match upload (`ifMatch`). */
+    replace: boolean;
+}
+
+/**
+ * A presigned browser-form `POST` upload: send `multipart/form-data` to `url` with every entry of
+ * `fields`, followed by the `file` field. The provider enforces the signed policy (size range,
+ * content type, key, expiry) before it stores anything.
+ */
+export interface UploadPostPolicy {
+    fields: Record<string, string>;
+    url: string;
+}
+
+/** Options for `BaseStorage.getUploadPost`. */
+export interface UploadPostOptions extends OperationOptions {
+    contentType?: string;
+    expiresIn?: number;
+    /** Largest accepted body in bytes. */
+    maxSize?: number;
+    /** Smallest accepted body in bytes. */
+    minSize?: number;
+}
+
+/**
  * Batch operation result for a single file
  */
 export interface BatchOperationResult<T extends File = File> {

@@ -132,6 +132,10 @@
             "types": "./dist/storage/sftp/index.d.ts",
             "import": "./dist/storage/sftp/index.js"
         },
+        "./provider/webdav": {
+            "types": "./dist/storage/webdav/index.d.ts",
+            "import": "./dist/storage/webdav/index.js"
+        },
         "./provider/supabase": {
             "types": "./dist/storage/supabase/index.d.ts",
             "import": "./dist/storage/supabase/index.js"

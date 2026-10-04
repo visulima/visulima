@@ -111,6 +111,8 @@ class S3ClientAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -119,6 +121,8 @@ class S3ClientAdapter implements S3ApiOperations {
     ): Promise<{ ETag?: string; Location: string }> {
         const command = new CompleteMultipartUploadCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { IfNoneMatch: params.IfNoneMatch }),
             Key: params.Key,
             MultipartUpload: {
                 Parts: params.Parts.map(({ ETag, PartNumber }) => {
@@ -200,7 +204,7 @@ class S3ClientAdapter implements S3ApiOperations {
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string; Range?: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -213,6 +217,7 @@ class S3ClientAdapter implements S3ApiOperations {
     }> {
         const command = new GetObjectCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
             Key: params.Key,
             ...(params.Range !== undefined && { Range: params.Range }),
         });
@@ -274,19 +279,26 @@ class S3ClientAdapter implements S3ApiOperations {
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const command = new DeleteObjectCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
             Key: params.Key,
         });
 
         await this.client.send(command, sendOptions(options));
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const commandInput: CopyObjectCommandInput = {
             Bucket: params.Bucket,
             CopySource: params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { CopySourceIfMatch: params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { IfNoneMatch: params.IfNoneMatch }),
             Key: params.Key,
         };
 
