@@ -25,6 +25,7 @@ pnpm add @google-cloud/storage gaxios
 ## Usage
 
 ```ts
+import { Files } from "@visulima/storage";
 import { LRUCache } from "lru-cache";
 import { GCStorage } from "@visulima/storage/provider/gcs";
 import ImageTransformer from "@visulima/storage/transformer/image";
@@ -50,11 +51,13 @@ const imageTransformer = new ImageTransformer(storage, {
     cacheTtl: 3600, // 1 hour
 });
 
-// Upload a file
-const file = await storage.put(fileBuffer, { filename: "image.jpg" });
+// Upload a file (the key doubles as the file id)
+const files = new Files({ adapter: storage });
+
+await files.upload("image.jpg", fileBuffer, { contentType: "image/jpeg" });
 
 // Transform the uploaded image
-const thumbnail = await imageTransformer.resize(file.id, {
+const thumbnail = await imageTransformer.resize("image.jpg", {
     width: 300,
     height: 200,
     fit: "cover",
@@ -74,11 +77,11 @@ const resized = await imageTransformer.resize("file-id", {
     fit: "cover",
 });
 
-// Convert formats
-const webp = await imageTransformer.transform("file-id", {
-    format: "webp",
-    quality: 85,
-});
+// Convert formats: `transform` takes an array of steps
+const webp = await imageTransformer.transform("file-id", [{ type: "format", options: { format: "webp", quality: 85 } }]);
+
+// Or the shorthand
+const avif = await imageTransformer.convertFormat("file-id", "avif", { quality: 60 });
 
 // Crop images
 const cropped = await imageTransformer.crop("file-id", {
@@ -103,22 +106,9 @@ const cropped = await imageTransformer.crop("file-id", {
 
 1. **Global CDN**: GCS automatically serves files through Google's global CDN
 2. **Caching**: Enable transformation caching to reduce processing overhead
-3. **Signed URLs**: Use signed URLs for private files with transformations
+3. **Private files**: `GCStorage` does not implement `getReadUrl()` / `getUploadUrl()`; serve private files through your upload handler's `GET` route
 4. **Lifecycle Policies**: Configure automatic cleanup of temporary transformations
 
-## Signed URLs with Transformations
+## Signed URLs
 
-For private files, combine signed URLs with transformations:
-
-```ts
-// Generate a signed URL for a transformed image
-const signedUrl = await storage.getSignedUrl(fileId, {
-    expires: Date.now() + 3600000, // 1 hour
-    transform: {
-        width: 500,
-        height: 500,
-        fit: "cover",
-        format: "webp",
-    },
-});
-```
+`GCStorage` does not implement `getReadUrl()` or `getUploadUrl()`, so `files.url()` and `files.signedUploadUrl()` reject with `METHOD_NOT_ALLOWED`. Serve private files through your upload handler's `GET` route (or a `MediaTransformer` for transformed variants). If you need V4 signed URLs on a Google Cloud bucket, the [Firebase adapter](./firebase.mdx) implements both.

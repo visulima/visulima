@@ -23,7 +23,7 @@ pnpm add @googleapis/drive google-auth-library
 ## Usage
 
 ```ts
-import GoogleDriveStorage from "@visulima/storage/provider/google-drive";
+import { GoogleDriveStorage } from "@visulima/storage/provider/google-drive";
 
 const storage = new GoogleDriveStorage({
     credentials: {
@@ -77,9 +77,7 @@ The `google-auth-library` `OAuth2Client` handles refresh natively — no per-req
 
 ```ts
 const storage = new GoogleDriveStorage({
-    credentials: {
-        /* … */
-    },
+    credentials: {/* … */},
     publicByDefault: true,
 });
 

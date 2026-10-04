@@ -112,7 +112,8 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
 ```typescript
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import { auth } from "@/lib/auth";
 import { requireAuth } from "@/middleware/auth";
 
@@ -141,8 +142,10 @@ const storage = new DiskStorage({
 
 const multipart = new Multipart({ storage });
 
-// Protected upload endpoint
-app.post("/api/files", requireAuth, multipart.handle, async (req, res) => {
+// Protected upload endpoint.
+// `upload` (unlike `handle`) calls the next middleware once the upload completes,
+// with the stored file metadata on `req.body`.
+app.post("/api/files", requireAuth, multipart.upload, async (req, res) => {
     try {
         const file = req.body; // File object from storage handler
         const user = req.user; // User from Better Auth (properly typed)
@@ -174,15 +177,8 @@ app.post("/api/files", requireAuth, multipart.handle, async (req, res) => {
     }
 });
 
-// Protected file retrieval
-app.get(
-    "/api/files/:id",
-    requireAuth,
-    multipart.handle, // Handles GET requests to stream files
-    (req, res) => {
-        // File is automatically streamed by the handler
-    },
-);
+// Protected file retrieval: `handle` streams the file (incl. range requests) and ends the response
+app.get("/api/files/:id", requireAuth, multipart.handle);
 
 // Protected file deletion
 app.delete("/api/files/:id", requireAuth, async (req, res) => {
@@ -217,7 +213,8 @@ app.delete("/api/files/:id", requireAuth, async (req, res) => {
 
 ```typescript
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import { requireAuth } from "@/middleware/auth";
 
 const app = express();
@@ -246,7 +243,7 @@ storage.onCreate = async (file) => {
     }
 };
 
-app.post("/api/files", requireAuth, multipart.handle, async (req, res) => {
+app.post("/api/files", requireAuth, multipart.upload, async (req, res) => {
     const file = req.body;
     const user = req.user; // Properly typed
 
@@ -290,7 +287,8 @@ Hono works seamlessly with Better Auth and the storage handlers:
 
 ```typescript
 import { Hono } from "hono";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 import { auth } from "@/lib/auth";
 
 const app = new Hono();
@@ -351,7 +349,7 @@ app.get("/api/files/:id", requireAuth, async (c) => {
 
 // Protected file deletion
 app.delete("/api/files/:id", requireAuth, async (c) => {
-    const { id } = c.req.param("id");
+    const id = c.req.param("id");
     await storage.delete({ id });
     return c.body(null, 204);
 });
@@ -360,11 +358,17 @@ app.delete("/api/files/:id", requireAuth, async (c) => {
 ## Fastify Integration
 
 ```typescript
+import { Readable } from "node:stream";
+
 import Fastify from "fastify";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 import { auth } from "@/lib/auth";
 
 const fastify = Fastify();
+
+// Let the storage handler read the raw multipart body itself
+fastify.addContentTypeParser("multipart/form-data", (_request, _payload, done) => done(null));
 const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
 
@@ -391,8 +395,9 @@ fastify.post("/api/files", { preHandler: fastify.requireAuth }, async (request, 
     const webRequest = new Request(`http://localhost${request.url}`, {
         method: request.method,
         headers: request.headers as any,
-        body: request.raw,
-    });
+        body: Readable.toWeb(request.raw) as ReadableStream,
+        duplex: "half", // required by Node's fetch for streamed bodies
+    } as RequestInit);
 
     const response = await multipart.fetch(webRequest);
     const file = await response.json();
@@ -411,33 +416,28 @@ For direct binary uploads or API-first applications:
 
 ```typescript
 import express from "express";
-import { DiskStorage, Rest } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
 import { requireAuth } from "@/middleware/auth";
 
 const app = express();
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
 
-// Upload binary data
-app.post("/api/files", requireAuth, rest.handle, (req, res) => {
+// Completed single-request uploads go to the next middleware with the file on req.body.
+// (A chunked-upload init or a partial chunk is still answered by the handler.)
+app.post("/api/files", requireAuth, rest.upload, (req, res) => {
     const file = req.body;
-    res.json({
+
+    res.status(201).json({
         id: file.id,
         url: `/api/files/${file.id}`,
     });
 });
 
-// Update file (PUT)
-app.put("/api/files/:id", requireAuth, rest.handle, (req, res) => {
-    const file = req.body;
-    res.json({ id: file.id });
-});
-
-// Batch delete
-app.delete("/api/files", requireAuth, rest.handle, (req, res) => {
-    // Handler processes ?ids=id1,id2,id3 or JSON body
-    res.status(204).send();
-});
+// Everything else — PUT, PATCH chunks, GET, HEAD, DELETE (incl. batch `?ids=a,b`) —
+// is answered by the handler itself, so nothing is chained after `handle`.
+app.use("/api/files", requireAuth, rest.handle);
 ```
 
 ## TUS Handler for Resumable Uploads
@@ -446,18 +446,18 @@ For large files or unreliable networks:
 
 ```typescript
 import express from "express";
-import { DiskStorage, Tus } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
 import { requireAuth } from "@/middleware/auth";
 
 const app = express();
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });
 
-// TUS endpoints (all protected)
-app.post("/api/files/tus", requireAuth, tus.handle);
-app.patch("/api/files/tus/:id", requireAuth, tus.handle);
-app.head("/api/files/tus/:id", requireAuth, tus.handle);
-app.delete("/api/files/tus/:id", requireAuth, tus.handle);
+// Mount once so every TUS method (OPTIONS, POST, HEAD, PATCH, GET, DELETE) reaches the handler.
+// Browsers send CORS preflights (OPTIONS) without credentials, so answer those before auth.
+app.options("/api/files/tus*", tus.handle);
+app.use("/api/files/tus", requireAuth, tus.handle);
 ```
 
 ## Cloud Storage Examples
@@ -466,7 +466,8 @@ app.delete("/api/files/tus/:id", requireAuth, tus.handle);
 
 ```typescript
 import express from "express";
-import { S3Storage, Multipart } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import { S3Storage } from "@visulima/storage/provider/aws";
 import { requireAuth } from "@/middleware/auth";
 
 const app = express();
@@ -485,7 +486,7 @@ const storage = new S3Storage({
 
 const multipart = new Multipart({ storage });
 
-app.post("/api/files", requireAuth, multipart.handle, (req, res) => {
+app.post("/api/files", requireAuth, multipart.upload, (req, res) => {
     res.json({ id: req.body.id, url: req.body.url });
 });
 ```
@@ -493,7 +494,8 @@ app.post("/api/files", requireAuth, multipart.handle, (req, res) => {
 ### Google Cloud Storage
 
 ```typescript
-import { GCStorage, Multipart } from "@visulima/storage/provider/gcs";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import { GCStorage } from "@visulima/storage/provider/gcs";
 import { requireAuth } from "@/middleware/auth";
 
 const storage = new GCStorage({
@@ -503,7 +505,7 @@ const storage = new GCStorage({
 
 const multipart = new Multipart({ storage });
 
-app.post("/api/files", requireAuth, multipart.handle, (req, res) => {
+app.post("/api/files", requireAuth, multipart.upload, (req, res) => {
     res.json({ id: req.body.id });
 });
 ```
@@ -667,7 +669,8 @@ Using separate upload endpoints for different file types (avatars, documents, im
 
 ```typescript
 import express from "express";
-import { DiskStorage, Multipart } from "@visulima/storage";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/node";
 import { requireAuth } from "@/middleware/auth";
 import { db } from "@/db";
 
@@ -694,7 +697,7 @@ const documentStorage = new DiskStorage({
 const documentHandler = new Multipart({ storage: documentStorage });
 
 // Avatar upload endpoint
-app.post("/api/avatars", requireAuth, avatarHandler.handle, async (req, res) => {
+app.post("/api/avatars", requireAuth, avatarHandler.upload, async (req, res) => {
     try {
         const file = req.body;
         const user = req.user;
@@ -728,7 +731,7 @@ app.post("/api/avatars", requireAuth, avatarHandler.handle, async (req, res) => 
 });
 
 // Document upload endpoint
-app.post("/api/documents", requireAuth, documentHandler.handle, async (req, res) => {
+app.post("/api/documents", requireAuth, documentHandler.upload, async (req, res) => {
     try {
         const file = req.body;
         const user = req.user;
@@ -800,7 +803,8 @@ app.delete("/api/avatars/:id", requireAuth, async (req, res) => {
 
 ```typescript
 import express from "express";
-import { S3Storage, Multipart } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import { S3Storage } from "@visulima/storage/provider/aws";
 import { auth } from "@/lib/auth";
 import { requireAuth } from "@/middleware/auth";
 import { db } from "@/db";
@@ -826,7 +830,7 @@ const storage = new S3Storage({
 const multipart = new Multipart({ storage });
 
 // Upload endpoint
-app.post("/api/files", requireAuth, multipart.handle, async (req, res) => {
+app.post("/api/files", requireAuth, multipart.upload, async (req, res) => {
     const file = req.body;
     const user = req.user; // Properly typed
 
@@ -948,7 +952,7 @@ const validateFileSignature = (fileBuffer: Buffer, expectedType: string): boolea
 // Use in upload handler with file signature validation
 // Note: This example reads the file after upload for validation. For better performance,
 // consider validating the file signature from the upload stream before storage.
-app.post("/api/files", requireAuth, multipart.handle, async (req, res) => {
+app.post("/api/files", requireAuth, multipart.upload, async (req, res) => {
     try {
         const file = req.body;
 

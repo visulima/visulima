@@ -9,7 +9,7 @@ Chunked uploads are ideal for:
 - Large files that exceed memory limits
 - Unreliable network connections
 - Resumable uploads after interruptions
-- Parallel chunk uploads for better performance
+- Parallel chunk uploads on adapters that accept out-of-order writes (see [Chunk ordering](#chunk-ordering))
 
 ## Initializing a Chunked Upload
 
@@ -31,8 +31,8 @@ const initResponse = await fetch("/files", {
     },
 });
 
-const { id } = await initResponse.json();
-// id is the upload session ID
+// 201 Created, with `X-Upload-ID` and `Location` headers and the file record as JSON
+const id = initResponse.headers.get("X-Upload-ID");
 ```
 
 ## Uploading Chunks
@@ -49,8 +49,8 @@ await fetch(`/files/${id}`, {
     body: chunk1,
 });
 
-// Upload chunk 2 (bytes 524288-1048576) - can be out of order
-await fetch(`/files/${id}`, {
+// Upload chunk 2 (bytes 524288-1048576)
+const last = await fetch(`/files/${id}`, {
     method: "PATCH",
     headers: {
         "X-Chunk-Offset": "524288",
@@ -59,7 +59,24 @@ await fetch(`/files/${id}`, {
     },
     body: chunk2,
 });
+
+// 202 Accepted → more chunks expected
+// 200 OK + X-Upload-Complete: true → this chunk completed the upload (body: the file record)
+if (last.status === 200 && last.headers.get("X-Upload-Complete") === "true") {
+    console.log("Upload complete");
+}
 ```
+
+Each `PATCH` answers `202 Accepted` while the upload is incomplete and `200 OK` with `X-Upload-Complete: true` for the chunk that completes it. That response is the completion signal; you don't need a separate `HEAD`.
+
+## Chunk ordering
+
+Whether chunks may arrive out of order depends on the adapter:
+
+- **S3 (and S3-compatible), Azure Blob and GCS only append.** Send chunks strictly in order, one at a time, each starting at the current `X-Upload-Offset`. An out-of-order or parallel chunk is rejected.
+- **Other adapters** (local disk, memory, …) write each chunk at its offset, so chunks may arrive in any order and in parallel.
+
+If you don't control which adapter backs the endpoint, upload sequentially.
 
 ## Checking Upload Progress
 
@@ -76,32 +93,28 @@ const chunks = JSON.parse(statusResponse.headers.get("X-Received-Chunks") || "[]
 console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
 ```
 
+`HEAD` reports progress for an unfinished upload (to resume after an interruption) and keeps answering after the upload completes, because the upload's metadata is kept.
+
 ## Features
 
-- **Out-of-Order Chunks**: Chunks can be uploaded in any order
+- **Out-of-Order Chunks**: Supported on adapters that write at an offset; S3, Azure and GCS require in-order chunks (see [Chunk ordering](#chunk-ordering))
 - **Idempotency**: Duplicate chunks are safely ignored
 - **Resumable**: Check progress and resume from last uploaded chunk
-- **Progress Tracking**: Real-time upload progress via HEAD requests
-- **Chunk Size Limits**: Maximum 100MB per chunk (configurable)
+- **Progress Tracking**: Upload progress via HEAD requests
+- **Chunk Size Limit**: Maximum 100 MB per chunk. The limit is fixed in the REST handler and not configurable; larger chunks are rejected with `413`
 
 ## Response Headers
 
-- `X-Upload-ID`: Upload session ID (returned on initialization)
+- `X-Upload-ID`: Upload session ID (returned on initialization; a random id, unrelated to the file name or size)
 - `X-Chunked-Upload`: Indicates chunked upload mode
 - `X-Upload-Offset`: Current upload offset in bytes
-- `X-Upload-Complete`: "true" when upload is complete, "false" otherwise
+- `X-Upload-Complete`: "true" when upload is complete, "false" otherwise (on `PATCH` and `HEAD`)
 - `X-Received-Chunks`: JSON array of received chunks `[{ offset, length }]`
 
 ## Complete Example
 
 ```typescript
-import { DiskStorage } from "@visulima/storage";
-import { Rest } from "@visulima/storage/handler/http/fetch";
-
-const storage = new DiskStorage({ directory: "./uploads" });
-const rest = new Rest({ storage });
-
-// Client-side chunked upload implementation
+// Client-side chunked upload; works on every adapter because chunks are sent in order
 async function uploadFileInChunks(file: File, chunkSize = 524288) {
     const totalSize = file.size;
 
@@ -116,48 +129,36 @@ async function uploadFileInChunks(file: File, chunkSize = 524288) {
         },
     });
 
-    const { id } = await initResponse.json();
+    const id = initResponse.headers.get("X-Upload-ID");
 
-    // Upload chunks
-    const chunks = Math.ceil(totalSize / chunkSize);
-    const uploadPromises = [];
-
-    for (let i = 0; i < chunks; i++) {
-        const start = i * chunkSize;
+    for (let start = 0; start < totalSize; start += chunkSize) {
         const end = Math.min(start + chunkSize, totalSize);
-        const chunk = file.slice(start, end);
 
-        uploadPromises.push(
-            fetch(`/files/${id}`, {
-                method: "PATCH",
-                headers: {
-                    "X-Chunk-Offset": String(start),
-                    "Content-Length": String(end - start),
-                    "Content-Type": "application/octet-stream",
-                },
-                body: chunk,
-            }),
-        );
+        const response = await fetch(`/files/${id}`, {
+            method: "PATCH",
+            headers: {
+                "X-Chunk-Offset": String(start),
+                "Content-Length": String(end - start),
+                "Content-Type": "application/octet-stream",
+            },
+            body: file.slice(start, end),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Chunk at ${start} failed with ${response.status}`);
+        }
+
+        // The completing chunk answers 200 with X-Upload-Complete: true
+        if (response.headers.get("X-Upload-Complete") === "true") {
+            return id;
+        }
     }
 
-    // Wait for all chunks to upload
-    await Promise.all(uploadPromises);
-
-    // Verify completion
-    const statusResponse = await fetch(`/files/${id}`, {
-        method: "HEAD",
-    });
-
-    const complete = statusResponse.headers.get("X-Upload-Complete");
-
-    if (complete === "true") {
-        console.log("Upload complete!");
-        return id;
-    } else {
-        throw new Error("Upload incomplete");
-    }
+    throw new Error("Upload incomplete");
 }
 ```
+
+On an adapter that writes at an offset (local disk, memory) you can send the chunks in parallel with `Promise.all`; the one `PATCH` that answers `200` + `X-Upload-Complete: true` marks completion.
 
 ## Resuming Interrupted Uploads
 
@@ -203,8 +204,8 @@ async function resumeUpload(uploadId: string, file: File, chunkSize = 524288) {
 
 ## Best Practices
 
-1. **Choose appropriate chunk size** - Balance between network efficiency and memory usage (typically 512KB - 5MB)
-2. **Upload chunks in parallel** - Use `Promise.all()` for better performance
+1. **Choose appropriate chunk size** - Balance between network efficiency and memory usage (typically 512KB - 5MB, never above 100 MB)
+2. **Upload in order unless you know the adapter** - S3, Azure and GCS reject out-of-order chunks; parallel uploads only help on adapters that write at an offset
 3. **Handle errors gracefully** - Retry failed chunks individually
-4. **Monitor progress** - Use HEAD requests to track upload status
-5. **Verify completion** - Always check `X-Upload-Complete` header before considering upload done
+4. **Resume with HEAD** - After an interruption, read `X-Upload-Offset` / `X-Received-Chunks` and continue from there
+5. **Detect completion from the PATCH response** - The completing chunk answers `200` with `X-Upload-Complete: true`

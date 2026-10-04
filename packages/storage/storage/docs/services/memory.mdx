@@ -74,7 +74,7 @@ files.raw.clear();
 Pass a shared `metaStorage` to point a second `MemoryStorage` instance at the same `MemoryMetaStorage`. Rarely needed, but useful for testing meta-only flows.
 
 ```typescript
-import MemoryMetaStorage from "@visulima/storage/provider/memory/meta-storage";
+import { MemoryMetaStorage, MemoryStorage } from "@visulima/storage/provider/memory";
 
 const meta = new MemoryMetaStorage();
 const a = new MemoryStorage({ metaStorage: meta });

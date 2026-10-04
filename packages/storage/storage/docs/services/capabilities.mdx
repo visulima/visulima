@@ -11,23 +11,31 @@ Legend:
 
 ## Read & write URLs
 
-| Adapter        | `getReadUrl()`                                           | `getUploadUrl()`                       |
-| -------------- | -------------------------------------------------------- | -------------------------------------- |
-| S3 / R2 / etc. | ✅ presigned `GET`                                       | ✅ presigned `PUT`                     |
-| S3 (light)     | 🟡 limited (aws4fetch signing)                           | 🟡 limited (aws4fetch signing)         |
-| Azure Blob     | ✅ SAS                                                   | ❌                                     |
-| GCS            | ✅ V4 signed URL                                         | ❌ (resumable URLs handled internally) |
-| Vercel Blob    | ✅ public URL                                            | ❌ (use Vercel client tokens)          |
-| Netlify Blobs  | ✅ signed URL                                            | ❌                                     |
-| Local (disk)   | 🟡 path-based URL                                        | ❌                                     |
-| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link          | ❌                                     |
-| Google Drive   | 🟡 only when `publicByDefault: true`                     | ✅ resumable session URL               |
-| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`        | ✅ `createUploadSession`               |
-| Box            | ✅ shared download link                                  | ❌                                     |
-| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                             | ✅ `createSignedUploadUrl`             |
-| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private) | ❌                                     |
-| Bunny Storage  | 🟡 via `publicBaseUrl` (Pull Zone)                       | ❌                                     |
-| Memory         | 🟡 synthetic `memory://${key}`                           | 🟡 synthetic `memory://${key}`         |
+`Files.url()` calls `getReadUrl()` and `Files.signedUploadUrl()` calls `getUploadUrl()`. Adapters that don't implement a method inherit the `BaseStorage` default, which rejects with `METHOD_NOT_ALLOWED`.
+
+| Adapter        | `getReadUrl()`                                                  | `getUploadUrl()`                       |
+| -------------- | --------------------------------------------------------------- | -------------------------------------- |
+| S3 / R2 / etc. | ✅ presigned `GET`                                              | ✅ presigned `PUT`                     |
+| S3 (light)     | ❌                                                              | ❌                                     |
+| Bun S3         | ✅ `presign` (`GET`)                                            | ✅ `presign` (`PUT`)                   |
+| Azure Blob     | ✅ SAS                                                          | ✅ SAS (`cw` permissions)              |
+| GCS            | ❌                                                              | ❌ (resumable URLs handled internally) |
+| Firebase       | ✅ V4 signed URL, or `publicBaseUrl`                            | ✅ V4 signed `PUT`                     |
+| Vercel Blob    | ❌                                                              | ❌ (use Vercel client tokens)          |
+| Netlify Blobs  | ❌                                                              | ❌                                     |
+| Local (disk)   | ❌                                                              | ❌                                     |
+| FTP / SFTP     | ❌                                                              | ❌                                     |
+| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link                 | ❌                                     |
+| Google Drive   | 🟡 only when `publicByDefault: true`                            | ✅ resumable session URL               |
+| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`               | ✅ `createUploadSession`               |
+| SharePoint     | ✅ same as OneDrive                                             | ✅ same as OneDrive                    |
+| Box            | ✅ shared download link                                         | ❌                                     |
+| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                                    | ✅ `createSignedUploadUrl`             |
+| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private)        | ❌                                     |
+| Bunny Storage  | 🟡 only with `publicBaseUrl` (Pull Zone)                        | ❌                                     |
+| Cloudinary     | ✅ delivery URL, or `private_download_url` for non-public types | ❌                                     |
+| PocketBase     | ✅ file URL (`publicBaseUrl` or a fresh file token)             | ❌                                     |
+| Memory         | 🟡 synthetic `memory://${key}`                                  | 🟡 synthetic `memory://${key}`         |
 
 ## URL options
 
@@ -35,10 +43,6 @@ Legend:
 | -------------- | --------------- | --------------------------------------------------------------------------- |
 | S3 / R2 / etc. | 7 d (SigV4 max) | ✅ forwarded as `ResponseContentDisposition`                                |
 | Azure Blob     | none (SAS)      | ✅ via SAS query                                                            |
-| GCS            | 7 d             | ✅ `response-content-disposition`                                           |
-| Vercel Blob    | n/a (public)    | ❌                                                                          |
-| Netlify Blobs  | varies          | ❌                                                                          |
-| Local (disk)   | n/a             | ❌                                                                          |
 | Dropbox        | 4 h             | ❌ — temporary links have no override                                       |
 | Google Drive   | n/a             | ❌ — `webContentLink` has no override                                       |
 | OneDrive       | n/a             | ❌ — Graph download URLs have no overrides                                  |

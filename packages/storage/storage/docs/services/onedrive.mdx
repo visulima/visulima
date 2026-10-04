@@ -22,17 +22,21 @@ pnpm add @microsoft/microsoft-graph-client
 
 ## Usage
 
+Pick exactly one auth shape: `clientCredentials`, `oauth`, `accessToken` or a pre-built `client`.
+
 ### App-only (client-credentials)
 
 ```ts
-import OneDriveStorage from "@visulima/storage/provider/onedrive";
+import { OneDriveStorage } from "@visulima/storage/provider/onedrive";
 
 const storage = new OneDriveStorage({
-    clientId: process.env.ONEDRIVE_CLIENT_ID!,
-    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET!,
-    tenantId: process.env.ONEDRIVE_TENANT_ID!,
-    driveUserId: process.env.ONEDRIVE_USER_ID, // target a specific user's drive
-    basePath: "uploads",
+    clientCredentials: {
+        clientId: process.env.ONEDRIVE_CLIENT_ID!,
+        clientSecret: process.env.ONEDRIVE_CLIENT_SECRET!,
+        tenantId: process.env.ONEDRIVE_TENANT_ID!,
+    },
+    userId: process.env.ONEDRIVE_USER_ID!, // app-only tokens can't use /me/drive: set userId, driveId or siteId
+    rootFolderPath: "uploads",
 });
 ```
 
@@ -40,10 +44,20 @@ const storage = new OneDriveStorage({
 
 ```ts
 const storage = new OneDriveStorage({
-    clientId: process.env.ONEDRIVE_CLIENT_ID!,
-    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
-    tenantId: process.env.ONEDRIVE_TENANT_ID, // optional; defaults to `common`
-    refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN!,
+    oauth: {
+        clientId: process.env.ONEDRIVE_CLIENT_ID!,
+        clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
+        tenantId: process.env.ONEDRIVE_TENANT_ID, // optional; defaults to `common`
+        refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN!,
+    },
+});
+```
+
+### Static or dynamic access token
+
+```ts
+const storage = new OneDriveStorage({
+    accessToken: async () => getTokenFromYourIdentityLayer(),
 });
 ```
 
@@ -61,24 +75,41 @@ Pre-built clients bypass the adapter's auth bookkeeping entirely.
 
 ## Configuration
 
-### `basePath`
+| Option              | Type                                                   | Description                                                                       |
+| ------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `clientCredentials` | `{ clientId, clientSecret, tenantId }`                 | App-only auth                                                                     |
+| `oauth`             | `{ clientId, clientSecret?, refreshToken, tenantId? }` | Delegated auth with a refresh token                                               |
+| `accessToken`       | `string \| () => string \| Promise<string>`            | Static token, or a function returning a fresh one per call                        |
+| `client`            | `Client`                                               | Pre-built Graph client                                                            |
+| `driveId`           | `string`                                               | Target `/drives/{id}`                                                             |
+| `siteId`            | `string`                                               | Target a SharePoint site's default drive (`/sites/{id}/drive`)                    |
+| `userId`            | `string`                                               | Target `/users/{id}/drive`                                                        |
+| `rootFolderPath`    | `string`                                               | Folder inside the drive that acts as the bucket root; must already exist          |
+| `publicByDefault`   | `boolean`                                              | `getReadUrl` mints an anonymous view link instead of the short-lived download URL |
+| `copyTimeoutMs`     | `number`                                               | Timeout for polling Graph's async-copy monitor (default `60000`)                  |
+| `metaStorageConfig` | `LocalMetaStorageOptions`                              | Where upload metadata is kept (default: local temp directory)                     |
 
-All operations are rooted under `basePath` so the same Microsoft tenant can host multiple logical "buckets":
+### `rootFolderPath`
+
+All operations are rooted under `rootFolderPath` so the same drive can host multiple logical "buckets":
 
 ```ts
 new OneDriveStorage({
     /* …auth… */
-    basePath: "uploads/avatars",
+    rootFolderPath: "uploads/avatars",
 });
 ```
 
-Keys are then joined as `uploads/avatars/<key>` inside `/drive/root:`.
+Keys are then joined as `uploads/avatars/<key>` inside the drive root. The folder must already exist.
 
 ### Drive selection
 
-- Default: `/me/drive` (the authenticated user).
-- `driveUserId`: targets `/users/{id}/drive` — useful for app-only auth where there's no "me".
-- Pre-built client: target whatever the client is wired for.
+`driveId`, `siteId` and `userId` are mutually exclusive:
+
+- None set: `/me/drive` (the signed-in user; delegated auth only).
+- `driveId`: `/drives/{id}`.
+- `siteId`: `/sites/{id}/drive`.
+- `userId`: `/users/{id}/drive`. Required (or `driveId` / `siteId`) for `clientCredentials`, since Graph rejects `/me/drive` for app-only tokens.
 
 ## URL Generation
 

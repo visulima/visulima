@@ -10,7 +10,7 @@ AWS Light Storage is a lightweight S3-compatible storage implementation optimize
 
 - **Worker Compatible**: Works in Cloudflare Workers, Web Workers, and edge runtimes
 - **Lightweight**: Uses `aws4fetch` (~6.4 KB) instead of the full AWS SDK
-- **S3-Compatible**: Full S3 API compatibility for multipart uploads, presigned URLs, and more
+- **S3-Compatible**: Works against S3 and S3-compatible services, including multipart uploads
 - **No Node.js Dependencies**: Uses standard Web APIs (`fetch`, `SubtleCrypto`)
 
 ## Installation
@@ -88,21 +88,26 @@ self.onmessage = async (event) => {
 
 ### Custom Endpoint (S3-Compatible Services)
 
-AWS Light Storage works with any S3-compatible service:
+AWS Light Storage works with any S3-compatible service. Always pass both:
+
+- **`endpoint`** — the provider's S3 API root URL, **without** the bucket name (no `https://my-bucket.…` host, no `/my-bucket` path).
+- **`bucket`** — the bucket name. The adapter adds it to every request URL itself.
+
+Without `endpoint`, requests go to AWS (`https://<bucket>.s3.<region>.amazonaws.com`).
 
 ```typescript
 import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
-// Cloudflare R2
+// Cloudflare R2: endpoint is the account-level S3 API URL, bucket is separate
 const r2Storage = new AwsLightStorage({
     bucket: "my-r2-bucket",
     region: "auto",
-    endpoint: "https://my-account-id.r2.cloudflarestorage.com",
+    endpoint: "https://<account-id>.r2.cloudflarestorage.com",
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
 });
 
-// DigitalOcean Spaces
+// DigitalOcean Spaces: regional endpoint (not https://my-space.nyc3.digitaloceanspaces.com)
 const spacesStorage = new AwsLightStorage({
     bucket: "my-space",
     region: "nyc3",
@@ -111,7 +116,7 @@ const spacesStorage = new AwsLightStorage({
     secretAccessKey: process.env.DO_SPACES_SECRET!,
 });
 
-// MinIO
+// MinIO: server root URL; the bucket is never part of it
 const minioStorage = new AwsLightStorage({
     bucket: "my-bucket",
     region: "us-east-1",
@@ -141,19 +146,18 @@ const storage = new AwsLightStorage({
 
 ### Configuration Options
 
-| Name               | Type           | Description                                             | Default |
-| :----------------- | :------------- | :------------------------------------------------------ | :------ |
-| bucket             | string         | The name of the S3 bucket to use.                       |         |
-| region             | string         | The AWS region of the bucket.                           |         |
-| accessKeyId        | string         | AWS access key ID.                                      |         |
-| secretAccessKey    | string         | AWS secret access key.                                  |         |
-| sessionToken       | string         | Optional AWS session token (for temporary credentials). |         |
-| endpoint           | string         | Custom S3 endpoint (for S3-compatible services).        | Auto    |
-| service            | string         | AWS service name (usually "s3").                        | "s3"    |
-| clientDirectUpload | boolean        | Enable client-side direct upload with presigned URLs.   | false   |
-| partSize           | number\|string | Part size for multipart uploads.                        | "16MB"  |
-| expiration         | object         | File expiration configuration.                          |         |
-| logger             | Logger         | Logger instance for debugging.                          |         |
+| Name            | Type           | Description                                                      | Default |
+| :-------------- | :------------- | :--------------------------------------------------------------- | :------ |
+| bucket          | string         | The name of the S3 bucket to use.                                |         |
+| region          | string         | The AWS region of the bucket.                                    |         |
+| accessKeyId     | string         | AWS access key ID.                                               |         |
+| secretAccessKey | string         | AWS secret access key.                                           |         |
+| sessionToken    | string         | Optional AWS session token (for temporary credentials).          |         |
+| endpoint        | string         | S3 API root URL of an S3-compatible service, without the bucket. | AWS     |
+| service         | string         | AWS service name (usually "s3").                                 | "s3"    |
+| partSize        | number\|string | Part size for multipart uploads.                                 | "16MB"  |
+| expiration      | object         | File expiration configuration.                                   |         |
+| logger          | Logger         | Logger instance for debugging.                                   |         |
 
 ## When to Use AWS Light vs AWS S3 Storage
 
@@ -163,7 +167,7 @@ const storage = new AwsLightStorage({
 - ✅ **Bundle Size Matters**: Need a lightweight solution (~6.4 KB vs ~2MB)
 - ✅ **No Node.js Available**: Running in browser or edge environments without Node.js
 - ✅ **Simple S3 Operations**: Basic upload, download, delete operations are sufficient
-- ✅ **S3-Compatible Services**: Using R2, DigitalOcean Spaces, MinIO, or other S3-compatible services
+- ✅ **S3-Compatible Services**: Using R2, DigitalOcean Spaces, MinIO, or other S3-compatible services (set `endpoint` + `bucket`)
 
 ### Use AWS S3 Storage When:
 
@@ -198,13 +202,13 @@ const storage = new AwsLightStorage({
 | Worker Support       | ❌ No           | ✅ Yes              |
 | Bundle Size          | ~2MB (AWS SDK)  | ~6.4 KB (aws4fetch) |
 | Node.js Required     | ✅ Yes          | ❌ No               |
-| Presigned URLs       | ✅ Full Support | ⚠️ Limited          |
+| Presigned URLs       | ✅ Full Support | ❌ Not implemented  |
 | All S3 Features      | ✅ Yes          | ✅ Yes              |
 | Edge Runtime Support | ❌ No           | ✅ Yes              |
 
 ## Limitations
 
-1. **Presigned URLs**: Full presigned URL generation requires implementing AWS Signature Version 4 query string authentication. Currently, URLs are constructed but signing happens on-demand.
+1. **Presigned URLs**: `getReadUrl()` / `getUploadUrl()` are not implemented, so `files.url()` and `files.signedUploadUrl()` reject with `METHOD_NOT_ALLOWED`. Use `S3Storage` (or `BunS3Storage` on Bun) when you need presigned URLs.
 
 2. **File Type Detection**: File type detection from streams may not work in all worker environments due to Node.js stream dependencies.
 
@@ -266,7 +270,7 @@ If you're migrating from `S3Storage` to `AwsLightStorage`:
 1. Install `aws4fetch` instead of `@aws-sdk/client-s3`
 2. Update imports: `S3Storage` → `AwsLightStorage`
 3. Update configuration: Remove `credentials` object, use `accessKeyId` and `secretAccessKey` directly
-4. Test presigned URL functionality if using `clientDirectUpload`
+4. If you rely on presigned URLs (`getReadUrl` / `getUploadUrl`), stay on `S3Storage`: `AwsLightStorage` doesn't implement them
 
 ```typescript
 // Before (S3Storage)

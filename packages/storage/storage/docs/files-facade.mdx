@@ -1,6 +1,6 @@
 # `Files` facade
 
-Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
+Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `downloadStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
 
 ```ts
 import { Files } from "@visulima/storage";
@@ -29,16 +29,22 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | ----------------- | ---------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
 | `upload`          | `(key, body, opts?) → Promise<FileObject>`           | `(items: BulkUploadItem[], opts?) → Promise<…>` | Accepts any [supported body type](#body-types).                   |
 | `download`        | `(key, opts?) → Promise<DownloadResult>`             | `(keys: string[], opts?) → Promise<…>`          | Optional `range` for byte slices.                                 |
+| `downloadStream`  | `(key, opts?) → Promise<DownloadStreamResult>`       | —                                               | `body` is a Node `Readable`; nothing is buffered in memory.       |
 | `head`            | `(key, opts?) → Promise<FileObject>`                 | `(keys: string[], opts?) → Promise<…>`          | Metadata only.                                                    |
 | `exists`          | `(key, opts?) → Promise<boolean>`                    | `(keys: string[], opts?) → Promise<…>`          | Never throws for a missing object.                                |
 | `delete`          | `(key, opts?) → Promise<void>`                       | `(keys: string[], opts?) → Promise<…>`          | Uses the adapter's native bulk primitive when present.            |
 | `copy`            | `(source, destination, opts?) → Promise<FileObject>` | —                                               | Server-side where supported; download + re-upload otherwise.      |
 | `move`            | `(from, to, opts?) → Promise<FileObject>`            | `(items: BulkMoveItem[], opts?) → Promise<…>`   | Uses native rename where one exists, otherwise `copy` + `delete`. |
 | `list`            | `(opts?) → Promise<FileObject[]>`                    | —                                               | Optional `prefix` filter and `limit`. Single page.                |
+| `list`            | `({ delimiter, … }) → Promise<ListDirectoryResult>`  | —                                               | Directory-style `{ files, prefixes }`.                            |
 | `listAll`         | `(opts?) → AsyncGenerator<FileObject>`               | —                                               | Pages internally; yields one at a time.                           |
 | `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
 | `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | `{ range, metadata, cacheControl, readonly }`.                    |
+| `readonly`        | `() → Files`                                         | —                                               | Locked view sharing adapter, prefix, defaults and hooks.          |
+
+Two top-level functions build on the same surface: `transfer(source, destination)` and `sync(source, destination)` (both covered below).
 
 ## Per-call `OperationOptions`
 
@@ -127,8 +133,9 @@ No S3-style `ETag` capitalization quirks, no Azure-specific fields leaking throu
 `Files` is generic over the adapter type, so `files.raw` is typed to the adapter's native client when you pin it:
 
 ```ts
-import { Files, S3Storage } from "@visulima/storage";
 import type { S3Client } from "@aws-sdk/client-s3";
+import { Files } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
 
 const files = new Files({ adapter: new S3Storage({ bucket: "u", region: "us-east-1" }) });
 
@@ -172,7 +179,23 @@ const { body } = await files.download("video.mp4", { range: { start: 0, end: 102
 const { body: tail } = await files.download("video.mp4", { range: { start: 8 * 1024 * 1024 } });
 ```
 
-`range` is the HTTP `bytes=start-end` semantics: both bounds 0-based, `end` inclusive. The facade checks `adapter.supportsRange` and throws synchronously for adapters that don't opt in, so the bandwidth saving is never silently lost client-side.
+`range` is the HTTP `bytes=start-end` semantics: both bounds 0-based, `end` inclusive. The facade checks `adapter.supportsRange` (also exposed as `files.capabilities.range`) and rejects the returned promise for adapters that don't opt in, so the bandwidth saving is never silently lost client-side. Nothing throws synchronously — `await` (or `.catch`) the call to handle it.
+
+### Stream a download
+
+```ts
+const { body, contentType, size } = await files.downloadStream("videos/intro.mp4");
+
+response.setHeader("Content-Type", contentType);
+
+if (size !== undefined) {
+    response.setHeader("Content-Length", String(size));
+}
+
+body.pipe(response);
+```
+
+`downloadStream` is backed by the adapter's `getStream()`, so large objects are never buffered in memory. `body` is a Node `Readable`; `contentType`, `etag`, `lastModified` and `size` come from the adapter's response headers.
 
 ### Upload with progress
 
@@ -238,6 +261,16 @@ const userFiles = await files.list({ prefix: `users/${userId}/`, limit: 100 });
 ```
 
 `list()` is intentionally simple: one page from the adapter, then filter by `prefix` in memory. Use `listAll` for full-bucket walks.
+
+### Directory-style listing
+
+```ts
+const { files: direct, prefixes } = await files.list({ prefix: "photos/", delimiter: "/" });
+// direct   → objects directly under photos/ (e.g. photos/cover.jpg)
+// prefixes → one entry per "subdirectory" (e.g. ["photos/2024/", "photos/2025/"])
+```
+
+Passing `delimiter` changes the return type to `ListDirectoryResult` (`{ files, prefixes }`). Adapters with `supportsDelimiter` (the S3 family and GCS) collapse prefixes server-side; for every other adapter the facade lists one page and folds the keys itself.
 
 ### Walk every object (paginated async iterable)
 
@@ -309,6 +342,39 @@ const { transferred, skipped, errors } = await transfer(from, to, {
 Each object is downloaded and re-uploaded with bounded concurrency. By default keys that already exist at the destination are skipped — pass `overwrite: true` to force re-upload. `transformKey` rewrites the destination key, `stopOnError` switches to sequential execution and aborts on the first failure, `signal` aborts mid-walk. Body, content type, and user metadata travel; `etag`/`lastModified` are destination-assigned.
 
 The walk pulls from `source.listAll()` directly via N concurrent workers — no eager buffering of keys, so very large buckets transfer in constant memory.
+
+## Incremental mirror: `sync(source, destination, opts?)`
+
+`sync` copies only what changed. Each source object is compared against the destination (size, then etag, then modification time) and uploaded when missing or different. With `prune: true`, destination keys that no longer exist on the source are deleted after the copy pass.
+
+```ts
+import { sync } from "@visulima/storage";
+
+// Preview the plan without writing anything…
+const plan = await sync(from, to, { prefix: "assets/", prune: true, dryRun: true });
+
+// …then apply it.
+const { uploaded, updated, unchanged, deleted, errors } = await sync(from, to, { prefix: "assets/", prune: true });
+```
+
+Like the bulk methods, `sync` doesn't throw on partial failure — per-key failures land in `errors`. It also accepts `concurrency`, `limit`, `onProgress`, `signal`, `stopOnError` and `transformKey`.
+
+## Capabilities and read-only views
+
+```ts
+if (files.capabilities.range) {
+    await files.download("video.mp4", { range: { start: 0, end: 1023 } });
+}
+
+const ro = files.readonly(); // or: new Files({ adapter, readonly: true })
+
+await ro.download("a.txt"); // ok
+await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
+```
+
+`files.capabilities` returns `{ range, metadata, cacheControl, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags plus whether this view is read-only. Branch on them before relying on an optional feature.
+
+A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`) before the adapter is touched; reads pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
 
 ## In-memory adapter for tests
 
