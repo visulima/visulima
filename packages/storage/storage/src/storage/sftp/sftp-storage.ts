@@ -69,10 +69,14 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
     private readonly rootFolderPath: string;
 
+    /** An absolute `rootFolderPath` ("/srv/uploads") stays absolute; a relative one resolves against the home directory. */
+    private readonly absoluteRoot: boolean;
+
     public constructor(config: SftpStorageOptions) {
         super(config);
 
         this.connection = config.connection;
+        this.absoluteRoot = config.rootFolderPath?.startsWith("/") ?? false;
         this.rootFolderPath = trimSlashes(config.rootFolderPath ?? "");
         this.meta = config.metaStorage ?? new SftpMetaStorage(config.metaStorageConfig);
 
@@ -407,6 +411,14 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
+    /**
+     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
+     * without a `createdAt`, so purge would never match an expired upload through it.
+     */
+    protected override async listUploads(): Promise<SftpFile[]> {
+        return (await this.meta.list()) ?? this.list();
+    }
+
     private async walkList(client: SftpClient, directory: string, files: SftpFile[]): Promise<void> {
         let entries: Awaited<ReturnType<SftpClient["list"]>>;
 
@@ -514,7 +526,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
             return "";
         }
 
-        return this.rootFolderPath.startsWith("/") ? `/${parts.join("/")}` : parts.join("/");
+        return this.absoluteRoot ? `/${parts.join("/")}` : parts.join("/");
     }
 
     private pathToKey(path: string): string {

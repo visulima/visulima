@@ -423,6 +423,14 @@ class FtpStorage extends BaseStorage<FtpFile> {
         });
     }
 
+    /**
+     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
+     * without a `createdAt`, so purge would never match an expired upload through it.
+     */
+    protected override async listUploads(): Promise<FtpFile[]> {
+        return (await this.meta.list()) ?? this.list();
+    }
+
     private async walkList(client: Client, directory: string, files: FtpFile[]): Promise<void> {
         let entries: Awaited<ReturnType<Client["list"]>>;
 
