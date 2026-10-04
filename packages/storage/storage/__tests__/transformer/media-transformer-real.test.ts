@@ -168,7 +168,9 @@ describe("mediaTransformer with real transformers", () => {
             const transform = vi.spyOn(ImageTransformer.prototype, "transform");
 
             await expect(media.fetch("image-file", "format=webp&lossless=true&effort=1")).resolves.toMatchObject({ format: "webp" });
-            expect(transform).toHaveBeenLastCalledWith("image-file", [{ options: { effort: 1, format: "webp", lossless: true, quality: undefined }, type: "format" }]);
+            expect(transform).toHaveBeenLastCalledWith("image-file", [
+                { options: { effort: 1, format: "webp", lossless: true, quality: undefined }, type: "format" },
+            ]);
 
             transform.mockRestore();
         });
@@ -227,6 +229,31 @@ describe("mediaTransformer with real transformers", () => {
         });
     });
 
+    describe("content types the mime package lacks", () => {
+        it.each(["audio/flac", "audio/m4a", "audio/aiff"])("routes %s uploads to the audio transformer", async (contentType) => {
+            expect.assertions(1);
+
+            const { media, storage } = await setup();
+
+            // mediabunny sniffs the container, so WAV bytes stand in for the declared type.
+            await seedFile(storage, "typed-audio", makeWav(44_100, 1, 4410), contentType);
+
+            await expect(media.handle("typed-audio", { format: "wav", sampleRate: "22050" })).resolves.toMatchObject({
+                format: "wav",
+                mediaType: "audio",
+                sampleRate: 22_050,
+            });
+        });
+    });
+
+    it.each(["inside", "outside"])("still accepts fit=%s for images", async (fit) => {
+        expect.assertions(1);
+
+        const { media } = await setup();
+
+        await expect(media.handle("image-file", { fit, height: "10", width: "10" })).resolves.toMatchObject({ mediaType: "image" });
+    });
+
     describe("validation errors", () => {
         it.each([
             ["image-file", "codec=avc", "INVALID_PARAMS_FOR_IMAGE"],
@@ -236,6 +263,9 @@ describe("mediaTransformer with real transformers", () => {
             ["image-file", "left=1&top=1", "INCOMPLETE_CROP_PARAMS"],
             ["video-file", "sampleRate=44100", "INVALID_PARAMS_FOR_VIDEO"],
             ["video-file", "fit=bogus", "INVALID_FIT_VALUE"],
+            // mediabunny has no inside/outside fit (images keep them)
+            ["video-file", "width=16&fit=inside", "INVALID_FIT_VALUE"],
+            ["video-file", "width=16&fit=outside", "INVALID_FIT_VALUE"],
             ["video-file", "codec=mp3", "INVALID_VIDEO_CODEC"],
             ["video-file", "codec=bogus", "INVALID_VIDEO_CODEC"],
             ["video-file", "format=avi", "INVALID_VIDEO_FORMAT"],
@@ -312,7 +342,10 @@ describe("mediaTransformer with real transformers", () => {
             const items = await storage.list();
             const saved = items.find((item) => item.id.startsWith("image-file_transformed_"));
 
-            expect(saved).toMatchObject({ contentType: "image/webp", metadata: expect.objectContaining({ height: 5, originalFileId: "image-file", width: 10 }) });
+            expect(saved).toMatchObject({
+                contentType: "image/webp",
+                metadata: expect.objectContaining({ height: 5, originalFileId: "image-file", width: 10 }),
+            });
 
             const second = await media.fetch("image-file", "format=webp&width=10");
 

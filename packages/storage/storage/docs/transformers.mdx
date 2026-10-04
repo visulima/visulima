@@ -282,6 +282,7 @@ const fromQuery = await transformer.fetch("file-id", "width=800&height=600&forma
 | ----------- | ------ | ---------------- | ---------------------------------- |
 | `width`     | number | Width in pixels  | 1-10000                            |
 | `height`    | number | Height in pixels | 1-10000                            |
+| `fit`       | string | Resize fit mode  | `cover`, `contain`, `fill`         |
 | `codec`     | string | Video codec      | `avc`, `hevc`, `vp8`, `vp9`, `av1` |
 | `bitrate`   | number | Bitrate in bps   | 1000000+                           |
 | `frameRate` | number | Frame rate in Hz | 24, 30, 60                         |
@@ -294,6 +295,13 @@ const fromQuery = await transformer.fetch("file-id", "width=800&height=600&forma
 | `numberOfChannels` | number | Number of channels | 1, 2                                   |
 | `codec`            | string | Audio codec        | `aac`, `opus`, `mp3`, `vorbis`, `flac` |
 | `bitrate`          | number | Bitrate in bps     | 64000+                                 |
+
+Videos accept only `cover`, `contain` and `fill` for `fit`; `inside` and `outside` answer 400.
+
+The response `Content-Type` is the format's registered MIME type, e.g. `video/x-matroska` for
+`mkv`, `video/quicktime` for `mov`, `audio/flac` for `flac`, and `video/ogg` or `audio/ogg` for
+`ogg` depending on the source. Uploads typed `audio/flac`, `audio/m4a`, `audio/opus`, `audio/aiff`,
+`video/matroska` and `video/avi` are recognised alongside the types the `mime` package knows.
 
 ## Caching Transformed Files
 

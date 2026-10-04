@@ -1,13 +1,11 @@
 import { Readable } from "node:stream";
 
-import mime from "mime";
-
 import type { BaseStorage } from "../storage/storage";
 import type { File, FileReturn } from "../storage/utils/file";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
 import type { BaseTransformerConfig } from "./transformer-config";
-import { sourceVersion } from "./utils";
+import { getContentTypeFromFormat, sourceVersion } from "./utils";
 
 /**
  * Abstract base class for all media transformers.
@@ -26,6 +24,9 @@ abstract class BaseTransformer<
     protected logger?: Console;
 
     protected cache?: Cache<string, CacheValue>;
+
+    /** Kind of media this transformer produces; decides e.g. `video/ogg` over `audio/ogg`. */
+    protected readonly mediaType?: "image" | "video" | "audio";
 
     /**
      * Expiry time of every entry this instance cached, oldest first. Enforces `cacheTtl` even on
@@ -217,18 +218,8 @@ abstract class BaseTransformer<
      * @param result Transformation result object containing format information.
      * @returns Content type string (MIME type).
      */
-    // eslint-disable-next-line class-methods-use-this
     protected getContentTypeFromResult(result: any): string {
-        // If result has a format, try to get content type from mime
-        if (result?.format) {
-            const contentType = mime.getType(result.format);
-
-            if (contentType) {
-                return contentType;
-            }
-        }
-
-        return "application/octet-stream";
+        return getContentTypeFromFormat(result?.format, this.mediaType) ?? "application/octet-stream";
     }
 }
 

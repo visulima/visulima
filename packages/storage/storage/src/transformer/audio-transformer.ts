@@ -60,6 +60,8 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    protected override readonly mediaType = "audio" as const;
+
     /**
      * Creates a new AudioTransformer instance.
      * @param storage The storage backend for retrieving and storing audio files.

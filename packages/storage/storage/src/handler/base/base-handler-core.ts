@@ -9,6 +9,7 @@ import mime from "mime";
 import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
+import { getContentTypeFromFormat } from "../../transformer/utils";
 import type { ErrorResponses } from "../../utils/errors";
 import { ErrorMap, ERRORS, isUploadError } from "../../utils/errors";
 import { HeaderUtilities, toHttpDate } from "../../utils/headers";
@@ -442,7 +443,8 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         try {
-            const response = (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+            const response =
+                (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
 
             if (target.isDownloadRequest) {
                 response.headers = {
@@ -511,7 +513,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 content: transformed.buffer,
                 headers: {
                     "Content-Length": String(transformed.size),
-                    "Content-Type": `${transformed.mediaType}/${transformed.format}`,
+                    "Content-Type": getContentTypeFromFormat(transformed.format, transformed.mediaType) ?? "application/octet-stream",
                     "X-Media-Type": transformed.mediaType,
                     "X-Original-Format": transformed.originalFile?.contentType?.split("/")[1] || "",
                     "X-Transformed-Format": transformed.format,

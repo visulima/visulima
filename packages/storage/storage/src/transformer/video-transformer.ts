@@ -54,7 +54,7 @@ import { getFormatFromContentType, isSupportedFormat, isValidMediaType } from ".
  *
  * - `width`: Width in pixels (Number)
  * - `height`: Height in pixels (Number)
- * - `fit`: Resize fit mode - cover/contain/fill/inside/outside
+ * - `fit`: Resize fit mode - cover/contain/fill
  * - `codec`: Video codec - avc/hevc/vp8/vp9/av1
  * - `bitrate`: Video bitrate in bits per second (Number)
  * - `frameRate`: Frame rate in Hz (Number)
@@ -66,6 +66,8 @@ class VideoTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    protected override readonly mediaType = "video" as const;
+
     /**
      * Creates a new VideoTransformer instance.
      * @param storage The storage backend for retrieving and storing video files.

@@ -16,8 +16,24 @@ export const isValidMediaType = (contentType: string | undefined, expectedType: 
     return contentType.startsWith(`${expectedType}/`);
 };
 
+/** Common media types the `mime` package does not know, mapped to their format. */
+const CONTENT_TYPE_FORMATS: Readonly<Record<string, string>> = {
+    "audio/aiff": "aiff",
+    "audio/flac": "flac",
+    "audio/m4a": "m4a",
+    "audio/opus": "opus",
+    "audio/vnd.wave": "wav",
+    "video/avi": "avi",
+    "video/matroska": "mkv",
+};
+
+/** Formats whose `mime` type is not the registered one (`audio/x-flac`). */
+const FORMAT_CONTENT_TYPES: Readonly<Record<string, string>> = {
+    flac: "audio/flac",
+};
+
 /**
- * Get format (extension) from content type using mime package.
+ * Get format (extension) from content type using mime package, plus common media types it lacks.
  * @param contentType MIME content type string to extract format from
  * @returns Format string or undefined if not found
  */
@@ -26,7 +42,31 @@ export const getFormatFromContentType = (contentType: string | undefined): strin
         return undefined;
     }
 
-    return mime.getExtension(contentType) || undefined;
+    const type = contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+
+    return CONTENT_TYPE_FORMATS[type] ?? (mime.getExtension(type) || undefined);
+};
+
+/**
+ * MIME type of a media format, e.g. `mkv` → `video/x-matroska`, `mov` → `video/quicktime`.
+ * Container formats that hold audio or video alike (`ogg`, `mp4`, `webm`) take their top-level
+ * type from `mediaType`, so a video transcoded to `ogg` is `video/ogg`, not `audio/ogg`.
+ * @param format Format (file extension) of the media
+ * @param mediaType Kind of media the format holds, when known
+ * @returns The MIME type, or undefined for an unknown format
+ */
+export const getContentTypeFromFormat = (format: string | undefined, mediaType?: "image" | "video" | "audio"): string | undefined => {
+    if (!format) {
+        return undefined;
+    }
+
+    const type = FORMAT_CONTENT_TYPES[format.toLowerCase()] ?? mime.getType(format);
+
+    if (!type || !mediaType || mediaType === "image" || type.startsWith(`${mediaType}/`) || !/^(?:audio|video)\//.test(type)) {
+        return type ?? undefined;
+    }
+
+    return `${mediaType}/${type.slice(type.indexOf("/") + 1)}`;
 };
 
 /**
@@ -37,9 +77,14 @@ export const getFormatFromContentType = (contentType: string | undefined): strin
  * @returns True if supported, or if the content type has no known extension to check
  */
 export const isSupportedFormat = (contentType: string | undefined, supportedFormats: string[]): boolean => {
-    const extensions = contentType ? mime.getAllExtensions(contentType) : undefined;
+    const extensions = new Set(contentType ? mime.getAllExtensions(contentType) : undefined);
+    const alias = getFormatFromContentType(contentType);
 
-    return !extensions || extensions.size === 0 || supportedFormats.some((format) => extensions.has(format));
+    if (alias) {
+        extensions.add(alias);
+    }
+
+    return extensions.size === 0 || supportedFormats.some((format) => extensions.has(format));
 };
 
 /**
@@ -87,7 +132,7 @@ export const isKnownContentType = (contentType: string | undefined): boolean => 
         return false;
     }
 
-    return !!mime.getExtension(contentType);
+    return getFormatFromContentType(contentType) !== undefined;
 };
 
 /**

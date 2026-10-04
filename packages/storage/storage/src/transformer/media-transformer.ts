@@ -1,8 +1,6 @@
 import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 
-import mime from "mime";
-
 import type { BaseStorage } from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
 import { NoOpCache } from "../utils/cache";
@@ -18,7 +16,7 @@ import type {
     VideoTransformerConfig,
     VideoTransformResult,
 } from "./types";
-import { isKnownContentType, sourceVersion } from "./utils";
+import { getContentTypeFromFormat, getFormatFromContentType, isKnownContentType, sourceVersion } from "./utils";
 import ValidationError from "./validation-error";
 
 /**
@@ -600,13 +598,14 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Validate specific parameter values
-        if (query.fit && !["contain", "cover", "fill", "inside", "outside"].includes(query.fit)) {
+        // mediabunny resizes with fill, contain or cover only.
+        if (query.fit && !["contain", "cover", "fill"].includes(query.fit)) {
             throw new ValidationError(
-                `Invalid fit value: "${query.fit}". Supported values: "cover", "contain", "fill", "inside", "outside"`,
+                `Invalid fit value for video: "${query.fit}". Supported values: "cover", "contain", "fill"`,
                 "INVALID_FIT_VALUE",
                 "video",
                 ["fit"],
-                ["cover", "contain", "fill", "inside", "outside"],
+                ["cover", "contain", "fill"],
             );
         }
 
@@ -717,10 +716,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Media transformation result with metadata.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private createMediaTransformResult(storedFile: TFileReturn, mediaType: string, originalFile: TFileReturn): MediaTransformResult {
         const baseResult = {
             buffer: storedFile.content,
-            format: this.getFormatFromContentType(storedFile.contentType || ""),
+            format: getFormatFromContentType(storedFile.contentType) ?? "",
             mediaType: mediaType as "image" | "video" | "audio",
             originalFile,
             size: storedFile.content.length,
@@ -760,24 +760,6 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
                 return baseResult;
             }
         }
-    }
-
-    /**
-     * Extracts format from content type.
-     * @param contentType MIME content type string.
-     * @returns Format string extracted from content type.
-     * @private
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private getFormatFromContentType(contentType: string): string {
-        if (!contentType) {
-            return "";
-        }
-
-        // Use mime package to get extension from content type
-        const extension = mime.getExtension(contentType);
-
-        return extension || "application/octet-stream";
     }
 
     /**
@@ -831,7 +813,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             // land on disk / in the bucket and the cache lookup later sees a
             // zero-byte object.
             const created = await this.storage.create({
-                contentType: mime.getType(result.format) ?? undefined,
+                contentType: getContentTypeFromFormat(result.format, result.mediaType),
                 id: transformedFileId,
                 metadata,
                 originalName: `${transformedFileId}.${result.format}`,

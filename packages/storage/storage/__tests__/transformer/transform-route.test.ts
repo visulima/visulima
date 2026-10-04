@@ -10,7 +10,8 @@ import MemoryStorage from "../../src/storage/memory/memory-storage";
 import AudioTransformer from "../../src/transformer/audio-transformer";
 import ImageTransformer from "../../src/transformer/image-transformer";
 import MediaTransformer from "../../src/transformer/media-transformer";
-import { makeImage, makeWav, seedFile } from "../__helpers__/media";
+import VideoTransformer from "../../src/transformer/video-transformer";
+import { makeImage, makeMp4, makeWav, seedFile } from "../__helpers__/media";
 
 const BASE = "http://localhost/files/";
 
@@ -168,5 +169,63 @@ describe("transform route through the Node Rest handler", () => {
         const response = await supertest(await app()).get("/files/image-file?fit=bogus");
 
         expect(response.status).toBe(400);
+    });
+});
+
+describe("transform route content types", () => {
+    const videoHandler = async (saveTransformedFiles: boolean): Promise<RestFetch> => {
+        const storage = new MemoryStorage();
+
+        await seedFile(storage, "video-file", await makeMp4(), "video/mp4");
+
+        return new RestFetch({ mediaTransformer: new MediaTransformer(storage, { saveTransformedFiles, VideoTransformer }), storage });
+    };
+
+    it.each([false, true])("serves mkv as video/x-matroska (saveTransformedFiles: %s)", async (saveTransformedFiles) => {
+        expect.assertions(4);
+
+        const handler = await videoHandler(saveTransformedFiles);
+
+        // The second request is answered from the stored transform when saving is on.
+        for (let round = 0; round < 2; round += 1) {
+            const response = await handler.fetch(new Request(`${BASE}video-file?format=mkv`));
+
+            expect(response.headers.get("content-type")).toBe("video/x-matroska");
+            expect(response.headers.get("x-media-type")).toBe("video");
+        }
+    });
+
+    it("serves mp4 as video/mp4", async () => {
+        expect.assertions(2);
+
+        const handler = await videoHandler(false);
+        const response = await handler.fetch(new Request(`${BASE}video-file?format=mp4`));
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("video/mp4");
+    });
+
+    it.each(["inside", "outside"])("answers 400 for video fit=%s", async (fit) => {
+        expect.assertions(1);
+
+        const handler = await videoHandler(false);
+        const response = await handler.fetch(new Request(`${BASE}video-file?width=16&fit=${fit}`));
+
+        expect(response.status).toBe(400);
+    });
+
+    it("transforms an audio/flac upload instead of rejecting its content type", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage();
+
+        // mediabunny sniffs the container, so WAV bytes stand in for FLAC (Node has no FLAC encoder).
+        await seedFile(storage, "flac-file", makeWav(44_100, 1, 4410), "audio/flac");
+
+        const handler = new RestFetch({ mediaTransformer: new MediaTransformer(storage, { AudioTransformer }), storage });
+        const response = await handler.fetch(new Request(`${BASE}flac-file?format=wav&sampleRate=22050`));
+
+        expect(response.headers.get("x-media-type")).toBe("audio");
+        expect(response.headers.get("content-type")).toBe("audio/wav");
     });
 });

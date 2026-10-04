@@ -4,10 +4,19 @@ import MemoryStorage from "../../src/storage/memory/memory-storage";
 import type { FileReturn } from "../../src/storage/utils/file";
 import BaseTransformer from "../../src/transformer/base-transformer";
 import type { BaseTransformerConfig } from "../../src/transformer/transformer-config";
-import { getFormatFromContentType, isKnownContentType, isSupportedFormat, isValidMediaType, sourceVersion, validateMediaFile } from "../../src/transformer/utils";
+import {
+    getContentTypeFromFormat,
+    getFormatFromContentType,
+    isKnownContentType,
+    isSupportedFormat,
+    isValidMediaType,
+    sourceVersion,
+    validateMediaFile,
+} from "../../src/transformer/utils";
 import ValidationError from "../../src/transformer/validation-error";
 
-const file = (contentType: string | undefined, size: number | string = 10): FileReturn => ({ content: Buffer.alloc(0), contentType, id: "x", size }) as FileReturn;
+const file = (contentType: string | undefined, size: number | string = 10): FileReturn =>
+    ({ content: Buffer.alloc(0), contentType, id: "x", size }) as FileReturn;
 
 describe("transformer utils", () => {
     it("matches media types by prefix", () => {
@@ -25,6 +34,49 @@ describe("transformer utils", () => {
         expect(getFormatFromContentType("image/png")).toBe("png");
         expect(getFormatFromContentType("image/x-nope")).toBeUndefined();
         expect(getFormatFromContentType(undefined)).toBeUndefined();
+    });
+
+    it("maps content types the mime package lacks", () => {
+        expect.assertions(7);
+
+        expect(getFormatFromContentType("audio/flac")).toBe("flac");
+        expect(getFormatFromContentType("audio/FLAC; rate=44100")).toBe("flac");
+        expect(getFormatFromContentType("video/matroska")).toBe("mkv");
+        expect(isKnownContentType("audio/flac")).toBe(true);
+        expect(isKnownContentType("audio/m4a")).toBe(true);
+        expect(isSupportedFormat("audio/flac", ["flac"])).toBe(true);
+        expect(isSupportedFormat("audio/flac", ["mp3"])).toBe(false);
+    });
+
+    it.each([
+        ["mkv", "video", "video/x-matroska"],
+        ["mkv", "audio", "audio/x-matroska"],
+        ["mov", "video", "video/quicktime"],
+        ["mp4", "video", "video/mp4"],
+        ["mp4", "audio", "audio/mp4"],
+        ["webm", "video", "video/webm"],
+        ["webm", "audio", "audio/webm"],
+        ["ogg", "video", "video/ogg"],
+        ["ogg", "audio", "audio/ogg"],
+        ["ogv", "video", "video/ogg"],
+        ["mp3", "audio", "audio/mpeg"],
+        ["wav", "audio", "audio/wav"],
+        ["aac", "audio", "audio/aac"],
+        ["adts", "audio", "audio/aac"],
+        ["flac", "audio", "audio/flac"],
+        ["m4a", "audio", "audio/mp4"],
+        ["jpeg", "image", "image/jpeg"],
+        ["avif", "image", "image/avif"],
+        ["heif", "image", "image/heif"],
+        ["tiff", "image", "image/tiff"],
+        ["svg", "image", "image/svg+xml"],
+        ["webp", undefined, "image/webp"],
+        ["nope", "video", undefined],
+        [undefined, "video", undefined],
+    ] as const)("serves format %s (%s) as %s", (format, mediaType, contentType) => {
+        expect.assertions(1);
+
+        expect(getContentTypeFromFormat(format, mediaType)).toBe(contentType);
     });
 
     it("knows registered content types", () => {

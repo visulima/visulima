@@ -502,8 +502,8 @@ export interface AudioTransformOptions extends TransformOptions {
  * Video resize transformation options
  */
 export interface VideoResizeOptions extends VideoTransformOptions {
-    /** Resize fit mode */
-    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+    /** Resize fit mode (mediabunny has no `inside`/`outside`) */
+    fit?: "cover" | "contain" | "fill";
     /** Height in pixels */
     height?: number;
     /** Position for cover/contain fits */

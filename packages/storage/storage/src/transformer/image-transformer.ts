@@ -89,6 +89,8 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    protected override readonly mediaType = "image" as const;
+
     /**
      * Creates a new ImageTransformer instance.
      * @param storage The storage backend for retrieving and storing image files.
