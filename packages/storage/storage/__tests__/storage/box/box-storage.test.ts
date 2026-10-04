@@ -8,7 +8,10 @@ import { storageOptions } from "../../__helpers__/config";
 const makeMockClient = () => {
     return {
         chunkedUploads: {
+            createFileUploadSessionCommitByUrl: vi.fn(),
+            createFileUploadSessionForExistingFile: vi.fn(),
             uploadBigFile: vi.fn(),
+            uploadFilePartByUrl: vi.fn(),
         },
         downloads: {
             getDownloadFileUrl: vi.fn(),
@@ -205,6 +208,42 @@ describe(BoxStorage, () => {
             });
 
             await expect(storage.delete({ id: "file.mp4" })).resolves.toMatchObject({ status: "deleted" });
+        });
+    });
+
+    describe("large uploads", () => {
+        it("uploads a new version of an existing file instead of creating a second one", async () => {
+            expect.assertions(5);
+
+            const storage = new BoxStorage({ ...(storageOptions as BoxStorageOptions), developerToken: "tok" });
+            const partSize = 32 * 1024 * 1024;
+            const data = Buffer.alloc(50 * 1024 * 1024 + 1);
+
+            mockClient.chunkedUploads.createFileUploadSessionForExistingFile.mockResolvedValueOnce({
+                partSize,
+                sessionEndpoints: { commit: "https://upload/commit", uploadPart: "https://upload/part" },
+            });
+            mockClient.chunkedUploads.uploadFilePartByUrl.mockImplementation(async (_url: string, _body: unknown, headers: { contentRange: string }) => {
+                return { part: { partId: headers.contentRange } };
+            });
+            mockClient.chunkedUploads.createFileUploadSessionCommitByUrl.mockResolvedValueOnce({ entries: [{ id: "FID", name: "big.bin" }] });
+
+            const item = await (
+                storage as unknown as { performUpload: (...args: unknown[]) => Promise<{ id: string }> }
+            ).performUpload("FID", "0", "big.bin", data);
+
+            expect(item.id).toBe("FID");
+            expect(mockClient.chunkedUploads.uploadBigFile).not.toHaveBeenCalled();
+            expect(mockClient.chunkedUploads.createFileUploadSessionForExistingFile).toHaveBeenCalledWith("FID", { fileName: "big.bin", fileSize: data.byteLength });
+            expect(mockClient.chunkedUploads.uploadFilePartByUrl.mock.calls.map((call) => (call[2] as { contentRange: string }).contentRange)).toStrictEqual([
+                `bytes 0-${partSize - 1}/${data.byteLength}`,
+                `bytes ${partSize}-${data.byteLength - 1}/${data.byteLength}`,
+            ]);
+            expect(mockClient.chunkedUploads.createFileUploadSessionCommitByUrl).toHaveBeenCalledWith(
+                "https://upload/commit",
+                { parts: [{ partId: `bytes 0-${partSize - 1}/${data.byteLength}` }, { partId: `bytes ${partSize}-${data.byteLength - 1}/${data.byteLength}` }] },
+                { digest: expect.stringMatching(/^sha=/) },
+            );
         });
     });
 

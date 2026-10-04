@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 
 import type { BoxClient } from "box-typescript-sdk-gen";
@@ -15,6 +16,8 @@ import type { BoxJwtOptions, BoxStorageOptions } from "./types";
 
 const DEFAULT_ROOT_FOLDER_ID = "0";
 const SIMPLE_UPLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
+
+type UploadPart = NonNullable<Awaited<ReturnType<BoxClient["chunkedUploads"]["uploadFilePartByUrl"]>>["part"]>;
 
 interface AuthHandle {
     ensureReady: () => Promise<void>;
@@ -87,6 +90,9 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
 };
 
 const bufferToReadable = (buffer: Buffer): Readable => Readable.from(buffer);
+
+// eslint-disable-next-line sonarjs/hashing -- Box chunked uploads require a SHA-1 digest; it is an integrity check, not a security one.
+const sha1Base64 = (buffer: Buffer): string => createHash("sha1").update(buffer).digest("base64");
 
 const buildJwtConfig = (jwt: BoxJwtOptions): JwtConfig => {
     if ("configJsonString" in jwt) {
@@ -365,10 +371,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -421,7 +424,7 @@ class BoxStorage extends BaseStorage<BoxFile> {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -825,6 +828,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
     private async performUpload(fileId: string | undefined, folderId: string, leaf: string, data: Buffer, options?: OperationOptions): Promise<BoxFileLike> {
         if (data.byteLength > SIMPLE_UPLOAD_LIMIT_BYTES) {
+            // `uploadBigFile` always creates a new file, which Box rejects with a 409 when one exists.
+            if (fileId) {
+                return this.uploadBigFileVersion(fileId, leaf, data, options);
+            }
+
             return (await this.runOperation(options, () =>
                 this.client.chunkedUploads.uploadBigFile(bufferToReadable(data), leaf, data.byteLength, folderId),
             )) as BoxFileLike;
@@ -856,6 +864,51 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
         if (!entry) {
             throw new Error("Box: uploadFile returned no file");
+        }
+
+        return entry;
+    }
+
+    /**
+     * Uploads a new version of an existing file through a chunked upload session — the
+     * new-version counterpart of the SDK's `uploadBigFile`.
+     */
+    private async uploadBigFileVersion(fileId: string, leaf: string, data: Buffer, options?: OperationOptions): Promise<BoxFileLike> {
+        const session = await this.runOperation(options, () =>
+            this.client.chunkedUploads.createFileUploadSessionForExistingFile(fileId, { fileName: leaf, fileSize: data.byteLength }),
+        );
+        const { commit, uploadPart } = session.sessionEndpoints ?? {};
+        const { partSize } = session;
+
+        if (!commit || !uploadPart || !partSize) {
+            throw new Error("Box: upload session returned no endpoints");
+        }
+
+        const parts: UploadPart[] = [];
+
+        for (let start = 0; start < data.byteLength; start += partSize) {
+            const chunk = data.subarray(start, start + partSize);
+            const { part } = await this.runOperation(options, () =>
+                this.client.chunkedUploads.uploadFilePartByUrl(uploadPart, bufferToReadable(chunk), {
+                    contentRange: `bytes ${start}-${start + chunk.byteLength - 1}/${data.byteLength}`,
+                    digest: `sha=${sha1Base64(chunk)}`,
+                }),
+            );
+
+            if (!part) {
+                throw new Error("Box: upload part returned no part");
+            }
+
+            parts.push(part);
+        }
+
+        const committed = await this.runOperation(options, () =>
+            this.client.chunkedUploads.createFileUploadSessionCommitByUrl(commit, { parts }, { digest: `sha=${sha1Base64(data)}` }),
+        );
+        const entry = committed?.entries?.[0] as BoxFileLike | undefined;
+
+        if (!entry) {
+            throw new Error("Box: upload session commit returned no file");
         }
 
         return entry;
@@ -896,8 +949,6 @@ class BoxStorage extends BaseStorage<BoxFile> {
 
         return out;
     }
-
-    private internalOnComplete = (file: BoxFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default BoxStorage;
