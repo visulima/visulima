@@ -1383,13 +1383,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     /**
      * Backend-resolved retry configuration that {@link runOperation} layers
-     * per-call overrides on top of. Subclasses that build a `RetryConfig`
-     * (S3, Azure, Netlify, …) override this; the default (`undefined`) makes
-     * `runOperation` fall back to the retry engine's own defaults.
+     * per-call overrides on top of. Defaults to the `retryConfig` option;
+     * subclasses that build their own `RetryConfig` (S3, Azure, Netlify, …)
+     * override this. Unset options fall back to the retry engine's defaults.
      */
-    // eslint-disable-next-line class-methods-use-this
     protected getRetryConfig(): RetryConfig | undefined {
-        return undefined;
+        return this.genericConfig.retryConfig;
     }
 
     /**
