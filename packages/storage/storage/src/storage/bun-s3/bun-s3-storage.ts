@@ -192,10 +192,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -248,7 +245,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -475,8 +472,6 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             ...(options?.contentType && { type: options.contentType }),
         });
     }
-
-    private internalOnComplete = (file: BunS3File): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default BunS3Storage;

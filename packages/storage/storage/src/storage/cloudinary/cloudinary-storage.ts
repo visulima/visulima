@@ -217,10 +217,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -296,7 +293,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     }
 
     /**
-     * Describes the resource stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the resource stored under an ID that has no upload metadata (an object written by other means).
      * Only the Admin API resource details are requested — the content is never downloaded. The resource is looked up by the upload's ID as its public ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -556,8 +553,6 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
             return undefined;
         }
     }
-
-    private internalOnComplete = (file: CloudinaryFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default CloudinaryStorage;

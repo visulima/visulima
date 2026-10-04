@@ -216,10 +216,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -290,7 +287,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -502,8 +499,6 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             return undefined;
         }
     }
-
-    private internalOnComplete = (file: SupabaseFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default SupabaseStorage;

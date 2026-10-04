@@ -215,10 +215,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -261,7 +258,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
     }
 
     /**
-     * Describes the file stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the file stored under an ID that has no upload metadata (an object written by other means).
      * Only a `HEAD` request is made — the content is never downloaded. The file is looked up by the upload's ID as its custom ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -457,8 +454,6 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
         return ufsUrl;
     }
-
-    private internalOnComplete = (file: UploadThingFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default UploadThingStorage;

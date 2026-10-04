@@ -225,10 +225,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -310,7 +307,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     }
 
     /**
-     * Describes the record stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the record stored under an ID that has no upload metadata (an object written by other means).
      * Only the record and a `HEAD` request on its file URL are made — the content is never downloaded. The record is looked up by the upload's ID as its key.
      * @param id Upload ID.
      * @param options Operation options.
@@ -572,8 +569,6 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             return undefined;
         }
     }
-
-    private internalOnComplete = (file: PocketBaseFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default PocketBaseStorage;
