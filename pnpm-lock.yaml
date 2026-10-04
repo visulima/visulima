@@ -1529,8 +1529,8 @@ catalogs:
       specifier: 3.0.1
       version: 3.0.1
     zod:
-      specifier: 4.4.3
-      version: 4.4.3
+      specifier: 4.6.5
+      version: 4.6.5
 
 overrides:
   picomatch: 4.0.5
@@ -2039,7 +2039,7 @@ importers:
         version: 1.5.1(@floating-ui/dom@1.8.0)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(highlight.js@11.11.2)(lucide-react@1.31.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.31(crossws@0.4.12(srvx@1.0.3)))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.3))
       '@fumadocs/mdx-remote':
         specifier: catalog:prod
-        version: 1.5.1(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(react@19.2.6)
+        version: 1.5.1(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(react@19.2.6)
       '@icons-pack/react-simple-icons':
         specifier: catalog:icons
         version: 13.13.0(react@19.2.6)
@@ -2123,16 +2123,16 @@ importers:
         version: 3.3.3
       fumadocs-core:
         specifier: catalog:prod
-        version: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3)
+        version: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5)
       fumadocs-mdx:
         specifier: catalog:prod
-        version: 15.2.3(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(rolldown@1.2.7)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
+        version: 15.2.3(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(rolldown@1.2.7)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
       fumadocs-twoslash:
         specifier: catalog:prod
-        version: 3.3.0(becc67ee57416ec4fb51adf7a3c0f9c0)
+        version: 3.3.0(32c893385208688f40f3c6ea8dea4bee)
       fumadocs-ui:
         specifier: catalog:frontend
-        version: 16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3)
+        version: 16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3)
       gray-matter:
         specifier: catalog:prod
         version: 4.0.3
@@ -2207,11 +2207,11 @@ importers:
         version: 5.2.0(rollup@4.63.1)(typescript@6.0.3)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
       zod:
         specifier: catalog:utils
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -2280,7 +2280,7 @@ importers:
         version: 0.1.1(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-zod:
         specifier: catalog:lint
-        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5)
       happy-dom:
         specifier: catalog:dev
         version: 20.11.2
@@ -2314,7 +2314,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -2562,7 +2562,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -2640,7 +2640,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -2727,7 +2727,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -2948,7 +2948,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -3041,7 +3041,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3156,7 +3156,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -3254,7 +3254,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3344,7 +3344,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3462,7 +3462,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3646,7 +3646,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3743,7 +3743,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -3837,7 +3837,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -3987,7 +3987,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -4066,7 +4066,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -4163,7 +4163,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -4787,7 +4787,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -4823,7 +4823,7 @@ importers:
         version: 4.1.11(vitest@4.1.11)
       ai:
         specifier: catalog:dev
-        version: 7.0.127(zod@4.5.4)
+        version: 7.0.127(zod@4.6.5)
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
@@ -4881,7 +4881,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -5013,7 +5013,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -5159,7 +5159,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -5231,7 +5231,7 @@ importers:
         version: 18.0.11
       openai:
         specifier: catalog:dev
-        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.5.4)
+        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
       prettier:
         specifier: catalog:lint
         version: 3.9.9
@@ -5338,7 +5338,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -5563,7 +5563,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -5663,7 +5663,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6182,7 +6182,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6267,7 +6267,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6459,7 +6459,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6565,7 +6565,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6686,7 +6686,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -6698,7 +6698,7 @@ importers:
         version: 13.4.32(@anolilab/semantic-release-pnpm@8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1))(@semantic-release/npm@13.1.5(semantic-release@25.0.9(typescript@6.0.3)))(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(semantic-release@25.0.9(typescript@6.0.3))(smol-toml@1.8.0)(yaml@2.9.1)
       '@anthropic-ai/claude-agent-sdk':
         specifier: ^0.3.289
-        version: 0.3.289(@anthropic-ai/sdk@0.124.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(zod@4.4.3)
+        version: 0.3.289(@anthropic-ai/sdk@0.124.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(zod@4.6.5)
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.5
@@ -6740,7 +6740,7 @@ importers:
         version: 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.147.0)(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(webpack@5.110.3(@swc/core@1.16.2(@swc/helpers@0.5.23))(cssnano@8.0.10(postcss@8.5.28))(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.4))))
       '@openai/agents':
         specifier: ^0.18.0
-        version: 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
+        version: 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
       '@opentelemetry/api':
         specifier: catalog:dev
         version: 1.9.1
@@ -6755,7 +6755,7 @@ importers:
         version: 2.117.2
       '@tanstack/ai':
         specifier: ^0.64.0
-        version: 0.64.0(@opentelemetry/api@1.9.1)(zod@4.4.3)
+        version: 0.64.0(@opentelemetry/api@1.9.1)(zod@4.6.5)
       '@total-typescript/ts-reset':
         specifier: catalog:dev
         version: 0.6.1
@@ -6800,7 +6800,7 @@ importers:
         version: 4.1.11(vitest@4.1.11)
       ai:
         specifier: catalog:dev
-        version: 7.0.127(zod@4.4.3)
+        version: 7.0.127(zod@4.6.5)
       aws-crt:
         specifier: catalog:dev
         version: 1.33.2
@@ -6830,7 +6830,7 @@ importers:
         version: 10.8.1(jiti@2.7.0)
       eslint-plugin-zod:
         specifier: 4.9.1
-        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5)
       etag:
         specifier: catalog:dev
         version: 1.8.1
@@ -6869,7 +6869,7 @@ importers:
         version: 1.18.1(@types/express@5.0.6)(@types/node@26.6.4)
       openai:
         specifier: catalog:dev
-        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.4.3)
+        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
       pocketbase:
         specifier: 0.28.1
         version: 0.28.1
@@ -6908,7 +6908,7 @@ importers:
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.2)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@26.6.4)(typescript@6.0.3))(vite@8.2.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
       zod:
         specifier: catalog:utils
-        version: 4.4.3
+        version: 4.6.5
 
   packages/storage/storage-client:
     devDependencies:
@@ -7799,7 +7799,7 @@ importers:
         version: 0.6.1(hono@4.13.12)
       '@hono/zod-openapi':
         specifier: catalog:backend
-        version: 1.5.2(hono@4.13.12)(zod@4.5.4)
+        version: 1.5.2(hono@4.13.12)(zod@4.6.5)
       '@visulima/storage':
         specifier: workspace:*
         version: link:../..
@@ -7834,7 +7834,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -7936,7 +7936,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -8063,7 +8063,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -8268,7 +8268,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -8474,7 +8474,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -8607,7 +8607,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -8710,7 +8710,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -8797,7 +8797,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -8891,7 +8891,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -8973,7 +8973,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 8.1.31(@visulima/yaml@packages+data-manipulation+yaml)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.8.0)(yaml@2.9.1)
@@ -9054,7 +9054,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -9211,7 +9211,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -9524,7 +9524,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -9886,7 +9886,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -9998,7 +9998,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -10115,7 +10115,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -10576,7 +10576,7 @@ importers:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
-        version: 1.30.0(zod@4.4.3)
+        version: 1.30.0(zod@4.6.5)
       '@visulima/fs':
         specifier: 6.0.28
         version: link:../../filesystem/fs
@@ -10588,11 +10588,11 @@ importers:
         version: link:../vis
       zod:
         specifier: catalog:utils
-        version: 4.4.3
+        version: 4.6.5
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -10637,7 +10637,7 @@ importers:
         version: 10.8.1(jiti@2.7.0)
       eslint-plugin-zod:
         specifier: 4.9.1
-        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5)
       fallow:
         specifier: catalog:lint
         version: 3.14.0
@@ -10787,7 +10787,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 28.0.0(b24b6892703dfaf170e999080b1f57d9)
+        version: 28.0.0(184b791e79c9a768ed9da68bcfe66316)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.3(prettier@3.9.9)
@@ -10832,7 +10832,7 @@ importers:
         version: 10.8.1(jiti@2.7.0)
       eslint-plugin-zod:
         specifier: 4.9.1
-        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+        version: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5)
       fallow:
         specifier: catalog:lint
         version: 3.14.0
@@ -10868,7 +10868,7 @@ importers:
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.4)(@vitest/coverage-v8@4.1.11)(@vitest/ui@4.1.11)(happy-dom@20.11.2)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@26.6.4)(typescript@6.0.3))(vite@8.2.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
       zod:
         specifier: catalog:utils
-        version: 4.4.3
+        version: 4.6.5
 
   shared/utils:
     dependencies:
@@ -34840,6 +34840,9 @@ packages:
   zod@4.5.4:
     resolution: {integrity: sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==}
 
+  zod@4.6.5:
+    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
+
   zustand@5.0.12:
     resolution: {integrity: sha512-i77ae3aZq4dhMlRhJVCYgMLKuSiZAaUPAct2AksxQ+gOtimhGMdXljRT21P5BNpeT4kXlLIckvkPM029OljD7g==}
     engines: {node: '>=12.20.0'}
@@ -34906,41 +34909,25 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@ag-ui/core@1.0.0(zod@4.4.3)':
+  '@ag-ui/core@1.0.0(zod@4.6.5)':
     optionalDependencies:
-      zod: 4.4.3
+      zod: 4.6.5
 
-  '@ai-sdk/gateway@4.0.103(zod@4.4.3)':
+  '@ai-sdk/gateway@4.0.103(zod@4.6.5)':
     dependencies:
       '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.4.3)
+      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.5)
       '@vercel/oidc': 3.2.0
-      zod: 4.4.3
+      zod: 4.6.5
 
-  '@ai-sdk/gateway@4.0.103(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.5.4)
-      '@vercel/oidc': 3.2.0
-      zod: 4.5.4
-
-  '@ai-sdk/provider-utils@5.0.53(zod@4.4.3)':
+  '@ai-sdk/provider-utils@5.0.53(zod@4.6.5)':
     dependencies:
       '@ai-sdk/provider': 4.0.21
       '@standard-schema/spec': 1.1.0
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       undici: 7.29.1
-      zod: 4.4.3
-
-  '@ai-sdk/provider-utils@5.0.53(zod@4.5.4)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.21
-      '@standard-schema/spec': 1.1.0
-      '@workflow/serde': 4.1.0
-      eventsource-parser: 3.1.1
-      undici: 7.29.1
-      zod: 4.5.4
+      zod: 4.6.5
 
   '@ai-sdk/provider@4.0.21':
     dependencies:
@@ -34968,6 +34955,90 @@ snapshots:
       - conventional-commits-filter
       - conventional-commits-parser
       - typescript
+
+  '@anolilab/eslint-config@28.0.0(184b791e79c9a768ed9da68bcfe66316)':
+    dependencies:
+      '@e18e/eslint-plugin': 0.4.1(eslint@10.8.1(jiti@2.7.0))
+      '@eslint-community/eslint-plugin-eslint-comments': 4.7.2(eslint@10.8.1(jiti@2.7.0))
+      '@eslint/compat': 2.0.5(eslint@10.8.1(jiti@2.7.0))
+      '@eslint/js': 10.0.1(eslint@10.8.1(jiti@2.7.0))
+      '@eslint/markdown': 8.0.2
+      '@html-eslint/eslint-plugin': 0.60.0(eslint@10.8.1(jiti@2.7.0))
+      '@html-eslint/parser': 0.60.0
+      '@stylistic/eslint-plugin': 5.10.0(eslint@10.8.1(jiti@2.7.0))
+      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/parser': 8.59.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.59.1
+      '@visulima/fs': 4.1.0(yaml@2.9.1)
+      '@visulima/package': 4.1.7(@types/node@26.6.4)
+      '@visulima/tsconfig': 2.1.3(yaml@2.9.1)
+      '@vitest/eslint-plugin': 1.6.19(@typescript-eslint/eslint-plugin@8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.11)
+      confusing-browser-globals: 1.0.11
+      eslint: 10.8.1(jiti@2.7.0)
+      eslint-config-flat-gitignore: 2.3.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-flat-config-utils: 3.2.0
+      eslint-import-resolver-node: 0.3.10
+      eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint@10.8.1(jiti@2.7.0))
+      eslint-merge-processors: 2.0.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-antfu: 3.2.2(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-compat: 7.0.2(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-erasable-syntax-only: 0.4.1(@typescript-eslint/parser@8.59.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      eslint-plugin-es-x: 9.6.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-html: 8.1.4
+      eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-jsdoc: 62.9.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-jsonc: 3.1.2(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-n: 17.24.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.8.1(jiti@2.7.0))(typescript-eslint@8.59.4(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(typescript@6.0.3)
+      eslint-plugin-no-only-tests: 3.4.0
+      eslint-plugin-no-secrets: 2.3.3(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-perfectionist: 5.9.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      eslint-plugin-pnpm: 1.6.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-promise: 7.3.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-regexp: 3.1.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-security: 4.0.0
+      eslint-plugin-simple-import-sort: 13.0.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-sonarjs: 4.0.3(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-toml: 1.3.1(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-unicorn: 64.0.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-yml: 3.3.2(eslint@10.8.1(jiti@2.7.0))
+      globals: 17.6.0
+      jsonc-eslint-parser: 3.1.0
+      parse-gitignore: 2.0.0
+      semver: 7.7.4
+      toml-eslint-parser: 1.0.3
+      typescript-eslint: 8.59.4(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      yaml-eslint-parser: 2.0.0
+    optionalDependencies:
+      '@eslint-react/eslint-plugin': 5.18.3(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      '@eslint/css': 1.4.0
+      '@tanstack/eslint-plugin-router': 1.162.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-playwright: 2.11.0(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react: 7.37.5(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react-hooks: 7.1.1(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react-perf: 3.3.3(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react-refresh: 0.5.4(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-react-you-might-not-need-an-effect: 1.0.1(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-testing-library: 7.16.2(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.8.1(jiti@2.7.0))
+      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
+      eslint-plugin-zod: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5)
+      tailwind-csstree: 0.3.3(@eslint/css@1.4.0)
+      typescript: 6.0.3
+    transitivePeerDependencies:
+      - '@eslint/json'
+      - '@types/node'
+      - '@typescript-eslint/eslint-plugin'
+      - '@typescript-eslint/utils'
+      - eslint-plugin-import
+      - oxlint
+      - supports-color
+      - vitest
+      - yaml
 
   '@anolilab/eslint-config@28.0.0(1bf1c47aeb1e5d353041abb614ec30ea)':
     dependencies:
@@ -35278,90 +35349,6 @@ snapshots:
       eslint-plugin-testing-library: 7.16.2(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      tailwind-csstree: 0.3.3(@eslint/css@1.4.0)
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - oxlint
-      - supports-color
-      - vitest
-      - yaml
-
-  '@anolilab/eslint-config@28.0.0(b24b6892703dfaf170e999080b1f57d9)':
-    dependencies:
-      '@e18e/eslint-plugin': 0.4.1(eslint@10.8.1(jiti@2.7.0))
-      '@eslint-community/eslint-plugin-eslint-comments': 4.7.2(eslint@10.8.1(jiti@2.7.0))
-      '@eslint/compat': 2.0.5(eslint@10.8.1(jiti@2.7.0))
-      '@eslint/js': 10.0.1(eslint@10.8.1(jiti@2.7.0))
-      '@eslint/markdown': 8.0.2
-      '@html-eslint/eslint-plugin': 0.60.0(eslint@10.8.1(jiti@2.7.0))
-      '@html-eslint/parser': 0.60.0
-      '@stylistic/eslint-plugin': 5.10.0(eslint@10.8.1(jiti@2.7.0))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/parser': 8.59.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.59.1
-      '@visulima/fs': 4.1.0(yaml@2.9.1)
-      '@visulima/package': 4.1.7(@types/node@26.6.4)
-      '@visulima/tsconfig': 2.1.3(yaml@2.9.1)
-      '@vitest/eslint-plugin': 1.6.19(@typescript-eslint/eslint-plugin@8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.11)
-      confusing-browser-globals: 1.0.11
-      eslint: 10.8.1(jiti@2.7.0)
-      eslint-config-flat-gitignore: 2.3.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-flat-config-utils: 3.2.0
-      eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint@10.8.1(jiti@2.7.0))
-      eslint-merge-processors: 2.0.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-antfu: 3.2.2(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-compat: 7.0.2(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-erasable-syntax-only: 0.4.1(@typescript-eslint/parser@8.59.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      eslint-plugin-es-x: 9.6.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-html: 8.1.4
-      eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-jsdoc: 62.9.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-jsonc: 3.1.2(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-n: 17.24.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.8.1(jiti@2.7.0))(typescript-eslint@8.59.4(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(typescript@6.0.3)
-      eslint-plugin-no-only-tests: 3.4.0
-      eslint-plugin-no-secrets: 2.3.3(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-perfectionist: 5.9.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      eslint-plugin-pnpm: 1.6.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-promise: 7.3.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-regexp: 3.1.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-security: 4.0.0
-      eslint-plugin-simple-import-sort: 13.0.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-sonarjs: 4.0.3(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-toml: 1.3.1(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-unicorn: 64.0.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.69.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-yml: 3.3.2(eslint@10.8.1(jiti@2.7.0))
-      globals: 17.6.0
-      jsonc-eslint-parser: 3.1.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.4
-      toml-eslint-parser: 1.0.3
-      typescript-eslint: 8.59.4(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      yaml-eslint-parser: 2.0.0
-    optionalDependencies:
-      '@eslint-react/eslint-plugin': 5.18.3(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      '@eslint/css': 1.4.0
-      '@tanstack/eslint-plugin-router': 1.162.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-playwright: 2.11.0(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react: 7.37.5(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react-hooks: 7.1.1(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react-perf: 3.3.3(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react-refresh: 0.5.4(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-react-you-might-not-need-an-effect: 1.0.1(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-testing-library: 7.16.2(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.8.1(jiti@2.7.0))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
       tailwind-csstree: 0.3.3(@eslint/css@1.4.0)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -35696,11 +35683,11 @@ snapshots:
   '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.289':
     optional: true
 
-  '@anthropic-ai/claude-agent-sdk@0.3.289(@anthropic-ai/sdk@0.124.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.30.0(zod@4.4.3))(zod@4.4.3)':
+  '@anthropic-ai/claude-agent-sdk@0.3.289(@anthropic-ai/sdk@0.124.0(zod@4.6.5))(@modelcontextprotocol/sdk@1.30.0(zod@4.6.5))(zod@4.6.5)':
     dependencies:
-      '@anthropic-ai/sdk': 0.124.0(zod@4.4.3)
-      '@modelcontextprotocol/sdk': 1.30.0(zod@4.4.3)
-      zod: 4.4.3
+      '@anthropic-ai/sdk': 0.124.0(zod@4.6.5)
+      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.5)
+      zod: 4.6.5
     optionalDependencies:
       '@anthropic-ai/claude-agent-sdk-darwin-arm64': 0.3.289
       '@anthropic-ai/claude-agent-sdk-darwin-x64': 0.3.289
@@ -35711,12 +35698,12 @@ snapshots:
       '@anthropic-ai/claude-agent-sdk-win32-arm64': 0.3.289
       '@anthropic-ai/claude-agent-sdk-win32-x64': 0.3.289
 
-  '@anthropic-ai/sdk@0.124.0(zod@4.4.3)':
+  '@anthropic-ai/sdk@0.124.0(zod@4.6.5)':
     dependencies:
       json-schema-to-ts: 3.1.1
       standardwebhooks: 1.1.1
     optionalDependencies:
-      zod: 4.4.3
+      zod: 4.6.5
 
   '@apidevtools/json-schema-ref-parser@14.0.1':
     dependencies:
@@ -35814,10 +35801,10 @@ snapshots:
       '@ast-grep/napi-win32-ia32-msvc': 0.44.1
       '@ast-grep/napi-win32-x64-msvc': 0.44.1
 
-  '@asteasolutions/zod-to-openapi@8.5.0(zod@4.5.4)':
+  '@asteasolutions/zod-to-openapi@8.5.0(zod@4.6.5)':
     dependencies:
       openapi3-ts: 4.6.1
-      zod: 4.5.4
+      zod: 4.6.5
 
   '@aws-sdk/abort-controller@3.374.0':
     dependencies:
@@ -37932,10 +37919,10 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
 
-  '@fumadocs/mdx-remote@1.5.1(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(react@19.2.6)':
+  '@fumadocs/mdx-remote@1.5.1(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(react@19.2.6)':
     dependencies:
       '@mdx-js/mdx': 3.1.1
-      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3)
+      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5)
       react: 19.2.6
       unified: 11.0.5
       vfile: 6.0.3
@@ -38070,18 +38057,18 @@ snapshots:
     dependencies:
       hono: 4.13.12
 
-  '@hono/zod-openapi@1.5.2(hono@4.13.12)(zod@4.5.4)':
+  '@hono/zod-openapi@1.5.2(hono@4.13.12)(zod@4.6.5)':
     dependencies:
-      '@asteasolutions/zod-to-openapi': 8.5.0(zod@4.5.4)
-      '@hono/zod-validator': 0.9.1(hono@4.13.12)(zod@4.5.4)
+      '@asteasolutions/zod-to-openapi': 8.5.0(zod@4.6.5)
+      '@hono/zod-validator': 0.9.1(hono@4.13.12)(zod@4.6.5)
       hono: 4.13.12
       openapi3-ts: 4.6.1
-      zod: 4.5.4
+      zod: 4.6.5
 
-  '@hono/zod-validator@0.9.1(hono@4.13.12)(zod@4.5.4)':
+  '@hono/zod-validator@0.9.1(hono@4.13.12)(zod@4.6.5)':
     dependencies:
       hono: 4.13.12
-      zod: 4.5.4
+      zod: 4.6.5
 
   '@html-eslint/core@0.60.0':
     dependencies:
@@ -38982,28 +38969,6 @@ snapshots:
     dependencies:
       zod: 4.5.4
 
-  '@modelcontextprotocol/sdk@1.30.0(zod@4.4.3)':
-    dependencies:
-      '@hono/node-server': 2.1.1(hono@4.13.12)
-      ajv: 8.20.0
-      ajv-formats: 3.0.1(ajv@8.20.0)
-      content-type: 1.0.5
-      cors: 2.8.6
-      cross-spawn: 7.0.6
-      eventsource: 3.0.7
-      eventsource-parser: 3.1.1
-      express: 5.2.1
-      express-rate-limit: 8.7.0(express@5.2.1)
-      hono: 4.13.12
-      jose: 6.2.12
-      json-schema-typed: 8.0.2
-      pkce-challenge: 5.0.1
-      raw-body: 3.0.2
-      zod: 4.4.3
-      zod-to-json-schema: 3.25.2(zod@4.4.3)
-    transitivePeerDependencies:
-      - supports-color
-
   '@modelcontextprotocol/sdk@1.30.0(zod@4.5.4)':
     dependencies:
       '@hono/node-server': 2.1.1(hono@4.13.12)
@@ -39023,6 +38988,28 @@ snapshots:
       raw-body: 3.0.2
       zod: 4.5.4
       zod-to-json-schema: 3.25.2(zod@4.5.4)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.5)':
+    dependencies:
+      '@hono/node-server': 2.1.1(hono@4.13.12)
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      content-type: 1.0.5
+      cors: 2.8.6
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.1.1
+      express: 5.2.1
+      express-rate-limit: 8.7.0(express@5.2.1)
+      hono: 4.13.12
+      jose: 6.2.12
+      json-schema-typed: 8.0.2
+      pkce-challenge: 5.0.1
+      raw-body: 3.0.2
+      zod: 4.6.5
+      zod-to-json-schema: 3.25.2(zod@4.6.5)
     transitivePeerDependencies:
       - supports-color
 
@@ -40464,14 +40451,14 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@openai/agents-core@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)':
+  '@openai/agents-core@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
+      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
     optionalDependencies:
       '@modelcontextprotocol/client': 2.0.0
-      zod: 4.4.3
+      zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -40479,12 +40466,12 @@ snapshots:
       - supports-color
       - ws
 
-  '@openai/agents-openai@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)':
+  '@openai/agents-openai@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
-      zod: 4.4.3
+      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
+      zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -40492,13 +40479,13 @@ snapshots:
       - supports-color
       - ws
 
-  '@openai/agents-realtime@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(zod@4.4.3)':
+  '@openai/agents-realtime@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
       '@types/ws': 8.18.1
       debug: 4.4.3(supports-color@8.1.1)
       ws: 8.21.3
-      zod: 4.4.3
+      zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -40507,14 +40494,14 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@openai/agents@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)':
+  '@openai/agents@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
-      '@openai/agents-openai': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
-      '@openai/agents-realtime': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(zod@4.4.3)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-openai': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-realtime': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(zod@4.6.5)
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3)
-      zod: 4.4.3
+      openai: 7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5)
+      zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -44177,9 +44164,9 @@ snapshots:
 
   '@tanstack/ai-utils@0.4.1': {}
 
-  '@tanstack/ai@0.64.0(@opentelemetry/api@1.9.1)(zod@4.4.3)':
+  '@tanstack/ai@0.64.0(@opentelemetry/api@1.9.1)(zod@4.6.5)':
     dependencies:
-      '@ag-ui/core': 1.0.0(zod@4.4.3)
+      '@ag-ui/core': 1.0.0(zod@4.6.5)
       '@standard-schema/spec': 1.1.0
       '@tanstack/ai-event-client': 0.13.0
       '@tanstack/ai-utils': 0.4.1
@@ -49041,19 +49028,12 @@ snapshots:
       clean-stack: 5.3.0
       indent-string: 5.0.0
 
-  ai@7.0.127(zod@4.4.3):
+  ai@7.0.127(zod@4.6.5):
     dependencies:
-      '@ai-sdk/gateway': 4.0.103(zod@4.4.3)
+      '@ai-sdk/gateway': 4.0.103(zod@4.6.5)
       '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.4.3)
-      zod: 4.4.3
-
-  ai@7.0.127(zod@4.5.4):
-    dependencies:
-      '@ai-sdk/gateway': 4.0.103(zod@4.5.4)
-      '@ai-sdk/provider': 4.0.21
-      '@ai-sdk/provider-utils': 5.0.53(zod@4.5.4)
-      zod: 4.5.4
+      '@ai-sdk/provider-utils': 5.0.53(zod@4.6.5)
+      zod: 4.6.5
 
   ajv-draft-04@1.0.0(ajv@8.20.0):
     optionalDependencies:
@@ -52724,17 +52704,6 @@ snapshots:
     dependencies:
       kebab-case: 1.0.2
 
-  eslint-plugin-zod@4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3):
-    dependencies:
-      '@eslint-zod/utils': 3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
-    optionalDependencies:
-      eslint: 10.8.1(jiti@2.7.0)
-      zod: 4.4.3
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   eslint-plugin-zod@4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.5.4):
     dependencies:
       '@eslint-zod/utils': 3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
@@ -52742,6 +52711,17 @@ snapshots:
     optionalDependencies:
       eslint: 10.8.1(jiti@2.7.0)
       zod: 4.5.4
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  eslint-plugin-zod@4.9.1(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.6.5):
+    dependencies:
+      '@eslint-zod/utils': 3.0.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
+    optionalDependencies:
+      eslint: 10.8.1(jiti@2.7.0)
+      zod: 4.6.5
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -53685,7 +53665,7 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
-  fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3):
+  fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5):
     dependencies:
       estree-util-value-to-estree: 3.5.0
       github-slugger: 2.0.0
@@ -53717,18 +53697,18 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
       react-router: 8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      zod: 4.4.3
+      zod: 4.6.5
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-mdx@15.2.3(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(rolldown@1.2.7)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)):
+  fumadocs-mdx@15.2.3(@types/mdast@4.0.4)(@types/mdx@2.0.14)(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(rolldown@1.2.7)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.1.0
       chokidar: 5.0.0
       esbuild: 0.28.2
       estree-util-value-to-estree: 3.5.0
-      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3)
+      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5)
       github-slugger: 2.0.0
       magic-string: 1.2.3
       mdast-util-mdx: 3.0.0
@@ -53754,13 +53734,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-twoslash@3.3.0(becc67ee57416ec4fb51adf7a3c0f9c0):
+  fumadocs-twoslash@3.3.0(32c893385208688f40f3c6ea8dea4bee):
     dependencies:
       '@base-ui/react': 1.8.0(@types/react@19.2.18)(date-fns@4.4.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@shikijs/twoslash': 4.4.3(typescript@6.0.3)
       cnfast: 0.0.8
-      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3)
-      fumadocs-ui: 16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3)
+      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5)
+      fumadocs-ui: 16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3)
       mdast-util-from-markdown: 2.0.3
       mdast-util-gfm: 3.1.0
       mdast-util-to-hast: 13.2.1
@@ -53776,7 +53756,7 @@ snapshots:
       - supports-color
       - typescript
 
-  fumadocs-ui@16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3):
+  fumadocs-ui@16.14.3(@types/mdx@2.0.14)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(fumadocs-core@16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.3):
     dependencies:
       '@fuma-translate/react': 1.0.2(@types/react@19.2.18)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@fumadocs/tailwind': 0.1.1(tailwindcss@4.3.3)
@@ -53792,7 +53772,7 @@ snapshots:
       '@radix-ui/react-tabs': 1.1.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       class-variance-authority: 0.7.1
       cnfast: 0.1.0
-      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3)
+      fumadocs-core: 16.14.3(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.25(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.5)(@types/mdast@4.0.4)(@types/react@19.2.18)(lucide-react@1.31.0(react@19.2.6))(next@16.3.8(@babel/core@8.0.1)(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.6.4)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@8.3.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.6.5)
       lucide-react: 1.31.0(react@19.2.6)
       motion: 12.43.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       next-themes: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -59995,28 +59975,20 @@ snapshots:
       powershell-utils: 0.2.1
       wsl-utils: 1.0.0
 
-  openai@7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.4.3):
+  openai@7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.84
       '@smithy/signature-v4': 5.7.3
       undici: 8.10.2
       ws: 8.21.3
-      zod: 4.4.3
+      zod: 4.6.5
 
-  openai@7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.5.4):
-    optionalDependencies:
-      '@aws-sdk/credential-provider-node': 3.972.84
-      '@smithy/signature-v4': 5.7.3
-      undici: 8.10.2
-      ws: 8.21.3
-      zod: 4.5.4
-
-  openai@7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.4.3):
+  openai@7.4.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(ws@8.21.3)(zod@4.6.5):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.84
       '@smithy/signature-v4': 5.7.3
       ws: 8.21.3
-      zod: 4.4.3
+      zod: 4.6.5
 
   openapi-types@12.1.3: {}
 
@@ -66988,13 +66960,13 @@ snapshots:
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
-  zod-to-json-schema@3.25.2(zod@4.4.3):
-    dependencies:
-      zod: 4.4.3
-
   zod-to-json-schema@3.25.2(zod@4.5.4):
     dependencies:
       zod: 4.5.4
+
+  zod-to-json-schema@3.25.2(zod@4.6.5):
+    dependencies:
+      zod: 4.6.5
 
   zod-validation-error@3.5.4(zod@3.25.76):
     dependencies:
@@ -67011,6 +66983,8 @@ snapshots:
   zod@4.4.3: {}
 
   zod@4.5.4: {}
+
+  zod@4.6.5: {}
 
   zustand@5.0.12(@types/react@19.2.14)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6)):
     optionalDependencies:
