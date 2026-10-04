@@ -7,7 +7,7 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { toHttpDate } from "../../utils/headers";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -413,32 +413,27 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
     }
 
     /**
-     * Describes the remote file stored under an ID that has no upload metadata (an object written by other means).
-     * Only properties are requested — the content is never downloaded.
-     * @param id Upload ID, used as the remote key.
+     * Describes the remote file stored under a key (only its properties are requested).
+     * @param id Remote key.
      * @param options Operation options.
-     * @returns The completed file, or `undefined` when the server answers 404 (or the path is a collection). Any other failure throws, so a failed lookup never reads as absent.
+     * @returns The file, or `undefined` when the server answers 404 or the path is a collection.
      */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<WebdavFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            const path = this.keyToPath(id);
-            const [entry] = (await this.runOperation(options, (signal) => this.propfind(path, "0", signal))) ?? [];
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        const [entry] = (await this.runOperation(options, (signal) => this.propfind(path, "0", signal))) ?? [];
 
-            if (!entry || entry.isCollection) {
-                return undefined;
-            }
+        if (!entry || entry.isCollection) {
+            return undefined;
+        }
 
-            return toFile(id, entry);
-        });
+        return { contentType: entry.contentType, etag: entry.etag, extra: { modifiedAt: entry.modifiedAt, path: entry.path }, size: entry.size ?? 0 };
     }
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let file: WebdavFile;
+            const file = await this.findMeta(id);
 
-            try {
-                file = await this.getMeta(id);
-            } catch {
+            if (file === undefined) {
                 return false;
             }
 
@@ -447,14 +442,6 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
 
             return entry !== undefined && !entry.isCollection;
         });
-    }
-
-    /**
-     * Upload records from the meta storage: `list` yields remote files, keyed by stored name and
-     * without a `createdAt`, so purge would never match an expired upload through it.
-     */
-    protected override async listUploads(): Promise<WebdavFile[]> {
-        return (await this.meta.list()) ?? this.list();
     }
 
     private async request(method: string, path: string, signal: AbortSignal | undefined, init?: { body?: BodyInit; headers?: Record<string, string> }): Promise<Response> {

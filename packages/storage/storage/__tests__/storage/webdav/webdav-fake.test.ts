@@ -7,6 +7,7 @@ import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type { WebdavStorageOptions } from "../../../src/storage/webdav/types";
 import WebdavStorage from "../../../src/storage/webdav/webdav-storage";
 import { ERRORS } from "../../../src/utils/errors";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 const BASE = "https://dav.test/remote.php/dav/files/alice";
 const BASE_PATH = "/remote.php/dav/files/alice";
@@ -180,6 +181,20 @@ describe("webdav storage against an in-memory WebDAV server", () => {
 
     afterEach(() => {
         vi.unstubAllGlobals();
+    });
+
+    describeStorageContract(() => {
+        return {
+            createStorage: (options) => createStorage({ retryConfig: { maxRetries: 0 }, ...options }),
+            failBackend: (failing) => {
+                server.fail = failing ? Object.fromEntries(["COPY", "DELETE", "GET", "HEAD", "MKCOL", "MOVE", "PROPFIND", "PUT"].map((method) => [method, 500])) : {};
+            },
+            hasObject: (key) => server.files.has(`uploads/${key}`),
+            putObject: (key, content) => {
+                server.dirs.add("uploads");
+                server.files.set(`uploads/${key}`, { body: Buffer.from(content), contentType: "text/plain", modifiedAt: new Date() });
+            },
+        };
     });
 
     it("should run the full lifecycle: nested write, read, range, copy, move, list, delete", async () => {
