@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-adapter";
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 
 type Stored = { body: Uint8Array; headers: Record<string, string>; lastModified: Date };
 
@@ -335,14 +336,9 @@ describe("aws-light against an in-memory S3", () => {
         vi.stubGlobal("fetch", s3.fetch);
 
         const storage = createStorage();
-        const finished = await upload(storage, "done");
-        const unfinished = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "b.txt", size: 5 });
-        const old = new Date(Date.now() - 2 * 60 * 60 * 1000);
-
-        s3.objects.get(finished)!.lastModified = old;
-        s3.objects.get(`${finished}.META`)!.lastModified = old;
-        s3.objects.get(`${unfinished.id}.META`)!.lastModified = old;
-        [...s3.uploads.values()][0]!.initiated = old;
+        const [finished, unfinished] = await createdAgo(2 * HOUR, async () =>
+            Promise.all([upload(storage, "done"), storage.create({ contentType: "text/plain", metadata: {}, originalName: "b.txt", size: 5 })]),
+        );
 
         const purged = await storage.purge("1h");
         const deletedKeys = s3.requests.filter((request) => request.method === "DELETE").map((request) => new URL(request.url).pathname);

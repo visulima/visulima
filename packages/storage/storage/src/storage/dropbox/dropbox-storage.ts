@@ -599,14 +599,6 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         );
     }
 
-    /**
-     * Upload records only, never {@link DropboxStorage.list}: its entries carry `modifiedAt`, so with
-     * `expiration.rolling` purge would delete any file in the folder, not only uploads.
-     */
-    protected override async listUploads(): Promise<DropboxFile[]> {
-        return (await this.meta.list()) ?? [];
-    }
-
     public override async getReadUrl(
         key: string,
         options?: { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },

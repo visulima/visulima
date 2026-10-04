@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import GCStorage from "../../../src/storage/gcs/gcs-storage";
+import { createdAgo } from "../../__helpers__/clock";
 
 type Stored = { body: Uint8Array; contentType: string; generation: number; updated: Date };
 
@@ -457,10 +458,7 @@ describe("gcs against an in-memory GCS", () => {
         expect.assertions(2);
 
         const storage = createStorage();
-        const id = await upload(storage, "old");
-
-        (gcs.objects.get(id) as Stored).updated = new Date(Date.now() - 60_000);
-
+        const id = await createdAgo(60_000, async () => upload(storage, "old"));
         const purged = await storage.purge(1000);
 
         expect(purged.items.map((item) => item.id)).toStrictEqual([id]);

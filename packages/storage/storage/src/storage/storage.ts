@@ -836,7 +836,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @remarks
      * Errors during individual file deletions are logged but do not stop the purge process.
      * Files with corrupted metadata are skipped with a warning.
-     * Uses rolling expiration if configured (based on modifiedAt) or fixed expiration (based on createdAt).
+     * Only uploads with metadata are deleted, aged by it: rolling expiration if configured (based on
+     * modifiedAt) or fixed expiration (based on createdAt).
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
         return this.instrumentOperation("purge", async () => {
@@ -858,14 +859,21 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
                     return Math.max(time(item.modifiedAt || item.createdAt), lastSave);
                 };
-                const list = await this.listUploads();
-                const expired = list.filter((item) => lastActive(item) < before);
 
-                for await (const { id, ...rest } of expired) {
+                for (const { id } of await this.listUploads()) {
                     try {
+                        // Only uploads: `listUploads` may fall back to `list`, which yields any stored
+                        // object, and `delete` removes some of those. The age comes from the metadata
+                        // too, as a listing may carry no dates.
+                        const file = await this.findMeta(id);
+
+                        if (file === undefined || lastActive(file) >= before) {
+                            continue;
+                        }
+
                         const deleted = await this.delete({ id });
 
-                        purged.items.push({ ...deleted, ...rest });
+                        purged.items.push({ ...deleted, ...file });
                     } catch (error: unknown) {
                         // If delete fails (e.g., corrupted metadata, file already deleted),
                         // log the error but continue purging other files

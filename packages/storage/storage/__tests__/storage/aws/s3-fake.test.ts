@@ -19,6 +19,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 
 vi.mock(import("aws-crt"));
 
@@ -503,20 +504,15 @@ describe("s3Storage against an in-memory S3", () => {
         expect.assertions(3);
 
         const storage = createStorage();
-        const finished = await upload(storage, "done");
-        const unfinished = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "b.txt", size: 5 });
+        const [finished, unfinished] = await createdAgo(2 * HOUR, async () =>
+            Promise.all([upload(storage, "done"), storage.create({ contentType: "text/plain", metadata: {}, originalName: "b.txt", size: 5 })]),
+        );
         const fresh = await upload(storage, "new");
-        const old = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const old = new Date(Date.now() - 2 * HOUR);
 
-        s3.objects.get(finished)!.lastModified = old;
-        s3.objects.get(`${finished}.META`)!.lastModified = old;
         // Another client's multipart upload and an app file in the same bucket: not ours to purge.
         s3.uploads.set("orphan", { initiated: old, key: "orphan-key", metadata: {}, parts: new Map() });
         s3.objects.set("app-file", { body: Buffer.from("app"), lastModified: old, metadata: {} } as never);
-
-        for (const pending of s3.uploads.values()) {
-            pending.initiated = old;
-        }
 
         const purged = await storage.purge("1h");
 

@@ -104,6 +104,28 @@ describe("s3Storage purge", () => {
         expect(s3Mock.commandCalls(AbortMultipartUploadCommand)).toHaveLength(0);
     });
 
+    it("should page past the first thousand objects", async () => {
+        expect.assertions(2);
+
+        await metaStorage.save("late", { contentType: "text/plain", createdAt: ago(2 * HOUR).toISOString(), id: "late", metadata: {}, name: "late", status: "completed" } as S3File);
+
+        s3Mock
+            .on(ListObjectsV2Command)
+            .resolvesOnce({
+                Contents: Array.from({ length: 1000 }, (_, index) => { return { Key: `app-${String(index)}`, LastModified: ago(2 * HOUR) }; }),
+                IsTruncated: true,
+                NextContinuationToken: "next",
+            })
+            .resolves({ Contents: [{ Key: "late", LastModified: ago(2 * HOUR) }] });
+        s3Mock.on(ListMultipartUploadsCommand).resolves({});
+        s3Mock.on(DeleteObjectCommand).resolves({});
+
+        const purged = await createStorage().purge();
+
+        expect(purged.items.map(({ id }) => id)).toStrictEqual(["late"]);
+        expect(s3Mock.commandCalls(DeleteObjectCommand).map(({ args }) => args[0].input.Key)).toStrictEqual(["late"]);
+    });
+
     it("should do nothing without a max age", async () => {
         expect.assertions(2);
 

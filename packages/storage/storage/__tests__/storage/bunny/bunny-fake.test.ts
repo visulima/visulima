@@ -7,6 +7,7 @@ import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
 import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import { ERRORS } from "../../../src/utils/errors";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 
 type Stored = { body: Buffer; contentType: string; created: Date };
 
@@ -309,7 +310,7 @@ describe("bunny against an in-memory storage zone", () => {
         await expect(storage.getMeta(gone)).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
     });
 
-    it("should purge expired objects by their listed creation date when the meta storage cannot list", async () => {
+    it("should purge expired uploads by their metadata when the meta storage cannot list", async () => {
         expect.assertions(2);
 
         const metaStorage = new MemoryMetaStorage();
@@ -317,10 +318,7 @@ describe("bunny against an in-memory storage zone", () => {
         metaStorage.list = async () => undefined as never;
 
         const storage = createStorage({ metaStorage });
-        const id = await upload(storage, "old");
-
-        (zone.objects.get(`/${id}`) as Stored).created = new Date(twoHoursAgo());
-
+        const id = await createdAgo(2 * HOUR, async () => upload(storage, "old"));
         const fresh = await upload(storage, "new");
         const purged = await storage.purge();
 

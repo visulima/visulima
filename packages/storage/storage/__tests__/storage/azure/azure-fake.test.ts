@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import AzureStorage from "../../../src/storage/azure/azure-storage";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 
 vi.mock(import("@azure/storage-blob"), async (importOriginal) => {
     const actual = await importOriginal();
@@ -571,11 +572,8 @@ describe("azure storage against an in-memory container", () => {
             UploadErrorCode: "Gone",
         });
 
-        const old = await upload(storage, "old", "old");
+        const old = await createdAgo(2 * HOUR, async () => upload(storage, "old", "old"));
         const fresh = await upload(storage, "new", "new");
-
-        // Purge goes by the upload record.
-        (azure.blobs.get(`${old}.META`) as Blob).createdOn = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
         const purged = await storage.purge();
 
@@ -588,9 +586,7 @@ describe("azure storage against an in-memory container", () => {
         expect.assertions(2);
 
         const storage = createStorage({ expiration: { maxAge: "1h" }, filename: (file) => `named/${file.originalName}` });
-        const id = await upload(storage, "old", "aged");
-
-        (azure.blobs.get(`${id}.META`) as Blob).createdOn = new Date(Date.now() - 2 * 60 * 60 * 1000);
+        const id = await createdAgo(2 * HOUR, async () => upload(storage, "old", "aged"));
 
         const purged = await storage.purge();
 

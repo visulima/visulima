@@ -566,24 +566,14 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * The uploads {@link BaseStorage.purge} checks: finished ones from the object listing, and
-     * unfinished multipart uploads, which no object listing shows. Only this storage's own: the
-     * bucket may hold objects and multipart uploads of other clients, and `delete` removes any
-     * object stored under a key. Untracked leftovers are for an S3 lifecycle rule
-     * (AbortIncompleteMultipartUpload). An upload is as old as its object, or its multipart upload.
+     * The uploads {@link BaseStorage.purge} checks: every object in the bucket (purge skips the ones
+     * without upload metadata), and this storage's own unfinished multipart uploads, which no object
+     * listing shows. Another client's multipart upload in a shared bucket is not ours to abort;
+     * untracked leftovers are for an S3 lifecycle rule (AbortIncompleteMultipartUpload).
      */
     protected override async listUploads(): Promise<TFile[]> {
-        const uploads: TFile[] = [];
-
         // Metadata is looked up by the object key, which is the upload id unless a custom `filename` is set.
-        for (const { createdAt, id } of await this.list()) {
-            const file = await this.findMeta(id);
-
-            if (file) {
-                uploads.push({ ...file, createdAt });
-            }
-        }
-
+        const uploads = await this.list(Number.POSITIVE_INFINITY);
         const s3Api = this.getS3Api();
         let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
 
@@ -591,11 +581,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             const previous: { KeyMarker?: string; UploadIdMarker?: string } = marker;
             const page = await this.runOperation(undefined, (signal) => s3Api.listMultipartUploads({ Bucket: this.bucket, ...previous }, { signal }));
 
-            for (const { Initiated, Key, UploadId } of page.Uploads ?? []) {
+            for (const { Key, UploadId } of page.Uploads ?? []) {
                 const file = Key === undefined ? undefined : await this.findMeta(Key);
 
                 if (UploadId !== undefined && file?.UploadId === UploadId) {
-                    uploads.push({ ...file, createdAt: Initiated });
+                    uploads.push(file);
                 }
             }
 

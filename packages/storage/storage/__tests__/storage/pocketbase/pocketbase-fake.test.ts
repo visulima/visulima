@@ -7,6 +7,7 @@ import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import PocketBaseStorage from "../../../src/storage/pocketbase/pocketbase-storage";
 import type { PocketBaseClientLike, PocketBaseRecord, PocketBaseStorageOptions } from "../../../src/storage/pocketbase/types";
 import { ERRORS } from "../../../src/utils/errors";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 
 type Row = PocketBaseRecord & { created: string; file: string; key: string; updated: string };
 
@@ -314,7 +315,7 @@ describe("pocketbase against an in-memory collection", () => {
         await expect(storage.delete({ id: "loose.txt" })).resolves.toMatchObject({ status: "deleted" });
     });
 
-    it("should purge expired records by their creation date when the meta storage cannot list", async () => {
+    it("should purge expired uploads by their metadata when the meta storage cannot list", async () => {
         expect.assertions(2);
 
         const metaStorage = new MemoryMetaStorage();
@@ -322,11 +323,8 @@ describe("pocketbase against an in-memory collection", () => {
         metaStorage.list = async () => undefined as never;
 
         const storage = createStorage({ metaStorage });
-        const id = await upload(storage, "old");
+        const id = await createdAgo(2 * HOUR, async () => upload(storage, "old"));
         const fresh = await upload(storage, "new");
-
-        ([...pb.records.values()].find((record) => record.key === id) as Row).created = pbDate(twoHoursAgo());
-
         const purged = await storage.purge();
 
         expect(purged.items.map((item) => item.id)).toStrictEqual([id]);
