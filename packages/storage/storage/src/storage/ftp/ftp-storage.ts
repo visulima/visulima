@@ -408,7 +408,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
         let entries: Awaited<ReturnType<Client["list"]>>;
 
         try {
-            entries = await client.list(directory || ".");
+            entries = await client.list(directory);
         } catch (error) {
             if (isNotFoundError(error)) {
                 return;
@@ -418,7 +418,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
         }
 
         for (const entry of entries) {
-            const childPath = directory ? `${directory}/${entry.name}` : entry.name;
+            const childPath = `${directory.replace(/\/+$/u, "")}/${entry.name}`;
 
             if (entry.isDirectory) {
                 await this.walkList(client, childPath, files);
@@ -519,10 +519,8 @@ class FtpStorage extends BaseStorage<FtpFile> {
             parts.push(inner);
         }
 
-        if (parts.length === 0) {
-            return "";
-        }
-
+        // Absolute even without a rootFolderPath, so list() walks the same tree write() fills, not
+        // the login directory.
         return `/${parts.join("/")}`;
     }
 

@@ -68,7 +68,7 @@ const storage = new FtpStorage({
 
 Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME`, `maxMetadataSize`, `filename`, `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`. The adapter reads no environment variables.
 
-> Always set `rootFolderPath`. Without it, writes go to `/<key>` (the server root) while `list()` walks the login directory. Those are two different places unless the user is jailed to `/`.
+> Without `rootFolderPath`, every operation (write, read, `list()`, delete) uses the server root `/`, not the login directory. Set `rootFolderPath` to keep uploads in their own directory.
 
 ## Metadata storage
 
@@ -130,12 +130,11 @@ const { body } = await files.download("reports/2026-10.csv", { range: { start: 0
 
 ## Troubleshooting
 
-| Symptom                                    | Cause / fix                                                                                                                                   |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `530 Login incorrect`                      | Wrong `user` / `password`, or the server requires FTPS (`secure: true`).                                                                      |
-| Timeouts on data transfers                 | The passive port range is blocked by a firewall or NAT. Open it to the app servers.                                                           |
-| TLS errors (`self signed certificate`)     | Pass `secureOptions: { ca }`. Avoid `rejectUnauthorized: false` in production.                                                                |
-| `550` on write                             | The user can't create directories or write under `rootFolderPath`.                                                                            |
-| `405` on a TUS PATCH / chunk               | Send the whole file in one request.                                                                                                           |
-| `FILE_NOT_FOUND` for a file that exists    | No metadata record on this instance (another instance, a wiped `/tmp`, or a file uploaded outside the storage). Share the metadata directory. |
-| Files written to `/` but `list()` is empty | Set `rootFolderPath` (see the note under Configuration).                                                                                      |
+| Symptom                                 | Cause / fix                                                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `530 Login incorrect`                   | Wrong `user` / `password`, or the server requires FTPS (`secure: true`).                                                                      |
+| Timeouts on data transfers              | The passive port range is blocked by a firewall or NAT. Open it to the app servers.                                                           |
+| TLS errors (`self signed certificate`)  | Pass `secureOptions: { ca }`. Avoid `rejectUnauthorized: false` in production.                                                                |
+| `550` on write                          | The user can't create directories or write under `rootFolderPath`.                                                                            |
+| `405` on a TUS PATCH / chunk            | Send the whole file in one request.                                                                                                           |
+| `FILE_NOT_FOUND` for a file that exists | No metadata record on this instance (another instance, a wiped `/tmp`, or a file uploaded outside the storage). Share the metadata directory. |

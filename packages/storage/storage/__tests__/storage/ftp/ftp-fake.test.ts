@@ -19,6 +19,8 @@ import { describeStorageContract } from "../../__helpers__/storage-contract";
  */
 const server = vi.hoisted(() => {
     return {
+        /** The login directory "." resolves to. */
+        cwd: "",
         dirs: new Set<string>([""]),
         fail: {},
         files: new Map<string, { body: Buffer; modifiedAt: Date }>(),
@@ -132,7 +134,7 @@ vi.mock(import("basic-ftp"), () => {
         public async list(path: string): Promise<{ isDirectory: boolean; isFile: boolean; modifiedAt?: Date; name: string; size: number }[]> {
             check("list");
 
-            const directory = normalize(path === "." ? "" : path);
+            const directory = normalize(path === "." ? server.cwd : path);
 
             if (!server.dirs.has(directory)) {
                 throw ftpError(550, "No such directory");
@@ -176,6 +178,7 @@ describe("ftp storage against an in-memory FTP server", () => {
 
     beforeEach(() => {
         server.files.clear();
+        server.cwd = "";
         server.dirs = new Set([""]);
         server.fail = {};
         metaDirectory = join(tmpdir(), `ftp-fake-${Math.random().toString(36).slice(2)}`);
@@ -218,6 +221,19 @@ describe("ftp storage against an in-memory FTP server", () => {
         await expect(storage.write({ body: Readable.from([Buffer.from("x")]), contentLength: 1, id, start: 0 })).resolves.toMatchObject({
             size: 5,
         });
+    });
+
+    it("should list the files it writes without a rootFolderPath, whatever the login directory", async () => {
+        expect.assertions(2);
+
+        server.cwd = "home/ftp";
+        server.dirs.add("home").add("home/ftp");
+
+        const storage = createStorage({ rootFolderPath: undefined });
+        const id = await upload(storage, "hello");
+
+        expect(server.files.has(id)).toBe(true);
+        await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id, path: `/${id}` })]);
     });
 
     it("should refuse a second chunk and keep the first part resumable from offset 0", async () => {
