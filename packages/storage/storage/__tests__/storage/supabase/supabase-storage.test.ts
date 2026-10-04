@@ -12,6 +12,7 @@ const makeBucketApi = () => {
         createSignedUrl: vi.fn(),
         download: vi.fn(),
         exists: vi.fn(),
+        info: vi.fn(),
         list: vi.fn(),
         move: vi.fn(),
         remove: vi.fn(),
@@ -200,6 +201,42 @@ describe(SupabaseStorage, () => {
 
             expect(bucketApi.move).toHaveBeenCalledWith("source.mp4", "renamed.mp4");
             expect(file.path).toBe("renamed.mp4");
+        });
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from the object info without downloading", async () => {
+            expect.assertions(4);
+
+            const storage = new SupabaseStorage({
+                ...(storageOptions as SupabaseStorageOptions),
+                bucket: "avatars",
+                client: mockClient as unknown as SupabaseStorageOptions["client"],
+            });
+
+            bucketApi.info.mockResolvedValueOnce({ data: { contentType: "video/mp4", etag: "etag-1", size: 321 }, error: null });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({ bytesWritten: 321, ETag: "etag-1", id: "video.mp4", path: "video.mp4", size: 321, status: "completed" });
+            expect(file?.contentType).toBe("video/mp4");
+            expect(bucketApi.info).toHaveBeenCalledWith("video.mp4");
+            expect(bucketApi.download).not.toHaveBeenCalled();
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(2);
+
+            const storage = new SupabaseStorage({
+                ...(storageOptions as SupabaseStorageOptions),
+                bucket: "avatars",
+                client: mockClient as unknown as SupabaseStorageOptions["client"],
+            });
+
+            bucketApi.info.mockResolvedValueOnce({ data: null, error: new Error("not found") });
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+            expect(bucketApi.download).not.toHaveBeenCalled();
         });
     });
 

@@ -289,6 +289,40 @@ describe(BunnyStorage, () => {
     // If a future release renames these, the regex inference in
     // `wrapBunnyError` would silently fall through to STORAGE_ERROR — this
     // suite traps that drift at the test layer.
+    describe(".getCompletedFile()", () => {
+        it("answers from the object description without downloading the content", async () => {
+            expect.assertions(6);
+
+            const entry = makeStorageFile();
+
+            fileMock.get.mockResolvedValueOnce(entry);
+
+            const file = await new BunnyStorage(baseOptions).getCompletedFile("user/file.bin");
+
+            expect(file).toMatchObject({
+                bunnyChecksum: "ABCD1234",
+                bunnyPath: "/user/file.bin",
+                bytesWritten: 7,
+                contentType: "application/octet-stream",
+                id: "user/file.bin",
+                status: "completed",
+            });
+            expect(file?.size).toBe(7);
+            expect(fileMock.get).toHaveBeenCalledWith(expect.anything(), "/user/file.bin");
+            expect(fileMock.get).toHaveBeenCalledTimes(1);
+            expect(entry.data).not.toHaveBeenCalled();
+            expect(file?.name).toBe("user/file.bin");
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(1);
+
+            fileMock.get.mockRejectedValueOnce(new Error("File not found: /missing"));
+
+            await expect(new BunnyStorage(baseOptions).getCompletedFile("missing")).resolves.toBeUndefined();
+        });
+    });
+
     describe("sdk error format regression guard (pin @bunny.net/storage-sdk@0.3.1)", () => {
         it("maps 'Unable to upload file. ...' (400) to BAD_REQUEST on upload (via copy)", async () => {
             expect.assertions(1);

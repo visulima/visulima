@@ -311,8 +311,16 @@ ${partsXml}
         }
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
+    public async listParts(
+        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }> {
         const queryParams: Record<string, string> = { uploadId: params.UploadId };
+
+        if (params.PartNumberMarker !== undefined) {
+            queryParams["part-number-marker"] = params.PartNumberMarker;
+        }
+
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
             method: "GET",
@@ -329,6 +337,8 @@ ${partsXml}
         const listPartsResult = (xml.ListPartsResult as Record<string, unknown> | undefined) ?? xml;
 
         return {
+            IsTruncated: listPartsResult.IsTruncated === "true" || listPartsResult.IsTruncated === true,
+            NextPartNumberMarker: listPartsResult.NextPartNumberMarker === undefined ? undefined : String(listPartsResult.NextPartNumberMarker),
             Parts: toArray<Record<string, unknown>>(listPartsResult.Part).map((part) => {
                 return {
                     ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),

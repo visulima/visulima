@@ -412,6 +412,46 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<DropboxFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const path = this.keyToPath(id);
+            let data: files.FileMetadataReference | files.FolderMetadataReference | files.DeletedMetadataReference;
+
+            try {
+                await this.authHandle.ensureAccessToken();
+
+                const response = await this.runOperation(options, () => this.client.filesGetMetadata({ path }));
+
+                data = response.result;
+            } catch {
+                return undefined;
+            }
+
+            if (data[".tag"] !== "file") {
+                return undefined;
+            }
+
+            const size = data.size ?? 0;
+            const file = new DropboxFile({ contentType: "application/octet-stream", metadata: {}, originalName: data.name, size });
+
+            return Object.assign(file, {
+                bytesWritten: size,
+                ETag: data.rev,
+                id,
+                name: id,
+                path,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: DropboxFile | undefined;

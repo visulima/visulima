@@ -309,6 +309,52 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored record, since the metadata is deleted on completion.
+     * Only the record and a `HEAD` request on its file URL are made — the content is never downloaded. The record is looked up by the upload's ID as its key.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored record exists or its size cannot be determined.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<PocketBaseFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let response: Response;
+
+            try {
+                await this.ensureAuth();
+
+                const record = await this.findRecord(id, options);
+                const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
+
+                response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+            } catch {
+                return undefined;
+            }
+
+            const size = Number(response.headers.get("content-length"));
+
+            if (!response.ok || !Number.isFinite(size) || response.headers.get("content-length") === null) {
+                return undefined;
+            }
+
+            const file = new PocketBaseFile({
+                contentType: response.headers.get("content-type") ?? "application/octet-stream",
+                id,
+                metadata: {},
+                size,
+            });
+
+            return Object.assign(file, {
+                bucket: this.collectionName,
+                bytesWritten: size,
+                id,
+                name: id,
+                path: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;

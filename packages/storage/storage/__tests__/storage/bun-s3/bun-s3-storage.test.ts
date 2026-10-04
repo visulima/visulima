@@ -184,6 +184,40 @@ describe(BunS3Storage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from a stat without downloading the content", async () => {
+            expect.assertions(6);
+
+            const client = makeClient();
+            const storage = makeStorage(client);
+            const file = await storage.getCompletedFile("/file.mp4");
+
+            expect(file).toMatchObject({
+                bunS3Key: "file.mp4",
+                bytesWritten: 7,
+                contentType: "video/mp4",
+                ETag: "etag-1",
+                id: "/file.mp4",
+                status: "completed",
+            });
+            expect(file?.size).toBe(7);
+            expect(client.file).toHaveBeenCalledWith("file.mp4");
+            expect(client.__fileRef.stat).toHaveBeenCalledTimes(1);
+            expect(client.__fileRef.arrayBuffer).not.toHaveBeenCalled();
+            expect(client.__fileRef.stream).not.toHaveBeenCalled();
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(1);
+
+            const client = makeClient();
+
+            client.__fileRef.stat.mockRejectedValueOnce(new Error("NoSuchKey"));
+
+            await expect(makeStorage(client).getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+        });
+    });
+
     describe(".getStream()", () => {
         it("returns a Node Readable plus headers", async () => {
             expect.assertions(2);

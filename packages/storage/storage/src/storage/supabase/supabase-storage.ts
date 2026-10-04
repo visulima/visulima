@@ -289,6 +289,44 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<SupabaseFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let info;
+
+            try {
+                const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
+
+                if (error || !data) {
+                    return undefined;
+                }
+
+                info = data;
+            } catch {
+                return undefined;
+            }
+
+            const size = info.size ?? 0;
+            const file = new SupabaseFile({ contentType: info.contentType ?? "application/octet-stream", id, metadata: {}, size });
+
+            return Object.assign(file, {
+                bucket: this.bucket,
+                bytesWritten: size,
+                ETag: info.etag,
+                id,
+                name: id,
+                path: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;

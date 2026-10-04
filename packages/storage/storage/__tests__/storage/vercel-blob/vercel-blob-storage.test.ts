@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 
-import { copy, del, list, put } from "@vercel/blob";
+import { copy, del, head, list, put } from "@vercel/blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VercelBlobStorageOptions } from "../../../src/storage/vercel-blob/types";
@@ -12,6 +12,7 @@ vi.mock(import("@vercel/blob"), () => {
     return {
         copy: vi.fn(),
         del: vi.fn(),
+        head: vi.fn(),
         list: vi.fn(),
         put: vi.fn(),
     };
@@ -37,6 +38,46 @@ describe(VercelBlobStorage, () => {
         (globalThis.fetch as ReturnType<typeof vi.fn>).mockReset();
 
         storage = new VercelBlobStorage(options);
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from the blob head without downloading", async () => {
+            expect.assertions(5);
+
+            vi.mocked(head).mockResolvedValueOnce({
+                contentType: "video/mp4",
+                downloadUrl: "https://example.com/blob/video.mp4?download=1",
+                etag: "etag-1",
+                pathname: "video.mp4",
+                size: 321,
+                url: "https://example.com/blob/video.mp4",
+            } as Awaited<ReturnType<typeof head>>);
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                ETag: "etag-1",
+                id: "video.mp4",
+                pathname: "video.mp4",
+                size: 321,
+                status: "completed",
+                url: "https://example.com/blob/video.mp4",
+            });
+            expect(file?.contentType).toBe("video/mp4");
+            expect(head).toHaveBeenCalledWith("video.mp4", expect.anything());
+            expect(head).toHaveBeenCalledTimes(1);
+            expect(globalThis.fetch).not.toHaveBeenCalled();
+        });
+
+        it("returns undefined when the blob is missing", async () => {
+            expect.assertions(2);
+
+            vi.mocked(head).mockRejectedValueOnce(new Error("not found"));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+            expect(globalThis.fetch).not.toHaveBeenCalled();
+        });
     });
 
     describe(".exists()", () => {

@@ -103,6 +103,37 @@ describe(AzureStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from the blob properties without downloading", async () => {
+            expect.assertions(5);
+
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockResolvedValue({ contentLength: 321, contentType: "video/mp4", etag: "etag-1" });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                ETag: "etag-1",
+                id: "video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(file?.contentType).toBe("video/mp4");
+            expect(mockBlobClient.getProperties).toHaveBeenCalledTimes(1);
+            expect(mockBlobClient.downloadToBuffer).not.toHaveBeenCalled();
+            expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(expect.stringContaining("video.mp4"));
+        });
+
+        it("returns undefined when the blob does not exist", async () => {
+            expect.assertions(2);
+
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("BlobNotFound"));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+            expect(mockBlobClient.downloadToBuffer).not.toHaveBeenCalled();
+        });
+    });
+
     describe(".write()", () => {
         const blockId = (offset: number): string => Buffer.from(`visulima-${String(offset).padStart(16, "0")}`).toString("base64");
         const chunk = (length: number): Readable => Readable.from(Buffer.alloc(length));

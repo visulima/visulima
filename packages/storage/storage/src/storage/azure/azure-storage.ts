@@ -477,6 +477,36 @@ class AzureStorage extends BaseStorage {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<AzureFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
+            let properties: Awaited<ReturnType<typeof blobClient.getProperties>>;
+
+            try {
+                properties = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
+            } catch {
+                return undefined;
+            }
+
+            const size = properties.contentLength ?? 0;
+            const file = new AzureFile({ contentType: properties.contentType, id, metadata: {}, size });
+
+            return Object.assign(file, {
+                bytesWritten: size,
+                ETag: properties.etag,
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(id));
