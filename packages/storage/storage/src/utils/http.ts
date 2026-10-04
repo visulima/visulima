@@ -281,25 +281,19 @@ export const getBaseUrl = (request: IncomingMessage): string => {
 export const getRealPath = (request: IncomingMessage & { originalUrl?: string }): string => {
     // Exclude the query params from the path
     // Prefer originalUrl (full path) over url (may be stripped by Express routing)
-    let realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
+    const realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
 
     if (!realPath) {
         throw new TypeError("Invalid request URL");
     }
 
+    // An absolute-form request target (RFC 9112 §3.2.2, e.g. through a proxy): take its path
+    if (/^https?:\/\//iu.test(realPath)) {
+        return new URL(realPath).pathname;
+    }
+
     // Ensure path starts with / for consistent parsing
-    if (!realPath.startsWith("/")) {
-        realPath = `/${realPath}`;
-    }
-
-    // If it's an absolute URL, extract the pathname
-    if (realPath.startsWith("http")) {
-        const url = new URL(realPath);
-
-        realPath = url.pathname;
-    }
-
-    return realPath;
+    return realPath.startsWith("/") ? realPath : `/${realPath}`;
 };
 
 /**
