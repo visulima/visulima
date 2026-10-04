@@ -580,9 +580,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             }
 
             const before = Date.now() - maxAgeMs;
-            const { prefix, suffix } = this.meta;
-            // Metadata records live next to the objects when the meta storage uses the bucket.
-            const isMetaKey = (key: string): boolean => (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
 
             const purge = async (id: string, file: Partial<TFile>): Promise<void> => {
                 try {
@@ -593,7 +590,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             };
 
             for (const { id, ...rest } of await this.list()) {
-                if (!isMetaKey(id) && Number(rest.createdAt) < before) {
+                if (Number(rest.createdAt) < before) {
                     await purge(id, rest as Partial<TFile>);
                 }
             }
@@ -675,7 +672,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 break;
                             }
 
-                            if (Key === undefined) {
+                            if (Key === undefined || this.isMetaKey(Key)) {
                                 continue;
                             }
 
@@ -756,7 +753,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 break;
                             }
 
-                            if (Key === undefined) {
+                            if (Key === undefined || this.isMetaKey(Key)) {
                                 continue;
                             }
 
@@ -1069,6 +1066,16 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         const file = new (this.getFileClass())({ contentType: head.ContentType, id, metadata: {}, size });
 
         return Object.assign(file, { bytesWritten: size, ETag: head.ETag, name: id, status: "completed" as const });
+    }
+
+    /**
+     * Whether a bucket key is a metadata record: they live next to the objects when the meta
+     * storage uses the bucket, and must not be listed or purged as uploads of their own.
+     */
+    protected isMetaKey(key: string): boolean {
+        const { prefix, suffix } = this.meta;
+
+        return (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
     }
 
     /**
