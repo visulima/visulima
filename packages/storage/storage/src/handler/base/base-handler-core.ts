@@ -481,6 +481,9 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         try {
+            // Not every adapter checks expiry on read; the metadata decides for all of them.
+            await this.storage.checkIfExpired(fileMeta);
+
             const response =
                 (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
 
@@ -493,6 +496,11 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
 
             return response;
         } catch (error: unknown) {
+            // The storage refuses an expired upload on read; answer 410 like TUS does, not 404.
+            if ((error as { UploadErrorCode?: string }).UploadErrorCode === ERRORS.GONE) {
+                throw createHttpError(410, "File has expired");
+            }
+
             if (isNotFound(error)) {
                 throw createHttpError(404, "File not found");
             }

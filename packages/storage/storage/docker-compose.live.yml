@@ -1,0 +1,69 @@
+# Real backends for the opt-in live tests (`pnpm run test:live`, see AGENTS.md).
+# Start with `docker compose -f docker-compose.live.yml up -d --wait`.
+# Credentials are fixed, local-only test values. The tests create the bucket/container they use.
+"name": "visulima-storage-live"
+
+"services":
+    # S3 (S3Storage, AwsLightStorage). MinIO stopped publishing images; pgsty/minio is a community
+    # rebuild of the same server.
+    "minio":
+        "image": "pgsty/minio:RELEASE.2026-08-04T00-00-00Z"
+        "command": ["server", "/data"]
+        "environment":
+            "MINIO_ROOT_USER": "live-access-key"
+            "MINIO_ROOT_PASSWORD": "live-secret-key"
+        "ports": ["9000:9000"]
+        "healthcheck":
+            "test": ["CMD", "mc", "ready", "local"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # Azure Blob Storage, with its well-known development account (devstoreaccount1).
+    "azurite":
+        "image": "mcr.microsoft.com/azure-storage/azurite:3.35.0"
+        "command": ["azurite-blob", "--blobHost", "0.0.0.0", "--skipApiVersionCheck", "--loose"]
+        "ports": ["10000:10000"]
+        "healthcheck":
+            "test": ["CMD", "nc", "-z", "127.0.0.1", "10000"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # Google Cloud Storage JSON API, without authentication.
+    "gcs":
+        "image": "fsouza/fake-gcs-server:1.52.2"
+        "command": ["-scheme", "http", "-port", "4443", "-external-url", "http://localhost:4443", "-backend", "memory"]
+        "ports": ["4443:4443"]
+        "healthcheck":
+            "test": ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:4443/storage/v1/b"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # SFTP: user "live", password "live-password", writable directory ~/upload.
+    "sftp":
+        "image": "atmoz/sftp:alpine@sha256:6d41b9200f8115ce925bbd295376cb3c6b72634a267f41946e5aee4efe482186"
+        "command": ["live:live-password:1001::upload"]
+        "ports": ["2222:22"]
+        "healthcheck":
+            "test": ["CMD", "nc", "-z", "127.0.0.1", "22"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # FTP (passive ports 21000-21010): user "live", password "live-password". vsftpd doesn't chroot
+    # the user, so the adapter's (absolute) rootFolderPath has to point into /home/live.
+    "ftp":
+        "image": "delfer/alpine-ftp-server:latest@sha256:60bb774d8408d9d4d5c74d05d1c086a34ce192c6c1a142ffac268cac0dbc6fac"
+        "environment":
+            "USERS": "live|live-password|/home/live|1001"
+            "ADDRESS": "127.0.0.1"
+            "MIN_PORT": "21000"
+            "MAX_PORT": "21010"
+        "ports": ["2121:21", "21000-21010:21000-21010"]
+        "healthcheck":
+            "test": ["CMD", "nc", "-z", "127.0.0.1", "21"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
