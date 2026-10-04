@@ -204,7 +204,10 @@ class GCStorage extends BaseStorage<GCSFile> {
             };
 
             const requestOptions: GaxiosOptions = {
-                body: JSON.stringify({ metadata: file.metadata }),
+                // GCS takes string metadata values only; the upload's own metadata (`_chunks`, …) is not.
+                body: JSON.stringify({
+                    metadata: Object.fromEntries(Object.entries(file.metadata).map(([key, value]) => [key, typeof value === "string" ? value : JSON.stringify(value)])),
+                }),
                 headers,
                 method: "POST" as const,
                 params: { name: file.name, uploadType: "resumable" },

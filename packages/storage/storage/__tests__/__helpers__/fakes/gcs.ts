@@ -1,4 +1,5 @@
-// Copied from __tests__/storage/gcs/gcs-fake.test.ts so other suites can share it.
+// Copied from __tests__/storage/gcs/gcs-fake.test.ts so other suites can share it; unlike the original it
+// refuses object metadata with non-string values, as GCS does.
 
 type Stored = { body: Uint8Array; contentType: string; generation: number; updated: Date };
 
@@ -111,6 +112,13 @@ export const createGcsFake = () => {
             const name = searchParams.get("name") as string;
 
             if (searchParams.get("uploadType") === "resumable") {
+                const { metadata = {} } = JSON.parse(new TextDecoder().decode(await readBody(init.body)) || "{}") as { metadata?: Record<string, unknown> };
+
+                // Like GCS, object metadata takes string values only.
+                if (Object.values(metadata).some((value) => typeof value !== "string")) {
+                    return json({ error: { code: 400, message: "Invalid metadata value" } }, { status: 400 });
+                }
+
                 const location = `/session/${String(sessions.size + 1)}-${encodeURIComponent(name)}`;
 
                 sessions.set(location, {
