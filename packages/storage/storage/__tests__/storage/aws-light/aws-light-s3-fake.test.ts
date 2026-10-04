@@ -7,6 +7,7 @@ import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-ada
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { createS3State } from "../../__helpers__/s3-state";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 /**
  * In-memory path-style S3 at https://s3.test with the bucket "uploads". `override` answers a
@@ -124,7 +125,7 @@ const createS3 = () => {
     return { fetch, objects: bucket.objects, put: bucket.put, requests, state, uploads: bucket.uploads };
 };
 
-const createStorage = (): AwsLightStorage =>
+const createStorage = (options: Partial<ConstructorParameters<typeof AwsLightStorage>[0]> = {}): AwsLightStorage =>
     new AwsLightStorage({
         accessKeyId: "id",
         bucket: "uploads",
@@ -132,6 +133,7 @@ const createStorage = (): AwsLightStorage =>
         region: "auto",
         retryConfig: { maxRetries: 0 },
         secretAccessKey: "secret",
+        ...options,
     });
 
 const upload = async (storage: AwsLightStorage, text: string): Promise<string> => {
@@ -146,6 +148,25 @@ describe("aws-light against an in-memory S3", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
+
+    describeStorageContract(
+        () => {
+            const s3 = createS3();
+
+            vi.stubGlobal("fetch", s3.fetch);
+
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    s3.state.override = failing ? () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) : undefined;
+                },
+                hasObject: (key) => s3.objects.has(key),
+                putObject: (key, content) => {
+                    s3.put(key, Buffer.from(content));
+                },
+            };
+        },
+    );
 
     it("should stream an object once, not once per read", async () => {
         expect.assertions(1);

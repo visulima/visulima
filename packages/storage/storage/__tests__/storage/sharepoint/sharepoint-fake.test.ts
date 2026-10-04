@@ -6,6 +6,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import SharePointStorage from "../../../src/storage/sharepoint/sharepoint-storage";
 import type { SharePointStorageOptions } from "../../../src/storage/sharepoint/types";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 import { createGraph } from "../onedrive/graph-fake";
 
 /** A Graph drive behind the site "contoso.sharepoint.com/sites/Marketing" with a renamed "Shared Documents" library. */
@@ -57,6 +58,28 @@ describe("sharepoint against an in-memory Graph drive", () => {
         vi.unstubAllGlobals();
     });
 
+    describeStorageContract(
+        () => {
+            const graph = createSite();
+            const resolveSite = graph.state.override;
+
+            vi.stubGlobal("fetch", graph.fetch);
+
+            return {
+                createStorage: (options) => createStorage(graph, { retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    graph.state.override = failing
+                        ? (method, url) => resolveSite?.(method, url) ?? Response.json({ error: { code: "accessDenied", message: "denied" } }, { status: 403 })
+                        : resolveSite;
+                },
+                hasObject: (key) => graph.items.has(`uploads/${key}`),
+                putObject: (key, content) => {
+                    graph.put(`uploads/${key}`, Buffer.from(content), "text/plain");
+                },
+            };
+        },
+    );
+
     it("should resolve the library once and run an upload through its drive", async () => {
         expect.assertions(6);
 
@@ -98,22 +121,6 @@ describe("sharepoint against an in-memory Graph drive", () => {
 
         expect(graph.items.has(`uploads/${id}`)).toBe(false);
         await expect(storage.exists({ id })).resolves.toBe(false);
-    });
-
-    it("should purge expired uploads together with their metadata", async () => {
-        expect.assertions(2);
-
-        const graph = createSite();
-        const storage = createStorage(graph, { expiration: { maxAge: "1h" } });
-        const old = await upload(storage, "old");
-
-        await upload(storage, "fresh");
-        await storage.update({ id: old }, { createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() });
-
-        const purged = await storage.purge();
-
-        expect(purged.items.map((item) => item.id)).toStrictEqual([old]);
-        expect(graph.items.has(`uploads/${old}`)).toBe(false);
     });
 
     it("should serve a REST upload lifecycle: POST + PATCH + HEAD + PUT replace + DELETE", async () => {

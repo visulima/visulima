@@ -9,6 +9,7 @@ import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Buffer; contentType: string; created: Date };
 
@@ -16,14 +17,16 @@ type Stored = { body: Buffer; contentType: string; created: Date };
  * In-memory Bunny storage zone "zone" behind the `@bunny.net/storage-sdk` functions the adapter calls.
  * Error messages mirror the SDK's (`File not found: …`, `Unable to upload file. …`); `remove` answers
  * `false` for a missing object like the SDK's `(await fetch()).ok`. `fail` makes the next call of an
- * operation throw.
+ * operation throw, `failing.all` every call.
  */
 const zone = vi.hoisted(() => {
     const objects = new Map<string, Stored>();
     const fail = new Map<"get" | "list" | "remove" | "upload", Error | "false">();
 
+    const failing = { all: false };
+
     const take = (operation: "get" | "list" | "remove" | "upload"): Error | "false" | undefined => {
-        const failure = fail.get(operation);
+        const failure = failing.all ? new Error("Unauthorized access to storage zone: zone") : fail.get(operation);
 
         fail.delete(operation);
 
@@ -121,7 +124,7 @@ const zone = vi.hoisted(() => {
         zone: { connect_with_accesskey: () => { return { name: "zone" }; }, name: () => "zone" },
     };
 
-    return { fail, objects, sdk };
+    return { fail, failing, objects, sdk };
 });
 
 vi.mock(import("@bunny.net/storage-sdk"), () => zone.sdk as never);
@@ -145,6 +148,21 @@ describe("bunny against an in-memory storage zone", () => {
 
         zone.fail.clear();
     });
+
+    describeStorageContract(
+        () => {
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    zone.failing.all = failing;
+                },
+                hasObject: (key) => zone.objects.has(`/${key}`),
+                putObject: (key, content) => {
+                    zone.objects.set(`/${key}`, { body: Buffer.from(content), contentType: "text/plain", created: new Date() });
+                },
+            };
+        },
+    );
 
     it("should store a whole-file upload and keep its metadata after completion", async () => {
         expect.assertions(5);
@@ -225,17 +243,6 @@ describe("bunny against an in-memory storage zone", () => {
 
         expect(result.content.toString()).toBe("raw");
         expect(result).toMatchObject({ metadata: {}, name: "raw.bin", size: 3 });
-    });
-
-    it("should answer GONE for an expired upload instead of serving it", async () => {
-        expect.assertions(1);
-
-        const storage = createStorage();
-        const id = await upload(storage, "stale");
-
-        await storage.saveMeta(Object.assign(await storage.getMeta(id), { expiredAt: Date.now() - 1000 }));
-
-        await expect(storage.get({ id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.GONE });
     });
 
     it("should report a missing object as FILE_NOT_FOUND", async () => {

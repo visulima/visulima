@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import MemoryStorage from "../../../src/storage/memory/memory-storage";
 import { ERRORS } from "../../../src/utils/errors";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 describe(MemoryStorage, () => {
     afterEach(() => {
@@ -83,5 +84,42 @@ describe(MemoryStorage, () => {
 
         await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.from("abcdefgh"));
         await expect(storage.getMeta(file.id)).resolves.toStrictEqual(expect.objectContaining({ bytesWritten: 8, status: "completed" }));
+    });
+});
+
+describe.each([
+    ["memory", (): MemoryMetaStorage => new MemoryMetaStorage()],
+    // Purge then walks `list()`, which yields every stored object, not only uploads.
+    ["memory with a meta storage that can't list", (): MemoryMetaStorage => Object.assign(new MemoryMetaStorage(), { list: async () => undefined as never })],
+])("%s", (_, createMetaStorage) => {
+    describeStorageContract(() => {
+        let storage = new MemoryStorage();
+
+        return {
+            createStorage: (options) => {
+                storage = new MemoryStorage({ metaStorage: createMetaStorage(), ...options });
+
+                return storage;
+            },
+            failBackend: (failing) => {
+                // eslint-disable-next-line sonarjs/no-selector-parameter -- the contract switches failures on and off
+                if (failing) {
+                    const down = (): never => {
+                        throw new Error("backend down");
+                    };
+
+                    vi.spyOn(storage.raw, "get").mockImplementation(down);
+                    vi.spyOn(storage.raw, "delete").mockImplementation(down);
+                } else {
+                    vi.restoreAllMocks();
+                }
+            },
+            hasObject: (key) => storage.raw.has(key),
+            putObject: (key, content) => {
+                const now = new Date().toISOString();
+
+                storage.raw.set(key, { bytes: Buffer.from(content), contentType: "text/plain", createdAt: now, eTag: "\"app\"", metadata: {}, modifiedAt: now });
+            },
+        };
     });
 });

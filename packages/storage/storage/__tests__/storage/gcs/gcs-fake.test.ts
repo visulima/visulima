@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import GCStorage from "../../../src/storage/gcs/gcs-storage";
-import { createdAgo } from "../../__helpers__/clock";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Uint8Array; contentType: string; generation: number; updated: Date };
 
@@ -260,6 +260,21 @@ describe("gcs against an in-memory GCS", () => {
         instance.defaults = {};
     });
 
+    describeStorageContract(
+        () => {
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    gcs.state.override = failing ? () => new Response("forbidden", { status: 403 }) : undefined;
+                },
+                hasObject: (key) => gcs.objects.has(key),
+                putObject: (key, content) => {
+                    gcs.objects.set(key, { body: Buffer.from(content), contentType: "text/plain", generation: 1, updated: new Date() });
+                },
+            };
+        },
+    );
+
     it("should upload in several chunks and keep the metadata once complete", async () => {
         expect.assertions(5);
 
@@ -301,24 +316,6 @@ describe("gcs against an in-memory GCS", () => {
         });
         await expect(resumed.write({ body: chunk("456789"), contentLength: 6, id: file.id, start: 4 })).resolves.toMatchObject({ status: "completed" });
         expect(Buffer.from(gcs.objects.get(file.name)?.body ?? []).toString()).toBe("0123456789");
-    });
-
-    it("should read a finished upload back with get and getStream", async () => {
-        expect.assertions(2);
-
-        const storage = createStorage();
-        const id = await upload(storage, "hello gcs");
-
-        await expect(storage.get({ id })).resolves.toMatchObject({ content: Buffer.from("hello gcs") });
-
-        const { stream } = await storage.getStream({ id });
-        const chunks: Buffer[] = [];
-
-        for await (const part of stream) {
-            chunks.push(Buffer.from(part as Uint8Array));
-        }
-
-        expect(Buffer.concat(chunks).toString()).toBe("hello gcs");
     });
 
     it("should report a missing object as absent and other failures as errors", async () => {
@@ -424,23 +421,6 @@ describe("gcs against an in-memory GCS", () => {
         });
     });
 
-    it("should delete the object and its metadata, and keep the metadata when the object delete fails", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const kept = await upload(storage, "keep");
-
-        gcs.state.override = (method) => (method === "DELETE" ? new Response("boom", { status: 500 }) : undefined);
-
-        await expect(storage.delete({ id: kept })).rejects.toThrow();
-        await expect(storage.getMeta(kept)).resolves.toMatchObject({ status: "completed" });
-
-        gcs.state.override = undefined;
-
-        await expect(storage.delete({ id: kept })).resolves.toMatchObject({ status: "deleted" });
-        expect([...gcs.objects.keys()]).toStrictEqual([]);
-    });
-
     it("should cancel the session of an unfinished upload on delete", async () => {
         expect.assertions(2);
 
@@ -452,26 +432,6 @@ describe("gcs against an in-memory GCS", () => {
 
         expect(gcs.sessions.size).toBe(0);
         expect(gcs.objects.size).toBe(0);
-    });
-
-    it("should purge uploads older than the max age", async () => {
-        expect.assertions(2);
-
-        const storage = createStorage();
-        const id = await createdAgo(60_000, async () => upload(storage, "old"));
-        const purged = await storage.purge(1000);
-
-        expect(purged.items.map((item) => item.id)).toStrictEqual([id]);
-        expect(gcs.objects.size).toBe(0);
-    });
-
-    it("should refuse to write to an expired upload", async () => {
-        expect.assertions(1);
-
-        const storage = createStorage();
-        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 4, ttl: -1000 });
-
-        await expect(storage.write({ body: chunk("abcd"), contentLength: 4, id: file.id, start: 0 })).rejects.toMatchObject({ UploadErrorCode: "Gone" });
     });
 
     describe("retries", () => {

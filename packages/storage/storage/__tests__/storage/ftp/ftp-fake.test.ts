@@ -10,11 +10,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import FtpStorage from "../../../src/storage/ftp/ftp-storage";
 import type { FtpStorageOptions } from "../../../src/storage/ftp/types";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 /**
  * In-memory FTP server behind `basic-ftp`'s Client: a tree of files and directories, uploads
  * into a missing directory are refused like a real server, missing paths answer 550. `fail`
- * makes one client method throw, to inject server/connection errors.
+ * makes one client method (`*`: every method) throw, to inject server/connection errors.
  */
 const server = vi.hoisted(() => {
     return {
@@ -30,7 +31,7 @@ vi.mock(import("basic-ftp"), () => {
     const ftpError = (code: number, message: string): Error => Object.assign(new Error(`${String(code)} ${message}`), { code });
 
     const check = (method: string): void => {
-        const error = server.fail[method];
+        const error = server.fail[method] ?? server.fail["*"];
 
         if (error) {
             throw error;
@@ -184,6 +185,21 @@ describe("ftp storage against an in-memory FTP server", () => {
         await rm(metaDirectory, { force: true, recursive: true });
     });
 
+    describeStorageContract(
+        () => {
+            return {
+                createStorage: (options) => createStorage({ retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    server.fail = failing ? { "*": Object.assign(new Error("421 Service not available"), { code: 421 }) } : {};
+                },
+                hasObject: (key) => server.files.has(`uploads/${key}`),
+                putObject: (key, content) => {
+                    server.files.set(`uploads/${key}`, { body: Buffer.from(content), modifiedAt: new Date() });
+                },
+            };
+        },
+    );
+
     it("should upload into a fresh directory tree and keep the metadata once completed", async () => {
         expect.assertions(4);
 
@@ -309,42 +325,6 @@ describe("ftp storage against an in-memory FTP server", () => {
         ]);
         // A missing root lists as empty.
         await expect(createStorage({ rootFolderPath: "nowhere" }).list()).resolves.toStrictEqual([]);
-    });
-
-    it("should delete the object and metadata, and keep the metadata when the server fails", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const id = await upload(storage, "hello");
-
-        server.fail.remove = new Error("421 Service not available");
-
-        await expect(storage.delete({ id })).rejects.toThrow("421");
-        await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
-
-        server.fail = {};
-
-        await expect(storage.delete({ id })).resolves.toMatchObject({ status: "deleted" });
-        expect(server.files.size).toBe(0);
-    });
-
-    it("should purge expired uploads", async () => {
-        expect.assertions(3);
-
-        const storage = createStorage({ expiration: { maxAge: "1h" }, filename: (file) => `docs/${file.originalName}` });
-        const id = await upload(storage, "old");
-
-        vi.useFakeTimers({ now: Date.now() + 2 * 60 * 60 * 1000 });
-
-        try {
-            const purged = await storage.purge();
-
-            expect(purged.items.map((item) => item.id)).toStrictEqual([id]);
-            expect(server.files.size).toBe(0);
-            await expect(storage.getMeta(id)).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
-        } finally {
-            vi.useRealTimers();
-        }
     });
 
     it("should turn a cancelled operation into an AbortError", async () => {

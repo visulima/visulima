@@ -1,12 +1,13 @@
 import { Readable } from "node:stream";
 import { text } from "node:stream/consumers";
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type SupabaseFile from "../../../src/storage/supabase/supabase-file";
 import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Uint8Array; contentType: string; created: string; id: string };
 
@@ -124,7 +125,7 @@ const createSupabase = () => {
     return { fetch, objects, state };
 };
 
-const createStorage = (supabase: ReturnType<typeof createSupabase>, options: { expiration?: { maxAge: string } } = {}): SupabaseStorage =>
+const createStorage = (supabase: ReturnType<typeof createSupabase>, options: Partial<ConstructorParameters<typeof SupabaseStorage>[0]> = {}): SupabaseStorage =>
     new SupabaseStorage({
         bucket: "media",
         fetch: supabase.fetch,
@@ -141,6 +142,22 @@ const upload = async (storage: SupabaseStorage, text: string, metadata: Record<s
 };
 
 describe("supabase against an in-memory Storage API", () => {
+    describeStorageContract(
+        () => {
+            const supabase = createSupabase();
+
+            return {
+                createStorage: (options) => createStorage(supabase, { retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    supabase.state.override = failing ? () => Response.json({ error: "forbidden", message: "Access denied", statusCode: "403" }, { status: 403 }) : undefined;
+                },
+                hasObject: (key) => supabase.objects.has(key),
+                putObject: (key, content) => {
+                    supabase.objects.set(key, { body: new TextEncoder().encode(content), contentType: "text/plain", created: new Date().toISOString(), id: key });
+                },
+            };
+        },
+    );
     it("should store a whole-file upload and keep its metadata after completion", async () => {
         expect.assertions(5);
 
@@ -254,44 +271,6 @@ describe("supabase against an in-memory Storage API", () => {
         }
 
         await expect(storage.list(5000)).resolves.toHaveLength(1001);
-    });
-
-    it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {
-        expect.assertions(5);
-
-        const supabase = createSupabase();
-        const storage = createStorage(supabase);
-        const file = await upload(storage, "hello");
-
-        supabase.state.override = (request) =>
-            request.method === "DELETE" ? Response.json({ error: "internal", message: "boom", statusCode: "500" }, { status: 500 }) : undefined;
-
-        await expect(storage.delete({ id: file.id })).rejects.toThrow("boom");
-        await expect(storage.getMeta(file.id)).resolves.toMatchObject({ status: "completed" });
-
-        supabase.state.override = undefined;
-
-        await expect(storage.delete({ id: file.id })).resolves.toMatchObject({ status: "deleted" });
-
-        expect(supabase.objects.size).toBe(0);
-        await expect(storage.getMeta(file.id)).rejects.toThrow();
-    });
-
-    it("should purge expired uploads", async () => {
-        expect.assertions(3);
-
-        const supabase = createSupabase();
-        const storage = createStorage(supabase, { expiration: { maxAge: "1h" } });
-        const file = await upload(storage, "hello");
-
-        await expect(storage.purge()).resolves.toMatchObject({ items: [] });
-
-        vi.useFakeTimers({ now: Date.now() + 2 * 60 * 60 * 1000, toFake: ["Date"] });
-
-        const purged = await storage.purge().finally(() => vi.useRealTimers());
-
-        expect(purged.items.map((item) => item.id)).toStrictEqual([file.id]);
-        expect(supabase.objects.size).toBe(0);
     });
 
     it("should serve a REST upload end to end: POST, HEAD, PUT replace, DELETE, and refuse chunks", async () => {

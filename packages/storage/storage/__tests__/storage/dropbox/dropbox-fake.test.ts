@@ -10,6 +10,7 @@ import DropboxStorage from "../../../src/storage/dropbox/dropbox-storage";
 import type { DropboxStorageOptions } from "../../../src/storage/dropbox/types";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import { ERRORS } from "../../../src/utils/errors";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Buffer; modified: string; rev: string };
 
@@ -20,7 +21,8 @@ const pathError = (tag: string): DropboxResponseError<unknown> =>
 
 /**
  * In-memory Dropbox answering the SDK calls DropboxStorage makes. Lookups of a path that is a folder
- * answer like Dropbox does; `failNext` makes the next call of the named method throw.
+ * answer like Dropbox does; `failNext` makes the next call of the named method throw, `failing.all`
+ * every call.
  */
 const createDropbox = () => {
     const objects = new Map<string, Stored>();
@@ -29,7 +31,13 @@ const createDropbox = () => {
     const sessions = new Map<string, Buffer[]>();
     let revision = 0;
 
+    const failing = { all: false };
+
     const guard = (method: string): void => {
+        if (failing.all) {
+            throw Object.assign(new Error("Internal Server Error"), { status: 500 });
+        }
+
         const error = failNext.get(method);
 
         if (error !== undefined) {
@@ -183,7 +191,7 @@ const createDropbox = () => {
         },
     };
 
-    return { client, failNext, folders, objects };
+    return { client, failing, failNext, folders, objects, put };
 };
 
 const createStorage = (dropbox: ReturnType<typeof createDropbox>, options: Partial<DropboxStorageOptions> = {}) => {
@@ -206,6 +214,22 @@ const upload = async (storage: DropboxStorage, text: string, init: Partial<Dropb
 };
 
 describe("dropbox against an in-memory Dropbox", () => {
+    describeStorageContract(
+        () => {
+            const dropbox = createDropbox();
+
+            return {
+                createStorage: (options) => createStorage(dropbox, options).storage,
+                failBackend: (failing) => {
+                    dropbox.failing.all = failing;
+                },
+                hasObject: (key) => dropbox.objects.has(`/apps/up/${key}`),
+                putObject: (key, content) => {
+                    dropbox.put(`/apps/up/${key}`, Buffer.from(content));
+                },
+            };
+        },
+    );
     it("should refuse a partial chunk instead of storing it as the whole file", async () => {
         expect.assertions(4);
 
@@ -355,26 +379,6 @@ describe("dropbox against an in-memory Dropbox", () => {
         await expect(storage.list(3)).resolves.toHaveLength(3);
         // A limit above Dropbox's per-request maximum still lists (Files.listAll asks for growing limits).
         await expect(storage.list(4000)).resolves.toHaveLength(5);
-    });
-
-    it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {
-        expect.assertions(6);
-
-        const dropbox = createDropbox();
-        const { meta, storage } = createStorage(dropbox);
-        const kept = await upload(storage, "keep");
-
-        dropbox.failNext.set("filesDeleteV2", new DropboxResponseError(500, {}, { error_summary: "internal/" }));
-
-        await expect(storage.delete({ id: kept.id })).rejects.toMatchObject({ status: 500 });
-        await expect(meta.get(kept.id)).resolves.toMatchObject({ status: "completed" });
-
-        await expect(storage.delete({ id: kept.id })).resolves.toMatchObject({ status: "deleted" });
-
-        expect(dropbox.objects.size).toBe(0);
-        await expect(meta.get(kept.id)).rejects.toThrow("Meta not found");
-        // An already-missing object is not an error.
-        await expect(storage.delete({ id: "gone" })).resolves.toMatchObject({ id: "gone", status: "deleted" });
     });
 
     it("should refuse an expired upload and purge old uploads by upload id", async () => {

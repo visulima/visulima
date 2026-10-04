@@ -8,6 +8,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import type BoxFile from "../../../src/storage/box/box-file";
 import BoxStorage from "../../../src/storage/box/box-storage";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Item = { body?: Buffer; etag?: string; id: string; name: string; parent: string; type: "file" | "folder" };
 
@@ -15,7 +16,7 @@ const boxError = (statusCode: number, code: string): Error => Object.assign(new 
 
 /**
  * In-memory Box account: folder "0" is the root. Downloads are served by `fetch` from
- * https://dl.box.test/&lt;file id>. `fail` answers a method call before the fake does, to inject errors.
+ * https://dl.box.test/&lt;file id>. `fail` answers a method call (`*`: every call) before the fake does, to inject errors.
  */
 const createBox = () => {
     const items = new Map<string, Item>();
@@ -53,7 +54,7 @@ const createBox = () => {
         return describe(item);
     };
     const guard = (method: string): void => {
-        fail[method]?.();
+        (fail[method] ?? fail["*"])?.();
     };
 
     const client = {
@@ -198,6 +199,30 @@ describe("box against an in-memory Box account", () => {
         vi.useRealTimers();
     });
 
+    describeStorageContract(
+        () => {
+            const box = createBox();
+            const meta = new MemoryMetaStorage<BoxFile>();
+
+            vi.stubGlobal("fetch", box.fetch);
+
+            return {
+                createStorage: (options) => new BoxStorage({ client: box.client, metaStorage: meta, retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    box.fail["*"] = failing
+                        ? () => {
+                              throw boxError(500, "internal_server_error");
+                          }
+                        : undefined;
+                },
+                hasObject: (key) => box.read(key) !== undefined,
+                putObject: (key, content) => {
+                    box.putFile("0", key, Buffer.from(content));
+                },
+            };
+        },
+    );
+
     it("should store a whole-file write and keep the metadata after completion", async () => {
         expect.assertions(6);
 
@@ -326,26 +351,6 @@ describe("box against an in-memory Box account", () => {
         const all = await storage.list();
 
         expect(all.map((file) => file.name)).toStrictEqual(["a", "b", "c", "d"]);
-    });
-
-    it("should delete the file and its metadata, and keep the metadata when Box refuses", async () => {
-        expect.assertions(4);
-
-        const { box, storage } = setup();
-        const kept = await upload(storage, "keep", "k.txt");
-        const gone = await upload(storage, "gone", "g.txt");
-
-        box.fail.deleteFileById = () => {
-            throw boxError(500, "internal_server_error");
-        };
-
-        await expect(storage.delete({ id: kept.id })).rejects.toMatchObject({ responseInfo: { statusCode: 500 } });
-        await expect(storage.getMeta(kept.id)).resolves.toMatchObject({ status: "completed" });
-
-        delete box.fail.deleteFileById;
-
-        await expect(storage.delete({ id: gone.id })).resolves.toMatchObject({ status: "deleted" });
-        expect([box.read(gone.id), await storage.exists({ id: gone.id })]).toStrictEqual([undefined, false]);
     });
 
     it("should report expired uploads as gone and purge them, also under a custom filename", async () => {

@@ -8,6 +8,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import type GoogleDriveFile from "../../../src/storage/google-drive/google-drive-file";
 import GoogleDriveStorage from "../../../src/storage/google-drive/google-drive-storage";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type DriveFile = {
     appProperties: Record<string, string>;
@@ -165,8 +166,12 @@ const createDrive = (pageLimit = 100) => {
     return { add, client: client as unknown as drive_v3.Drive, files, state };
 };
 
-const createStorage = (drive: ReturnType<typeof createDrive>, store = new Map<string, GoogleDriveFile>()): GoogleDriveStorage =>
-    new GoogleDriveStorage({ client: drive.client, metaStorage: new MemoryMetaStorage<GoogleDriveFile>({ store }), retryConfig: { maxRetries: 0 } });
+const createStorage = (
+    drive: ReturnType<typeof createDrive>,
+    store = new Map<string, GoogleDriveFile>(),
+    options: Partial<ConstructorParameters<typeof GoogleDriveStorage>[0]> = {},
+): GoogleDriveStorage =>
+    new GoogleDriveStorage({ client: drive.client, metaStorage: new MemoryMetaStorage<GoogleDriveFile>({ store }), retryConfig: { maxRetries: 0 }, ...options });
 
 const upload = async (storage: GoogleDriveStorage, text: string): Promise<GoogleDriveFile> => {
     const file = await storage.create({ contentType: "text/plain", metadata: { owner: "me" }, originalName: "a.txt", size: text.length });
@@ -177,6 +182,22 @@ const upload = async (storage: GoogleDriveStorage, text: string): Promise<Google
 const keyed = (drive: ReturnType<typeof createDrive>, key: string): DriveFile[] => [...drive.files.values()].filter((file) => file.appProperties.fsdkKey === key);
 
 describe("google-drive against an in-memory Drive", () => {
+    describeStorageContract(
+        () => {
+            const drive = createDrive();
+
+            return {
+                createStorage: (options) => createStorage(drive, undefined, options),
+                failBackend: (failing) => {
+                    drive.state.fail = failing ? () => driveError(500) : undefined;
+                },
+                hasObject: (key) => keyed(drive, key).length > 0,
+                putObject: (key, content) => {
+                    drive.add({ appProperties: { fsdkKey: key }, body: Buffer.from(content), mimeType: "text/plain", name: key, parents: ["root"] });
+                },
+            };
+        },
+    );
     it("should store a whole-file write, keep its metadata and read it back", async () => {
         expect.assertions(6);
 
@@ -315,27 +336,6 @@ describe("google-drive against an in-memory Drive", () => {
         await storage.delete({ id: empty.id });
 
         expect(store.has(empty.id)).toBe(false);
-    });
-
-    it("should purge expired uploads", async () => {
-        expect.assertions(3);
-
-        const drive = createDrive();
-        const store = new Map<string, GoogleDriveFile>();
-        const storage = createStorage(drive, store);
-        const old = await upload(storage, "old");
-        const pending = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "p.txt", size: 3 });
-        const fresh = await upload(storage, "fresh");
-
-        for (const id of [old.id, pending.id]) {
-            (store.get(id) as GoogleDriveFile).createdAt = "2000-01-01T00:00:00.000Z";
-        }
-
-        const purged = await storage.purge("1h");
-
-        expect(purged.items.map((item) => item.id).toSorted()).toStrictEqual([old.id, pending.id].toSorted());
-        expect([...store.keys()]).toStrictEqual([fresh.id]);
-        expect(keyed(drive, old.name)).toHaveLength(0);
     });
 
     it("should serve a REST upload: POST, PATCH, HEAD, PUT replace and DELETE", async () => {

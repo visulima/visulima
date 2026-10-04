@@ -9,12 +9,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import SftpStorage from "../../../src/storage/sftp/sftp-storage";
 import type { SftpStorageOptions } from "../../../src/storage/sftp/types";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 /**
  * In-memory SFTP server behind `ssh2-sftp-client`: paths are kept as given, so an absolute
  * "/srv/x" and a home-relative "srv/x" are different files, like on a real server. Missing
  * paths fail with SSH_FX_NO_SUCH_FILE (code 2); writes into a missing directory are refused.
- * `fail` makes one client method throw, to inject server/connection errors.
+ * `fail` makes one client method (`*`: every method) throw, to inject server/connection errors.
  */
 const server = vi.hoisted(() => {
     return {
@@ -33,7 +34,7 @@ vi.mock(import("ssh2-sftp-client"), () => {
     const noSuchFile = (path: string): Error => Object.assign(new Error(`No such file: ${path}`), { code: 2 });
 
     const check = (method: string): void => {
-        const error = server.fail[method];
+        const error = server.fail[method] ?? server.fail["*"];
 
         if (error) {
             throw error;
@@ -179,6 +180,21 @@ describe("sftp storage against an in-memory SFTP server", () => {
         await rm(metaDirectory, { force: true, recursive: true });
     });
 
+    describeStorageContract(
+        () => {
+            return {
+                createStorage: (options) => createStorage({ retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    server.fail = failing ? { "*": new Error("Permission denied") } : {};
+                },
+                hasObject: (key) => server.files.has(`uploads/${key}`),
+                putObject: (key, content) => {
+                    server.files.set(`uploads/${key}`, { body: Buffer.from(content), modifyTime: Date.now() });
+                },
+            };
+        },
+    );
+
     it("should upload into a fresh directory tree and keep the metadata once completed", async () => {
         expect.assertions(3);
 
@@ -312,42 +328,6 @@ describe("sftp storage against an in-memory SFTP server", () => {
             "uploads/docs/b.txt",
         ]);
         await expect(createStorage({ rootFolderPath: "nowhere" }).list()).resolves.toStrictEqual([]);
-    });
-
-    it("should delete the object and metadata, and keep the metadata when the server fails", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const id = await upload(storage, "hello");
-
-        server.fail.delete = new Error("Permission denied");
-
-        await expect(storage.delete({ id })).rejects.toThrow("Permission denied");
-        await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
-
-        server.fail = {};
-
-        await expect(storage.delete({ id })).resolves.toMatchObject({ status: "deleted" });
-        expect(server.files.size).toBe(0);
-    });
-
-    it("should purge expired uploads", async () => {
-        expect.assertions(3);
-
-        const storage = createStorage({ expiration: { maxAge: "1h" }, filename: (file) => `docs/${file.originalName}` });
-        const id = await upload(storage, "old");
-
-        vi.useFakeTimers({ now: Date.now() + 2 * 60 * 60 * 1000 });
-
-        try {
-            const purged = await storage.purge();
-
-            expect(purged.items.map((item) => item.id)).toStrictEqual([id]);
-            expect(server.files.size).toBe(0);
-            await expect(storage.getMeta(id)).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
-        } finally {
-            vi.useRealTimers();
-        }
     });
 
     it("should turn a cancelled operation into an AbortError", async () => {

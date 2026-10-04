@@ -1,5 +1,5 @@
 import { Readable } from "node:stream";
-import { buffer, text } from "node:stream/consumers";
+import { buffer } from "node:stream/consumers";
 
 import { BlobServiceClient } from "@azure/storage-blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import AzureStorage from "../../../src/storage/azure/azure-storage";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 vi.mock(import("@azure/storage-blob"), async (importOriginal) => {
     const actual = await importOriginal();
@@ -253,7 +254,7 @@ const createAzure = () => {
         },
     };
 
-    return { blobs, service, state };
+    return { blobs, put, service, state };
 };
 
 type Azure = ReturnType<typeof createAzure>;
@@ -284,6 +285,21 @@ describe("azure storage against an in-memory container", () => {
     afterEach(() => {
         vi.clearAllMocks();
     });
+
+    describeStorageContract(
+        () => {
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    azure.state.fail = failing ? () => statusError(403, "AuthorizationFailure") : undefined;
+                },
+                hasObject: (key) => azure.blobs.has(key),
+                putObject: (key, content) => {
+                    azure.put(key, Buffer.from(content), {});
+                },
+            };
+        },
+    );
 
     it("should write a chunked upload, resume after an interrupted chunk and keep its metadata", async () => {
         expect.assertions(7);
@@ -346,21 +362,6 @@ describe("azure storage against an in-memory container", () => {
 
         expect(second.id).toBe(first.id);
         expect(second.bytesWritten).toBe(2);
-    });
-
-    it("should read a finished upload with get and getStream", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const id = await upload(storage, "hello");
-
-        const file = await storage.get({ id });
-        const { headers, size, stream } = await storage.getStream({ id });
-
-        expect(file).toMatchObject({ contentType: "text/plain", id, originalName: "a.txt", size: 5 });
-        expect(file.content.toString()).toBe("hello");
-        expect([size, headers?.["Content-Type"]]).toStrictEqual([5, "text/plain"]);
-        await expect(text(stream)).resolves.toBe("hello");
     });
 
     it("should tell a missing blob from a deleted one", async () => {
@@ -497,24 +498,6 @@ describe("azure storage against an in-memory container", () => {
         await expect(storage.list().then((files) => files.map((file) => file.id))).resolves.toStrictEqual([id]);
     });
 
-    it("should delete the blob and its metadata, and keep the metadata when the blob delete fails", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const kept = await upload(storage, "keep");
-        const gone = await upload(storage, "gone");
-
-        await storage.delete({ id: gone });
-
-        expect([azure.blobs.has(gone), azure.blobs.has(`${gone}.META`)]).toStrictEqual([false, false]);
-
-        azure.state.fail = (operation) => (operation === "delete" ? statusError(503, "ServerBusy") : undefined);
-
-        await expect(storage.delete({ id: kept })).rejects.toThrow("ServerBusy");
-        await expect(storage.getMeta(kept)).resolves.toMatchObject({ id: kept });
-        expect(azure.blobs.has(kept)).toBe(true);
-    });
-
     it("should delete in a batch, keeping the metadata of failed sub-requests", async () => {
         expect.assertions(4);
 
@@ -545,26 +528,6 @@ describe("azure storage against an in-memory container", () => {
         expect(result.failed.map((failure) => failure.id)).toStrictEqual(["missing"]);
         expect(azure.blobs.has(id)).toBe(false);
         await expect(storage.deleteBatch([])).resolves.toMatchObject({ successfulCount: 0 });
-    });
-
-    it("should refuse writes to an expired upload and purge old ones", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage({ expiration: { maxAge: "1h" } });
-        const expired = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 4, ttl: -1000 });
-
-        await expect(storage.write({ body: Readable.from([Buffer.from("ab")]), contentLength: 2, id: expired.id, start: 0 })).rejects.toMatchObject({
-            UploadErrorCode: "Gone",
-        });
-
-        const old = await createdAgo(2 * HOUR, async () => upload(storage, "old", "old"));
-        const fresh = await upload(storage, "new", "new");
-
-        const purged = await storage.purge();
-
-        expect(purged.items.map((item) => item.id)).toStrictEqual([old]);
-        expect([azure.blobs.has(old), azure.blobs.has(`${old}.META`)]).toStrictEqual([false, false]);
-        expect(azure.blobs.has(fresh)).toBe(true);
     });
 
     it("should purge an expired upload stored under a custom filename", async () => {

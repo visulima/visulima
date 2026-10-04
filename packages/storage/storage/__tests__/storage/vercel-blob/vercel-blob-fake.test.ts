@@ -8,11 +8,12 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import type { File } from "../../../src/storage/utils/file";
 import VercelBlobStorage from "../../../src/storage/vercel-blob/vercel-blob-storage";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 /**
  * In-memory Vercel Blob store at https://blob.test, keyed by pathname. Like the real service it
  * refuses to overwrite an existing pathname, and `head`/`del` take a pathname or a blob URL.
- * `failNext` makes the next call to an SDK function throw, to inject failures.
+ * `failNext` makes the next call to an SDK function throw, `failing.all` every call, to inject failures.
  */
 const blob = vi.hoisted(() => {
     class BlobNotFoundError extends Error {}
@@ -38,7 +39,12 @@ const blob = vi.hoisted(() => {
             url: `${base}${pathname}`,
         };
     };
+    const failing = { all: false };
     const failure = (name: string): void => {
+        if (failing.all) {
+            throw new Error("Vercel Blob: Access denied, please provide a valid token for this resource.");
+        }
+
         const error = failNext.get(name);
 
         if (error) {
@@ -69,6 +75,7 @@ const blob = vi.hoisted(() => {
 
             store.delete(toPathname(urlOrPathname));
         },
+        failing,
         failNext,
         head: async (urlOrPathname: string) => {
             failure("head");
@@ -141,6 +148,25 @@ describe("vercel-blob against an in-memory blob store", () => {
         vi.unstubAllGlobals();
         vi.useRealTimers();
     });
+
+    describeStorageContract(
+        () => {
+            return {
+                // Stored under the upload id: the other tests' `filename` would give every upload the same pathname.
+                createStorage: (options) =>
+                    new VercelBlobStorage({ metaStorage: new MemoryMetaStorage(), retryConfig: { maxRetries: 0 }, token: "vercel_blob_rw_test", ...options }),
+                failBackend: (failing) => {
+                    blob.failing.all = failing;
+                },
+                hasObject: (key) => blob.store.has(key),
+                putObject: (key, content) => {
+                    blob.store.set(key, { body: new TextEncoder().encode(content), contentType: "text/plain", uploadedAt: new Date() });
+                },
+            };
+        },
+        // Covered below: `get` reads only uploads, and a copied blob has no upload metadata.
+        { "copy and move": "get reads only uploads with metadata" },
+    );
 
     it("should store a whole-file upload and keep its metadata once completed", async () => {
         expect.assertions(5);
@@ -307,23 +333,6 @@ describe("vercel-blob against an in-memory blob store", () => {
         }
 
         expect(keys).toStrictEqual(["uploads/1.txt", "uploads/2.txt", "uploads/3.txt", "uploads/4.txt", "uploads/5.txt"]);
-    });
-
-    it("should delete the blob and its metadata, and keep the metadata when the delete fails", async () => {
-        expect.assertions(5);
-
-        const metaStore = new Map<string, File>();
-        const storage = createStorage(metaStore);
-        const id = await upload(storage, "d.txt", "delete me");
-
-        blob.failNext.set("del", new Error("Vercel Blob: service unavailable"));
-
-        await expect(storage.delete({ id })).rejects.toThrow("service unavailable");
-        expect(metaStore.has(id)).toBe(true);
-
-        await expect(storage.delete({ id })).resolves.toMatchObject({ status: "deleted" });
-        expect(blob.store.size + metaStore.size).toBe(0);
-        await expect(storage.delete({ id })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
     });
 
     it("should delete an upload that never received content", async () => {

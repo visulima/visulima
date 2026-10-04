@@ -8,6 +8,7 @@ import PocketBaseStorage from "../../../src/storage/pocketbase/pocketbase-storag
 import type { PocketBaseClientLike, PocketBaseRecord, PocketBaseStorageOptions } from "../../../src/storage/pocketbase/types";
 import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Row = PocketBaseRecord & { created: string; file: string; key: string; updated: string };
 
@@ -16,7 +17,7 @@ const pbDate = (date: Date): string => date.toISOString().replace("T", " ");
 /**
  * In-memory PocketBase collection "uploads" (key field `key`, file field `file`) plus the file server
  * behind `files.getURL`, answered through a stubbed global fetch. `fail` makes the next call of a
- * collection operation throw.
+ * collection operation throw, `failing.all` every call.
  */
 const createPocketBase = () => {
     const records = new Map<string, Row>();
@@ -25,7 +26,12 @@ const createPocketBase = () => {
     let counter = 0;
 
     const notFound = (): Error => Object.assign(new Error("The requested resource wasn't found."), { status: 404 });
+    const failing = { all: false };
     const take = (operation: "delete" | "getFirstListItem" | "getList"): void => {
+        if (failing.all) {
+            throw Object.assign(new Error("Something went wrong."), { status: 500 });
+        }
+
         const failure = fail.get(operation);
 
         if (failure) {
@@ -112,7 +118,7 @@ const createPocketBase = () => {
         });
     };
 
-    return { blobs, client, fail, fetch, records };
+    return { blobs, client, fail, failing, fetch, records };
 };
 
 let pb: ReturnType<typeof createPocketBase>;
@@ -145,6 +151,26 @@ describe("pocketbase against an in-memory collection", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
+
+    describeStorageContract(
+        () => {
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    pb.failing.all = failing;
+                },
+                hasObject: (key) => content(key) !== undefined,
+                putObject: async (key, data) => {
+                    const form = new FormData();
+
+                    form.append("key", key);
+                    form.append("file", new Blob([data], { type: "text/plain" }));
+
+                    await pb.client.collection("uploads").create(form);
+                },
+            };
+        },
+    );
 
     it("should store a whole-file upload as one record and keep its metadata after completion", async () => {
         expect.assertions(4);
@@ -233,17 +259,6 @@ describe("pocketbase against an in-memory collection", () => {
         await expect(storage.getCompletedFile(id)).rejects.toThrow(/answered 503/);
     });
 
-    it("should answer GONE for an expired upload instead of serving it", async () => {
-        expect.assertions(1);
-
-        const storage = createStorage();
-        const id = await upload(storage, "stale");
-
-        await storage.saveMeta(Object.assign(await storage.getMeta(id), { expiredAt: Date.now() - 1000 }));
-
-        await expect(storage.get({ id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.GONE });
-    });
-
     it("should report a record without a downloadable file as FILE_NOT_FOUND", async () => {
         expect.assertions(1);
 
@@ -284,24 +299,6 @@ describe("pocketbase against an in-memory collection", () => {
 
         await expect(storage.list().then((files) => files.map((file) => file.id))).resolves.toStrictEqual(ids);
         await expect(storage.list(1).then((files) => files.map((file) => file.id))).resolves.toStrictEqual([ids[0]]);
-    });
-
-    it("should delete the record and its metadata, and keep the metadata when the delete fails", async () => {
-        expect.assertions(4);
-
-        const storage = createStorage();
-        const kept = await upload(storage, "keep");
-        const gone = await upload(storage, "gone");
-
-        pb.fail.set("delete", Object.assign(new Error("Something went wrong."), { status: 500 }));
-
-        await expect(storage.delete({ id: kept })).rejects.toThrow(/went wrong/);
-        await expect(storage.getMeta(kept)).resolves.toMatchObject({ status: "completed" });
-
-        await storage.delete({ id: gone });
-
-        expect(content(gone)).toBeUndefined();
-        await expect(storage.getMeta(gone)).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
     });
 
     it("should delete a key without metadata and treat an already-missing record as deleted", async () => {

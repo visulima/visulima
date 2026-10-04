@@ -22,6 +22,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { createS3State } from "../../__helpers__/s3-state";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 vi.mock(import("aws-crt"));
 
@@ -168,7 +169,7 @@ const createS3 = () => {
         return {};
     };
 
-    return { objects: bucket.objects, send, sent, state, uploads: bucket.uploads };
+    return { objects: bucket.objects, put: bucket.put, send, sent, state, uploads: bucket.uploads };
 };
 
 const createStorage = (config: Partial<ConstructorParameters<typeof S3Storage>[0]> = {}): S3Storage =>
@@ -199,6 +200,21 @@ describe("s3Storage against an in-memory S3", () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
+
+    describeStorageContract(
+        () => {
+            return {
+                createStorage,
+                failBackend: (failing) => {
+                    s3.state.override = failing ? () => s3Error("InternalError", 500) : undefined;
+                },
+                hasObject: (key) => s3.objects.has(key),
+                putObject: (key, content) => {
+                    s3.put(key, Buffer.from(content));
+                },
+            };
+        },
+    );
 
     it("should resume a multipart upload on a fresh instance after a failed part, and keep the metadata on completion", async () => {
         expect.assertions(7);
@@ -399,24 +415,6 @@ describe("s3Storage against an in-memory S3", () => {
 
         await expect(storage.list()).rejects.toMatchObject({ name: "AccessDenied" });
         await expect(storage.listDirectory({ delimiter: "/" })).rejects.toMatchObject({ name: "AccessDenied" });
-    });
-
-    it("should delete the object with its metadata, and keep the metadata when that fails", async () => {
-        expect.assertions(5);
-
-        const storage = createStorage();
-        const id = await upload(storage, "hello");
-
-        s3.state.override = (command) => (command instanceof DeleteObjectCommand && command.input.Key === id ? s3Error("AccessDenied", 403) : undefined);
-
-        await expect(storage.delete({ id })).rejects.toMatchObject({ name: "AccessDenied" });
-        expect(s3.objects.has(`${id}.META`)).toBe(true);
-
-        s3.state.override = undefined;
-
-        await expect(storage.delete({ id })).resolves.toMatchObject({ status: "deleted" });
-        expect([...s3.objects.keys()]).toStrictEqual([]);
-        await expect(storage.delete({ id })).rejects.toBeDefined();
     });
 
     it("should abort an unfinished upload, keep its metadata when aborting fails, and drop it when the upload is gone", async () => {

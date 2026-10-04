@@ -6,6 +6,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import OneDriveStorage from "../../../src/storage/onedrive/onedrive-storage";
 import type { OneDriveStorageOptions } from "../../../src/storage/onedrive/types";
+import { describeStorageContract } from "../../__helpers__/storage-contract";
 import { createGraph } from "./graph-fake";
 
 const createStorage = (graph: ReturnType<typeof createGraph>, options: Partial<OneDriveStorageOptions> = {}): OneDriveStorage =>
@@ -29,6 +30,25 @@ describe("onedrive against an in-memory Graph drive", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
     });
+
+    describeStorageContract(
+        () => {
+            const graph = createGraph();
+
+            vi.stubGlobal("fetch", graph.fetch);
+
+            return {
+                createStorage: (options) => createStorage(graph, { retryConfig: { maxRetries: 0 }, ...options }),
+                failBackend: (failing) => {
+                    graph.state.override = failing ? () => Response.json({ error: { code: "accessDenied", message: "denied" } }, { status: 403 }) : undefined;
+                },
+                hasObject: (key) => graph.items.has(`uploads/${key}`),
+                putObject: (key, content) => {
+                    graph.put(`uploads/${key}`, Buffer.from(content), "text/plain");
+                },
+            };
+        },
+    );
 
     it("should store an upload under the root folder and keep its metadata once completed", async () => {
         expect.assertions(5);
@@ -191,43 +211,6 @@ describe("onedrive against an in-memory Graph drive", () => {
         await upload(nested, "hi");
 
         await expect(nested.list().then((listed) => listed.map((file) => file.id))).resolves.toContain("user/456/report.txt");
-    });
-
-    it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {
-        expect.assertions(5);
-
-        const graph = createGraph();
-        const storage = createStorage(graph);
-        const kept = await upload(storage, "kept");
-        const gone = await upload(storage, "gone");
-
-        graph.state.override = (method) => (method === "DELETE" ? Response.json({ error: { code: "accessDenied" } }, { status: 403 }) : undefined);
-
-        await expect(storage.delete({ id: kept })).rejects.toMatchObject({ statusCode: 403 });
-        await expect(storage.exists({ id: kept })).resolves.toBe(true);
-
-        graph.state.override = undefined;
-
-        await expect(storage.delete({ id: gone })).resolves.toMatchObject({ status: "deleted" });
-        expect(graph.items.has(`uploads/${gone}`)).toBe(false);
-        await expect(storage.exists({ id: gone })).resolves.toBe(false);
-    });
-
-    it("should purge expired uploads together with their metadata", async () => {
-        expect.assertions(3);
-
-        const graph = createGraph();
-        const storage = createStorage(graph, { expiration: { maxAge: "1h" } });
-        const old = await upload(storage, "old");
-        const fresh = await upload(storage, "fresh");
-
-        await storage.update({ id: old }, { createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() });
-
-        const purged = await storage.purge();
-
-        expect(purged.items.map((item) => item.id)).toStrictEqual([old]);
-        expect([...graph.items.keys()]).toStrictEqual([`uploads/${fresh}`]);
-        await expect(storage.exists({ id: old })).resolves.toBe(false);
     });
 
     it("should hand out read and upload-session URLs", async () => {
