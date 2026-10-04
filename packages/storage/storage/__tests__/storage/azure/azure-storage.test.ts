@@ -48,6 +48,7 @@ describe(AzureStorage, () => {
         // Create mock container client
         mockContainerClient = {
             getBlockBlobClient: vi.fn().mockReturnValue(mockBlobClient),
+            listBlobsFlat: vi.fn(),
         } as unknown as ContainerClient;
 
         // Mock BlobServiceClient constructor to return our mock instance
@@ -138,6 +139,55 @@ describe(AzureStorage, () => {
         });
     });
 
+    describe(".list()", () => {
+        const listing = (names: string[]): void => {
+            vi.mocked(mockContainerClient.listBlobsFlat).mockReturnValue({
+                byPage: () => {
+                    return {
+                        next: async () => {
+                            return {
+                                value: {
+                                    segment: {
+                                        blobItems: names.map((name) => {
+                                            return { deleted: false, name, properties: { createdOn: new Date(), lastModified: new Date() } };
+                                        }),
+                                    },
+                                },
+                            };
+                        },
+                    };
+                },
+            } as unknown as ReturnType<ContainerClient["listBlobsFlat"]>);
+        };
+
+        it("skips the metadata sidecars stored in the same container", async () => {
+            expect.assertions(1);
+
+            listing(["a.bin", "a.bin.META"]);
+
+            await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id: "a.bin" })]);
+        });
+
+        it("lists under root and assetFolder and returns ids that round-trip", async () => {
+            expect.assertions(3);
+
+            const scoped = new AzureStorage({ ...options, assetFolder: "assets", root: "/tenant/" });
+
+            listing(["tenant/assets/a.bin"]);
+
+            const files = await scoped.list();
+
+            expect(mockContainerClient.listBlobsFlat).toHaveBeenCalledWith(
+                expect.objectContaining({ prefix: "tenant/assets/" }),
+            );
+            expect(files.map((file) => file.id)).toStrictEqual(["a.bin"]);
+
+            await scoped.getCompletedFile("a.bin").catch(() => undefined);
+
+            expect(mockContainerClient.getBlockBlobClient).toHaveBeenLastCalledWith("tenant/assets/a.bin");
+        });
+    });
+
     describe(".write()", () => {
         const blockId = (offset: number): string => Buffer.from(`visulima-${String(offset).padStart(16, "0")}`).toString("base64");
         const chunk = (length: number): Readable => Readable.from(Buffer.alloc(length));
@@ -167,11 +217,12 @@ describe(AzureStorage, () => {
         });
 
         it("commits the contiguous block chain in offset order with the blob headers on completion", async () => {
-            expect.assertions(5);
+            expect.assertions(6);
 
             vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, size: 20 });
 
             const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             (mockBlobClient.getBlockList as ReturnType<typeof vi.fn>).mockResolvedValue({
                 uncommittedBlocks: [
@@ -193,7 +244,9 @@ describe(AzureStorage, () => {
                     metadata: expect.objectContaining({ originalName: metafile.originalName }),
                 }),
             );
-            expect(deleteMeta).toHaveBeenCalledWith(metafile.id);
+            // Completed uploads keep their metadata.
+            expect(deleteMeta).not.toHaveBeenCalled();
+            expect(saveMeta).toHaveBeenCalledWith(expect.objectContaining({ id: metafile.id, status: "completed" }));
             expect(file.bytesWritten).toBe(20);
         });
 

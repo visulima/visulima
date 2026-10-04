@@ -97,7 +97,7 @@ class AzureStorage extends BaseStorage {
 
         this.containerClient = this.client.getContainerClient(config.containerName);
 
-        this.root = config.root ? normalize(config.root).replace(/^\//, "") : "";
+        this.root = config.root ? normalize(config.root).replaceAll(/^\/+|\/+$/g, "") : "";
 
         // Initialize retry wrapper with config or defaults
         const retryConfig: RetryConfig = {
@@ -462,12 +462,11 @@ class AzureStorage extends BaseStorage {
                         const response = await this.commitBlocks(blobClient, file, options);
 
                         file.uri = response._response.headers.get("location");
-
-                        await this.deleteMeta(file.id);
-                    } else {
-                        // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
-                        await this.saveMeta(file);
                     }
+
+                    // Completed uploads keep their metadata. Persist the offset after every partial write: HEAD
+                    // reports it and the next PATCH is checked against it.
+                    await this.saveMeta(file);
                 }
             } finally {
                 await this.unlock(part.id, lockToken);
@@ -478,7 +477,7 @@ class AzureStorage extends BaseStorage {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -630,6 +629,7 @@ class AzureStorage extends BaseStorage {
                 // Declare truncated as a flag that the while loop is based on.
                 let truncated = true;
                 let token: string | undefined;
+                const prefix = this.getFullPath("");
 
                 while (truncated && files.length < limit) {
                     try {
@@ -639,7 +639,7 @@ class AzureStorage extends BaseStorage {
                                 .listBlobsFlat({
                                     abortSignal: signal,
                                     includeMetadata: true,
-                                    prefix: this.root,
+                                    prefix,
                                 })
                                 .byPage({ continuationToken: token, maxPageSize: pageSize })
                                 .next(),
@@ -648,13 +648,14 @@ class AzureStorage extends BaseStorage {
 
                         if (response !== undefined && "segment" in response) {
                             for (const blob of response.segment.blobItems as BlobItem[]) {
-                                if (blob.deleted) {
+                                // Upload metadata sidecars share the container with the files.
+                                if (blob.deleted || (this.meta instanceof AzureMetaStorage && blob.name.endsWith(this.meta.suffix))) {
                                     continue;
                                 }
 
                                 files.push({
                                     createdAt: blob.properties.createdOn,
-                                    id: blob.name,
+                                    id: blob.name.slice(prefix.length),
                                     modifiedAt: blob.properties.lastModified,
                                 } as AzureFile);
 
@@ -778,16 +779,14 @@ class AzureStorage extends BaseStorage {
     }
 
     /**
-     * Prefixes the given filePath with the storage root location (assetFolder if configured).
+     * Prefixes the given filePath with the `root` path and the `assetFolder`, when configured.
      * @param filePath Relative file path to prefix.
-     * @returns Full path with asset folder prefix if configured, otherwise returns original path.
+     * @returns The blob name.
      */
     private getFullPath(filePath: string): string {
-        if (this.assetFolder !== undefined) {
-            return `${this.assetFolder}/${filePath}`;
-        }
+        const prefix = [this.root, this.assetFolder].filter(Boolean).join("/");
 
-        return filePath;
+        return prefix ? `${prefix}/${filePath}` : filePath;
     }
 
     /**
