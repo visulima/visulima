@@ -211,17 +211,23 @@ export const safeInvoke = (callback: ((argument: unknown) => void) | undefined, 
  * Decide whether a destination object still matches its source counterpart. Prefers strong signals
  * (size, then etag) and falls back to modification time; when nothing is comparable it treats the
  * pair as matching so a metadata-poor adapter doesn't force endless re-uploads.
+ *
+ * Pass `compareEtags: false` when the two sides run different adapters: ETag formats differ across
+ * providers (S3 multipart `-N` suffixes, GCS/Azure encodings), so a cross-provider ETag mismatch says
+ * nothing about the content. Matching sizes are then confirmed by modification time when available.
  */
-export const objectsMatch = (source: FileObject, destination: FileObject): boolean => {
-    if (typeof source.size === "number" && typeof destination.size === "number" && source.size !== destination.size) {
+export const objectsMatch = (source: FileObject, destination: FileObject, compareEtags = true): boolean => {
+    const sizesKnown = typeof source.size === "number" && typeof destination.size === "number";
+
+    if (sizesKnown && source.size !== destination.size) {
         return false;
     }
 
-    if (source.etag && destination.etag) {
+    if (compareEtags && source.etag && destination.etag) {
         return source.etag === destination.etag;
     }
 
-    if (typeof source.size === "number" && typeof destination.size === "number") {
+    if (sizesKnown && compareEtags) {
         // Sizes match and there is no etag to contradict them.
         return true;
     }

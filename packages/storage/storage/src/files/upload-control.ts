@@ -1,4 +1,4 @@
-import type { Readable } from "node:stream";
+import { Transform } from "node:stream";
 
 import type { UploadControlState, UploadControlToken } from "./types";
 
@@ -30,9 +30,8 @@ export class UploadControl {
 
     private loadedBytes: number;
 
-    private startPaused = false;
-
-    private boundStream?: Readable;
+    /** Chunks held by the gate while paused; released in order on `resume()`. */
+    private heldChunks: (() => void)[] = [];
 
     public constructor(initial?: { key?: string; loaded?: number }) {
         this.loadedBytes = initial?.loaded ?? 0;
@@ -66,16 +65,13 @@ export class UploadControl {
     public pause(): void {
         if (this.internalState === "uploading" || this.internalState === "idle") {
             this.internalState = "paused";
-            this.startPaused = true;
-            this.boundStream?.pause();
         }
     }
 
     public resume(): void {
         if (this.internalState === "paused") {
             this.internalState = "uploading";
-            this.startPaused = false;
-            this.boundStream?.resume();
+            this.releaseHeldChunks();
         }
     }
 
@@ -83,6 +79,7 @@ export class UploadControl {
         if (this.internalState !== "completed" && this.internalState !== "aborted") {
             this.internalState = "aborted";
             this.controller.abort(reason);
+            this.releaseHeldChunks();
         }
     }
 
@@ -91,20 +88,40 @@ export class UploadControl {
     }
 
     /**
-     * Attach the live body stream so `pause()`/`resume()` can drive its backpressure. Called by
-     * {@link Files.upload}; not part of the stable public surface.
+     * Start the upload and return a gate stream to pipe the body through. While paused, the gate
+     * holds the next chunk, so backpressure stops the source no matter how the adapter consumes the
+     * stream (`pipe()` and async iteration both bypass `Readable#pause()`). A pause issued before
+     * the upload starts therefore holds too. Called by {@link Files.upload}; not part of the stable
+     * public surface.
      * @internal
      */
-    public _bind(stream: Readable, key: string): void {
-        this.boundStream = stream;
+    public _bind(key: string): Transform {
         this.key ??= key;
 
-        if (this.internalState !== "aborted") {
-            this.internalState = this.startPaused ? "paused" : "uploading";
+        if (this.internalState === "idle") {
+            this.internalState = "uploading";
         }
 
-        if (this.startPaused) {
-            stream.pause();
+        return new Transform({
+            transform: (chunk: Buffer, _encoding, callback) => {
+                if (this.internalState === "paused") {
+                    this.heldChunks.push(() => {
+                        callback(undefined, chunk);
+                    });
+                } else {
+                    callback(undefined, chunk);
+                }
+            },
+        });
+    }
+
+    private releaseHeldChunks(): void {
+        const held = this.heldChunks;
+
+        this.heldChunks = [];
+
+        for (const release of held) {
+            release();
         }
     }
 
@@ -117,14 +134,12 @@ export class UploadControl {
     }
 
     /**
-     * Mark the upload finished; releases the stream reference.
+     * Mark the upload finished.
      * @internal
      */
     public _complete(): void {
         if (this.internalState !== "aborted") {
             this.internalState = "completed";
         }
-
-        this.boundStream = undefined;
     }
 }

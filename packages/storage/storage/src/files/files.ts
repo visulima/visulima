@@ -1,5 +1,5 @@
 import type { Readable } from "node:stream";
-import { PassThrough } from "node:stream";
+import { PassThrough, pipeline } from "node:stream";
 
 import { BaseStorage } from "../storage/storage";
 import type { OperationOptions } from "../storage/types";
@@ -123,7 +123,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
     /**
      * Derive a read-only view sharing this instance's adapter, prefix, defaults, and hooks. Every
-     * mutating call on the returned client fails with `FilesError { code: "ReadOnly" }` before the
+     * mutating call on the returned client fails with an `UploadError` whose `UploadErrorCode` is `"ReadOnly"` before the
      * adapter is touched. Cheaper and safer than handing a writable client to code that should only
      * read.
      * @example
@@ -260,6 +260,19 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
     }
 
+    /**
+     * Report an operation that runs outside this instance (the top-level `transfer` helper) through
+     * its hooks. Not part of the stable public surface.
+     * @internal
+     */
+    public _emitHook(type: HookActionType, partial: Omit<HookEvent, "error" | "type">, error?: Error): void {
+        if (error) {
+            this.emitError(type, partial, error);
+        } else {
+            this.emitAction(type, partial);
+        }
+    }
+
     private async withHooks<R>(type: HookActionType, partial: Omit<HookEvent, "durationMs" | "error" | "type">, run: () => Promise<R>): Promise<R> {
         const started = Date.now();
 
@@ -313,7 +326,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             BaseStorage.assertSafeId(resolved);
 
-            const { size: normalizedSize, stream } = await normalizeBody(body, options?.size);
+            const { size: normalizedSize, stream: source } = await normalizeBody(body, options?.size);
             const size = options?.size ?? normalizedSize;
 
             const userMetadata = options?.metadata ?? {};
@@ -325,7 +338,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             };
 
             // Fold the control's abort signal into the operation so abort() cancels the adapter call,
-            // and bind the body stream so pause()/resume() can drive its backpressure.
+            // and route the body through the control's gate so pause()/resume() drive its backpressure.
             const perCall: (OperationOptions & UploadOptions) | undefined = control
                 ? { ...options, signal: options?.signal ? AbortSignal.any([options.signal, control.signal]) : control.signal }
                 : options;
@@ -333,7 +346,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const operationOptions = this.mergeOptions(perCall, { key, type: "upload" });
             const multipart = options?.multipart;
 
-            control?._bind(stream, key);
+            // pipeline (not pipe) so a source error tears down the gate the adapter is reading.
+            const stream: Readable = control ? pipeline(source, control._bind(key), () => {}) : source;
 
             const file = await this.adapter.create(
                 {
@@ -490,7 +504,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
 
         if (!this.adapter.supportsRange) {
-            throw new Error(`Adapter ${this.adapter.constructor.name} does not support range downloads`);
+            throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `Adapter ${this.adapter.constructor.name} does not support range downloads`);
         }
     }
 
@@ -872,12 +886,15 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
     private async moveOne(from: string, to: string, options: (OperationOptions & { storageClass?: string }) | undefined): Promise<FileObject> {
         return this.withHooks("move", { from, to }, async () => {
             const resolvedFrom = this.resolveKey(from);
+            const resolvedTo = this.resolveKey(to);
 
             BaseStorage.assertSafeId(resolvedFrom);
+            BaseStorage.assertSafeId(resolvedTo);
 
-            // No-op when source and destination match: read meta directly so we don't emit a
-            // second `head` hook event for what the caller invoked as a `move`.
-            if (from === to) {
+            // No-op when source and destination resolve to the same object (`"a"` vs `"/a"`): a
+            // copy-then-delete adapter would otherwise delete the object it just "moved". Read meta
+            // directly so we don't emit a second `head` hook event for what the caller invoked as a `move`.
+            if (resolvedFrom === resolvedTo) {
                 const file = await this.adapter.getMeta(resolvedFrom, this.mergeOptions(options, { from, to, type: "move" }));
                 const result = toFileObject(file, resolvedFrom);
 
@@ -885,10 +902,6 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
                 return result;
             }
-
-            const resolvedTo = this.resolveKey(to);
-
-            BaseStorage.assertSafeId(resolvedTo);
 
             const adapterOptions: OperationOptions & { storageClass?: string } = {
                 ...this.mergeOptions(options, { from, to, type: "move" }),
@@ -1063,10 +1076,11 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * constructor prefix stripped off and out-of-namespace keys are filtered out, just like
      * {@link Files.list}.
      *
-     * Most adapters return all objects in a single `list()` call (the default `limit` is 1000),
-     * so this is effectively `list` + iteration for them. Adapters that paginate natively can
-     * override `list` to honour the per-page `limit` and `listAll` will keep pulling pages until
-     * the page is short.
+     * `limit` is the initial page size (default 1000). Because `BaseStorage.list` has no cursor,
+     * each further round re-lists with a doubled limit and yields only the new keys, until the
+     * adapter returns fewer objects than requested. Adapters whose `list(limit)` is capped by a
+     * single provider call (no internal paging) cannot be walked past that cap; when a full page
+     * brings no new keys, the walk throws instead of truncating silently.
      * @example
      * ```ts
      * for await (const file of files.listAll({ prefix: "avatars/" })) {
@@ -1083,44 +1097,55 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         let errored: Error | undefined;
 
         try {
-            // Most adapters answer with everything in a single call; a few paginate. We can't rely
-            // on `page.length < pageSize` to terminate — the abstract list() contract doesn't
-            // require honoring the limit, and several adapters (memory, disk) ignore it entirely.
-            // Terminate when an iteration yields zero *new* keys instead. Per-key dedup also guards
-            // against adapters that hand back the same set on each call.
+            // `BaseStorage.list(limit)` has no cursor: every call restarts from the first object, and
+            // paging adapters (S3, GCS, Azure, Box, OneDrive) page internally up to `limit`. Re-asking
+            // for the same `limit` would return the same first page forever, so grow the request each
+            // round and yield only keys not seen yet. A page shorter than the request means the
+            // listing is exhausted; a page longer than the request means the adapter ignores `limit`
+            // (memory, disk, FTP) and already returned everything.
+            // ponytail: re-lists from the start each round (~2x total listing work, O(n) key memory);
+            // replace with a cursor once BaseStorage.list grows one.
+            let requested = pageSize;
 
             while (true) {
-                const page = await this.adapter.list(pageSize, this.mergeOptions(operationOptions, { type: "listAll" }));
-                let yielded = 0;
+                const page = await this.adapter.list(requested, this.mergeOptions(operationOptions, { type: "listAll" }));
+                let fresh = 0;
 
                 for (const file of page) {
                     const object = toFileObject(file);
-                    const stripped = this.stripPrefix(object.key);
 
-                    if (stripped === null) {
-                        continue;
-                    }
-
-                    object.key = stripped;
-
-                    if (callerPrefix && !object.key.startsWith(callerPrefix)) {
-                        continue;
-                    }
-
+                    // Dedup on the raw adapter key so out-of-scope keys still count as progress.
                     if (seen.has(object.key)) {
                         continue;
                     }
 
                     seen.add(object.key);
-                    yielded += 1;
+                    fresh += 1;
+
+                    const stripped = this.stripPrefix(object.key);
+
+                    if (stripped === null || (callerPrefix && !stripped.startsWith(callerPrefix))) {
+                        continue;
+                    }
+
+                    object.key = stripped;
                     yield object;
                 }
 
-                // Exit once a page contributes no new keys: either the adapter is single-shot
-                // (`list` returns the whole set every call) or pagination is exhausted.
-                if (yielded === 0 || page.length < pageSize) {
+                if (page.length !== requested) {
                     break;
                 }
+
+                // A full page made only of keys we already have: the adapter is not advancing, so the
+                // rest of the listing is unreachable. Fail loudly instead of silently truncating the
+                // walk (and every transfer/sync built on it).
+                if (fresh === 0) {
+                    throw new Error(
+                        `listAll() cannot page past ${String(seen.size)} objects: ${this.adapter.constructor.name}.list(${String(requested)}) returned no new keys`,
+                    );
+                }
+
+                requested *= 2;
             }
         } catch (error: unknown) {
             const message = typeof error === "string" ? error : "Unknown error";
@@ -1147,7 +1172,16 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             BaseStorage.assertSafeId(resolved);
 
-            return this.adapter.getReadUrl(resolved, { ...this.mergeOptions(options, { key, type: "url" }), ...options });
+            // Spread only the URL fields over the merged options: spreading the whole per-call object
+            // would clobber the default signal and the hooks.onRetry wrapper.
+            const { expiresIn, responseContentDisposition, responseContentType } = options ?? {};
+
+            return this.adapter.getReadUrl(resolved, {
+                ...this.mergeOptions(options, { key, type: "url" }),
+                ...(expiresIn !== undefined && { expiresIn }),
+                ...(responseContentDisposition !== undefined && { responseContentDisposition }),
+                ...(responseContentType !== undefined && { responseContentType }),
+            });
         });
     }
 
@@ -1159,7 +1193,14 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             BaseStorage.assertSafeId(resolved);
 
-            return this.adapter.getUploadUrl(resolved, { ...this.mergeOptions(options, { key, type: "signedUploadUrl" }), ...options });
+            const { contentLength, contentType, expiresIn } = options ?? {};
+
+            return this.adapter.getUploadUrl(resolved, {
+                ...this.mergeOptions(options, { key, type: "signedUploadUrl" }),
+                ...(contentLength !== undefined && { contentLength }),
+                ...(contentType !== undefined && { contentType }),
+                ...(expiresIn !== undefined && { expiresIn }),
+            });
         });
     }
 }

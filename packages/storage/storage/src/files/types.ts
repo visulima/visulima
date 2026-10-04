@@ -279,7 +279,7 @@ export interface FilesOptions<TStorage extends BaseStorage = BaseStorage> {
 
     /**
      * When `true`, every mutating operation (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`)
-     * fails immediately with `FilesError { code: "ReadOnly" }` before the adapter is touched; reads
+     * fails immediately with an `UploadError` whose `UploadErrorCode` is `"ReadOnly"` before the adapter is touched; reads
      * (`download`, `head`, `exists`, `list`, `listAll`, `url`) pass through. Derive a locked view of
      * an existing client with {@link Files.readonly} instead of threading the flag manually.
      * @default false
@@ -450,7 +450,8 @@ export interface SyncOptions extends OperationOptions {
 
     /**
      * Delete destination keys that no longer exist on the source (mirror semantics). Pruning runs
-     * after the copy pass so a failed upload never triggers a delete of its counterpart.
+     * after the copy pass so a failed upload never triggers a delete of its counterpart. Cannot be
+     * combined with {@link SyncOptions.transformKey} — `sync` rejects with a `TypeError`.
      * @default false
      */
     prune?: boolean;
