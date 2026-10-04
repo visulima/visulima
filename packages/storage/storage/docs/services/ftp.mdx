@@ -1,0 +1,52 @@
+# FTP / FTPS
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+The FTP adapter (built on `basic-ftp`) maps keys onto remote paths under `rootFolderPath`. FTP has no metadata store, so upload metadata is kept as sidecar JSON on the local disk. A fresh connection is opened and closed around every operation; FTP control connections are single-session, so the adapter doesn't pool them.
+
+## Installation
+
+```sh
+npm install basic-ftp
+```
+
+```sh
+yarn add basic-ftp
+```
+
+```sh
+pnpm add basic-ftp
+```
+
+## Usage
+
+```ts
+import { FtpStorage } from "@visulima/storage/provider/ftp";
+
+const storage = new FtpStorage({
+    connection: {
+        host: "ftp.example.com",
+        user: process.env.FTP_USER,
+        password: process.env.FTP_PASSWORD,
+        secure: true, // FTPS
+    },
+    rootFolderPath: "uploads",
+});
+```
+
+## Configuration
+
+| Option              | Type                      | Description                                                                               | Default                |
+| ------------------- | ------------------------- | ----------------------------------------------------------------------------------------- | ---------------------- |
+| `connection`        | `AccessOptions`           | `basic-ftp` access options (`host`, `port`, `user`, `password`, `secure`, …). Required    | —                      |
+| `rootFolderPath`    | `string`                  | Remote directory acting as the bucket root; intermediate directories are created on write | connection working dir |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | Where the sidecar metadata is kept                                                        | OS temp directory      |
+
+## Behaviour
+
+- **Ranged reads** — `supportsRange` is `true`: `download({ range })` starts the transfer at the requested offset (FTP `REST`) and trims the end client-side.
+- **Single-shot writes** — each object is uploaded in one request. FTP has no remote append or seek, so a chunk that doesn't start at offset 0, or doesn't carry the whole file, is **rejected with `METHOD_NOT_ALLOWED`** rather than written (writing it would overwrite the earlier bytes or leave a truncated file). Resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request.
+- **No URLs** — `getReadUrl()` / `getUploadUrl()` reject with `METHOD_NOT_ALLOWED`; FTP has no signed-URL concept.
+- `write()` buffers the part in memory before uploading.

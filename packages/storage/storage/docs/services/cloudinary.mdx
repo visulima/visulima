@@ -1,0 +1,60 @@
+# Cloudinary
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+The Cloudinary adapter stores each object as a Cloudinary asset whose `public_id` is the key. Uploads go through `upload_stream` in one request. Read URLs are Cloudinary delivery URLs; Cloudinary has no presigned `PUT`, so `getUploadUrl` is not implemented.
+
+## Installation
+
+```sh
+npm install cloudinary
+```
+
+```sh
+yarn add cloudinary
+```
+
+```sh
+pnpm add cloudinary
+```
+
+## Usage
+
+```ts
+import { CloudinaryStorage } from "@visulima/storage/provider/cloudinary";
+
+const storage = new CloudinaryStorage({
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    resourceType: "image",
+});
+```
+
+Pass a pre-configured `cloudinary.v2` namespace with `client` to skip `cloudinary.config()`.
+
+## Configuration
+
+| Option                | Type                                       | Description                                                          | Default                                     |
+| --------------------- | ------------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------- |
+| `cloudName`           | `string`                                   | Cloud name                                                           | `CLOUDINARY_CLOUD_NAME` or `CLOUDINARY_URL` |
+| `apiKey`              | `string`                                   | API key                                                              | `CLOUDINARY_API_KEY` or `CLOUDINARY_URL`    |
+| `apiSecret`           | `string`                                   | API secret                                                           | `CLOUDINARY_API_SECRET` or `CLOUDINARY_URL` |
+| `client`              | `typeof cloudinary.v2`                     | Pre-configured SDK namespace                                         | —                                           |
+| `resourceType`        | `"raw" \| "image" \| "video"`              | Asset resource type; use `image` / `video` for media                 | `"raw"`                                     |
+| `type`                | `"upload" \| "private" \| "authenticated"` | Delivery type; `private` / `authenticated` need signed delivery URLs | `"upload"`                                  |
+| `secure`              | `boolean`                                  | Generate `https://` URLs                                             | `true`                                      |
+| `defaultUrlExpiresIn` | `number`                                   | Expiry (seconds) for signed URLs on non-public assets                | `3600`                                      |
+| `metaStorageConfig`   | `LocalMetaStorageOptions`                  | Where upload metadata is kept                                        | OS temp directory                           |
+
+## URL Generation
+
+- `getReadUrl(key, { expiresIn })` — for `type: "upload"` a public delivery URL; for `private` / `authenticated` a `private_download_url` that expires after `expiresIn`. `responseContentDisposition` / `responseContentType` are rejected with `BAD_REQUEST`.
+- `getUploadUrl()` — not implemented; rejects with `METHOD_NOT_ALLOWED`.
+
+## Limitations
+
+- Uploads are single-shot: the part is buffered and uploaded in one request, so resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request.
+- Per-operation `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.

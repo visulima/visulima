@@ -1,0 +1,62 @@
+# PocketBase
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+PocketBase is record-based. The adapter maps the object store onto one collection where each record holds exactly one file: a text field (`keyField`) holds the object key and a file field (`fileField`) holds the bytes. Uploads are sent as one multipart request.
+
+## Installation
+
+```sh
+npm install pocketbase
+```
+
+```sh
+yarn add pocketbase
+```
+
+```sh
+pnpm add pocketbase
+```
+
+Create the collection first (the adapter doesn't): a text field `key` and a single-file field `file`, or your own names via `keyField` / `fileField`.
+
+## Usage
+
+```ts
+import { PocketBaseStorage } from "@visulima/storage/provider/pocketbase";
+
+const storage = new PocketBaseStorage({
+    url: process.env.POCKETBASE_URL,
+    adminEmail: process.env.POCKETBASE_ADMIN_EMAIL,
+    adminPassword: process.env.POCKETBASE_ADMIN_PASSWORD,
+    collection: "uploads",
+});
+```
+
+## Configuration
+
+| Option                | Type                      | Description                                                         | Default                     |
+| --------------------- | ------------------------- | ------------------------------------------------------------------- | --------------------------- |
+| `collection`          | `string`                  | Collection backing the store (required)                             | —                           |
+| `url`                 | `string`                  | PocketBase instance URL                                             | `POCKETBASE_URL`            |
+| `adminEmail`          | `string`                  | Superuser email for lazy authentication                             | `POCKETBASE_ADMIN_EMAIL`    |
+| `adminPassword`       | `string`                  | Superuser password                                                  | `POCKETBASE_ADMIN_PASSWORD` |
+| `authToken`           | `string`                  | Pre-saved auth token (instead of email/password)                    | `POCKETBASE_AUTH_TOKEN`     |
+| `client`              | `PocketBase`              | Pre-built client, used as-is without authenticating                 | —                           |
+| `keyField`            | `string`                  | Text field holding the object key                                   | `"key"`                     |
+| `fileField`           | `string`                  | File field holding the bytes                                        | `"file"`                    |
+| `publicBaseUrl`       | `string`                  | `getReadUrl` returns `${publicBaseUrl}/${key}` without a file token | —                           |
+| `defaultUrlExpiresIn` | `number`                  | Advisory only; PocketBase controls file-token lifetime              | `3600`                      |
+| `metaStorageConfig`   | `LocalMetaStorageOptions` | Where upload metadata is kept                                       | OS temp directory           |
+
+## URL Generation
+
+- `getReadUrl(key)` — `${publicBaseUrl}/${key}` when set; otherwise the record's file URL with a freshly requested file token. `responseContentDisposition` / `responseContentType` are rejected with `METHOD_NOT_ALLOWED`.
+- `getUploadUrl()` — not implemented; rejects with `METHOD_NOT_ALLOWED`.
+
+## Limitations
+
+- Uploads are single-shot: the part is buffered and sent in one request, so resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request.
+- Per-operation `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.
