@@ -27,7 +27,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "./s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "./s3-api";
 
 // Use global ReadableStream type for interface compatibility
 type ReadableStream = globalThis.ReadableStream;

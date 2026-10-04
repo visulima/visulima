@@ -291,9 +291,6 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     protected locker: Locker;
 
-    /** Renewal timers of the held locks, by lock token. */
-    private readonly lockRenewals = new Map<string, ReturnType<typeof setInterval>>();
-
     /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
     private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
 
@@ -339,8 +336,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             this.assetFolder = normalize(options.assetFolder);
         }
 
+        // A write can outlast the lock TTL, so a held lock is renewed and another request can't take it
+        // over mid-write; a hung holder (a stalled body, a provider call without timeout) loses it
+        // after LOCK_MAX_HOLD_MS.
         this.locker = new Locker({
             max: 1000,
+            maxHoldMs: LOCK_MAX_HOLD_MS,
             ttl: LOCK_TTL_MS,
             ttlAutopurge: true,
         });
@@ -1366,25 +1367,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 
-        const token = this.locker.lock(key);
-
-        // A write can outlast the lock TTL; renew the lock until it is released, so another
-        // request can't take it over mid-write. Renewal stops after LOCK_MAX_HOLD_MS, so a hung
-        // holder (a stalled body, a provider call without timeout) can't lock the upload for good.
-        const lockedAt = Date.now();
-        const renewal = setInterval(() => {
-            if (this.locker.get(key) === token && Date.now() - lockedAt < LOCK_MAX_HOLD_MS) {
-                this.locker.set(key, token);
-            } else {
-                clearInterval(renewal);
-                this.lockRenewals.delete(token);
-            }
-        }, LOCK_TTL_MS / 3);
-
-        renewal.unref?.();
-        this.lockRenewals.set(token, renewal);
-
-        return token;
+        return this.locker.lock(key);
     }
 
     protected async unlock(key: string, token?: string): Promise<void> {
@@ -1396,8 +1379,6 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             return;
         }
 
-        clearInterval(this.lockRenewals.get(token));
-        this.lockRenewals.delete(token);
         this.locker.unlock(key, token);
     }
 

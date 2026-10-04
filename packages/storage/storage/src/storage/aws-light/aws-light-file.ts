@@ -1,4 +1,4 @@
-import type { Part } from "../aws/s3-base-storage";
+import type { Part } from "../aws/s3-api";
 import { File } from "../utils/file";
 
 class AwsLightFile extends File {

@@ -94,7 +94,7 @@ describe(MemoryStorage, () => {
         const storage = new MemoryStorage();
 
         // The lock TTL is measured on `performance.now()` by default, which fake timers don't drive.
-        Object.assign(storage, { locker: new Locker({ max: 1000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
+        Object.assign(storage, { locker: new Locker({ max: 1000, maxHoldMs: 15 * 60_000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
 
         await storage.withLock("upload", async () => {
             await vi.advanceTimersByTimeAsync(60_000);

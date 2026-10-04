@@ -3,7 +3,7 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
-import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-api";
 import type { AwsLightClientConfig } from "./types";
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
