@@ -218,6 +218,31 @@ describe(FirebaseStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from object metadata without downloading the content", async () => {
+            expect.assertions(5);
+
+            const storage = makeStorage();
+            const file = await storage.getCompletedFile("file.mp4");
+
+            expect(file).toMatchObject({ bytesWritten: 5, contentType: "video/mp4", ETag: "etag-1", id: "file.mp4", size: 5, status: "completed" });
+            expect(mockBucket.file).toHaveBeenCalledWith("file.mp4");
+            expect(gcsFile.getMetadata).toHaveBeenCalledTimes(1);
+            expect(gcsFile.download).not.toHaveBeenCalled();
+            expect(file?.path).toBe("file.mp4");
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage();
+
+            gcsFile.getMetadata.mockRejectedValueOnce(Object.assign(new Error("No such object"), { code: 404 }));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+        });
+    });
+
     describe(".delete()", () => {
         it("calls file.delete with ignoreNotFound", async () => {
             expect.assertions(2);
