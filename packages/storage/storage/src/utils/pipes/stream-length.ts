@@ -1,10 +1,18 @@
 import { Transform } from "node:stream";
 
+const STREAM_LENGTH_LIMIT = "ERR_STREAM_LENGTH_LIMIT";
+
+/**
+ * Whether an error is StreamLength's own "body is longer than the limit" error.
+ * @param error Stream error
+ * @returns `true` for the limit error
+ */
+export const isStreamLengthError = (error: unknown): boolean => (error as { code?: string } | null)?.code === STREAM_LENGTH_LIMIT;
+
 /**
  * Transform stream that tracks byte length and enforces size limits.
  * Counts total bytes passing through and optionally enforces a maximum limit.
  */
-
 class StreamLength extends Transform {
     public length = 0;
 
@@ -32,7 +40,7 @@ class StreamLength extends Transform {
 
             callback();
         } else {
-            callback(new Error("Stream length limit exceeded"));
+            callback(Object.assign(new Error("Stream length limit exceeded"), { code: STREAM_LENGTH_LIMIT }));
         }
     }
 }

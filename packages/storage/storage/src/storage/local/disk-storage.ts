@@ -13,7 +13,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import { toHttpDate } from "../../utils/headers";
 import { streamChecksum } from "../../utils/pipes/stream-checksum";
-import StreamLength from "../../utils/pipes/stream-length";
+import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
@@ -689,13 +689,29 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 checksumChecker.destroy();
             };
 
-            const failWithCode = (code?: ERRORS): void => {
-                cleanupStreams();
-                resolve([Number.NaN, code]);
+            // Settle only once the file is closed: the caller stats it next to find the real offset,
+            // and on Windows the last write can still be in flight when a failure is reported.
+            const settle = (outcome: () => void): void => {
+                if (destination.closed) {
+                    outcome();
+                } else {
+                    destination.once("close", outcome);
+                }
             };
 
-            lengthChecker.on("error", () => {
-                failWithCode(ERRORS.FILE_CONFLICT);
+            const failWithCode = (code?: ERRORS): void => {
+                cleanupStreams();
+                settle(() => {
+                    resolve([Number.NaN, code]);
+                });
+            };
+
+            // Only its own limit error means the body is too long: pipeline also destroys it with the
+            // body's error, which must surface as that error (Windows reports this one first).
+            lengthChecker.on("error", (error) => {
+                if (isStreamLengthError(error)) {
+                    failWithCode(ERRORS.FILE_CONFLICT);
+                }
             });
             checksumChecker.on("error", () => {
                 failWithCode(ERRORS.CHECKSUM_MISMATCH);
@@ -706,7 +722,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             });
             part.body.on("error", (error) => {
                 cleanupStreams();
-                reject(error);
+                settle(() => {
+                    reject(error);
+                });
             });
 
             // Check if signal is already aborted before starting pipeline
@@ -727,7 +745,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     lengthChecker.destroy();
                     checksumChecker.destroy();
                     part.body.destroy();
-                    resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    settle(() => {
+                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    });
                 };
 
                 signal.addEventListener("abort", onAbort, { once: true });
@@ -743,13 +763,17 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                     // Check if error is due to abort signal
                     if (signal?.aborted) {
-                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                        settle(() => {
+                            resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                        });
 
                         return;
                     }
 
                     // Convert other pipeline errors to error codes
-                    resolve([Number.NaN, ERRORS.FILE_ERROR]);
+                    settle(() => {
+                        resolve([Number.NaN, ERRORS.FILE_ERROR]);
+                    });
 
                     return;
                 }
