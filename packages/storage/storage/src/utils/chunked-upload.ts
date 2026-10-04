@@ -154,18 +154,24 @@ export const getContiguousEnd = (chunks: ChunkInfo[]): number => {
 };
 
 /**
- * Whether a chunked upload holds every byte: its recorded chunks cover the file, or, for an
- * adapter that only appends ({@link BaseStorage.sequentialWrites}), its stored prefix does. The
- * latter also covers a chunk whose request broke off after some bytes were stored (#909): the
- * adapter kept them, but the chunk was never recorded.
+ * Whether a chunked upload holds every byte. For an adapter that only appends
+ * ({@link BaseStorage.sequentialWrites}) its stored prefix decides: it confirms what was
+ * persisted, which can be less than a request sent (a GCS resumable upload may keep a shorter
+ * range), and it also covers a chunk whose request broke off after some bytes were stored (#909).
+ * Otherwise the recorded chunks have to cover the file.
  * @param chunks Recorded chunks
  * @param totalSize Total size of the upload
  * @param bytesWritten The adapter's `bytesWritten`
  * @param sequentialWrites Whether the adapter only appends
  * @returns True if every byte is stored
  */
-export const isChunkedUploadComplete = (chunks: ChunkInfo[], totalSize: number, bytesWritten: number | undefined, sequentialWrites: boolean): boolean =>
-    isUploadComplete(chunks, totalSize) || (sequentialWrites && totalSize > 0 && (bytesWritten ?? 0) >= totalSize);
+export const isChunkedUploadComplete = (chunks: ChunkInfo[], totalSize: number, bytesWritten: number | undefined, sequentialWrites: boolean): boolean => {
+    if (sequentialWrites && typeof bytesWritten === "number" && Number.isFinite(bytesWritten)) {
+        return totalSize > 0 && bytesWritten >= totalSize;
+    }
+
+    return isUploadComplete(chunks, totalSize);
+};
 
 /**
  * Byte offset a client should resume a chunked upload from. An adapter that only appends knows

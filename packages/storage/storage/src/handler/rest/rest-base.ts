@@ -372,6 +372,13 @@ abstract class RestBase<TFile extends UploadFile> {
         // The stored status is reconciled with the chunk list under the same lock: each provider
         // write sets it from its own view of the bytes, so concurrent PATCHes would otherwise leave
         // "part" behind on a finished upload (#902), or "completed" on an unfinished one.
+        // An adapter that only appends confirms how much it persisted, which can be less than the
+        // request carried (a GCS resumable upload may keep a shorter range); record only that.
+        const confirmedLength =
+            sequentialWrites && typeof written.bytesWritten === "number" && Number.isFinite(written.bytesWritten)
+                ? Math.min(contentLength, Math.max(0, written.bytesWritten - chunkOffset))
+                : contentLength;
+
         let bytesWritten: number | undefined;
         let chunks: ChunkInfo[];
         let status: UploadFile["status"];
@@ -381,11 +388,15 @@ abstract class RestBase<TFile extends UploadFile> {
                 async () =>
                     this.storage.withLock(`chunks:${id}`, async () => {
                         const current = await this.storage.getMeta(id);
-                        const merged = trackChunk(getChunks(current), {
-                            checksum: chunkChecksum,
-                            length: contentLength,
-                            offset: chunkOffset,
-                        });
+                        const merged =
+                            confirmedLength > 0
+                                ? trackChunk(getChunks(current), {
+                                      // The checksum covers the whole chunk, not a confirmed part of it.
+                                      checksum: confirmedLength === contentLength ? chunkChecksum : undefined,
+                                      length: confirmedLength,
+                                      offset: chunkOffset,
+                                  })
+                                : getChunks(current);
                         const saved = await this.storage.update(
                             { id },
                             {
