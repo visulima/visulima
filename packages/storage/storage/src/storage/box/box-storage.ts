@@ -468,10 +468,17 @@ class BoxStorage extends BaseStorage<BoxFile> {
             let key = id;
 
             try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+                stored = await this.getMeta(id);
+            } catch (error) {
+                // No metadata: look the id up directly. Any other failure must not read as absent.
+                if (!isUploadError(error) || error.UploadErrorCode !== ERRORS.FILE_NOT_FOUND) {
+                    throw error;
+                }
+            }
+
+            if (stored) {
+                await this.checkIfExpired(stored);
                 key = stored.name ?? id;
-            } catch {
-                // direct lookup
             }
 
             await this.authHandle.ensureReady();
@@ -644,6 +651,11 @@ class BoxStorage extends BaseStorage<BoxFile> {
             },
             { limit },
         );
+    }
+
+    /** Upload records by id: `list` yields stored names without creation dates, so purge could never match them. */
+    protected override async listUploads(): Promise<BoxFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     public override async getReadUrl(
