@@ -299,6 +299,14 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     public readonly sequentialWrites: boolean = false;
 
     /**
+     * Adapter capability flag: when `true`, the adapter has to know a chunk's length before it can
+     * stream it to the provider (an S3 part, a GCS `Content-Range`, an Azure block). The TUS handler
+     * then answers a PATCH without `Content-Length` with 411 Length Required instead of buffering an
+     * unbounded body. Adapters that stream a body of unknown length keep `false`.
+     */
+    public readonly requiresContentLength: boolean = false;
+
+    /**
      * Adapter capability flags: which ETag predicates ({@link ConditionalOptions}) the adapter
      * evaluates natively. All `false` by default; the `Files` facade rejects a predicate whose flag
      * is off with `METHOD_NOT_ALLOWED` and surfaces the flags as `Files.capabilities.conditional`.

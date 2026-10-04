@@ -140,6 +140,14 @@ checked against `maxUploadSize` (413), and an `Upload-Defer-Length` other than `
 //   Upload-Length: 10485760
 ```
 
+### PATCH without Content-Length
+
+A PATCH may send its body with chunked transfer encoding, without `Content-Length`. Memory, local disk, FTP,
+SFTP and the single-request adapters store it, bounded while it streams by the rest of the upload's length (or
+`maxUploadSize` while the length is deferred). Adapters that send a chunk's length to the provider before its
+bytes (S3, S3 light, Google Cloud Storage, Azure; `storage.requiresContentLength`) answer `411 Length Required`
+before reading the body, and the upload stays as it was.
+
 ### Checksum Extension
 
 Verify each chunk. The checksum is the **base64** digest of the chunk's bytes:

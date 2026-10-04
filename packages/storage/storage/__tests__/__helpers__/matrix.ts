@@ -284,6 +284,32 @@ export const describeMatrix = (provider: MatrixProvider): void => {
             expect(stored.toString()).toBe(content);
         });
 
+        it.each(runtimes)("should store a TUS PATCH without Content-Length, or refuse it with 411 before reading it (%s)", async (runtime) => {
+            expect.assertions(2);
+
+            const send = await mount(storage, "tus", runtime, servers);
+            const content = "hello world";
+            const path = pathOf(await send(BASE, { headers: { ...TUS, "Upload-Length": String(content.length) }, method: "POST" }));
+            // A stream body goes out with chunked transfer encoding: no Content-Length.
+            const body = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(new TextEncoder().encode(content));
+                    controller.close();
+                },
+            });
+            const response = await send(path, {
+                body,
+                duplex: "half",
+                headers: { ...TUS, "Content-Type": OFFSET_STREAM, "Upload-Offset": "0" },
+                method: "PATCH",
+            } as RequestInit);
+            // Adapters that need a chunk's length up front refuse it; the rest store every byte.
+            const [status, offset] = storage.requiresContentLength ? [411, "0"] : [204, String(content.length)];
+
+            expect(response.status).toBe(status);
+            await expect(headerOf(send(path, { headers: TUS, method: "HEAD" }), "upload-offset")).resolves.toBe(offset);
+        });
+
         it.runIf(!resumable).each(runtimes)("should refuse a partial TUS chunk it can't assemble (%s)", async (runtime) => {
             expect.assertions(1);
 

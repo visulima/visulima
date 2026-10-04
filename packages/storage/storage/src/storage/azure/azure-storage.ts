@@ -69,6 +69,9 @@ class AzureStorage extends BaseStorage {
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
 
+    /** A part's length goes into the provider request before its bytes, so it must be known. */
+    public override readonly requiresContentLength: boolean = true;
+
     /** `md5` is verified by Azure per staged block (`transactionalContentMD5`, `Md5Mismatch` on failure). */
     public override checksumTypes: string[] = ["md5"];
 

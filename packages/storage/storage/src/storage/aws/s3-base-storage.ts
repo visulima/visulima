@@ -46,6 +46,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
 
+    /** A part's length goes into the provider request before its bytes, so it must be known. */
+    public override readonly requiresContentLength: boolean = true;
+
     /**
      * S3 evaluates `If-Match` / `If-None-Match` on CompleteMultipartUpload, GetObject, DeleteObject
      * and CopyObject (plus `x-amz-copy-source-if-match`). Enabled through the `conditional` option;

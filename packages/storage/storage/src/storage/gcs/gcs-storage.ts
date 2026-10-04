@@ -56,6 +56,9 @@ class GCStorage extends BaseStorage<GCSFile> {
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
 
+    /** A part's length goes into the provider request before its bytes, so it must be known. */
+    public override readonly requiresContentLength: boolean = true;
+
     /**
      * GCS resumable uploads only verify whole-object hashes on finalize, never a single chunk,
      * so no per-write checksum algorithm can be honoured.

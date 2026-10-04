@@ -52,11 +52,14 @@ export interface TusStorage<TFile extends UploadFile> {
     getStream?: (options: { id: string }) => Promise<{ size?: number; stream: unknown }>;
     maxUploadSize: number;
 
+    /** True for adapters that need a chunk's length before storing it (S3 parts, GCS, Azure blocks). */
+    requiresContentLength?: boolean;
+
     /** False for adapters that can only store an object in one request. */
     supportsResumableWrites?: boolean;
     tusExtension: string[];
     update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength?: number; id: string; start: number }) => Promise<TFile>;
 }
 
 export interface TusBaseConfig<TFile extends UploadFile> {
@@ -459,10 +462,17 @@ export class TusBase<TFile extends UploadFile> {
 
         this.assertResumableWrite(current, uploadOffset, contentLength, deferredSize);
 
+        // TUS allows a chunked PATCH body; an adapter that can't stream one of unknown length
+        // refuses it before a byte is read rather than buffering it.
+        if (contentLength === undefined && this.storage.requiresContentLength) {
+            throw createHttpError(411, "Content-Length is required by this storage backend");
+        }
+
         const size = deferredSize ?? current.size;
         const limit = this.assertWithinLength(uploadOffset, contentLength, size);
         const { body, native } = await this.prepareChecksum(request, contentLength, size === undefined ? undefined : size - uploadOffset);
-        // Without a Content-Length the body is only known to fit while it streams.
+        // Without a Content-Length the body is only known to fit while it streams, and the adapter
+        // gets no length: an unknown one must not read as an empty chunk.
         const boundedBody = contentLength === undefined && body instanceof Readable ? body.pipe(new StreamLength(limit - uploadOffset)) : body;
 
         // The adapter must know the final length when it writes, to finish the upload on its last byte.
@@ -473,7 +483,7 @@ export class TusBase<TFile extends UploadFile> {
         let file: TFile;
 
         try {
-            file = await this.storage.write({ body: boundedBody, ...native, contentLength: contentLength ?? 0, id, start: uploadOffset });
+            file = await this.storage.write({ body: boundedBody, ...native, contentLength, id, start: uploadOffset });
         } catch (error: unknown) {
             // A rejected chunk must leave the upload as it was.
             if (deferredSize !== undefined) {
