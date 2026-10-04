@@ -157,11 +157,7 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch HEAD request to return success
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: true,
-                status: 200,
-            });
+            vi.mocked(head).mockResolvedValueOnce({ contentType: "video/mp4", etag: "e", size: 1 } as Awaited<ReturnType<typeof head>>);
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -202,18 +198,14 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch HEAD request to return 404 (doesn't exist)
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: false,
-                status: 404,
-            });
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
 
             const exists = await storage.exists({ id: metafile.id });
 
             expect(exists).toBe(false);
         });
 
-        it("should return false when fetch throws an error", async () => {
+        it("should return false when the blob lookup throws an error", async () => {
             expect.assertions(1);
 
             // Mock getMeta to return metadata with URL
@@ -222,8 +214,7 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch to throw error
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Network error"));
+            vi.mocked(head).mockRejectedValueOnce(new Error("Network error"));
 
             const exists = await storage.exists({ id: metafile.id });
 

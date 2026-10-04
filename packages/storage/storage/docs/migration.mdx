@@ -66,6 +66,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **Cloudinary `get()` and `copy()` work for `private` / `authenticated` assets**: they use the signed `private_download_url` that `getReadUrl()` returns instead of the unsigned delivery URL.
 - **FTP without `rootFolderPath` lists the server root `/`**, where it writes, instead of the login directory.
 - **`DiskStorageWithChecksum` honours `checksum: false`**: it no longer hashes uploads or sets `file.hash`.
+- **Vercel Blob overwrites and supports private stores.** `put()` and `copy()` pass `allowOverwrite: true` (`@vercel/blob` 2.x refuses an existing pathname otherwise), `access: "private"` is accepted, and `get()`/`exists()` go through the SDK instead of fetching the blob URL. A part mismatch, an unsupported checksum and a read before any content now throw `UploadError`s (`FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`, `FILE_NOT_FOUND`).
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

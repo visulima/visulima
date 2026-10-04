@@ -1,4 +1,4 @@
-import { BlobNotFoundError, copy, del, head, list, put } from "@vercel/blob";
+import { BlobNotFoundError, copy, del, get, head, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
@@ -28,11 +28,10 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ✅ create, write, delete, get, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Vercel Blob)
- * - ❌ getStream: Not implemented (use get() for file retrieval)
- * - ❌ list: Not implemented (Vercel Blob API doesn't support listing)
- * - ❌ update: Not implemented (Vercel Blob API doesn't support metadata updates)
- * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
- * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
+ * - ✅ list (follows the SDK cursor up to `limit`)
+ * - ✅ `access: "private"` blobs (read through the SDK's authenticated `get()`)
+ * - ❌ getStream: Not implemented natively (falls back to get())
+ * - ❌ getReadUrl / getUploadUrl: Not implemented
  * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 
@@ -68,7 +67,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
     private readonly multipart: boolean | number;
 
-    private readonly access: "public";
+    private readonly access: "private" | "public";
 
     public constructor(config: VercelBlobStorageOptions) {
         super(config);
@@ -187,7 +186,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -195,7 +194,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -237,6 +236,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                     const result = await this.runOperation(options, () =>
                         put(file.name, blob, {
                             access: this.access,
+                            // The upload owns its pathname: a rewrite (or a replaced upload) overwrites it.
+                            allowOverwrite: true,
                             multipart: this.shouldUseMultipart(file),
                             ...this.credentials,
                         }),
@@ -314,21 +315,11 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
-                // First check if metadata exists
-                const file = await this.getMeta(id);
+                const file = await this.findMeta(id);
 
-                if (!file.url || file.url.length === 0) {
-                    return false;
-                }
-
-                const { url } = file;
-
-                // Then verify the actual blob exists by checking if URL is accessible
-                const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
-
-                return response.ok;
+                // Through the SDK, not a plain HEAD on the URL, which a private blob refuses.
+                return file?.url ? (await this.statObject(file.url, options)) !== undefined : false;
             } catch {
-                // Return false if metadata doesn't exist or blob doesn't exist
                 return false;
             }
         });
@@ -357,27 +348,22 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
 
-            if (!file.url || file.url.length === 0) {
-                throw new Error("File URL not found");
-            }
-
             const { url } = file;
 
-            // For Vercel Blob, we need to fetch the content
-            // In a real implementation, you might want to use the blob URL directly
-            // and let the client download it, but for compatibility with the interface,
-            // we'll fetch the content
-            const response = await this.runOperation(options, () => fetch(url));
+            if (!url) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "Vercel Blob: the upload has no content yet");
+            }
 
-            if (!response.ok) {
-                if (response.status === 404) {
+            // The SDK authenticates the read, which a private blob requires.
+            const content = await this.runOperation(options, async () => {
+                const result = await get(url, { access: this.access, ...this.credentials });
+
+                if (result?.statusCode !== 200) {
                     return throwErrorCode(ERRORS.FILE_NOT_FOUND);
                 }
 
-                throw new Error(`Vercel Blob: fetching ${url} failed with status ${String(response.status)}`);
-            }
-
-            const content = Buffer.from(await this.runOperation(options, () => response.arrayBuffer()));
+                return Buffer.from(await new Response(result.stream).arrayBuffer());
+            });
 
             return {
                 content,
@@ -406,7 +392,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             const sourceFile = await this.getMeta(name);
 
             if (!sourceFile.url) {
-                throw new Error("Source file URL not found");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "Vercel Blob: the source upload has no content yet");
             }
 
             const sourceUrl = sourceFile.url;
@@ -414,7 +400,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             // Use Vercel Blob's copy function
             const result = await this.runOperation(options, () =>
                 copy(sourceUrl, destination, {
-                    access: "public",
+                    access: this.access,
+                    allowOverwrite: true,
                     ...this.credentials,
                 }),
             );

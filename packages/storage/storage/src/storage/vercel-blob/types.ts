@@ -3,11 +3,11 @@ import type { BaseStorageOptions } from "../types";
 
 export interface VercelBlobStorageOptions extends BaseStorageOptions {
     /**
-     * Visibility for uploaded blobs. Vercel Blob currently exposes only
-     * `"public"` in its SDK, but this option is here so callers can pass
-     * through any future value without forking. Defaults to `"public"`.
+     * Visibility for uploaded blobs. `"private"` blobs need authentication to read; the adapter
+     * reads them through the SDK with its credentials. Must match the store's access type.
+     * @default "public"
      */
-    access?: "public";
+    access?: "private" | "public";
 
     /**
      * Configure metafiles storage

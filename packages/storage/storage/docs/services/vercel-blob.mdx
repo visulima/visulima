@@ -28,7 +28,7 @@ OIDC auth needs `@vercel/blob >= 2.4.0`, the first release with `oidcToken` and 
 2. **Credentials** are injected into the project's environment when the store is connected:
     - `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` on Vercel deployments. OIDC tokens are short-lived and rotated automatically, so there is no long-lived secret to leak. Recommended.
     - `BLOB_READ_WRITE_TOKEN`, a long-lived token for the whole store. Use it off Vercel (CI, local dev); `vercel env pull` writes it to `.env.local`.
-3. **Access.** A read-write token grants full access to its store; there are no narrower scopes. Every blob this adapter writes is public: anyone with the URL can read it. Don't store private files here.
+3. **Access.** A read-write token grants full access to its store; there are no narrower scopes. With the default `access: "public"`, anyone with a blob's URL can read it. Use a private store with `access: "private"` for files that must not be public.
 
 ### CORS
 
@@ -72,7 +72,7 @@ const storage = new VercelBlobStorage({
 | `token`             | `string`                  | `BLOB_READ_WRITE_TOKEN` → `VERCEL_BLOB_TOKEN` | Read-write (or client) token. Wins over OIDC when set.                                                                                 |
 | `oidcToken`         | `string`                  | `VERCEL_OIDC_TOKEN`                           | OIDC token. Requires `storeId`.                                                                                                        |
 | `storeId`           | `string`                  | `BLOB_STORE_ID`                               | Store ID, `store_<id>` or `<id>`. Requires `oidcToken`.                                                                                |
-| `access`            | `"public"`                | `"public"`                                    | Visibility passed to `put()`.                                                                                                          |
+| `access`            | `"public" \| "private"`   | `"public"`                                    | Visibility passed to `put()` and `copy()`; must match the store. Private blobs are read through the SDK's authenticated `get()`.       |
 | `multipart`         | `boolean \| number`       | `false`                                       | `true` always uses the SDK's multipart `put()`; a number uses it for files at least that many bytes. The body is still buffered first. |
 | `metaStorageConfig` | `LocalMetaStorageOptions` | `<os tmpdir>/Upload_meta`                     | Where upload metadata is kept, see [Metadata storage](#metadata-storage).                                                              |
 
@@ -96,17 +96,17 @@ Upload records are JSON sidecar files on the **local disk** of the process: `<di
 
 ## Behaviour & limits
 
-| Topic              | Behaviour                                                                                                                                                                                       |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                |
-| Request size       | On Vercel Functions the request body is capped at 4.5 MB, which bounds uploads through your handler. For larger files use Vercel's client uploads (`@vercel/blob/client`) outside this adapter. |
-| Overwrites         | `put()` and `copy()` run without `allowOverwrite`, so writing to a pathname that already exists fails. The default `filename` (the random upload ID) never collides; a custom one can.          |
-| Reads              | `get()` fetches the public blob URL and buffers it. No ranged reads.                                                                                                                            |
-| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). The public URL is on the upload record as `url` / `downloadUrl`, also returned by `write()` and `list()`.          |
-| Listing            | `list(limit)` follows the SDK cursor (1000 blobs per page) through the whole store, recursively. IDs are pathnames.                                                                             |
-| Copy / move        | Server-side `copy()`; `move()` is copy + delete.                                                                                                                                                |
-| Expiration / purge | `purge()` walks the metadata records, so it only deletes this storage's own uploads.                                                                                                            |
-| Cancellation       | Per-call `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.                                                                                |
+| Topic              | Behaviour                                                                                                                                                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                                                 |
+| Request size       | On Vercel Functions the request body is capped at 4.5 MB, which bounds uploads through your handler. For larger files use Vercel's client uploads (`@vercel/blob/client`) outside this adapter.                                  |
+| Overwrites         | `put()` and `copy()` pass `allowOverwrite: true`: an upload replaces whatever blob is stored under its pathname, and `copy()` replaces the destination. With a custom `filename`, two uploads with the same name share one blob. |
+| Reads              | `get()` reads the blob through the SDK (`get()` with the configured `access` and credentials) and buffers it. No ranged reads.                                                                                                   |
+| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). The public URL is on the upload record as `url` / `downloadUrl`, also returned by `write()` and `list()`.                                           |
+| Listing            | `list(limit)` follows the SDK cursor (1000 blobs per page) through the whole store, recursively. IDs are pathnames.                                                                                                              |
+| Copy / move        | Server-side `copy()`; `move()` is copy + delete.                                                                                                                                                                                 |
+| Expiration / purge | `purge()` walks the metadata records, so it only deletes this storage's own uploads.                                                                                                                                             |
+| Cancellation       | Per-call `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.                                                                                                                 |
 
 `storage.raw` returns `{ put, del, list, copy, credentials }` for direct SDK calls with the resolved credentials.
 
@@ -152,7 +152,6 @@ const entries = await files.list({ prefix: "avatars" });
 | `Vercel Blob credentials are required`                                | No token or OIDC pair found. Connect the store to the project, or set `BLOB_READ_WRITE_TOKEN` (`vercel env pull` locally). |
 | `Vercel Blob OIDC auth requires both oidcToken and storeId`           | Only one of `VERCEL_OIDC_TOKEN` / `BLOB_STORE_ID` is set. Set both, or use a token.                                        |
 | `401` / `403` from the Blob API                                       | The token belongs to another store, was revoked, or the OIDC token expired outside a Vercel deployment.                    |
-| `This blob already exists`                                            | A custom `filename` produced a pathname that's taken. Make names unique, or keep the default ID-based name.                |
 | `413 FUNCTION_PAYLOAD_TOO_LARGE`                                      | The request exceeded Vercel's 4.5 MB function body limit. Use client uploads for large files.                              |
 | `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload           | The adapter is single-shot. Send the whole file in one request.                                                            |
 | `404` on `PATCH`/`HEAD` right after `POST`, or `get()` after a deploy | The local metadata lived on another instance. Use a single-request handler or a shared `metaStorage`.                      |

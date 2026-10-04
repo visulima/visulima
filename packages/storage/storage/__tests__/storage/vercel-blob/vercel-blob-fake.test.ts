@@ -12,13 +12,14 @@ import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 /**
  * In-memory Vercel Blob store at https://blob.test, keyed by pathname. Like the real service it
- * refuses to overwrite an existing pathname, and `head`/`del` take a pathname or a blob URL.
+ * refuses to overwrite an existing pathname without `allowOverwrite`, serves private blobs only
+ * through the SDK's `get`, and `head`/`del`/`get` take a pathname or a blob URL.
  * `failNext` makes the next call to an SDK function throw, `failing.all` every call, to inject failures.
  */
 const blob = vi.hoisted(() => {
     class BlobNotFoundError extends Error {}
 
-    const store = new Map<string, { body: Uint8Array; contentType: string; uploadedAt: Date }>();
+    const store = new Map<string, { access?: string; body: Uint8Array; contentType: string; uploadedAt: Date }>();
     const failNext = new Map<string, Error>();
     const base = "https://blob.test/";
     const toPathname = (urlOrPathname: string): string => (urlOrPathname.startsWith(base) ? urlOrPathname.slice(base.length) : urlOrPathname);
@@ -57,13 +58,17 @@ const blob = vi.hoisted(() => {
     return {
         base,
         BlobNotFoundError,
-        copy: async (from: string, to: string) => {
+        copy: async (from: string, to: string, options: { allowOverwrite?: boolean } = {}) => {
             failure("copy");
 
             const source = store.get(toPathname(from));
 
             if (!source) {
                 throw new BlobNotFoundError();
+            }
+
+            if (store.has(to) && !options.allowOverwrite) {
+                throw new Error("Vercel Blob: This blob already exists");
             }
 
             store.set(to, { ...source, uploadedAt: new Date() });
@@ -77,6 +82,17 @@ const blob = vi.hoisted(() => {
         },
         failing,
         failNext,
+        get: async (urlOrPathname: string, options: { access: string }) => {
+            failure("get");
+
+            const stored = store.get(toPathname(urlOrPathname));
+
+            if (!stored || (stored.access ?? "public") !== options.access) {
+                return null;
+            }
+
+            return { blob: describeBlob(toPathname(urlOrPathname)), headers: new Headers(), statusCode: 200, stream: new Blob([stored.body]).stream() };
+        },
         head: async (urlOrPathname: string) => {
             failure("head");
 
@@ -92,14 +108,14 @@ const blob = vi.hoisted(() => {
 
             return { blobs: blobs.slice(start, end), cursor: end < blobs.length ? String(end) : undefined, hasMore: end < blobs.length };
         },
-        put: async (pathname: string, body: Blob) => {
+        put: async (pathname: string, body: Blob, options: { access?: string; allowOverwrite?: boolean } = {}) => {
             failure("put");
 
-            if (store.has(pathname)) {
+            if (store.has(pathname) && !options.allowOverwrite) {
                 throw new Error("Vercel Blob: This blob already exists");
             }
 
-            store.set(pathname, { body: new Uint8Array(await body.arrayBuffer()), contentType: body.type, uploadedAt: new Date() });
+            store.set(pathname, { access: options.access, body: new Uint8Array(await body.arrayBuffer()), contentType: body.type, uploadedAt: new Date() });
 
             return describeBlob(pathname);
         },
@@ -107,19 +123,7 @@ const blob = vi.hoisted(() => {
     };
 });
 
-vi.mock(import("@vercel/blob"), () => ({ BlobNotFoundError: blob.BlobNotFoundError, copy: blob.copy, del: blob.del, head: blob.head, list: blob.list, put: blob.put } as never));
-
-/** Serves the stored blobs at their URLs, as the Vercel Blob CDN does. */
-const cdn = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const request = input instanceof Request ? input : new Request(input, init);
-    const stored = blob.store.get(new URL(request.url).pathname.slice(1));
-
-    if (!stored) {
-        return new Response("Not Found", { status: 404 });
-    }
-
-    return new Response(request.method === "HEAD" ? null : stored.body, { headers: { "content-type": stored.contentType } });
-};
+vi.mock(import("@vercel/blob"), () => ({ BlobNotFoundError: blob.BlobNotFoundError, copy: blob.copy, del: blob.del, get: blob.get, head: blob.head, list: blob.list, put: blob.put } as never));
 
 const createStorage = (metaStore = new Map<string, File>()): VercelBlobStorage =>
     new VercelBlobStorage({
@@ -141,11 +145,9 @@ describe("vercel-blob against an in-memory blob store", () => {
     beforeEach(() => {
         blob.store.clear();
         blob.failNext.clear();
-        vi.stubGlobal("fetch", cdn);
     });
 
     afterEach(() => {
-        vi.unstubAllGlobals();
         vi.useRealTimers();
     });
 
@@ -167,6 +169,32 @@ describe("vercel-blob against an in-memory blob store", () => {
         // Covered below: `get` reads only uploads, and a copied blob has no upload metadata.
         { "copy and move": "get reads only uploads with metadata" },
     );
+
+    it("should replace a blob under a pathname another upload already wrote", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage();
+
+        await upload(storage, "a.txt", "first");
+        const second = await upload(storage, "a.txt", "second");
+
+        expect(new TextDecoder().decode(blob.store.get("uploads/a.txt")?.body)).toBe("second");
+
+        await storage.copy(second, "uploads/a.txt");
+
+        await expect(storage.get({ id: second })).resolves.toHaveProperty("content", Buffer.from("second"));
+    });
+
+    it("should store and read private blobs through the SDK", async () => {
+        expect.assertions(3);
+
+        const storage = new VercelBlobStorage({ access: "private", metaStorage: new MemoryMetaStorage(), token: "vercel_blob_rw_test" });
+        const id = await upload(storage, "secret.txt", "hush");
+
+        expect(blob.store.get(id)?.access).toBe("private");
+        await expect(storage.get({ id })).resolves.toHaveProperty("content", Buffer.from("hush"));
+        await expect(storage.exists({ id })).resolves.toBe(true);
+    });
 
     it("should store a whole-file upload and keep its metadata once completed", async () => {
         expect.assertions(5);
@@ -260,9 +288,9 @@ describe("vercel-blob against an in-memory blob store", () => {
 
         await expect(storage.get({ id })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
 
-        vi.stubGlobal("fetch", async () => new Response("Bad Gateway", { status: 502 }));
+        blob.failNext.set("get", new Error("Vercel Blob: bad gateway"));
 
-        await expect(storage.get({ id })).rejects.toThrow("status 502");
+        await expect(storage.get({ id })).rejects.toThrow("bad gateway");
     });
 
     it("should answer exists and getCompletedFile from the store", async () => {
