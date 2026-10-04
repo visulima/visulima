@@ -98,11 +98,11 @@ All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`
 | `SHAREPOINT_TENANT_ID` / `_CLIENT_ID` / `_CLIENT_SECRET`, then the `ONEDRIVE_*` equivalents | `clientCredentials` (all three needed) |
 | `SHAREPOINT_DRIVE_ID`, `SHAREPOINT_SITE_ID`, `SHAREPOINT_SITE_URL`, `SHAREPOINT_HOSTNAME`   | target options                         |
 
-Env-derived credentials are added even when you pass a different auth option in code. Combining e.g. `oauth` in code with `SHAREPOINT_CLIENT_*` (or `ONEDRIVE_CLIENT_*`) in the environment throws `pass exactly one of accessToken, clientCredentials, or oauth` — unset the env variables you don't use. With none of the above, the remaining OneDrive env fallbacks (`ONEDRIVE_REFRESH_TOKEN` + `ONEDRIVE_CLIENT_ID`) apply.
+Env credentials are only read when no auth option (`client`, `accessToken`, `clientCredentials`, `oauth`) is passed in code; an access token wins over client credentials. With none of the above, the remaining OneDrive env fallbacks (`ONEDRIVE_REFRESH_TOKEN` + `ONEDRIVE_CLIENT_ID`) apply.
 
 ## Metadata storage
 
-Same as [OneDrive](./onedrive.mdx#metadata-storage): records live in a `LocalMetaStorage` (default `<os tmpdir>/Upload_meta/<id>.META`), finished uploads keep theirs, and multi-instance deployments need a shared `metaStorageConfig.directory` or a shared `metaStorage` (e.g. `S3MetaStorage` from `@visulima/storage/provider/aws`). `purge()` only touches uploads that have a record.
+Same as [OneDrive](./onedrive.mdx#metadata-storage): records live in a `LocalMetaStorage` (default `<os tmpdir>/Upload_meta/<id>.META`), finished uploads keep theirs, and multi-instance deployments need a shared `metaStorageConfig.directory` or a shared `metaStorage` (e.g. `S3MetaStorage` from `@visulima/storage/provider/aws`). `purge()` only touches uploads that have a record. With `expiration.purgeInterval` one timer runs (the inner OneDrive storage starts none), and `close()` stops it.
 
 ## Behaviour & limits
 
@@ -153,6 +153,6 @@ const url = await files.url("briefs/campaign.docx");
 | `missing site targeting` (`BAD_REQUEST`) on the first call           | Set `driveId`, `siteId`, `siteUrl`, or `hostname` (+ `sitePath`), in code or env.               |
 | `site not found for "…"`                                             | Wrong URL/path, or (with `Sites.Selected`) the app has no grant on that site.                   |
 | `document library "…" not found in site "…"`                         | Use the library's display name or URL name exactly as shown in SharePoint, or pass `driveId`.   |
-| `pass exactly one of accessToken, clientCredentials, or oauth`       | An auth option in code plus `SHAREPOINT_*`/`ONEDRIVE_*` credentials in env. Remove one.         |
+| `pass exactly one of accessToken, clientCredentials, or oauth`       | More than one auth option passed in code. Keep one.                                             |
 | `403 accessDenied`                                                   | Missing permission/admin consent, or a `Sites.Selected` grant with `read` instead of `write`.   |
 | `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads` | The client sent a partial chunk. Upload the whole file in one request, or use `getUploadUrl()`. |

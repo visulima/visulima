@@ -61,6 +61,7 @@ The Node `Tus` and `Multipart` handlers read the id from the last path segment, 
 - **S3 and aws-light layer a custom `retryConfig.shouldRetry`** over their defaults instead of discarding it: it is asked first, and `undefined` falls back to `retryableStatusCodes` (now honoured too).
 - **GCS supports a deferred upload length** (TUS `Upload-Defer-Length`) instead of crashing in `create()`, and a `clientDirectUpload` upload now saves its metadata record and fires `onCreate`.
 - **Azure reads `AZURE_STORAGE_CONTAINER`** when `containerName` is not passed. The meta storage is exported as `AzureMetaStorage`; the misspelled `AzureSMetaStorage` is a deprecated alias.
+- **SharePoint only reads env credentials when no auth is passed in code**, so `oauth`/`clientCredentials` in code no longer clash with `SHAREPOINT_*`/`ONEDRIVE_*` variables. `expiration.purgeInterval` starts one purge timer, which `close()` stops; `exists()` and `getStream()` forward per-call options.
 
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 

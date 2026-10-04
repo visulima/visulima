@@ -80,6 +80,43 @@ describe("sharepoint against an in-memory Graph drive", () => {
         },
     );
 
+    it("should use env credentials only when no auth is passed in code", () => {
+        expect.assertions(1);
+
+        vi.stubEnv("SHAREPOINT_ACCESS_TOKEN", "env-token");
+
+        try {
+            expect(() => new SharePointStorage({ clientCredentials: { clientId: "c", clientSecret: "s", tenantId: "t" }, siteId: "site-1" })).not.toThrow();
+        } finally {
+            vi.unstubAllEnvs();
+        }
+    });
+
+    it("should run one purge timer and stop it on close", async () => {
+        expect.assertions(2);
+
+        vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+
+        try {
+            const graph = createSite();
+
+            vi.stubGlobal("fetch", graph.fetch);
+
+            const storage = createStorage(graph, { expiration: { maxAge: "1h", purgeInterval: "1h" } });
+
+            // Builds the inner OneDrive storage.
+            await storage.exists({ id: "x" });
+
+            expect(vi.getTimerCount()).toBe(1);
+
+            await storage.close();
+
+            expect(vi.getTimerCount()).toBe(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it("should resolve the library once and run an upload through its drive", async () => {
         expect.assertions(6);
 
