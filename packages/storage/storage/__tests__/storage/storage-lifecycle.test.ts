@@ -6,13 +6,19 @@ import MemoryStorage from "../../src/storage/memory/memory-storage";
 import { BaseStorage } from "../../src/storage/storage";
 import type { File } from "../../src/storage/utils/file";
 import { ERRORS } from "../../src/utils/errors";
+import Locker from "../../src/utils/locker";
 
 const HOUR = 60 * 60 * 1000;
 
-/** Exposes the lock internals the tests observe. */
-type Internals = { locker: { get: (key: string) => string | undefined; set: (key: string, value: string) => void }; unlock: (key: string, token?: string) => Promise<void> };
+/**
+ * Fakes the clock and gives `storage` locks that read it: the lock TTL is measured on
+ * `performance.now()` by default, which fake timers don't drive.
+ */
+const withFakeClockLocks = (storage: MemoryStorage): MemoryStorage => {
+    vi.useFakeTimers();
 
-const internals = (storage: MemoryStorage): Internals => storage as unknown as Internals;
+    return Object.assign(storage, { locker: new Locker({ max: 1000, maxHoldMs: 15 * 60_000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
+};
 
 const createUpload = async (storage: MemoryStorage, body = "hello"): Promise<File> => {
     const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: body.length });
@@ -57,51 +63,45 @@ describe("baseStorage lifecycle", () => {
             await expect(storage.withLock("b", async () => "b")).resolves.toBe("b");
         });
 
-        it("should renew a held lock before its TTL runs out and stop renewing once it is released", async () => {
-            expect.assertions(3);
+        it("should keep a held lock past its TTL and free it once released", async () => {
+            expect.assertions(2);
 
-            vi.useFakeTimers();
-
-            const storage = new MemoryStorage();
-            const { locker } = internals(storage);
-            const set = vi.spyOn(locker, "set");
-            let token: string | undefined;
+            const storage = withFakeClockLocks(new MemoryStorage());
 
             await storage.withLock("upload", async () => {
-                token = locker.get("upload");
-                set.mockClear();
-
                 // Longer than the 30 s lock TTL
-                await vi.advanceTimersByTimeAsync(35_000);
+                await vi.advanceTimersByTimeAsync(60_000);
+
+                await expect(storage.withLock("upload", async () => undefined)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_LOCKED);
             });
 
-            expect(set.mock.calls.length).toBeGreaterThanOrEqual(3);
-            expect(set).toHaveBeenCalledWith("upload", token);
-
-            set.mockClear();
-            await vi.advanceTimersByTimeAsync(60_000);
-
-            expect(set).not.toHaveBeenCalled();
+            await expect(storage.withLock("upload", async () => "free")).resolves.toBe("free");
         });
 
-        it("should stop renewing a lock released without its token", async () => {
+        it("should let a hung holder lose its lock after the longest hold", async () => {
             expect.assertions(1);
 
-            vi.useFakeTimers();
+            const storage = withFakeClockLocks(new MemoryStorage());
 
-            const storage = new MemoryStorage();
-            const { locker } = internals(storage);
+            await storage.withLock("upload", async () => {
+                // 15 minutes of renewal, then the 30 s TTL
+                await vi.advanceTimersByTimeAsync(15 * 60_000 + 31_000);
+
+                await expect(storage.withLock("upload", async () => "taken over")).resolves.toBe("taken over");
+            });
+        });
+
+        it("should free a lock released without its token", async () => {
+            expect.assertions(1);
+
+            const storage = withFakeClockLocks(new MemoryStorage());
 
             await storage.withLock("upload", async () => {
                 // Legacy unlock: deletes the lock without the token
-                await internals(storage).unlock("upload");
+                await (storage as unknown as { unlock: (key: string) => Promise<void> }).unlock("upload");
+
+                await expect(storage.withLock("upload", async () => "free")).resolves.toBe("free");
             });
-
-            const set = vi.spyOn(locker, "set");
-
-            await vi.advanceTimersByTimeAsync(60_000);
-
-            expect(set).not.toHaveBeenCalled();
         });
     });
 

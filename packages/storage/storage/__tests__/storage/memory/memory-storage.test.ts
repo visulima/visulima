@@ -5,7 +5,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 import MemoryStorage from "../../../src/storage/memory/memory-storage";
 import { ERRORS } from "../../../src/utils/errors";
-import Locker from "../../../src/utils/locker";
 
 describe(MemoryStorage, () => {
     afterEach(() => {
@@ -84,22 +83,5 @@ describe(MemoryStorage, () => {
 
         await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.from("abcdefgh"));
         await expect(storage.getMeta(file.id)).resolves.toStrictEqual(expect.objectContaining({ bytesWritten: 8, status: "completed" }));
-    });
-
-    it("should keep a lock held past its TTL while the holder still runs", async () => {
-        expect.assertions(1);
-
-        vi.useFakeTimers().setSystemTime(new Date("2022-02-02"));
-
-        const storage = new MemoryStorage();
-
-        // The lock TTL is measured on `performance.now()` by default, which fake timers don't drive.
-        Object.assign(storage, { locker: new Locker({ max: 1000, maxHoldMs: 15 * 60_000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
-
-        await storage.withLock("upload", async () => {
-            await vi.advanceTimersByTimeAsync(60_000);
-
-            await expect(storage.withLock("upload", async () => undefined)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_LOCKED);
-        });
     });
 });
