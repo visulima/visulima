@@ -158,7 +158,8 @@ class Multipart<
         try {
             const id = getIdFromRequest(request);
 
-            return this.multipartBase.handleDelete(id);
+            // Awaited, so the catch below maps its errors.
+            return await this.multipartBase.handleDelete(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
 

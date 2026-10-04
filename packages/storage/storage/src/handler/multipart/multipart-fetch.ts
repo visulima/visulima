@@ -167,7 +167,8 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            return this.multipartBase.handleDelete(id);
+            // Awaited, so the catch below maps its errors.
+            return await this.multipartBase.handleDelete(id);
         } catch (error: unknown) {
             const errorWithCode = error as { code?: string };
 
