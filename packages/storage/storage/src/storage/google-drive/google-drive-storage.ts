@@ -333,22 +333,39 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
                         [KEY_PROP]: key,
                     };
 
-                    const response = await this.runOperation(options, () =>
-                        this.driveClient.files.create({
+                    const fields = "id, size, mimeType, md5Checksum, modifiedTime";
+                    const media = (): { body: Readable; mimeType: string } => {
+                        return { body: Readable.from(buffer), mimeType: file.contentType };
+                    };
+
+                    // Overwrite the file stored under the key when there is one: a second create would leave
+                    // two files sharing the key, which resolveFileId then refuses to pick between. Looked up
+                    // on every attempt, so a retry after a create whose response was lost updates that file.
+                    const response = await this.runOperation(options, async () => {
+                        const existingId = file.driveFileId ?? (await this.findFileId(key, options));
+
+                        if (existingId) {
+                            return this.driveClient.files.update({
+                                ...this.sharedDriveParams,
+                                fields,
+                                fileId: existingId,
+                                media: media(),
+                                requestBody: { appProperties, mimeType: file.contentType },
+                            });
+                        }
+
+                        return this.driveClient.files.create({
                             ...this.sharedDriveParams,
-                            fields: "id, size, mimeType, md5Checksum, modifiedTime",
-                            media: {
-                                body: Readable.from(buffer),
-                                mimeType: file.contentType,
-                            },
+                            fields,
+                            media: media(),
                             requestBody: {
                                 appProperties,
                                 mimeType: file.contentType,
                                 name: basename(key),
                                 parents: [this.rootFolderId],
                             },
-                        }),
-                    );
+                        });
+                    });
 
                     const { data } = response;
                     const fileId = data.id ?? undefined;
@@ -376,10 +393,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -431,7 +445,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     }
 
     /**
-     * Describes the object stored under an upload ID, whose metadata is deleted once the upload completes.
+     * Describes the object stored under an ID that has no upload metadata (an object written by other means).
      * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
      * @param id Upload ID.
      * @param options Operation options.
@@ -699,6 +713,19 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         return sessionUrl;
     }
 
+    /** Like {@link resolveFileId}, but `undefined` when no file carries the key. */
+    private async findFileId(key: string, options?: OperationOptions): Promise<string | undefined> {
+        try {
+            return await this.resolveFileId(key, options);
+        } catch (error) {
+            if (isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND) {
+                return undefined;
+            }
+
+            throw error;
+        }
+    }
+
     private async resolveFileId(key: string, options?: OperationOptions): Promise<string> {
         const cached = this.fileIdCache.get(key);
 
@@ -741,8 +768,6 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
 
         return id;
     }
-
-    private internalOnComplete = (file: GoogleDriveFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 const isNotFoundError = (error: unknown): boolean => {
