@@ -333,6 +333,8 @@ class AzureStorage extends BaseStorage {
             const source = this.getFullPath(name);
 
             await this.runOperation(options, (signal) => this.containerClient.getBlockBlobClient(source).deleteIfExists({ abortSignal: signal }));
+            // The source upload is gone; drop its metadata so it does not linger as an orphan.
+            await this.deleteMeta(name);
 
             return copiedFile;
         });
@@ -517,14 +519,8 @@ class AzureStorage extends BaseStorage {
             const exists = await this.runOperation(options, (signal) => blobClient.exists({ abortSignal: signal }));
 
             if (!exists) {
-                // Check if metadata exists - if so, file was deleted (GONE), otherwise never existed (NOT_FOUND)
-                try {
-                    await this.getMeta(id);
-
-                    return throwErrorCode(ERRORS.GONE);
-                } catch {
-                    return throwErrorCode(ERRORS.FILE_NOT_FOUND);
-                }
+                // Metadata without a blob: the file was deleted (GONE), otherwise it never existed (NOT_FOUND).
+                return throwErrorCode(await this.hasMeta(id) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
             }
 
             const response = await this.runOperation(options, (signal) => blobClient.getProperties({ abortSignal: signal }));
@@ -584,14 +580,7 @@ class AzureStorage extends BaseStorage {
             const exists = await this.runOperation(options, (signal) => source.exists({ abortSignal: signal }));
 
             if (!exists) {
-                // Check if metadata exists - if so, file was deleted (GONE), otherwise never existed (NOT_FOUND)
-                try {
-                    await this.getMeta(name);
-
-                    return throwErrorCode(ERRORS.GONE);
-                } catch {
-                    return throwErrorCode(ERRORS.FILE_NOT_FOUND);
-                }
+                return throwErrorCode(await this.hasMeta(name) ? ERRORS.GONE : ERRORS.FILE_NOT_FOUND);
             }
 
             const target = this.containerClient.getBlockBlobClient(this.getFullPath(destination));
@@ -613,8 +602,8 @@ class AzureStorage extends BaseStorage {
 
             await this.runOperation(options, () => poller.pollUntilDone());
 
-            // Get source file metadata and return with destination name
-            const sourceFile = await this.getMeta(name);
+            // A blob written by other means has no upload metadata; describe it from its properties.
+            const sourceFile = (await this.getMeta(name).catch(async () => this.getCompletedFile(name, options))) as AzureFile;
 
             return { ...sourceFile, id: destination, name: destination };
         });
@@ -684,6 +673,14 @@ class AzureStorage extends BaseStorage {
             },
             { limit },
         );
+    }
+
+    /**
+     * Upload records from the meta storage: `list` yields stored names, which differ from the
+     * upload ids under a custom `filename`.
+     */
+    protected override async listUploads(): Promise<AzureFile[]> {
+        return (await this.meta.list()) ?? this.list();
     }
 
     /**
@@ -787,6 +784,13 @@ class AzureStorage extends BaseStorage {
         const prefix = [this.root, this.assetFolder].filter(Boolean).join("/");
 
         return prefix ? `${prefix}/${filePath}` : filePath;
+    }
+
+    private async hasMeta(id: string): Promise<boolean> {
+        return this.getMeta(id).then(
+            () => true,
+            () => false,
+        );
     }
 
     /**
