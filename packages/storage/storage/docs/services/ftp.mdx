@@ -4,7 +4,7 @@
 
 ## Overview
 
-The FTP adapter (built on `basic-ftp`) maps keys onto remote paths under `rootFolderPath`. FTP has no metadata store, so upload metadata is kept as sidecar JSON on the local disk. A fresh connection is opened and closed around every operation; FTP control connections are single-session, so the adapter doesn't pool them.
+The FTP adapter, built on `basic-ftp`, stores each key as a remote file under `rootFolderPath`. FTP has nowhere to keep metadata, so upload records are stored as sidecar JSON on **local disk**. The adapter opens a fresh connection for every operation and closes it afterwards. FTP control connections are single-session, so it doesn't pool them.
 
 ## Installation
 
@@ -20,33 +20,122 @@ yarn add basic-ftp
 pnpm add basic-ftp
 ```
 
-## Usage
+## Provider setup
+
+- **Account:** a dedicated FTP user that can list, read, write, delete and rename files and create directories (`MKD`) inside the upload directory. If the server jails users (chroot), the jail root is `/` for the adapter.
+- **FTPS:** set `connection.secure: true` for explicit FTPS (`AUTH TLS`) or `"implicit"` for implicit FTPS. Plain FTP sends the password in clear text, so use it only on trusted networks. To pin a self-signed certificate, pass `connection.secureOptions` (Node `tls` options such as `ca`).
+- **Passive mode / firewalls:** `basic-ftp` always uses passive mode. Open the server's passive port range to your app servers.
+- **Limits:** each connection is opened for one operation, so the server's per-user connection limit caps how many operations can run at once.
+- **CORS:** not applicable. Browsers never talk to the FTP server. They go through your handler.
+
+## Configuration
 
 ```ts
 import { FtpStorage } from "@visulima/storage/provider/ftp";
 
+// Minimal
 const storage = new FtpStorage({
-    connection: {
-        host: "ftp.example.com",
-        user: process.env.FTP_USER,
-        password: process.env.FTP_PASSWORD,
-        secure: true, // FTPS
-    },
+    connection: { host: "ftp.example.com", user: process.env.FTP_USER, password: process.env.FTP_PASSWORD },
     rootFolderPath: "uploads",
 });
 ```
 
-## Configuration
+```ts
+import { FtpStorage } from "@visulima/storage/provider/ftp";
 
-| Option              | Type                      | Description                                                                               | Default                |
-| ------------------- | ------------------------- | ----------------------------------------------------------------------------------------- | ---------------------- |
-| `connection`        | `AccessOptions`           | `basic-ftp` access options (`host`, `port`, `user`, `password`, `secure`, …). Required    | —                      |
-| `rootFolderPath`    | `string`                  | Remote directory acting as the bucket root; intermediate directories are created on write | connection working dir |
-| `metaStorageConfig` | `LocalMetaStorageOptions` | Where the sidecar metadata is kept                                                        | OS temp directory      |
+// Production: FTPS, shared metadata directory, limits
+const storage = new FtpStorage({
+    connection: {
+        host: "ftp.example.com",
+        port: 21,
+        user: process.env.FTP_USER,
+        password: process.env.FTP_PASSWORD,
+        secure: true,
+    },
+    rootFolderPath: "srv/uploads",
+    maxUploadSize: "200MB",
+    metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
+    expiration: { maxAge: "7d", purgeInterval: "1h" },
+    defaultTimeout: 60_000,
+});
+```
 
-## Behaviour
+| Option              | Type                      | Default                     | Description                                                                                                                                                                                                            |
+| ------------------- | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection`        | `AccessOptions`           | —                           | **Required.** `basic-ftp` access options: `host`, `port`, `user`, `password`, `secure`, `secureOptions`. Used for every operation.                                                                                     |
+| `rootFolderPath`    | `string`                  | `""`                        | Remote directory that acts as the bucket root. Leading and trailing slashes are stripped, and object paths are built as `/<rootFolderPath>/<key>` from the server root. Intermediate directories are created on write. |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | OS temp dir (`Upload_meta`) | `directory` / `prefix` / `suffix` for the local metadata files.                                                                                                                                                        |
 
-- **Ranged reads** — `supportsRange` is `true`: `download({ range })` starts the transfer at the requested offset (FTP `REST`) and trims the end client-side.
-- **Single-shot writes** — each object is uploaded in one request. FTP has no remote append or seek, so a chunk that doesn't start at offset 0, or doesn't carry the whole file, is **rejected with `METHOD_NOT_ALLOWED`** rather than written (writing it would overwrite the earlier bytes or leave a truncated file). Resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request.
-- **No URLs** — `getReadUrl()` / `getUploadUrl()` reject with `METHOD_NOT_ALLOWED`; FTP has no signed-URL concept.
-- `write()` buffers the part in memory before uploading.
+Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME`, `maxMetadataSize`, `filename`, `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`. The adapter reads no environment variables.
+
+> Always set `rootFolderPath`. Without it, writes go to `/<key>` (the server root) while `list()` walks the login directory. Those are two different places unless the user is jailed to `/`.
+
+## Metadata storage
+
+Upload records (id, name, size, content type, custom metadata, ETag) are JSON sidecars on **local disk**, by default `<os tmpdir>/Upload_meta/<id>.META`. They are not on the FTP server.
+
+- **Multiple app instances:** each instance only sees its own sidecars. Mount a shared volume and set `metaStorageConfig.directory` to it, or pass a custom `metaStorage`. Upload locks are held per process.
+- **Ephemeral disks:** in containers, `/tmp` disappears on restart. Use a persistent directory.
+- `get`, `delete`, `exists`, `copy` and `move` look up the record first. Without one, they answer `FILE_NOT_FOUND` (`exists` answers `false`), even if the remote file exists.
+- Finished uploads **keep** their record. `delete()` removes it.
+- `purge()` works from the upload **records**, so expiration only removes this storage's own uploads.
+
+## Behaviour & limits
+
+| Aspect                            | Behaviour                                                                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes        | ❌ `supportsResumableWrites: false`. FTP has no append or seek here. A chunk that doesn't start at 0, or doesn't carry the whole file, is rejected with `METHOD_NOT_ALLOWED`. The body is buffered in memory first. |
+| Checksums                         | None advertised.                                                                                                                                                                                                    |
+| Range reads                       | ✅ `supportsRange: true`. The transfer starts at `range.start` (FTP `REST`), and the end is trimmed on the client.                                                                                                  |
+| `getReadUrl()` / `getUploadUrl()` | ❌ `METHOD_NOT_ALLOWED`. FTP has no signed URLs.                                                                                                                                                                    |
+| `list()`                          | Walks `rootFolderPath` recursively and returns **every** regular file, including files not uploaded through this storage. `limit` is ignored.                                                                       |
+| `copy()`                          | Downloads and uploads again through the same connection, then writes a new metadata record.                                                                                                                         |
+| `move()`                          | `RNFR`/`RNTO` rename. If the rename fails, falls back to copy and delete.                                                                                                                                           |
+| ETag                              | Computed from the uploaded bytes and stored in the record.                                                                                                                                                          |
+| Retries                           | `retryConfig` (default 3 retries, exponential backoff). Cancelling closes the connection, and an aborted operation is never retried.                                                                                |
+
+## Using it with the handlers
+
+```ts
+// Node
+import express from "express";
+import { Multipart, Rest } from "@visulima/storage/handler/http/node";
+import { FtpStorage } from "@visulima/storage/provider/ftp";
+
+const storage = new FtpStorage({ connection: { host: "ftp.example.com", user: "u", password: "p" }, rootFolderPath: "uploads" });
+const app = express();
+
+app.use("/upload/form", new Multipart({ storage }).handle);
+app.use("/upload/rest", new Rest({ storage }).handle);
+```
+
+```ts
+// Fetch runtimes (Node-based only: basic-ftp needs node:net)
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export const POST = (request: Request) => rest.fetch(request);
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("reports/2026-10.csv", csv, { contentType: "text/csv" });
+const { body } = await files.download("reports/2026-10.csv", { range: { start: 0, end: 1023 } });
+```
+
+## Troubleshooting
+
+| Symptom                                    | Cause / fix                                                                                                                                   |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `530 Login incorrect`                      | Wrong `user` / `password`, or the server requires FTPS (`secure: true`).                                                                      |
+| Timeouts on data transfers                 | The passive port range is blocked by a firewall or NAT. Open it to the app servers.                                                           |
+| TLS errors (`self signed certificate`)     | Pass `secureOptions: { ca }`. Avoid `rejectUnauthorized: false` in production.                                                                |
+| `550` on write                             | The user can't create directories or write under `rootFolderPath`.                                                                            |
+| `405` on a TUS PATCH / chunk               | Send the whole file in one request.                                                                                                           |
+| `FILE_NOT_FOUND` for a file that exists    | No metadata record on this instance (another instance, a wiped `/tmp`, or a file uploaded outside the storage). Share the metadata directory. |
+| Files written to `/` but `list()` is empty | Set `rootFolderPath` (see the note under Configuration).                                                                                      |

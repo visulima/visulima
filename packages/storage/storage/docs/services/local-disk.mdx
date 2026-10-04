@@ -4,237 +4,160 @@
 
 ## Overview
 
-Local disk storage provides file storage on the local filesystem. It's ideal for development, single-server deployments, and scenarios where cloud storage isn't needed.
+`DiskStorage` stores uploads as plain files under a directory on the local filesystem, with a JSON metadata file next to each upload. It writes at any offset (`createWriteStream` with `start`), so it supports full resumable and chunked uploads: TUS (including `creation-defer-length` and `concatenation`), chunked REST and multipart. It is the right choice for development, single-server deployments, and servers that share a network volume.
+
+`DiskStorageWithChecksum` extends it. It keeps a running MD5 or SHA-1 hash of each upload and saves it in the upload record (`file.hash`).
 
 ## Installation
 
-No additional dependencies required - uses Node.js built-in `fs` module.
+No extra dependencies. Both classes ship with `@visulima/storage` and use Node's `fs`.
 
-## Usage
+```ts
+import { DiskStorage, DiskStorageWithChecksum, LocalMetaStorage } from "@visulima/storage";
+// also available from "@visulima/storage/provider/local"
+```
 
-```typescript
+## Provider setup
+
+- **Directory:** the process user needs read and write access to `directory` and to the metadata directory. The storage creates both if they are missing, and checks `directory` on startup (`isReady` turns true once it exists).
+- **Containers:** mount `directory` as a persistent volume. A container's own filesystem is lost on redeploy.
+- **Several instances:** put `directory` (and the metadata, if it lives elsewhere) on a shared filesystem such as NFS or EFS. See [Metadata storage](#metadata-storage).
+- **Serving files:** the adapter has no URLs. Serve downloads through the handlers' `GET` or your own static route. Don't expose `directory` directly, because the `.META` files sit next to the uploads.
+- **CORS:** configure it on your HTTP server or handler. The disk itself has no CORS concept.
+
+## Configuration
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+
+// Minimal
+const storage = new DiskStorage({ directory: "./uploads" });
+```
+
+```ts
+import { DiskStorageWithChecksum } from "@visulima/storage";
+
+// Production
+const storage = new DiskStorageWithChecksum({
+    directory: "/var/lib/app/uploads",
+    checksum: "sha1",
+    maxUploadSize: "10GB",
+    allowMIME: ["image/*", "video/*", "application/pdf"],
+    filename: (file) => `${file.id.slice(0, 2)}/${file.id}`, // spread files across sub-directories
+    expiration: { maxAge: "24h", purgeInterval: "1h", rolling: true },
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    logger: console,
+});
+```
+
+| Option               | Type                         | Default                               | Description                                                                                                                                 |
+| -------------------- | ---------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `directory`          | `string`                     | —                                     | **Required.** Where uploaded files are written.                                                                                             |
+| `metaStorageConfig`  | `LocalMetaStorageOptions`    | `{ directory: <directory> }`          | `directory` / `prefix` (default `""`) / `suffix` (default `".META"`) for the metadata files. By default they sit in the upload `directory`. |
+| `checksum`           | `boolean \| "md5" \| "sha1"` | `md5`                                 | `DiskStorageWithChecksum` only. Hash algorithm for `file.hash`. Any value other than `"sha1"` uses MD5.                                     |
+| `fileNameValidation` | `(name: string) => boolean`  | `defaultFilesystemFileNameValidation` | Rejects names shorter than 3 or longer than 255 characters, absolute paths, and names containing `" * : < > ? \ \|`, `../` or a null byte.  |
+
+Other options from `BaseStorageOptions` with their defaults:
+
+| Option                                                                        | Default             | Notes                                                                               |
+| ----------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------- |
+| `maxUploadSize`                                                               | `"5TB"`             | Number of bytes, or a string such as `"500MB"`.                                     |
+| `maxMetadataSize`                                                             | `"8MB"`             | Size limit for client-supplied metadata.                                            |
+| `allowMIME`                                                                   | `["*/*"]`           | Glob list checked against the content type.                                         |
+| `filename`                                                                    | `(file) => file.id` | Stored name, relative to `directory`. It may contain `/` to create sub-directories. |
+| `expiration`                                                                  | —                   | `{ maxAge, purgeInterval?, rolling? }`. See below.                                  |
+| `metaStorage`                                                                 | —                   | A custom `MetaStorage`. Takes precedence over `metaStorageConfig`.                  |
+| `validation`, `onCreate` / `onUpdate` / `onComplete` / `onDelete` / `onError` | —                   | Validation rules and lifecycle hooks.                                               |
+| `logger`, `metrics`, `cache`                                                  | —                   | Observability and metadata cache.                                                   |
+| `useRelativeLocation`                                                         | `false`             | Use a relative `Location` header.                                                   |
+
+`retryConfig` and `defaultTimeout` have no effect here: filesystem calls are not retried. `assetFolder` is ignored by `DiskStorage`. The adapter reads no environment variables.
+
+## Metadata storage
+
+Each upload has a JSON record at `<metaStorageConfig.directory ?? directory>/<prefix><id><suffix>`, which is `uploads/<id>.META` by default.
+
+- `list()` skips `*.META` files, so records never show up as uploads.
+- Saves are atomic (a temp file plus rename) and serialised across **processes** with a `<record>.lock` file. Several processes can share one metadata directory, and chunked uploads merge correctly.
+- The write lock on an upload's **bytes** is held per process. When you run several instances on a shared volume, send each upload's requests to one instance (sticky routing by upload id), or make sure clients never send chunks of one upload in parallel to different instances.
+- Finished uploads **keep** their record. `delete()` removes both the file and the record.
+- To keep records apart from the files (for example on a faster disk), set `metaStorageConfig.directory`. To use a database or bucket instead, pass `metaStorage`.
+
+## Behaviour & limits
+
+| Aspect                         | Behaviour                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chunked / resumable writes     | ✅ Writes at any offset, so chunks may arrive out of order (`sequentialWrites: false`). TUS advertises `creation-defer-length`, `concatenation` and, with `expiration`, `expiration`.                  |
+| Checksums                      | `md5`, `sha1`. A per-chunk checksum (TUS `Upload-Checksum`) is verified while streaming, and a mismatch truncates the chunk and answers `CHECKSUM_MISMATCH`.                                           |
+| Content-type sniffing          | On the first chunk, when the type is missing or `application/octet-stream`, the type is detected from the bytes.                                                                                       |
+| Range reads                    | ✅ `supportsRange: true`. `get({ range })` reads only the requested slice and returns a weak, stat-based ETag. An invalid range → `BAD_REQUEST`.                                                       |
+| `getStream()`                  | Streams straight from disk, without an ETag header.                                                                                                                                                    |
+| URLs                           | ❌ `getReadUrl()` / `getUploadUrl()` → `METHOD_NOT_ALLOWED`.                                                                                                                                           |
+| `list()`                       | Walks `directory` recursively (no symlinks) and returns every non-`.META` file with `createdAt` / `modifiedAt`. `limit` is ignored.                                                                    |
+| `copy()` / `move()`            | `fs.copyFile` / rename. On `EXDEV` (across devices), move falls back to copy and delete. Both write a record for the destination.                                                                      |
+| `create()` over an existing id | Replaces it. The old content is truncated or removed.                                                                                                                                                  |
+| Expiration / purge             | `purge()` works from the metadata records, so only this storage's own uploads expire. Files dropped into `directory` by other means are never purged. `rolling: true` measures age from the last save. |
+| Retries                        | None. Errors surface immediately.                                                                                                                                                                      |
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart, Rest, Tus } from "@visulima/storage/handler/http/node";
+
+const storage = new DiskStorage({ directory: "./uploads", expiration: { maxAge: "6h", purgeInterval: "30min" } });
+const app = express();
+
+app.use("/upload/tus", new Tus({ storage }).handle);
+app.use("/upload/rest", new Rest({ storage }).handle);
+app.use("/upload/form", new Multipart({ storage }).handle);
+```
+
+```ts
+// Fetch runtimes on Node / Bun / Deno (needs a filesystem)
+import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/fetch";
+
+const tus = new Tus({ storage: new DiskStorage({ directory: "./uploads" }) });
+
+export default { fetch: (request: Request) => tus.fetch(request) };
+```
+
+```ts
+// Files facade
+import { DiskStorage, Files } from "@visulima/storage";
+
+const files = new Files({ adapter: new DiskStorage({ directory: "./uploads" }) });
+
+await files.upload("docs/readme.txt", "hello");
+const { body } = await files.download("docs/readme.txt", { range: { start: 0, end: 4 } });
+```
+
+## Filename validation
+
+`DiskStorage` uses `defaultFilesystemFileNameValidation`. Cloud adapters use the more permissive `defaultCloudStorageFileNameValidation`, which only blocks path traversal and null bytes. You can override either:
+
+```ts
 import { DiskStorage } from "@visulima/storage";
 
 const storage = new DiskStorage({
-    directory: "./uploads",
-});
-```
-
-## Basic Configuration
-
-```typescript
-const storage = new DiskStorage({
-    directory: "/var/uploads", // Upload directory
-});
-```
-
-## With Checksum Validation
-
-```typescript
-import { DiskStorageWithChecksum } from "@visulima/storage/provider/local";
-
-const storage = new DiskStorageWithChecksum({
-    checksum: "md5", // Enable MD5 checksum validation (md5 or sha1)
     directory: "/var/uploads",
+    fileNameValidation: (name) => name.length >= 3 && name.length <= 255 && !name.includes("../") && !name.includes("\0"),
 });
 ```
 
-## Advanced Configuration
+Even with a permissive validator, ids that are absolute paths or contain `..` are always rejected before any filesystem call.
 
-```typescript
-const storage = new DiskStorage({
-    assetFolder: "assets",
-    directory: "/var/uploads",
-    filename: (file, request) => `${Date.now()}-${file.originalName}`,
-    expiration: {
-        maxAge: "7d",
-        purgeInterval: "1h",
-    },
-    retryConfig: {
-        maxRetries: 3,
-    },
-    cache: new LRUCache({
-        max: 1000,
-        ttl: 3600000,
-    }),
-});
-```
+## Troubleshooting
 
-## Features
-
-- **Filesystem Storage**: Direct disk I/O operations
-- **Checksum Support**: MD5 and SHA1 validation
-- **Resumable Uploads**: Continue interrupted uploads
-- **Metadata Storage**: JSON-based metadata files
-- **Directory Management**: Automatic directory creation
-- **File Locking**: Concurrent access protection
-- **Cross-platform**: Works on Windows, macOS, Linux
-
-## TTL (Time-to-Live)
-
-Set expiration times for files:
-
-```typescript
-const storage = new DiskStorage({
-    directory: "./uploads",
-    expiration: {
-        maxAge: "30d", // Files expire in 30 days
-        purgeInterval: "1h", // Check for expired files every hour
-        rolling: true, // Extend expiration on every write
-    },
-});
-```
-
-## File Naming
-
-Customize file naming strategy:
-
-```typescript
-const storage = new DiskStorage({
-    directory: "/var/uploads",
-    filename: (file, request) => {
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).slice(2);
-        return `${timestamp}-${random}-${file.originalName}`;
-    },
-});
-```
-
-## Filename Validation
-
-DiskStorage automatically applies filesystem-safe filename validation by default, blocking characters that are incompatible with local filesystems (`"`, `*`, `:`, `<`, `>`, `?`, `\`, `|`, `../`, `\0`).
-
-### Default Validation
-
-```typescript
-// DiskStorage uses strict filesystem validation by default
-const storage = new DiskStorage({
-    directory: "/var/uploads",
-    // Automatically validates filenames for filesystem compatibility
-});
-```
-
-### Custom Validation
-
-Override the default validation with your own rules:
-
-```typescript
-import { defaultFilesystemFileNameValidation } from "@visulima/storage";
-
-const storage = new DiskStorage({
-    directory: "/var/uploads",
-    fileNameValidation: (name: string) => {
-        // Custom validation logic
-        // Return true if valid, false otherwise
-        if (name.length < 3 || name.length > 255) {
-            return false;
-        }
-
-        // Block specific patterns
-        if (name.includes("../") || name.includes("\0")) {
-            return false;
-        }
-
-        // Your custom rules here
-        return !name.includes("forbidden");
-    },
-});
-```
-
-### Cloud Storage Validation
-
-Cloud storage platforms (S3, Azure, GCS) use more permissive validation by default, only blocking dangerous patterns like path traversal (`../`) and null bytes (`\0`). They accept most special characters since cloud storage handles URL encoding automatically.
-
-```typescript
-import { defaultCloudStorageFileNameValidation } from "@visulima/storage";
-import { S3Storage } from "@visulima/storage/provider/aws";
-
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    // Uses permissive validation by default
-    // Or explicitly set:
-    fileNameValidation: defaultCloudStorageFileNameValidation,
-});
-```
-
-## Directory Structure
-
-```typescript
-const storage = new DiskStorage({
-    assetFolder: "files", // Subfolder for uploaded files
-    directory: "/var/uploads",
-});
-
-// Files stored in: /var/uploads/files/
-// Metadata in: /var/uploads/.meta/
-```
-
-## Concurrent Access
-
-File locking prevents corruption during concurrent access:
-
-```typescript
-// Automatic locking during write operations
-await storage.write({
-    body: data,
-    contentLength: data.length,
-    id: file.id,
-    start: 0,
-});
-// File is locked during the operation
-```
-
-## Error Handling
-
-Local storage provides clear error messages:
-
-```typescript
-try {
-    await storage.get({ id: "nonexistent" });
-} catch (error) {
-    console.log(error.code); // 'ENOENT'
-    console.log(error.statusCode); // 404
-    console.log(error.message); // 'File not found'
-}
-```
-
-Common errors:
-
-- `ENOENT` (404): File not found
-- `EACCES` (403): Permission denied
-- `ENOSPC` (507): Disk full
-- `EMFILE` (503): Too many open files
-
-## Performance Optimization
-
-### Large File Handling
-
-```typescript
-const storage = new DiskStorage({
-    directory: "/var/uploads",
-    // Optimize for large files
-    highWaterMark: 64 * 1024, // 64KB buffer size
-});
-```
-
-### Directory Structure
-
-```typescript
-// Use prefixes to avoid too many files per directory
-const storage = new DiskStorage({
-    directory: "/var/uploads",
-    filename: (file) => {
-        // Distribute files across subdirectories
-        const hash = file.id.slice(0, 2);
-        return `${hash}/${file.id}`;
-    },
-});
-```
-
-## Best Practices
-
-1. **Set appropriate permissions** - Ensure directory is writable
-2. **Monitor disk space** - Implement disk space monitoring
-3. **Use checksums** - Enable checksum validation for critical files
-4. **Configure expiration** - Automatically clean up old files
-5. **Backup regularly** - Local storage requires manual backups
+| Symptom                                    | Cause / fix                                                                                                                         |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `EACCES` / `FILE_ERROR` on create or write | The process user can't write to `directory` or the metadata directory. Fix ownership or permissions, or the volume mount.           |
+| `FILE_NOT_FOUND` on another instance       | The instances don't share `directory` and the metadata directory. Use a shared volume, or route uploads to one instance.            |
+| `423 FILE_LOCKED`                          | Two requests wrote to the same upload at the same time. TUS clients retry. Don't send chunks of one upload in parallel.             |
+| `409 FILE_CONFLICT` on a chunk             | The chunk's length differs from `Content-Length`, or its offset/size doesn't match the upload. The client should `HEAD` and resume. |
+| `460` / `CHECKSUM_MISMATCH`                | The chunk was corrupted in transit. It is discarded, and the client should resend it.                                               |
+| `INVALID_FILE_NAME`                        | The name failed `fileNameValidation`, for example because it contains `:` or is shorter than 3 characters.                          |
+| `ENOSPC`                                   | The disk is full. Set `expiration` to clean up abandoned uploads, and monitor free space.                                           |
