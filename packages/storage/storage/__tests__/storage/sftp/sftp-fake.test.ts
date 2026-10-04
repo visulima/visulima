@@ -2,6 +2,7 @@ import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -148,16 +149,6 @@ vi.mock(import("ssh2-sftp-client"), () => {
     return { default: Client };
 });
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 describe("sftp storage against an in-memory SFTP server", () => {
     let metaDirectory: string;
 
@@ -249,7 +240,7 @@ describe("sftp storage against an in-memory SFTP server", () => {
         const { size, stream } = await storage.getStream({ id }, { range: { start: 7 } } as never);
 
         expect(size).toBe(3);
-        await expect(readAll(stream)).resolves.toBe("789");
+        await expect(text(stream)).resolves.toBe("789");
     });
 
     it("should tell a missing file from a failing server", async () => {

@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { buffer } from "node:stream/consumers";
 
 import type { BoxClient } from "box-typescript-sdk-gen";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -11,16 +12,6 @@ import MemoryMetaStorage from "../../../src/storage/memory/memory-meta-storage";
 type Item = { body?: Buffer; etag?: string; id: string; name: string; parent: string; type: "file" | "folder" };
 
 const boxError = (statusCode: number, code: string): Error => Object.assign(new Error(code), { responseInfo: { code, statusCode } });
-
-const readStream = async (stream: AsyncIterable<Uint8Array>): Promise<Buffer> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk));
-    }
-
-    return Buffer.concat(chunks);
-};
 
 /**
  * In-memory Box account: folder "0" is the root. Downloads are served by `fetch` from
@@ -82,10 +73,10 @@ const createBox = () => {
             uploadBigFile: async (file: Readable, name: string, _size: number, folderId: string) => {
                 assertFreeName(folderId, name);
 
-                return putFile(folderId, name, await readStream(file));
+                return putFile(folderId, name, await buffer(file));
             },
             uploadFilePartByUrl: async (url: string, file: Readable, { contentRange }: { contentRange: string }) => {
-                (sessions.get(url) as { parts: Buffer[] }).parts.push(await readStream(file));
+                (sessions.get(url) as { parts: Buffer[] }).parts.push(await buffer(file));
 
                 return { part: { offset: Number(/bytes (\d+)/u.exec(contentRange)?.[1]) } };
             },
@@ -145,12 +136,12 @@ const createBox = () => {
             uploadFile: async ({ attributes, file }: { attributes: { name: string; parent: { id: string } }; file: Readable }) => {
                 assertFreeName(attributes.parent.id, attributes.name);
 
-                return { entries: [putFile(attributes.parent.id, attributes.name, await readStream(file))] };
+                return { entries: [putFile(attributes.parent.id, attributes.name, await buffer(file))] };
             },
             uploadFileVersion: async (id: string, { file }: { file: Readable }) => {
                 const item = getItem(id);
 
-                return { entries: [putFile(item.parent, item.name, await readStream(file), id)] };
+                return { entries: [putFile(item.parent, item.name, await buffer(file), id)] };
             },
         },
     };
@@ -224,7 +215,7 @@ describe("box against an in-memory Box account", () => {
 
         const { stream } = await storage.getStream({ id: file.id });
 
-        await expect(readStream(stream)).resolves.toStrictEqual(Buffer.from("hello"));
+        await expect(buffer(stream)).resolves.toStrictEqual(Buffer.from("hello"));
     });
 
     it("should reject chunks and partial bodies, and accept the whole file on a retry", async () => {

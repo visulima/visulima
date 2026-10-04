@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -129,16 +130,6 @@ const upload = async (storage: VercelBlobStorage, name: string, text: string): P
     return file.id;
 };
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 describe("vercel-blob against an in-memory blob store", () => {
     beforeEach(() => {
         blob.store.clear();
@@ -230,7 +221,7 @@ describe("vercel-blob against an in-memory blob store", () => {
         const { headers, stream } = await storage.getStream({ id });
 
         expect(headers).toMatchObject({ "Content-Length": "7", "Content-Type": "text/plain" });
-        await expect(readAll(stream)).resolves.toBe("content");
+        await expect(text(stream)).resolves.toBe("content");
     });
 
     it("should report a blob gone from the store as not found, not return the error page as content", async () => {

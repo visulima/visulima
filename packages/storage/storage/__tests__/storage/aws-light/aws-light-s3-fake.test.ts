@@ -1,20 +1,19 @@
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-adapter";
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
-
-type Stored = { body: Uint8Array; headers: Record<string, string>; lastModified: Date };
+import { createS3State } from "../../__helpers__/s3-state";
 
 /**
  * In-memory path-style S3 at https://s3.test with the bucket "uploads". `override` answers a
  * request before the fake does, to inject failures.
  */
 const createS3 = () => {
-    const objects = new Map<string, Stored>();
-    const uploads = new Map<string, { initiated: Date; key: string; parts: Map<number, Uint8Array> }>();
+    const bucket = createS3State();
     const requests: Request[] = [];
     const state: { override?: (request: Request, key: string) => Response | undefined } = {};
 
@@ -39,7 +38,7 @@ const createS3 = () => {
         if (key === "") {
             if (url.searchParams.has("uploads")) {
                 return xml(
-                    `<ListMultipartUploadsResult>${[...uploads]
+                    `<ListMultipartUploadsResult>${[...bucket.uploads]
                         .map(
                             ([id, upload]) =>
                                 `<Upload><Key>${upload.key}</Key><UploadId>${id}</UploadId><Initiated>${upload.initiated.toISOString()}</Initiated></Upload>`,
@@ -50,8 +49,10 @@ const createS3 = () => {
 
             if (url.searchParams.get("list-type") === "2") {
                 return xml(
-                    `<ListBucketResult>${[...objects]
-                        .map(([name, object]) => `<Contents><Key>${name}</Key><LastModified>${object.lastModified.toISOString()}</LastModified></Contents>`)
+                    `<ListBucketResult>${bucket
+                        .list({})
+                        .contents
+.map((object) => `<Contents><Key>${object.key}</Key><LastModified>${object.lastModified?.toISOString() ?? ""}</LastModified></Contents>`)
                         .join("")}<IsTruncated>false</IsTruncated></ListBucketResult>`,
                 );
             }
@@ -60,92 +61,67 @@ const createS3 = () => {
         }
 
         if (request.method === "POST" && url.searchParams.has("uploads")) {
-            const id = `u${String(uploads.size + 1)}`;
-
-            uploads.set(id, { initiated: new Date(), key, parts: new Map() });
-
-            return xml(`<InitiateMultipartUploadResult><UploadId>${id}</UploadId></InitiateMultipartUploadResult>`);
+            return xml(`<InitiateMultipartUploadResult><UploadId>${bucket.createUpload(key)}</UploadId></InitiateMultipartUploadResult>`);
         }
 
         if (uploadId !== null) {
-            const upload = uploads.get(uploadId);
-
-            if (!upload) {
-                return missing("NoSuchUpload");
-            }
-
             if (request.method === "PUT") {
-                const partNumber = Number(url.searchParams.get("partNumber"));
+                const etag = bucket.putPart(uploadId, Number(url.searchParams.get("partNumber")), Buffer.from(await request.arrayBuffer()));
 
-                upload.parts.set(partNumber, new Uint8Array(await request.arrayBuffer()));
-
-                return new Response(null, { headers: { ETag: `"p${String(partNumber)}"` } });
+                return etag === undefined ? missing("NoSuchUpload") : new Response(null, { headers: { ETag: etag } });
             }
-
-            const sorted = [...upload.parts].toSorted(([a], [b]) => a - b);
 
             if (request.method === "GET") {
-                return xml(
-                    `<ListPartsResult>${sorted.map(([number, body]) => `<Part><PartNumber>${String(number)}</PartNumber><ETag>"p${String(number)}"</ETag><Size>${String(body.byteLength)}</Size></Part>`).join("")}</ListPartsResult>`,
-                );
-            }
+                const parts = bucket.parts(uploadId);
 
-            uploads.delete(uploadId);
+                return parts === undefined
+                    ? missing("NoSuchUpload")
+                    : xml(
+                          `<ListPartsResult>${parts.map(([number, part]) => `<Part><PartNumber>${String(number)}</PartNumber><ETag>${part.etag}</ETag><Size>${String(part.body.byteLength)}</Size></Part>`).join("")}</ListPartsResult>`,
+                      );
+            }
 
             if (request.method === "POST") {
-                objects.set(upload.key, { body: Buffer.concat(sorted.map(([, body]) => body)), headers: {}, lastModified: new Date() });
+                const completed = bucket.complete(uploadId);
 
-                return xml(`<CompleteMultipartUploadResult><ETag>"done"</ETag></CompleteMultipartUploadResult>`);
+                return completed === undefined ? missing("NoSuchUpload") : xml(`<CompleteMultipartUploadResult><ETag>${completed.etag}</ETag></CompleteMultipartUploadResult>`);
             }
 
-            return new Response(null, { status: 204 });
+            return bucket.abort(uploadId) ? new Response(null, { status: 204 }) : missing("NoSuchUpload");
         }
 
         if (request.method === "PUT") {
             const source = request.headers.get("x-amz-copy-source");
 
             if (source !== null) {
-                const copied = objects.get(decodeURIComponent(source.slice("uploads/".length)));
-
-                if (!copied) {
-                    return missing();
-                }
-
-                objects.set(key, { ...copied, lastModified: new Date() });
-
-                return xml("<CopyObjectResult/>");
+                return bucket.copy(decodeURIComponent(source.slice("uploads/".length)), key) ? xml("<CopyObjectResult/>") : missing();
             }
 
-            const headers = Object.fromEntries([...request.headers].filter(([name]) => name.startsWith("x-amz-meta-")));
+            const metadata = Object.fromEntries([...request.headers].filter(([name]) => name.startsWith("x-amz-meta-")));
+            const object = bucket.put(key, Buffer.from(await request.arrayBuffer()), { metadata });
 
-            objects.set(key, { body: new Uint8Array(await request.arrayBuffer()), headers, lastModified: new Date() });
-
-            return new Response(null, { headers: { ETag: '"m"' } });
+            return new Response(null, { headers: { ETag: object.etag } });
         }
 
         if (request.method === "DELETE") {
-            objects.delete(key);
+            bucket.objects.delete(key);
 
             return new Response(null, { status: 204 });
         }
 
-        const stored = objects.get(key);
+        const read = bucket.read(key, request.headers.get("range"));
 
-        if (!stored) {
+        if (!read) {
             return request.method === "HEAD" ? new Response(null, { status: 404 }) : missing();
         }
 
-        const range = /^bytes=(\d+)-(\d*)$/u.exec(request.headers.get("range") ?? "");
-        const end = range?.[2] ? Number(range[2]) + 1 : undefined;
-        const body = range ? stored.body.slice(Number(range[1]), end) : stored.body;
-
-        return new Response(request.method === "HEAD" ? null : body, {
-            headers: { ...stored.headers, "content-length": String(body.byteLength) },
-            status: range ? 206 : 200,
+        return new Response(request.method === "HEAD" ? null : read.body, {
+            headers: { ...read.object.metadata, "content-length": String(read.body.byteLength) },
+            status: read.partial ? 206 : 200,
         });
     };
 
-    return { fetch, objects, requests, state, uploads };
+    return { fetch, objects: bucket.objects, put: bucket.put, requests, state, uploads: bucket.uploads };
 };
 
 const createStorage = (): AwsLightStorage =>
@@ -166,16 +142,6 @@ const upload = async (storage: AwsLightStorage, text: string): Promise<string> =
     return file.id;
 };
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 describe("aws-light against an in-memory S3", () => {
     afterEach(() => {
         vi.unstubAllGlobals();
@@ -190,7 +156,7 @@ describe("aws-light against an in-memory S3", () => {
 
         const body = Buffer.alloc(1024 * 1024, 7);
 
-        s3.objects.set("big", { body, headers: {}, lastModified: new Date() });
+        s3.put("big", body);
 
         const { stream } = await createStorage().getStream({ id: "big" });
         let length = 0;
@@ -208,14 +174,14 @@ describe("aws-light against an in-memory S3", () => {
         const s3 = createS3();
 
         vi.stubGlobal("fetch", s3.fetch);
-        s3.objects.set("text", { body: Buffer.from("0123456789"), headers: {}, lastModified: new Date() });
+        s3.put("text", Buffer.from("0123456789"));
 
         const storage = createStorage();
         const file = await storage.get({ id: "text" }, { range: { end: 4, start: 2 } });
         const { stream } = await storage.getStream({ id: "text" }, { range: { start: 7 } });
 
         expect(file.content.toString()).toBe("234");
-        await expect(readAll(stream)).resolves.toBe("789");
+        await expect(text(stream)).resolves.toBe("789");
     });
 
     it("should report a missing object as a 404", async () => {
@@ -261,7 +227,7 @@ describe("aws-light against an in-memory S3", () => {
         const s3 = createS3();
 
         vi.stubGlobal("fetch", s3.fetch);
-        s3.objects.set("old", { body: Buffer.from("legacy"), headers: {}, lastModified: new Date() });
+        s3.put("old", Buffer.from("legacy"));
 
         const storage = createStorage();
 

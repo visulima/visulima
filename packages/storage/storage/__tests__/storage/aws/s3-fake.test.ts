@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { buffer, text } from "node:stream/consumers";
 
 import {
     AbortMultipartUploadCommand,
@@ -20,62 +21,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import { createS3State } from "../../__helpers__/s3-state";
 
 vi.mock(import("aws-crt"));
-
-type Stored = { body: Buffer; contentType?: string; etag: string; expires?: Date; lastModified: Date; metadata: Record<string, string> };
-
-type Upload = { contentType?: string; initiated: Date; key: string; metadata: Record<string, string>; parts: Map<number, { body: Buffer; etag: string }> };
 
 const MIB = 1024 * 1024;
 
 const s3Error = (name: string, status: number): Error => Object.assign(new Error(name), { $fault: "client", $metadata: { httpStatusCode: status }, name });
 
-const toBuffer = async (body: unknown): Promise<Buffer> => {
-    if (body instanceof Uint8Array) {
-        return Buffer.from(body);
-    }
-
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of body as AsyncIterable<Uint8Array>) {
-        chunks.push(Buffer.from(chunk));
-    }
-
-    return Buffer.concat(chunks);
-};
-
-const readAll = async (stream: Readable): Promise<string> => {
-    const buffer = await toBuffer(stream);
-
-    return buffer.toString();
-};
+const toBuffer = async (body: unknown): Promise<Buffer> => (body instanceof Uint8Array ? Buffer.from(body) : buffer(body as AsyncIterable<Uint8Array>));
 
 /**
  * In-memory S3 bucket answering the commands S3Storage and S3MetaStorage send. `override` answers a
  * command before the fake does: an Error is thrown, any other value is returned as the response.
  */
 const createS3 = () => {
-    const objects = new Map<string, Stored>();
-    const uploads = new Map<string, Upload>();
+    const bucket = createS3State();
     const sent: { input: Record<string, unknown>; name: string }[] = [];
     const state: { override?: (command: { input: Record<string, unknown> }) => unknown } = {};
-    let counter = 0;
-    const etag = (): string => {
-        counter += 1;
-
-        return `"e${String(counter)}"`;
-    };
-
-    const findUpload = (id: unknown): Upload => {
-        const upload = uploads.get(id as string);
-
-        if (!upload) {
-            throw s3Error("NoSuchUpload", 404);
-        }
-
-        return upload;
-    };
 
     const send = async (command: { constructor: { name: string }; input: Record<string, unknown> }): Promise<unknown> => {
         const { input } = command;
@@ -93,137 +56,111 @@ const createS3 = () => {
         }
 
         const key = input.Key as string;
+        const uploadId = input.UploadId as string;
 
         if (command instanceof CreateMultipartUploadCommand) {
-            const id = `u${String(uploads.size + 1)}-${String(counter)}`;
-
-            uploads.set(id, {
-                contentType: input.ContentType as string,
-                initiated: new Date(),
-                key,
-                metadata: (input.Metadata ?? {}) as Record<string, string>,
-                parts: new Map(),
-            });
-
-            return { UploadId: id };
+            return { UploadId: bucket.createUpload(key, { contentType: input.ContentType as string, metadata: input.Metadata as Record<string, string> }) };
         }
 
         if (command instanceof UploadPartCommand) {
-            const upload = findUpload(input.UploadId);
-            const part = { body: await toBuffer(input.Body), etag: etag() };
+            const ETag = bucket.putPart(uploadId, input.PartNumber as number, await toBuffer(input.Body));
 
-            upload.parts.set(input.PartNumber as number, part);
+            if (ETag === undefined) {
+                throw s3Error("NoSuchUpload", 404);
+            }
 
-            return { ETag: part.etag };
+            return { ETag };
         }
 
         if (command instanceof ListPartsCommand) {
-            const parts = [...findUpload(input.UploadId).parts].toSorted(([a], [b]) => a - b);
+            const parts = bucket.parts(uploadId);
+
+            if (parts === undefined) {
+                throw s3Error("NoSuchUpload", 404);
+            }
 
             return { Parts: parts.map(([number, part]) => { return { ETag: part.etag, PartNumber: number, Size: part.body.byteLength }; }) };
         }
 
         if (command instanceof CompleteMultipartUploadCommand) {
-            const upload = findUpload(input.UploadId);
             const requested = (input.MultipartUpload as { Parts: { PartNumber: number }[] }).Parts;
-            const body = Buffer.concat(requested.map(({ PartNumber }) => upload.parts.get(PartNumber)?.body ?? Buffer.alloc(0)));
+            const completed = bucket.complete(uploadId, requested.map(({ PartNumber }) => PartNumber));
 
-            uploads.delete(input.UploadId as string);
-            objects.set(upload.key, { body, contentType: upload.contentType, etag: etag(), lastModified: new Date(), metadata: upload.metadata });
+            if (completed === undefined) {
+                throw s3Error("NoSuchUpload", 404);
+            }
 
-            return { ETag: objects.get(upload.key)?.etag, Location: `https://bucket.s3.test/${upload.key}` };
+            return { ETag: completed.etag, Location: `https://bucket.s3.test/${key}` };
         }
 
         if (command instanceof AbortMultipartUploadCommand) {
-            findUpload(input.UploadId);
-            uploads.delete(input.UploadId as string);
+            if (!bucket.abort(uploadId)) {
+                throw s3Error("NoSuchUpload", 404);
+            }
 
             return {};
         }
 
         if (command instanceof ListMultipartUploadsCommand) {
-            return { IsTruncated: false, Uploads: [...uploads].map(([id, upload]) => { return { Initiated: upload.initiated, Key: upload.key, UploadId: id }; }) };
+            return { IsTruncated: false, Uploads: [...bucket.uploads].map(([id, upload]) => { return { Initiated: upload.initiated, Key: upload.key, UploadId: id }; }) };
         }
 
         if (command instanceof ListObjectsV2Command) {
-            const prefix = (input.Prefix as string | undefined) ?? "";
-            const delimiter = input.Delimiter as string | undefined;
-            const keys = [...objects.keys()].filter((name) => name.startsWith(prefix)).toSorted();
-            const prefixes = new Set<string>();
-            const contents: string[] = [];
-
-            for (const name of keys) {
-                const cut = delimiter ? name.indexOf(delimiter, prefix.length) : -1;
-
-                if (cut === -1) {
-                    contents.push(name);
-                } else {
-                    prefixes.add(name.slice(0, cut + 1));
-                }
-            }
-
             // A real bucket may answer fewer keys than asked for; two per page forces paging.
-            const start = Number(input.ContinuationToken ?? 0);
-            const end = start + Math.min((input.MaxKeys as number | undefined) ?? 1000, 2);
+            const page = bucket.list({
+                delimiter: input.Delimiter as string | undefined,
+                maxKeys: input.MaxKeys as number | undefined,
+                pageSize: 2,
+                prefix: input.Prefix as string | undefined,
+                start: Number(input.ContinuationToken ?? 0),
+            });
 
             return {
-                CommonPrefixes: [...prefixes].map((name) => { return { Prefix: name }; }),
-                Contents: contents.slice(start, end).map((name) => { return { Key: name, LastModified: objects.get(name)?.lastModified }; }),
-                IsTruncated: end < contents.length,
-                NextContinuationToken: end < contents.length ? String(end) : undefined,
+                CommonPrefixes: page.prefixes.map((name) => { return { Prefix: name }; }),
+                Contents: page.contents.map((object) => { return { Key: object.key, LastModified: object.lastModified }; }),
+                IsTruncated: page.next !== undefined,
+                NextContinuationToken: page.next === undefined ? undefined : String(page.next),
             };
         }
 
         if (command instanceof PutObjectCommand) {
-            if (input.IfMatch !== undefined && objects.get(key)?.etag !== input.IfMatch) {
+            if (input.IfMatch !== undefined && bucket.objects.get(key)?.etag !== input.IfMatch) {
                 throw s3Error("PreconditionFailed", 412);
             }
 
-            const stored = { body: Buffer.alloc(0), etag: etag(), lastModified: new Date(), metadata: (input.Metadata ?? {}) as Record<string, string> };
-
-            objects.set(key, stored);
-
-            return { ETag: stored.etag };
+            return { ETag: bucket.put(key, Buffer.alloc(0), { metadata: input.Metadata as Record<string, string> }).etag };
         }
 
         if (command instanceof CopyObjectCommand) {
-            const source = objects.get(decodeURIComponent((input.CopySource as string).slice("bucket/".length)));
-
-            if (!source) {
+            if (!bucket.copy(decodeURIComponent((input.CopySource as string).slice("bucket/".length)), key)) {
                 throw s3Error("NoSuchKey", 404);
             }
-
-            objects.set(key, { ...source, etag: etag(), lastModified: new Date() });
 
             return {};
         }
 
         if (command instanceof DeleteObjectCommand) {
-            objects.delete(key);
+            bucket.objects.delete(key);
 
             return {};
         }
 
         if (command instanceof HeadObjectCommand || command instanceof GetObjectCommand) {
-            const stored = objects.get(key);
+            const read = bucket.read(key, input.Range as string | undefined);
 
-            if (!stored) {
+            if (!read) {
                 throw s3Error(command instanceof HeadObjectCommand ? "NotFound" : "NoSuchKey", 404);
             }
 
-            const range = /^bytes=(\d+)-(\d*)$/u.exec((input.Range as string | undefined) ?? "");
-            const end = range?.[2] ? Number(range[2]) + 1 : undefined;
-            const body = range ? stored.body.subarray(Number(range[1]), end) : stored.body;
-
             return {
                 // Not a Readable: the adapter has to wrap whatever body type the SDK hands it.
-                ...(command instanceof GetObjectCommand && { Body: body }),
-                ContentLength: body.byteLength,
-                ContentType: stored.contentType,
-                ETag: stored.etag,
-                Expires: stored.expires,
-                LastModified: stored.lastModified,
-                Metadata: stored.metadata,
+                ...(command instanceof GetObjectCommand && { Body: read.body }),
+                ContentLength: read.body.byteLength,
+                ContentType: read.object.contentType,
+                ETag: read.object.etag,
+                Expires: read.object.expires,
+                LastModified: read.object.lastModified,
+                Metadata: read.object.metadata,
             };
         }
 
@@ -231,7 +168,7 @@ const createS3 = () => {
         return {};
     };
 
-    return { objects, send, sent, state, uploads };
+    return { objects: bucket.objects, send, sent, state, uploads: bucket.uploads };
 };
 
 const createStorage = (config: Partial<ConstructorParameters<typeof S3Storage>[0]> = {}): S3Storage =>
@@ -332,7 +269,7 @@ describe("s3Storage against an in-memory S3", () => {
         const { headers, stream } = await storage.getStream({ id }, { range: { start: 7 } });
 
         expect(headers).toMatchObject({ "Content-Length": "3", "Content-Type": "text/plain", ETag: expect.any(String) });
-        await expect(readAll(stream)).resolves.toBe("789");
+        await expect(text(stream)).resolves.toBe("789");
     });
 
     it("should read an upload stored under a custom filename by its id", async () => {
@@ -347,7 +284,7 @@ describe("s3Storage against an in-memory S3", () => {
 
         const { stream } = await storage.getStream({ id }, { range: { start: 7 } });
 
-        await expect(readAll(stream)).resolves.toBe("789");
+        await expect(text(stream)).resolves.toBe("789");
         // Without metadata the id is the key.
         await expect(storage.get({ id: "user/123/digits.txt" })).resolves.toMatchObject({ size: 10 });
     });

@@ -1,17 +1,9 @@
 import { PassThrough, Readable } from "node:stream";
+import { buffer as collect } from "node:stream/consumers";
 
 import { describe, expect, it } from "vitest";
 
 import { applyRange, createRangeLimitedStream, createStreamResponse, pipeWithBackpressure, rangeIfCurrent } from "../../../src/handler/utils/stream-utils";
-
-const collect = (stream: Readable): Promise<Buffer> =>
-    new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-
-        stream.on("data", (chunk: Buffer) => chunks.push(chunk));
-        stream.on("end", () => resolve(Buffer.concat(chunks)));
-        stream.on("error", reject);
-    });
 
 const makeSequentialBuffer = (length: number): Buffer => {
     const buffer = Buffer.alloc(length);

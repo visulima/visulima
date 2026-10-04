@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { buffer, text } from "node:stream/consumers";
 
 import { BlobServiceClient } from "@azure/storage-blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -25,20 +26,6 @@ type Blob = {
 const ORIGIN = "https://acct.blob.core.windows.net/files/";
 
 const statusError = (statusCode: number, code: string): Error => Object.assign(new Error(code), { code, statusCode });
-
-const readBody = async (body: Buffer | Readable): Promise<Buffer> => {
-    if (Buffer.isBuffer(body)) {
-        return body;
-    }
-
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of body) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks);
-};
 
 /**
  * In-memory Azure Blob container ("files") answering the BlobServiceClient calls AzureStorage and
@@ -173,7 +160,7 @@ const createAzure = () => {
             stageBlock: async (id: string, body: Buffer | Readable, length: number) => {
                 guard("stageBlock");
 
-                const bytes = await readBody(body);
+                const bytes = Buffer.isBuffer(body) ? body : await buffer(body);
 
                 if (bytes.byteLength !== length) {
                     throw statusError(400, "InvalidHeaderValue");
@@ -284,8 +271,6 @@ const upload = async (storage: AzureStorage, text: string, id?: string): Promise
     return file.id;
 };
 
-const readAll = async (stream: Readable): Promise<string> => readBody(stream).then((body) => body.toString());
-
 describe("azure storage against an in-memory container", () => {
     beforeEach(() => {
         azure = createAzure();
@@ -375,7 +360,7 @@ describe("azure storage against an in-memory container", () => {
         expect(file).toMatchObject({ contentType: "text/plain", id, originalName: "a.txt", size: 5 });
         expect(file.content.toString()).toBe("hello");
         expect([size, headers?.["Content-Type"]]).toStrictEqual([5, "text/plain"]);
-        await expect(readAll(stream)).resolves.toBe("hello");
+        await expect(text(stream)).resolves.toBe("hello");
     });
 
     it("should tell a missing blob from a deleted one", async () => {

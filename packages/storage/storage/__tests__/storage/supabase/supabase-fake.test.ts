@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -139,16 +140,6 @@ const upload = async (storage: SupabaseStorage, text: string, metadata: Record<s
     return storage.write({ body: Readable.from([Buffer.from(text)]), contentLength: text.length, id: file.id, start: 0 });
 };
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 describe("supabase against an in-memory Storage API", () => {
     it("should store a whole-file upload and keep its metadata after completion", async () => {
         expect.assertions(5);
@@ -167,7 +158,7 @@ describe("supabase against an in-memory Storage API", () => {
 
         const { stream } = await storage.getStream({ id: file.id });
 
-        await expect(readAll(stream)).resolves.toBe("hello world");
+        await expect(text(stream)).resolves.toBe("hello world");
     });
 
     it("should reject a chunked write without storing a partial object, then accept the whole file", async () => {

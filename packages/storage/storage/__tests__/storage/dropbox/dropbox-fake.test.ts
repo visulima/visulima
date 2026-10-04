@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { DropboxResponseError } from "dropbox";
 import { describe, expect, it } from "vitest";
@@ -198,16 +199,6 @@ const createStorage = (dropbox: ReturnType<typeof createDropbox>, options: Parti
     return { meta, storage };
 };
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 const upload = async (storage: DropboxStorage, text: string, init: Partial<DropboxFile> = {}): Promise<DropboxFile> => {
     const file = await storage.create({ contentType: "text/plain", metadata: { owner: "me" }, originalName: "a.txt", size: text.length, ...init });
 
@@ -288,7 +279,7 @@ describe("dropbox against an in-memory Dropbox", () => {
         const { headers, stream } = await storage.getStream({ id: file.id });
 
         expect(headers).toMatchObject({ "Content-Length": "5", "Content-Type": "text/plain" });
-        await expect(readAll(stream)).resolves.toBe("hello");
+        await expect(text(stream)).resolves.toBe("hello");
         await expect(storage.get({ id: "missing" })).rejects.toBeInstanceOf(DropboxResponseError);
     });
 

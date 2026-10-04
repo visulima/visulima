@@ -1,4 +1,5 @@
 import { Readable } from "node:stream";
+import { text } from "node:stream/consumers";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -138,16 +139,6 @@ const upload = async (storage: BunnyStorage, text: string): Promise<string> => {
     return file.id;
 };
 
-const readAll = async (stream: Readable): Promise<string> => {
-    const chunks: Buffer[] = [];
-
-    for await (const chunk of stream) {
-        chunks.push(Buffer.from(chunk as Uint8Array));
-    }
-
-    return Buffer.concat(chunks).toString();
-};
-
 describe("bunny against an in-memory storage zone", () => {
     beforeEach(() => {
         zone.objects.clear();
@@ -215,7 +206,7 @@ describe("bunny against an in-memory storage zone", () => {
         const id = await upload(storage, "payload");
 
         await expect(storage.get({ id })).resolves.toMatchObject({ contentType: "text/plain", metadata: { kept: "yes" }, size: 7 });
-        await expect(storage.getStream({ id }).then(async ({ stream }) => readAll(stream))).resolves.toBe("payload");
+        await expect(storage.getStream({ id }).then(async ({ stream }) => text(stream))).resolves.toBe("payload");
         await expect(storage.exists({ id })).resolves.toBe(true);
         await expect(storage.getCompletedFile(id)).resolves.toMatchObject({ bytesWritten: 7, contentType: "text/plain", status: "completed" });
         await expect(storage.getCompletedFile("missing")).resolves.toBeUndefined();
