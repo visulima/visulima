@@ -2,8 +2,9 @@ import { Readable } from "node:stream";
 
 import etag from "etag";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import { toHttpDate } from "../../utils/headers";
+import { retry } from "../../utils/retry";
 import { isMetaNotFound } from "../meta-storage";
 import type { MetaStorageOptions } from "../meta-storage-options";
 import { BaseStorage } from "../storage";
@@ -157,20 +158,16 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
     public async write(part: FilePart | FileQuery, _options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("write", async () => {
+            // Also fails before the body of an unknown upload is read.
             const file = await this.getMeta(part.id);
 
             if (!hasContent(part)) {
                 return file;
             }
 
-            if (part.size !== undefined) {
-                updateSize(file, part.size);
-            }
-
-            const { body, start } = part;
             const chunks: Buffer[] = [];
 
-            for await (const chunk of body) {
+            for await (const chunk of part.body) {
                 if (Buffer.isBuffer(chunk)) {
                     chunks.push(chunk);
                 } else if (typeof chunk === "string") {
@@ -183,47 +180,17 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             }
 
             const incoming = Buffer.concat(chunks);
-            const existing = this.store.get(file.name)?.bytes;
-            // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale. Chunked
-            // uploads are excluded: providers mark them completed as soon as the furthest byte lands,
-            // so offset 0 can still be a missing chunk of an unfinished upload.
-            const isOverwrite = start === 0 && file.status === "completed" && file.metadata?._chunkedUpload !== true;
-            const base = isOverwrite || !existing ? Buffer.alloc(0) : existing;
 
-            // Write at `start`, growing the buffer as needed and leaving bytes outside
-            // `[start, start + incoming.length)` untouched, so out-of-order chunks don't clobber each other.
-            const bytes = Buffer.alloc(Math.max(base.length, start + incoming.length));
-
-            base.copy(bytes);
-            incoming.copy(bytes, start);
-
-            // An overwrite may be shorter than the file it replaces.
-            if (isOverwrite) {
-                updateSize(file, bytes.length);
-            }
-
-            const now = new Date().toISOString();
-            const entry: MemoryEntry = {
-                bytes,
-                contentType: file.contentType,
-                createdAt: this.store.get(file.name)?.createdAt ?? now,
-                eTag: etag(bytes),
-                metadata: { ...file.metadata },
-                modifiedAt: now,
-            };
-
-            this.store.set(file.name, entry);
-
-            file.bytesWritten = bytes.length;
-            file.ETag = entry.eTag;
-            file.modifiedAt = entry.modifiedAt;
-            file.status = getFileStatus(file);
-
-            // onComplete is the upload handlers' job (they call it once the upload is
-            // completed); calling it here too made every handler upload fire it twice.
-            await this.saveMeta(file);
-
-            return file;
+            // The read-modify-write of the bytes and metadata holds the per-id lock, like DiskStorage,
+            // so concurrent writes to an id apply one after the other instead of saving stale copies.
+            // The body is read before locking, so concurrent chunks only wait for each other's short
+            // merge (the lock fails fast, hence the retry) instead of answering 423.
+            return retry(async () => this.withLock(part.id, async () => this.storeBytes(part, incoming)), {
+                initialDelay: 1,
+                maxDelay: 50,
+                maxRetries: 20,
+                shouldRetry: (error) => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_LOCKED,
+            });
         });
     }
 
@@ -368,6 +335,58 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             return moved;
         });
+    }
+
+    /** Writes `incoming` at `part.start` and saves the metadata; call with the id's lock held. */
+    private async storeBytes(part: FilePart, incoming: Buffer): Promise<TFile> {
+        const file = await this.getMeta(part.id);
+
+        if (part.size !== undefined) {
+            updateSize(file, part.size);
+        }
+
+        const { start } = part;
+        const existing = this.store.get(file.name)?.bytes;
+        // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale. Chunked
+        // uploads are excluded: providers mark them completed as soon as the furthest byte lands,
+        // so offset 0 can still be a missing chunk of an unfinished upload.
+        const isOverwrite = start === 0 && file.status === "completed" && file.metadata?._chunkedUpload !== true;
+        const base = isOverwrite || !existing ? Buffer.alloc(0) : existing;
+
+        // Write at `start`, growing the buffer as needed and leaving bytes outside
+        // `[start, start + incoming.length)` untouched, so out-of-order chunks don't clobber each other.
+        const bytes = Buffer.alloc(Math.max(base.length, start + incoming.length));
+
+        base.copy(bytes);
+        incoming.copy(bytes, start);
+
+        // An overwrite may be shorter than the file it replaces.
+        if (isOverwrite) {
+            updateSize(file, bytes.length);
+        }
+
+        const now = new Date().toISOString();
+        const entry: MemoryEntry = {
+            bytes,
+            contentType: file.contentType,
+            createdAt: this.store.get(file.name)?.createdAt ?? now,
+            eTag: etag(bytes),
+            metadata: { ...file.metadata },
+            modifiedAt: now,
+        };
+
+        this.store.set(file.name, entry);
+
+        file.bytesWritten = bytes.length;
+        file.ETag = entry.eTag;
+        file.modifiedAt = entry.modifiedAt;
+        file.status = getFileStatus(file);
+
+        // onComplete is the upload handlers' job (they call it once the upload is
+        // completed); calling it here too made every handler upload fire it twice.
+        await this.saveMeta(file);
+
+        return file;
     }
 
     /** Upload records by id: `list` yields stored names, which differ from the ids under a custom `filename`. */

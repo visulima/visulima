@@ -34,6 +34,17 @@ Creating the same file twice now starts two uploads. To resume, keep the upload 
 
 The Node `Tus` and `Multipart` handlers read the id from the last path segment, as the fetch handlers and the Node `Rest` handler already do. A mount path shaped like an id (for example `/files-by-user`) is no longer taken as the id, and `/<id>/metadata` resolves to `<id>`.
 
+### Other changes in this release
+
+- **`retryConfig` applies to every adapter.** It used to take effect only on S3, Azure, Netlify and GCS. `maxRetries: 0` now really disables retries.
+- **`list()` walks subfolders and provider pages.** Supabase, OneDrive, SharePoint and Bunny list files in subfolders, keyed by their full path (`user/123/file`). Vercel Blob, UploadThing, Cloudinary, Bun S3 and PocketBase return up to `limit` objects across provider pages, so `Files.listAll`, `transfer` and `sync` see every object.
+- **Reads under a custom `filename` work** on S3, aws-light, GCS and Azure: objects are looked up by their stored name, not the upload id.
+- **Azure `exists()`** answers `true` for blobs without upload metadata, and throws on errors other than `404`.
+- **`DiskStorageWithChecksum.delete()`** throws `FILE_NOT_FOUND` for an unknown id, like `DiskStorage`, instead of returning `{ id }`.
+- **Multipart uploads** no longer fire `onUpdate`, and form fields named `name`, `title`, `originalName` or `filename` no longer replace the uploaded file's name.
+- **Transforms** answer with the real media type (`video/x-matroska`, `video/quicktime`, `audio/flac`, …). Video answers `400` for `fit=inside` and `fit=outside`.
+- **`OpenTelemetryMetrics`** moved to `@visulima/storage/metrics`.
+
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
 ### Summary

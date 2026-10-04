@@ -8,7 +8,8 @@ import typeis from "type-is";
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
-import { isFreshChunkedRecord, mergeChunkedProgress } from "../utils/chunked-upload";
+import type { ChunkInfo } from "../utils/chunked-upload";
+import { isFreshChunkedRecord, mergeChunkedProgress, mergeChunks } from "../utils/chunked-upload";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
@@ -918,6 +919,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 }
 
                 delete (processedMetadata as Record<string, unknown>).ttl;
+            }
+
+            // A caller's `_chunks` comes from an earlier read; chunks another request recorded since are
+            // in the stored record. Merge, so an update never drops a recorded chunk (lost update).
+            const storedChunks = file.metadata?._chunks;
+            const incomingChunks = processedMetadata.metadata?._chunks;
+
+            if (Array.isArray(storedChunks) && Array.isArray(incomingChunks)) {
+                processedMetadata.metadata = {
+                    ...processedMetadata.metadata,
+                    _chunks: mergeChunks(storedChunks as ChunkInfo[], incomingChunks as ChunkInfo[]),
+                };
             }
 
             updateMetadata(file as File, processedMetadata);

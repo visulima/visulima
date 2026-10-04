@@ -146,7 +146,7 @@ const swaggerSpec = (path = "/", tags: string[] | undefined = ["Transform"]): Pa
                     },
                 },
                 Fit: {
-                    description: "Resize fit mode",
+                    description: "Resize fit mode. `inside` and `outside` apply to images only; video answers 400 for them.",
                     in: "query",
                     name: "fit",
                     schema: {

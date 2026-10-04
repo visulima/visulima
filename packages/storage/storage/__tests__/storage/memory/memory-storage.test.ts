@@ -49,6 +49,43 @@ describe(MemoryStorage, () => {
         expect(storage.raw.size).toBe(0);
     });
 
+    it("should hold the id's lock while merging a write", async () => {
+        expect.assertions(3);
+
+        const storage = new MemoryStorage();
+        const file = await storage.create({ id: "upload", metadata: {}, size: 4 });
+        let written: Promise<unknown> | undefined;
+
+        await storage.withLock(file.id, async () => {
+            written = storage.write({ body: Readable.from("ab"), contentLength: 2, id: file.id, start: 0 });
+
+            // Give the write time to read its body and try the lock.
+            await new Promise((resolve) => {
+                setTimeout(resolve, 20);
+            });
+
+            await expect(storage.getMeta(file.id)).resolves.toHaveProperty("bytesWritten", 0);
+        });
+
+        // It retries once the lock is free.
+        await expect(written).resolves.toHaveProperty("bytesWritten", 2);
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.from("ab"));
+    });
+
+    it("should apply concurrent writes to the same id one after the other", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage();
+        const file = await storage.create({ id: "upload", metadata: {}, size: 8 });
+
+        await Promise.all(
+            ["ab", "cd", "ef", "gh"].map(async (body, index) => storage.write({ body: Readable.from(body), contentLength: 2, id: file.id, start: index * 2 })),
+        );
+
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.from("abcdefgh"));
+        await expect(storage.getMeta(file.id)).resolves.toStrictEqual(expect.objectContaining({ bytesWritten: 8, status: "completed" }));
+    });
+
     it("should keep a lock held past its TTL while the holder still runs", async () => {
         expect.assertions(1);
 
