@@ -33,15 +33,17 @@ const createSupabase = () => {
         }
 
         if (path === "list/media") {
+            // `prefix` names a folder; like the API, only its direct entries are listed.
             const { limit, offset, prefix } = (await request.json()) as { limit: number; offset: number; prefix: string };
+            const folder = prefix ? `${prefix}/` : "";
             const entries = new Map<string>();
 
             for (const [key, object] of [...objects].toSorted(([a], [b]) => a.localeCompare(b))) {
-                if (!key.startsWith(prefix)) {
+                if (!key.startsWith(folder)) {
                     continue;
                 }
 
-                const [name, ...rest] = key.slice(prefix.length).split("/");
+                const [name, ...rest] = key.slice(folder.length).split("/");
 
                 entries.set(
                     name as string,
@@ -225,19 +227,42 @@ describe("supabase against an in-memory Storage API", () => {
         await expect(storage.move("nope", "x")).rejects.toThrow("Object not found");
     });
 
-    it("should list stored files without folder placeholders", async () => {
-        expect.assertions(2);
+    it("should list stored files in subfolders by their full key, without folder placeholders", async () => {
+        expect.assertions(3);
 
         const supabase = createSupabase();
         const storage = createStorage(supabase);
         const file = await upload(storage, "hello");
+        const stored = { body: new Uint8Array(1), contentType: "text/plain", created: new Date().toISOString(), id: "n" };
 
-        supabase.objects.set("nested/deep.txt", { body: new Uint8Array(1), contentType: "text/plain", created: new Date().toISOString(), id: "n" });
+        supabase.objects.set("nested/deep.txt", stored);
+        supabase.objects.set("user/123/file", stored);
 
         const listed = await storage.list();
 
-        expect(listed.map((entry) => [entry.id, entry.size, entry.contentType])).toStrictEqual([[file.name, 5, "text/plain"]]);
+        expect(listed.map((entry) => [entry.id, entry.size, entry.contentType]).toSorted()).toStrictEqual(
+            [
+                [file.name, 5, "text/plain"],
+                ["nested/deep.txt", 1, "text/plain"],
+                ["user/123/file", 1, "text/plain"],
+            ].toSorted(),
+        );
+        await expect(storage.list(2)).resolves.toHaveLength(2);
         await expect(storage.list(0)).resolves.toStrictEqual([]);
+    });
+
+    it("should page through a folder holding more entries than one request returns", async () => {
+        expect.assertions(1);
+
+        const supabase = createSupabase();
+        const storage = createStorage(supabase);
+        const stored = { body: new Uint8Array(1), contentType: "text/plain", created: new Date().toISOString(), id: "o" };
+
+        for (let index = 0; index < 1001; index += 1) {
+            supabase.objects.set(`many/${String(index).padStart(4, "0")}`, stored);
+        }
+
+        await expect(storage.list(5000)).resolves.toHaveLength(1001);
     });
 
     it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {

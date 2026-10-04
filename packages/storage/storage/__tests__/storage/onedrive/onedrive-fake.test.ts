@@ -166,8 +166,8 @@ describe("onedrive against an in-memory Graph drive", () => {
         expect(text(graph, "uploads/moved.txt")).toBe("payload");
     });
 
-    it("should list files of the root folder across pages, without folders or items outside it", async () => {
-        expect.assertions(2);
+    it("should list files of the root folder and its subfolders across pages, without folders or items outside it", async () => {
+        expect.assertions(3);
 
         const graph = createGraph(2);
         const storage = createStorage(graph);
@@ -177,12 +177,20 @@ describe("onedrive against an in-memory Graph drive", () => {
         }
 
         graph.put("uploads/nested/x", new Uint8Array(1), "text/plain");
+        graph.put("uploads/user/123/file", new Uint8Array(1), "text/plain");
         graph.put("elsewhere/y", new Uint8Array(1), "text/plain");
 
         const files = await storage.list();
 
-        expect(files.map((file) => file.id).toSorted()).toStrictEqual(["a", "b", "c", "d", "e"]);
+        expect(files.map((file) => file.id).toSorted()).toStrictEqual(["a", "b", "c", "d", "e", "nested/x", "user/123/file"]);
         await expect(storage.list(3)).resolves.toHaveLength(3);
+
+        // An upload under a nested custom filename is listed by the key it was stored under.
+        const nested = createStorage(graph, { filename: () => "user/456/report.txt" });
+
+        await upload(nested, "hi");
+
+        await expect(nested.list().then((listed) => listed.map((file) => file.id))).resolves.toContain("user/456/report.txt");
     });
 
     it("should delete the object and its metadata, and keep the metadata when the delete fails", async () => {

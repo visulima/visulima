@@ -26,6 +26,7 @@ interface DriveItem {
     cTag?: string;
     eTag?: string;
     file?: { mimeType?: string };
+    folder?: { childCount?: number };
     id: string;
     lastModifiedDateTime?: string;
     name: string;
@@ -619,48 +620,50 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             "list",
             async () => {
                 const files: OneDriveFile[] = [];
-                let url: string | null = `${this.folderListChildrenPath()}?$top=${Math.min(limit, 1000)}`;
+                // `children` lists one folder level, so walk the subfolders breadth-first; keys stay relative to the root folder.
+                const folders = [""];
 
-                while (url && files.length < limit) {
-                    const page = (await this.runOperation(options, () => this.client.api(url as string).get())) as {
-                        "@odata.nextLink"?: string;
-                        value: DriveItem[];
-                    };
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const prefix = folder;
+                    let url: string | null = `${this.itemActionPath(prefix, "children")}?$top=${Math.min(limit, 1000)}`;
 
-                    for (const item of page.value) {
-                        if (!item.file) {
-                            continue;
+                    while (url && files.length < limit) {
+                        const page = (await this.runOperation(options, () => this.client.api(url as string).get())) as {
+                            "@odata.nextLink"?: string;
+                            value: DriveItem[];
+                        };
+
+                        for (const item of page.value) {
+                            const key = prefix ? `${prefix}/${item.name}` : item.name;
+
+                            if (item.folder) {
+                                folders.push(key);
+                            }
+
+                            if (!item.file || files.length >= limit) {
+                                continue;
+                            }
+
+                            const file = new OneDriveFile({
+                                contentType: item.file.mimeType ?? "application/octet-stream",
+                                metadata: {},
+                                originalName: item.name,
+                            });
+
+                            file.id = key;
+                            file.name = key;
+                            file.driveItemId = item.id;
+                            file.webUrl = item.webUrl;
+                            file.eTag = item.eTag;
+                            file.ETag = item.eTag;
+                            file.size = item.size ?? 0;
+                            file.modifiedAt = item.lastModifiedDateTime;
+
+                            files.push(file);
                         }
 
-                        const key = this.itemPathToKey(item);
-
-                        if (!key) {
-                            continue;
-                        }
-
-                        const file = new OneDriveFile({
-                            contentType: item.file.mimeType ?? "application/octet-stream",
-                            metadata: {},
-                            originalName: item.name,
-                        });
-
-                        file.id = key;
-                        file.name = key;
-                        file.driveItemId = item.id;
-                        file.webUrl = item.webUrl;
-                        file.eTag = item.eTag;
-                        file.ETag = item.eTag;
-                        file.size = item.size ?? 0;
-                        file.modifiedAt = item.lastModifiedDateTime;
-
-                        files.push(file);
-
-                        if (files.length >= limit) {
-                            break;
-                        }
+                        url = page["@odata.nextLink"] ?? null;
                     }
-
-                    url = page["@odata.nextLink"] ?? null;
                 }
 
                 return files;
@@ -773,10 +776,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         return `${this.basePath}/root:/${encodePathSegments(parts.join("/"))}:/${action}`;
     }
 
-    private folderListChildrenPath(): string {
-        return this.itemActionPath("", "children");
-    }
-
     /**
      * Build a `parentReference.path` for move/copy. Microsoft Graph requires
      * this path to be relative to the drive, prefixed with `/drive/root:` —
@@ -807,21 +806,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         }
 
         return `/drive/root:/${encodePathSegments(parts.join("/"))}`;
-    }
-
-    private itemPathToKey(item: DriveItem): string {
-        const parentPath = item.parentReference?.path ?? "";
-        const rootMarker = "/root:";
-        const index = parentPath.indexOf(rootMarker);
-        let folder = index === -1 ? "" : parentPath.slice(index + rootMarker.length);
-
-        folder = trimSlashes(decodeURIComponent(folder));
-
-        const stripped = this.rootFolderPath && folder.startsWith(this.rootFolderPath) ? folder.slice(this.rootFolderPath.length) : folder;
-
-        const cleanFolder = trimSlashes(stripped);
-
-        return cleanFolder ? `${cleanFolder}/${item.name}` : item.name;
     }
 
     private async uploadSimple(key: string, data: Buffer, contentType?: string, options?: OperationOptions): Promise<DriveItem> {

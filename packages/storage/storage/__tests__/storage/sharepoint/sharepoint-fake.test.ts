@@ -79,7 +79,7 @@ describe("sharepoint against an in-memory Graph drive", () => {
         await storage.move("copy.txt", "archive/moved.txt");
 
         expect([...graph.items.keys()].toSorted()).toStrictEqual([`uploads/${id}`, "uploads/archive/moved.txt"].toSorted());
-        await expect(storage.list()).resolves.toMatchObject([{ id }]);
+        await expect(storage.list().then((files) => files.map((file) => file.id).toSorted())).resolves.toStrictEqual([id, "archive/moved.txt"].toSorted());
     });
 
     it("should answer getCompletedFile from the drive and delete object and metadata", async () => {

@@ -1,3 +1,4 @@
+import type { FileObject } from "@supabase/storage-js";
 import { StorageClient } from "@supabase/storage-js";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
@@ -11,6 +12,9 @@ import SupabaseMetaStorage from "./supabase-meta-storage";
 import type { SupabaseStorageOptions } from "./types";
 
 const MAX_SIGNED_URL_SECONDS = 60 * 60 * 24 * 7;
+
+/** Entries per `list` request; a shorter page ends a folder. */
+const LIST_PAGE_SIZE = 1000;
 
 /**
  * Translate a `responseContentDisposition` header value into Supabase's
@@ -425,35 +429,47 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { data, error } = await this.runOperation(options, () =>
-                    this.storageClient.from(this.bucket).list("", {
-                        limit,
-                    }),
-                );
+                const files: SupabaseFile[] = [];
+                // Supabase lists one folder level at a time, so walk the subfolders breadth-first.
+                const folders = [""];
 
-                if (error) {
-                    throw error;
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const prefix = folder;
+
+                    let offset = 0;
+
+                    while (files.length < limit) {
+                        const start = offset;
+                        const { data, error } = await this.runOperation(options, () =>
+                            this.storageClient.from(this.bucket).list(prefix, { limit: LIST_PAGE_SIZE, offset: start }),
+                        );
+
+                        if (error) {
+                            throw error;
+                        }
+
+                        const entries = data ?? [];
+
+                        for (const entry of entries) {
+                            const key = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+                            // Folders come back as entries with a null `id`; they are not files.
+                            if (entry.id === null) {
+                                folders.push(key);
+                            } else if (files.length < limit) {
+                                files.push(this.toListedFile(entry, key));
+                            }
+                        }
+
+                        if (entries.length < LIST_PAGE_SIZE) {
+                            break;
+                        }
+
+                        offset += entries.length;
+                    }
                 }
 
-                // Folders come back as entries with a null `id`; they are not files.
-                return (data ?? []).filter((entry) => entry.id !== null).map((entry) => {
-                    const file = new SupabaseFile({
-                        contentType: entry.metadata?.mimetype ?? "application/octet-stream",
-                        metadata: entry.metadata ?? {},
-                        originalName: entry.name,
-                    });
-
-                    file.id = entry.name;
-                    file.name = entry.name;
-                    file.path = entry.name;
-                    file.bucket = this.bucket;
-                    file.size = typeof entry.metadata?.size === "number" ? entry.metadata.size : undefined;
-                    file.createdAt = entry.created_at ?? undefined;
-                    file.modifiedAt = entry.updated_at ?? undefined;
-                    file.ETag = entry.metadata?.eTag ?? entry.id ?? undefined;
-
-                    return file;
-                });
+                return files;
             },
             { limit },
         );
@@ -491,6 +507,25 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         }
 
         return data.signedUrl;
+    }
+
+    private toListedFile(entry: FileObject, key: string): SupabaseFile {
+        const file = new SupabaseFile({
+            contentType: entry.metadata?.mimetype ?? "application/octet-stream",
+            metadata: entry.metadata ?? {},
+            originalName: entry.name,
+        });
+
+        file.id = key;
+        file.name = key;
+        file.path = key;
+        file.bucket = this.bucket;
+        file.size = typeof entry.metadata?.size === "number" ? entry.metadata.size : undefined;
+        file.createdAt = entry.created_at ?? undefined;
+        file.modifiedAt = entry.updated_at ?? undefined;
+        file.ETag = entry.metadata?.eTag ?? entry.id ?? undefined;
+
+        return file;
     }
 
     private async getMetaSafe(id: string): Promise<SupabaseFile | undefined> {

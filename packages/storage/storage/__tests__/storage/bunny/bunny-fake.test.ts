@@ -64,16 +64,32 @@ const zone = vi.hoisted(() => {
 
                 return entry(path, stored);
             },
-            list: async () => {
+            // Lists the direct entries of one directory ("/" or "/dir/"), subdirectories as directory entries.
+            list: async (_client: unknown, directory: string) => {
                 const failure = take("list");
 
                 if (failure instanceof Error) {
                     throw failure;
                 }
 
+                const subdirectories = new Set<string>();
+                const files = [];
+
+                for (const [path, stored] of objects) {
+                    if (path.startsWith(directory)) {
+                        const rest = path.slice(directory.length);
+
+                        if (rest.includes("/")) {
+                            subdirectories.add(rest.slice(0, rest.indexOf("/")));
+                        } else {
+                            files.push(entry(path, stored));
+                        }
+                    }
+                }
+
                 return [
-                    { isDirectory: true, length: 0, objectName: "dir", path: "/zone/", storageZoneName: "zone" },
-                    ...[...objects].filter(([path]) => path.lastIndexOf("/") === 0).map(([path, stored]) => entry(path, stored)),
+                    ...[...subdirectories].map((name) => { return { isDirectory: true, length: 0, objectName: name, path: `/zone${directory}`, storageZoneName: "zone" }; }),
+                    ...files,
                 ];
             },
             remove: async (_client: unknown, path: string) => {
@@ -251,18 +267,20 @@ describe("bunny against an in-memory storage zone", () => {
         expect(zone.objects.get("/moved.txt")?.contentType).toBe("text/plain");
     });
 
-    it("should list stored root objects only, by key", async () => {
-        expect.assertions(2);
+    it("should list stored objects of every directory by key", async () => {
+        expect.assertions(3);
 
         const storage = createStorage();
         const id = await upload(storage, "hello");
 
         zone.objects.set("/nested/deep.txt", { body: Buffer.from("x"), contentType: "text/plain", created: new Date() });
+        zone.objects.set("/user/123/file", { body: Buffer.from("y"), contentType: "text/plain", created: new Date() });
 
         const files = await storage.list();
 
-        expect(files.map((file) => file.id)).toStrictEqual([id]);
-        expect(files[0]).toMatchObject({ bunnyPath: `/${id}`, size: 5 });
+        expect(files.map((file) => file.id).toSorted()).toStrictEqual([id, "nested/deep.txt", "user/123/file"].toSorted());
+        expect(files.find((file) => file.id === "user/123/file")).toMatchObject({ bunnyPath: "/user/123/file", size: 1 });
+        await expect(storage.list(2)).resolves.toHaveLength(2);
     });
 
     it("should wrap a list failure", async () => {

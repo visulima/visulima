@@ -477,41 +477,52 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                let entries: BunnyStorageSDK.file.StorageFile[];
+                const files: BunnyFile[] = [];
+                // Bunny lists one directory level at a time, so walk the subdirectories breadth-first.
+                const folders = ["/"];
 
-                try {
-                    entries = await this.runOperation(options, () => BunnyStorageSDK.file.list(this.client, "/"));
-                } catch (error) {
-                    throw wrapBunnyError(error, "list");
-                }
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const directory = folder;
+                    let entries: BunnyStorageSDK.file.StorageFile[];
 
-                return entries
-                    .filter((entry) => !entry.isDirectory)
-                    .slice(0, limit)
-                    .map((entry) => {
+                    try {
+                        entries = await this.runOperation(options, () => BunnyStorageSDK.file.list(this.client, directory));
+                    } catch (error) {
+                        throw wrapBunnyError(error, "list");
+                    }
+
+                    for (const entry of entries) {
                         const path =
                             entry.path.endsWith(entry.objectName) || !entry.objectName ? entry.path : `${entry.path.replace(/\/+$/u, "")}/${entry.objectName}`;
                         // Bunny reports paths as `/{zone}/{key}`; ids carry only the key.
                         const zonePrefix = `/${entry.storageZoneName || this.zoneName}/`;
-                        const key = fromBunnyPath(path.startsWith(zonePrefix) ? path.slice(zonePrefix.length) : path);
-                        const file = new BunnyFile({
-                            contentType: entry.contentType || "application/octet-stream",
-                            metadata: {},
-                            originalName: key,
-                        });
+                        const key = fromBunnyPath(path.startsWith(zonePrefix) ? path.slice(zonePrefix.length) : path).replace(/\/+$/u, "");
 
-                        file.id = key;
-                        file.name = key;
-                        file.bunnyPath = toBunnyPath(key);
-                        file.bunnyChecksum = entry.checksum ?? undefined;
-                        file.ETag = entry.checksum ?? undefined;
-                        file.size = entry.length;
-                        // purge() ages non-rolling uploads by createdAt; without it nothing ever expires.
-                        file.createdAt = entry.dateCreated?.toISOString();
-                        file.modifiedAt = entry.lastChanged?.toISOString();
+                        if (entry.isDirectory) {
+                            folders.push(`${toBunnyPath(key)}/`);
+                        } else if (files.length < limit) {
+                            const file = new BunnyFile({
+                                contentType: entry.contentType || "application/octet-stream",
+                                metadata: {},
+                                originalName: key,
+                            });
 
-                        return file;
-                    });
+                            file.id = key;
+                            file.name = key;
+                            file.bunnyPath = toBunnyPath(key);
+                            file.bunnyChecksum = entry.checksum ?? undefined;
+                            file.ETag = entry.checksum ?? undefined;
+                            file.size = entry.length;
+                            // purge() ages non-rolling uploads by createdAt; without it nothing ever expires.
+                            file.createdAt = entry.dateCreated?.toISOString();
+                            file.modifiedAt = entry.lastChanged?.toISOString();
+
+                            files.push(file);
+                        }
+                    }
+                }
+
+                return files;
             },
             { limit },
         );
