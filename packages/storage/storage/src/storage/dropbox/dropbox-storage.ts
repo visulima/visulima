@@ -459,10 +459,15 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             let path = this.keyToPath(id);
 
             try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                path = stored.path ?? this.keyToPath(stored.name ?? id);
+                stored = await this.getMeta(id);
             } catch {
                 // direct path lookup
+            }
+
+            if (stored) {
+                // An expired upload answers GONE instead of falling back to a direct path lookup.
+                await this.checkIfExpired(stored);
+                path = stored.path ?? this.keyToPath(stored.name ?? id);
             }
 
             await this.authHandle.ensureAccessToken();
@@ -551,17 +556,30 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             async () => {
                 await this.authHandle.ensureAccessToken();
 
-                const response = await this.runOperation(options, () =>
+                let { result } = await this.runOperation(options, () =>
                     this.client.filesListFolder({
                         limit,
                         path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
                         recursive: true,
                     }),
                 );
-                const { result } = response;
+                const entries = [...result.entries];
+
+                // `limit` is only a per-page hint and folders take entries too, so follow the cursor.
+                while (result.has_more && entries.length < limit) {
+                    const { cursor } = result;
+
+                    ({ result } = await this.runOperation(options, () => this.client.filesListFolderContinue({ cursor })));
+                    entries.push(...result.entries);
+                }
+
                 const files: DropboxFile[] = [];
 
-                for (const entry of result.entries) {
+                for (const entry of entries) {
+                    if (files.length >= limit) {
+                        break;
+                    }
+
                     const tag = (entry as { ".tag"?: string })[".tag"];
 
                     if (tag !== "file") {
@@ -597,6 +615,11 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             },
             { limit },
         );
+    }
+
+    /** Upload records by id: `list` yields stored paths without `createdAt`, so purge could never match them. */
+    protected override async listUploads(): Promise<DropboxFile[]> {
+        return (await this.meta.list()) ?? [];
     }
 
     public override async getReadUrl(
