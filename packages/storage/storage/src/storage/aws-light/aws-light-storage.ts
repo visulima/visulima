@@ -7,7 +7,7 @@ import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
 import { buildRangeHeader } from "../aws/s3-utils";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, UploadPostOptions, UploadPostPolicy } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
 import AwsLightFile from "./aws-light-file";
@@ -55,6 +55,9 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  */
 class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
+
+    /** Signs SigV4 POST policies, so `Files.signedUpload` can enforce a size range. */
+    public override readonly supportsUploadPost: boolean = true;
 
     private s3Api: AwsLightApiAdapter;
 
@@ -180,6 +183,12 @@ class AwsLightStorage extends S3BaseStorage {
 
     public override get raw(): AwsClient {
         return this.s3Api.aws;
+    }
+
+    public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        AwsLightStorage.assertSafeId(key);
+
+        return this.s3Api.presignPost(key, options);
     }
 
     protected getS3Api(): AwsLightApiAdapter {

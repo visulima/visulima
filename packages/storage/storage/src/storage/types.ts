@@ -256,6 +256,26 @@ export interface ConditionalSupport {
 }
 
 /**
+ * A presigned browser-form `POST` upload: send `multipart/form-data` to `url` with every entry of
+ * `fields`, followed by the `file` field. The provider enforces the signed policy (size range,
+ * content type, key, expiry) before it stores anything.
+ */
+export interface UploadPostPolicy {
+    fields: Record<string, string>;
+    url: string;
+}
+
+/** Options for `BaseStorage.getUploadPost`. */
+export interface UploadPostOptions extends OperationOptions {
+    contentType?: string;
+    expiresIn?: number;
+    /** Largest accepted body in bytes. */
+    maxSize?: number;
+    /** Smallest accepted body in bytes. */
+    minSize?: number;
+}
+
+/**
  * Batch operation result for a single file
  */
 export interface BatchOperationResult<T extends File = File> {

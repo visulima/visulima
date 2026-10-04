@@ -4,6 +4,8 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { AwsClient } from "aws4fetch";
 
 import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-api";
+import { createS3PostPolicy } from "../aws/s3-post-policy";
+import type { UploadPostOptions, UploadPostPolicy } from "../types";
 import type { AwsLightClientConfig } from "./types";
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
@@ -140,6 +142,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     /** Bucket URL without a trailing slash; object keys are appended to it. */
     private readonly baseUrl: string;
 
+    private readonly credentials: AwsLightClientConfig;
+
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
 
@@ -153,6 +157,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         this.baseUrl = endpoint.origin + path;
+        this.credentials = config;
 
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
@@ -722,6 +727,28 @@ ${partsXml}
 
             throw requestError("Failed to access bucket", response.status, text);
         }
+    }
+
+    /**
+     * Signs a browser-form POST policy for `key` against this bucket's URL.
+     */
+    public presignPost(key: string, options?: UploadPostOptions): UploadPostPolicy {
+        const { accessKeyId, region, secretAccessKey, service, sessionToken } = this.credentials;
+
+        return createS3PostPolicy({
+            accessKeyId,
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region,
+            secretAccessKey,
+            service,
+            sessionToken,
+            url: `${this.baseUrl}/`,
+        });
     }
 
     /**

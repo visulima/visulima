@@ -32,6 +32,8 @@ export type {
     ListOptions,
     MultipartOptions,
     SignedReadUrlOptions,
+    SignedUpload,
+    SignedUploadOptions,
     SignedUploadUrlOptions,
     StorageCapabilities,
     SyncOptions,

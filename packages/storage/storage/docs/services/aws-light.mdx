@@ -129,6 +129,10 @@ new AwsLightStorage({ bucket: "b", region: "us-east-1", endpoint: "https://minio
 
 The `@visulima/storage/provider/aws/s3/clients` helpers return an AWS SDK `S3ClientConfig` (`credentials: { … }`), so they don't spread into `AwsLightStorage` directly — copy the endpoint/region they document into the fields above.
 
+### Size-limited uploads
+
+`AwsLightStorage` signs SigV4 POST policies (`files.signedUpload(key, { maxSize, minSize })`) with the configured credentials, so S3 enforces the `content-length-range` itself. It still has no presigned GET/PUT URLs (`files.url()` / `files.signedUploadUrl()`).
+
 ## Metadata storage
 
 Records are zero-byte `<id>.META` objects in the bucket (user-metadata header, 2 KB S3 limit), exactly as with [`S3Storage`](./amazon-s3.mdx#metadata-storage): shared by every instance, written with `If-Match` conditional saves, hidden from `list()`, kept after an upload completes. Use `metaStorageConfig: { bucket: "my-uploads-meta" }` (plus credentials/endpoint if they differ) for a separate bucket, or pass your own `metaStorage` (KV, D1, Redis, …). `metaStorageConfig: { directory }` keeps the records on local disk (Node.js only; single instance or a shared directory).

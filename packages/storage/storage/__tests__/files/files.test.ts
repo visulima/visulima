@@ -1377,6 +1377,7 @@ describe("capabilities", () => {
             metadata: true,
             range: true,
             readonly: false,
+            signedUploadPost: false,
         });
     });
 

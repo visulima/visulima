@@ -138,6 +138,25 @@ export interface SignedUploadUrlOptions {
     expiresIn?: number;
 }
 
+export interface SignedUploadOptions extends SignedUploadUrlOptions {
+    /**
+     * Largest accepted body in bytes. Setting `maxSize` or `minSize` makes {@link Files.signedUpload}
+     * sign a `POST` policy whose `content-length-range` the provider enforces; adapters without
+     * presigned POST support (`capabilities.signedUploadPost === false`) reject the call with
+     * `METHOD_NOT_ALLOWED` instead of signing an unbounded URL.
+     */
+    maxSize?: number;
+    /** Smallest accepted body in bytes. See {@link SignedUploadOptions.maxSize}. */
+    minSize?: number;
+}
+
+/**
+ * Upload contract returned by {@link Files.signedUpload}, discriminated on `method`. For `PUT`, send
+ * the raw body to `url` with `headers`. For `POST`, send `multipart/form-data` to `url` with every
+ * entry of `fields` first, then the file as the last field, named `file`.
+ */
+export type SignedUpload = { fields: Record<string, string>; method: "POST"; url: string } | { headers: Record<string, string>; method: "PUT"; url: string };
+
 /** Exact-read / conditional-delete predicate. */
 export interface IfMatchOptions {
     /**
@@ -215,6 +234,10 @@ export interface StorageCapabilities {
     range: boolean;
     /** This `Files` view rejects every mutating operation. */
     readonly: boolean;
+    /** {@link Files.signedUpload} can sign a size-limited `POST` policy (`maxSize` / `minSize`). */
+    signedUploadPost: boolean;
+    /** Longest `expiresIn` (seconds) the adapter can sign for, when the provider has a hard ceiling. */
+    signedUrlMaxExpiresIn?: number;
 }
 
 export interface DownloadOptions extends IfMatchOptions, OperationOptions {

@@ -40,8 +40,9 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | `listAll`         | `(opts?) → AsyncGenerator<FileObject>`               | —                                               | Pages internally; yields one at a time.                           |
 | `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
+| `signedUpload`    | `(key, opts?) → Promise<SignedUpload>`               | —                                               | PUT or size-limited POST contract (`maxSize` / `minSize`).        |
 | `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
-| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `readonly`.                         |
+| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `signedUploadPost`, `readonly`.     |
 | `readonly`        | `() → Files`                                         | —                                               | Locked view sharing adapter, prefix, defaults and hooks.          |
 
 Two top-level functions build on the same surface: `transfer(source, destination)` and `sync(source, destination)` (both covered below).
@@ -254,6 +255,42 @@ return Response.json({ uploadUrl });
 
 Not every adapter supports presigned PUT. Adapters without a primitive (UploadThing, Bunny) throw `UploadError(METHOD_NOT_ALLOWED)` with a message pointing to the supported alternative.
 
+### Size-limited browser upload (presigned POST)
+
+A presigned PUT URL cannot cap the body size: whoever holds the URL can send any number of bytes. `signedUpload()` returns the whole upload contract instead of a bare URL, and when you pass `maxSize` and/or `minSize` it signs a browser-form **POST policy** with a `content-length-range` condition, which the provider itself enforces (S3 answers `EntityTooLarge` / `EntityTooSmall` before storing anything).
+
+```ts
+const upload = await files.signedUpload(`avatars/${userId}.png`, {
+    contentType: "image/png",
+    expiresIn: 300,
+    maxSize: 5 * 1024 * 1024,
+    minSize: 1,
+});
+
+// Browser side:
+if (upload.method === "POST") {
+    const form = new FormData();
+
+    for (const [name, value] of Object.entries(upload.fields)) {
+        form.append(name, value);
+    }
+
+    form.append("file", file); // the file goes last
+    await fetch(upload.url, { body: form, method: "POST" });
+} else {
+    await fetch(upload.url, { body: file, headers: upload.headers, method: "PUT" });
+}
+```
+
+`SignedUpload` is a union discriminated on `method`:
+
+- `{ method: "PUT", url, headers }` — no size limit requested; the same URL `signedUploadUrl()` returns, plus the headers the client has to send (`Content-Type`, `Content-Length`) so the signature matches.
+- `{ method: "POST", url, fields }` — `maxSize` / `minSize` requested; post `multipart/form-data` with every field, then the file.
+
+Size limits are never silently dropped: on an adapter without POST policy support (`files.capabilities.signedUploadPost === false`) a `maxSize` / `minSize` rejects with `UploadError(METHOD_NOT_ALLOWED)` instead of signing an unbounded upload. Today the S3 adapter (`S3Storage`, including S3-compatible endpoints) and `AwsLightStorage` sign POST policies. An `expiresIn` above `files.capabilities.signedUrlMaxExpiresIn` (7 days for SigV4) rejects with `BAD_REQUEST`, for `url()` and `signedUploadUrl()` too.
+
+> **Why a new method instead of changing `signedUploadUrl()`?** Turning `signedUploadUrl()`'s `Promise<string>` into a union would break every caller that treats the result as a URL string. `signedUploadUrl()` keeps its contract unchanged; `signedUpload()` is the object-returning form, and the only one that accepts `maxSize` / `minSize`.
+
 ### Conditional (ETag) operations
 
 Conditional operations put an ETag predicate into the provider request itself, so create-only writes and compare-and-set updates are safe against concurrent writers — the facade never emulates them with a `head()` followed by an unconditional write.
@@ -417,9 +454,9 @@ await ro.download("a.txt"); // ok
 await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
 ```
 
-`files.capabilities` returns `{ range, metadata, cacheControl, conditional, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), plus whether this view is read-only. Branch on them before relying on an optional feature.
+`files.capabilities` returns `{ range, metadata, cacheControl, conditional, signedUploadPost, signedUrlMaxExpiresIn?, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), whether `signedUpload()` can sign a size-limited POST policy, the longest `expiresIn` it can sign for (when the provider has a hard ceiling), plus whether this view is read-only. Branch on them before relying on an optional feature.
 
-A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`) before the adapter is touched; reads pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
+A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`, `signedUpload`) before the adapter is touched; reads pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
 
 ## In-memory adapter for tests
 

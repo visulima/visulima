@@ -11,6 +11,8 @@ import AwsLightApiAdapter from "../../../src/storage/aws-light/aws-light-api-ada
 import AwsLightStorage from "../../../src/storage/aws-light/aws-light-storage";
 import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import type { S3PostError } from "../../__helpers__/s3-post";
+import { acceptS3Post } from "../../__helpers__/s3-post";
 import { createS3State } from "../../__helpers__/s3-state";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
@@ -45,6 +47,25 @@ const createS3 = () => {
             bucket.holds(target, { ifMatch: request.headers.get("if-match"), ifNoneMatch: request.headers.get("if-none-match") });
 
         if (key === "") {
+            // Browser-form POST upload, checked against its signed policy like S3 does.
+            if (request.method === "POST") {
+                const form = await request.formData();
+                const file = form.get("file") as Blob;
+                const fields = Object.fromEntries([...form].filter(([name]) => name !== "file")) as Record<string, string>;
+
+                try {
+                    const accepted = acceptS3Post(fields, Buffer.from(await file.arrayBuffer()), { bucket: "uploads", secretAccessKey: "secret" });
+
+                    bucket.put(accepted.key, accepted.body, { contentType: accepted.contentType });
+
+                    return new Response(null, { status: 204 });
+                } catch (error: unknown) {
+                    const { code, status } = error as S3PostError;
+
+                    return new Response(`<Error><Code>${code}</Code></Error>`, { status });
+                }
+            }
+
             if (url.searchParams.has("uploads")) {
                 return xml(
                     `<ListMultipartUploadsResult>${[...bucket.uploads]
@@ -378,6 +399,38 @@ describe("aws-light against an in-memory S3", () => {
 
         await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
         expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
+    });
+
+    it("should sign a POST policy whose size range the bucket enforces", async () => {
+        expect.assertions(5);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const files = new Files({ adapter: createStorage() });
+        const signed = await files.signedUpload("in/up.txt", { contentType: "text/plain", maxSize: 8 });
+
+        expect(signed).toMatchObject({ method: "POST", url: "https://s3.test/uploads/" });
+
+        const post = async (body: string): Promise<number> => {
+            const form = new FormData();
+
+            for (const [name, value] of Object.entries((signed as { fields: Record<string, string> }).fields)) {
+                form.append(name, value);
+            }
+
+            form.append("file", new Blob([body]));
+
+            const response = await fetch(signed.url, { body: form, method: "POST" });
+
+            return response.status;
+        };
+
+        await expect(post("too large!")).resolves.toBe(400);
+        expect(s3.objects.has("in/up.txt")).toBe(false);
+        await expect(post("fits")).resolves.toBe(204);
+        expect(s3.objects.get("in/up.txt")?.body.toString()).toBe("fits");
     });
 
     it("should only claim conditional support for AWS itself unless told to", () => {

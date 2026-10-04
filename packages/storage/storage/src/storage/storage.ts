@@ -33,6 +33,8 @@ import type {
     OperationOptions,
     PurgeList,
     StoredObject,
+    UploadPostOptions,
+    UploadPostPolicy,
 } from "./types";
 import { assertCondition } from "./utils/etag";
 import type { FileInit, FilePart, FileQuery } from "./utils/file";
@@ -303,6 +305,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public readonly conditionalSupport: ConditionalSupport = { copy: false, create: false, delete: false, read: false, replace: false };
 
+    /**
+     * Adapter capability flag: when `true`, {@link BaseStorage.getUploadPost} signs a browser-form
+     * `POST` policy whose size range the provider enforces. Defaults to `false`.
+     */
+    public readonly supportsUploadPost: boolean = false;
+
+    /**
+     * Longest `expiresIn` (seconds) the adapter can sign a URL or upload policy for, when the
+     * provider has a hard ceiling (SigV4: 7 days). `undefined` when unknown or unlimited.
+     */
+    public readonly maxSignedUrlExpiresIn: number | undefined = undefined;
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
@@ -471,6 +485,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         _options?: OperationOptions & { contentLength?: number; contentType?: string; expiresIn?: number },
     ): Promise<string> {
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getUploadUrl()`);
+    }
+
+    /**
+     * Signs a browser-form `POST` upload of a single object to `key`, whose policy makes the provider
+     * enforce `minSize`/`maxSize` (and `contentType`, when given). Adapters that set
+     * {@link BaseStorage.supportsUploadPost} override this.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no POST policy support.
+     * @param _key Storage key.
+     * @param _options Size range, content type and expiry of the policy.
+     */
+    public async getUploadPost(_key: string, _options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not support presigned POST uploads`);
     }
 
     public get tusExtension(): string[] {

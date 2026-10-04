@@ -18,6 +18,7 @@ import { hasCondition, quoteETag } from "../utils/etag";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { Part, S3ApiOperations, S3CompatibleFile } from "./s3-api";
+import { MAX_SIGV4_EXPIRES_IN } from "./s3-post-policy";
 import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, rethrowPreconditionFailed, withoutParts } from "./s3-utils";
 
 // Re-exported for existing importers of this module.
@@ -51,6 +52,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * S3-compatible services differ in which of these headers they honour.
      */
     public override readonly conditionalSupport: ConditionalSupport;
+
+    public override readonly maxSignedUrlExpiresIn: number | undefined = MAX_SIGV4_EXPIRES_IN;
 
     protected bucket: string;
 

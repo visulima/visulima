@@ -30,6 +30,8 @@ export type {
     ListOptions,
     MultipartOptions,
     SignedReadUrlOptions,
+    SignedUpload,
+    SignedUploadOptions,
     SignedUploadUrlOptions,
     StorageCapabilities,
     SyncOptions,
@@ -75,6 +77,8 @@ export type {
     OnError,
     OnUpdate,
     PurgeList,
+    UploadPostOptions,
+    UploadPostPolicy,
 } from "./storage/types";
 export type { FileInit, FilePart, FileQuery, UploadEventType, UploadFile } from "./storage/utils/file";
 export { File, Metadata } from "./storage/utils/file";

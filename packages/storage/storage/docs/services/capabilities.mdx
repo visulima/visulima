@@ -55,6 +55,16 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 | Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
 | WebDAV         | ❌                                                               | ❌                                     |
 
+## Presigned POST (size-limited uploads)
+
+`Files.signedUpload(key, { maxSize, minSize })` signs a browser-form POST policy whose `content-length-range` the provider enforces. Adapters without one reject a size limit with `METHOD_NOT_ALLOWED`; `files.capabilities.signedUploadPost` reports which is which.
+
+| Adapter        | `getUploadPost()`                             | `signedUrlMaxExpiresIn` |
+| -------------- | --------------------------------------------- | ----------------------- |
+| S3 / R2 / etc. | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
+| S3 (light)     | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
+| every other    | ❌ `METHOD_NOT_ALLOWED`                       | —                       |
+
 ## Conditional (ETag) operations
 
 Reported per primitive under `files.capabilities.conditional`; a predicate the adapter cannot evaluate natively rejects with `METHOD_NOT_ALLOWED`, and a predicate that does not hold with `PRECONDITION_FAILED` (412). See [Conditional (ETag) operations](../files-facade.mdx#conditional-etag-operations).

@@ -176,3 +176,20 @@ describe("conditional operations on an adapter without native support", () => {
         await expect(text(files, "a.txt")).resolves.toBe("x");
     });
 });
+
+describe("signedUpload on an adapter without presigned POST", () => {
+    it("should return a PUT contract, and refuse size limits it cannot enforce", async () => {
+        expect.assertions(4);
+
+        const files = new Files({ adapter: new MemoryStorage() });
+
+        expect(files.capabilities.signedUploadPost).toBe(false);
+        await expect(files.signedUpload("a.txt", { contentLength: 3, contentType: "text/plain" })).resolves.toStrictEqual({
+            headers: { "Content-Length": "3", "Content-Type": "text/plain" },
+            method: "PUT",
+            url: "memory://a.txt",
+        });
+        await expect(files.signedUpload("a.txt", { maxSize: 10 })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }));
+        await expect(files.readonly().signedUpload("a.txt")).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.READ_ONLY }));
+    });
+});

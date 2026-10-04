@@ -276,6 +276,15 @@ Defaults: `maxRetries: 3`, `initialDelay: 1000`, `maxDelay: 30000`, `backoffMult
 
 With `clientDirectUpload: true` the server never sees the file bytes: `create()` (TUS `POST` / REST `POST`) starts the multipart upload and returns `partsUrls` — one presigned `UploadPart` URL per `partSize` chunk, valid for `expiration.maxAge` (default 6 h). The client `PUT`s each part to its URL, then calls the handler again (`PATCH`/`PUT` without a body) — the adapter lists the parts and completes the upload once their sizes add up to the file size. Requires the [CORS rule](#3-cors-only-for-browser-direct-traffic) with `ExposeHeaders: ["ETag"]`.
 
+### Size-limited presigned uploads (POST policy)
+
+`files.signedUpload(key, { maxSize, minSize })` signs a SigV4 POST policy with a `content-length-range` condition, so S3 itself rejects a body outside the range (`EntityTooLarge` / `EntityTooSmall`). The policy is signed locally from the client's credentials; no extra package is needed. `expiresIn` is capped at 7 days (`files.capabilities.signedUrlMaxExpiresIn`).
+
+```ts
+const upload = await files.signedUpload("avatars/1.png", { contentType: "image/png", maxSize: 5 * 1024 * 1024 });
+// → { method: "POST", url: "https://bucket.s3.us-east-1.amazonaws.com/", fields: { key, Policy, "X-Amz-Signature", … } }
+```
+
 ### Conditional requests
 
 `S3Storage` sends the `Files` ETag predicates natively: `ifNoneMatch: "*"` / `ifMatch` uploads on `CompleteMultipartUpload`, exact reads on `GetObject`, `DeleteObject` with `If-Match`, and `CopyObject` with `x-amz-copy-source-if-match` plus a destination `If-None-Match` / `If-Match`. A 412 becomes `UploadError(ERRORS.PRECONDITION_FAILED)`; a failed conditional upload aborts its multipart upload and keeps the stored object's metadata record.

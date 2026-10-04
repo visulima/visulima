@@ -49,6 +49,8 @@ import type {
     ListOptions,
     MultipartOptions,
     SignedReadUrlOptions,
+    SignedUpload,
+    SignedUploadOptions,
     SignedUploadUrlOptions,
     StorageCapabilities,
     UploadOptions,
@@ -117,12 +119,16 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * hitting a `MethodNotAllowed` mid-flight. `readonly` reflects this view, not the adapter.
      */
     public get capabilities(): StorageCapabilities {
+        const maxExpiresIn = this.adapter.maxSignedUrlExpiresIn;
+
         return {
             cacheControl: this.adapter.supportsCacheControl,
             conditional: { ...this.adapter.conditionalSupport },
             metadata: this.adapter.supportsMetadata,
             range: this.adapter.supportsRange,
             readonly: this.readonlyMode,
+            signedUploadPost: this.adapter.supportsUploadPost,
+            ...(maxExpiresIn !== undefined && { signedUrlMaxExpiresIn: maxExpiresIn }),
         };
     }
 
@@ -179,6 +185,15 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
 
         return ifMatch === undefined ? undefined : { ifMatch };
+    }
+
+    /** Reject an `expiresIn` the adapter cannot sign for, before it is handed to the provider. */
+    private assertExpiresIn(expiresIn: number | undefined): void {
+        const max = this.adapter.maxSignedUrlExpiresIn;
+
+        if (expiresIn !== undefined && max !== undefined && expiresIn > max) {
+            throwErrorCode(ERRORS.BAD_REQUEST, `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`);
+        }
     }
 
     /** Fail closed before any adapter mutation when this view is read-only. */
@@ -1252,6 +1267,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
 
             // Spread only the URL fields over the merged options: spreading the whole per-call object
             // would clobber the default signal and the hooks.onRetry wrapper.
@@ -1273,6 +1289,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const resolved = this.resolveKey(key);
 
             BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
 
             const { contentLength, contentType, expiresIn } = options ?? {};
 
@@ -1282,6 +1299,78 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 ...(contentType !== undefined && { contentType }),
                 ...(expiresIn !== undefined && { expiresIn }),
             });
+        });
+    }
+
+    /**
+     * Sign a direct browser upload of `key` and return the full contract instead of a bare URL.
+     *
+     * Without `maxSize` / `minSize` this is a presigned `PUT` (`{ method: "PUT", url, headers }`),
+     * the same URL {@link Files.signedUploadUrl} returns, plus the headers the client must send. With
+     * either limit it is a presigned `POST` policy (`{ method: "POST", url, fields }`) carrying a
+     * `content-length-range` condition, so the provider itself rejects a body outside the range — a
+     * PUT URL cannot do that. Adapters without POST policy support
+     * (`capabilities.signedUploadPost === false`) reject a size limit with `METHOD_NOT_ALLOWED`
+     * rather than sign an unbounded upload.
+     * @example
+     * ```ts
+     * const upload = await files.signedUpload("avatars/1.png", { contentType: "image/png", maxSize: 5 * 1024 * 1024 });
+     *
+     * if (upload.method === "POST") {
+     *   const form = new FormData();
+     *
+     *   for (const [name, value] of Object.entries(upload.fields)) form.append(name, value);
+     *   form.append("file", blob);
+     *   await fetch(upload.url, { body: form, method: "POST" });
+     * }
+     * ```
+     */
+    public async signedUpload(key: string, options?: OperationOptions & SignedUploadOptions): Promise<SignedUpload> {
+        this.assertWritable();
+
+        return this.withHooks("signedUploadUrl", { key }, async () => {
+            const resolved = this.resolveKey(key);
+
+            BaseStorage.assertSafeId(resolved);
+            this.assertExpiresIn(options?.expiresIn);
+
+            const { contentLength, contentType, expiresIn, maxSize, minSize } = options ?? {};
+            const merged = this.mergeOptions(options, { key, type: "signedUploadUrl" });
+
+            if (maxSize === undefined && minSize === undefined) {
+                const url = await this.adapter.getUploadUrl(resolved, {
+                    ...merged,
+                    ...(contentLength !== undefined && { contentLength }),
+                    ...(contentType !== undefined && { contentType }),
+                    ...(expiresIn !== undefined && { expiresIn }),
+                });
+
+                return {
+                    headers: {
+                        ...(contentType !== undefined && { "Content-Type": contentType }),
+                        ...(contentLength !== undefined && { "Content-Length": String(contentLength) }),
+                    },
+                    method: "PUT",
+                    url,
+                };
+            }
+
+            if (!this.adapter.supportsUploadPost) {
+                return throwErrorCode(
+                    ERRORS.METHOD_NOT_ALLOWED,
+                    `Adapter ${this.adapter.constructor.name} cannot enforce maxSize/minSize on a signed upload (no presigned POST support)`,
+                );
+            }
+
+            const { fields, url } = await this.adapter.getUploadPost(resolved, {
+                ...merged,
+                ...(contentType !== undefined && { contentType }),
+                ...(expiresIn !== undefined && { expiresIn }),
+                ...(maxSize !== undefined && { maxSize }),
+                ...(minSize !== undefined && { minSize }),
+            });
+
+            return { fields, method: "POST", url };
         });
     }
 }

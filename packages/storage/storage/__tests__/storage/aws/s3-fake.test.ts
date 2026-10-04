@@ -23,6 +23,7 @@ import RestFetch from "../../../src/handler/rest/rest-fetch";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
+import { acceptS3Post } from "../../__helpers__/s3-post";
 import { createS3State } from "../../__helpers__/s3-state";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
@@ -598,6 +599,42 @@ describe("s3Storage against an in-memory S3", () => {
                 .filter(({ input }) => input.IfMatch !== undefined || input.IfNoneMatch !== undefined || input.CopySourceIfMatch !== undefined)
                 .map(({ name }) => name),
         ).toStrictEqual(["CompleteMultipartUploadCommand", "CompleteMultipartUploadCommand", "CopyObjectCommand", "DeleteObjectCommand"]);
+    });
+
+    it("should sign a POST policy whose size range S3 enforces", async () => {
+        expect.assertions(9);
+
+        const files = new Files({ adapter: createStorage() });
+
+        expect([files.capabilities.signedUploadPost, files.capabilities.signedUrlMaxExpiresIn]).toStrictEqual([true, 604_800]);
+
+        const signed = await files.signedUpload("up.txt", { contentType: "text/plain", expiresIn: 60, maxSize: 10, minSize: 2 });
+
+        expect(signed).toMatchObject({
+            fields: { "Content-Type": "text/plain", key: "up.txt" },
+            method: "POST",
+            url: "https://bucket.s3.us-east-1.amazonaws.com/",
+        });
+
+        const { fields } = signed as { fields: Record<string, string> };
+        const post =
+            (body: string, postFields = fields, now?: Date) =>
+            () =>
+                acceptS3Post(postFields, Buffer.from(body), { bucket: "bucket", now, secretAccessKey: "secret" });
+
+        expect(post("hello")()).toMatchObject({ contentType: "text/plain", key: "up.txt" });
+        expect(post("hello world")).toThrow("EntityTooLarge");
+        expect(post("h")).toThrow("EntityTooSmall");
+        expect(post("hello", { ...fields, key: "other.txt" })).toThrow("AccessDenied");
+        expect(post("hello", fields, new Date(Date.now() + 120_000))).toThrow("AccessDenied");
+
+        await expect(files.signedUpload("up.txt", { contentType: "text/plain" })).resolves.toMatchObject({
+            headers: { "Content-Type": "text/plain" },
+            method: "PUT",
+        });
+        await expect(files.signedUpload("up.txt", { expiresIn: 604_801, maxSize: 1 })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.BAD_REQUEST }),
+        );
     });
 
     it("should not claim conditional support for a custom endpoint unless told to", () => {
