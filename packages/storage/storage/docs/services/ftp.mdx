@@ -52,7 +52,7 @@ const storage = new FtpStorage({
         password: process.env.FTP_PASSWORD,
         secure: true,
     },
-    rootFolderPath: "srv/uploads",
+    rootFolderPath: "/srv/uploads",
     maxUploadSize: "200MB",
     metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
     expiration: { maxAge: "7d", purgeInterval: "1h" },
@@ -60,15 +60,15 @@ const storage = new FtpStorage({
 });
 ```
 
-| Option              | Type                      | Default                     | Description                                                                                                                                                                                                            |
-| ------------------- | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `connection`        | `AccessOptions`           | —                           | **Required.** `basic-ftp` access options: `host`, `port`, `user`, `password`, `secure`, `secureOptions`. Used for every operation.                                                                                     |
-| `rootFolderPath`    | `string`                  | `""`                        | Remote directory that acts as the bucket root. Leading and trailing slashes are stripped, and object paths are built as `/<rootFolderPath>/<key>` from the server root. Intermediate directories are created on write. |
-| `metaStorageConfig` | `LocalMetaStorageOptions` | OS temp dir (`Upload_meta`) | `directory` / `prefix` / `suffix` for the local metadata files.                                                                                                                                                        |
+| Option              | Type                      | Default                     | Description                                                                                                                                                                                                     |
+| ------------------- | ------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection`        | `AccessOptions`           | —                           | **Required.** `basic-ftp` access options: `host`, `port`, `user`, `password`, `secure`, `secureOptions`. Used for every operation.                                                                              |
+| `rootFolderPath`    | `string`                  | `""` (login directory)      | Remote directory that acts as the bucket root. A leading `/` makes it absolute; otherwise it resolves against the login directory. Trailing slashes are ignored. Intermediate directories are created on write. |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | OS temp dir (`Upload_meta`) | `directory` / `prefix` / `suffix` for the local metadata files.                                                                                                                                                 |
 
 Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME`, `maxMetadataSize`, `filename`, `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`. The adapter reads no environment variables.
 
-> Without `rootFolderPath`, every operation (write, read, `list()`, delete) uses the server root `/`, not the login directory. Set `rootFolderPath` to keep uploads in their own directory.
+> Without `rootFolderPath`, every operation (write, read, `list()`, delete) uses the login directory. On a server that chroots the user that is `/` of the jail; on one that doesn't, it is the user's home directory. Set `rootFolderPath` to keep uploads in their own directory, with a leading `/` to address it from the server root.
 
 ## Metadata storage
 
@@ -136,5 +136,6 @@ const { body } = await files.download("reports/2026-10.csv", { range: { start: 0
 | Timeouts on data transfers              | The passive port range is blocked by a firewall or NAT. Open it to the app servers.                                                           |
 | TLS errors (`self signed certificate`)  | Pass `secureOptions: { ca }`. Avoid `rejectUnauthorized: false` in production.                                                                |
 | `550` on write                          | The user can't create directories or write under `rootFolderPath`.                                                                            |
+| Files land in an unexpected directory   | A relative `rootFolderPath` resolves against the login directory. Use a leading `/` for a path from the server root.                          |
 | `405` on a TUS PATCH / chunk            | Send the whole file in one request.                                                                                                           |
 | `FILE_NOT_FOUND` for a file that exists | No metadata record on this instance (another instance, a wiped `/tmp`, or a file uploaded outside the storage). Share the metadata directory. |

@@ -66,7 +66,8 @@ const downloadToBuffer = async (client: Client, path: string, startAt?: number):
 /**
  * FTP / FTPS storage backend (built on `basic-ftp`).
  *
- * Routes virtual keys onto remote paths under `rootFolderPath`. FTP has no
+ * Routes virtual keys onto remote paths under `rootFolderPath`, which resolves against the login
+ * directory unless it starts with `/`. FTP has no
  * native metadata store, so upload metadata is kept as sidecar JSON on the
  * local disk (see `FtpMetaStorage`).
  *
@@ -94,10 +95,14 @@ class FtpStorage extends BaseStorage<FtpFile> {
 
     private readonly rootFolderPath: string;
 
+    /** An absolute `rootFolderPath` ("/srv/uploads") stays absolute; a relative one resolves against the login directory. */
+    private readonly absoluteRoot: boolean;
+
     public constructor(config: FtpStorageOptions) {
         super(config);
 
         this.connection = config.connection;
+        this.absoluteRoot = config.rootFolderPath?.startsWith("/") ?? false;
         this.rootFolderPath = trimSlashes(config.rootFolderPath ?? "");
         this.meta = config.metaStorage ?? new FtpMetaStorage(config.metaStorageConfig);
 
@@ -418,7 +423,7 @@ class FtpStorage extends BaseStorage<FtpFile> {
         }
 
         for (const entry of entries) {
-            const childPath = `${directory.replace(/\/+$/u, "")}/${entry.name}`;
+            const childPath = directory ? `${directory.replace(/\/+$/u, "")}/${entry.name}` : entry.name;
 
             if (entry.isDirectory) {
                 await this.walkList(client, childPath, files);
@@ -495,10 +500,12 @@ class FtpStorage extends BaseStorage<FtpFile> {
         const directory = posixDirname(path);
 
         if (directory) {
+            const loginDirectory = await client.pwd();
+
             await client.ensureDir(directory);
-            // ensureDir leaves the working directory at `directory`; reset to
-            // root so the following absolute-path operation resolves correctly.
-            await client.cd("/");
+            // ensureDir leaves the working directory at `directory`; go back to
+            // the login directory, which a relative `path` resolves against.
+            await client.cd(loginDirectory);
         }
     }
 
@@ -519,9 +526,8 @@ class FtpStorage extends BaseStorage<FtpFile> {
             parts.push(inner);
         }
 
-        // Absolute even without a rootFolderPath, so list() walks the same tree write() fills, not
-        // the login directory.
-        return `/${parts.join("/")}`;
+        // Relative paths resolve against the login directory, which every fresh connection starts in.
+        return this.absoluteRoot ? `/${parts.join("/")}` : parts.join("/");
     }
 
     private pathToKey(path: string): string {

@@ -41,6 +41,11 @@ vi.mock(import("basic-ftp"), () => {
         public async cd(): Promise<void> {}
 
         // eslint-disable-next-line class-methods-use-this
+        public async pwd(): Promise<string> {
+            return "/";
+        }
+
+        // eslint-disable-next-line class-methods-use-this
         public async uploadFrom(source: Readable, path: string): Promise<void> {
             if (control.uploadThrows) {
                 throw new Error("553 upload not permitted");

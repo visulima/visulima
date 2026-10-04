@@ -1,19 +1,26 @@
 import type { Readable, Writable } from "node:stream";
 
-// Copied from __tests__/storage/ftp/ftp-fake.test.ts so other suites can share it. Install it with
+// In-memory FTP server behind `basic-ftp`'s Client. Install it with
 // vi.mock(import("basic-ftp"), async () => import("../__helpers__/fakes/ftp")).
 
-/** In-memory FTP server state; `fail` makes one client method (`*`: every method) throw. */
-export const server: { dirs: Set<string>; fail: Record<string, Error>; files: Map<string, { body: Buffer; modifiedAt: Date }> } = {
+/**
+ * In-memory FTP server state: a tree of files and directories (paths without leading slash), uploads
+ * into a missing directory are refused like a real server, missing paths answer 550. A connection
+ * starts in `home`, the login directory relative paths resolve against. `fail` makes one client
+ * method (`*`: every method) throw, to inject server/connection errors.
+ */
+export const server: { dirs: Set<string>; fail: Record<string, Error>; files: Map<string, { body: Buffer; modifiedAt: Date }>; home: string } = {
     dirs: new Set<string>([""]),
     fail: {},
     files: new Map(),
+    home: "",
 };
 
 export const resetServer = (): void => {
     server.files.clear();
     server.dirs = new Set([""]);
     server.fail = {};
+    server.home = "";
 };
 
 const normalize = (path: string): string => path.replaceAll(/^\/+|\/+$/gu, "");
@@ -28,17 +35,10 @@ const check = (method: string): void => {
     }
 };
 
-const read = (path: string): Buffer => {
-    const file = server.files.get(normalize(path));
-
-    if (!file) {
-        throw ftpError(550, "File unavailable");
-    }
-
-    return file.body;
-};
-
 export class Client {
+    /** Working directory of this connection. */
+    private cwd = server.home;
+
     // eslint-disable-next-line class-methods-use-this
     public async access(): Promise<void> {
         check("access");
@@ -47,24 +47,33 @@ export class Client {
     // eslint-disable-next-line class-methods-use-this
     public close(): void {}
 
-    // eslint-disable-next-line class-methods-use-this
-    public async cd(): Promise<void> {}
+    public async pwd(): Promise<string> {
+        return `/${this.cwd}`;
+    }
 
-    // eslint-disable-next-line class-methods-use-this
+    public async cd(path: string): Promise<void> {
+        this.cwd = this.resolve(path);
+    }
+
+    /** Creates the directories and enters the last one, as basic-ftp does. */
     public async ensureDir(path: string): Promise<void> {
+        const target = this.resolve(path);
         let current = "";
 
-        for (const segment of normalize(path).split("/")) {
+        for (const segment of target.split("/")) {
             current = current ? `${current}/${segment}` : segment;
             server.dirs.add(current);
         }
+
+        this.cwd = target;
     }
 
-    // eslint-disable-next-line class-methods-use-this
     public async uploadFrom(source: Readable, path: string): Promise<void> {
         check("uploadFrom");
 
-        if (!server.dirs.has(parent(normalize(path)))) {
+        const target = this.resolve(path);
+
+        if (!server.dirs.has(parent(target))) {
             throw ftpError(553, "Could not create file");
         }
 
@@ -74,14 +83,13 @@ export class Client {
             chunks.push(Buffer.from(chunk as Uint8Array));
         }
 
-        server.files.set(normalize(path), { body: Buffer.concat(chunks), modifiedAt: new Date() });
+        server.files.set(target, { body: Buffer.concat(chunks), modifiedAt: new Date() });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     public async downloadTo(destination: Writable, path: string, startAt = 0): Promise<void> {
         check("downloadTo");
 
-        const body = read(path).subarray(startAt);
+        const body = this.read(path).subarray(startAt);
 
         await new Promise<void>((resolve, reject) => {
             destination.on("error", reject);
@@ -90,39 +98,35 @@ export class Client {
         });
     }
 
-    // eslint-disable-next-line class-methods-use-this
     public async remove(path: string): Promise<void> {
         check("remove");
-        read(path);
-        server.files.delete(normalize(path));
+        this.read(path);
+        server.files.delete(this.resolve(path));
     }
 
-    // eslint-disable-next-line class-methods-use-this
     public async rename(from: string, to: string): Promise<void> {
         check("rename");
 
-        const file = server.files.get(normalize(from));
+        const file = server.files.get(this.resolve(from));
 
         if (!file) {
             throw ftpError(550, "File unavailable");
         }
 
-        server.files.set(normalize(to), file);
-        server.files.delete(normalize(from));
+        server.files.set(this.resolve(to), file);
+        server.files.delete(this.resolve(from));
     }
 
-    // eslint-disable-next-line class-methods-use-this
     public async size(path: string): Promise<number> {
         check("size");
 
-        return read(path).length;
+        return this.read(path).length;
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    public async list(path: string): Promise<{ isDirectory: boolean; isFile: boolean; modifiedAt?: Date; name: string; size: number }[]> {
+    public async list(path = ""): Promise<{ isDirectory: boolean; isFile: boolean; modifiedAt?: Date; name: string; size: number }[]> {
         check("list");
 
-        const directory = normalize(path === "." ? "" : path);
+        const directory = this.resolve(path);
 
         if (!server.dirs.has(directory)) {
             throw ftpError(550, "No such directory");
@@ -145,5 +149,26 @@ export class Client {
             // A symlink-like entry that is neither file nor directory is skipped.
             { isDirectory: false, isFile: false, name: "link", size: 0 },
         ];
+    }
+
+    /** A server path: absolute from the root, otherwise from the working directory. */
+    private resolve(path: string): string {
+        const relative = normalize(path === "." ? "" : path);
+
+        if (path.startsWith("/") || !this.cwd) {
+            return relative;
+        }
+
+        return relative ? `${this.cwd}/${relative}` : this.cwd;
+    }
+
+    private read(path: string): Buffer {
+        const file = server.files.get(this.resolve(path));
+
+        if (!file) {
+            throw ftpError(550, "File unavailable");
+        }
+
+        return file.body;
     }
 }

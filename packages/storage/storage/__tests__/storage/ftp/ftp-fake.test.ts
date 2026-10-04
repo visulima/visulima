@@ -1,7 +1,6 @@
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Writable } from "node:stream";
 import { Readable } from "node:stream";
 import { text } from "node:stream/consumers";
 
@@ -10,152 +9,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import FtpStorage from "../../../src/storage/ftp/ftp-storage";
 import type { FtpStorageOptions } from "../../../src/storage/ftp/types";
+import { resetServer, server } from "../../__helpers__/fakes/ftp";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
-/**
- * In-memory FTP server behind `basic-ftp`'s Client: a tree of files and directories, uploads
- * into a missing directory are refused like a real server, missing paths answer 550. `fail`
- * makes one client method (`*`: every method) throw, to inject server/connection errors.
- */
-const server = vi.hoisted(() => {
-    return {
-        /** The login directory "." resolves to. */
-        cwd: "",
-        dirs: new Set<string>([""]),
-        fail: {},
-        files: new Map<string, { body: Buffer; modifiedAt: Date }>(),
-    };
-});
-
-vi.mock(import("basic-ftp"), () => {
-    const normalize = (path: string): string => path.replaceAll(/^\/+|\/+$/gu, "");
-    const parent = (path: string): string => path.split("/").slice(0, -1).join("/");
-    const ftpError = (code: number, message: string): Error => Object.assign(new Error(`${String(code)} ${message}`), { code });
-
-    const check = (method: string): void => {
-        const error = server.fail[method] ?? server.fail["*"];
-
-        if (error) {
-            throw error;
-        }
-    };
-
-    const read = (path: string): Buffer => {
-        const file = server.files.get(normalize(path));
-
-        if (!file) {
-            throw ftpError(550, "File unavailable");
-        }
-
-        return file.body;
-    };
-
-    class Client {
-        // eslint-disable-next-line class-methods-use-this
-        public async access(): Promise<void> {
-            check("access");
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public close(): void {}
-
-        // eslint-disable-next-line class-methods-use-this
-        public async cd(): Promise<void> {}
-
-        // eslint-disable-next-line class-methods-use-this
-        public async ensureDir(path: string): Promise<void> {
-            let current = "";
-
-            for (const segment of normalize(path).split("/")) {
-                current = current ? `${current}/${segment}` : segment;
-                server.dirs.add(current);
-            }
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async uploadFrom(source: Readable, path: string): Promise<void> {
-            check("uploadFrom");
-
-            if (!server.dirs.has(parent(normalize(path)))) {
-                throw ftpError(553, "Could not create file");
-            }
-
-            const chunks: Buffer[] = [];
-
-            for await (const chunk of source) {
-                chunks.push(Buffer.from(chunk as Uint8Array));
-            }
-
-            server.files.set(normalize(path), { body: Buffer.concat(chunks), modifiedAt: new Date() });
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async downloadTo(destination: Writable, path: string, startAt = 0): Promise<void> {
-            check("downloadTo");
-
-            const body = read(path).subarray(startAt);
-
-            await new Promise<void>((resolve, reject) => {
-                destination.on("error", reject);
-                destination.on("finish", resolve);
-                destination.end(body);
-            });
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async remove(path: string): Promise<void> {
-            check("remove");
-            read(path);
-            server.files.delete(normalize(path));
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async rename(from: string, to: string): Promise<void> {
-            check("rename");
-
-            const file = server.files.get(normalize(from));
-
-            if (!file) {
-                throw ftpError(550, "File unavailable");
-            }
-
-            server.files.set(normalize(to), file);
-            server.files.delete(normalize(from));
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async size(path: string): Promise<number> {
-            check("size");
-
-            return read(path).length;
-        }
-
-        // eslint-disable-next-line class-methods-use-this
-        public async list(path: string): Promise<{ isDirectory: boolean; isFile: boolean; modifiedAt?: Date; name: string; size: number }[]> {
-            check("list");
-
-            const directory = normalize(path === "." ? server.cwd : path);
-
-            if (!server.dirs.has(directory)) {
-                throw ftpError(550, "No such directory");
-            }
-
-            const children = (name: string): boolean => name !== directory && parent(name) === directory;
-            const base = (name: string): string => name.split("/").pop() as string;
-
-            return [
-                ...[...server.dirs].filter((name) => children(name)).map((name) => { return { isDirectory: true, isFile: false, name: base(name), size: 0 }; }),
-                ...[...server.files]
-                    .filter(([name]) => children(name))
-                    .map(([name, file]) => { return { isDirectory: false, isFile: true, modifiedAt: file.modifiedAt, name: base(name), size: file.body.length }; }),
-                // A symlink-like entry that is neither file nor directory is skipped.
-                { isDirectory: false, isFile: false, name: "link", size: 0 },
-            ];
-        }
-    }
-
-    return { Client };
-});
+vi.mock(import("basic-ftp"), async () => import("../../__helpers__/fakes/ftp") as never);
 
 describe("ftp storage against an in-memory FTP server", () => {
     let metaDirectory: string;
@@ -177,10 +34,7 @@ describe("ftp storage against an in-memory FTP server", () => {
     };
 
     beforeEach(() => {
-        server.files.clear();
-        server.cwd = "";
-        server.dirs = new Set([""]);
-        server.fail = {};
+        resetServer();
         metaDirectory = join(tmpdir(), `ftp-fake-${Math.random().toString(36).slice(2)}`);
     });
 
@@ -223,17 +77,28 @@ describe("ftp storage against an in-memory FTP server", () => {
         });
     });
 
-    it("should list the files it writes without a rootFolderPath, whatever the login directory", async () => {
-        expect.assertions(2);
+    it.each([
+        [undefined, "home/ftp"],
+        ["uploads/", "home/ftp/uploads"],
+        ["/srv/uploads/", "srv/uploads"],
+    ])("should resolve rootFolderPath %s against the login directory for write, read, list and delete", async (rootFolderPath, directory) => {
+        expect.assertions(5);
 
-        server.cwd = "home/ftp";
+        // A server that doesn't chroot the user logs it into its home directory.
+        server.home = "home/ftp";
         server.dirs.add("home").add("home/ftp");
 
-        const storage = createStorage({ rootFolderPath: undefined });
+        const storage = createStorage({ rootFolderPath });
         const id = await upload(storage, "hello");
 
-        expect(server.files.has(id)).toBe(true);
-        await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id, path: `/${id}` })]);
+        expect([...server.files.keys()]).toStrictEqual([`${directory}/${id}`]);
+        await expect(storage.get({ id })).resolves.toHaveProperty("content", Buffer.from("hello"));
+        await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id })]);
+
+        await storage.delete({ id });
+
+        expect(server.files.size).toBe(0);
+        await expect(storage.exists({ id })).resolves.toBe(false);
     });
 
     it("should refuse a second chunk and keep the first part resumable from offset 0", async () => {
