@@ -260,6 +260,48 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored file, since the metadata is deleted on completion.
+     * Only a `HEAD` request is made — the content is never downloaded. The file is looked up by the upload's ID as its custom ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored file exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<UploadThingFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let response: Response;
+
+            try {
+                const url = await this.resolveFetchUrl(id, options);
+
+                response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+            } catch {
+                return undefined;
+            }
+
+            if (!response.ok) {
+                return undefined;
+            }
+
+            const size = Number(response.headers.get("content-length") ?? 0) || 0;
+            const file = new UploadThingFile({
+                contentType: response.headers.get("content-type") ?? "application/octet-stream",
+                id,
+                metadata: {},
+                size,
+            });
+
+            return Object.assign(file, {
+                bytesWritten: size,
+                customId: id,
+                ETag: response.headers.get("etag") ?? undefined,
+                id,
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: UploadThingFile | undefined;

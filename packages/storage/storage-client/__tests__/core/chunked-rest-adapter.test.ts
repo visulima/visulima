@@ -36,6 +36,46 @@ describe(createChunkedRestAdapter, () => {
         expect(adapter.upload).toBeDefined();
     });
 
+    it("should finish on the completing PATCH when a later HEAD would 404 (#915)", async () => {
+        expect.assertions(2);
+
+        const file = new File(["x".repeat(20)], "test.bin", { type: "application/octet-stream" });
+        let completed = false;
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            if (init?.method === "POST") {
+                return { headers: new Headers({ "X-Upload-ID": "file-123" }), ok: true, status: 201 };
+            }
+
+            if (init?.method === "PATCH") {
+                completed = true;
+
+                return {
+                    headers: new Headers({ "X-Upload-Complete": "true", "X-Upload-Offset": "20" }),
+                    json: async () => {
+                        return { id: "file-123", size: 20, status: "completed" };
+                    },
+                    ok: true,
+                    status: 200,
+                };
+            }
+
+            // S3 providers delete the upload's metadata once it completes.
+            return completed
+                ? { headers: new Headers(), ok: false, status: 404, statusText: "Not Found" }
+                : { headers: new Headers({ "X-Upload-Offset": "0" }), ok: true, status: 200 };
+        });
+
+        try {
+            const result = await createChunkedRestAdapter({ chunkSize: 20, endpoint: "https://api.example.com/upload", retry: false }).upload(file);
+
+            expect(result).toMatchObject({ id: "file-123", status: "completed" });
+            expect(mockFetch.mock.calls.map(([, init]) => (init as RequestInit | undefined)?.method)).toStrictEqual(["POST", "HEAD", "PATCH"]);
+        } finally {
+            mockFetch.mockReset();
+        }
+    });
+
     it("should upload file successfully", async () => {
         expect.assertions(3);
 
@@ -336,9 +376,6 @@ describe(createChunkedRestAdapter, () => {
             },
             ok: true,
         });
-        // Final status check (HEAD)
-        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": String(file.size) }), ok: true });
-
         const adapter = createChunkedRestAdapter({ endpoint: "https://api.example.com/upload", retry: false });
 
         const result = await adapter.upload(file);
@@ -401,8 +438,6 @@ describe(createChunkedRestAdapter, () => {
             },
             ok: true,
         });
-        // Final status check (HEAD)
-        mockFetch.mockResolvedValueOnce({ headers: new Headers({ "X-Upload-Offset": String(file.size) }), ok: true });
         // Metadata (GET /:id/metadata)
         mockFetch.mockResolvedValueOnce({
             json: async () => {

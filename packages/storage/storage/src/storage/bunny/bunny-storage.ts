@@ -332,6 +332,44 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only the object description is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BunnyFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const path = toBunnyPath(id);
+            let entry: BunnyStorageSDK.file.StorageFile;
+
+            try {
+                entry = await this.runOperation(options, () => BunnyStorageSDK.file.get(this.client, path));
+            } catch {
+                return undefined;
+            }
+
+            if (entry.isDirectory || typeof entry.length !== "number") {
+                return undefined;
+            }
+
+            const size = entry.length;
+            const file = new BunnyFile({ contentType: entry.contentType ?? "application/octet-stream", id, metadata: {}, size });
+
+            return Object.assign(file, {
+                bunnyChecksum: entry.checksum ?? undefined,
+                bunnyPath: path,
+                bytesWritten: size,
+                ETag: entry.checksum ?? undefined,
+                id,
+                modifiedAt: entry.lastChanged?.toISOString(),
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BunnyFile | undefined;

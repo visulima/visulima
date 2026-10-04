@@ -469,7 +469,29 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async handleHead(id: string): Promise<ResponseFile<TFile>> {
-        let file = await this.storage.getMeta(id);
+        let file: TFile;
+
+        try {
+            file = await this.storage.getMeta(id);
+        } catch (error) {
+            // Providers that drop the metadata on completion (S3) answer for the stored object
+            // instead, so resuming a finished upload sees it complete rather than a 404 (#915).
+            const completed = isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND ? await this.storage.getCompletedFile?.(id) : undefined;
+
+            if (!completed) {
+                throw error;
+            }
+
+            const size = completed.bytesWritten;
+            const completedFile: TFile = { ...completed, metadata: { ...completed.metadata, _chunks: size > 0 ? [{ length: size, offset: 0 }] : [] } };
+
+            return buildResponseFile(
+                completedFile,
+                { ...buildFileMetadataHeaders(completedFile), ...buildChunkedUploadHeaders(completedFile, true), "x-upload-offset": String(size) },
+                200,
+            );
+        }
+
         const isChunkedUploadFile = isChunkedUpload(file);
 
         // For chunked uploads, ensure file.size is set to total size
@@ -570,6 +592,7 @@ abstract class RestBase<TFile extends UploadFile> {
             successful: TFile[];
             successfulCount: number;
         }>;
+        getCompletedFile?: (id: string) => Promise<TFile | undefined>;
         getMeta: (id: string) => Promise<TFile>;
         maxUploadSize: number;
         sequentialWrites?: boolean;

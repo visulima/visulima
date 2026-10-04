@@ -464,6 +464,31 @@ class GCStorage extends BaseStorage<GCSFile> {
      * @param query File query containing the file ID to check.
      * @returns Promise resolving to true if both metadata and GCS object exist, false otherwise.
      */
+
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GCSFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let object: { contentType?: string; etag?: string; size?: number | string };
+
+            try {
+                ({ data: object } = await this.makeRequest<typeof object>({ params: { alt: "json" }, url: `${this.storageBaseURI}/${id}` }, options));
+            } catch {
+                return undefined;
+            }
+
+            const size = Number(object?.size ?? 0) || 0;
+            const file = new GCSFile({ contentType: object?.contentType, id, metadata: {}, size });
+
+            return Object.assign(file, { bytesWritten: size, ETag: object?.etag, name: id, status: "completed" as const });
+        });
+    }
+
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {

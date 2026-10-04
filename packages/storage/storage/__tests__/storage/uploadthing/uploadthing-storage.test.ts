@@ -131,6 +131,45 @@ describe(UploadThingStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("answers from a HEAD request without downloading", async () => {
+            expect.assertions(4);
+
+            const storage = new UploadThingStorage({
+                ...(storageOptions as UploadThingStorageOptions),
+                token: validToken,
+            });
+
+            const fetchSpy = vi
+                .spyOn(globalThis, "fetch")
+                .mockResolvedValueOnce(new Response(null, { headers: { "content-length": "321", "content-type": "video/mp4", etag: "etag-1" }, status: 200 }));
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({ bytesWritten: 321, customId: "video.mp4", ETag: "etag-1", id: "video.mp4", size: 321, status: "completed" });
+            expect(file?.contentType).toBe("video/mp4");
+            expect(fetchSpy).toHaveBeenCalledWith("https://test-app.ufs.sh/f/video.mp4", { method: "HEAD" });
+            expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+            fetchSpy.mockRestore();
+        });
+
+        it("returns undefined when the file is missing", async () => {
+            expect.assertions(1);
+
+            const storage = new UploadThingStorage({
+                ...(storageOptions as UploadThingStorageOptions),
+                token: validToken,
+            });
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 404 }));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            fetchSpy.mockRestore();
+        });
+    });
+
     describe(".getReadUrl()", () => {
         it("returns a public CDN URL for public-read ACL", async () => {
             expect.assertions(1);

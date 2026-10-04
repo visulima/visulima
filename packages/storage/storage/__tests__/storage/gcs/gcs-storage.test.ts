@@ -412,6 +412,38 @@ describe(GCStorage, async () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("should answer from the object metadata without downloading the content", async () => {
+            expect.assertions(5);
+
+            const mockMakeRequest = vi.fn().mockResolvedValue({
+                data: { contentType: "video/mp4", etag: "etag-1", size: "1234" },
+                status: 200,
+            });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            const file = await storage.getCompletedFile("done-id");
+
+            expect(file).toMatchObject({ bytesWritten: 1234, contentType: "video/mp4", ETag: "etag-1", id: "done-id", size: 1234, status: "completed" });
+            expect(mockMakeRequest).toHaveBeenCalledTimes(1);
+            expect(mockMakeRequest.mock.calls[0]?.[0]).not.toHaveProperty("method", "DELETE");
+            expect(mockMakeRequest.mock.calls[0]?.[0].params).toStrictEqual({ alt: "json" });
+            expect(mockMakeRequest.mock.calls[0]?.[0].url).toContain("done-id");
+        });
+
+        it("should return undefined when the object does not exist", async () => {
+            expect.assertions(1);
+
+            vi.spyOn(storage as unknown as { makeRequest: () => Promise<unknown> }, "makeRequest").mockRejectedValue({
+                response: { status: 404 },
+                status: 404,
+            });
+
+            await expect(storage.getCompletedFile("missing-id")).resolves.toBeUndefined();
+        });
+    });
+
     describe(".copy()", () => {
         it("should copy file to relative path with correct API calls", async () => {
             expect.assertions(1);

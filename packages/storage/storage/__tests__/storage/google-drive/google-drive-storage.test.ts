@@ -177,6 +177,49 @@ describe(GoogleDriveStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("resolves the drive file and answers from its metadata without downloading", async () => {
+            expect.assertions(5);
+
+            const storage = new GoogleDriveStorage({
+                ...(storageOptions as GoogleDriveStorageOptions),
+                client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
+            });
+
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [{ id: "drive-1" }] } });
+            mockDrive.files.get.mockResolvedValueOnce({ data: { id: "drive-1", md5Checksum: "md5-1", mimeType: "video/mp4", size: "321" } });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                driveFileId: "drive-1",
+                ETag: "md5-1",
+                id: "video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(mockDrive.files.get).toHaveBeenCalledTimes(1);
+            expect(mockDrive.files.get).toHaveBeenCalledWith(expect.objectContaining({ fileId: "drive-1" }));
+            expect(mockDrive.files.get.mock.calls[0]?.[0]).not.toHaveProperty("alt");
+            expect(file?.contentType).toBe("video/mp4");
+        });
+
+        it("returns undefined when no drive file matches", async () => {
+            expect.assertions(2);
+
+            const storage = new GoogleDriveStorage({
+                ...(storageOptions as GoogleDriveStorageOptions),
+                client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
+            });
+
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [] } });
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+            expect(mockDrive.files.get).not.toHaveBeenCalled();
+        });
+    });
+
     describe(".copy()", () => {
         it("resolves source by virtual key and copies into rootFolderId with appProperties", async () => {
             expect.assertions(2);

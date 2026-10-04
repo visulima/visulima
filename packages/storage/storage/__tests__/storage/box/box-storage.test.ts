@@ -237,6 +237,49 @@ describe(BoxStorage, () => {
         });
     });
 
+    describe(".getCompletedFile()", () => {
+        it("resolves the box file and answers from its metadata without downloading", async () => {
+            expect.assertions(5);
+
+            const storage = new BoxStorage({
+                ...(storageOptions as BoxStorageOptions),
+                developerToken: "tok",
+            });
+
+            mockClient.folders.getFolderItems.mockResolvedValueOnce({ entries: [{ id: "BOX1", name: "video.mp4", type: "file" }] });
+            mockClient.files.getFileById.mockResolvedValueOnce({ etag: "7", id: "BOX1", name: "video.mp4", size: 321 });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                boxFileId: "BOX1",
+                bytesWritten: 321,
+                ETag: "7",
+                id: "video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(mockClient.files.getFileById).toHaveBeenCalledWith("BOX1");
+            expect(mockClient.files.getFileById).toHaveBeenCalledTimes(1);
+            expect(mockClient.downloads.getDownloadFileUrl).not.toHaveBeenCalled();
+            expect(file?.name).toBe("video.mp4");
+        });
+
+        it("returns undefined when no box file matches", async () => {
+            expect.assertions(2);
+
+            const storage = new BoxStorage({
+                ...(storageOptions as BoxStorageOptions),
+                developerToken: "tok",
+            });
+
+            mockClient.folders.getFolderItems.mockResolvedValueOnce({ entries: [] });
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+            expect(mockClient.files.getFileById).not.toHaveBeenCalled();
+        });
+    });
+
     describe(".move()", () => {
         it("wraps updateFileById body in `requestBody`", async () => {
             expect.assertions(2);

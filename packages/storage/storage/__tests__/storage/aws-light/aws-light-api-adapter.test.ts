@@ -99,12 +99,30 @@ describe("awsLightApiAdapter list responses (#907)", () => {
         );
 
         await expect(adapter.listParts({ Bucket: "bucket", Key: "file", UploadId: "u1" })).resolves.toStrictEqual({
+            IsTruncated: false,
+            NextPartNumberMarker: undefined,
             Parts: [
                 { ETag: "e1", PartNumber: 1, Size: 5_242_880 },
                 { ETag: "e2", PartNumber: 2, Size: 5_242_880 },
                 { ETag: "e3", PartNumber: 3, Size: 1024 },
             ],
         });
+    });
+
+    it("should send the part-number marker and report a truncated ListParts page (#916)", async () => {
+        expect.assertions(3);
+
+        mockFetch.mockResolvedValueOnce(
+            new Response(
+                `<ListPartsResult><IsTruncated>true</IsTruncated><NextPartNumberMarker>2000</NextPartNumberMarker><Part><PartNumber>2000</PartNumber><ETag>"e2000"</ETag><Size>5</Size></Part></ListPartsResult>`,
+            ),
+        );
+
+        const result = await adapter.listParts({ Bucket: "bucket", Key: "file", PartNumberMarker: "1000", UploadId: "u1" });
+
+        expect(new URL(String(mockFetch.mock.calls[0]?.[0])).searchParams.get("part-number-marker")).toBe("1000");
+        expect(result.IsTruncated).toBe(true);
+        expect(result.NextPartNumberMarker).toBe("2000");
     });
 
     it("should return every object and common prefix of a ListObjectsV2 response", async () => {

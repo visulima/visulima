@@ -430,6 +430,41 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<GoogleDriveFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let data: drive_v3.Schema$File;
+
+            try {
+                const fileId = await this.resolveFileId(id, options);
+
+                ({ data } = await this.runOperation(options, () => this.driveClient.files.get({ ...this.sharedDriveParams, fields: FILE_FIELDS, fileId })));
+            } catch {
+                return undefined;
+            }
+
+            const props = (data.appProperties ?? {}) as Record<string, string>;
+            const contentType = props[CONTENT_TYPE_PROP] ?? data.mimeType ?? undefined;
+            const size = Number(data.size ?? 0) || 0;
+            const file = new GoogleDriveFile({ contentType, id, metadata: {}, size });
+
+            return Object.assign(file, {
+                bytesWritten: size,
+                driveFileId: data.id ?? undefined,
+                ETag: data.md5Checksum ?? undefined,
+                mimeType: data.mimeType ?? undefined,
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: GoogleDriveFile | undefined;

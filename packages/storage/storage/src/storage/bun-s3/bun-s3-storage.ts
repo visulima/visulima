@@ -247,6 +247,38 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
+     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored object exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<BunS3File | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            const key = toKey(id);
+            let stat: Awaited<ReturnType<BunS3ClientLike["stat"]>>;
+
+            try {
+                stat = await this.runOperation(options, () => this.client.file(key).stat());
+            } catch {
+                return undefined;
+            }
+
+            const size = stat.size ?? 0;
+            const file = new BunS3File({ contentType: stat.type, id, metadata: {}, size });
+
+            return Object.assign(file, {
+                bunS3ETag: stat.etag ?? undefined,
+                bunS3Key: key,
+                bytesWritten: size,
+                ETag: stat.etag ?? undefined,
+                name: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let stored: BunS3File | undefined;

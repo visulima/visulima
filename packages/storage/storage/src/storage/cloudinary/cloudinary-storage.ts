@@ -295,6 +295,51 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
+    /**
+     * Answers for a completed upload from its stored resource, since the metadata is deleted on completion.
+     * Only the Admin API resource details are requested — the content is never downloaded. The resource is looked up by the upload's ID as its public ID.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored resource exists or its size is unknown.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<CloudinaryFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let resource: Awaited<ReturnType<typeof cloudinary.api.resource>>;
+
+            try {
+                resource = await this.runOperation(options, () =>
+                    this.client.api.resource(id, {
+                        resource_type: this.resourceType,
+                        type: this.deliveryType,
+                    }),
+                );
+            } catch {
+                return undefined;
+            }
+
+            if (typeof resource.bytes !== "number") {
+                return undefined;
+            }
+
+            const size = resource.bytes;
+            const file = new CloudinaryFile({
+                contentType: resource.resource_type && resource.format ? `${resource.resource_type}/${resource.format}` : "application/octet-stream",
+                id,
+                metadata: {},
+                size,
+            });
+
+            return Object.assign(file, {
+                bytesWritten: size,
+                ETag: resource.version === undefined ? undefined : String(resource.version),
+                id,
+                name: id,
+                path: id,
+                status: "completed" as const,
+            });
+        });
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;

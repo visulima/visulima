@@ -417,13 +417,13 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         startOffset: number,
         endOffset: number,
         signal: AbortSignal,
-    ): Promise<Partial<UploadResult> | undefined> => {
+    ): Promise<{ complete: boolean; meta?: Partial<UploadResult> }> => {
         const chunk = file.slice(startOffset, endOffset);
         const currentChunkSize = endOffset - startOffset;
 
         // Skip if already uploaded
         if (uploadState.uploadedChunks.has(startOffset)) {
-            return undefined;
+            return { complete: false };
         }
 
         const url = fileUrl(fileId);
@@ -465,7 +465,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         progressCallback?.(progress, currentOffset);
 
         // The PATCH that completes the upload carries the file metadata as its JSON body.
-        return response.headers.get("X-Upload-Complete") === "true" ? parseFileMeta(response) : undefined;
+        if (response.headers.get("X-Upload-Complete") === "true") {
+            return { complete: true, meta: await parseFileMeta(response) };
+        }
+
+        return { complete: false };
     };
 
     /**
@@ -525,6 +529,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         let nextIndex = 0;
 
         let completedMeta: Partial<UploadResult> | undefined;
+        // An object, so the flag set inside the workers is not narrowed away.
+        const completion = { byPatch: false };
 
         const worker = async (): Promise<void> => {
             while (nextIndex < pending.length) {
@@ -552,10 +558,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 }
 
                 // eslint-disable-next-line no-await-in-loop -- Sequential drain within a single worker bounds concurrency
-                const meta = await uploadChunk(file, fileId, pair.startOffset, pair.endOffset, signal);
+                const { complete, meta } = await uploadChunk(file, fileId, pair.startOffset, pair.endOffset, signal);
 
-                if (meta) {
-                    completedMeta = meta;
+                if (complete) {
+                    completion.byPatch = true;
+                    completedMeta = meta ?? completedMeta;
                 }
             }
         };
@@ -564,11 +571,14 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
-        // Verify upload is complete
-        const finalStatus = await getUploadStatus(fileId);
+        // Verify upload is complete, unless a PATCH already said so: S3 providers drop the
+        // upload's metadata on completion, so a HEAD after it is a 404 (#915).
+        if (!completion.byPatch) {
+            const finalStatus = await getUploadStatus(fileId);
 
-        if (finalStatus.offset < file.size) {
-            throw new Error(`Upload incomplete. Expected ${String(file.size)} bytes, got ${String(finalStatus.offset)}`);
+            if (finalStatus.offset < file.size) {
+                throw new Error(`Upload incomplete. Expected ${String(file.size)} bytes, got ${String(finalStatus.offset)}`);
+            }
         }
 
         // Check if uploadedChunks set has any items

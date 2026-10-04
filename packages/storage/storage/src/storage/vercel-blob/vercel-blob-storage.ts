@@ -1,4 +1,4 @@
-import { copy, del, list, put } from "@vercel/blob";
+import { copy, del, head, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
@@ -331,6 +331,38 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                 // Return false if metadata doesn't exist or blob doesn't exist
                 return false;
             }
+        });
+    }
+
+    /**
+     * Answers for a completed upload from its stored blob, since the metadata is deleted on completion.
+     * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the upload's ID as its pathname.
+     * @param id Upload ID.
+     * @param options Operation options.
+     * @returns The completed file, or `undefined` when no stored blob exists.
+     */
+    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<VercelBlobFile | undefined> {
+        return this.instrumentOperation("getCompletedFile", async () => {
+            let blob;
+
+            try {
+                blob = await this.runOperation(options, () => head(id, this.credentials));
+            } catch {
+                return undefined;
+            }
+
+            const file = new VercelBlobFile({ contentType: blob.contentType, id, metadata: {}, size: blob.size });
+
+            return Object.assign(file, {
+                bytesWritten: blob.size,
+                downloadUrl: blob.downloadUrl,
+                ETag: blob.etag,
+                id,
+                name: id,
+                pathname: blob.pathname,
+                status: "completed" as const,
+                url: blob.url,
+            });
         });
     }
 

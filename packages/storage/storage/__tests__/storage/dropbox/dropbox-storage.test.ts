@@ -14,6 +14,7 @@ const makeMockClient = () => {
         filesCopyV2: vi.fn(),
         filesDeleteV2: vi.fn(),
         filesDownload: vi.fn(),
+        filesGetMetadata: vi.fn(),
         filesGetTemporaryLink: vi.fn(),
         filesMoveV2: vi.fn(),
         filesUpload: vi.fn(),
@@ -225,6 +226,52 @@ describe(DropboxStorage, () => {
                 from_path: "/uploads/src.mp4",
                 to_path: "/uploads/dst.mp4",
             });
+        });
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from the file metadata without downloading", async () => {
+            expect.assertions(5);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.filesGetMetadata.mockResolvedValueOnce({ result: { ".tag": "file", name: "video.mp4", rev: "rev-1", size: 321 } });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                ETag: "rev-1",
+                id: "video.mp4",
+                path: "/video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(mockClient.filesGetMetadata).toHaveBeenCalledWith({ path: "/video.mp4" });
+            expect(mockClient.filesGetMetadata).toHaveBeenCalledTimes(1);
+            expect(mockClient.filesDownload).not.toHaveBeenCalled();
+            expect(file?.name).toBe("video.mp4");
+        });
+
+        it("returns undefined when the path is missing or not a file", async () => {
+            expect.assertions(3);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.filesGetMetadata.mockRejectedValueOnce(new Error("path/not_found"));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            mockClient.filesGetMetadata.mockResolvedValueOnce({ result: { ".tag": "folder", name: "dir" } });
+
+            await expect(storage.getCompletedFile("dir")).resolves.toBeUndefined();
+            expect(mockClient.filesDownload).not.toHaveBeenCalled();
         });
     });
 

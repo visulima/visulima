@@ -476,7 +476,7 @@ catalogs:
   prod:
     '@alcalzone/ansi-tokenize': ^0.3.0
     '@anolilab/commitlint-config': 10.1.0
-    '@anolilab/multi-semantic-release': ^4.4.21
+    '@anolilab/multi-semantic-release': ^4.4.23
     '@anolilab/textlint-config': 13.0.6
     '@antfu/install-pkg': ^2.0.1
     '@apidevtools/swagger-parser': ^12.1.0
@@ -796,6 +796,7 @@ linkWorkspacePackages: true
 minimumReleaseAge: 1440
 
 minimumReleaseAgeExclude:
+  - '@anolilab/multi-semantic-release@4.4.23'
   - typescript
   - '@types/*'
   - '@visulima/*'
