@@ -69,12 +69,14 @@ export class Client {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    public async get(path: string, _destination?: unknown, options?: { readStreamOptions?: { end?: number; start?: number } }): Promise<Buffer> {
+    public async get(path: string, _destination?: unknown, options?: { readStreamOptions?: { end?: number; start?: number } }): Promise<Buffer | []> {
         check("get");
 
         const { end, start = 0 } = options?.readStreamOptions ?? {};
+        const bytes = read(path).subarray(start, end === undefined ? undefined : end + 1);
 
-        return read(path).subarray(start, end === undefined ? undefined : end + 1);
+        // As ssh2-sftp-client does: with no chunk read, it answers its chunk list, not a Buffer.
+        return bytes.byteLength === 0 ? [] : bytes;
     }
 
     // eslint-disable-next-line class-methods-use-this

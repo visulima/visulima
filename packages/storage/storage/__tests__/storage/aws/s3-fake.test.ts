@@ -282,6 +282,16 @@ describe("s3Storage against an in-memory S3", () => {
         };
     });
 
+    it("should store an empty upload completed by a write without a body", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "empty.txt", size: 0 });
+
+        await expect(storage.write({ id: file.id })).resolves.toHaveProperty("status", "completed");
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.alloc(0));
+    });
+
     it("should resume a multipart upload on a fresh instance after a failed part, and keep the metadata on completion", async () => {
         expect.assertions(7);
 

@@ -83,7 +83,9 @@ export const createAwsLightFake = () => {
             }
 
             if (request.method === "POST") {
-                const completed = bucket.complete(uploadId);
+                const body = await request.text();
+                const requested = [...body.matchAll(/<PartNumber>(\d+)<\/PartNumber>/g)].map(([, number]) => Number(number));
+                const completed = bucket.complete(uploadId, requested);
 
                 return completed === undefined
                     ? missing("NoSuchUpload")

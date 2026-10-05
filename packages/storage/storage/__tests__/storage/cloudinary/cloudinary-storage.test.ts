@@ -159,6 +159,28 @@ describe(CloudinaryStorage, () => {
             expect(file.bytesWritten).toBe(4);
             expect(file.status).toBe("completed");
         });
+
+        it("uploads an empty file", async () => {
+            expect.assertions(2);
+
+            const storage = newStorage();
+            const created = await storage.create({ contentType: "video/mp4", metadata: {}, originalName: "empty.mp4", size: 0 });
+            let uploaded: Buffer | undefined;
+
+            mockClient.uploader.upload_stream.mockImplementation((_options: unknown, callback: (error: unknown, result: unknown) => void) => {
+                return {
+                    end: (buffer: Buffer) => {
+                        uploaded = buffer;
+                        callback(null, { public_id: "anonymous/empty.mp4", secure_url: "https://cdn/x", version: 42 });
+                    },
+                };
+            });
+
+            const file = await storage.write({ body: Readable.from([]), contentLength: 0, id: created.id, start: 0 });
+
+            expect(uploaded).toStrictEqual(Buffer.alloc(0));
+            expect(file).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
+        });
     });
 
     describe(".get()", () => {

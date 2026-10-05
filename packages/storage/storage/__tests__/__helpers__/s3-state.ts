@@ -63,6 +63,12 @@ export const createS3State = () => {
             }
 
             const numbers = partNumbers ?? (parts(uploadId) ?? []).map(([number]) => number);
+
+            // S3 refuses to complete an upload without parts.
+            if (partNumbers?.length === 0) {
+                throw Object.assign(new Error("MalformedXML"), { $fault: "client", $metadata: { httpStatusCode: 400 }, name: "MalformedXML" });
+            }
+
             const body = Buffer.concat(numbers.map((number) => upload.parts.get(number)?.body ?? Buffer.alloc(0)));
             // A multipart object's ETag is the MD5 of its parts' MD5s and the part count.
             const digests = Buffer.concat(numbers.map((number) => Buffer.from(md5(upload.parts.get(number)?.body ?? Buffer.alloc(0)), "hex")));

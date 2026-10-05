@@ -95,7 +95,8 @@ class File implements FileInit {
             this.size = Number(metadata.size);
         }
 
-        if (typeof this.size === "number" && this.size <= 0) {
+        // 0 is an empty file; only a size that isn't a length leaves it unknown (deferred).
+        if (this.size !== undefined && !(Number.isFinite(this.size) && this.size >= 0)) {
             this.size = undefined;
         }
     }

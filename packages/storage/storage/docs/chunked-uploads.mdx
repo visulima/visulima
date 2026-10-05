@@ -35,6 +35,8 @@ const initResponse = await fetch("/files", {
 const id = initResponse.headers.get("X-Upload-ID");
 ```
 
+An empty file (`X-Total-Size: 0`) has no chunks to send: the `POST` stores it and answers `201` with `X-Upload-Complete: true` right away.
+
 ## Uploading Chunks
 
 ```typescript

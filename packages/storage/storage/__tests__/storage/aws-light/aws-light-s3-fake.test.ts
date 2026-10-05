@@ -119,7 +119,9 @@ const createS3 = () => {
                     return preconditionFailed();
                 }
 
-                const completed = bucket.complete(uploadId);
+                const body = await request.text();
+                const requested = [...body.matchAll(/<PartNumber>(\d+)<\/PartNumber>/g)].map(([, number]) => Number(number));
+                const completed = bucket.complete(uploadId, requested);
 
                 return completed === undefined
                     ? missing("NoSuchUpload")
@@ -224,6 +226,20 @@ describe("aws-light against an in-memory S3", () => {
                 s3.put(key, Buffer.from(content));
             },
         };
+    });
+
+    it("should store an empty upload completed by a write without a body", async () => {
+        expect.assertions(2);
+
+        const s3 = createS3();
+
+        vi.stubGlobal("fetch", s3.fetch);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "empty.txt", size: 0 });
+
+        await expect(storage.write({ id: file.id })).resolves.toHaveProperty("status", "completed");
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.alloc(0));
     });
 
     it("should stream an object once, not once per read", async () => {

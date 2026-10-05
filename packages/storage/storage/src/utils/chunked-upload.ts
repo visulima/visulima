@@ -142,8 +142,13 @@ export const isFreshChunkedRecord = (file: UploadFile): boolean => getChunks(fil
  * @returns True if every byte is stored
  */
 export const isChunkedUploadComplete = (chunks: ChunkInfo[], totalSize: number, bytesWritten: number | undefined, sequentialWrites: boolean): boolean => {
+    // An empty upload has no byte to wait for: it is stored complete when created.
+    if (totalSize === 0) {
+        return true;
+    }
+
     if (sequentialWrites && typeof bytesWritten === "number" && Number.isFinite(bytesWritten)) {
-        return totalSize > 0 && bytesWritten >= totalSize;
+        return bytesWritten >= totalSize;
     }
 
     return isUploadComplete(chunks, totalSize);

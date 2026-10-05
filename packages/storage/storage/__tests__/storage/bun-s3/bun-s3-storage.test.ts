@@ -147,6 +147,26 @@ describe(BunS3Storage, () => {
             expect(result.size).toBe(5);
         });
 
+        it("uploads an empty file", async () => {
+            expect.assertions(2);
+
+            const client = makeClient();
+            const storage = makeStorage(client);
+            const file = new BunS3File({ contentType: "text/plain", metadata: {}, originalName: "empty.txt", size: 0 });
+
+            file.name = "anonymous/empty.txt";
+            file.bytesWritten = 0;
+            file.createdAt = new Date().toISOString();
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue(file);
+            vi.spyOn(storage as unknown as { saveMeta: (f: unknown) => Promise<unknown> }, "saveMeta").mockResolvedValue(undefined);
+
+            const result = await storage.write({ body: Readable.from([]), contentLength: 0, id: file.id, start: 0 });
+
+            expect(client.write).toHaveBeenCalledWith("anonymous/empty.txt", Buffer.alloc(0), { type: "text/plain" });
+            expect(result).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
+        });
+
         it("refuses a part that doesn't match the upload with FILE_CONFLICT", async () => {
             expect.assertions(1);
 

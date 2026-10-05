@@ -58,6 +58,19 @@ describe(DiskStorageWithChecksum, () => {
         expect(file).toMatchSnapshot("file_readable");
     });
 
+    it("should store and hash an empty file", async () => {
+        expect.assertions(3);
+
+        const storage = new DiskStorageWithChecksum(options);
+        const diskFile = await storage.create({ ...metafile, id: "empty", size: 0 });
+        const file = await storage.write({ ...diskFile, body: Readable.from([]), contentLength: 0, start: 0 });
+
+        expect(file).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
+        // SHA-1 of no bytes.
+        await expect(storage.getMeta(file.id)).resolves.toHaveProperty("hash", { algorithm: "sha1", value: "da39a3ee5e6b4b0d3255bfef95601890afd80709" });
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("content", Buffer.alloc(0));
+    });
+
     it("should not hash with checksum: false", async () => {
         expect.assertions(2);
 

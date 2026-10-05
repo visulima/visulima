@@ -39,6 +39,18 @@ const toAbortError = (reason: unknown): Error => {
 };
 
 /**
+ * The bytes `client.get` answers without a destination. For an empty file ssh2-sftp-client hands
+ * back its chunk list, an empty array, instead of a Buffer.
+ */
+const toBuffer = (data: unknown): Buffer => {
+    if (Buffer.isBuffer(data)) {
+        return data;
+    }
+
+    return Buffer.concat(Array.isArray(data) ? (data as Uint8Array[]) : []);
+};
+
+/**
  * SFTP storage backend (built on `ssh2-sftp-client`).
  *
  * Routes virtual keys onto remote paths under `rootFolderPath`. SFTP has no
@@ -207,7 +219,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
                               } as unknown as Parameters<typeof client.get>[2])
                             : undefined;
 
-                        return (await client.get(path, undefined, transferOptions)) as Buffer;
+                        return toBuffer(await client.get(path, undefined, transferOptions));
                     } catch (error) {
                         if (isNotFoundError(error)) {
                             return throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -268,7 +280,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
             await this.runOperation(options, (signal) =>
                 this.run(signal, async (client) => {
-                    const buffer = (await client.get(sourcePath)) as Buffer;
+                    const buffer = toBuffer(await client.get(sourcePath));
                     const directory = posixDirname(targetPath);
 
                     if (directory) {
@@ -305,7 +317,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
                         await client.rename(sourcePath, targetPath);
                     } catch (renameError) {
                         try {
-                            const buffer = (await client.get(sourcePath)) as Buffer;
+                            const buffer = toBuffer(await client.get(sourcePath));
 
                             await client.put(buffer, targetPath);
                             await client.delete(sourcePath);

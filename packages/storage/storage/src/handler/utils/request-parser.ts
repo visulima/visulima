@@ -31,16 +31,16 @@ export const parseIntegerHeader = (value: string | null | undefined): number | u
 };
 
 /**
- * Parses a `Content-Length` header that is required to be a positive integer.
+ * Parses a `Content-Length` header that is required; `0` (an empty file) is a valid length.
  * @param value Raw header value
  * @returns The content length
- * @throws {HttpError} 400 when the header is missing, malformed or zero
+ * @throws {HttpError} 400 when the header is missing or malformed
  */
-export const requirePositiveContentLength = (value: string | null | undefined): number => {
+export const requireContentLength = (value: string | null | undefined): number => {
     const contentLength = parseIntegerHeader(value);
 
-    if (contentLength === undefined || contentLength === 0) {
-        throw createHttpError(400, "Content-Length is required and must be greater than 0");
+    if (contentLength === undefined) {
+        throw createHttpError(400, "Content-Length is required and must be a non-negative integer");
     }
 
     return contentLength;
@@ -135,7 +135,7 @@ export const parseChunkHeaders = (
     return {
         chunkOffset: parseIntegerHeader(readHeader("x-chunk-offset")),
         isChunkedUpload: readHeader("x-chunked-upload") === "true",
-        totalSize: totalSize === 0 ? undefined : totalSize,
+        totalSize,
     };
 };
 
@@ -157,33 +157,25 @@ export const validateRequestBody = (request: IncomingMessage, allowEmptyForChunk
         throw createHttpError(400, "Request body is required");
     }
 
-    // Also check Content-Length header to ensure body is not empty
+    // A body sent without Content-Length (chunked transfer encoding) is refused; an explicit 0 is an empty file.
     if (!isChunkedUpload) {
-        requirePositiveContentLength(getHeader(request, "content-length"));
+        requireContentLength(getHeader(request, "content-length"));
     }
 };
 
 /**
  * Validates Content-Length header.
  * @param request The HTTP request
- * @param allowZeroForChunked Whether to allow zero length for chunked uploads
  * @param maxSize Maximum allowed size
  * @returns Parsed content length
  * @throws {HttpError} If Content-Length is invalid or exceeds max size
  */
-export const validateContentLength = (request: IncomingMessage, allowZeroForChunked = false, maxSize?: number): number => {
-    const isChunkedUpload = getHeader(request, "x-chunked-upload", true) === "true";
+export const validateContentLength = (request: IncomingMessage, maxSize?: number): number => {
     const contentLengthHeader = getHeader(request, "content-length");
     const contentLength = parseIntegerHeader(contentLengthHeader) ?? 0;
 
     if (contentLengthHeader && parseIntegerHeader(contentLengthHeader) === undefined) {
         throw createHttpError(400, "Content-Length must be a non-negative integer");
-    }
-
-    // For chunked uploads, Content-Length can be 0 (initialization)
-    // For regular uploads, Content-Length must be greater than 0
-    if (!allowZeroForChunked && !isChunkedUpload && contentLength === 0) {
-        throw createHttpError(400, "Content-Length is required and must be greater than 0");
     }
 
     if (maxSize !== undefined && contentLength > maxSize) {
@@ -205,10 +197,10 @@ export const buildFileInit = (readHeader: HeaderReader, contentLength: number, c
     const metadata = parseMetadataHeader(readHeader("x-file-metadata")) ?? {};
     const { isChunkedUpload, totalSize } = parseChunkHeaders(readHeader);
 
-    const fileSize = isChunkedUpload && totalSize ? totalSize : contentLength;
+    const fileSize = isChunkedUpload && totalSize !== undefined ? totalSize : contentLength;
 
     // For chunked uploads, store chunk tracking info in metadata
-    if (isChunkedUpload && totalSize) {
+    if (isChunkedUpload && totalSize !== undefined) {
         metadata._chunkedUpload = true;
         metadata._chunks = []; // Array to track received chunks: [{ offset, length }]
         metadata._totalSize = totalSize;

@@ -970,6 +970,22 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 return { ETag, PartNumber };
             }) || [];
 
+        // S3 refuses to complete an upload without parts (an empty file that got no body): it gets one
+        // empty part, which S3 takes as the last part has no minimum size.
+        if (parts.length === 0) {
+            const { ETag } = await this.runOperation(
+                undefined,
+                (signal) =>
+                    s3Api.uploadPart(
+                        { Body: new Uint8Array(0), Bucket: this.bucket, ContentLength: 0, Key: file.name, PartNumber: 1, UploadId: uploadId },
+                        { signal },
+                    ),
+                { replayable: true },
+            );
+
+            parts.push({ ETag, PartNumber: 1 });
+        }
+
         return this.runOperation(undefined, (signal) =>
             s3Api.completeMultipartUpload(
                 {

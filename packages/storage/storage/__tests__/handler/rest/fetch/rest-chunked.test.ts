@@ -80,7 +80,7 @@ describe("fetch RestFetch chunked uploads", () => {
         expect(secondPatch.headers.get("location")).toMatch(new RegExp(String.raw`^${basePath}${id}\.\w+$`, "u"));
     });
 
-    it.each(["abc", "12garbage", "0"])("should refuse a chunked POST without a valid total size (%s)", async (totalSize) => {
+    it.each(["abc", "12garbage"])("should refuse a chunked POST without a valid total size (%s)", async (totalSize) => {
         expect.assertions(1);
 
         const restHandler = new RestFetch({ storage: new MemoryStorage({ path: "/files" }) });
