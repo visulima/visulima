@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import RestFetch from "../../../src/handler/rest/rest-fetch";
 import GCStorage from "../../../src/storage/gcs/gcs-storage";
+import { createdAgo, HOUR } from "../../__helpers__/clock";
 import { describeStorageContract } from "../../__helpers__/storage-contract";
 
 type Stored = { body: Uint8Array; contentType: string; generation: number; updated: Date };
@@ -278,20 +279,18 @@ describe("gcs against an in-memory GCS", () => {
         instance.defaults = {};
     });
 
-    describeStorageContract(
-        () => {
-            return {
-                createStorage,
-                failBackend: (failing) => {
-                    gcs.state.override = failing ? () => new Response("forbidden", { status: 403 }) : undefined;
-                },
-                hasObject: (key) => gcs.objects.has(key),
-                putObject: (key, content) => {
-                    gcs.objects.set(key, { body: Buffer.from(content), contentType: "text/plain", generation: 1, updated: new Date() });
-                },
-            };
-        },
-    );
+    describeStorageContract(() => {
+        return {
+            createStorage,
+            failBackend: (failing) => {
+                gcs.state.override = failing ? () => new Response("forbidden", { status: 403 }) : undefined;
+            },
+            hasObject: (key) => gcs.objects.has(key),
+            putObject: (key, content) => {
+                gcs.objects.set(key, { body: Buffer.from(content), contentType: "text/plain", generation: 1, updated: new Date() });
+            },
+        };
+    });
 
     it("should upload in several chunks and keep the metadata once complete", async () => {
         expect.assertions(5);
@@ -331,7 +330,10 @@ describe("gcs against an in-memory GCS", () => {
         const storage = createStorage();
         const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt" });
 
-        await expect(storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 })).resolves.toMatchObject({ bytesWritten: 5, status: "part" });
+        await expect(storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 })).resolves.toMatchObject({
+            bytesWritten: 5,
+            status: "part",
+        });
 
         // TUS: the final PATCH declares the length and carries no bytes; GCS takes "bytes */5" for it.
         await storage.update({ id: file.id }, { size: 5 });
@@ -414,6 +416,65 @@ describe("gcs against an in-memory GCS", () => {
         gcs.state.override = () => new Response("boom", { status: 500 });
 
         await expect(storage.getCompletedFile(id)).rejects.toMatchObject({ status: 500 });
+    });
+
+    it("should report an object without upload metadata as present and surface failures", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+
+        gcs.objects.set("foreign", { body: Buffer.from("x"), contentType: "text/plain", generation: 1, updated: new Date() });
+
+        await expect(storage.exists({ id: "foreign" })).resolves.toBe(true);
+
+        const id = await upload(storage, "x");
+
+        gcs.state.override = (method) => (method === "GET" ? new Response("boom", { status: 500 }) : undefined);
+
+        // Only a missing object reads as absent; a failing backend must not answer "no".
+        await expect(storage.exists({ id })).rejects.toMatchObject({ status: 500 });
+        await expect(storage.exists({ id: "foreign" })).rejects.toMatchObject({ status: 500 });
+    });
+
+    it("should delete an upload whose session or object is already gone", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 10 });
+
+        // The resumable session expired on GCS's side.
+        gcs.sessions.clear();
+
+        await expect(storage.delete({ id: file.id })).resolves.toMatchObject({ id: file.id, status: "deleted" });
+        expect(gcs.objects.has(`${file.id}.META`)).toBe(false);
+
+        gcs.state.override = (method) => (method === "DELETE" ? new Response("forbidden", { status: 403 }) : undefined);
+
+        const other = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 10 });
+
+        // Any other failure keeps the metadata to retry with.
+        await expect(storage.delete({ id: other.id })).rejects.toMatchObject({ status: 403 });
+    });
+
+    it("should purge unfinished uploads and uploads stored under a custom filename across pages", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage({ expiration: { maxAge: "1h" }, filename: (file) => `named/${file.id}` });
+        const ids = await createdAgo(2 * HOUR, async () => {
+            const unfinished = await Promise.all(
+                ["a.txt", "b.txt"].map(async (originalName) => storage.create({ contentType: "text/plain", metadata: {}, originalName, size: 10 })),
+            );
+
+            return [await upload(storage, "done"), ...unfinished.map((file) => file.id)];
+        });
+        const fresh = await upload(storage, "new");
+
+        gcs.state.pageSize = 2;
+
+        const purged = await storage.purge();
+
+        expect(purged.items.map((item) => item.id).toSorted()).toStrictEqual(ids.toSorted());
+        expect([...gcs.objects.keys()].toSorted()).toStrictEqual([`${fresh}.META`, `named/${fresh}`].toSorted());
     });
 
     it("should copy and move a finished upload", async () => {

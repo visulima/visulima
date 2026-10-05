@@ -6972,6 +6972,9 @@ importers:
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.1.0(278d6b5839838acf520c36bfd0797ddb)
+      '@visulima/storage':
+        specifier: workspace:*
+        version: link:../storage
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)

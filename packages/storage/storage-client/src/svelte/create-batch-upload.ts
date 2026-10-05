@@ -1,4 +1,4 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 import type { Readable } from "svelte/store";
 import { get, writable } from "svelte/store";
 
@@ -151,13 +151,15 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
         uploader.on("BATCH_ERROR", onBatchError);
         uploader.on("BATCH_CANCELLED", onBatchCancelled);
 
-        onDestroy(() => {
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return () => {
+            uploaderInstance.abort();
             uploader.off("BATCH_START", onBatchStart);
             uploader.off("BATCH_PROGRESS", onBatchProgress);
             uploader.off("BATCH_FINISH", onBatchFinish);
             uploader.off("BATCH_ERROR", onBatchError);
             uploader.off("BATCH_CANCELLED", onBatchCancelled);
-        });
+        };
     });
 
     const uploadBatch = (files: File[]): string[] => {

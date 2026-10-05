@@ -1,11 +1,10 @@
-import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
-import { isExpired } from "../utils/file";
-import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
+import { parseMetaRecord } from "./s3-utils";
 import type { S3MetaStorageOptions } from "./types";
 
 /**
@@ -25,7 +24,8 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
      */
     public override readonly supportsConditionalSave: boolean = true;
 
-    private readonly bucket: string;
+    /** The bucket the records are stored in. */
+    public readonly bucket: string;
 
     private readonly client: S3Client;
 
@@ -65,21 +65,10 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         await this.ensureAccess();
 
         const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
-        const { ETag, Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters)).catch(rethrowNotFound);
+        const { Body, ETag, Metadata } = await this.client.send(new GetObjectCommand(parameters)).catch(rethrowNotFound);
+        const file = parseMetaRecord<T>((await Body?.transformToString()) ?? "", Metadata?.metadata);
 
-        if (Expires && isExpired({ expiredAt: Expires } as T)) {
-            await this.delete(id);
-
-            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} expired`);
-        }
-
-        if (Metadata?.metadata !== undefined) {
-            const file = JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
-
-            if (file.metadata && typeof file.metadata === "string") {
-                file.metadata = parseMetadata(file.metadata);
-            }
-
+        if (file !== undefined) {
             setMetaVersion(file, ETag);
 
             return file;
@@ -123,19 +112,14 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     private async put(id: string, file: T, ifMatch?: string): Promise<void> {
         await this.ensureAccess();
 
-        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
-
-        if (transformedMetadata.metadata) {
-            transformedMetadata.metadata = stringifyMetadata(file.metadata);
-        }
-
-        const metadata = encodeURIComponent(JSON.stringify(transformedMetadata));
+        // The record is the object's body, so its ETag (the body's MD5) changes with it and If-Match
+        // detects a concurrent save; a header record left the empty body, and its ETag, unchanged.
         const parameters = {
+            Body: JSON.stringify(file),
             Bucket: this.bucket,
-            ContentLength: 0,
+            ContentType: "application/json",
             IfMatch: ifMatch,
             Key: this.getMetaName(id),
-            Metadata: { metadata },
         };
 
         const result = await this.client.send(new PutObjectCommand(parameters));

@@ -394,7 +394,6 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         // over mid-write; a hung holder (a stalled body, a provider call without timeout) loses it
         // after LOCK_MAX_HOLD_MS.
         this.locker = new Locker({
-            max: 1000,
             maxHoldMs: LOCK_MAX_HOLD_MS,
             ttl: LOCK_TTL_MS,
             ttlAutopurge: true,
@@ -566,7 +565,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param query File query containing the file ID to check.
      * @param query.id File ID to check.
      * @returns Promise resolving to true if file exists, false otherwise.
-     * @remarks This method does not throw errors - it returns false if the file is not found.
+     * @remarks Only a missing upload answers false; any other failure throws, so a failed lookup
+     * never reads as "absent" (a transfer with `overwrite: false` would replace the destination).
      */
     public async exists(query: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
@@ -574,8 +574,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 await this.getMeta(query.id, options);
 
                 return true;
-            } catch {
-                return false;
+            } catch (error: unknown) {
+                if (isMetaNotFound(error)) {
+                    return false;
+                }
+
+                throw error;
             }
         });
     }
@@ -904,13 +908,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             // Keep the version the record was read at, so saving the copy can be conditional.
             setMetaVersion(copy, getMetaVersion(file));
         } catch (error: unknown) {
-            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-            await this.onError(httpError);
-
+            // A missing upload is an answer, not a failure to report.
             if (isMetaNotFound(error)) {
                 return throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
+
+            await this.onError(this.normalizeError(error instanceof Error ? error : new Error(String(error))));
 
             throw error;
         }
@@ -1008,7 +1011,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Errors during individual file deletions are logged but do not stop the purge process.
      * Files with corrupted metadata are skipped with a warning.
      * Only uploads with metadata are deleted, aged by it: rolling expiration if configured (based on
-     * modifiedAt) or fixed expiration (based on createdAt).
+     * modifiedAt) or fixed expiration (based on createdAt), either prolonged by a later `expiredAt`
+     * (an `update` with a `ttl`), so purge never deletes an upload {@link BaseStorage.checkIfExpired} keeps.
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
         return this.instrumentOperation("purge", async () => {
@@ -1017,18 +1021,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             if (maxAgeMs) {
                 const before = Date.now() - maxAgeMs;
-                const rollingMaxAgeMs = this.expiration?.rolling ? toMilliseconds(this.expiration.maxAge) : undefined;
+                const configuredMaxAgeMs = toMilliseconds(this.expiration?.maxAge);
                 const time = (value: unknown): number => Number(new Date(value as number | string));
-                // Rolling expiration prolongs an upload on every save (see updateTimestamps), not only on
-                // writes: the last save is its expiredAt minus maxAge.
+                // An upload lives until its expiredAt: rolling expiration moves it on every save (see
+                // updateTimestamps), and a ttl moves it in either mode. Aged as if last active at
+                // expiredAt minus maxAge.
                 const lastActive = (item: TFile): number => {
-                    if (!this.expiration?.rolling) {
-                        return time(item.createdAt);
-                    }
+                    const lastSave = item.expiredAt && configuredMaxAgeMs ? time(item.expiredAt) - configuredMaxAgeMs : 0;
 
-                    const lastSave = item.expiredAt && rollingMaxAgeMs ? time(item.expiredAt) - rollingMaxAgeMs : 0;
-
-                    return Math.max(time(item.modifiedAt || item.createdAt), lastSave);
+                    return Math.max(time((this.expiration?.rolling && item.modifiedAt) || item.createdAt), lastSave);
                 };
 
                 for (const { id } of await this.listUploads()) {
@@ -1875,7 +1876,20 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             perCall = options.retries;
         }
 
-        const retryConfig: RetryConfig = { ...this.getRetryConfig(), ...perCall };
+        const base = this.getRetryConfig();
+        const retryConfig: RetryConfig = { ...base, ...perCall };
+
+        // A per-call onRetry (the Files facade's `hooks.onRetry` rides on one) adds to the adapter's
+        // `retryConfig.onRetry` instead of replacing it.
+        const baseOnRetry = base?.onRetry;
+        const perCallOnRetry = perCall?.onRetry;
+
+        if (baseOnRetry && perCallOnRetry && baseOnRetry !== perCallOnRetry) {
+            retryConfig.onRetry = (attempt, error) => {
+                baseOnRetry(attempt, error);
+                perCallOnRetry(attempt, error);
+            };
+        }
 
         // A consumed stream body cannot be replayed; a retry would re-send an
         // already-drained source and silently upload truncated/empty data.

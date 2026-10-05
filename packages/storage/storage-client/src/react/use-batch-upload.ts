@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import type { MultipartAdapter } from "../core/multipart-adapter";
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
 import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
@@ -209,11 +210,23 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
         };
     }, [uploaderInstance]);
 
+    // The adapter running the latest batch: options re-creating the adapter must not abort it, unmounting must.
+    const activeAdapterRef = useRef<MultipartAdapter | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            activeAdapterRef.current?.abort();
+        },
+        [],
+    );
+
     const uploadBatch = useCallback(
         (files: File[]): string[] => {
             if (files.length === 0) {
                 return [];
             }
+
+            activeAdapterRef.current = uploaderInstance;
 
             return uploaderInstance.uploadBatch(files);
         },

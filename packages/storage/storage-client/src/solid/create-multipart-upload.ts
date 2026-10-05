@@ -141,9 +141,9 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
                 const item = itemOrBatch;
                 const uploadError = new Error(item.error ?? "Upload failed");
 
+                // `upload()` rejects with this error, and its catch calls `onError`.
                 setError(uploadError);
                 setIsUploading(false);
-                onError?.(uploadError);
                 setCurrentItemId(undefined);
             }
         };
@@ -155,6 +155,7 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
 
         // Cleanup on unmount
         onCleanup(() => {
+            uploaderInstance.abort();
             uploader.off("ITEM_START", onItemStart);
             uploader.off("ITEM_PROGRESS", onItemProgress);
             uploader.off("ITEM_FINISH", onItemFinish);

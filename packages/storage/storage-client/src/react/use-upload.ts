@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "./types";
 import type { UseChunkedRestUploadOptions } from "./use-chunked-rest-upload";
@@ -136,14 +136,10 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         throw new Error("At least one endpoint must be provided: endpointChunkedRest, endpointMultipart, or endpointTus");
     }, [method, endpointChunkedRest, endpointMultipart, endpointTus]);
 
-    const chunkedRestOptions: UseChunkedRestUploadOptions | undefined = useMemo(() => {
-        if (!endpointChunkedRest) {
-            return undefined;
-        }
-
+    const chunkedRestOptions: UseChunkedRestUploadOptions = useMemo(() => {
         return {
             chunkSize,
-            endpoint: endpointChunkedRest,
+            endpoint: endpointChunkedRest ?? "",
             headers,
             maxRetries,
             metadata,
@@ -158,13 +154,9 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         };
     }, [endpointChunkedRest, chunkSize, headers, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries, restrictions]);
 
-    const multipartOptions: UseMultipartUploadOptions | undefined = useMemo(() => {
-        if (!endpointMultipart) {
-            return undefined;
-        }
-
+    const multipartOptions: UseMultipartUploadOptions = useMemo(() => {
         return {
-            endpoint: endpointMultipart,
+            endpoint: endpointMultipart ?? "",
             headers,
             metadata,
             onError,
@@ -175,14 +167,10 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         };
     }, [endpointMultipart, headers, metadata, onStart, onSuccess, onError, onProgress, restrictions]);
 
-    const tusOptions: UseTusUploadOptions | undefined = useMemo(() => {
-        if (!endpointTus) {
-            return undefined;
-        }
-
+    const tusOptions: UseTusUploadOptions = useMemo(() => {
         return {
             chunkSize,
-            endpoint: endpointTus,
+            endpoint: endpointTus ?? "",
             headers,
             maxRetries,
             metadata,
@@ -197,9 +185,16 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         };
     }, [endpointTus, chunkSize, headers, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries, restrictions]);
 
-    const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : undefined;
-    const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : undefined;
-    const tusUpload = tusOptions ? useTusUpload(tusOptions) : undefined;
+    // Hooks must run unconditionally; the ones without an endpoint are created but never used.
+    const chunkedRestHook = useChunkedRestUpload(chunkedRestOptions);
+    const multipartHook = useMultipartUpload(multipartOptions);
+    const tusHook = useTusUpload(tusOptions);
+    const chunkedRestUpload = endpointChunkedRest ? chunkedRestHook : undefined;
+    const multipartUpload = endpointMultipart ? multipartHook : undefined;
+    const tusUpload = endpointTus ? tusHook : undefined;
+
+    // The method of the latest upload, so state follows it rather than a previous upload's result.
+    const [lastMethod, setLastMethod] = useState<UploadMethod | undefined>(undefined);
 
     const determineMethod = useCallback(
         (file: File): UploadMethod => {
@@ -237,6 +232,8 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         async (file: File): Promise<UploadResult> => {
             const selectedMethod = determineMethod(file);
 
+            setLastMethod(selectedMethod);
+
             if (selectedMethod === "tus") {
                 if (!tusUpload) {
                     throw new Error("TUS endpoint not configured");
@@ -272,6 +269,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         tusUpload?.reset();
         chunkedRestUpload?.reset();
         multipartUpload?.reset();
+        setLastMethod(undefined);
     }, [tusUpload, chunkedRestUpload, multipartUpload]);
 
     // Determine current method based on which hook is active
@@ -280,19 +278,8 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             return detectedMethod;
         }
 
-        // If TUS is uploading or has result, it's being used
-        if (tusUpload && (tusUpload.isUploading || tusUpload.result)) {
-            return "tus";
-        }
-
-        // If chunked REST is uploading or has result, it's being used
-        if (chunkedRestUpload && (chunkedRestUpload.isUploading || chunkedRestUpload.result)) {
-            return "chunked-rest";
-        }
-
-        // If multipart is uploading or has result, it's being used
-        if (multipartUpload && (multipartUpload.isUploading || multipartUpload.result)) {
-            return "multipart";
+        if (lastMethod) {
+            return lastMethod;
         }
 
         // Default based on available endpoints (priority: chunked-rest > tus > multipart)
@@ -305,7 +292,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         }
 
         return "multipart";
-    }, [detectedMethod, tusUpload, chunkedRestUpload, multipartUpload, endpointChunkedRest, endpointMultipart, endpointTus]);
+    }, [detectedMethod, lastMethod, endpointChunkedRest, endpointTus]);
 
     const getError = (): Error | undefined => {
         if (currentMethod === "tus") {

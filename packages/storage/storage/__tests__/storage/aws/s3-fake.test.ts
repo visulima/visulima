@@ -34,7 +34,13 @@ const MIB = 1024 * 1024;
 
 const s3Error = (name: string, status: number): Error => Object.assign(new Error(name), { $fault: "client", $metadata: { httpStatusCode: status }, name });
 
-const toBuffer = async (body: unknown): Promise<Buffer> => (body instanceof Uint8Array ? Buffer.from(body) : buffer(body as AsyncIterable<Uint8Array>));
+const toBuffer = async (body: unknown): Promise<Buffer> => {
+    if (typeof body === "string") {
+        return Buffer.from(body);
+    }
+
+    return body instanceof Uint8Array ? Buffer.from(body) : buffer(body as AsyncIterable<Uint8Array>);
+};
 
 /**
  * In-memory S3 bucket answering the commands S3Storage and S3MetaStorage send. `override` answers a
@@ -84,13 +90,21 @@ const createS3 = () => {
                 throw s3Error("NoSuchUpload", 404);
             }
 
-            return { Parts: parts.map(([number, part]) => { return { ETag: part.etag, PartNumber: number, Size: part.body.byteLength }; }) };
+            return {
+                Parts: parts.map(([number, part]) => {
+                    return { ETag: part.etag, PartNumber: number, Size: part.body.byteLength };
+                }),
+            };
         }
 
         const holds = (target: string): boolean => bucket.holds(target, { ifMatch: input.IfMatch as string, ifNoneMatch: input.IfNoneMatch as string });
 
         // A write's If-Match on a key that stores nothing answers 404, not 412.
-        if (input.IfMatch !== undefined && !bucket.objects.has(key) && [CompleteMultipartUploadCommand, CopyObjectCommand, DeleteObjectCommand].some((type) => command instanceof type)) {
+        if (
+            input.IfMatch !== undefined &&
+            !bucket.objects.has(key) &&
+            [CompleteMultipartUploadCommand, CopyObjectCommand, DeleteObjectCommand].some((type) => command instanceof type)
+        ) {
             throw s3Error("NoSuchKey", 404);
         }
 
@@ -101,7 +115,10 @@ const createS3 = () => {
             }
 
             const requested = (input.MultipartUpload as { Parts: { PartNumber: number }[] }).Parts;
-            const completed = bucket.complete(uploadId, requested.map(({ PartNumber }) => PartNumber));
+            const completed = bucket.complete(
+                uploadId,
+                requested.map(({ PartNumber }) => PartNumber),
+            );
 
             if (completed === undefined) {
                 throw s3Error("NoSuchUpload", 404);
@@ -119,7 +136,12 @@ const createS3 = () => {
         }
 
         if (command instanceof ListMultipartUploadsCommand) {
-            return { IsTruncated: false, Uploads: [...bucket.uploads].map(([id, upload]) => { return { Initiated: upload.initiated, Key: upload.key, UploadId: id }; }) };
+            return {
+                IsTruncated: false,
+                Uploads: [...bucket.uploads].map(([id, upload]) => {
+                    return { Initiated: upload.initiated, Key: upload.key, UploadId: id };
+                }),
+            };
         }
 
         if (command instanceof ListObjectsV2Command) {
@@ -133,8 +155,12 @@ const createS3 = () => {
             });
 
             return {
-                CommonPrefixes: page.prefixes.map((name) => { return { Prefix: name }; }),
-                Contents: page.contents.map((object) => { return { Key: object.key, LastModified: object.lastModified }; }),
+                CommonPrefixes: page.prefixes.map((name) => {
+                    return { Prefix: name };
+                }),
+                Contents: page.contents.map((object) => {
+                    return { Key: object.key, LastModified: object.lastModified };
+                }),
                 IsTruncated: page.next !== undefined,
                 NextContinuationToken: page.next === undefined ? undefined : String(page.next),
             };
@@ -145,7 +171,12 @@ const createS3 = () => {
                 throw s3Error("PreconditionFailed", 412);
             }
 
-            return { ETag: bucket.put(key, Buffer.alloc(0), { metadata: input.Metadata as Record<string, string> }).etag };
+            return {
+                ETag: bucket.put(key, await toBuffer(input.Body ?? Buffer.alloc(0)), {
+                    contentType: input.ContentType as string,
+                    metadata: input.Metadata as Record<string, string>,
+                }).etag,
+            };
         }
 
         if (command instanceof CopyObjectCommand) {
@@ -185,7 +216,9 @@ const createS3 = () => {
 
             return {
                 // Not a Readable: the adapter has to wrap whatever body type the SDK hands it.
-                ...(command instanceof GetObjectCommand && { Body: read.body }),
+                ...(command instanceof GetObjectCommand && {
+                    Body: Object.assign(Buffer.from(read.body), { transformToString: async () => read.body.toString() }),
+                }),
                 ContentLength: read.body.byteLength,
                 ContentType: read.object.contentType,
                 ETag: read.object.etag,
@@ -212,7 +245,12 @@ const createStorage = (config: Partial<ConstructorParameters<typeof S3Storage>[0
     });
 
 const upload = async (storage: S3Storage, text: string, init: { metadata?: Record<string, string>; originalName?: string } = {}): Promise<string> => {
-    const file = await storage.create({ contentType: "text/plain", metadata: init.metadata ?? {}, originalName: init.originalName ?? "a.txt", size: text.length });
+    const file = await storage.create({
+        contentType: "text/plain",
+        metadata: init.metadata ?? {},
+        originalName: init.originalName ?? "a.txt",
+        size: text.length,
+    });
 
     await storage.write({ body: Readable.from([Buffer.from(text)]), contentLength: text.length, id: file.id, start: 0 });
 
@@ -231,20 +269,18 @@ describe("s3Storage against an in-memory S3", () => {
         vi.restoreAllMocks();
     });
 
-    describeStorageContract(
-        () => {
-            return {
-                createStorage,
-                failBackend: (failing) => {
-                    s3.state.override = failing ? () => s3Error("InternalError", 500) : undefined;
-                },
-                hasObject: (key) => s3.objects.has(key),
-                putObject: (key, content) => {
-                    s3.put(key, Buffer.from(content));
-                },
-            };
-        },
-    );
+    describeStorageContract(() => {
+        return {
+            createStorage,
+            failBackend: (failing) => {
+                s3.state.override = failing ? () => s3Error("InternalError", 500) : undefined;
+            },
+            hasObject: (key) => s3.objects.has(key),
+            putObject: (key, content) => {
+                s3.put(key, Buffer.from(content));
+            },
+        };
+    });
 
     it("should resume a multipart upload on a fresh instance after a failed part, and keep the metadata on completion", async () => {
         expect.assertions(7);
@@ -291,7 +327,9 @@ describe("s3Storage against an in-memory S3", () => {
 
         // Process A: S3 stores the second part, then the process dies before saving its offset.
         s3.state.override = (command) =>
-            command instanceof PutObjectCommand && String(command.input.Key).endsWith(".META") && parts().length >= 2 ? s3Error("InternalError", 500) : undefined;
+            command instanceof PutObjectCommand && String(command.input.Key).endsWith(".META") && parts().length >= 2
+                ? s3Error("InternalError", 500)
+                : undefined;
 
         await expect(new Files({ adapter: createStorage() }).upload("big.bin", source, { control, multipart })).rejects.toBeDefined();
 
@@ -318,9 +356,9 @@ describe("s3Storage against an in-memory S3", () => {
         const storage = createStorage();
         const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "w.txt", size: 5 });
 
-        await expect(
-            storage.write({ body: Readable.from([Buffer.from("lo")]), contentLength: 2, id: file.id, start: 3 }),
-        ).rejects.toMatchObject({ UploadErrorCode: "FileConflict" });
+        await expect(storage.write({ body: Readable.from([Buffer.from("lo")]), contentLength: 2, id: file.id, start: 3 })).rejects.toMatchObject({
+            UploadErrorCode: "FileConflict",
+        });
 
         await storage.write({ body: new Blob(["hello"]).stream() as never, contentLength: 5, id: file.id, start: 0 });
 
@@ -366,12 +404,19 @@ describe("s3Storage against an in-memory S3", () => {
         await expect(storage.get({ id: "user/123/digits.txt" })).resolves.toMatchObject({ size: 10 });
     });
 
-    it("should refuse an expired object", async () => {
-        expect.assertions(1);
+    it("should refuse an upload whose record has expired, not an object with a past HTTP Expires header", async () => {
+        expect.assertions(3);
 
-        s3.objects.set("old", { body: Buffer.from("x"), etag: '"o"', expires: new Date(Date.now() - 1000), lastModified: new Date(), metadata: {} });
+        const storage = createStorage();
 
-        await expect(createStorage().get({ id: "old" })).rejects.toMatchObject({ UploadErrorCode: "Gone" });
+        s3.objects.set("cached", { body: Buffer.from("x"), etag: '"o"', expires: new Date(Date.now() - 1000), lastModified: new Date(), metadata: {} });
+        s3.objects.set("old", { body: Buffer.from("x"), etag: '"o"', lastModified: new Date(), metadata: {} });
+        await storage.saveMeta({ expiredAt: Date.now() - 1000, id: "old", metadata: {}, name: "old", status: "completed" } as never);
+
+        await expect(storage.get({ id: "cached" })).resolves.toMatchObject({ content: Buffer.from("x") });
+        await expect(storage.get({ id: "old" })).rejects.toMatchObject({ UploadErrorCode: "Gone" });
+        // Never the record of an upload named "undefined".
+        expect(s3.sent.filter(({ name }) => name === "DeleteObjectCommand").map(({ input }) => input.Key)).not.toContain("undefined.META");
     });
 
     it("should answer undefined only for a missing object and throw any other failure", async () => {
@@ -623,7 +668,9 @@ describe("s3Storage against an in-memory S3", () => {
         const files = new Files({ adapter: createStorage() });
         const created = await files.upload("a.txt", "one", { ifNoneMatch: "*" });
 
-        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }),
+        );
         // The losing multipart upload is aborted; the stored object and its record stay as they were.
         expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
         await expect(files.head("a.txt")).resolves.toMatchObject({ etag: created.etag, size: 3 });
@@ -682,8 +729,12 @@ describe("s3Storage against an in-memory S3", () => {
         await files.upload("source.txt", "source");
 
         // S3 answers 404 for these, not 412.
-        await expect(files.upload("absent.txt", "one", { ifMatch: "\"etag\"" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
-        await expect(files.copy("source.txt", "absent.txt", { ifMatch: "\"etag\"" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        await expect(files.upload("absent.txt", "one", { ifMatch: '"etag"' })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }),
+        );
+        await expect(files.copy("source.txt", "absent.txt", { ifMatch: '"etag"' })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }),
+        );
         expect(s3.uploads.size).toBe(0);
     });
 
@@ -706,7 +757,9 @@ describe("s3Storage against an in-memory S3", () => {
 
         expect(fields.acl).toBe("public-read");
         // The ACL is a policy condition: a form that changes it is refused.
-        expect(() => acceptS3Post({ ...fields, acl: "private" }, Buffer.from("hello"), { bucket: "bucket", secretAccessKey: "secret" })).toThrow("AccessDenied");
+        expect(() => acceptS3Post({ ...fields, acl: "private" }, Buffer.from("hello"), { bucket: "bucket", secretAccessKey: "secret" })).toThrow(
+            "AccessDenied",
+        );
     });
 
     it("should sign POST policies for AWS only, unless told to", async () => {
@@ -727,7 +780,9 @@ describe("s3Storage against an in-memory S3", () => {
         const files = new Files({ adapter: createStorage({ conditional: { copy: true, read: true }, endpoint: "https://r2.local" }) });
 
         expect(files.capabilities.conditional).toStrictEqual({ copy: true, create: false, delete: false, read: true, replace: false });
-        await expect(files.upload("a.txt", "one", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }));
+        await expect(files.upload("a.txt", "one", { ifNoneMatch: "*" })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }),
+        );
     });
 
     it("should keep the configured ACL on objects a server-side copy writes", async () => {

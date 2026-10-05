@@ -228,8 +228,11 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
             // id into a path — an id containing `#` or `?` would otherwise be silently reinterpreted
             // by clients as a fragment or query separator. Forcing them through `%`-encoding closes
             // that ambiguity. Legitimate query strings on Location targets already arrive
-            // pre-formed; we only encode the literal chars that survived `encodeURI`.
-            const encoded = encodeURI((headers[key] as Header).toString()).replaceAll("#", "%23");
+            // pre-formed; we only encode the literal chars that survived `encodeURI`. An escape the
+            // value already carries (a percent-encoded request path) is kept, not encoded again.
+            const encoded = encodeURI((headers[key] as Header).toString())
+                .replaceAll(/%25(?=[\dA-F]{2})/giu, "%")
+                .replaceAll("#", "%23");
 
             response.setHeader(key, encoded);
         } else {

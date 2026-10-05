@@ -1,4 +1,6 @@
-import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { Readable } from "node:stream";
+
+import { DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -11,6 +13,9 @@ import { metafile } from "../../__helpers__/config";
 vi.mock(import("aws-crt"));
 
 const s3Mock = mockClient(S3Client);
+
+/** A GetObject body as the SDK hands it out. */
+const sdkBody = (text: string) => Object.assign(Readable.from([text]), { transformToString: async () => text }) as never;
 
 // Calls other than the lazy bucket access probe (HeadBucketCommand) run on the first operation.
 const dataCalls = () => s3Mock.calls().filter((call) => !(call.args[0] instanceof HeadBucketCommand));
@@ -80,16 +85,17 @@ describe(S3MetaStorage, () => {
             expect(dataCalls()).toHaveLength(1);
         });
 
-        it("should encode metadata correctly", async () => {
-            expect.assertions(1);
+        it("should store the record as the object's body, so its ETag changes with every change", async () => {
+            expect.assertions(2);
 
             s3Mock.on(PutObjectCommand).resolves({});
 
             await metaStorage.save(metafile.id, metafile);
 
-            const putCommand = s3Mock.commandCalls(PutObjectCommand)[0]?.args[0].input as { Metadata?: { metadata?: string } };
+            const { input } = s3Mock.commandCalls(PutObjectCommand)[0]?.args[0] ?? {};
 
-            expect(putCommand.Metadata?.metadata).toBeDefined();
+            expect(JSON.parse(input?.Body as string)).toMatchObject({ id: metafile.id, metadata: metafile.metadata });
+            expect(input?.Metadata).toBeUndefined();
         });
     });
 
@@ -106,7 +112,7 @@ describe(S3MetaStorage, () => {
                 }),
             );
 
-            s3Mock.on(HeadObjectCommand).resolves({
+            s3Mock.on(GetObjectCommand).resolves({
                 Metadata: { metadata },
             });
 
@@ -118,43 +124,45 @@ describe(S3MetaStorage, () => {
         it("should throw error when metadata not found", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).resolves({
+            s3Mock.on(GetObjectCommand).resolves({
                 Metadata: {},
             });
 
             await expect(metaStorage.get("non-existent-id")).rejects.toThrow("Metafile non-existent-id not found");
         });
 
-        it("should delete expired metadata", async () => {
-            expect.assertions(3);
+        it("should read a record from the object's body", async () => {
+            expect.assertions(2);
 
-            const expiredDate = new Date(Date.now() - 1000 * 60 * 60); // 1 hour ago
-            const metadata = encodeURIComponent(
-                JSON.stringify({
-                    ...metafile,
-                    bytesWritten: 0,
-                    createdAt: new Date().toISOString(),
-                    status: "created",
-                }),
-            );
+            s3Mock.on(GetObjectCommand).resolves({ Body: sdkBody(JSON.stringify({ ...metafile, metadata: {} })) });
 
-            s3Mock.on(HeadObjectCommand).resolves({
-                Expires: expiredDate,
-                Metadata: { metadata },
-            });
-            s3Mock.on(DeleteObjectCommand).resolves({});
+            await expect(metaStorage.get(metafile.id)).resolves.toMatchObject({ id: metafile.id, metadata: {} });
 
-            await expect(metaStorage.get(metafile.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+            expect(s3Mock.commandCalls(GetObjectCommand)[0]?.args[0].input.Key).toBe(`${metafile.id}.META`);
+        });
 
-            expect(dataCalls()).toHaveLength(2); // HeadObjectCommand + DeleteObjectCommand
-            // The metafile itself, not `<id>.META.META`
-            expect(s3Mock.commandCalls(DeleteObjectCommand)[0]?.args[0].input.Key).toBe(`${metafile.id}.META`);
+        it("should read empty metadata of a header record as an object, not a string", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(GetObjectCommand).resolves({ Metadata: { metadata: encodeURIComponent(JSON.stringify({ ...metafile, metadata: "" })) } });
+
+            await expect(metaStorage.get(metafile.id)).resolves.toHaveProperty("metadata", {});
+        });
+
+        it("should not take an HTTP Expires header for the record's expiry", async () => {
+            expect.assertions(2);
+
+            s3Mock.on(GetObjectCommand).resolves({ Body: sdkBody(JSON.stringify(metafile)), Expires: new Date(Date.now() - 1000 * 60 * 60) });
+
+            await expect(metaStorage.get(metafile.id)).resolves.toHaveProperty("id", metafile.id);
+
+            expect(s3Mock.commandCalls(DeleteObjectCommand)).toHaveLength(0);
         });
 
         it("should report a missing metafile as not found", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
 
             await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
         });
@@ -164,7 +172,7 @@ describe(S3MetaStorage, () => {
 
             const failure = Object.assign(new Error("Forbidden"), { $metadata: { httpStatusCode: 403 } });
 
-            s3Mock.on(HeadObjectCommand).rejects(failure);
+            s3Mock.on(GetObjectCommand).rejects(failure);
 
             await expect(metaStorage.get(metafile.id)).rejects.toThrow("Forbidden");
         });
@@ -198,7 +206,7 @@ describe(S3MetaStorage, () => {
         it("should attach the ETag read by get() and write with If-Match", async () => {
             expect.assertions(4);
 
-            s3Mock.on(HeadObjectCommand).resolves({ ETag: '"v1"', Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
+            s3Mock.on(GetObjectCommand).resolves({ ETag: '"v1"', Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
             s3Mock.on(PutObjectCommand).resolves({ ETag: '"v2"' });
 
             const file = await metaStorage.get(metafile.id);

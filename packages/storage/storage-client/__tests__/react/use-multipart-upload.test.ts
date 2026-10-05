@@ -1,10 +1,13 @@
+import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createMultipartAdapter } from "../../src/core/multipart-adapter";
 import type { UploadItem } from "../../src/core/uploader";
+import { useMultipartUpload } from "../../src/react/use-multipart-upload";
+import { FailingXMLHttpRequest, HangingXMLHttpRequest } from "../upload-mocks";
 import { MockXMLHttpRequest } from "./test-utils";
 
-describe("useMultipartUpload", () => {
+describe(useMultipartUpload, () => {
     let originalXHR: typeof XMLHttpRequest;
 
     beforeEach(() => {
@@ -106,5 +109,36 @@ describe("useMultipartUpload", () => {
         // Timeout should have been cleared
         // In Node.js, setTimeout returns a Timeout object.
         expect(clearTimeoutSpy).toHaveBeenCalledWith(expect.anything());
+    });
+    it("should call onError once when the upload fails", async () => {
+        expect.assertions(2);
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = FailingXMLHttpRequest;
+
+        const onError = vi.fn();
+        const { result } = renderHook(() => useMultipartUpload({ endpoint: "/api/upload", onError }));
+
+        await expect(result.current.upload(new File(["test content"], "test.jpg"))).rejects.toThrow("Network error");
+        expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it("should abort the in-flight upload on unmount", async () => {
+        expect.hasAssertions();
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = HangingXMLHttpRequest;
+        HangingXMLHttpRequest.sent.length = 0;
+
+        const { result, unmount } = renderHook(() => useMultipartUpload({ endpoint: "/api/upload" }));
+        const uploadPromise = result.current.upload(new File(["test content"], "test.jpg"));
+
+        await waitFor(() => {
+            expect(HangingXMLHttpRequest.sent).toHaveLength(1);
+        });
+
+        unmount();
+
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
     });
 });

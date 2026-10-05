@@ -1,8 +1,9 @@
-# Runs @visulima/storage's live tests (the storage contract and the upload handlers end to end)
-# against real services started from packages/storage/storage/docker-compose.live.yml: MinIO and
-# SeaweedFS for S3Storage and AwsLightStorage, Azurite, fake-gcs-server, an SFTP and an FTP server,
-# Apache mod_dav (WebDAV), PocketBase and Supabase's storage-api. The fakes the regular test job
-# uses can't show how a real service answers; this job does.
+# Runs @visulima/storage's live tests (the storage contract and the upload handlers end to end), and
+# @visulima/storage-client's adapters against those handlers, against real services started from
+# packages/storage/storage/docker-compose.live.yml: MinIO and SeaweedFS for S3Storage and
+# AwsLightStorage, Azurite, fake-gcs-server, an SFTP and an FTP server, Apache mod_dav (WebDAV),
+# PocketBase and Supabase's storage-api. The fakes the regular test job uses can't show how a real
+# service answers; this job does.
 
 name: "Storage Live Tests"
 
@@ -12,11 +13,13 @@ on: # yamllint disable-line rule:truthy
         branches: ["main"]
         paths:
             - "packages/storage/storage/**"
+            - "packages/storage/storage-client/**"
             - ".github/workflows/storage-live.yml"
     push:
         branches: ["main"]
         paths:
             - "packages/storage/storage/**"
+            - "packages/storage/storage-client/**"
             - ".github/workflows/storage-live.yml"
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
@@ -61,12 +64,21 @@ jobs:
             - name: "Build workspace dependencies"
               run: "pnpm --filter \"@visulima/storage^...\" run build"
 
+            # The client tests serve the storage package's handlers from its dist/.
+            - name: "Build @visulima/storage"
+              run: "pnpm --filter \"@visulima/storage\" run build"
+
             # Blocks until every service passes its health check.
             - name: "Start services"
               run: "docker compose up --detach --wait"
 
             - name: "Run live tests"
               run: "pnpm --filter \"@visulima/storage\" run test:live"
+              env:
+                  LIVE_TESTS: "1"
+
+            - name: "Run client live tests"
+              run: "pnpm --filter \"@visulima/storage-client\" run test:live"
               env:
                   LIVE_TESTS: "1"
 

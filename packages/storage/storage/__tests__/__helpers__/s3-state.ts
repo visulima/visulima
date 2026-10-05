@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 /** An object in the in-memory bucket. */
 export interface S3Object {
     body: Buffer;
@@ -26,14 +28,15 @@ export const createS3State = () => {
     const uploads = new Map<string, S3Upload>();
     let counter = 0;
 
-    const etag = (): string => {
-        counter += 1;
+    // Not for security: S3 ETags are MD5 digests, and the fake has to reproduce them.
+    // eslint-disable-next-line sonarjs/hashing
+    const md5 = (data: Buffer): string => createHash("md5").update(data).digest("hex");
 
-        return `"e${String(counter)}"`;
-    };
+    // As S3 computes them: an object's ETag is the MD5 of its bytes, so rewriting the same bytes keeps it.
+    const etag = (body: Buffer): string => `"${md5(body)}"`;
 
-    const put = (key: string, body: Buffer, init: { contentType?: string; metadata?: Record<string, string> } = {}): S3Object => {
-        const object = { body, contentType: init.contentType, etag: etag(), lastModified: new Date(), metadata: init.metadata ?? {} };
+    const put = (key: string, body: Buffer, init: { contentType?: string; etag?: string; metadata?: Record<string, string> } = {}): S3Object => {
+        const object = { body, contentType: init.contentType, etag: init.etag ?? etag(body), lastModified: new Date(), metadata: init.metadata ?? {} };
 
         objects.set(key, object);
 
@@ -61,10 +64,12 @@ export const createS3State = () => {
 
             const numbers = partNumbers ?? (parts(uploadId) ?? []).map(([number]) => number);
             const body = Buffer.concat(numbers.map((number) => upload.parts.get(number)?.body ?? Buffer.alloc(0)));
+            // A multipart object's ETag is the MD5 of its parts' MD5s and the part count.
+            const digests = Buffer.concat(numbers.map((number) => Buffer.from(md5(upload.parts.get(number)?.body ?? Buffer.alloc(0)), "hex")));
 
             uploads.delete(uploadId);
 
-            return put(upload.key, body, upload);
+            return put(upload.key, body, { ...upload, etag: `"${md5(digests)}-${String(numbers.length)}"` });
         },
 
         /** Copies an object; `false` when the source is missing. */
@@ -72,14 +77,16 @@ export const createS3State = () => {
             const object = objects.get(source);
 
             if (object) {
-                objects.set(key, { ...object, etag: etag(), lastModified: new Date() });
+                objects.set(key, { ...object, lastModified: new Date() });
             }
 
             return object !== undefined;
         },
 
         createUpload: (key: string, init: { contentType?: string; metadata?: Record<string, string> } = {}): string => {
-            const id = `u${String(uploads.size + 1)}-${String(counter)}`;
+            counter += 1;
+
+            const id = `u${String(counter)}`;
 
             uploads.set(id, { contentType: init.contentType, initiated: new Date(), key, metadata: init.metadata ?? {}, parts: new Map() });
 
@@ -136,7 +143,7 @@ export const createS3State = () => {
                 return undefined;
             }
 
-            const part = { body, etag: etag() };
+            const part = { body, etag: etag(body) };
 
             upload.parts.set(partNumber, part);
 

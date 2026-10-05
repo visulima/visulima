@@ -1,29 +1,26 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface CreateAllAbortListenerOptions {
     endpoint: string;
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     onAbort: (item: UploadItem) => void;
 }
 
 export const createAllAbortListener = (options: CreateAllAbortListenerOptions): void => {
-    const { endpoint, metadata, onAbort } = options;
+    const { endpoint, onAbort } = options;
 
     onMount(() => {
-        const adapter = createMultipartAdapter({ endpoint, metadata });
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("file" in itemOrBatch) {
                 onAbort(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("ITEM_ABORT", handler);
-
-        onDestroy(() => {
-            adapter.uploader.off("ITEM_ABORT", handler);
-        });
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return subscribe(endpoint, "ITEM_ABORT", handler);
     });
 };

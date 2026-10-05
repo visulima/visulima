@@ -1,9 +1,10 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore } from "svelte/store";
 
 import { buildUrl, fetchJson, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
+import toReadable from "./to-readable";
 
 export interface FileListResponse {
     data: FileMeta[];
@@ -56,10 +57,14 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
     const pageStore: Readable<number | undefined> = typeof page === "object" && "subscribe" in page ? page : derived([], () => page);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
+    const limitState = fromStore(limitStore);
+    const pageState = fromStore(pageStore);
+    const enabledState = fromStore(enabledStore);
+
     const query = createQuery(() => {
-        const currentLimit = get(limitStore);
-        const currentPage = get(pageStore);
-        const currentEnabled = get(enabledStore);
+        const currentLimit = limitState.current;
+        const currentPage = pageState.current;
+        const currentEnabled = enabledState.current;
 
         return {
             enabled: currentEnabled,
@@ -79,13 +84,12 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
         };
     });
 
-    const dataStore = (query.data as unknown as Readable<FileListResponse | undefined> | null) ?? readable<FileListResponse | undefined>();
-    const errorStore = derived((query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(), ($error) => $error ?? undefined);
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => query.data);
+    const errorStore = derived(
+        toReadable(() => query.error),
+        ($error) => $error ?? undefined,
+    );
+    const isLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     return {
         data: derived(dataStore, ($data) => $data ?? undefined),

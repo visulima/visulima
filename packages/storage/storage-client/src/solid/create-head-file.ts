@@ -1,28 +1,8 @@
 import { createQuery } from "@tanstack/solid-query";
 import type { Accessor } from "solid-js";
 
-import { buildUrl, fetchHead, storageQueryKeys } from "../core";
-
-export interface FileHeadMetadata {
-    /** Whether this is a chunked upload session */
-    chunkedUpload?: boolean;
-    /** Content length in bytes */
-    contentLength?: number;
-    /** Content type */
-    contentType?: string;
-    /** Entity tag for caching */
-    etag?: string;
-    /** Last modified date */
-    lastModified?: string;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
-    /** Whether upload is complete (chunked uploads) */
-    uploadComplete?: boolean;
-    /** Upload expiration date */
-    uploadExpires?: string;
-    /** Upload offset for chunked uploads */
-    uploadOffset?: number;
-}
+import type { FileHeadMetadata } from "../core";
+import { buildUrl, extractHeadMetadataFromHeaders, fetchHead, storageQueryKeys } from "../core";
 
 export interface CreateHeadFileOptions {
     /** Whether to enable the query */
@@ -63,62 +43,8 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
             enabled: enabledValue() && !!fileId,
             queryFn: async ({ signal }): Promise<FileHeadMetadata> => {
                 const url = buildUrl(endpoint, fileId);
-                const headers = await fetchHead(url, { signal });
 
-                // Extract metadata from headers
-                const contentLength = headers.get("Content-Length");
-                const contentType = headers.get("Content-Type");
-                const etag = headers.get("ETag");
-                const lastModified = headers.get("Last-Modified");
-                const uploadExpires = headers.get("X-Upload-Expires");
-                const uploadOffset = headers.get("X-Upload-Offset");
-                const uploadComplete = headers.get("X-Upload-Complete");
-                const chunkedUpload = headers.get("X-Chunked-Upload");
-                const receivedChunks = headers.get("X-Received-Chunks");
-
-                const fileMeta: FileHeadMetadata = {};
-
-                if (contentLength) {
-                    fileMeta.contentLength = Number.parseInt(contentLength, 10);
-                }
-
-                if (contentType) {
-                    fileMeta.contentType = contentType;
-                }
-
-                if (etag) {
-                    fileMeta.etag = etag;
-                }
-
-                if (lastModified) {
-                    fileMeta.lastModified = lastModified;
-                }
-
-                if (uploadExpires) {
-                    fileMeta.uploadExpires = uploadExpires;
-                }
-
-                if (uploadOffset) {
-                    fileMeta.uploadOffset = Number.parseInt(uploadOffset, 10);
-                }
-
-                if (uploadComplete) {
-                    fileMeta.uploadComplete = uploadComplete === "true";
-                }
-
-                if (chunkedUpload) {
-                    fileMeta.chunkedUpload = chunkedUpload === "true";
-                }
-
-                if (receivedChunks) {
-                    try {
-                        fileMeta.receivedChunks = JSON.parse(receivedChunks) as number[];
-                    } catch {
-                        // Ignore parse errors
-                    }
-                }
-
-                return fileMeta;
+                return extractHeadMetadataFromHeaders(await fetchHead(url, { signal }));
             },
             queryKey: storageQueryKeys.files.head(endpoint, fileId),
         };

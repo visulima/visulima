@@ -28,6 +28,12 @@ type Blob = {
 
 const ORIGIN = "https://acct.blob.core.windows.net/files/";
 
+/** Azure metadata names are C# identifiers. */
+const IDENTIFIER = /^[A-Z_]\w*$/iu;
+
+/** What Node's HTTP stack sends as a header value. */
+const HEADER_VALUE = /^[\t\u0020-\u007E\u0080-\u00FF]*$/u;
+
 const statusError = (statusCode: number, code: string): Error => Object.assign(new Error(code), { code, statusCode });
 
 /**
@@ -51,7 +57,31 @@ const createAzure = () => {
         return { _response: { headers: { get: () => undefined } }, etag: nextEtag(), requestId };
     };
 
+    /**
+     * What Azure (and Node's HTTP stack, which sends the values as `x-ms-meta-*` headers) accepts:
+     * C# identifier names, header-safe values, 8 KiB names and values together.
+     */
+    const assertMetadata = (metadata: Record<string, string>): void => {
+        const entries = Object.entries(metadata);
+
+        for (const [key, value] of entries) {
+            if (IDENTIFIER.exec(key) === null) {
+                throw statusError(400, "InvalidMetadata");
+            }
+
+            if (HEADER_VALUE.exec(value) === null) {
+                throw Object.assign(new TypeError(`Invalid character in header content ["x-ms-meta-${key}"]`), { code: "ERR_INVALID_CHAR" });
+            }
+        }
+
+        if (entries.reduce((size, [key, value]) => size + key.length + value.length, 0) > 8 * 1024) {
+            throw statusError(400, "MetadataTooLarge");
+        }
+    };
+
     const put = (name: string, body: Buffer, metadata: Record<string, string>, contentType?: string): void => {
+        assertMetadata(metadata);
+
         const now = new Date();
 
         blobs.set(name, {
@@ -129,6 +159,8 @@ const createAzure = () => {
                 return response("commit");
             },
             createIfNotExists: async (options: { metadata: Record<string, string> }) => {
+                guard("createIfNotExists");
+
                 if (blobs.has(name)) {
                     return { succeeded: false };
                 }
@@ -190,6 +222,7 @@ const createAzure = () => {
                     throw statusError(412, "ConditionNotMet");
                 }
 
+                assertMetadata(metadata);
                 blob.metadata = metadata;
                 blob.etag = nextEtag();
 
@@ -214,7 +247,10 @@ const createAzure = () => {
 
                 return response("upload");
             },
-            url: `${ORIGIN}${name.split("/").map((segment) => encodeURIComponent(segment)).join("/")}`,
+            url: `${ORIGIN}${name
+                .split("/")
+                .map((segment) => encodeURIComponent(segment))
+                .join("/")}`,
         };
     };
 
@@ -323,20 +359,18 @@ describe("azure storage against an in-memory container", () => {
         vi.clearAllMocks();
     });
 
-    describeStorageContract(
-        () => {
-            return {
-                createStorage,
-                failBackend: (failing) => {
-                    azure.state.fail = failing ? () => statusError(403, "AuthorizationFailure") : undefined;
-                },
-                hasObject: (key) => azure.blobs.has(key),
-                putObject: (key, content) => {
-                    azure.put(key, Buffer.from(content), {});
-                },
-            };
-        },
-    );
+    describeStorageContract(() => {
+        return {
+            createStorage,
+            failBackend: (failing) => {
+                azure.state.fail = failing ? () => statusError(403, "AuthorizationFailure") : undefined;
+            },
+            hasObject: (key) => azure.blobs.has(key),
+            putObject: (key, content) => {
+                azure.put(key, Buffer.from(content), {});
+            },
+        };
+    });
 
     it("should take the container from AZURE_STORAGE_CONTAINER when none is passed", async () => {
         expect.assertions(2);
@@ -349,7 +383,7 @@ describe("azure storage against an in-memory container", () => {
 
             // The storage and its metadata sidecars both use it.
             expect(getContainerClient.mock.calls).toStrictEqual([["from-env"], ["from-env"]]);
-            await expect(storage.exists({ id: (await upload(storage, "x")) })).resolves.toBe(true);
+            await expect(storage.exists({ id: await upload(storage, "x") })).resolves.toBe(true);
         } finally {
             vi.unstubAllEnvs();
         }
@@ -391,6 +425,77 @@ describe("azure storage against an in-memory container", () => {
         await storage.write({ body: Readable.from([Buffer.from("zz")]), contentLength: 2, id: file.id, start: 12 });
 
         expect(azure.blobs.get(file.id)?.body.toString()).toBe("0123456789ab");
+    });
+
+    it("should store and read back a non-Latin-1 name and metadata under any key", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+        const metadata = { "file-name": "Ünïcödé 文件", name: "photo.txt", tags: ["a", "b"] };
+        const file = await storage.create({ contentType: "text/plain", metadata, originalName: "文件.pdf", size: 2 });
+
+        await storage.write({ body: Readable.from([Buffer.from("hi")]), contentLength: 2, id: file.id, start: 0 });
+
+        await expect(storage.get({ id: file.id })).resolves.toMatchObject({ content: Buffer.from("hi"), metadata, name: file.id, originalName: "文件.pdf" });
+        await expect(storage.getMeta(file.id)).resolves.toMatchObject({ metadata, originalName: "文件.pdf" });
+
+        // Blobs written before the values were encoded still read, with Azure's lower-cased names.
+        azure.put("legacy", Buffer.from("old"), { name: "legacy", originalname: "old.txt", owner: '"me"' });
+
+        await expect(storage.get({ id: "legacy" })).resolves.toMatchObject({ name: "legacy", originalName: "old.txt" });
+    });
+
+    it("should not let a metadata.name replace the stored name", async () => {
+        expect.assertions(1);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: { name: "photo.txt" }, originalName: "photo.txt", size: 2 });
+
+        await storage.write({ body: Readable.from([Buffer.from("hi")]), contentLength: 2, id: file.id, start: 0 });
+
+        await expect(storage.get({ id: file.id })).resolves.toMatchObject({ metadata: { name: "photo.txt" }, name: file.id });
+    });
+
+    it("should not store a write claim in the finished blob's metadata", async () => {
+        expect.assertions(1);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: { _writeClaim: { expiresAt: 1, token: "t" }, note: "kept" }, originalName: "a.txt", size: 2 });
+
+        await storage.write({ body: Readable.from([Buffer.from("hi")]), contentLength: 2, id: file.id, start: 0 });
+
+        await expect(storage.get({ id: file.id })).resolves.toHaveProperty("metadata", { note: "kept" });
+    });
+
+    it("should reject metadata Azure cannot store before creating a blob", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage();
+
+        // Fits a blob's 8 KiB raw, but not once the upload record encodes it.
+        await expect(storage.create({ contentType: "text/plain", metadata: { note: "x".repeat(6000) }, originalName: "a.txt", size: 1 })).rejects.toMatchObject(
+            {
+                UploadErrorCode: ERRORS.REQUEST_ENTITY_TOO_LARGE,
+            },
+        );
+        expect(azure.blobs.size).toBe(0);
+    });
+
+    it("should remove the blob when the upload record cannot be saved", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+
+        azure.state.fail = (operation) => (operation === "createIfNotExists" ? statusError(503, "ServerBusy") : undefined);
+
+        await expect(storage.create({ contentType: "text/plain", id: "retry", metadata: {}, originalName: "a.txt", size: 2 })).rejects.toThrow("ServerBusy");
+        expect(azure.blobs.size).toBe(0);
+
+        azure.state.fail = undefined;
+
+        await expect(storage.create({ contentType: "text/plain", id: "retry", metadata: {}, originalName: "a.txt", size: 2 })).resolves.toMatchObject({
+            status: "created",
+        });
     });
 
     it("should buffer a chunk without a declared length", async () => {

@@ -104,10 +104,25 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
             setDragCounter((previous) => previous + 1);
         };
 
+        // `dragenter` is counted document-wide, so its matching `dragleave` must be too; the drop
+        // zone's own `dragleave` stops propagating and is counted by `handleDragLeave` instead.
+        const handleDocumentDragLeave = (): void => {
+            setDragCounter((previous) => Math.max(0, previous - 1));
+        };
+
+        // A drop outside the drop zone ends the drag without a `dragleave`.
+        const handleDocumentDrop = (): void => {
+            setDragCounter(0);
+        };
+
         document.addEventListener("dragenter", handleDragEnter);
+        document.addEventListener("dragleave", handleDocumentDragLeave);
+        document.addEventListener("drop", handleDocumentDrop);
 
         onCleanup(() => {
             document.removeEventListener("dragenter", handleDragEnter);
+            document.removeEventListener("dragleave", handleDocumentDragLeave);
+            document.removeEventListener("drop", handleDocumentDrop);
         });
     });
 

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { copyFile, open, rename, stat, truncate } from "node:fs/promises";
-import type { Readable, Transform } from "node:stream";
-import { pipeline } from "node:stream";
+import type { Transform } from "node:stream";
+import { pipeline, Readable } from "node:stream";
 
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
 import { dirname, isAbsolute, join } from "@visulima/path";
@@ -216,6 +216,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         // Taken before locking: a lock that can't be acquired must not strand the parked record.
         const conditional = this.takeConditional(part.id, options);
 
+        // The body's listeners are attached only once the metadata is read and the lock held. A
+        // client dropping before then emits 'error' with no listener, which crashes the process (as
+        // in #910). lazyWrite reports that failure from the stream's errored state.
+        if ("body" in part && part.body instanceof Readable) {
+            part.body.on("error", () => {
+                // Reported by lazyWrite through `body.errored`
+            });
+        }
+
         // Lock before reading the metadata, so the offset checked and extended is the one stored
         // after any earlier write finished.
         return this.instrumentOperation("write", async () =>
@@ -313,19 +322,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                             return throwErrorCode(errorCode);
                         }
 
-                        if (Number.isNaN(bytesWritten)) {
-                            // An aborted keepPartial (checksum-less) write resolves with NaN and
-                            // no error code. The pipeline did not complete, so the declared
-                            // contentLength must not be credited (that plus Math.max(x, NaN) would
-                            // persist NaN as the offset). Re-derive the real offset from disk.
-                            const { size } = await stat(path);
-
-                            file.bytesWritten = size;
-                        } else {
-                            // The bytes that actually landed: a body shorter than its Content-Length
-                            // leaves the upload incomplete at its real offset.
-                            file.bytesWritten = bytesWritten;
-                        }
+                        // The bytes that actually landed: a body shorter than its Content-Length, or an
+                        // aborted checksum-less one, leaves the upload incomplete at its real offset.
+                        file.bytesWritten = bytesWritten;
 
                         file.status = getFileStatus(file);
                         file.modifiedAt = new Date().toISOString();
@@ -563,15 +562,12 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 return true;
             } catch (error: unknown) {
-                // Check if it's a file not found error
-                const errorWithCode = error as { code?: string };
-
-                if (errorWithCode.code === "ENOENT") {
+                // Only a missing upload or file is "absent"; any other failure throws.
+                if (isMetaNotFound(error) || (error as { code?: string }).code === "ENOENT") {
                     return false;
                 }
 
-                // For metadata errors, also return false
-                return false;
+                throw error;
             }
         });
     }
@@ -801,7 +797,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 const { suffix } = this.meta;
                 const { path } = founding;
 
-                if (!path.includes(suffix)) {
+                // A metafile, or the lock or temporary file of one, but not any name merely containing the suffix.
+                if (!path.replace(/\.lock$|\.[\da-f-]{36}\.tmp$/, "").endsWith(suffix)) {
                     const { birthtime, ctime, mtime } = await stat(path);
                     const normalizedPath = toPosix(path);
                     const id = normalizedPath.startsWith(normalizedDirectory) ? normalizedPath.slice(normalizedDirectory.length) : normalizedPath;
@@ -834,7 +831,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Streams the part body to disk at `part.start`.
      * @param part The part to write
      * @param transforms Extra transforms the body passes through before it lands on disk
-     * @returns The offset after the write, or NaN with an error code when the write failed
+     * @returns The offset after the write, or NaN with an error code when the write failed. An
+     * aborted checksum-less write keeps what it stored: its offset is `start` plus the bytes this
+     * write delivered, never the file's size, which later chunks may already have extended.
      */
     protected lazyWrite(part: File & FilePart, transforms: Transform[] = []): Promise<[number, ERRORS?]> {
         return new Promise((resolve, reject) => {
@@ -861,10 +860,24 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 }
             };
 
-            const failWithCode = (code?: ERRORS): void => {
+            const failWithCode = (code: ERRORS): void => {
                 cleanupStreams();
                 settle(() => {
                     resolve([Number.NaN, code]);
+                });
+            };
+
+            const abort = (): void => {
+                if (!keepPartial) {
+                    failWithCode(ERRORS.REQUEST_ABORTED);
+
+                    return;
+                }
+
+                cleanupStreams();
+                // Read once the file is closed, when `bytesWritten` counts every byte that landed.
+                settle(() => {
+                    resolve([part.start + destination.bytesWritten]);
                 });
             };
 
@@ -881,9 +894,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 }
             });
 
-            part.body.on("aborted", () => {
-                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
-            });
+            part.body.on("aborted", abort);
             part.body.on("error", (error) => {
                 cleanupStreams();
                 settle(() => {
@@ -893,7 +904,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             // Check if signal is already aborted before starting pipeline
             if (signal?.aborted) {
-                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+                abort();
 
                 return;
             }
@@ -904,14 +915,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             if (signal) {
                 onAbort = () => {
-                    cleanupStreams();
+                    abort();
                     destination.destroy();
-                    lengthChecker.destroy();
-                    checksumChecker.destroy();
                     part.body.destroy();
-                    settle(() => {
-                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
-                    });
                 };
 
                 signal.addEventListener("abort", onAbort, { once: true });
@@ -927,8 +933,19 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                     // Check if error is due to abort signal
                     if (signal?.aborted) {
+                        abort();
+
+                        return;
+                    }
+
+                    // A failing body is reported as itself, however the platform orders the events: the
+                    // body's own 'error' listener and this callback both wait for the file to close, and
+                    // this one's close listener is registered first.
+                    const bodyError = (part.body).errored;
+
+                    if (bodyError) {
                         settle(() => {
-                            resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                            reject(bodyError);
                         });
 
                         return;

@@ -1,9 +1,10 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
+import toReadable from "./to-readable";
 
 export interface TransformOptions {
     /** Additional transformation parameters */
@@ -58,10 +59,14 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         typeof transform === "object" && "subscribe" in transform ? (transform as Readable<TransformOptions>) : derived([], () => transform);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
+    const idState = fromStore(idStore);
+    const transformState = fromStore(transformStore);
+    const enabledState = fromStore(enabledStore);
+
     const query = createQuery(() => {
-        const currentId = get(idStore);
-        const currentTransform = get(transformStore);
-        const currentEnabled = get(enabledStore);
+        const currentId = idState.current;
+        const currentTransform = transformState.current;
+        const currentEnabled = enabledState.current;
 
         // eslint-disable-next-line @tanstack/query/exhaustive-deps -- endpoint is captured from outer scope; queryKey already includes it via storageQueryKeys.transform.file
         return {
@@ -102,14 +107,9 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         };
     });
 
-    const dataStore =
-        (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null) ?? readable<{ blob: Blob; meta: FileMeta } | undefined>();
-    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => query.data);
+    const errorStore = toReadable(() => query.error);
+    const isLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     return {
         data: derived(dataStore, ($data) => $data?.blob),

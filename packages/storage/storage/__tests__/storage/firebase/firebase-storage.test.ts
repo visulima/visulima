@@ -281,7 +281,7 @@ describe(FirebaseStorage, () => {
             await expect(storage.exists({ id: "file.mp4" })).resolves.toBe(true);
         });
 
-        it("returns false when file.exists throws", async () => {
+        it("throws when file.exists throws", async () => {
             expect.assertions(1);
 
             const storage = makeStorage();
@@ -289,7 +289,7 @@ describe(FirebaseStorage, () => {
             vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             gcsFile.exists.mockRejectedValueOnce(new Error("boom"));
 
-            await expect(storage.exists({ id: "file.mp4" })).resolves.toBe(false);
+            await expect(storage.exists({ id: "file.mp4" })).rejects.toThrow("boom");
         });
     });
 

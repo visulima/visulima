@@ -1,11 +1,9 @@
-import { computed } from "vue";
-
-import { createMultipartAdapter } from "../core/multipart-adapter";
+import { dispatch } from "../core/uploader";
 
 export interface UseBatchRetryOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to act on */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: commands reach the existing uploads to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
 }
 
@@ -16,21 +14,15 @@ export interface UseBatchRetryReturn {
 
 /**
  * Vue composable to retry all failed items in a batch.
+ * Acts on the uploads every upload hook of the same `endpoint` started; an unknown id is a no-op.
  * @param options Configuration options
  * @returns Retry batch function
  */
 export const useBatchRetry = (options: UseBatchRetryOptions): UseBatchRetryReturn => {
-    const { endpoint, metadata } = options;
-
-    const adapter = computed(() =>
-        createMultipartAdapter({
-            endpoint,
-            metadata,
-        }),
-    );
+    const { endpoint } = options;
 
     const retryBatch = (batchId: string): void => {
-        adapter.value.uploader.retryBatch(batchId);
+        dispatch(endpoint, { id: batchId, type: "retryBatch" });
     };
 
     return {

@@ -427,6 +427,24 @@ describe("http Tus", () => {
             expect(unsupported.status).toBe(400);
         });
 
+        it.each(["GET", "HEAD", "OPTIONS"])("should reject a POST overridden to %s with 400", async (override) => {
+            expect.assertions(2);
+
+            const createResponse = await supertest(app)
+                .post(basePath)
+                .set("Upload-Metadata", serializeMetadata({ ...metadata, name: "override-read.mp4" }))
+                .set("Upload-Length", "5")
+                .set("Tus-Resumable", TUS_RESUMABLE);
+
+            const overridden = await supertest(app)
+                .post(createResponse.header.location)
+                .set("X-HTTP-Method-Override", override)
+                .set("Tus-Resumable", TUS_RESUMABLE);
+
+            expect(overridden.status).toBe(400);
+            expect(overridden.header["upload-offset"]).toBeUndefined();
+        });
+
         it("should reject an Upload-Defer-Length other than 1 with 400", async () => {
             expect.assertions(1);
 

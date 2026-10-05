@@ -1,58 +1,64 @@
 import type { File, UploadFile } from "../storage/utils/file";
 
 /**
- * Chunk information structure for tracking uploaded chunks.
+ * A byte range of a chunked upload that the storage holds.
  */
 export interface ChunkInfo {
-    /** Optional checksum for validation */
-    checksum?: string;
-    /** Length of chunk in bytes */
+    /** Length of the range in bytes */
     length: number;
-    /** Byte offset where chunk starts */
+    /** Byte offset where the range starts */
     offset: number;
 }
 
 /**
- * Checks if upload is complete based on chunks coverage.
- * Verifies that all chunks form a continuous sequence covering the total file size.
- * @param chunks Array of chunk information objects
+ * Merges ranges into the fewest that cover the same bytes: sorted by offset, overlapping or
+ * adjacent ones joined.
+ *
+ * The list is stored in the upload's metadata and sent back in `X-Received-Chunks`, and object
+ * metadata is small (S3 allows 2 KiB, Azure and R2 8 KiB). One entry per chunk would outgrow it
+ * after a few dozen chunks and fail the save. Readers normalise too: a record saved before ranges
+ * were merged still lists one entry per chunk.
+ * @param chunks Ranges in any order
+ * @returns The merged ranges
+ */
+export const normalizeRanges = (chunks: ChunkInfo[]): ChunkInfo[] => {
+    const merged: ChunkInfo[] = [];
+
+    for (const { length, offset } of chunks.toSorted((a, b) => a.offset - b.offset)) {
+        const last = merged.at(-1);
+
+        if (last === undefined || offset > last.offset + last.length) {
+            merged.push({ length, offset });
+        } else if (offset + length > last.offset + last.length) {
+            merged[merged.length - 1] = { length: offset + length - last.offset, offset: last.offset };
+        }
+    }
+
+    return merged;
+};
+
+/**
+ * End of the stored prefix of a chunked upload as its recorded chunks show it: the first byte not
+ * covered by ranges starting at offset 0.
+ * @param chunks Recorded chunks
+ * @returns Byte offset to resume from
+ */
+export const getContiguousEnd = (chunks: ChunkInfo[]): number => {
+    const [first] = normalizeRanges(chunks);
+
+    return first?.offset === 0 ? first.length : 0;
+};
+
+/**
+ * Whether the recorded chunks cover the whole upload, from offset 0 without a gap.
+ * @param chunks Recorded chunks
  * @param totalSize Total expected file size in bytes
  * @returns True if upload is complete, false otherwise
  */
 export const isUploadComplete = (chunks: ChunkInfo[], totalSize: number): boolean => {
-    if (chunks.length === 0) {
-        return false;
-    }
+    const [first] = normalizeRanges(chunks);
 
-    // Sort by offset
-    const sorted = [...chunks].toSorted((a, b) => a.offset - b.offset);
-
-    // First chunk must start at offset 0
-    const firstChunk = sorted[0];
-
-    if (firstChunk?.offset !== 0) {
-        return false;
-    }
-
-    let currentEnd = firstChunk.length;
-
-    for (let i = 1; i < sorted.length; i += 1) {
-        const chunk = sorted[i];
-
-        if (!chunk) {
-            continue;
-        }
-
-        // If gap exists, upload is not complete
-        if (chunk.offset > currentEnd) {
-            return false;
-        }
-
-        // Extend currentEnd to cover overlapping or adjacent chunks
-        currentEnd = Math.max(currentEnd, chunk.offset + chunk.length);
-    }
-
-    return currentEnd >= totalSize;
+    return first?.offset === 0 && first.length >= totalSize;
 };
 
 /**
@@ -82,42 +88,20 @@ export const validateChunk = (chunkOffset: number, chunkLength: number, totalSiz
 };
 
 /**
- * Tracks a chunk in the metadata chunks array (idempotent).
+ * Records a chunk (idempotent): the ranges with it merged in, see {@link normalizeRanges}.
  * @param chunks Existing chunks array
  * @param chunkInfo New chunk information to track
- * @returns Updated chunks array
+ * @returns The merged ranges
  */
-export const trackChunk = (chunks: ChunkInfo[], chunkInfo: ChunkInfo): ChunkInfo[] => {
-    // Check if this chunk was already uploaded (idempotency)
-    const existingChunk = chunks.find((chunk) => chunk.offset === chunkInfo.offset && chunk.length === chunkInfo.length);
-
-    if (!existingChunk) {
-        return [...chunks, chunkInfo];
-    }
-
-    // Update checksum if provided
-    if (chunkInfo.checksum && existingChunk.checksum !== chunkInfo.checksum) {
-        return chunks.map((chunk) => (chunk.offset === chunkInfo.offset ? { ...chunk, checksum: chunkInfo.checksum } : chunk));
-    }
-
-    return chunks;
-};
+export const trackChunk = (chunks: ChunkInfo[], chunkInfo: ChunkInfo): ChunkInfo[] => normalizeRanges([...chunks, chunkInfo]);
 
 /**
- * Adds the chunks of `other` to `chunks` with {@link trackChunk}'s idempotency rules.
+ * Combines two recorded chunk lists (idempotent and commutative), see {@link normalizeRanges}.
  * @param chunks Chunks array to extend
  * @param other Chunks to merge in
- * @returns Merged chunks array
+ * @returns The merged ranges
  */
-export const mergeChunks = (chunks: ChunkInfo[], other: ChunkInfo[]): ChunkInfo[] => {
-    let merged = chunks;
-
-    for (const chunk of other) {
-        merged = trackChunk(merged, chunk);
-    }
-
-    return merged;
-};
+export const mergeChunks = (chunks: ChunkInfo[], other: ChunkInfo[]): ChunkInfo[] => normalizeRanges([...chunks, ...other]);
 
 /**
  * Reads the chunks recorded for a chunked upload.
@@ -144,26 +128,6 @@ export const withRecordedChunks = (metadata: Record<string, unknown>, stored: Up
  * @returns True if no chunk is recorded and nothing written
  */
 export const isFreshChunkedRecord = (file: UploadFile): boolean => getChunks(file).length === 0 && !file.bytesWritten;
-
-/**
- * End of the stored prefix of a chunked upload as its recorded chunks show it: the first byte not
- * covered by chunks starting at offset 0.
- * @param chunks Recorded chunks
- * @returns Byte offset to resume from
- */
-export const getContiguousEnd = (chunks: ChunkInfo[]): number => {
-    let end = 0;
-
-    for (const chunk of [...chunks].toSorted((a, b) => a.offset - b.offset)) {
-        if (chunk.offset > end) {
-            break;
-        }
-
-        end = Math.max(end, chunk.offset + chunk.length);
-    }
-
-    return end;
-};
 
 /**
  * Whether a chunked upload holds every byte. For an adapter that only appends
@@ -206,8 +170,6 @@ export const getChunkedUploadOffset = (chunks: ChunkInfo[], bytesWritten: number
  * @param sequentialWrites Whether the adapter only appends ({@link isChunkedUploadComplete})
  */
 export const mergeChunkedProgress = (file: File, stored: File, sequentialWrites = false): void => {
-    // Stored first, so a checksum the incoming record carries for the same chunk wins, and one
-    // it lacks is kept from the stored record.
     const chunks = mergeChunks(getChunks(stored), getChunks(file));
 
     file.metadata = { ...file.metadata, _chunks: chunks };

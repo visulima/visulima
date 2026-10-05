@@ -3,9 +3,10 @@ import type { ChecksumAlgorithm } from "./checksum";
 import { computeChunkChecksum } from "./checksum";
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
-import { resolveRequestHeaders } from "./query-client";
+import { parseReceivedChunks, resolveRequestHeaders } from "./query-client";
 import { validateFile } from "./restrictions";
-import type { HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult } from "./types";
+import { parseOffsetHeader } from "./tus/protocol";
+import type { HeadersResolver, OnBeforeRequest, ReceivedRange, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
@@ -199,6 +200,17 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         }
     };
 
+    /** Bytes of the chunks recorded as stored, whether sent in this session or found on the server. */
+    const uploadedBytes = (): number => {
+        let total = 0;
+
+        for (const offset of uploadState.uploadedChunks) {
+            total += Math.min(offset + chunkSize, uploadState.totalSize) - offset;
+        }
+
+        return total;
+    };
+
     const persistUploadEntry = async (fingerprint: string, fileId: string, file: File): Promise<void> => {
         if (!urlStorage) {
             return;
@@ -312,7 +324,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Initializes an upload session.
      */
-    const createUpload = async (file: File): Promise<string> => {
+    const createUpload = async (file: File, signal: AbortSignal): Promise<string> => {
         const headers: Record<string, string> = {
             "Content-Type": file.type || "application/octet-stream",
             "X-Chunked-Upload": "true",
@@ -331,6 +343,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             body: new Uint8Array(0), // Empty body for initialization
             headers: await buildHeaders(endpoint, "POST", headers),
             method: "POST",
+            signal,
         });
 
         if (!response.ok) {
@@ -351,14 +364,19 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
      * `undefined` if the upload no longer exists (404 / 410 / 403) — so the
      * caller can fall through to creating a fresh session.
      */
-    const probeExistingUpload = async (fileId: string): Promise<number | undefined> => {
+    const probeExistingUpload = async (fileId: string, signal: AbortSignal): Promise<number | undefined> => {
         const url = fileUrl(fileId);
 
         let response: Response;
 
+        // Transient failures (5xx, 408, 429, network) are retried per the adapter's retry config.
         try {
-            response = await fetch(url, { headers: await buildHeaders(url, "HEAD", {}), method: "HEAD" });
-        } catch {
+            response = await fetchWithRetry(url, { headers: await buildHeaders(url, "HEAD", {}), method: "HEAD", signal });
+        } catch (error) {
+            if (signal.aborted) {
+                throw error;
+            }
+
             return undefined;
         }
 
@@ -370,40 +388,29 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             throw new Error(`Failed to probe upload: ${String(response.status)} ${response.statusText}`);
         }
 
-        return Number.parseInt(response.headers.get("X-Upload-Offset") ?? "0", 10);
+        return parseOffsetHeader(response.headers.get("X-Upload-Offset"));
     };
 
     /**
      * Gets upload status from server.
      */
-    const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; complete: boolean; offset: number }> => {
+    const getUploadStatus = async (fileId: string, signal?: AbortSignal): Promise<{ chunks: ReceivedRange[]; complete: boolean; offset: number }> => {
         const url = fileUrl(fileId);
 
         const response = await fetchWithRetry(url, {
             headers: await buildHeaders(url, "HEAD", {}),
             method: "HEAD",
+            signal,
         });
 
         if (!response.ok) {
             throw new Error(`Failed to get upload status: ${String(response.status)} ${response.statusText}`);
         }
 
-        const offset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? "0", 10);
+        // A missing or malformed offset reads as 0, so it can never pass the completeness check.
+        const offset = parseOffsetHeader(response.headers.get("X-Upload-Offset"));
         const chunksHeader = response.headers.get("X-Received-Chunks");
-
-        let chunks: { length: number; offset: number }[] = [];
-
-        if (chunksHeader) {
-            try {
-                const parsed = JSON.parse(chunksHeader);
-
-                if (Array.isArray(parsed)) {
-                    chunks = parsed as { length: number; offset: number }[];
-                }
-            } catch {
-                // Ignore parse errors
-            }
-        }
+        const chunks = (chunksHeader ? parseReceivedChunks(chunksHeader) : undefined) ?? [];
 
         return { chunks, complete: response.headers.get("X-Upload-Complete") === "true", offset };
     };
@@ -454,11 +461,17 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             throw new Error(`Failed to upload chunk: ${String(response.status)} ${response.statusText}`);
         }
 
+        // Aborted (or cleared) while the response was in flight: report nothing more.
+        if (signal.aborted) {
+            throw new Error("Upload aborted");
+        }
+
         // Mark chunk as uploaded
         uploadState.uploadedChunks.add(startOffset);
 
-        // Update progress
-        const currentOffset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? String(endOffset), 10);
+        // Update progress. Chunks finish out of order, so without a server offset count the stored
+        // bytes rather than this chunk's end, which would move progress backwards.
+        const currentOffset = Math.max(parseOffsetHeader(response.headers.get("X-Upload-Offset")), uploadedBytes());
         const progress = Math.round((currentOffset / file.size) * 100);
 
         control?._updateOffset(currentOffset);
@@ -497,11 +510,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Performs the actual chunked upload.
      */
-    const performUpload = async (file: File, fileId: string, signal: AbortSignal): Promise<UploadResult> => {
+    const performUpload = async (file: File, fileId: string, abortController: AbortController): Promise<UploadResult> => {
+        const { signal } = abortController;
         const totalChunks = Math.ceil(file.size / chunkSize);
 
         // Get current status from server (for resumability)
-        const { chunks: serverChunks, complete: serverComplete } = await getUploadStatus(fileId);
+        const { chunks: serverChunks, complete: serverComplete } = await getUploadStatus(fileId, signal);
 
         // Collect the chunks that still need uploading. A chunk the server already holds is one
         // inside a reported range: ranges need not line up with this client's chunk size. A
@@ -524,13 +538,18 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             pending.push({ endOffset, startOffset });
         }
 
-        // Drain the queue with a bounded worker pool so we never fire every PATCH at once.
-        const CONCURRENCY = 4;
+        // One chunk at a time: the server refuses a PATCH while another one writes the same upload
+        // (423 Locked), and an append-only backend such as S3 needs the chunks in order.
+        const CONCURRENCY = 1;
         let nextIndex = 0;
 
         let completedMeta: Partial<UploadResult> | undefined;
         // An object, so the flag set inside the workers is not narrowed away.
         const completion = { byPatch: false };
+        // The first worker failure. It aborts the shared controller so the sibling workers stop
+        // sending, and is rethrown only once every worker has settled: a `resume()` after the
+        // error must never run alongside a worker still PATCHing.
+        let failure: { error: unknown } | undefined;
 
         const worker = async (): Promise<void> => {
             while (nextIndex < pending.length) {
@@ -543,7 +562,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                     });
                 }
 
-                if (uploadState.aborted) {
+                if (uploadState.aborted || signal.aborted) {
                     throw new Error("Upload aborted");
                 }
 
@@ -567,23 +586,33 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             }
         };
 
+        const runWorker = async (): Promise<void> => {
+            try {
+                await worker();
+            } catch (error) {
+                // An abort surfaces as the fetch's own AbortError; report it as the adapter's abort.
+                failure ??= { error: signal.aborted ? new Error("Upload aborted") : error };
+                abortController.abort();
+                flushPauseWaiters();
+            }
+        };
+
         const workerCount = Math.min(CONCURRENCY, pending.length);
 
-        await Promise.all(Array.from({ length: workerCount }, () => worker()));
+        await Promise.all(Array.from({ length: workerCount }, runWorker));
+
+        if (failure) {
+            throw failure.error;
+        }
 
         // Verify upload is complete, unless a PATCH already said so: S3 providers drop the
         // upload's metadata on completion, so a HEAD after it is a 404 (#915).
         if (!completion.byPatch) {
-            const finalStatus = await getUploadStatus(fileId);
+            const finalStatus = await getUploadStatus(fileId, signal);
 
             if (finalStatus.offset < file.size) {
                 throw new Error(`Upload incomplete. Expected ${String(file.size)} bytes, got ${String(finalStatus.offset)}`);
             }
-        }
-
-        // Check if uploadedChunks set has any items
-        if (uploadState.uploadedChunks.size <= 0) {
-            throw new Error("No chunks were uploaded");
         }
 
         // Never `GET <endpoint>/<id>`: that serves the file bytes, not JSON, and may not be exposed
@@ -622,6 +651,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
          * Clears upload state.
          */
         clear: () => {
+            // Stop the running upload first, so its workers neither keep sending nor report into the new state.
+            uploadState.abortController?.abort();
             flushPauseWaiters();
             uploadState = {
                 abortController: undefined,
@@ -648,15 +679,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 return status.offset;
             } catch {
-                let totalOffset = 0;
-
-                for (const offset of uploadState.uploadedChunks) {
-                    const chunkEnd = Math.min(offset + chunkSize, uploadState.totalSize);
-
-                    totalOffset += chunkEnd - offset;
-                }
-
-                return totalOffset;
+                return uploadedBytes();
             }
         },
 
@@ -698,7 +721,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             uploadState.abortController = abortController;
 
             try {
-                const result = await performUpload(uploadState.file, uploadState.fileId, abortController.signal);
+                const result = await performUpload(uploadState.file, uploadState.fileId, abortController);
 
                 finishCallback?.(result);
             } catch (error) {
@@ -746,6 +769,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             const originalErrorCallback = errorCallback;
             const originalProgressCallback = progressCallback;
             let timeoutId: NodeJS.Timeout | undefined;
+            // Set when the inactivity timeout fired, so `upload()` rejects with it rather than the abort it causes.
+            let timeoutError: Error | undefined;
 
             const cleanupTimeout = (): void => {
                 if (timeoutId) {
@@ -788,10 +813,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                     return;
                 }
 
+                timeoutError = new Error("Upload timeout");
                 uploadState.aborted = true;
                 uploadState.abortController?.abort();
                 flushPauseWaiters();
-                internalErrorCallback(new Error("Upload timeout"));
+                internalErrorCallback(timeoutError);
             };
 
             const armTimeout = (): void => {
@@ -807,8 +833,15 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             };
 
             // Validate restrictions before any network request so consumers get a
-            // friendly error instead of a server-side 413.
-            validateFile(file, restrictions);
+            // friendly error instead of a server-side 413. Reported like any other
+            // failure: the hooks only hear errors through the error callback.
+            try {
+                validateFile(file, restrictions);
+            } catch (error: unknown) {
+                internalErrorCallback(error instanceof Error ? error : new Error(String(error)));
+
+                throw error;
+            }
 
             finishCallback = internalFinishCallback;
             errorCallback = internalErrorCallback;
@@ -861,7 +894,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 // 3. Validate any resume hint — drop it if the server says the session is gone.
                 if (fileId !== undefined) {
-                    const probed = await probeExistingUpload(fileId);
+                    const probed = await probeExistingUpload(fileId, abortController.signal);
 
                     if (probed === undefined) {
                         await removeUploadEntry(fingerprint);
@@ -875,7 +908,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 // 4. No usable hint — create a new session.
                 if (fileId === undefined) {
-                    fileId = await createUpload(file);
+                    fileId = await createUpload(file, abortController.signal);
                     await persistUploadEntry(fingerprint, fileId, file);
                 }
 
@@ -901,7 +934,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 );
 
                 // Perform upload
-                return performUpload(file, fileId, abortController.signal);
+                return performUpload(file, fileId, abortController);
             })();
 
             uploadInFlight = true;
@@ -916,7 +949,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 return result;
             } catch (error) {
-                const uploadError = error instanceof Error ? error : new Error(String(error));
+                const uploadError = timeoutError ?? (error instanceof Error ? error : new Error(String(error)));
 
                 control?._detach();
                 internalErrorCallback(uploadError);

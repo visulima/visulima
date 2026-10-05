@@ -205,7 +205,7 @@ describe(VercelBlobStorage, () => {
             expect(exists).toBe(false);
         });
 
-        it("should return false when the blob lookup throws an error", async () => {
+        it("should throw when the blob lookup throws an error", async () => {
             expect.assertions(1);
 
             // Mock getMeta to return metadata with URL
@@ -216,9 +216,7 @@ describe(VercelBlobStorage, () => {
 
             vi.mocked(head).mockRejectedValueOnce(new Error("Network error"));
 
-            const exists = await storage.exists({ id: metafile.id });
-
-            expect(exists).toBe(false);
+            await expect(storage.exists({ id: metafile.id })).rejects.toThrow("Network error");
         });
     });
 

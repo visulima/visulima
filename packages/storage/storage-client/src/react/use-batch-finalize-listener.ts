@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface UseBatchFinalizeListenerOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to observe */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     /** Callback when batch finalizes (after all items complete) */
     onBatchFinalize: (batch: BatchState) => void;
@@ -18,7 +18,7 @@ export interface UseBatchFinalizeListenerOptions {
  * @param options Listener configuration options
  */
 export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOptions): void => {
-    const { endpoint, metadata, onBatchFinalize } = options;
+    const { endpoint, onBatchFinalize } = options;
 
     const callbackRef = useRef(onBatchFinalize);
 
@@ -27,21 +27,12 @@ export const useBatchFinalizeListener = (options: UseBatchFinalizeListenerOption
     }, [onBatchFinalize]);
 
     useEffect(() => {
-        const adapter = createMultipartAdapter({
-            endpoint,
-            metadata,
-        });
-
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("itemIds" in itemOrBatch) {
                 callbackRef.current(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("BATCH_FINALIZE", handler);
-
-        return () => {
-            adapter.uploader.off("BATCH_FINALIZE", handler);
-        };
-    }, [endpoint, metadata]);
+        return subscribe(endpoint, "BATCH_FINALIZE", handler);
+    }, [endpoint]);
 };

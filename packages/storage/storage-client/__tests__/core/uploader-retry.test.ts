@@ -385,4 +385,33 @@ describe("uploader Retry Operations", () => {
         // retryCount should remain the same (0) since retryItem returns early for non-error items
         expect(updatedItem?.retryCount ?? 0).toBe(initialRetryCount);
     });
+
+    it("should not re-queue an item waiting on an auto-retry after abort()", async () => {
+        expect.assertions(2);
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = ErrorMockXMLHttpRequest;
+
+        const uploader = createUploader({
+            endpoint: "/api/upload",
+            retry: true,
+        });
+        const onItemStart = vi.fn();
+
+        uploader.on("ITEM_START", onItemStart);
+
+        const itemId = uploader.add(new File(["test"], "test.jpg", { type: "image/jpeg" }));
+
+        // The first attempt fails and schedules a retry 1s later.
+        await waitUntil(() => uploader.getItem(itemId)?.retryCount === 1);
+
+        uploader.abort();
+
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 1100);
+        });
+
+        expect(onItemStart).toHaveBeenCalledTimes(1);
+        expect(uploader.getItem(itemId)?.status).toBe("aborted");
+    });
 });

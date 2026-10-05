@@ -151,7 +151,7 @@ class AwsLightStorage extends S3BaseStorage {
             const s3Api = this.getS3Api();
             const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
+            const { Body, ContentLength, ContentType, ETag, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
@@ -162,8 +162,6 @@ class AwsLightStorage extends S3BaseStorage {
                 ),
             );
 
-            await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
-
             // Returned as-is: a proxy that subscribed inside read() re-added its listeners on every
             // pull and pushed each chunk once per listener.
             const stream: Readable = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as NodeReadableStream<Uint8Array>) : (Body as Readable);
@@ -173,7 +171,6 @@ class AwsLightStorage extends S3BaseStorage {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
-                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
                     ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
@@ -188,6 +185,7 @@ class AwsLightStorage extends S3BaseStorage {
 
     public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
         AwsLightStorage.assertSafeId(key);
+        this.assertNotMetaKey(key);
 
         return this.s3Api.presignPost(key, options);
     }

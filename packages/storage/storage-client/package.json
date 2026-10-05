@@ -96,6 +96,7 @@
         "lint:types": "tsc --noEmit --project tsconfig.json",
         "test": "vitest run",
         "test:coverage": "vitest run --coverage",
+        "test:live": "vitest run --config vitest.live.config.ts",
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
@@ -120,6 +121,7 @@
         "@types/react": "catalog:types",
         "@typescript-eslint/parser": "catalog:lint",
         "@visulima/packem": "catalog:dev",
+        "@visulima/storage": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@vue/server-renderer": ">=3.5.41",

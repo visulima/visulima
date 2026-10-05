@@ -117,7 +117,7 @@ console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
 - `X-Chunked-Upload`: Indicates chunked upload mode
 - `X-Upload-Offset`: Current upload offset in bytes
 - `X-Upload-Complete`: "true" when upload is complete, "false" otherwise (on `PATCH` and `HEAD`)
-- `X-Received-Chunks`: JSON array of received chunks `[{ offset, length }]`
+- `X-Received-Chunks`: JSON array of the byte ranges received, `[{ offset, length }]`, sorted by offset. Contiguous chunks are merged into one range; only gaps between received chunks add ranges
 
 ## Complete Example
 
@@ -177,19 +177,17 @@ async function resumeUpload(uploadId: string, file: File, chunkSize = 524288) {
         method: "HEAD",
     });
 
+    // Everything before the offset is stored. Start there: adapters that only append (S3, Azure,
+    // GCS) refuse a chunk at any other offset.
     const offset = parseInt(statusResponse.headers.get("X-Upload-Offset") || "0");
     const receivedChunks = JSON.parse(statusResponse.headers.get("X-Received-Chunks") || "[]");
-
-    // Upload remaining chunks
     const totalSize = file.size;
-    const chunks = Math.ceil(totalSize / chunkSize);
 
-    for (let i = 0; i < chunks; i++) {
-        const start = i * chunkSize;
+    for (let start = offset; start < totalSize; start += chunkSize) {
         const end = Math.min(start + chunkSize, totalSize);
 
-        // Skip already uploaded chunks
-        const chunkUploaded = receivedChunks.some((chunk: { offset: number; length: number }) => chunk.offset === start && chunk.length === end - start);
+        // Skip chunks a received range already covers
+        const chunkUploaded = receivedChunks.some((range: { offset: number; length: number }) => range.offset <= start && range.offset + range.length >= end);
 
         if (chunkUploaded) {
             continue;

@@ -276,33 +276,6 @@ describe(DiskStorage, () => {
             await expect(writePromise).rejects.toThrow();
         });
 
-        it("re-derives bytesWritten from disk (never NaN) when a keepPartial write is aborted", async () => {
-            expect.assertions(3);
-
-            // The naming function relocates the file, so resolve the real on-disk path.
-            const stored = await storage.getMeta(metafile.id);
-            const filePath = join(directory, stored.name);
-
-            // Simulate the bytes an aborted pipeline left on disk.
-            await fsp.writeFile(filePath, Buffer.alloc(20));
-
-            // A keepPartial (checksum-less) abort resolves lazyWrite with [NaN, undefined]:
-            // no error code, NaN bytes. The old Math.max(x, NaN) persisted NaN (→ null).
-            vi.spyOn(storage as unknown as { lazyWrite: (...arguments_: unknown[]) => Promise<[number, ERRORS?]> }, "lazyWrite").mockResolvedValueOnce([
-                Number.NaN,
-                undefined,
-            ]);
-
-            const file = await storage.write({ ...metafile, body: Readable.from("ignored"), contentLength: 64, start: 0 });
-
-            expect(Number.isNaN(file.bytesWritten)).toBe(false);
-            expect(file.bytesWritten).toBe(20);
-
-            const meta = await storage.getMeta(metafile.id);
-
-            expect(meta.bytesWritten).toBe(20);
-        });
-
         it("should reject write operation when range is invalid", async () => {
             expect.assertions(1);
 
@@ -322,27 +295,19 @@ describe(DiskStorage, () => {
             await expect(Promise.all([write, write2])).rejects.toHaveProperty("UploadErrorCode", "FileLocked");
         });
 
-        it("should call onError hook when write operation fails", async () => {
+        it("should not call onError hook when writing to an unknown upload", async () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
 
             storage.onError = onErrorHook;
 
-            // Try to write to a non-existent file (should fail)
-            try {
-                await storage.write({ ...metafile, body: Readable.from("test"), id: "nonexistent", start: 0 });
-            } catch {
-                // Expected to throw
-            }
+            await expect(storage.write({ ...metafile, body: Readable.from("test"), id: "nonexistent", start: 0 })).rejects.toMatchObject({
+                UploadErrorCode: ERRORS.FILE_NOT_FOUND,
+            });
 
-            expect(onErrorHook).toHaveBeenCalledTimes(1);
-            expect(onErrorHook).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: expect.any(String),
-                    statusCode: expect.any(Number),
-                }),
-            );
+            // A missing upload is an answer, not a failure to report.
+            expect(onErrorHook).not.toHaveBeenCalled();
         });
     });
 
@@ -387,26 +352,16 @@ describe(DiskStorage, () => {
             await expect(storage.delete({ id: "notfound" })).rejects.toThrow();
         });
 
-        it("should call onError hook when deleting non-existent files", async () => {
+        it("should not call onError hook when deleting non-existent files", async () => {
             expect.assertions(2);
 
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
 
             storage.onError = onErrorHook;
 
-            try {
-                await storage.delete({ id: "notfound" });
-            } catch {
-                // Expected to throw
-            }
+            await expect(storage.delete({ id: "notfound" })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
 
-            expect(onErrorHook).toHaveBeenCalledTimes(1);
-            expect(onErrorHook).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: expect.any(String),
-                    statusCode: expect.any(Number),
-                }),
-            );
+            expect(onErrorHook).not.toHaveBeenCalled();
         });
 
         it("should delete file and metadata successfully", async () => {
@@ -1356,9 +1311,10 @@ describe(DiskStorage, () => {
             const onErrorHook = vi.fn().mockResolvedValue(undefined);
 
             storage.onError = onErrorHook;
+            vi.spyOn(storage.meta, "get").mockRejectedValueOnce(new Error("EACCES: permission denied"));
 
             try {
-                await storage.getMeta("nonexistent");
+                await storage.getMeta("unreadable");
             } catch {
                 // Expected to throw
             }
@@ -1384,9 +1340,10 @@ describe(DiskStorage, () => {
             });
 
             storage.onError = onErrorHook;
+            vi.spyOn(storage.meta, "get").mockRejectedValueOnce(new Error("EACCES: permission denied"));
 
             try {
-                await storage.getMeta("nonexistent");
+                await storage.getMeta("unreadable");
             } catch {
                 // Expected to throw
             }

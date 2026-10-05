@@ -21,6 +21,12 @@ import type { Part, S3ApiOperations, S3CompatibleFile } from "./s3-api";
 import { MAX_SIGV4_EXPIRES_IN } from "./s3-post-policy";
 import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, rethrowConditionalFailure, withoutParts } from "./s3-utils";
 
+/** CopyObject copies at most 5 GiB. */
+const MAX_COPY_OBJECT_SIZE = 5 * 1024 ** 3;
+
+/** S3 caps an object's user-defined metadata at 2 KiB. */
+const MAX_USER_METADATA_SIZE = 2048;
+
 // Re-exported for existing importers of this module.
 export type { MultipartUpload, Part, S3ApiOperations, S3CallOptions, S3CompatibleFile } from "./s3-api";
 export { buildRangeHeader } from "./s3-utils";
@@ -123,7 +129,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         const enabled = (kind: keyof ConditionalSupport): boolean =>
             !config.clientDirectUpload && (conditional === true || (typeof conditional === "object" && conditional[kind] === true));
 
-        this.conditionalSupport = { copy: enabled("copy"), create: enabled("create"), delete: enabled("delete"), read: enabled("read"), replace: enabled("replace") };
+        this.conditionalSupport = {
+            copy: enabled("copy"),
+            create: enabled("create"),
+            delete: enabled("delete"),
+            read: enabled("read"),
+            replace: enabled("replace"),
+        };
         this.supportsUploadPost = config.uploadPost === true;
 
         this.partSize = typeof config.partSize === "string" ? parseBytes(config.partSize) : config.partSize || PART_SIZE;
@@ -209,6 +221,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             const file = new (this.getFileClass())(processedConfig);
 
             file.name = this.namingFunction(file);
+            this.assertNotMetaKey(file.name);
 
             await this.validate(file);
 
@@ -219,6 +232,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             if (existing !== undefined) {
                 return existing;
+            }
+
+            const metadata = mapValues({ originalName: file.originalName, ...file.metadata }, (value) => encodeURI(String(value)));
+
+            // S3 refuses user metadata over 2 KiB (keys and values, UTF-8); say so instead of a generic create error.
+            if (new TextEncoder().encode(Object.entries(metadata).flat().join("")).byteLength > MAX_USER_METADATA_SIZE) {
+                return throwErrorCode(ERRORS.REQUEST_ENTITY_TOO_LARGE, "The upload's metadata exceeds the 2 KiB S3 allows");
             }
 
             const s3Api = this.getS3Api();
@@ -232,7 +252,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                             Bucket: this.bucket,
                             ContentType: file.contentType,
                             Key: file.name,
-                            Metadata: mapValues({ originalName: file.originalName, ...file.metadata }, (value) => encodeURI(String(value))),
+                            Metadata: metadata,
                         },
                         { signal },
                     ),
@@ -265,7 +285,14 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 (file as TFile & { partSize?: number }).partSize ??= this.partSize;
             }
 
-            await this.saveMeta(file);
+            try {
+                await this.saveMeta(file);
+            } catch (error: unknown) {
+                // Without its record, nothing (purge included) would ever find the multipart upload again.
+                await this.abortMultipartUpload(file).catch(() => undefined);
+
+                throw error;
+            }
 
             file.status = "created";
 
@@ -311,7 +338,11 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /** {@link S3BaseStorage.write} under the upload's lock; `conditional` is a parked conditional upload. */
-    private async writeLocked(part: FilePart | FileQuery | TFile, options: (ConditionalOptions & OperationOptions) | undefined, conditional?: TFile): Promise<TFile> {
+    private async writeLocked(
+        part: FilePart | FileQuery | TFile,
+        options: (ConditionalOptions & OperationOptions) | undefined,
+        conditional?: TFile,
+    ): Promise<TFile> {
         let file: TFile;
 
         if (conditional) {
@@ -754,7 +785,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const ifMatch = options?.ifMatch;
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
+            const { Body, ContentLength, ContentType, ETag, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
@@ -765,8 +796,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     { signal },
                 ),
             ).catch(rethrowConditionalFailure(false));
-
-            await this.checkIfExpired({ expiredAt: Expires } as TFile);
 
             const chunks: Uint8Array[] = [];
 
@@ -803,7 +832,6 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 content: Buffer.concat(chunks),
                 contentType: ContentType as string,
                 ETag,
-                expiredAt: Expires,
                 id,
                 metadata: meta,
                 modifiedAt: LastModified,
@@ -987,7 +1015,10 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         }
     }
 
+    /** Every lookup of an object without upload metadata (exists, delete, copy, move) comes through here. */
     protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        this.assertNotMetaKey(id);
+
         const s3Api = this.getS3Api();
 
         try {
@@ -1003,6 +1034,22 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         }
     }
 
+    /** Also refuses a name {@link S3BaseStorage.create} would refuse, so a replacement fails before it is staged. */
+    public override async validateInit(config: FileInit): Promise<void> {
+        this.assertNotMetaKey(this.nameOf(config));
+
+        await super.validateInit(config);
+    }
+
+    /** The key get and getStream read: never a metadata record, which an id without metadata would name. */
+    protected override async readableName(id: string): Promise<string> {
+        const name = await super.readableName(id);
+
+        this.assertNotMetaKey(name);
+
+        return name;
+    }
+
     /** Asks S3 for the object's ETag: the record's may predate a write by another client. */
     protected override async currentETag(file: TFile, options?: OperationOptions): Promise<string | undefined> {
         return this.storedETag(file.name, options);
@@ -1010,12 +1057,24 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     /**
      * Whether a bucket key is a metadata record: they live next to the objects when the meta
-     * storage uses the bucket, and must not be listed or purged as uploads of their own.
+     * storage uses this bucket, and must not be listed or purged as uploads of their own. With the
+     * metadata stored elsewhere, a key ending in the suffix is an ordinary object.
      */
     protected isMetaKey(key: string): boolean {
         const { prefix, suffix } = this.meta;
 
-        return (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
+        return "bucket" in this.meta && this.meta.bucket === this.bucket && (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
+    }
+
+    /**
+     * Refuses an object key that names a metadata record in this bucket: an upload stored there
+     * would overwrite the record, and a read, copy or delete of it would expose or drop the record.
+     * @throws {UploadError} INVALID_FILE_NAME
+     */
+    protected assertNotMetaKey(key: string): void {
+        if (this.isMetaKey(key)) {
+            throwErrorCode(ERRORS.INVALID_FILE_NAME, `"${key}" is reserved for upload metadata`);
+        }
     }
 
     /**
@@ -1039,33 +1098,74 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Copies `file`'s object to `destination` in the same bucket.
      */
-    protected async copyObject(file: TFile, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<TFile> {
+    protected async copyObject(
+        file: TFile,
+        destination: string,
+        options?: CopyConditionalOptions & OperationOptions & { storageClass?: string },
+    ): Promise<TFile> {
+        this.assertNotMetaKey(destination);
+
         const s3Api = this.getS3Api();
         const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+        const copy = {
+            // S3 doesn't copy the source's ACL: apply the configured one, as `create` does.
+            ...(this.getAcl() !== undefined && { ACL: this.getAcl() }),
+            Bucket: this.bucket,
+            // The source is "bucket/key" with the key URL-encoded.
+            CopySource: `${this.bucket}/${file.name
+                .split("/")
+                .map((segment) => encodeURIComponent(segment))
+                .join("/")}`,
+            // Always the same bucket: a leading "/" in `destination` once re-targeted another one.
+            Key: destination,
+            ...(sourceIfMatch !== undefined && { CopySourceIfMatch: quoteETag(sourceIfMatch) }),
+            ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }),
+            ...(ifNoneMatch !== undefined && { IfNoneMatch: ifNoneMatch }),
+            ...(options?.storageClass && { StorageClass: options.storageClass }),
+        };
 
-        await this.runOperation(options, (signal) =>
-            s3Api.copyObject(
-                {
-                    // S3 doesn't copy the source's ACL: apply the configured one, as `create` does.
-                    ...(this.getAcl() !== undefined && { ACL: this.getAcl() }),
-                    Bucket: this.bucket,
-                    // The source is "bucket/key" with the key URL-encoded.
-                    CopySource: `${this.bucket}/${file.name
-                        .split("/")
-                        .map((segment) => encodeURIComponent(segment))
-                        .join("/")}`,
-                    // Always the same bucket: a leading "/" in `destination` once re-targeted another one.
-                    Key: destination,
-                    ...(sourceIfMatch !== undefined && { CopySourceIfMatch: quoteETag(sourceIfMatch) }),
-                    ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }),
-                    ...(ifNoneMatch !== undefined && { IfNoneMatch: ifNoneMatch }),
-                    ...(options?.storageClass && { StorageClass: options.storageClass }),
-                },
-                { signal },
-            ),
+        await (
+            typeof file.size === "number" && file.size > MAX_COPY_OBJECT_SIZE
+                ? this.copyObjectInParts(file.name, file.size, copy, options)
+                : this.runOperation(options, (signal) => s3Api.copyObject(copy, { signal }))
         ).catch(rethrowConditionalFailure(ifMatch !== undefined));
 
         return { ...file, id: destination, name: destination };
+    }
+
+    /**
+     * CopyObject refuses sources over 5 GiB: copy those part by part (UploadPartCopy) into a
+     * multipart upload, which takes over the source's type and metadata as CopyObject does.
+     */
+    private async copyObjectInParts(name: string, size: number, copy: Parameters<S3ApiOperations["copyObject"]>[0], options?: OperationOptions): Promise<void> {
+        const s3Api = this.getS3Api();
+        const { ACL, Bucket, CopySource, CopySourceIfMatch, IfMatch, IfNoneMatch, Key, StorageClass } = copy;
+        const source = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket, Key: name }, { signal }));
+        const { UploadId } = await this.runOperation(options, (signal) =>
+            s3Api.createMultipartUpload({ ACL, Bucket, ContentType: source.ContentType, Key, Metadata: source.Metadata, StorageClass }, { signal }),
+        );
+        const upload = { Bucket, Key, UploadId };
+        const partSize = Math.max(this.partSize, Math.ceil(size / this.MAX_PARTS));
+        const parts: { ETag: string; PartNumber: number }[] = [];
+
+        try {
+            // ponytail: sequential parts; copy several at once if large copies are too slow.
+            for (let start = 0; start < size; start += partSize) {
+                const PartNumber = parts.length + 1;
+                const CopySourceRange = `bytes=${String(start)}-${String(Math.min(start + partSize, size) - 1)}`;
+                const { ETag } = await this.runOperation(options, (signal) =>
+                    s3Api.uploadPartCopy({ ...upload, CopySource, CopySourceIfMatch, CopySourceRange, PartNumber }, { signal }),
+                );
+
+                parts.push({ ETag, PartNumber });
+            }
+
+            await this.runOperation(options, (signal) => s3Api.completeMultipartUpload({ ...upload, IfMatch, IfNoneMatch, Parts: parts }, { signal }));
+        } catch (error: unknown) {
+            await this.runOperation(undefined, (signal) => s3Api.abortMultipartUpload(upload, { signal })).catch(() => undefined);
+
+            throw error;
+        }
     }
 
     /**

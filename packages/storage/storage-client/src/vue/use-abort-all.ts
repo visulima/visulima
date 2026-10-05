@@ -1,11 +1,9 @@
-import { computed } from "vue";
-
-import { createMultipartAdapter } from "../core/multipart-adapter";
+import { dispatch } from "../core/uploader";
 
 export interface UseAbortAllOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to act on */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: commands reach the existing uploads to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
 }
 
@@ -16,21 +14,15 @@ export interface UseAbortAllReturn {
 
 /**
  * Vue composable to abort all active uploads.
+ * Acts on every upload to `endpoint`, whichever upload hook started it.
  * @param options Configuration options
  * @returns Abort all function
  */
 export const useAbortAll = (options: UseAbortAllOptions): UseAbortAllReturn => {
-    const { endpoint, metadata } = options;
-
-    const adapter = computed(() =>
-        createMultipartAdapter({
-            endpoint,
-            metadata,
-        }),
-    );
+    const { endpoint } = options;
 
     const abortAll = (): void => {
-        adapter.value.abort();
+        dispatch(endpoint, { type: "abortAll" });
     };
 
     return {

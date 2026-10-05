@@ -49,6 +49,7 @@ export type {
     UploadProgressCallback,
 } from "./files";
 export { Files, sync, transfer, UploadControl } from "./files";
+export { parseMetadata as parseTusMetadata } from "./handler/tus/tus-protocol";
 export { waitForStorage } from "./handler/utils/storage-utils";
 // OpenTelemetryMetrics lives on the `@visulima/storage/metrics` sub-path: it statically imports the
 // optional `@opentelemetry/api` peer, which must never be pulled in by the root entry.

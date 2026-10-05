@@ -167,7 +167,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * Probes a previously-issued TUS upload URL. Returns the current server-side
      * offset, or `undefined` if the upload is unusable (gone, or the probe could
      * not reach the server) so the caller can fall through to a fresh POST.
-     * A 423 Locked answer (another request still holds the upload) is re-probed with backoff.
+     * A 423 Locked answer (another request still holds the upload) or a transient 5xx is re-probed
+     * with backoff, per the adapter's retry config.
      */
     const probeExistingUpload = async (uploadUrl: string, signal: AbortSignal): Promise<number | undefined> => {
         for (let lockedAttempts = 0; ; lockedAttempts += 1) {
@@ -180,7 +181,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     return undefined;
                 }
 
-                if (error.status !== 423 || !retry || lockedAttempts >= maxRetries || signal.aborted) {
+                if ((error.status !== 423 && error.status < 500) || !retry || lockedAttempts >= maxRetries || signal.aborted) {
                     throw error;
                 }
             }
@@ -232,7 +233,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      * `terminateOnAbort`) and never persisted. Resolves with the initial offset.
      */
     const startFreshUpload = async (state: TusUploadState, file: File): Promise<number> => {
-        const { initialOffset, uploadUrl } = await requests.create(file, metadata);
+        const { initialOffset, uploadUrl } = await requests.create(file, metadata, state.abortController.signal);
 
         if (state.abortController.signal.aborted) {
             // Don't leave the new upload orphaned on the server.
@@ -258,21 +259,20 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     };
 
     /**
-     * Performs the actual upload of `uploadState`'s file to `uploadState.uploadUrl`.
+     * Performs the actual upload of `state`'s file to `state.uploadUrl`. Takes the state of the
+     * `upload()` call it belongs to: `uploadState` is replaced by any later `upload()` call.
      *
      * Each iteration runs one `next` step before PATCHing: `"sync"` re-reads the
      * server offset via HEAD (after a failed chunk), `"restart"` re-creates the
      * upload via POST (after the server reported it gone).
      */
     /* eslint-disable sonarjs/cognitive-complexity -- sequential chunk/retry/restart state machine */
-    const performUpload = async (file: File, startOffset: number, onUploadUrlChange?: (newUploadUrl: string) => void): Promise<UploadResult> => {
-        // Capture local reference to uploadState at start
-        const state = uploadState;
-
-        if (!state) {
-            throw new Error("Upload state not initialized");
-        }
-
+    const performUpload = async (
+        state: TusUploadState,
+        file: File,
+        startOffset: number,
+        onUploadUrlChange?: (newUploadUrl: string) => void,
+    ): Promise<UploadResult> => {
         const { signal } = state.abortController;
         let currentOffset = startOffset;
         let next: "patch" | "restart" | "sync" = "patch";
@@ -345,6 +345,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                             throw error_;
                         }
 
+                        // eslint-disable-next-line no-param-reassign -- Tracking the shared upload state
                         state.restartedAfterGone = true;
                         next = "restart";
 
@@ -357,6 +358,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                     // Everything else (network errors, 5xx, 423 Locked, ...) is retried with backoff.
                     if (retry && state.retryCount < maxRetries) {
+                        // eslint-disable-next-line no-param-reassign -- Tracking the shared upload state
                         state.retryCount += 1;
                         // eslint-disable-next-line no-await-in-loop -- Sequential retry delay required (exponential backoff)
                         await sleep(1000 * state.retryCount);
@@ -374,6 +376,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     throw error_;
                 }
 
+                // eslint-disable-next-line no-param-reassign -- Tracking the shared upload state
                 state.retryCount = 0; // Reset retry count on successful chunk
             }
 
@@ -485,11 +488,28 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             validateFile(file, restrictions);
             validateMetadataKeys(metadata);
 
+            const initialState: TusUploadState = {
+                abortController: new AbortController(),
+                file,
+                fingerprint: undefined,
+                isPaused: false,
+                offset: 0,
+                pauseWaiters: [],
+                restartedAfterGone: false,
+                retryCount: 0,
+                terminatedUploadUrl: undefined,
+                uploadUrl: undefined,
+            };
+
+            uploadState = initialState;
+
             let resolved = false;
             const originalFinishCallback = finishCallback;
             const originalErrorCallback = errorCallback;
             const originalProgressCallback = progressCallback;
             let timeoutId: NodeJS.Timeout | undefined;
+            // Set when the inactivity timeout fired, so `upload()` rejects with it rather than the abort it causes.
+            let timeoutError: Error | undefined;
 
             const cleanupTimeout = (): void => {
                 if (timeoutId) {
@@ -516,7 +536,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     cleanupTimeout();
                     originalErrorCallback?.(error);
 
-                    if (!uploadState?.uploadUrl) {
+                    if (uploadState === initialState && !initialState.uploadUrl) {
                         uploadState = undefined;
                     }
                 }
@@ -529,15 +549,16 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     return;
                 }
 
-                if (uploadState?.isPaused) {
+                if (initialState.isPaused) {
                     // eslint-disable-next-line @typescript-eslint/no-use-before-define -- armTimeout is defined below; only invoked at runtime
                     armTimeout();
 
                     return;
                 }
 
-                uploadState?.abortController.abort();
-                internalErrorCallback(new Error("Upload timeout"));
+                timeoutError = new Error("Upload timeout");
+                initialState.abortController.abort();
+                internalErrorCallback(timeoutError);
             };
 
             const armTimeout = (): void => {
@@ -559,26 +580,12 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 originalProgressCallback?.(progress, offset);
             };
 
-            uploadState = {
-                abortController: new AbortController(),
-                file,
-                fingerprint: undefined,
-                isPaused: false,
-                offset: 0,
-                pauseWaiters: [],
-                restartedAfterGone: false,
-                retryCount: 0,
-                terminatedUploadUrl: undefined,
-                uploadUrl: undefined,
-            };
-
             // Hoisted so it survives `performUpload`'s finally clearing `uploadState`.
             let resolvedFingerprint: string | undefined;
 
             const uploadPromise = (async (): Promise<UploadResult> => {
                 startCallback?.();
 
-                const initialState = uploadState;
                 const fingerprint = await fingerprintFunction({ endpoint, file, protocol: "tus" });
 
                 resolvedFingerprint = fingerprint;
@@ -645,7 +652,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 control?._updateOffset(initialState.offset);
 
                 // If the server drops the upload mid-way it is re-created; keep the control's snapshot in sync.
-                return performUpload(file, initialState.offset, (newUploadUrl) => {
+                return performUpload(initialState, file, initialState.offset, (newUploadUrl) => {
                     control?._attach(controlBinding, { endpoint, fingerprint, protocol: "tus", uploadUrl: newUploadUrl });
                 });
             })();
@@ -661,7 +668,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                 return result;
             } catch (error_) {
-                const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
+                const uploadError = timeoutError ?? (error_ instanceof Error ? error_ : new Error(String(error_)));
 
                 control?._detach();
                 internalErrorCallback(uploadError);

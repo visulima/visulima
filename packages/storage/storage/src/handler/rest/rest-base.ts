@@ -192,9 +192,10 @@ class RestBase<TFile extends UploadFile> {
         bodyStream: Readable | undefined,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
-        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400.
+        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400. An empty
+        // file is refused as on a plain POST: REST stores no empty uploads.
         if (isChunkedUpload && config.metadata._totalSize === undefined) {
-            throw createHttpError(400, "X-Total-Size is required for chunked uploads");
+            throw createHttpError(400, "X-Total-Size is required for chunked uploads and must be greater than 0");
         }
 
         // Validate total size for chunked uploads
@@ -387,7 +388,7 @@ class RestBase<TFile extends UploadFile> {
             try {
                 completedChunks = await this.storage.withLock(`chunks:${id}`, async () => {
                     const current = await this.storage.getMeta(id);
-                    const merged = trackChunk(getChunks(current), { checksum: chunkChecksum, length: contentLength, offset: chunkOffset });
+                    const merged = trackChunk(getChunks(current), { length: contentLength, offset: chunkOffset });
 
                     await this.storage.update({ id }, { metadata: { ...current.metadata, _chunks: merged } });
 
@@ -419,10 +420,11 @@ class RestBase<TFile extends UploadFile> {
         // The stored status is reconciled with the chunk list under the same lock: each provider
         // write sets it from its own view of the bytes, so concurrent PATCHes would otherwise leave
         // "part" behind on a finished upload (#902), or "completed" on an unfinished one.
-        // An adapter that only appends confirms how much it persisted, which can be less than the
-        // request carried (a GCS resumable upload may keep a shorter range); record only that.
+        // The adapter confirms how much it persisted, which can be less than the request carried: a
+        // GCS resumable upload may keep a shorter range, and a chunk whose body broke off stores only
+        // what arrived (disk). Record only that.
         const confirmedLength =
-            sequentialWrites && typeof written.bytesWritten === "number" && Number.isFinite(written.bytesWritten)
+            typeof written.bytesWritten === "number" && Number.isFinite(written.bytesWritten)
                 ? Math.min(contentLength, Math.max(0, written.bytesWritten - chunkOffset))
                 : contentLength;
 
@@ -436,14 +438,7 @@ class RestBase<TFile extends UploadFile> {
                     this.storage.withLock(`chunks:${id}`, async () => {
                         const current = await this.storage.getMeta(id);
                         const merged =
-                            confirmedLength > 0
-                                ? trackChunk(getChunks(current), {
-                                      // The checksum covers the whole chunk, not a confirmed part of it.
-                                      checksum: confirmedLength === contentLength ? chunkChecksum : undefined,
-                                      length: confirmedLength,
-                                      offset: chunkOffset,
-                                  })
-                                : getChunks(current);
+                            confirmedLength > 0 ? trackChunk(getChunks(current), { length: confirmedLength, offset: chunkOffset }) : getChunks(current);
                         const saved = await this.storage.update(
                             { id },
                             {
@@ -580,7 +575,10 @@ class RestBase<TFile extends UploadFile> {
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                     // Header values must be Latin-1: escape the rest, the value stays valid JSON.
-                    "X-Delete-Errors": toLatin1Safe(JSON.stringify(result.failed), (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`),
+                    "X-Delete-Errors": toLatin1Safe(
+                        JSON.stringify(result.failed),
+                        (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`,
+                    ),
                     "X-Delete-Failed": String(result.failedCount),
                     "X-Delete-Successful": String(result.successfulCount),
                 },

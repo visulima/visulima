@@ -26,6 +26,10 @@ import { buildContentRange, getRangeEnd, retryOptions as baseRetryOptions } from
 
 const validateStatus = (code: number): boolean => (code >= 200 && code < 300) || code === 308 || code === 499;
 
+/** Whether a gaxios error is GCS answering 404. */
+const isNotFound = (error: unknown): boolean =>
+    ((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404;
+
 /**
  * Google cloud storage based backend.
  * @example
@@ -211,7 +215,9 @@ class GCStorage extends BaseStorage<GCSFile> {
             const requestOptions: GaxiosOptions = {
                 // GCS takes string metadata values only; the upload's own metadata (`_chunks`, …) is not.
                 body: JSON.stringify({
-                    metadata: Object.fromEntries(Object.entries(file.metadata).map(([key, value]) => [key, typeof value === "string" ? value : JSON.stringify(value)])),
+                    metadata: Object.fromEntries(
+                        Object.entries(file.metadata).map(([key, value]) => [key, typeof value === "string" ? value : JSON.stringify(value)]),
+                    ),
                 }),
                 headers,
                 method: "POST" as const,
@@ -348,7 +354,12 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             // Sequence the blob delete before the metadata delete so a partial failure leaves a recoverable
             // metadata orphan instead of an unreachable resumable upload that keeps consuming quota.
-            await this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }, options);
+            // A 404 means the object or resumable session is already gone; only the metadata is left.
+            await this.makeRequest({ method: "DELETE", url: file.uri, validateStatus }, options).catch((error: unknown) => {
+                if (!isNotFound(error)) {
+                    throw error;
+                }
+            });
             await this.deleteMeta(file.id);
 
             const deletedFile = { ...file };
@@ -467,20 +478,16 @@ class GCStorage extends BaseStorage<GCSFile> {
         });
     }
 
-    /**
-     * Checks if a file exists by verifying both metadata and the actual GCS object.
-     * Returns true only if both the metadata and the GCS object exist.
-     * @param query File query containing the file ID to check.
-     * @returns Promise resolving to true if both metadata and GCS object exist, false otherwise.
-     */
-
     protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
         try {
-            const { data: object } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string }>({ params: { alt: "json" }, url: this.objectUrl(id) }, options);
+            const { data: object } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string }>(
+                { params: { alt: "json" }, url: this.objectUrl(id) },
+                options,
+            );
 
             return { contentType: object?.contentType, etag: object?.etag, size: Number(object?.size ?? 0) || 0 };
         } catch (error) {
-            if (((error as { status?: number }).status ?? (error as { response?: { status?: number } }).response?.status) === 404) {
+            if (isNotFound(error)) {
                 return undefined;
             }
 
@@ -488,35 +495,13 @@ class GCStorage extends BaseStorage<GCSFile> {
         }
     }
 
+    /**
+     * Whether an upload's object exists: the one its metadata names, or, for an ID without metadata
+     * (a copied object, or one written by other means), the object stored under it. Only a missing
+     * object answers `false`; any other failure throws.
+     */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => {
-            try {
-                // First check if metadata exists
-                const { name } = await this.getMeta(id);
-
-                // Then verify the actual GCS object exists using HEAD request
-                await this.makeRequest(
-                    {
-                        method: "HEAD",
-                        url: this.objectUrl(name),
-                    },
-                    options,
-                );
-
-                return true;
-            } catch (error: unknown) {
-                // Check if it's a 404 error (file not found)
-                const errorWithStatus = error as { response?: { status?: number }; status?: number };
-                const statusCode = errorWithStatus.status || errorWithStatus.response?.status;
-
-                if (statusCode === 404) {
-                    return false;
-                }
-
-                // For metadata errors, also return false
-                return false;
-            }
-        });
+        return this.instrumentOperation("exists", async () => (await this.findStoredObject(await this.storedName(id), options)) !== undefined);
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<GCSFile[]> {

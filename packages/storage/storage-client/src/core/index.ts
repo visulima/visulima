@@ -12,10 +12,12 @@ export {
     buildUrl,
     deleteRequest,
     extractFileMetaFromHeaders,
+    extractHeadMetadataFromHeaders,
     fetchFile,
     fetchHead,
     fetchJson,
     parseApiError,
+    parseReceivedChunks,
     patchChunk,
     putFile,
     resolveHeaders,
@@ -29,12 +31,30 @@ export { RestrictionError, validateFile, validateFiles } from "./restrictions";
 export type { TusAdapter, TusAdapterOptions } from "./tus-adapter";
 export { createTusAdapter } from "./tus-adapter";
 // Shared framework-agnostic types
-export type { FileMeta, HeadersResolver, OnBeforeRequest, RequestContext, UploadMethod, UploadRestrictions, UploadResult } from "./types";
+export type {
+    FileHeadMetadata,
+    FileMeta,
+    HeadersResolver,
+    OnBeforeRequest,
+    ReceivedRange,
+    RequestContext,
+    UploadMethod,
+    UploadRestrictions,
+    UploadResult,
+} from "./types";
 // Resumable upload primitives
 export type { UploadControlAttachMeta, UploadControlBinding, UploadControlSnapshot } from "./upload-control";
 export { UploadControl } from "./upload-control";
 // Export new uploader implementation
-export type { BatchState, UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
-export { createUploader } from "./uploader";
+export type {
+    BatchState,
+    UploaderOptions as CoreUploaderOptions,
+    Uploader,
+    UploaderCommand,
+    UploaderEventHandler,
+    UploaderEventType,
+    UploadItem,
+} from "./uploader";
+export { createUploader, dispatch, subscribe } from "./uploader";
 export type { UrlStorage, UrlStorageEntry } from "./url-storage";
 export { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage } from "./url-storage";

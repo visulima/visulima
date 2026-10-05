@@ -1,8 +1,9 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, readable } from "svelte/store";
+import { derived } from "svelte/store";
 
 import { buildUrl, deleteRequest, storageQueryKeys } from "../core";
+import toReadable from "./to-readable";
 
 export interface CreateDeleteFileOptions {
     /** Base endpoint URL for file operations */
@@ -51,12 +52,11 @@ export const createDeleteFile = (options: CreateDeleteFileOptions): CreateDelete
         };
     });
 
-    const errorStore = derived((mutation.error as Readable<Error | null> | null) ?? readable<Error | null>(), ($error) => $error ?? undefined);
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query mutation type is complex
-        typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
-            ? (mutation.isPending as unknown as Readable<boolean>)
-            : readable(false);
+    const errorStore = derived(
+        toReadable(() => mutation.error),
+        ($error) => $error ?? undefined,
+    );
+    const isLoadingStore: Readable<boolean> = toReadable(() => mutation.isPending);
 
     return {
         deleteFile: mutation.mutateAsync,

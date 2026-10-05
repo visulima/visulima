@@ -82,8 +82,9 @@ export interface UploadOptions<TFile extends UploadFile> {
 
     /**
      * TUS only: honour `X-HTTP-Method-Override`, which the TUS protocol requires a server to
-     * interpret as the request method. The method changes inside the handler, after routing
-     * and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may
+     * interpret as the request method. Only a `POST` may be overridden, to `PATCH` or `DELETE`;
+     * any other override is a 400. The method changes inside the handler, after routing and
+     * middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may
      * DELETE) must also check this header — or set this option to `false`.
      * @default true
      */

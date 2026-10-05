@@ -414,7 +414,7 @@ function UploadStatus({ fileId }: { fileId: string }) {
                     Upload in progress: {data.uploadOffset} / {data.contentLength} bytes
                 </p>
             )}
-            {data.receivedChunks && <p>Received chunks: {data.receivedChunks.length}</p>}
+            {data.receivedChunks && <p>Received ranges: {data.receivedChunks.length}</p>}
         </div>
     );
 }
@@ -610,6 +610,8 @@ function ChunkUploader({ fileId }: { fileId: string }) {
 
 ## Abort Operations
 
+The abort hooks act on the multipart and batch uploads to their `endpoint`, whichever hook or adapter started them, so they can live in a different component from the upload. `abortItem` and `abortBatch` take the item and batch IDs those uploads report (e.g. from `uploadBatch` or a listener); an ID no upload owns is ignored. TUS and chunked REST uploads are not reached; use their own `abort()`. The `metadata` option is still accepted but deprecated and unused.
+
 ### Abort All Uploads
 
 ```tsx
@@ -654,6 +656,8 @@ function AbortItemButton({ itemId }: { itemId: string }) {
 
 ## Retry Operations
 
+The retry hooks act on the multipart and batch uploads to their `endpoint` the same way: they retry the failed item or the failed items of the batch with that ID, and ignore an ID no upload owns.
+
 ### Retry Failed Upload
 
 ```tsx
@@ -683,6 +687,8 @@ function BatchRetryButton({ batchId }: { batchId: string }) {
 ```
 
 ## Event Listeners
+
+Listeners observe every multipart and batch upload to their `endpoint`, whichever hook or adapter started it, so they can live in a different component from the upload. TUS and chunked REST uploads do not emit these events.
 
 ### Batch Event Listeners
 
@@ -734,8 +740,8 @@ import { useRetryListener } from "@visulima/storage-client/react";
 function RetryListener() {
     useRetryListener({
         endpoint: "/api/upload/multipart",
-        onRetry: (itemId) => {
-            console.log("Retrying item:", itemId);
+        onRetry: (item) => {
+            console.log("Retrying item:", item.id);
         },
     });
 
@@ -751,8 +757,8 @@ import { useAllAbortListener } from "@visulima/storage-client/react";
 function AbortListener() {
     useAllAbortListener({
         endpoint: "/api/upload/multipart",
-        onAbortAll: () => {
-            console.log("All uploads aborted");
+        onAbort: (item) => {
+            console.log("Upload aborted:", item.id);
         },
     });
 

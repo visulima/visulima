@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
+import { dispatch } from "../core/uploader";
 
 export interface UseAbortAllOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to act on */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: commands reach the existing uploads to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
 }
 
@@ -16,24 +16,16 @@ export interface UseAbortAllReturn {
 
 /**
  * React hook to abort all active uploads.
+ * Acts on every upload to `endpoint`, whichever upload hook started it.
  * @param options Configuration options
  * @returns Abort all function
  */
 export const useAbortAll = (options: UseAbortAllOptions): UseAbortAllReturn => {
-    const { endpoint, metadata } = options;
-
-    const adapter = useMemo(
-        () =>
-            createMultipartAdapter({
-                endpoint,
-                metadata,
-            }),
-        [endpoint, metadata],
-    );
+    const { endpoint } = options;
 
     const abortAll = useCallback((): void => {
-        adapter.abort();
-    }, [adapter]);
+        dispatch(endpoint, { type: "abortAll" });
+    }, [endpoint]);
 
     return {
         abortAll,

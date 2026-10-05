@@ -168,6 +168,7 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
         // Cleanup on unmount
         onCleanup(() => {
             clearInterval(checkInterval);
+            adapterInstance.abort();
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);
@@ -179,11 +180,8 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
         try {
             return await adapterInstance.upload(file);
         } catch (error_) {
-            const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-            setError(uploadError);
-            onError?.(uploadError);
-            throw uploadError;
+            // Adapter's onError already updated state and invoked callbacks
+            throw error_ instanceof Error ? error_ : new Error(String(error_));
         }
     };
 
@@ -201,12 +199,9 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
         try {
             await adapterInstance.resume();
         } catch (error_) {
-            const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-            setError(uploadError);
+            // Adapter's onError already updated state and invoked callbacks
             setIsUploading(false);
-            onError?.(uploadError);
-            throw uploadError;
+            throw error_ instanceof Error ? error_ : new Error(String(error_));
         }
     };
 

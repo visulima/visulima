@@ -211,6 +211,12 @@ export const pipeWithBackpressure = <TResponse extends ServerResponse>(
             return;
         }
 
+        // The file's headers are set but not sent; left in place they would describe the error body
+        // (a Content-Length the client waits for forever, a Content-Range, the file's ETag).
+        for (const name of ["Content-Disposition", "Content-Encoding", "Content-Length", "Content-Range", "ETag", "Last-Modified"]) {
+            destination.removeHeader(name);
+        }
+
         try {
             await sendError(destination, error);
         } catch {

@@ -18,6 +18,7 @@ import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
+import { WRITE_CLAIM_KEY } from "../meta-storage";
 import { BaseStorage } from "../storage";
 import type { BatchOperationResponse, ConditionalOptions, ConditionalSupport, CopyConditionalOptions, OperationOptions, StoredObject } from "../types";
 import { quoteETag } from "../utils/etag";
@@ -35,6 +36,15 @@ const BLOCK_ID_PREFIX = "visulima-";
 
 /** Largest block Put Block accepts (4000 MiB); a chunk becomes exactly one block. */
 const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
+
+/**
+ * Azure caps a blob's metadata, names and values together, at 8 KiB. Create keeps 1 KiB free for
+ * what an upload adds to its record later (request id, offset, status, write claims).
+ */
+// ponytail: fixed headroom, not the final record; measure that if records grow larger fields.
+const MAX_CREATE_METADATA_SIZE = 7 * 1024;
+
+const metadataSize = (metadata: Record<string, string>): number => Object.entries(metadata).reduce((size, [key, value]) => size + key.length + value.length, 0);
 
 /** Rethrows an Azure `412` (`ConditionNotMet`, `SourceConditionNotMet`) as `ERRORS.PRECONDITION_FAILED`. */
 const rethrowConditionNotMet = (error: unknown): never => {
@@ -219,6 +229,15 @@ class AzureStorage extends BaseStorage {
                 return existing;
             }
 
+            const records = [AzureStorage.blobMetadata(file), ...(this.meta instanceof AzureMetaStorage ? [AzureMetaStorage.toBlobMetadata(file)] : [])];
+
+            if (records.some((record) => metadataSize(record) > MAX_CREATE_METADATA_SIZE)) {
+                return throwErrorCode(
+                    ERRORS.REQUEST_ENTITY_TOO_LARGE,
+                    "azure: the upload's name and metadata exceed what Azure stores with a blob (8 KiB once encoded); send less metadata.",
+                );
+            }
+
             const blobClient = this.containerClient.getBlockBlobClient(this.getFullPath(file.name));
 
             const response = await this.runOperation(options, (signal) =>
@@ -241,7 +260,14 @@ class AzureStorage extends BaseStorage {
             file.uri = response._response.headers.get("location");
             file.bytesWritten = 0;
 
-            await this.saveMeta(file);
+            try {
+                await this.saveMeta(file);
+            } catch (error) {
+                // Without its record the empty blob is unreachable, and a later PUT to the id would conflict with it.
+                await blobClient.deleteIfExists().catch(() => undefined);
+
+                throw error;
+            }
 
             file.status = "created";
 
@@ -548,7 +574,8 @@ class AzureStorage extends BaseStorage {
                 rethrowConditionNotMet,
             );
 
-            const { contentLength, contentType, etag, expiresOn, lastModified, metadata } = response;
+            const { contentLength, contentType, etag, expiresOn, lastModified } = response;
+            const { metadata, name, originalName } = AzureStorage.readBlobMetadata(response.metadata);
             const content = await this.runOperation(options, (signal) => blobClient.downloadToBuffer(0, undefined, { abortSignal: signal, conditions })).catch(
                 rethrowConditionNotMet,
             );
@@ -559,10 +586,10 @@ class AzureStorage extends BaseStorage {
                 ETag: etag,
                 expiredAt: expiresOn,
                 id,
-                metadata: (metadata as Record<string, string>) || {},
+                metadata,
                 modifiedAt: lastModified,
-                name: metadata?.name || id,
-                originalName: metadata?.originalName || "",
+                name: name || id,
+                originalName: originalName || "",
                 size: contentLength as number,
             };
         });
@@ -808,20 +835,44 @@ class AzureStorage extends BaseStorage {
     }
 
     /**
-     * Blob metadata as Azure expects it (string values), shared by create and the final commit.
+     * Blob metadata as Azure expects it, shared by create and the final commit. Values go out as
+     * HTTP headers and names must be C# identifiers, so every value is URI-encoded and the user
+     * metadata, whatever its keys, is one JSON value.
      */
     private static blobMetadata(file: AzureFile): Record<string, string> {
-        const stringifiedMetaValues: Record<string, string> = {};
-
-        for (const [key, value] of Object.entries(file.metadata || {})) {
-            stringifiedMetaValues[key] = JSON.stringify(value);
-        }
+        // The write claim is the upload's bookkeeping while a request writes it, never the file's metadata.
+        const { [WRITE_CLAIM_KEY]: _claim, ...metadata } = file.metadata ?? {};
 
         return {
-            name: file.name,
-            originalName: file.originalName,
-            ...stringifiedMetaValues,
+            metadata: encodeURIComponent(JSON.stringify(metadata)),
+            name: encodeURIComponent(file.name),
+            originalName: encodeURIComponent(file.originalName),
         };
+    }
+
+    /**
+     * Reads {@link AzureStorage.blobMetadata} back. Blobs written before it was encoded keep their
+     * names as-is and the user metadata as one entry per key.
+     */
+    private static readBlobMetadata(stored: Record<string, string> = {}): { metadata: Record<string, unknown>; name?: string; originalName?: string } {
+        // Behind Node's HTTP stack Azure returns metadata names lower-cased.
+        const { metadata, name, originalname: originalName } = Object.fromEntries(Object.entries(stored).map(([key, value]) => [key.toLowerCase(), value]));
+
+        try {
+            const decoded: unknown = metadata === undefined ? undefined : JSON.parse(decodeURIComponent(metadata));
+
+            if (typeof decoded === "object" && decoded !== null && !Array.isArray(decoded)) {
+                return {
+                    metadata: decoded as Record<string, unknown>,
+                    name: name === undefined ? undefined : decodeURIComponent(name),
+                    originalName: originalName === undefined ? undefined : decodeURIComponent(originalName),
+                };
+            }
+        } catch {
+            // Not the encoded format.
+        }
+
+        return { metadata: stored, name, originalName };
     }
 
     /**

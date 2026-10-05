@@ -1,29 +1,25 @@
 import { onCleanup, onMount } from "solid-js";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface CreateBatchFinishListenerOptions {
     endpoint: string;
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     onBatchFinish: (batch: BatchState) => void;
 }
 
 export const createBatchFinishListener = (options: CreateBatchFinishListenerOptions): void => {
-    const { endpoint, metadata, onBatchFinish } = options;
+    const { endpoint, onBatchFinish } = options;
 
     onMount(() => {
-        const adapter = createMultipartAdapter({ endpoint, metadata });
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("itemIds" in itemOrBatch) {
                 onBatchFinish(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("BATCH_FINISH", handler);
-
-        onCleanup(() => {
-            adapter.uploader.off("BATCH_FINISH", handler);
-        });
+        onCleanup(subscribe(endpoint, "BATCH_FINISH", handler));
     });
 };

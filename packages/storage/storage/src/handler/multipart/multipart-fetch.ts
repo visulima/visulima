@@ -1,5 +1,10 @@
-import type { MultipartPart } from "@remix-run/multipart-parser";
-import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser";
+import {
+    MaxFileSizeExceededError,
+    MaxPartsExceededError,
+    MaxTotalSizeExceededError,
+    MultipartParseError,
+    parseMultipartRequest,
+} from "@remix-run/multipart-parser";
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
@@ -7,7 +12,7 @@ import { getIdFromRequestUrl } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
-import MultipartBase from "./multipart-base";
+import MultipartBase, { collectParts, multipartLimits } from "./multipart-base";
 
 const RE_MIME = /^multipart\/.+|application\/x-www-form-urlencoded$/i;
 
@@ -71,26 +76,11 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         }
 
         try {
-            const parts: MultipartPart[] = [];
-
-            // Parse multipart using web API with size limits
-            for await (const part of parseMultipartRequest(request, {
-                maxFileSize: this.maxFileSize,
-                maxHeaderSize: this.maxHeaderSize,
-            })) {
-                parts.push(part);
-            }
-
-            // Find the file part and validate it
-            const filePart = parts.find((part) => part.isFile);
-
-            if (!filePart) {
-                throw createHttpError(400, "No file found in multipart request");
-            }
+            const { filePart, parts } = await collectParts(parseMultipartRequest(request, multipartLimits(this.maxFileSize, this.maxHeaderSize)));
 
             return this.multipartBase.handlePost(filePart, parts, { url: request.url });
         } catch (error) {
-            if (error instanceof MaxFileSizeExceededError) {
+            if (error instanceof MaxFileSizeExceededError || error instanceof MaxTotalSizeExceededError || error instanceof MaxPartsExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
             }
 

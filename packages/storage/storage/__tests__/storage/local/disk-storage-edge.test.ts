@@ -144,6 +144,37 @@ describe("diskStorage edge cases", () => {
             expect(result.bytesWritten).toBe(5);
         });
 
+        it("should credit an aborted checksum-less chunk only with the bytes it delivered", async () => {
+            expect.assertions(3);
+
+            const storage = await createStorage();
+            const file = await create(storage, 10);
+
+            // The last chunk lands first; the upload is then reopened for the missing one.
+            await storage.write(part(file, "56789", { start: 5 }));
+            await storage.update({ id: file.id }, { status: "part" });
+
+            const body = new PassThrough();
+            const controller = new AbortController();
+            const written = storage.write({ ...part(file, ""), body, contentLength: 5, signal: controller.signal, start: 0 } as FilePart);
+
+            body.write("01");
+            await vi.waitFor(async () => {
+                const stored = await readFile(join(directory, file.name));
+
+                if (stored.subarray(0, 2).toString() !== "01") {
+                    throw new Error("not written yet");
+                }
+            });
+            controller.abort();
+
+            const result = await written;
+
+            expect(result.status).toBe("part");
+            expect(result.bytesWritten).toBe(2);
+            await expect(storage.getMeta(file.id)).resolves.toStrictEqual(expect.objectContaining({ bytesWritten: 2, status: "part" }));
+        });
+
         it("should not start a write whose signal is already aborted", async () => {
             expect.assertions(1);
 
@@ -285,6 +316,32 @@ describe("diskStorage edge cases", () => {
         });
     });
 
+    describe("list and exists", () => {
+        it("should list a file whose name merely contains the meta suffix", async () => {
+            expect.assertions(1);
+
+            const storage = await createStorage();
+
+            await writeFile(join(directory, "report.METAL.txt"), "x");
+
+            const listed = await storage.list();
+
+            expect(listed.map(({ id }) => id)).toStrictEqual(["/report.METAL.txt"]);
+        });
+
+        it("should answer exists false only for a missing upload", async () => {
+            expect.assertions(2);
+
+            const storage = await createStorage();
+
+            await expect(storage.exists({ id: "missing" })).resolves.toBe(false);
+
+            vi.spyOn(storage.meta, "get").mockRejectedValueOnce(Object.assign(new Error("EIO: i/o error"), { code: "EIO" }));
+
+            await expect(storage.exists({ id: "missing" })).rejects.toThrow("EIO");
+        });
+    });
+
     it("should use a custom meta storage", async () => {
         expect.assertions(2);
 
@@ -360,6 +417,25 @@ describe(DiskStorageWithChecksum, () => {
 
         await expect(storage.delete({ id: file.id })).rejects.toThrow("EACCES");
         await expect(storage.delete({ id: file.id })).resolves.toStrictEqual(expect.objectContaining({ id: file.id, status: "deleted" }));
+    });
+
+    it("should hash the file in file order when chunks arrive out of order", async () => {
+        expect.assertions(2);
+
+        const storage = new DiskStorageWithChecksum({ directory });
+
+        await waitForStorageReady(storage);
+
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 10 });
+
+        await storage.write({ body: Readable.from([Buffer.from("56789")]), contentLength: 5, id: file.id, start: 5 });
+        await storage.update({ id: file.id }, { status: "part" });
+
+        const done = await storage.write({ body: Readable.from([Buffer.from("01234")]), contentLength: 5, id: file.id, start: 0 });
+
+        await expect(readFile(join(directory, file.name), "utf8")).resolves.toBe("0123456789");
+        // eslint-disable-next-line sonarjs/hashing
+        expect(done.hash).toStrictEqual({ algorithm: "md5", value: createHash("md5").update("0123456789").digest("hex") });
     });
 
     it("should rethrow a failing body and forget the partial hash", async () => {

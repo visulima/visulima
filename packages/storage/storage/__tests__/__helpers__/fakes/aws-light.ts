@@ -100,6 +100,12 @@ export const createAwsLightFake = () => {
                 return bucket.copy(decodeURIComponent(source.slice("uploads/".length)), key) ? xml("<CopyObjectResult/>") : missing();
             }
 
+            const ifMatch = request.headers.get("if-match");
+
+            if (ifMatch !== null && bucket.objects.get(key)?.etag !== ifMatch) {
+                return new Response("<Error><Code>PreconditionFailed</Code></Error>", { status: 412 });
+            }
+
             const object = bucket.put(key, Buffer.from(await request.arrayBuffer()), {
                 contentType: request.headers.get("content-type") ?? undefined,
                 metadata: amzMetadata(request),
@@ -126,6 +132,7 @@ export const createAwsLightFake = () => {
                 ...read.object.metadata,
                 "content-length": String(read.body.byteLength),
                 "content-type": read.object.contentType ?? "binary/octet-stream",
+                etag: read.object.etag,
             },
             status: read.partial ? 206 : 200,
         });

@@ -1,3 +1,5 @@
+import { Readable } from "node:stream";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AwsLightMetaStorage from "../../../src/storage/aws-light/aws-light-meta-storage";
@@ -17,7 +19,7 @@ vi.mock(import("../../../src/storage/aws-light/aws-light-api-adapter"), () => {
 
         public deleteObject = vi.fn().mockResolvedValue(undefined);
 
-        public headObject = vi.fn();
+        public getObject = vi.fn();
 
         public putObject = vi.fn().mockResolvedValue(undefined);
     }
@@ -91,16 +93,16 @@ describe(AwsLightMetaStorage, () => {
             expect(adapterInstance?.putObject).toHaveBeenCalledTimes(1);
         });
 
-        it("should encode metadata correctly", async () => {
-            expect.assertions(1);
+        it("should store the record as the object's body, so its ETag changes with every change", async () => {
+            expect.assertions(2);
 
             await metaStorage.save(metafile.id, metafile);
 
-            // Access the adapter instance through the metaStorage instance
             const adapterInstance = (metaStorage as { adapter?: { putObject?: ReturnType<typeof vi.fn> } }).adapter;
-            const putCall = adapterInstance?.putObject?.mock.calls[0]?.[0];
+            const putCall = adapterInstance?.putObject?.mock.calls[0]?.[0] as { Body: Uint8Array; Metadata?: unknown };
 
-            expect(putCall?.Metadata?.metadata).toBeDefined();
+            expect(JSON.parse(new TextDecoder().decode(putCall.Body))).toMatchObject({ id: metafile.id, metadata: metafile.metadata });
+            expect(putCall.Metadata).toBeUndefined();
         });
     });
 
@@ -108,7 +110,7 @@ describe(AwsLightMetaStorage, () => {
         it("should retrieve metadata from S3", async () => {
             expect.assertions(1);
 
-            const adapterInstance = (metaStorage as { adapter?: { headObject?: ReturnType<typeof vi.fn> } }).adapter;
+            const adapterInstance = (metaStorage as { adapter?: { getObject?: ReturnType<typeof vi.fn> } }).adapter;
 
             const metadata = encodeURIComponent(
                 JSON.stringify({
@@ -119,7 +121,7 @@ describe(AwsLightMetaStorage, () => {
                 }),
             );
 
-            adapterInstance?.headObject?.mockResolvedValueOnce({
+            adapterInstance?.getObject?.mockResolvedValueOnce({
                 Metadata: { metadata },
             });
 
@@ -131,51 +133,60 @@ describe(AwsLightMetaStorage, () => {
         it("should throw error when metadata not found", async () => {
             expect.assertions(1);
 
-            const adapterInstance = (metaStorage as { adapter?: { headObject?: ReturnType<typeof vi.fn> } }).adapter;
+            const adapterInstance = (metaStorage as { adapter?: { getObject?: ReturnType<typeof vi.fn> } }).adapter;
 
-            adapterInstance?.headObject?.mockResolvedValueOnce({
+            adapterInstance?.getObject?.mockResolvedValueOnce({
                 Metadata: {},
             });
 
             await expect(metaStorage.get("non-existent-id")).rejects.toThrow("Metafile non-existent-id not found");
         });
 
-        it("should delete expired metadata", async () => {
+        it("should read a record from the object's body", async () => {
+            expect.assertions(1);
+
+            const adapterInstance = (metaStorage as { adapter?: { getObject?: ReturnType<typeof vi.fn> } }).adapter;
+
+            adapterInstance?.getObject?.mockResolvedValueOnce({ Body: Readable.from([JSON.stringify({ ...metafile, metadata: {} })]) });
+
+            await expect(metaStorage.get(metafile.id)).resolves.toMatchObject({ id: metafile.id, metadata: {} });
+        });
+
+        it("should read empty metadata of a header record as an object, not a string", async () => {
+            expect.assertions(1);
+
+            const adapterInstance = (metaStorage as { adapter?: { getObject?: ReturnType<typeof vi.fn> } }).adapter;
+
+            adapterInstance?.getObject?.mockResolvedValueOnce({ Metadata: { metadata: encodeURIComponent(JSON.stringify({ ...metafile, metadata: "" })) } });
+
+            await expect(metaStorage.get(metafile.id)).resolves.toHaveProperty("metadata", {});
+        });
+
+        it("should not take an HTTP Expires header for the record's expiry", async () => {
             expect.assertions(2);
 
-            const adapterInstance = (metaStorage as { adapter?: { deleteObject?: ReturnType<typeof vi.fn>; headObject?: ReturnType<typeof vi.fn> } }).adapter;
+            const adapterInstance = (metaStorage as { adapter?: { deleteObject?: ReturnType<typeof vi.fn>; getObject?: ReturnType<typeof vi.fn> } }).adapter;
 
-            const expiredDate = new Date(Date.now() - 1000 * 60 * 60); // 1 hour ago
-            const metadata = encodeURIComponent(
-                JSON.stringify({
-                    ...metafile,
-                    bytesWritten: 0,
-                    createdAt: new Date().toISOString(),
-                    status: "created",
-                }),
-            );
-
-            adapterInstance?.headObject?.mockResolvedValueOnce({
-                Expires: expiredDate,
-                Metadata: { metadata },
+            adapterInstance?.getObject?.mockResolvedValueOnce({
+                Body: Readable.from([JSON.stringify(metafile)]),
+                Expires: new Date(Date.now() - 1000 * 60 * 60),
             });
 
-            await expect(metaStorage.get(metafile.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+            await expect(metaStorage.get(metafile.id)).resolves.toHaveProperty("id", metafile.id);
 
-            // The metafile itself, not `<id>.META.META`
-            expect(adapterInstance?.deleteObject).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ Key: `${metafile.id}.META` }));
+            expect(adapterInstance?.deleteObject).not.toHaveBeenCalled();
         });
 
         it("should report a missing metafile as not found and rethrow other failures", async () => {
             expect.assertions(2);
 
-            const adapterInstance = (metaStorage as { adapter?: { headObject?: ReturnType<typeof vi.fn> } }).adapter;
+            const adapterInstance = (metaStorage as { adapter?: { getObject?: ReturnType<typeof vi.fn> } }).adapter;
 
-            adapterInstance?.headObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 404"), { $metadata: { httpStatusCode: 404 } }));
+            adapterInstance?.getObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 404"), { $metadata: { httpStatusCode: 404 } }));
 
             await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
 
-            adapterInstance?.headObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 500"), { $metadata: { httpStatusCode: 500 } }));
+            adapterInstance?.getObject?.mockRejectedValueOnce(Object.assign(new Error("Failed to head object: 500"), { $metadata: { httpStatusCode: 500 } }));
 
             await expect(metaStorage.get(metafile.id)).rejects.toThrow("Failed to head object: 500");
         });
@@ -205,14 +216,14 @@ describe(AwsLightMetaStorage, () => {
 
     describe("conditional saves", () => {
         const adapterOf = (storage: AwsLightMetaStorage) =>
-            (storage as unknown as { adapter: { headObject: ReturnType<typeof vi.fn>; putObject: ReturnType<typeof vi.fn> } }).adapter;
+            (storage as unknown as { adapter: { getObject: ReturnType<typeof vi.fn>; putObject: ReturnType<typeof vi.fn> } }).adapter;
 
         it("should attach the ETag read by get() and write with IfMatch", async () => {
             expect.assertions(3);
 
             const adapter = adapterOf(metaStorage);
 
-            adapter.headObject.mockResolvedValueOnce({ ETag: "v1", Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
+            adapter.getObject.mockResolvedValueOnce({ ETag: "v1", Metadata: { metadata: encodeURIComponent(JSON.stringify(metafile)) } });
             adapter.putObject.mockResolvedValueOnce({ ETag: "v2" });
 
             const file = await metaStorage.get(metafile.id);

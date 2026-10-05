@@ -33,11 +33,8 @@ describe("fetch RestFetch chunked uploads completed over an append-only adapter"
             }),
         );
         const location = new URL(created.headers.get("location") as string, endpoint).href;
-        const allChunks = [
-            { length: 10, offset: 0 },
-            { length: 10, offset: 10 },
-            { length: 10, offset: 20 },
-        ];
+        // The three chunks, merged into one range.
+        const allChunks = [{ length: total, offset: 0 }];
 
         await patch(rest, location, 0, bytes.slice(0, 10));
         await patch(rest, location, 10, bytes.slice(10, 20));

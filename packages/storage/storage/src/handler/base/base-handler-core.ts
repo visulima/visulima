@@ -7,6 +7,7 @@ import { paginate } from "@visulima/pagination";
 import createHttpError, { isHttpError } from "http-errors";
 import mime from "mime";
 
+import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
@@ -311,7 +312,9 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         const query = Object.fromEntries(url.searchParams.entries());
         const relative = format({ pathname: `${pathname.replace(/\/$/, "")}/${file.id}`, query });
 
-        return `${this.locationOrigin(requestUrl, request)}${relative}.${mime.getExtension(file.contentType)}`;
+        const extension = mime.getExtension(file.contentType);
+
+        return `${this.locationOrigin(requestUrl, request)}${relative}${extension ? `.${extension}` : ""}`;
     }
 
     /**
@@ -390,8 +393,13 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
             };
         }
 
-        // Call onError hook - user can modify the error object in place
-        await this.storage.onError(httpError);
+        // Call onError hook - user can modify the error object in place. A throwing hook must not
+        // leave the request unanswered, so the error is still sent.
+        try {
+            await this.storage.onError(httpError);
+        } catch (hookError: unknown) {
+            this.logger?.error("onError hook failed: %O", hookError);
+        }
 
         // An unexpected error's message carries internals (paths, SDK text); onError has seen it, the client doesn't.
         if (unexpected && (httpError.statusCode ?? 500) >= 500 && httpError.body === undefined) {
@@ -535,10 +543,13 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         const { ETag: _etag, ...stateHeaders } = fileStateHeaders(file);
+        // The write claim's token lets its holder release it; it is no client's business.
+        const { [WRITE_CLAIM_KEY]: _claim, ...metadata } = file.metadata ?? {};
+        const data = file.metadata === undefined ? file : { ...file, metadata };
 
         return {
             ...file,
-            content: JSON.stringify(file),
+            content: JSON.stringify(data),
             headers: { "Content-Type": JSON_CONTENT_TYPE, ...stateHeaders },
             statusCode: 200,
         };

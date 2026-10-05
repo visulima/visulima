@@ -1,29 +1,26 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface CreateBatchProgressListenerOptions {
     endpoint: string;
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     onBatchProgress: (batch: BatchState) => void;
 }
 
 export const createBatchProgressListener = (options: CreateBatchProgressListenerOptions): void => {
-    const { endpoint, metadata, onBatchProgress } = options;
+    const { endpoint, onBatchProgress } = options;
 
     onMount(() => {
-        const adapter = createMultipartAdapter({ endpoint, metadata });
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("itemIds" in itemOrBatch) {
                 onBatchProgress(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("BATCH_PROGRESS", handler);
-
-        onDestroy(() => {
-            adapter.uploader.off("BATCH_PROGRESS", handler);
-        });
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return subscribe(endpoint, "BATCH_PROGRESS", handler);
     });
 };

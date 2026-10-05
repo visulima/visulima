@@ -34,7 +34,7 @@ describe("s3Storage get", () => {
             Body: webStream("234567") as never,
             ContentLength: 6,
             ContentType: "text/plain",
-            ETag: "\"e\"",
+            ETag: '"e"',
             Metadata: { originalName: "report.txt", owner: "u1" },
         });
 
@@ -45,17 +45,37 @@ describe("s3Storage get", () => {
         expect(file).toStrictEqual(expect.objectContaining({ metadata: { owner: "u1" }, originalName: "report.txt" }));
     });
 
-    it("should answer GONE for an object past its Expires date", async () => {
-        expect.assertions(1);
+    it("should serve an object whose HTTP Expires caching header is past: it is not the upload's expiry", async () => {
+        expect.assertions(3);
 
         s3Mock.on(GetObjectCommand).resolves({ Body: webStream("x") as never, Expires: new Date(Date.now() - 1000) });
 
-        await expect(createStorage().get({ id: "old" })).rejects.toStrictEqual(expect.objectContaining({ UploadErrorCode: ERRORS.GONE }));
+        const storage = createStorage();
+        const file = await storage.get({ id: "old" });
+        const { headers } = await storage.getStream({ id: "old" });
+
+        expect(file.content.toString()).toBe("x");
+        expect(file.expiredAt).toBeUndefined();
+        expect(headers).not.toHaveProperty("X-Upload-Expires");
+    });
+
+    it("should answer GONE for an upload whose record has expired", async () => {
+        expect.assertions(1);
+
+        const metaStorage = new MemoryMetaStorage();
+
+        await metaStorage.save("old", { expiredAt: Date.now() - 1000, id: "old", metadata: {}, name: "old" } as never);
+
+        await expect(new S3Storage({ bucket: "bucket", metaStorage, region: "us-east-1" }).get({ id: "old" })).rejects.toStrictEqual(
+            expect.objectContaining({ UploadErrorCode: ERRORS.GONE }),
+        );
     });
 
     it("should refuse a part size below the S3 minimum", () => {
         expect.assertions(1);
 
-        expect(() => new S3Storage({ bucket: "bucket", metaStorage: new MemoryMetaStorage(), partSize: "1MB", region: "us-east-1" })).toThrow("Minimum allowed partSize value is 5MB");
+        expect(() => new S3Storage({ bucket: "bucket", metaStorage: new MemoryMetaStorage(), partSize: "1MB", region: "us-east-1" })).toThrow(
+            "Minimum allowed partSize value is 5MB",
+        );
     });
 });

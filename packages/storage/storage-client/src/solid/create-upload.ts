@@ -1,5 +1,5 @@
 import type { Accessor } from "solid-js";
-import { createMemo } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 
 import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "../react/types";
 import type { CreateChunkedRestUploadOptions } from "./create-chunked-rest-upload";
@@ -190,6 +190,9 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
     const multipartUpload = multipartOptions ? createMultipartUpload(multipartOptions) : undefined;
     const tusUpload = tusOptions ? createTusUpload(tusOptions) : undefined;
 
+    // The method of the latest upload, so state follows it rather than a previous upload's result.
+    const [lastMethod, setLastMethod] = createSignal<UploadMethod | undefined>(undefined);
+
     const determineMethod = (file: File): UploadMethod => {
         if (detectedMethod() !== "auto") {
             return detectedMethod();
@@ -221,6 +224,8 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
 
     const upload = async (file: File): Promise<UploadResult> => {
         const selectedMethod = determineMethod(file);
+
+        setLastMethod(selectedMethod);
 
         if (selectedMethod === "tus") {
             if (!tusUpload) {
@@ -255,6 +260,7 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
         tusUpload?.reset();
         chunkedRestUpload?.reset();
         multipartUpload?.reset();
+        setLastMethod(undefined);
     };
 
     // Determine current method based on which primitive is active
@@ -263,19 +269,10 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
             return detectedMethod();
         }
 
-        // If TUS is uploading or has result, it's being used
-        if (tusUpload && (tusUpload.isUploading() || tusUpload.result())) {
-            return "tus";
-        }
+        const latestMethod = lastMethod();
 
-        // If chunked REST is uploading or has result, it's being used
-        if (chunkedRestUpload && (chunkedRestUpload.isUploading() || chunkedRestUpload.result())) {
-            return "chunked-rest";
-        }
-
-        // If multipart is uploading or has result, it's being used
-        if (multipartUpload && (multipartUpload.isUploading() || multipartUpload.result())) {
-            return "multipart";
+        if (latestMethod) {
+            return latestMethod;
         }
 
         // Default based on available endpoints (priority: chunked-rest > tus > multipart)

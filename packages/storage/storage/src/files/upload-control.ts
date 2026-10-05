@@ -91,7 +91,7 @@ export class UploadControl {
     }
 
     public abort(reason?: unknown): void {
-        if (this.internalState !== "completed" && this.internalState !== "aborted") {
+        if (this.internalState !== "completed" && this.internalState !== "aborted" && this.internalState !== "failed") {
             this.internalState = "aborted";
             this.controller.abort(reason);
             this.releaseHeldChunks();
@@ -180,6 +180,17 @@ export class UploadControl {
     public _complete(): void {
         if (this.internalState !== "aborted") {
             this.internalState = "completed";
+        }
+    }
+
+    /**
+     * Mark the upload failed for a reason other than an abort, so `pause()` and `resume()` no longer
+     * act on it. `toJSON()` still describes what was stored, for a new control to resume from.
+     * @internal
+     */
+    public _fail(): void {
+        if (this.internalState !== "aborted" && this.internalState !== "completed") {
+            this.internalState = "failed";
         }
     }
 }

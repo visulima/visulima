@@ -299,8 +299,12 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 const file = await this.meta.get(id);
 
                 return this.store.has(file.name);
-            } catch {
-                return false;
+            } catch (error: unknown) {
+                if (isMetaNotFound(error)) {
+                    return false;
+                }
+
+                throw error;
             }
         });
     }
@@ -360,9 +364,11 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 return this.getMeta(source);
             }
 
+            const { name } = await this.getMeta(source);
             const moved = await this.copy(source, destination);
 
-            await this.delete({ id: source });
+            // Moved onto the name its bytes are already stored under: only the source record goes.
+            await (name === destination ? this.deleteMeta(source) : this.delete({ id: source }));
 
             return moved;
         });
@@ -379,6 +385,12 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             updateSize(file, part.size);
         }
 
+        // Like DiskStorage: an expired upload takes no more bytes. Awaited before the stored bytes are
+        // read, so no other write lands between that read and the store update.
+        if (!conditional) {
+            await this.checkIfExpired(file);
+        }
+
         const { start } = part;
         const existing = this.store.get(file.name)?.bytes;
         // Rewriting a finished file from byte 0 (e.g. REST PUT) replaces it wholesale. Chunked
@@ -386,6 +398,11 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
         // so offset 0 can still be a missing chunk of an unfinished upload.
         const isOverwrite = conditional !== undefined || (start === 0 && file.status === "completed" && file.metadata?._chunkedUpload !== true);
         const base = isOverwrite || !existing ? Buffer.alloc(0) : existing;
+
+        // A part may not run past the upload's size.
+        if (!isOverwrite && file.size !== undefined && start + incoming.length > file.size) {
+            return throwErrorCode(ERRORS.FILE_CONFLICT);
+        }
 
         // Write at `start`, growing the buffer as needed and leaving bytes outside
         // `[start, start + incoming.length)` untouched, so out-of-order chunks don't clobber each other.

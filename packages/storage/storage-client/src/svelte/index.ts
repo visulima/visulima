@@ -1,3 +1,4 @@
+export type { FileHeadMetadata } from "../core";
 // Abort stores
 export type { CreateAbortAllOptions, CreateAbortAllReturn } from "./create-abort-all";
 export { createAbortAll } from "./create-abort-all";
@@ -42,7 +43,7 @@ export type { CreateGetFileListOptions, CreateGetFileListReturn, FileListRespons
 export { createGetFileList } from "./create-get-file-list";
 export type { CreateGetFileMetaOptions, CreateGetFileMetaReturn } from "./create-get-file-meta";
 export { createGetFileMeta } from "./create-get-file-meta";
-export type { CreateHeadFileOptions, CreateHeadFileReturn, FileHeadMetadata } from "./create-head-file";
+export type { CreateHeadFileOptions, CreateHeadFileReturn } from "./create-head-file";
 export { createHeadFile } from "./create-head-file";
 export type { CreateMultipartUploadOptions, CreateMultipartUploadReturn } from "./create-multipart-upload";
 export { createMultipartUpload } from "./create-multipart-upload";

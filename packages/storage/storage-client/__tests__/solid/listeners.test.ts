@@ -35,21 +35,21 @@ const createStubUploader = (): {
 type StubUploader = ReturnType<typeof createStubUploader>;
 const stubRef: { current: StubUploader | undefined } = { current: undefined };
 
-vi.mock(import("../../src/core/multipart-adapter"), () => {
+// The hooks subscribe through the per-endpoint channel; stub `subscribe` so each hook's
+// subscription lands on its own stub uploader.
+vi.mock(import("../../src/core/uploader"), async (importOriginal) => {
+    const actual = await importOriginal();
+
     return {
-        createMultipartAdapter: vi.fn(() => {
+        ...actual,
+        subscribe: vi.fn((_endpoint: string, event: UploaderEventType, handler: UploaderEventHandler) => {
             const stub = createStubUploader();
 
             stubRef.current = stub;
+            stub.on(event, handler);
 
-            return {
-                abort: vi.fn(),
-                abortBatch: vi.fn(),
-                abortItem: vi.fn(),
-                clear: vi.fn(),
-                upload: vi.fn(),
-                uploadBatch: vi.fn(),
-                uploader: stub,
+            return () => {
+                stub.off(event, handler);
             };
         }),
     };

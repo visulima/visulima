@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createUploader } from "../../src/core/uploader";
+import { createUploader, dispatch } from "../../src/core/uploader";
 
 // Mock XMLHttpRequest
 
@@ -237,5 +237,63 @@ describe("uploader Abort Operations", () => {
 
         expect(onBatchCancelled).toHaveBeenCalledTimes(1);
         expect(itemIds).toHaveLength(3);
+    });
+
+    it("should not send an item aborted while its headers resolve", async () => {
+        expect.assertions(3);
+
+        const instances: MockXMLHttpRequest[] = [];
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = class extends MockXMLHttpRequest {
+            public constructor() {
+                super();
+                instances.push(this);
+            }
+        };
+
+        const uploader = createUploader({
+            endpoint: "/api/upload",
+        });
+
+        const id = uploader.add(new File(["test"], "test.jpg", { type: "image/jpeg" }));
+
+        uploader.abortItem(id);
+
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 10);
+        });
+
+        expect(instances).toHaveLength(1);
+        expect(instances[0]?.send).not.toHaveBeenCalled();
+        expect(uploader.getItem(id)?.status).toBe("aborted");
+    });
+
+    it("should route a dispatched command only to the uploader that owns the id", () => {
+        expect.assertions(3);
+
+        const first = createUploader({ endpoint: "/api/upload" });
+        const second = createUploader({ endpoint: "/api/upload" });
+        const firstId = first.add(new File(["test"], "a.jpg"));
+        const secondId = second.add(new File(["test"], "b.jpg"));
+
+        dispatch("/api/upload", { id: firstId, type: "abortItem" });
+
+        expect(first.getItem(firstId)?.status).toBe("aborted");
+        expect(second.getItem(secondId)?.status).toBe("uploading");
+
+        first.clear();
+        second.clear();
+
+        const third = createUploader({ endpoint: "/api/upload" });
+        const thirdId = third.add(new File(["test"], "c.jpg"));
+        const abort = vi.spyOn(first, "abort");
+
+        dispatch("/api/upload", { type: "abortAll" });
+
+        // A cleared uploader has left the channel; the live one still receives commands.
+        expect([abort.mock.calls.length, third.getItem(thirdId)?.status]).toStrictEqual([0, "aborted"]);
+
+        third.clear();
     });
 });

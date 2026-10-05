@@ -1,4 +1,5 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { render, renderHook, screen, waitFor } from "@testing-library/react";
+import { createElement } from "react";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { usePasteUpload } from "../../src/react/use-paste-upload";
@@ -158,5 +159,23 @@ describe(usePasteUpload, () => {
         await waitFor(() => {
             expect(result.current.pastedFiles).toStrictEqual([]);
         });
+    });
+    it("should handle a paste inside the element once", () => {
+        expect.assertions(1);
+
+        const onFilesPasted = vi.fn();
+        const PasteTarget = (): React.JSX.Element => createElement("div", { "data-testid": "target", onPaste: usePasteUpload({ onFilesPasted }).handlePaste });
+
+        render(createElement(PasteTarget));
+
+        const pasteEvent = new ClipboardEvent("paste", { bubbles: true, cancelable: true });
+
+        Object.defineProperty(pasteEvent, "clipboardData", {
+            value: { items: [{ getAsFile: () => new File(["test"], "test.jpg"), kind: "file" }] },
+        });
+
+        screen.getByTestId("target").dispatchEvent(pasteEvent);
+
+        expect(onFilesPasted).toHaveBeenCalledTimes(1);
     });
 });

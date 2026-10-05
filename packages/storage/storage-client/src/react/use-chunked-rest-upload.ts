@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ChecksumAlgorithm } from "../core/checksum";
+import type { ChunkedRestAdapter } from "../core/chunked-rest-adapter";
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
 import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
@@ -207,8 +208,20 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         };
     }, [adapterInstance]);
 
+    // The adapter running the latest upload: options re-creating the adapter must not abort it, unmounting must.
+    const activeAdapterRef = useRef<ChunkedRestAdapter | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            activeAdapterRef.current?.abort();
+        },
+        [],
+    );
+
     const upload = useCallback(
         async (file: File): Promise<UploadResult> => {
+            activeAdapterRef.current = adapterInstance;
+
             try {
                 return await adapterInstance.upload(file);
             } catch (error_) {
@@ -229,6 +242,8 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         setIsPaused(false);
         setIsUploading(true);
         callbacksRef.current.onResume?.();
+
+        activeAdapterRef.current = adapterInstance;
 
         try {
             await adapterInstance.resume();

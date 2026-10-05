@@ -1,12 +1,12 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface UseRetryListenerOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to observe */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     /** Callback when an item is retried */
     onRetry: (item: UploadItem) => void;
@@ -18,14 +18,9 @@ export interface UseRetryListenerOptions {
  * @param options Listener configuration options
  */
 export const useRetryListener = (options: UseRetryListenerOptions): void => {
-    const { endpoint, metadata, onRetry } = options;
+    const { endpoint, onRetry } = options;
 
     onMounted(() => {
-        const adapter = createMultipartAdapter({
-            endpoint,
-            metadata,
-        });
-
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             // Only trigger retry callback if item has been retried
             if ("file" in itemOrBatch && itemOrBatch.retryCount && itemOrBatch.retryCount > 0) {
@@ -33,10 +28,6 @@ export const useRetryListener = (options: UseRetryListenerOptions): void => {
             }
         };
 
-        adapter.uploader.on("ITEM_START", handler);
-
-        onBeforeUnmount(() => {
-            adapter.uploader.off("ITEM_START", handler);
-        });
+        onBeforeUnmount(subscribe(endpoint, "ITEM_START", handler));
     });
 };

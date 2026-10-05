@@ -1,4 +1,4 @@
-import type { FileMeta, HeadersResolver, OnBeforeRequest } from "./types";
+import type { FileHeadMetadata, FileMeta, HeadersResolver, OnBeforeRequest, ReceivedRange } from "./types";
 
 /**
  * Error response from the API
@@ -139,6 +139,75 @@ export const extractFileMetaFromHeaders = (id: string, headers: Headers): FileMe
         if (!Number.isNaN(date.getTime())) {
             fileMeta.createdAt = date.toISOString();
         }
+    }
+
+    return fileMeta;
+};
+
+/**
+ * Parses `X-Received-Chunks`, or `undefined` when it is malformed.
+ */
+export const parseReceivedChunks = (header: string): ReceivedRange[] | undefined => {
+    try {
+        const parsed: unknown = JSON.parse(header);
+
+        return Array.isArray(parsed) ? (parsed as ReceivedRange[]) : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Extracts the metadata a `HEAD` response carries, for the `useHeadFile` / `createHeadFile` hooks.
+ */
+export const extractHeadMetadataFromHeaders = (headers: Headers): FileHeadMetadata => {
+    const contentLength = headers.get("Content-Length");
+    const contentType = headers.get("Content-Type");
+    const etag = headers.get("ETag");
+    const lastModified = headers.get("Last-Modified");
+    const uploadExpires = headers.get("X-Upload-Expires");
+    const uploadOffset = headers.get("X-Upload-Offset");
+    const uploadComplete = headers.get("X-Upload-Complete");
+    const chunkedUpload = headers.get("X-Chunked-Upload");
+    const receivedChunks = headers.get("X-Received-Chunks");
+    const fileMeta: FileHeadMetadata = {};
+
+    if (contentLength) {
+        fileMeta.contentLength = Number.parseInt(contentLength, 10);
+    }
+
+    if (contentType) {
+        fileMeta.contentType = contentType;
+    }
+
+    if (etag) {
+        fileMeta.etag = etag;
+    }
+
+    if (lastModified) {
+        fileMeta.lastModified = lastModified;
+    }
+
+    if (uploadExpires) {
+        fileMeta.uploadExpires = uploadExpires;
+    }
+
+    if (uploadOffset) {
+        fileMeta.uploadOffset = Number.parseInt(uploadOffset, 10);
+    }
+
+    if (uploadComplete) {
+        fileMeta.uploadComplete = uploadComplete === "true";
+    }
+
+    if (chunkedUpload) {
+        fileMeta.chunkedUpload = chunkedUpload === "true";
+    }
+
+    const ranges = receivedChunks ? parseReceivedChunks(receivedChunks) : undefined;
+
+    if (ranges) {
+        fileMeta.receivedChunks = ranges;
     }
 
     return fileMeta;

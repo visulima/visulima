@@ -36,6 +36,39 @@ export interface FileMeta {
 }
 
 /**
+ * A byte range of a chunked upload the server holds, as `X-Received-Chunks` lists it.
+ * Contiguous chunks are merged into one range.
+ */
+export interface ReceivedRange {
+    length: number;
+    offset: number;
+}
+
+/**
+ * File metadata read from a `HEAD` response.
+ */
+export interface FileHeadMetadata {
+    /** Whether this is a chunked upload session */
+    chunkedUpload?: boolean;
+    /** Content length in bytes */
+    contentLength?: number;
+    /** Content type */
+    contentType?: string;
+    /** Entity tag for caching */
+    etag?: string;
+    /** Last modified date */
+    lastModified?: string;
+    /** Byte ranges the server holds (chunked uploads) */
+    receivedChunks?: ReceivedRange[];
+    /** Whether upload is complete (chunked uploads) */
+    uploadComplete?: boolean;
+    /** Upload expiration date */
+    uploadExpires?: string;
+    /** Upload offset for chunked uploads */
+    uploadOffset?: number;
+}
+
+/**
  * Result returned after a successful file upload.
  * Extends FileMeta with additional client-side fields.
  */

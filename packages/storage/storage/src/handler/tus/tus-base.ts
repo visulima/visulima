@@ -89,7 +89,7 @@ export interface TusBaseConfig<TFile extends UploadFile> {
  * @template TFile The file type used by this handler.
  */
 export class TusBase<TFile extends UploadFile> {
-    /** Uploads with a PATCH in progress in this process; a concurrent PATCH gets 423 Locked. */
+    /** Uploads with a PATCH or DELETE in progress in this process; a concurrent one gets 423 Locked. */
     private readonly patchesInFlight = new Set<string>();
 
     public constructor(private readonly config: TusBaseConfig<TFile>) {}
@@ -205,26 +205,7 @@ export class TusBase<TFile extends UploadFile> {
             throw createHttpError(400, "Invalid Upload-Offset header");
         }
 
-        // A second PATCH racing the first would pass the offset check below before either writes.
-        if (this.patchesInFlight.has(id)) {
-            throw createHttpError(423, "The upload is locked by another request");
-        }
-
-        this.patchesInFlight.add(id);
-
-        try {
-            // Other processes sharing the meta store: claimed before the offset is read, so a PATCH
-            // racing this one from another process gets 423 instead of passing the same offset check.
-            const release = await this.storage.claimWrite?.(id);
-
-            try {
-                return await this.writeChunk(request, id, Number(offsetHeader));
-            } finally {
-                await release?.();
-            }
-        } finally {
-            this.patchesInFlight.delete(id);
-        }
+        return this.withWriteLock(id, async () => this.writeChunk(request, id, Number(offsetHeader)));
     }
 
     /**
@@ -293,21 +274,53 @@ export class TusBase<TFile extends UploadFile> {
 
         const id = request.resolveId();
 
-        // Only uploads: an id without upload metadata may name an object the route never created.
-        // The metadata is read anyway, for the status of the upload.
-        const existing = await this.storage.getMeta(id);
+        // Locked like a PATCH: deleting under an in-flight PATCH would let its write recreate the upload.
+        return this.withWriteLock(id, async () => {
+            // Only uploads: an id without upload metadata may name an object the route never created.
+            // The metadata is read anyway, for the status of the upload.
+            const existing = await this.storage.getMeta(id);
 
-        if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
-            throw createHttpError(400, "Termination of finished uploads is disabled");
+            if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
+                throw createHttpError(400, "Termination of finished uploads is disabled");
+            }
+
+            const file = await this.storage.delete({ id });
+
+            if (file.status === undefined) {
+                throw createHttpError(404, "File not found");
+            }
+
+            return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
+        });
+    }
+
+    /**
+     * Runs a write (PATCH or DELETE) while holding the upload, so a second one racing it gets 423
+     * instead of passing checks made before either writes.
+     * @param id Upload ID
+     * @param write The write
+     * @returns The write's response
+     */
+    private async withWriteLock(id: string, write: () => Promise<ResponseFile<TFile>>): Promise<ResponseFile<TFile>> {
+        if (this.patchesInFlight.has(id)) {
+            throw createHttpError(423, "The upload is locked by another request");
         }
 
-        const file = await this.storage.delete({ id });
+        this.patchesInFlight.add(id);
 
-        if (file.status === undefined) {
-            throw createHttpError(404, "File not found");
+        try {
+            // Other processes sharing the meta store: claimed before the upload is read, so a write
+            // racing this one from another process gets 423 too.
+            const release = await this.storage.claimWrite?.(id);
+
+            try {
+                return await write();
+            } finally {
+                await release?.();
+            }
+        } finally {
+            this.patchesInFlight.delete(id);
         }
-
-        return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
     }
 
     /**
@@ -363,17 +376,22 @@ export class TusBase<TFile extends UploadFile> {
         const contentLength = TusBase.contentLength(request);
 
         const hasUpload = TusBase.isOffsetOctetStream(request);
+        const size = init.size === undefined ? undefined : Number(init.size);
 
         if (hasUpload) {
-            this.assertWithinLength(0, contentLength, init.size === undefined ? undefined : Number(init.size));
+            this.assertWithinLength(0, contentLength, size);
         }
+
+        const writesData = hasUpload && contentLength !== undefined && contentLength > 0;
+        // Verified like a PATCH, and before the upload exists, so a mismatch leaves nothing behind.
+        const { body, native } = writesData ? await this.prepareChecksum(request, contentLength, size) : { body: undefined, native: {} };
 
         let file = await this.storage.create(init);
 
-        if (hasUpload && contentLength !== undefined && contentLength > 0) {
+        if (writesData) {
             this.assertResumableWrite(file, 0, contentLength, undefined);
 
-            file = await this.storage.write({ ...file, body: request.body, contentLength, start: 0 });
+            file = await this.storage.write({ ...file, body, ...native, contentLength, start: 0 });
         }
 
         file = TusBase.holdPartialUpload(file);

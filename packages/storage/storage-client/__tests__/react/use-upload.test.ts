@@ -3,6 +3,7 @@ import { waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useUpload } from "../../src/react/use-upload";
+import { createHangingPatchFetch } from "../upload-mocks";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
@@ -264,5 +265,61 @@ describe(useUpload, () => {
         expect(result.current.progress).toBe(0);
         expect(result.current.error).toBeUndefined();
         expect(result.current.result).toBeUndefined();
+    });
+    it("should report the method of the latest upload in auto mode", async () => {
+        expect.hasAssertions();
+
+        const chunkedFetch = createHangingPatchFetch();
+        const tusFile = new File(["large file"], "large.txt");
+
+        globalThis.fetch = vi.fn(async (url: string, init?: RequestInit) => {
+            if (!url.startsWith("https://api.example.com/tus")) {
+                return chunkedFetch(url, init);
+            }
+
+            if (init?.method === "POST") {
+                return { headers: new Headers({ Location: "https://api.example.com/tus/file-1" }), ok: true, status: 201 };
+            }
+
+            return { headers: new Headers({ "Upload-Offset": String(tusFile.size) }), ok: true, status: init?.method === "PATCH" ? 204 : 200 };
+        }) as unknown as typeof fetch;
+
+        const { result } = renderHookWithQueryClient(
+            () =>
+                useUpload({
+                    endpointChunkedRest: "https://api.example.com/chunked",
+                    endpointTus: "https://api.example.com/tus",
+                    tusThreshold: 5,
+                }),
+            { queryClient },
+        );
+
+        await result.current.upload(tusFile);
+
+        await waitFor(() => {
+            expect(result.current.result).toBeDefined();
+        });
+
+        result.current.upload(new File(["abc"], "small.txt")).catch(() => {});
+
+        await waitFor(() => {
+            expect(result.current.currentMethod).toBe("chunked-rest");
+            expect(result.current.isUploading).toBe(true);
+        });
+
+        result.current.abort();
+    });
+
+    it("should keep working when an endpoint is added after the first render", () => {
+        expect.assertions(1);
+
+        const { rerender, result } = renderHookWithQueryClient(
+            ({ endpointTus }: { endpointTus?: string }) => useUpload({ endpointMultipart: "https://api.example.com/upload", endpointTus }),
+            { initialProps: {}, queryClient },
+        );
+
+        rerender({ endpointTus: "https://api.example.com/tus" });
+
+        expect(result.current.currentMethod).toBe("tus");
     });
 });

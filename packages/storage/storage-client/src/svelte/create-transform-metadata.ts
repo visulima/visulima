@@ -1,8 +1,9 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore } from "svelte/store";
 
 import { buildUrl, fetchJson, storageQueryKeys } from "../core";
+import toReadable from "./to-readable";
 
 export interface TransformMetadata {
     /** Available transformation formats */
@@ -40,8 +41,10 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
 
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
+    const enabledState = fromStore(enabledStore);
+
     const query = createQuery(() => {
-        const currentEnabled = get(enabledStore);
+        const currentEnabled = enabledState.current;
 
         return {
             enabled: currentEnabled,
@@ -58,13 +61,9 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
         };
     });
 
-    const dataStore = (query.data as Readable<TransformMetadata | undefined> | null) ?? readable<TransformMetadata | undefined>();
-    const errorStore = (query.error as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => query.data);
+    const errorStore = toReadable(() => query.error);
+    const isLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     return {
         data: derived(dataStore, ($data) => $data ?? undefined),

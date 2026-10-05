@@ -1092,14 +1092,42 @@ describe("transfer(source, dest)", () => {
 
         controller.abort();
 
-        const result = await transfer(source, destination, {
+        // Worker pool sees `signal.aborted` on entry and exits without transferring any key, and the
+        // transfer rejects instead of answering an empty result as complete.
+        await expect(transfer(source, destination, { concurrency: 1, signal: controller.signal })).rejects.toMatchObject({ name: "AbortError" });
+        expect(destinationAdapter.raw.size).toBe(0);
+    });
+
+    it.each([
+        ["transfer", transfer],
+        ["sync", sync],
+    ])("rejects a %s aborted midway instead of reporting the keys it reached as complete", async (_, run) => {
+        const initial: Record<string, string> = {};
+
+        for (let index = 0; index < 10; index += 1) {
+            initial[`k${index}.txt`] = String(index);
+        }
+
+        const source = new Files({ adapter: new MemoryStorage({ initial }) });
+        const destinationAdapter = new MemoryStorage();
+        const destination = new Files({ adapter: destinationAdapter });
+        const controller = new AbortController();
+        let done = 0;
+
+        const result = run(source, destination, {
             concurrency: 1,
+            onProgress: () => {
+                done += 1;
+
+                if (done === 2) {
+                    controller.abort();
+                }
+            },
             signal: controller.signal,
         });
 
-        // Worker pool sees `signal.aborted` on entry and exits without transferring any key.
-        expect(result.transferred).toEqual([]);
-        expect(destinationAdapter.raw.size).toBe(0);
+        await expect(result).rejects.toMatchObject({ name: "AbortError" });
+        expect(destinationAdapter.raw.size).toBeLessThan(10);
     });
 
     it("stops on the first failure when stopOnError is set", async () => {

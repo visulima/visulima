@@ -320,9 +320,9 @@ describe(createTusAdapter, () => {
 
         const file = new File(["x".repeat(100)], "test.jpg", { type: "image/jpeg" });
 
-        // The inactivity timeout aborts the upload (rejecting with "Upload aborted") while
-        // surfacing the timeout reason through the error callback, asserted below.
-        await expect(adapter.upload(file)).rejects.toThrow("Upload aborted");
+        // The inactivity timeout aborts the upload, but both the promise and the error callback
+        // report the timeout rather than the abort it causes.
+        await expect(adapter.upload(file)).rejects.toThrow("Upload timeout");
 
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Upload timeout" }));
     });

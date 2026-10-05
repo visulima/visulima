@@ -340,7 +340,7 @@ describe("pocketbase against an in-memory collection", () => {
         const id = await upload(storage, "old");
         const fresh = await upload(storage, "new");
 
-        await storage.saveMeta(Object.assign(await storage.getMeta(id), { createdAt: twoHoursAgo().toISOString() }));
+        await storage.saveMeta(Object.assign(await storage.getMeta(id), { createdAt: twoHoursAgo().toISOString(), expiredAt: Date.now() - 60 * 60 * 1000 }));
 
         const purged = await storage.purge();
 

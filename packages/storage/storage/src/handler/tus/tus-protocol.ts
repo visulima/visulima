@@ -97,27 +97,36 @@ export const serializeMetadata = (object: Metadata | Record<string, unknown> | u
 export const publicMetadata = (metadata: Record<string, unknown> | undefined): Record<string, unknown> =>
     Object.fromEntries(Object.entries(metadata ?? {}).filter(([key]) => !INTERNAL_METADATA_KEYS.has(key)));
 
-/** Methods a client may tunnel through `X-HTTP-Method-Override`. */
-const OVERRIDABLE_METHODS = new Set(["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST"]);
+/**
+ * Methods a client may tunnel through a `POST` with `X-HTTP-Method-Override`: the ones some
+ * environments can't send. A tunnel to `GET` or `HEAD` would turn a request that looks like a
+ * write, to anything that checks the method before the handler, into a read.
+ */
+const OVERRIDABLE_METHODS = new Set(["DELETE", "PATCH"]);
 
 /**
  * Resolves an `X-HTTP-Method-Override` header to the method the server must use.
  * @param header Header value
- * @returns The upper-cased method, or undefined when the header is absent
- * @throws {HttpError} 400 for a method the TUS handler doesn't serve
+ * @param method The request's own method
+ * @returns The upper-cased method, or undefined when the header is absent or names the request's own method
+ * @throws {HttpError} 400 for an override other than `POST` to `PATCH` or `DELETE`
  */
-export const resolveMethodOverride = (header: string | undefined): string | undefined => {
+export const resolveMethodOverride = (header: string | undefined, method: string): string | undefined => {
     if (header === undefined || header.trim() === "") {
         return undefined;
     }
 
-    const method = header.trim().toUpperCase();
+    const override = header.trim().toUpperCase();
 
-    if (!OVERRIDABLE_METHODS.has(method)) {
-        throw createHttpError(400, `Unsupported X-HTTP-Method-Override: ${header}`);
+    if (override === method) {
+        return undefined;
     }
 
-    return method;
+    if (method !== "POST" || !OVERRIDABLE_METHODS.has(override)) {
+        throw createHttpError(400, `Unsupported X-HTTP-Method-Override: ${header} (only POST may be overridden, to PATCH or DELETE)`);
+    }
+
+    return override;
 };
 
 /**
@@ -162,11 +171,14 @@ export const parseFinalConcatIds = (header: string): string[] => {
  * @throws {HttpError} 412 if version doesn't match or header is missing
  */
 export const validateTusResumable = (tusResumable: string | undefined): void => {
+    // TUS core: the 412 for an unsupported version MUST carry the versions the server supports.
+    const headers = { "Tus-Version": TUS_VERSION_VERSION };
+
     if (!tusResumable) {
-        throw createHttpError(412, "Missing Tus-Resumable header");
+        throw createHttpError(412, "Missing Tus-Resumable header", { headers });
     }
 
     if (tusResumable !== TUS_RESUMABLE_VERSION) {
-        throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`);
+        throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`, { headers });
     }
 };
