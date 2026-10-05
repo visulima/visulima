@@ -1,4 +1,4 @@
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 
 import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
@@ -89,6 +89,23 @@ class S3Storage extends S3BaseStorage {
 
         // Initialize client before calling super
         const client = new S3Client(config);
+
+        // The SDK wraps a streamed body (aws-chunked encoding for its default checksum) in a stream
+        // that takes over the body's errors with no listener of its own: a body that breaks off
+        // raised an uncaught exception. The failure still reaches the caller through the request.
+        client.middlewareStack.add(
+            (next) => async (arguments_) => {
+                const { body } = arguments_.request as { body?: unknown };
+
+                if (body instanceof Readable) {
+                    body.on("error", () => {});
+                }
+
+                return next(arguments_);
+            },
+            { name: "visulimaBodyErrorGuard", step: "finalizeRequest" },
+        );
+
         // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
         // support for conditional headers and browser-form POST uploads is unknown.
         const aws = config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL;
