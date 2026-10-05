@@ -65,7 +65,8 @@ describe("fetch RestFetch chunked uploads across processes (#902)", () => {
 
         const meta = await (storages[3] as MemoryStorage).getMeta(id);
 
-        expect(meta.metadata._chunks).toHaveLength(12);
+        // Every chunk recorded: a lost one would leave a gap between two ranges.
+        expect(meta.metadata._chunks).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
         expect(meta.status).toBe("completed");
 
         const file = await (storages[0] as MemoryStorage).get({ id });

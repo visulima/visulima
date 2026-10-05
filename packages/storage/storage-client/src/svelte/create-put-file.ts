@@ -1,9 +1,10 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, readable, writable } from "svelte/store";
+import { derived, writable } from "svelte/store";
 
 import { buildUrl, putFile, storageQueryKeys } from "../core";
 import type { UploadResult } from "../react/types";
+import toReadable from "./to-readable";
 
 export interface CreatePutFileOptions {
     /** Base endpoint URL for file operations */
@@ -68,13 +69,9 @@ export const createPutFile = (options: CreatePutFileOptions): CreatePutFileRetur
         };
     });
 
-    const dataStore = (mutation.data as unknown as Readable<UploadResult | undefined> | null) ?? readable<UploadResult | undefined>();
-    const errorStore = (mutation.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query mutation type is complex
-        typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
-            ? (mutation.isPending as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => mutation.data);
+    const errorStore = toReadable(() => mutation.error);
+    const isLoadingStore: Readable<boolean> = toReadable(() => mutation.isPending);
 
     return {
         data: derived(dataStore, ($data) => $data ?? undefined),

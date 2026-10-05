@@ -89,7 +89,10 @@ describe(useHeadFile, () => {
         expect.hasAssertions();
 
         const mockHeaders = new Headers({
-            "X-Received-Chunks": JSON.stringify([0, 1024, 2048]),
+            "X-Received-Chunks": JSON.stringify([
+                { length: 2048, offset: 0 },
+                { length: 1024, offset: 4096 },
+            ]),
         });
 
         mockFetch.mockResolvedValueOnce({
@@ -107,7 +110,10 @@ describe(useHeadFile, () => {
         );
 
         await waitFor(() => {
-            expect(result.current.data?.receivedChunks).toStrictEqual([0, 1024, 2048]);
+            expect(result.current.data?.receivedChunks).toStrictEqual([
+                { length: 2048, offset: 0 },
+                { length: 1024, offset: 4096 },
+            ]);
         });
     });
 

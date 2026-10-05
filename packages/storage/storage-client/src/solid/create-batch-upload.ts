@@ -191,6 +191,7 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
         uploader.on("BATCH_CANCELLED", onBatchCancelled);
 
         onCleanup(() => {
+            uploaderInstance.abort();
             uploader.off("BATCH_START", onBatchStart);
             uploader.off("BATCH_PROGRESS", onBatchProgress);
             uploader.off("BATCH_FINISH", onBatchFinish);

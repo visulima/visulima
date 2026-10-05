@@ -1,3 +1,5 @@
+import { stat } from "node:fs/promises";
+
 import type { ERRORS } from "../../utils/errors";
 import RangeHasher from "../../utils/range-hasher";
 import type { ConditionalOptions, DiskStorageWithChecksumOptions, OperationOptions } from "../types";
@@ -65,16 +67,32 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
 
         const path = this.getFilePath(part.name);
 
+        // The running hash covers the file from its first byte, so only a write appending at its end
+        // can extend it. Any other one (an out-of-order or re-sent chunk) is hashed from disk on the next save.
+        const { size } = await stat(path);
+
+        if (part.start !== size) {
+            hashes.delete(path);
+
+            return super.lazyWrite(part);
+        }
+
         await hashes.init(path);
 
         const digester = hashes.digester(path);
+        let digested = 0;
+
+        digester.on("data", (chunk: Buffer) => {
+            digested += chunk.length;
+        });
+
         const result = await super.lazyWrite(part, [digester]).catch((error: unknown) => {
             hashes.delete(path);
 
             throw error;
         });
 
-        if (result[1] !== undefined || Number.isNaN(result[0])) {
+        if (result[1] !== undefined || result[0] !== part.start + digested) {
             // The digester saw bytes that were truncated or only partly stored: rebuild from disk next time.
             hashes.delete(path);
         } else {

@@ -1,44 +1,17 @@
 import { render } from "@testing-library/vue";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, h } from "vue";
 
 // Capture each adapter we hand out so individual tests can assert that the
 // composable forwards to the right uploader method.
-type FakeAdapter = {
-    abort: ReturnType<typeof vi.fn>;
-    abortBatch: ReturnType<typeof vi.fn>;
-    abortItem: ReturnType<typeof vi.fn>;
-    clear: ReturnType<typeof vi.fn>;
-    upload: ReturnType<typeof vi.fn>;
-    uploadBatch: ReturnType<typeof vi.fn>;
-    uploader: { retryBatch: ReturnType<typeof vi.fn>; retryItem: ReturnType<typeof vi.fn> };
-};
+// The hooks send their commands through the per-endpoint channel; record what they send.
+vi.mock(import("../../src/core/uploader"), async (importOriginal) => {
+    const actual = await importOriginal();
 
-const lastAdapter: { current: FakeAdapter | undefined } = { current: undefined };
-
-vi.mock(import("../../src/core/multipart-adapter"), () => {
-    return {
-        createMultipartAdapter: vi.fn(() => {
-            const adapter: FakeAdapter = {
-                abort: vi.fn(),
-                abortBatch: vi.fn(),
-                abortItem: vi.fn(),
-                clear: vi.fn(),
-                upload: vi.fn(),
-                uploadBatch: vi.fn(),
-                uploader: {
-                    retryBatch: vi.fn(),
-                    retryItem: vi.fn(),
-                },
-            };
-
-            lastAdapter.current = adapter;
-
-            return adapter;
-        }),
-    };
+    return { ...actual, dispatch: vi.fn() };
 });
 
+const { dispatch } = await import("../../src/core/uploader");
 const { useAbortAll } = await import("../../src/vue/use-abort-all");
 const { useAbortBatch } = await import("../../src/vue/use-abort-batch");
 const { useAbortItem } = await import("../../src/vue/use-abort-item");
@@ -62,16 +35,12 @@ const mountComposable = <T>(composable: () => T): { result: T } => {
 };
 
 describe("vue abort and retry composables", () => {
-    beforeEach(() => {
-        lastAdapter.current = undefined;
-    });
-
     afterEach(() => {
         vi.clearAllMocks();
     });
 
     describe(useAbortAll, () => {
-        it("calls adapter.abort when abortAll is invoked", () => {
+        it("dispatches abortAll to the endpoint when abortAll is invoked", () => {
             expect.assertions(2);
 
             const { result } = mountComposable(() => useAbortAll({ endpoint: "/upload" }));
@@ -80,55 +49,55 @@ describe("vue abort and retry composables", () => {
 
             result.abortAll();
 
-            expect(lastAdapter.current?.abort).toHaveBeenCalledTimes(1);
+            expect(dispatch).toHaveBeenCalledWith("/upload", { type: "abortAll" });
         });
     });
 
     describe(useAbortBatch, () => {
-        it("forwards batchId to adapter.abortBatch", () => {
+        it("forwards batchId to the endpoint's abortBatch command", () => {
             expect.assertions(1);
 
             const { result } = mountComposable(() => useAbortBatch({ endpoint: "/upload" }));
 
             result.abortBatch("batch-7");
 
-            expect(lastAdapter.current?.abortBatch).toHaveBeenCalledWith("batch-7");
+            expect(dispatch).toHaveBeenCalledWith("/upload", { id: "batch-7", type: "abortBatch" });
         });
     });
 
     describe(useAbortItem, () => {
-        it("forwards itemId to adapter.abortItem", () => {
+        it("forwards itemId to the endpoint's abortItem command", () => {
             expect.assertions(1);
 
             const { result } = mountComposable(() => useAbortItem({ endpoint: "/upload" }));
 
             result.abortItem("item-3");
 
-            expect(lastAdapter.current?.abortItem).toHaveBeenCalledWith("item-3");
+            expect(dispatch).toHaveBeenCalledWith("/upload", { id: "item-3", type: "abortItem" });
         });
     });
 
     describe(useRetry, () => {
-        it("forwards itemId to uploader.retryItem", () => {
+        it("forwards itemId to the endpoint's retryItem command", () => {
             expect.assertions(1);
 
             const { result } = mountComposable(() => useRetry({ endpoint: "/upload" }));
 
             result.retryItem("item-9");
 
-            expect(lastAdapter.current?.uploader.retryItem).toHaveBeenCalledWith("item-9");
+            expect(dispatch).toHaveBeenCalledWith("/upload", { id: "item-9", type: "retryItem" });
         });
     });
 
     describe(useBatchRetry, () => {
-        it("forwards batchId to uploader.retryBatch", () => {
+        it("forwards batchId to the endpoint's retryBatch command", () => {
             expect.assertions(1);
 
             const { result } = mountComposable(() => useBatchRetry({ endpoint: "/upload" }));
 
             result.retryBatch("batch-5");
 
-            expect(lastAdapter.current?.uploader.retryBatch).toHaveBeenCalledWith("batch-5");
+            expect(dispatch).toHaveBeenCalledWith("/upload", { id: "batch-5", type: "retryBatch" });
         });
     });
 });

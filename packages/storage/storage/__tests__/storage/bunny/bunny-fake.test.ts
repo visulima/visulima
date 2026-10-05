@@ -330,7 +330,7 @@ describe("bunny against an in-memory storage zone", () => {
         const id = await upload(storage, "old");
         const fresh = await upload(storage, "new");
 
-        await storage.saveMeta(Object.assign(await storage.getMeta(id), { createdAt: twoHoursAgo() }));
+        await storage.saveMeta(Object.assign(await storage.getMeta(id), { createdAt: twoHoursAgo(), expiredAt: Date.now() - 60 * 60 * 1000 }));
 
         const purged = await storage.purge();
 

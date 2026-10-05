@@ -148,6 +148,9 @@ export const transfer = async (source: Files, destination: Files, options: Trans
 
     try {
         await run();
+        // The workers stop at an abort and leave the rest of the walk untransferred: that is a failed
+        // transfer, not a finished one.
+        signal?.throwIfAborted();
     } catch (error: unknown) {
         const message = typeof error === "string" ? error : "Unknown error";
         const normalized = error instanceof Error ? error : new Error(message, { cause: error });
@@ -336,6 +339,10 @@ export const sync = async (source: Files, destination: Files, options: SyncOptio
         await walk.return?.();
     }
 
+    // The workers stop at an abort and leave the rest of the walk unsynced: reject, as every aborted
+    // operation does, instead of answering a partial result as complete.
+    signal?.throwIfAborted();
+
     // Prune pass — delete destination keys the source no longer owns. Skipped if a copy-phase error
     // stopped the run, so a half-finished walk can't trigger spurious deletes.
     if (prune && !stopped && !signal?.aborted) {
@@ -385,6 +392,8 @@ export const sync = async (source: Files, destination: Files, options: SyncOptio
             }
         }
     }
+
+    signal?.throwIfAborted();
 
     return errors.length > 0 ? { deleted, errors, unchanged, updated, uploaded } : { deleted, unchanged, updated, uploaded };
 };

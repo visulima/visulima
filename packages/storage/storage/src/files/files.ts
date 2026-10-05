@@ -12,6 +12,7 @@ import {
     mergeOperationOptions,
     normalizeBody,
     normalizePrefix,
+    notRunReason,
     readParts,
     runConcurrent,
     safeInvoke,
@@ -199,7 +200,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         const max = this.adapter.maxSignedUrlExpiresIn;
 
         if (expiresIn !== undefined && max !== undefined && expiresIn > max) {
-            throwErrorCode(ERRORS.BAD_REQUEST, `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`);
+            throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`,
+            );
         }
     }
 
@@ -264,6 +268,12 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         hookContext?: Omit<HookEvent, "durationMs" | "error" | "type"> & { type: HookActionType },
     ): OperationOptions | undefined {
         const merged = mergeOperationOptions(this.defaults, perCall);
+
+        // Many adapters (memory, disk, …) ignore the signal, so an operation aborted before it started
+        // would still run. Bulk calls (`keys`) report each key as aborted instead of throwing.
+        if (hookContext && !("keys" in hookContext)) {
+            merged?.signal?.throwIfAborted();
+        }
 
         if (!hookContext || !this.hooks.onRetry) {
             return merged;
@@ -393,6 +403,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             BaseStorage.assertSafeId(resolved);
 
             const { size: normalizedSize, stream: source } = await normalizeBody(body, options?.size);
+
+            // The adapter reads the body only after `create`, a network call on most adapters. A body
+            // failing before then emits 'error' with no listener, which crashes the process. The
+            // adapter's read still fails with it, through the stream's errored state.
+            source.on("error", () => {
+                // Reported by the adapter's read
+            });
             const size = options?.size ?? normalizedSize;
 
             const userMetadata = options?.metadata ?? {};
@@ -429,7 +446,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             // With a control, write in parts the adapter records one by one, so another process can
             // resume from the stored offset. A conditional or checksummed upload commits in one write.
-            const resumable = control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
+            const resumable =
+                control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
 
             if (control?._session && !resumable) {
                 throwErrorCode(
@@ -474,8 +492,9 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                         }
                     });
 
-                    stream.pipe(passthrough);
-                    progressStream = passthrough;
+                    // pipeline (not pipe) so a failing body fails the adapter's read instead of leaving it
+                    // waiting on a stream that never ends, with the error unheard.
+                    progressStream = pipeline(stream, passthrough, () => {});
                 }
 
                 const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
@@ -492,7 +511,18 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 return this.adapter.write(part, operationOptions);
             };
 
-            const written = resumable ? await this.writeInParts(control, stream, fileInit, size, options, operationOptions) : await writeWhole();
+            let written: StorageFile;
+
+            try {
+                written = resumable ? await this.writeInParts(control, stream, fileInit, size, options, operationOptions) : await writeWhole();
+            } catch (error: unknown) {
+                // A write refused before or while it read the body (a failed `create`, a precondition, a
+                // resume mismatch) leaves the caller's stream open: a file stream would hold its descriptor.
+                source.destroy();
+                control?._fail();
+
+                throw error;
+            }
 
             control?._complete();
 
@@ -654,7 +684,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const item = items[index] as BulkUploadItem;
 
             if (!result) {
-                errors.push(toBulkError(item.key, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(item.key, notRunReason(rest.signal)));
 
                 continue;
             }
@@ -753,7 +783,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const key = keys[index] as string;
 
             if (!result) {
-                errors.push(toBulkError(key, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(key, notRunReason(rest.signal)));
 
                 continue;
             }
@@ -861,7 +891,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const key = keys[index] as string;
 
             if (!result) {
-                errors.push(toBulkError(key, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(key, notRunReason(rest.signal)));
 
                 continue;
             }
@@ -920,7 +950,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const key = keys[index] as string;
 
             if (!result) {
-                errors.push(toBulkError(key, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(key, notRunReason(rest.signal)));
 
                 continue;
             }
@@ -1003,6 +1033,12 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             }
 
             return this.withHooks("delete", { keys: validKeys }, async () => {
+                // Checked before dispatch, as runConcurrent checks before each item: adapters whose
+                // delete ignores the signal would otherwise delete every key of an aborted call.
+                if (operationOptions?.signal?.aborted) {
+                    return { deleted: [], errors: [...earlyErrors, ...validKeys.map((key) => toBulkError(key, notRunReason(operationOptions.signal)))] };
+                }
+
                 const response = resolvedIds.length > 0 ? await this.adapter.deleteBatch(resolvedIds, operationOptions) : { failed: [], successful: [] };
                 const idIndex = new Map(resolvedIds.map((id, index) => [id, index]));
 
@@ -1038,7 +1074,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const key = keys[index] as string;
 
             if (!result) {
-                errors.push(toBulkError(key, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(key, notRunReason(rest.signal)));
 
                 continue;
             }
@@ -1161,7 +1197,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             const item = items[index] as BulkMoveItem;
 
             if (!result) {
-                errors.push(toBulkError(item.from, new Error("Operation skipped (stopOnError)")));
+                errors.push(toBulkError(item.from, notRunReason(rest.signal)));
 
                 continue;
             }

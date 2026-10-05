@@ -195,4 +195,26 @@ describe(createMultipartAdapter, () => {
             adapter.clear();
         }).not.toThrow();
     });
+
+    it("should abort the request when the upload times out", async () => {
+        expect.assertions(3);
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = class extends MockXMLHttpRequest {
+            // Never progresses or completes.
+            public override send = vi.fn();
+        };
+
+        const adapter = createMultipartAdapter({
+            endpoint: "/api/upload",
+            uploadTimeoutMs: 50,
+        });
+
+        await expect(adapter.upload(new File(["test"], "test.jpg", { type: "image/jpeg" }))).rejects.toThrow("Upload timeout");
+
+        const [item] = adapter.uploader.getItems();
+
+        expect(item?.status).toBe("aborted");
+        expect(adapter.uploader.getItems().filter((entry) => entry.status === "uploading")).toHaveLength(0);
+    });
 });

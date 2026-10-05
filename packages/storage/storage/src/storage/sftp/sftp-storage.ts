@@ -370,11 +370,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let file: SftpFile;
+            const file = await this.findMeta(id);
 
-            try {
-                file = await this.getMeta(id);
-            } catch {
+            if (file === undefined) {
                 return false;
             }
 

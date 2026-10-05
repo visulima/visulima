@@ -242,13 +242,9 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
             const meta = await this.findMeta(id);
             const path = meta?.path ?? id;
 
-            try {
-                const [exists] = await this.runOperation(options, () => this.bucket.file(path).exists());
+            const [exists] = await this.runOperation(options, () => this.bucket.file(path).exists());
 
-                return exists;
-            } catch {
-                return false;
-            }
+            return exists;
         });
     }
 

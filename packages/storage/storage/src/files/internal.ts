@@ -68,7 +68,11 @@ export const normalizeBody = async (body: FileBody, sizeHint?: number): Promise<
  * Re-chunk `source` into parts of exactly `partSize` bytes (the last one may be shorter), after
  * dropping its first `skip` bytes.
  */
-export const readParts = async function* readParts(source: AsyncIterable<Buffer | Uint8Array | string>, partSize: number, skip = 0): AsyncGenerator<Buffer, void, void> {
+export const readParts = async function* readParts(
+    source: AsyncIterable<Buffer | Uint8Array | string>,
+    partSize: number,
+    skip = 0,
+): AsyncGenerator<Buffer, void, void> {
     let pending: Buffer[] = [];
     let length = 0;
     let toSkip = skip;
@@ -220,6 +224,14 @@ export const runConcurrent = async <T, R>(
 
     return results;
 };
+
+/**
+ * Why {@link runConcurrent} never ran an item: the operation was aborted, or an earlier failure
+ * stopped it under `stopOnError`.
+ * @param signal The operation's signal
+ * @returns The abort reason, or a "skipped" error
+ */
+export const notRunReason = (signal: AbortSignal | undefined): unknown => (signal?.aborted ? signal.reason : new Error("Operation skipped (stopOnError)"));
 
 export const toBulkError = (key: string, reason: unknown): BulkError => {
     if (reason instanceof Error) {

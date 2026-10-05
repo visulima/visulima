@@ -39,7 +39,7 @@ export const S3 = {
     secretAccessKey: env("LIVE_S3_SECRET_KEY", "live-secret-key"),
 };
 // SeaweedFS takes the same credentials as MinIO.
-const SEAWEEDFS = { ...S3, endpoint: env("LIVE_SEAWEEDFS_ENDPOINT", "http://127.0.0.1:8333") };
+export const SEAWEEDFS = { ...S3, endpoint: env("LIVE_SEAWEEDFS_ENDPOINT", "http://127.0.0.1:8333") };
 
 /** Connection settings of an S3-compatible service. */
 export type S3Config = typeof S3;

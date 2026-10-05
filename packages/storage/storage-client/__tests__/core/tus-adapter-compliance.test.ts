@@ -325,6 +325,80 @@ describe("tus-adapter protocol compliance", () => {
         expect(requests()[2]?.headers["Upload-Offset"]).toBe("50");
     });
 
+    it("re-probes a stored resume URL after a transient 5xx instead of failing", async () => {
+        expect.assertions(1);
+
+        const urlStorage = new MemoryUrlStorage();
+        const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+        await urlStorage.addEntry({
+            createdAt: Date.now(),
+            endpoint: ENDPOINT,
+            fingerprint: defaultFingerprint({ endpoint: ENDPOINT, file, protocol: "tus" }),
+            lastModified: file.lastModified,
+            protocol: "tus",
+            size: file.size,
+            uploadUrl: `${ENDPOINT}/abc`,
+        });
+
+        const adapter = createTusAdapter({ chunkSize: 100, endpoint: ENDPOINT, urlStorage });
+
+        mockFetch.mockResolvedValueOnce(failed(503));
+        mockFetch.mockResolvedValueOnce(headOk(50));
+        mockFetch.mockResolvedValueOnce(patched(100));
+        mockFetch.mockResolvedValueOnce(headOk(100));
+
+        await adapter.upload(file);
+
+        expect(requests().map(({ method }) => method)).toStrictEqual(["HEAD", "HEAD", "PATCH", "HEAD"]);
+    });
+
+    it("passes the abort signal to the creation POST", async () => {
+        expect.assertions(2);
+
+        const adapter = createTusAdapter({ endpoint: ENDPOINT, retry: false });
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => init?.method === "POST" ? hangingUntilAborted(init) : headOk(0));
+
+        const uploadPromise = adapter.upload(new File(["x".repeat(100)], "test.bin"));
+
+        await waitFor(() => mockFetch.mock.calls.length > 0);
+
+        adapter.abort();
+
+        await expect(uploadPromise).rejects.toThrow(/abort/i);
+        expect((mockFetch.mock.calls[0]?.[1] as RequestInit).signal?.aborted).toBe(true);
+    });
+
+    it("completes two concurrent uploads on one adapter", async () => {
+        expect.assertions(1);
+
+        const adapter = createTusAdapter({ endpoint: ENDPOINT, retry: false });
+        let createdCount = 0;
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            const headers = (init?.headers ?? {}) as Record<string, string>;
+
+            switch (init?.method) {
+                case "PATCH": {
+                    return patched(Number(headers["Upload-Offset"]) + (init.body as Blob).size);
+                }
+                case "POST": {
+                    createdCount += 1;
+
+                    return created(`/api/upload/tus/upload-${String(createdCount)}`);
+                }
+                default: {
+                    return headOk(100);
+                }
+            }
+        });
+
+        const results = await Promise.all([adapter.upload(new File(["a".repeat(100)], "a.bin")), adapter.upload(new File(["b".repeat(100)], "b.bin"))]);
+
+        expect(results.map((result) => result.url)).toStrictEqual([`${ENDPOINT}/upload-1`, `${ENDPOINT}/upload-2`]);
+    });
+
     describe("terminateOnAbort", () => {
         const routeWithHangingPatch = (deleteResponse: () => Promise<Partial<Response>>) => {
             mockFetch.mockImplementation((_url: string, init?: RequestInit) => {

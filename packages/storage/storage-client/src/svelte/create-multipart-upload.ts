@@ -1,4 +1,4 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 import type { Readable } from "svelte/store";
 import { get, writable } from "svelte/store";
 
@@ -145,9 +145,9 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
                 const item = itemOrBatch;
                 const uploadError = new Error(item.error ?? "Upload failed");
 
+                // `upload()` rejects with this error, and its catch calls `onError`.
                 error.set(uploadError);
                 isUploading.set(false);
-                onError?.(uploadError);
                 currentItemId.set(undefined);
             }
         };
@@ -157,13 +157,14 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
         uploader.on("ITEM_FINISH", onItemFinish);
         uploader.on("ITEM_ERROR", onUploadError);
 
-        // Cleanup on destroy
-        onDestroy(() => {
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return () => {
+            uploaderInstance.abort();
             uploader.off("ITEM_START", onItemStart);
             uploader.off("ITEM_PROGRESS", onItemProgress);
             uploader.off("ITEM_FINISH", onItemFinish);
             uploader.off("ITEM_ERROR", onUploadError);
-        });
+        };
     });
 
     const upload = async (file: File): Promise<UploadResult> => {

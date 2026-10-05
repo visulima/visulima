@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface UseBatchStartListenerOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to observe */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     /** Callback when batch starts */
     onBatchStart: (batch: BatchState) => void;
@@ -17,7 +17,7 @@ export interface UseBatchStartListenerOptions {
  * @param options Listener configuration options
  */
 export const useBatchStartListener = (options: UseBatchStartListenerOptions): void => {
-    const { endpoint, metadata, onBatchStart } = options;
+    const { endpoint, onBatchStart } = options;
 
     const callbackRef = useRef(onBatchStart);
 
@@ -26,21 +26,12 @@ export const useBatchStartListener = (options: UseBatchStartListenerOptions): vo
     }, [onBatchStart]);
 
     useEffect(() => {
-        const adapter = createMultipartAdapter({
-            endpoint,
-            metadata,
-        });
-
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("itemIds" in itemOrBatch) {
                 callbackRef.current(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("BATCH_START", handler);
-
-        return () => {
-            adapter.uploader.off("BATCH_START", handler);
-        };
-    }, [endpoint, metadata]);
+        return subscribe(endpoint, "BATCH_START", handler);
+    }, [endpoint]);
 };

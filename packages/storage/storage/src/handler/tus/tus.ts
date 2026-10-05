@@ -1,8 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { format } from "node:url";
 
+import createHttpError from "http-errors";
+
 import type { UploadFile } from "../../storage/utils/file";
-import { getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
+import { getHeader, getIdFromRequestUrl, getRealPath, getRequestStream } from "../../utils/http";
 import type { UploadResponse } from "../../utils/types";
 import type { LocationSource } from "../base/base-handler-core";
 import BaseHandlerNode from "../base/base-handler-node";
@@ -126,8 +128,8 @@ export class Tus<
     }
 
     /**
-     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
-     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * Applies X-HTTP-Method-Override, which TUS core says the server must use as the request's
+     * method. Only a POST tunnelled to PATCH or DELETE is honoured; see {@link resolveMethodOverride}.
      * @param request Node.js IncomingMessage
      */
     protected override normalizeRequest(request: NodeRequest): void {
@@ -135,7 +137,7 @@ export class Tus<
             return;
         }
 
-        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined);
+        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined, request.method ?? "");
 
         if (override !== undefined) {
             request.method = override;
@@ -166,7 +168,7 @@ export class Tus<
         const url = new URL(request.url, "http://localhost");
         const query = Object.fromEntries(url.searchParams.entries());
 
-        return this.locationOrigin(request.url, request) + format({ pathname: `${url.pathname}/${file.id}`, query });
+        return this.locationOrigin(request.url, request) + format({ pathname: `${url.pathname.replace(/\/$/, "")}/${file.id}`, query });
     }
 
     /**
@@ -186,13 +188,22 @@ export class Tus<
                 return Array.isArray(value) ? value.join(", ") : value;
             },
             resolveId: () => {
+                let id: string | undefined;
+
                 try {
-                    return getIdFromRequest(request);
+                    // As issued in the Location: no extension to strip (fetch reads it the same way).
+                    id = getIdFromRequestUrl(getRealPath(request));
                 } catch (error: unknown) {
                     this.checkForUndefinedIdOrPath(error);
 
                     throw error;
                 }
+
+                if (!id) {
+                    throw createHttpError(404, "File not found");
+                }
+
+                return id;
             },
         };
     }

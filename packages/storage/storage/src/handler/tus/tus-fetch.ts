@@ -129,26 +129,26 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     }
 
     /**
-     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
-     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * Applies X-HTTP-Method-Override, which TUS core says the server must use as the request's
+     * method. Only a POST tunnelled to PATCH or DELETE is honoured; see {@link resolveMethodOverride}.
      * @param request Web API Request
      * @returns The request with the overridden method
      */
     protected override normalizeRequest(request: Request): Request {
-        const override = this.allowMethodOverride ? resolveMethodOverride(request.headers.get("x-http-method-override") ?? undefined) : undefined;
+        const override = this.allowMethodOverride
+            ? resolveMethodOverride(request.headers.get("x-http-method-override") ?? undefined, request.method)
+            : undefined;
 
-        if (override === undefined || override === request.method) {
+        if (override === undefined) {
             return request;
         }
 
-        const hasBody = override !== "GET" && override !== "HEAD";
-
         return new Request(request.url, {
-            body: hasBody ? request.body : null,
+            body: request.body,
             headers: request.headers,
             method: override,
             signal: request.signal,
-            ...(hasBody && request.body ? { duplex: "half" } : {}),
+            ...(request.body ? { duplex: "half" } : {}),
         });
     }
 
@@ -175,7 +175,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     protected buildFileUrlForTus(request: LocationSource, file: TFile): string {
         const { pathname, search } = new URL(request.url);
 
-        return `${this.locationOrigin(request.url)}${pathname}/${file.id}${search}`;
+        return `${this.locationOrigin(request.url)}${pathname.replace(/\/$/, "")}/${file.id}${search}`;
     }
 
     /**

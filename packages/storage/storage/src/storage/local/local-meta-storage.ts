@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { open, rename, stat, unlink, utimes } from "node:fs/promises";
+import { link, open, rename, unlink, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { setTimeout as sleep } from "node:timers/promises";
 
@@ -59,6 +59,56 @@ const writeMeta = async (path: string, file: File): Promise<void> => {
     }
 
     setMetaVersion(file, hashContent(content));
+};
+
+/**
+ * Removes the lock file at `lockPath` when it is stale (left by a crashed process). The lock is
+ * renamed aside, an atomic step only one waiter wins, and put back when it turns out to be a live
+ * lock another waiter created after taking the stale one over.
+ * @returns Whether the caller should try to acquire the lock again right away.
+ */
+const removeStaleLock = async (lockPath: string): Promise<boolean> => {
+    let stale: string;
+
+    try {
+        const handle = await open(lockPath, "r");
+
+        try {
+            const { mtimeMs } = await handle.stat();
+
+            if (Date.now() - mtimeMs <= LOCK_STALE_MS) {
+                return false;
+            }
+
+            stale = await handle.readFile("utf8");
+        } finally {
+            await handle.close();
+        }
+    } catch (error) {
+        if ((error as { code?: string }).code === "ENOENT") {
+            return true;
+        }
+
+        throw error;
+    }
+
+    const aside = `${lockPath}.${randomUUID()}.stale`;
+
+    try {
+        await rename(lockPath, aside);
+    } catch (error) {
+        // Already released, or taken over by another waiter, which leaves a live lock to wait for.
+        return (error as { code?: string }).code === "ENOENT";
+    }
+
+    if ((await readFile(aside).catch(() => undefined)) !== stale) {
+        // A waiter replaced the stale lock first: restore its live one, unless a third took the path.
+        await link(aside, lockPath).catch(() => undefined);
+    }
+
+    await unlink(aside).catch(() => undefined);
+
+    return true;
 };
 
 /**
@@ -205,6 +255,8 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
     // eslint-disable-next-line class-methods-use-this
     private async withFileLock<R>(path: string, function_: () => Promise<R>): Promise<R> {
         const lockPath = `${path}.lock`;
+        // Written into the lock, so a holder only ever removes its own lock.
+        const token = randomUUID();
 
         // A nested id (`a/b`) keeps its metafile in a subdirectory.
         await ensureDir(dirname(path));
@@ -213,20 +265,23 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
             try {
                 const handle = await open(lockPath, "wx");
 
-                await handle.close();
+                try {
+                    await handle.writeFile(token);
+                } finally {
+                    await handle.close();
+                }
+
                 break;
             } catch (error) {
                 if ((error as { code?: string }).code !== "EEXIST") {
                     throw error;
                 }
 
-                const lock = await stat(lockPath).catch(() => undefined);
+                if (!(await removeStaleLock(lockPath))) {
+                    if (attempt >= LOCK_ATTEMPTS) {
+                        throw new Error(`Metafile ${path} is locked`, { cause: error });
+                    }
 
-                if (lock !== undefined && Date.now() - lock.mtimeMs > LOCK_STALE_MS) {
-                    await unlink(lockPath).catch(() => undefined);
-                } else if (attempt >= LOCK_ATTEMPTS) {
-                    throw new Error(`Metafile ${path} is locked`, { cause: error });
-                } else {
                     await sleep(LOCK_RETRY_DELAY_MS);
                 }
             }
@@ -235,7 +290,10 @@ class LocalMetaStorage<T extends File = File> extends MetaStorage<T> {
         try {
             return await function_();
         } finally {
-            await unlink(lockPath).catch(() => undefined);
+            // Taken over as stale while `function_` ran: that lock is someone else's now.
+            if ((await readFile(lockPath).catch(() => undefined)) === token) {
+                await unlink(lockPath).catch(() => undefined);
+            }
         }
     }
 

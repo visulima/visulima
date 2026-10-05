@@ -1,10 +1,11 @@
 import { createQuery } from "@tanstack/svelte-query";
 import { onDestroy } from "svelte";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore, get } from "svelte/store";
 
 import { buildUrl, extractFileMetaFromHeaders, storageQueryKeys } from "../core";
 import type { FileMeta } from "../react/types";
+import toReadable from "./to-readable";
 
 type TransformParams = Record<string, string | number | boolean> | undefined;
 
@@ -60,15 +61,19 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
     // Create derived stores for reactive query options
     const enabledDerived = derived([enabledStore, idStore], ([$enabled, $id]) => $enabled && !!$id);
 
+    const idState = fromStore(idStore);
+    const transformState = fromStore(transformStore);
+    const enabledState = fromStore(enabledDerived);
+
     // According to TanStack Svelte Query docs, when inside QueryClientProvider,
     // createQuery automatically uses context - no need to pass queryClient parameter
     // Calling useQueryClient() above ensures context is available
     const query = createQuery(() => {
-        const currentId = get(idStore);
-        const currentTransform = get(transformStore);
+        const currentId = idState.current;
+        const currentTransform = transformState.current;
 
         return {
-            enabled: get(enabledDerived),
+            enabled: enabledState.current,
             queryFn: async ({ signal }) => {
                 const url = buildUrl(endpoint, currentId, currentTransform);
                 const response = await fetch(url, {
@@ -98,14 +103,9 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
         };
     });
 
-    const queryDataStore =
-        (query.data as unknown as Readable<{ blob: Blob; meta: FileMeta } | undefined> | null) ?? readable<{ blob: Blob; meta: FileMeta } | undefined>();
-    const queryErrorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const queryIsLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const queryDataStore = toReadable(() => query.data);
+    const queryErrorStore = toReadable(() => query.error);
+    const queryIsLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     // Extract metadata from response if available
     const meta = derived(queryDataStore, ($data) => $data?.meta);

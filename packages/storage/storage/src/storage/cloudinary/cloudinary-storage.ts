@@ -260,20 +260,8 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             const meta = await this.findMeta(id);
-            const key = meta?.path ?? id;
 
-            try {
-                await this.runOperation(options, () =>
-                    this.client.api.resource(key, {
-                        resource_type: this.resourceType,
-                        type: this.deliveryType,
-                    }),
-                );
-
-                return true;
-            } catch {
-                return false;
-            }
+            return (await this.statObject(meta?.path ?? id, options)) !== undefined;
         });
     }
 

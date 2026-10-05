@@ -3,6 +3,7 @@ import { waitFor } from "@testing-library/react";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useChunkedRestUpload } from "../../src/react/use-chunked-rest-upload";
+import { createFailingFetch, createHangingPatchFetch, patchSignal } from "../upload-mocks";
 import { renderHookWithQueryClient } from "./test-utils";
 
 // Mock fetch globally
@@ -431,5 +432,35 @@ describe(useChunkedRestUpload, () => {
         expect(result.current.isPaused).toBe(false);
         expect(result.current.progress).toBe(0);
         expect(result.current.error).toBeUndefined();
+    });
+    it("should call onError once when the upload fails", async () => {
+        expect.assertions(2);
+
+        globalThis.fetch = createFailingFetch();
+
+        const onError = vi.fn();
+        const { result } = renderHookWithQueryClient(() => useChunkedRestUpload({ endpoint: "https://api.example.com/upload", onError }), { queryClient });
+
+        await expect(result.current.upload(new File(["test content"], "test.txt"))).rejects.toThrow("400");
+        expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it("should abort the in-flight upload on unmount", async () => {
+        expect.hasAssertions();
+
+        const fetchMock = createHangingPatchFetch();
+
+        globalThis.fetch = fetchMock;
+
+        const { result, unmount } = renderHookWithQueryClient(() => useChunkedRestUpload({ endpoint: "https://api.example.com/upload" }), { queryClient });
+        const uploadPromise = result.current.upload(new File(["test content"], "test.txt"));
+
+        await waitFor(() => {
+            expect(patchSignal(fetchMock)).toBeDefined();
+        });
+
+        unmount();
+
+        await expect(uploadPromise).rejects.toThrow(/abort/i);
     });
 });

@@ -33,7 +33,7 @@ export interface UploadProgress {
 export type UploadProgressCallback = (event: UploadProgress) => void;
 
 /** Lifecycle state of an {@link UploadControl}. */
-export type UploadControlState = "aborted" | "completed" | "idle" | "paused" | "uploading";
+export type UploadControlState = "aborted" | "completed" | "failed" | "idle" | "paused" | "uploading";
 
 /**
  * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.toJSON} and

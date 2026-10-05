@@ -352,7 +352,7 @@ const { data, isLoading } = useHeadFile({
     <div v-else-if="data">
         <p v-if="data.uploadComplete">Upload complete</p>
         <p v-else>Upload in progress: {{ data.uploadOffset }} / {{ data.contentLength }} bytes</p>
-        <p v-if="data.receivedChunks">Received chunks: {{ data.receivedChunks.length }}</p>
+        <p v-if="data.receivedChunks">Received ranges: {{ data.receivedChunks.length }}</p>
     </div>
 </template>
 ```
@@ -512,6 +512,8 @@ const { data, isLoading, error } = useTransformMetadata({
 
 ## Abort Operations
 
+The abort hooks act on the multipart and batch uploads to their `endpoint`, whichever hook or adapter started them, so they can live in a different component from the upload. `abortItem` and `abortBatch` take the item and batch IDs those uploads report (e.g. from `uploadBatch` or a listener); an ID no upload owns is ignored. TUS and chunked REST uploads are not reached; use their own `abort()`. The `metadata` option is still accepted but deprecated and unused.
+
 ### Abort All Uploads
 
 ```vue
@@ -565,6 +567,8 @@ const { abortItem } = useAbortItem({
 ```
 
 ## Retry Operations
+
+The retry hooks act on the multipart and batch uploads to their `endpoint` the same way: they retry the failed item or the failed items of the batch with that ID, and ignore an ID no upload owns.
 
 ### Retry Failed Upload
 
@@ -660,6 +664,8 @@ const { upload, progress, isUploading } = useUpload({
 
 ## Event Listeners
 
+Listeners observe every multipart and batch upload to their `endpoint`, whichever hook or adapter started it, so they can live in a different component from the upload. TUS and chunked REST uploads do not emit these events.
+
 ### Batch Event Listeners
 
 Listen to batch upload events:
@@ -710,8 +716,8 @@ import { useRetryListener } from "@visulima/storage-client/vue";
 
 useRetryListener({
     endpoint: "/api/upload/multipart",
-    onRetry: (itemId) => {
-        console.log("Retrying item:", itemId);
+    onRetry: (item) => {
+        console.log("Retrying item:", item.id);
     },
 });
 </script>
@@ -729,8 +735,8 @@ import { useAllAbortListener } from "@visulima/storage-client/vue";
 
 useAllAbortListener({
     endpoint: "/api/upload/multipart",
-    onAbortAll: () => {
-        console.log("All uploads aborted");
+    onAbort: (item) => {
+        console.log("Upload aborted:", item.id);
     },
 });
 </script>

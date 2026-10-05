@@ -146,10 +146,10 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
             onSuccess?.(uploadResult);
         });
 
+        // `upload()` rejects with every error the adapter reports here, and its catch calls `onError`.
         adapterInstance.setOnError((uploadError) => {
             error.value = uploadError;
             isUploading.value = false;
-            onError?.(uploadError);
         });
 
         // Sync state with adapter periodically
@@ -161,6 +161,7 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         // Cleanup on unmount
         onBeforeUnmount(() => {
             clearInterval(checkInterval);
+            adapterInstance.abort();
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);

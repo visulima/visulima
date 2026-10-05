@@ -17,12 +17,17 @@ export const createPasteUpload = (options: CreatePasteUploadOptions = {}): Creat
 
     const [pastedFiles, setPastedFiles] = createSignal<File[]>([]);
 
+    // A paste inside the element reaches both its handler and the document listener; handle it once.
+    let lastPaste: ClipboardEvent | undefined;
+
     const handlePaste = (event: ClipboardEvent): void => {
         const items = event.clipboardData?.items;
 
-        if (!items) {
+        if (!items || event === lastPaste) {
             return;
         }
+
+        lastPaste = event;
 
         const files: File[] = [];
 

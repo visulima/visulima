@@ -12,7 +12,7 @@ export interface TusRequestsOptions {
 
 export interface TusRequests {
     /** POST a new upload; resolves with its absolute URL and the server's initial offset. */
-    create: (file: File, metadata: Record<string, string>) => Promise<{ initialOffset: number; uploadUrl: string }>;
+    create: (file: File, metadata: Record<string, string>, signal?: AbortSignal) => Promise<{ initialOffset: number; uploadUrl: string }>;
     /** HEAD the upload and return the server's offset; throws `TusUploadGoneError` when it no longer exists. */
     getOffset: (uploadUrl: string, signal?: AbortSignal) => Promise<number>;
     /** Raw HEAD request against the upload URL. */
@@ -59,7 +59,7 @@ export const createTusRequests = ({ buildHeaders, endpoint }: TusRequestsOptions
          * According to TUS protocol: POST returns 201 Created (or 200 if Creation With Upload extension is used).
          * Headers: Location (required), Tus-Resumable (required), Upload-Offset (optional, if data was uploaded).
          */
-        create: async (file: File, metadata: Record<string, string>): Promise<{ initialOffset: number; uploadUrl: string }> => {
+        create: async (file: File, metadata: Record<string, string>, signal?: AbortSignal): Promise<{ initialOffset: number; uploadUrl: string }> => {
             const response = await fetch(endpoint, {
                 headers: await buildHeaders(endpoint, "POST", {
                     "Tus-Resumable": TUS_RESUMABLE_VERSION,
@@ -67,6 +67,7 @@ export const createTusRequests = ({ buildHeaders, endpoint }: TusRequestsOptions
                     "Upload-Metadata": encodeMetadata({ filename: file.name, filetype: file.type, ...metadata }),
                 }),
                 method: "POST",
+                signal,
             });
 
             if (response.status !== 201 && response.status !== 200) {

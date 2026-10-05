@@ -180,6 +180,12 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         resolved = true;
                         // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
                         cleanup();
+
+                        // Stop the request too, so the item does not stay "uploading".
+                        if (itemId !== undefined) {
+                            uploader.abortItem(itemId);
+                        }
+
                         reject(new Error("Upload timeout"));
                     }
                 };

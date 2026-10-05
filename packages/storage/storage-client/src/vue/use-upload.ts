@@ -1,5 +1,5 @@
 import type { ComputedRef } from "vue";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "../react/types";
 import type { UseChunkedRestUploadOptions } from "./use-chunked-rest-upload";
@@ -190,6 +190,9 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
     const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : undefined;
     const tusUpload = tusOptions ? useTusUpload(tusOptions) : undefined;
 
+    // The method of the latest upload, so state follows it rather than a previous upload's result.
+    const lastMethod = ref<UploadMethod | undefined>(undefined);
+
     const determineMethod = (file: File): UploadMethod => {
         if (detectedMethod.value !== "auto") {
             return detectedMethod.value;
@@ -221,6 +224,8 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
 
     const upload = async (file: File): Promise<UploadResult> => {
         const selectedMethod = determineMethod(file);
+
+        lastMethod.value = selectedMethod;
 
         if (selectedMethod === "tus") {
             if (!tusUpload) {
@@ -255,6 +260,7 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         tusUpload?.reset();
         chunkedRestUpload?.reset();
         multipartUpload?.reset();
+        lastMethod.value = undefined;
     };
 
     // Determine current method based on which composable is active
@@ -263,19 +269,8 @@ export const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             return detectedMethod.value;
         }
 
-        // If TUS is uploading or has result, it's being used
-        if (tusUpload && (tusUpload.isUploading.value || tusUpload.result.value)) {
-            return "tus";
-        }
-
-        // If chunked REST is uploading or has result, it's being used
-        if (chunkedRestUpload && (chunkedRestUpload.isUploading.value || chunkedRestUpload.result.value)) {
-            return "chunked-rest";
-        }
-
-        // If multipart is uploading or has result, it's being used
-        if (multipartUpload && (multipartUpload.isUploading.value || multipartUpload.result.value)) {
-            return "multipart";
+        if (lastMethod.value) {
+            return lastMethod.value;
         }
 
         // Default based on available endpoints (priority: chunked-rest > tus > multipart)

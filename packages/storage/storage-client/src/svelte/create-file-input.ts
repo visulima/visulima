@@ -1,4 +1,4 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 import type { Readable, Writable } from "svelte/store";
 import { writable } from "svelte/store";
 
@@ -97,9 +97,10 @@ export const createFileInput = (options: CreateFileInputOptions = {}): CreateFil
 
         document.addEventListener("dragenter", handleDragEnter);
 
-        onDestroy(() => {
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return () => {
             document.removeEventListener("dragenter", handleDragEnter);
-        });
+        };
     });
 
     return {

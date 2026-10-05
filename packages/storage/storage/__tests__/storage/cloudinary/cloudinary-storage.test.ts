@@ -280,9 +280,19 @@ describe(CloudinaryStorage, () => {
 
             const storage = newStorage();
 
-            mockClient.api.resource.mockRejectedValueOnce(new Error("not found"));
+            mockClient.api.resource.mockRejectedValueOnce(Object.assign(new Error("not found"), { http_code: 404 }));
 
             await expect(storage.exists({ id: "missing.mp4" })).resolves.toBe(false);
+        });
+
+        it("throws when the lookup fails for another reason", async () => {
+            expect.assertions(1);
+
+            const storage = newStorage();
+
+            mockClient.api.resource.mockRejectedValueOnce(Object.assign(new Error("unavailable"), { http_code: 503 }));
+
+            await expect(storage.exists({ id: "file.mp4" })).rejects.toThrow("unavailable");
         });
     });
 

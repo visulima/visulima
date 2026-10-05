@@ -1,29 +1,10 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore } from "svelte/store";
 
-import { buildUrl, fetchHead, storageQueryKeys } from "../core";
-
-export interface FileHeadMetadata {
-    /** Whether this is a chunked upload session */
-    chunkedUpload?: boolean;
-    /** Content length in bytes */
-    contentLength?: number;
-    /** Content type */
-    contentType?: string;
-    /** Entity tag for caching */
-    etag?: string;
-    /** Last modified date */
-    lastModified?: string;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
-    /** Whether upload is complete (chunked uploads) */
-    uploadComplete?: boolean;
-    /** Upload expiration date */
-    uploadExpires?: string;
-    /** Upload offset for chunked uploads */
-    uploadOffset?: number;
-}
+import type { FileHeadMetadata } from "../core";
+import { buildUrl, extractHeadMetadataFromHeaders, fetchHead, storageQueryKeys } from "../core";
+import toReadable from "./to-readable";
 
 export interface CreateHeadFileOptions {
     /** Whether to enable the query */
@@ -57,82 +38,27 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
+    const idState = fromStore(idStore);
+    const enabledState = fromStore(enabledStore);
+
     const query = createQuery(() => {
-        const currentId = get(idStore);
-        const currentEnabled = get(enabledStore);
+        const currentId = idState.current;
+        const currentEnabled = enabledState.current;
 
         return {
             enabled: currentEnabled && !!currentId,
             queryFn: async ({ signal }): Promise<FileHeadMetadata> => {
                 const url = buildUrl(endpoint, currentId);
-                const headers = await fetchHead(url, { signal });
 
-                // Extract metadata from headers
-                const contentLength = headers.get("Content-Length");
-                const contentType = headers.get("Content-Type");
-                const etag = headers.get("ETag");
-                const lastModified = headers.get("Last-Modified");
-                const uploadExpires = headers.get("X-Upload-Expires");
-                const uploadOffset = headers.get("X-Upload-Offset");
-                const uploadComplete = headers.get("X-Upload-Complete");
-                const chunkedUpload = headers.get("X-Chunked-Upload");
-                const receivedChunks = headers.get("X-Received-Chunks");
-
-                const fileMeta: FileHeadMetadata = {};
-
-                if (contentLength) {
-                    fileMeta.contentLength = Number.parseInt(contentLength, 10);
-                }
-
-                if (contentType) {
-                    fileMeta.contentType = contentType;
-                }
-
-                if (etag) {
-                    fileMeta.etag = etag;
-                }
-
-                if (lastModified) {
-                    fileMeta.lastModified = lastModified;
-                }
-
-                if (uploadExpires) {
-                    fileMeta.uploadExpires = uploadExpires;
-                }
-
-                if (uploadOffset) {
-                    fileMeta.uploadOffset = Number.parseInt(uploadOffset, 10);
-                }
-
-                if (uploadComplete) {
-                    fileMeta.uploadComplete = uploadComplete === "true";
-                }
-
-                if (chunkedUpload) {
-                    fileMeta.chunkedUpload = chunkedUpload === "true";
-                }
-
-                if (receivedChunks) {
-                    try {
-                        fileMeta.receivedChunks = JSON.parse(receivedChunks) as number[];
-                    } catch {
-                        // Ignore parse errors
-                    }
-                }
-
-                return fileMeta;
+                return extractHeadMetadataFromHeaders(await fetchHead(url, { signal }));
             },
             queryKey: storageQueryKeys.files.head(endpoint, currentId),
         };
     });
 
-    const dataStore = (query.data as unknown as Readable<FileHeadMetadata | undefined> | null) ?? readable<FileHeadMetadata | undefined>();
-    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => query.data);
+    const errorStore = toReadable(() => query.error);
+    const isLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     return {
         data: derived(dataStore, ($data) => $data ?? undefined),

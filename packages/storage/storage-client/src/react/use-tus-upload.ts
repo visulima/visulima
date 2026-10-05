@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { FingerprintFunction } from "../core/fingerprint";
+import type { TusAdapter } from "../core/tus-adapter";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
@@ -166,10 +167,10 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
             callbacksRef.current.onSuccess?.(uploadResult);
         });
 
+        // `upload()` rejects with every error the adapter reports here, and its catch calls `onError`.
         adapterInstance.setOnError((uploadError) => {
             setError(uploadError);
             setIsUploading(false);
-            callbacksRef.current.onError?.(uploadError);
         });
 
         // Sync state with adapter periodically
@@ -203,8 +204,20 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         };
     }, [adapterInstance]);
 
+    // The adapter running the latest upload: options re-creating the adapter must not abort it, unmounting must.
+    const activeAdapterRef = useRef<TusAdapter | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            activeAdapterRef.current?.abort();
+        },
+        [],
+    );
+
     const upload = useCallback(
         async (file: File): Promise<UploadResult> => {
+            activeAdapterRef.current = adapterInstance;
+
             try {
                 return await adapterInstance.upload(file);
             } catch (error_) {
@@ -228,6 +241,8 @@ export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn =
         setIsPaused(false);
         setIsUploading(true);
         callbacksRef.current.onResume?.();
+
+        activeAdapterRef.current = adapterInstance;
 
         try {
             await adapterInstance.resume();

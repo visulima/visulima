@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import type { MultipartAdapter } from "../core/multipart-adapter";
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
 import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
@@ -154,9 +155,9 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
                 const item = itemOrBatch;
                 const uploadError = new Error(item.error ?? "Upload failed");
 
+                // `upload()` rejects with this error, and its catch calls `onError`.
                 setError(uploadError);
                 setIsUploading(false);
-                callbacksRef.current.onError?.(uploadError);
                 currentItemRef.current = undefined;
             }
         };
@@ -174,7 +175,19 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
         };
     }, [uploaderInstance]);
 
+    // The adapter running the latest upload: options re-creating the adapter must not abort it, unmounting must.
+    const activeAdapterRef = useRef<MultipartAdapter | undefined>(undefined);
+
+    useEffect(
+        () => () => {
+            activeAdapterRef.current?.abort();
+        },
+        [],
+    );
+
     const upload = async (file: File): Promise<UploadResult> => {
+        activeAdapterRef.current = uploaderInstance;
+
         // Use the convenience method from the adapter
         try {
             return await uploaderInstance.upload(file);

@@ -162,6 +162,9 @@ class AwsLightApiAdapter implements S3ApiOperations {
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
             region: config.region,
+            // aws4fetch retries 5xx/429 itself, 10 times by default: past the storage's retry config,
+            // and with a stream body it re-sends a consumed body ("body disturbed") in place of the S3 error.
+            retries: 0,
             secretAccessKey: config.secretAccessKey,
             service: config.service || "s3",
             sessionToken: config.sessionToken,
@@ -175,11 +178,16 @@ class AwsLightApiAdapter implements S3ApiOperations {
             ContentType?: string;
             Key: string;
             Metadata?: Record<string, string>;
+            StorageClass?: string;
         },
         options?: S3CallOptions,
     ): Promise<{ UploadId: string }> {
         const queryParams: Record<string, string> = { uploads: "" };
         const headers: Record<string, string> = {};
+
+        if (params.StorageClass) {
+            headers["x-amz-storage-class"] = params.StorageClass;
+        }
 
         if (params.ContentType) {
             headers["Content-Type"] = params.ContentType;
@@ -274,6 +282,42 @@ class AwsLightApiAdapter implements S3ApiOperations {
         }
 
         // Remove quotes from ETag
+        return { ETag: etag.replaceAll(/(^"|"$)/g, "") };
+    }
+
+    public async uploadPartCopy(
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; CopySourceRange: string; Key: string; PartNumber: number; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ ETag: string }> {
+        const url = this.buildUrl(params.Key, { partNumber: String(params.PartNumber), uploadId: params.UploadId });
+        const response = await this.aws.fetch(url, {
+            headers: {
+                "x-amz-copy-source": params.CopySource,
+                "x-amz-copy-source-range": params.CopySourceRange,
+                ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
+            },
+            method: "PUT",
+            signal: options?.signal,
+        });
+        const xmlText = await response.text();
+
+        if (!response.ok) {
+            throw requestError("Failed to copy part", response.status, xmlText);
+        }
+
+        const xml = parseXml(xmlText);
+
+        // Like CompleteMultipartUpload, a 200 can carry an <Error> body.
+        if (xml.Error !== undefined) {
+            throw requestError("Failed to copy part", 500, xmlText);
+        }
+
+        const etag = ((xml.CopyPartResult as Record<string, unknown> | undefined) ?? xml).ETag as string | undefined;
+
+        if (!etag) {
+            throw new Error("Failed to get ETag from response");
+        }
+
         return { ETag: etag.replaceAll(/(^"|"$)/g, "") };
     }
 
@@ -553,7 +597,16 @@ ${partsXml}
     }
 
     public async copyObject(
-        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: {
+            ACL?: string;
+            Bucket: string;
+            CopySource: string;
+            CopySourceIfMatch?: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
+            Key: string;
+            StorageClass?: string;
+        },
         options?: S3CallOptions,
     ): Promise<void> {
         const headers: Record<string, string> = {

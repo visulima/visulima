@@ -173,4 +173,28 @@ describe("uploader Batch Operations", () => {
 
         expect(itemIds).toStrictEqual([]);
     });
+
+    it("should finish a batch once its remaining items settle after one is aborted", async () => {
+        expect.assertions(1);
+
+        const uploader = createUploader({
+            endpoint: "/api/upload",
+        });
+        const onBatchFinalize = vi.fn();
+
+        uploader.on("BATCH_FINALIZE", onBatchFinalize);
+
+        const itemIds = uploader.addBatch([new File(["test1"], "test1.jpg", { type: "image/jpeg" }), new File(["test2"], "test2.jpg", { type: "image/jpeg" })]);
+
+        uploader.abortItem(itemIds[0]!);
+
+        await vi.waitFor(() => {
+            if (onBatchFinalize.mock.calls.length === 0) {
+                throw new Error("batch not finalized yet");
+            }
+        });
+
+        // One completed and one aborted item: reported like a partially aborted batch.
+        expect(uploader.getBatches()[0]?.status).toBe("error");
+    });
 });

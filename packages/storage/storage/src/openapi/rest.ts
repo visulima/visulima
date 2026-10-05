@@ -74,7 +74,8 @@ const swaggerSpec = (
                     type: "string",
                 },
                 "X-Received-Chunks": {
-                    description: "JSON array of received chunk offsets. Used for resumable uploads.",
+                    description:
+                        "JSON array of the byte ranges received, `[{ offset, length }]`, sorted by offset; contiguous chunks are merged into one range. Used for resumable uploads.",
                     type: "string",
                 },
                 "X-Total-Size": {
@@ -186,7 +187,8 @@ const swaggerSpec = (
                                     },
                                 },
                                 "X-Received-Chunks": {
-                                    description: "JSON array of received chunk offsets (chunked uploads only)",
+                                    description:
+                                        "JSON array of the byte ranges received, `[{ offset, length }]`; contiguous chunks are merged into one range (chunked uploads only)",
                                     schema: {
                                         $ref: "#/components/schemas/X-Received-Chunks",
                                     },

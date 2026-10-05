@@ -35,30 +35,8 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
 
         expect(stored.bytesWritten).toBe(30);
         expect(stored.metadata._chunks).toStrictEqual([
-            { checksum: "abc", length: 10, offset: 20 },
             { length: 10, offset: 0 },
-        ]);
-    });
-
-    it("should let the incoming checksum of a chunk win and keep the stored one when it has none", async () => {
-        expect.assertions(1);
-
-        const storage = new MemoryStorage();
-        const chunks = (first: string | undefined, second: string | undefined) => [
-            { checksum: first, length: 10, offset: 0 },
-            { checksum: second, length: 10, offset: 10 },
-        ];
-
-        await storage.saveMeta(chunked());
-        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("old", "kept"), _totalSize: 30 } }));
-        // A stale copy (no version) re-uploading chunk 0 with a new checksum and chunk 1 without one.
-        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("new", undefined), _totalSize: 30 } }));
-
-        const stored = await storage.getMeta("chunked-id");
-
-        expect(stored.metadata._chunks).toStrictEqual([
-            { checksum: "new", length: 10, offset: 0 },
-            { checksum: "kept", length: 10, offset: 10 },
+            { length: 10, offset: 20 },
         ]);
     });
 
@@ -95,7 +73,8 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
 
         const stored = await storage.getMeta("chunked-id");
 
-        expect((stored.metadata._chunks as { offset: number }[]).map((chunk) => chunk.offset).toSorted()).toStrictEqual([0, 10, 20]);
+        // All three chunks, merged into one range.
+        expect(stored.metadata._chunks).toStrictEqual([{ length: 30, offset: 0 }]);
     });
 
     it("should let a fresh record replace the stored progress", async () => {
@@ -162,8 +141,8 @@ describe("baseStorage saveMeta conditional saves", () => {
         expect(saveIfVersion).toHaveBeenCalledTimes(2);
         expect(stored.bytesWritten).toBe(30);
         expect(stored.metadata._chunks).toStrictEqual([
-            { length: 10, offset: 20 },
             { length: 10, offset: 0 },
+            { length: 10, offset: 20 },
         ]);
     });
 
@@ -186,8 +165,8 @@ describe("baseStorage saveMeta conditional saves", () => {
         const stored = await storage.getMeta("chunked-id");
 
         expect(stored.metadata._chunks).toStrictEqual([
-            { length: 10, offset: 20 },
             { length: 10, offset: 0 },
+            { length: 10, offset: 20 },
         ]);
     });
 
