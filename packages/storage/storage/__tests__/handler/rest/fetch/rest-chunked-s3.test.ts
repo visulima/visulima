@@ -79,6 +79,20 @@ const createS3Fake = (): {
             return new Response(null, { status: 204 });
         }
 
+        const copySource = request.headers.get("x-amz-copy-source");
+
+        if (request.method === "PUT" && copySource !== null) {
+            const source = objects.get(decodeURIComponent(copySource.replace(/^\/?uploads\//u, "")));
+
+            if (!source) {
+                return missing();
+            }
+
+            objects.set(key, { ...source });
+
+            return xml(`<CopyObjectResult><ETag>"c${String(counter)}"</ETag></CopyObjectResult>`);
+        }
+
         if (request.method === "PUT") {
             const headers = Object.fromEntries([...request.headers].filter(([name]) => name.startsWith("x-amz-meta-")));
 
