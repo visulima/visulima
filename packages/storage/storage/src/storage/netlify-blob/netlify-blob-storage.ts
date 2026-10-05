@@ -36,6 +36,8 @@ import type { NetlifyBlobStorageOptions } from "./types";
 class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
     public static override readonly name: string = "netlify-blob";
 
+    public override readonly storageKind: string = "netlify-blob";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

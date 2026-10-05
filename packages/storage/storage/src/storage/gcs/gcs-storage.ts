@@ -53,6 +53,8 @@ const validateStatus = (code: number): boolean => (code >= 200 && code < 300) ||
 class GCStorage extends BaseStorage<GCSFile> {
     public static override readonly name: string = "gcs";
 
+    public override readonly storageKind: string = "gcs";
+
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
 

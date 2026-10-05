@@ -56,6 +56,8 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
 class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
 
+    public override readonly storageKind: string = "aws-light";
+
     private s3Api: AwsLightApiAdapter;
 
     public constructor(config: AwsLightStorageOptions) {

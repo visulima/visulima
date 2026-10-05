@@ -59,6 +59,8 @@ interface MemoryEntry {
 class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "memory";
 
+    public override readonly storageKind: string = "memory";
+
     protected override async statObject(id: string): Promise<StoredObject | undefined> {
         const entry = this.store.get(id);
 

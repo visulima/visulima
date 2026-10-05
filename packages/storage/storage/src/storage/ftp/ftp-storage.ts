@@ -82,6 +82,8 @@ const downloadToBuffer = async (client: Client, path: string, startAt?: number):
 class FtpStorage extends BaseStorage<FtpFile> {
     public static override readonly name: string = "ftp";
 
+    public override readonly storageKind: string = "ftp";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

@@ -72,6 +72,8 @@ const isBucket = (value: unknown): value is FirebaseBucket =>
 class FirebaseStorage extends BaseStorage<FirebaseFile> {
     public static override readonly name: string = "firebase";
 
+    public override readonly storageKind: string = "firebase";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

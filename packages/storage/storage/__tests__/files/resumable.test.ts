@@ -111,6 +111,24 @@ describe("resumable uploads", () => {
         );
     });
 
+    it("should name the adapter kind in the token, also for a subclass, and accept a token naming the class", async () => {
+        expect.assertions(3);
+
+        class TenantStorage extends MemoryStorage {}
+
+        const adapter = new TenantStorage();
+        const token = await startAndDie(adapter);
+
+        expect(JSON.parse(token)).toHaveProperty("adapter", "memory");
+
+        // Tokens written before `storageKind` carry `constructor.name`.
+        const legacy = JSON.stringify({ ...JSON.parse(token), adapter: "TenantStorage" });
+
+        await new Files({ adapter }).upload("dir/big.bin", source, { control: UploadControl.from(legacy), multipart });
+
+        await expect(new Files({ adapter }).download("dir/big.bin")).resolves.toHaveProperty("body", source);
+    });
+
     it("should reject a token for another key, size or adapter", async () => {
         expect.assertions(4);
 

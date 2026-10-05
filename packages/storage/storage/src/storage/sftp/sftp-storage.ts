@@ -56,6 +56,8 @@ const toAbortError = (reason: unknown): Error => {
 class SftpStorage extends BaseStorage<SftpFile> {
     public static override readonly name: string = "sftp";
 
+    public override readonly storageKind: string = "sftp";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

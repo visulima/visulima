@@ -343,7 +343,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
 
                 const token = await startAndDie(first);
 
-                expect(JSON.parse(token)).toMatchObject({ adapter: first.constructor.name, key: "big.bin", loaded: PART_SIZE, size: source.length, version: 2 });
+                expect(JSON.parse(token)).toMatchObject({ adapter: first.storageKind, key: "big.bin", loaded: PART_SIZE, size: source.length, version: 2 });
 
                 // Process B: fresh instances over the same backend and metadata store.
                 const second = backend.createStorage();

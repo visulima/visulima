@@ -237,6 +237,8 @@ const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
 class DropboxStorage extends BaseStorage<DropboxFile> {
     public static override readonly name: string = "dropbox";
 
+    public override readonly storageKind: string = "dropbox";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

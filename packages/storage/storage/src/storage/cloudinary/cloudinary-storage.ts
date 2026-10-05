@@ -81,6 +81,8 @@ const parseCloudinaryUrl = (url: string | undefined): { apiKey?: string; apiSecr
 class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public static override readonly name: string = "cloudinary";
 
+    public override readonly storageKind: string = "cloudinary";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

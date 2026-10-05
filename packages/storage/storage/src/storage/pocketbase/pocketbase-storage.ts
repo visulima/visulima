@@ -64,6 +64,8 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
 class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public static override readonly name: string = "pocketbase";
 
+    public override readonly storageKind: string = "pocketbase";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

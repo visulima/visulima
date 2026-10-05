@@ -49,6 +49,8 @@ import LocalMetaStorage from "./local-meta-storage";
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "disk";
 
+    public override readonly storageKind: string = "disk";
+
     public override checksumTypes: string[] = ["md5", "sha1"];
 
     public override readonly supportsRange: boolean = true;

@@ -78,6 +78,8 @@ const basename = (key: string): string => {
 class UploadThingStorage extends BaseStorage<UploadThingFile> {
     public static override readonly name: string = "uploadthing";
 
+    public override readonly storageKind: string = "uploadthing";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

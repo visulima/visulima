@@ -521,13 +521,16 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         options: (OperationOptions & UploadOptions) | undefined,
         operationOptions: OperationOptions | undefined,
     ): Promise<StorageFile> {
-        const adapterName = this.adapter.constructor.name;
+        const adapterName = this.adapter.storageKind;
         const session = control._session;
         let id: string;
         let offset = 0;
 
         if (session) {
-            if (session.adapter !== adapterName || session.uploadId !== fileInit.id || session.size !== size) {
+            // Tokens written before `storageKind` carry the adapter's class name.
+            const sameAdapter = session.adapter === adapterName || session.adapter === this.adapter.constructor.name;
+
+            if (!sameAdapter || session.uploadId !== fileInit.id || session.size !== size) {
                 throwErrorCode(
                     ERRORS.BAD_REQUEST,
                     `The resume token describes ${String(session.size)} bytes of "${String(session.uploadId)}" on ${String(session.adapter)}, not ${String(size)} bytes of "${fileInit.id}" on ${adapterName}`,

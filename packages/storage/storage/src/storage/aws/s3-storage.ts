@@ -62,6 +62,8 @@ import type { AwsError, S3StorageOptions } from "./types";
 class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
 
+    public override readonly storageKind: string = "s3";
+
     private s3Api: S3ClientAdapter;
 
     private rawClient: S3Client;

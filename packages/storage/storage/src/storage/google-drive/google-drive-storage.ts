@@ -195,6 +195,8 @@ const toUint8 = (data: unknown): Uint8Array => {
 class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
     public static override readonly name: string = "google-drive";
 
+    public override readonly storageKind: string = "google-drive";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

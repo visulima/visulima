@@ -66,6 +66,8 @@ const rethrowConditionNotMet = (error: unknown): never => {
 class AzureStorage extends BaseStorage {
     public static override readonly name: string = "azure";
 
+    public override readonly storageKind: string = "azure";
+
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
 

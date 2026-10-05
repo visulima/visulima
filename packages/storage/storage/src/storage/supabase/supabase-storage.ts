@@ -90,6 +90,8 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
 class SupabaseStorage extends BaseStorage<SupabaseFile> {
     public static override readonly name: string = "supabase";
 
+    public override readonly storageKind: string = "supabase";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

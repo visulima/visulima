@@ -321,6 +321,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     public readonly supportsUploadPost: boolean = false;
 
     /**
+     * Stable identifier of the adapter, written into resume tokens (`UploadControl.toJSON()`). Unlike
+     * `constructor.name` it survives minifiers and is inherited by subclasses.
+     */
+    public readonly storageKind: string = this.constructor.name;
+
+    /**
      * Longest `expiresIn` (seconds) the adapter can sign a URL or upload policy for, when the
      * provider has a hard ceiling (SigV4: 7 days). `undefined` when unknown or unlimited.
      */

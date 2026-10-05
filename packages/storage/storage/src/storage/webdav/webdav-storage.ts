@@ -139,6 +139,8 @@ const toFile = (key: string, entry: DavEntry): WebdavFile => {
 class WebdavStorage extends BaseStorage<WebdavFile> {
     public static override readonly name: string = "webdav";
 
+    public override readonly storageKind: string = "webdav";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

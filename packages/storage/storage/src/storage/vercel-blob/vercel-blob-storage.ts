@@ -45,6 +45,8 @@ type VercelBlobCredentials = { oidcToken: string; storeId: string; token?: never
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
 
+    public override readonly storageKind: string = "vercel-blob";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

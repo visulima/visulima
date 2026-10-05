@@ -240,6 +240,8 @@ const isConflictError = (error: unknown): boolean => {
 class BoxStorage extends BaseStorage<BoxFile> {
     public static override readonly name: string = "box";
 
+    public override readonly storageKind: string = "box";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

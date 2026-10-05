@@ -138,6 +138,8 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
 class BunnyStorage extends BaseStorage<BunnyFile> {
     public static override readonly name: string = "bunny";
 
+    public override readonly storageKind: string = "bunny";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 

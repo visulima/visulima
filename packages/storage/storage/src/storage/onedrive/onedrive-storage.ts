@@ -274,6 +274,8 @@ const isNotFoundError = (error: unknown): boolean => {
 class OneDriveStorage extends BaseStorage<OneDriveFile> {
     public static override readonly name: string = "onedrive";
 
+    public override readonly storageKind: string = "onedrive";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
