@@ -5386,7 +5386,7 @@ importers:
         version: link:../../data-manipulation/redact
       '@visulima/string':
         specifier: 3.1.0
-        version: link:../../data-manipulation/string
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -6973,7 +6973,7 @@ importers:
         specifier: catalog:dev
         version: 2.1.0(278d6b5839838acf520c36bfd0797ddb)
       '@visulima/storage':
-        specifier: workspace:*
+        specifier: 2.0.32
         version: link:../storage
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -7972,7 +7972,7 @@ importers:
         version: link:../../filesystem/path
       '@visulima/string':
         specifier: 3.1.0
-        version: link:../../data-manipulation/string
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -8111,7 +8111,7 @@ importers:
         version: link:../../filesystem/path
       '@visulima/string':
         specifier: 3.1.0
-        version: link:../../data-manipulation/string
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -8740,7 +8740,7 @@ importers:
         version: 2.1.0(8d376edd13fbf05fb12cb1892bd109b1)
       '@visulima/string':
         specifier: 3.1.0
-        version: link:../../data-manipulation/string
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -9090,7 +9090,7 @@ importers:
         version: 2.1.0(8d376edd13fbf05fb12cb1892bd109b1)
       '@visulima/string':
         specifier: 3.1.0
-        version: link:../../data-manipulation/string
+        version: 3.1.0
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.11(@vitest/browser@4.1.11)(vitest@4.1.11)
@@ -9194,7 +9194,7 @@ importers:
         specifier: 6.1.0
         version: link:../../error-debugging/error
       '@visulima/string':
-        specifier: 3.1.0
+        specifier: 3.1.1
         version: link:../../data-manipulation/string
       react:
         specifier: 19.2.6
@@ -9440,7 +9440,7 @@ importers:
         specifier: catalog:dev
         version: 2.1.0(8d376edd13fbf05fb12cb1892bd109b1)
       '@visulima/tui':
-        specifier: 4.0.28
+        specifier: 4.0.29
         version: link:../tui
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -10237,10 +10237,10 @@ importers:
         specifier: 1.0.6
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 4.0.28
+        specifier: 4.0.29
         version: link:../../terminal/tui
       '@visulima/tui-kit':
-        specifier: 1.0.31
+        specifier: 1.0.32
         version: link:../../terminal/tui-kit
       fb-watchman:
         specifier: '>=2.0.0'
@@ -10397,7 +10397,7 @@ importers:
         specifier: 1.0.1
         version: link:../../terminal/spinner
       '@visulima/string':
-        specifier: 3.1.0
+        specifier: 3.1.1
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
         specifier: 3.2.35
@@ -10587,7 +10587,7 @@ importers:
         specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 4.1.19
+        specifier: 4.1.20
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -20490,6 +20490,10 @@ packages:
         optional: true
       vue-tsc:
         optional: true
+
+  '@visulima/string@3.1.0':
+    resolution: {integrity: sha512-0FuFRpmludwFn7kwAmRZKd3JI29PFwwUtHC5XMw+G2FrGBjTM80AVlQuQAw8RhWZEkPb8kuglsq1FJ7bZ1sjIA==}
+    engines: {node: ^22.14.0 || >=24.10.0}
 
   '@visulima/tabular@4.1.0':
     resolution: {integrity: sha512-fIzyHilmtFwEBfS9Tmc/G/PY77yu7+SrJfXljhFdWOW4K881wFjIuVd1bvydAqPJ3a0kgQ11iP4i50gG4JXtJQ==}
@@ -47529,6 +47533,8 @@ snapshots:
       - json5
       - smol-toml
 
+  '@visulima/string@3.1.0': {}
+
   '@visulima/tabular@4.1.0': {}
 
   '@visulima/tsconfig@2.1.3(yaml@2.9.0)':
@@ -51272,7 +51278,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
@@ -62710,7 +62716,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
