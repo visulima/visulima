@@ -45,7 +45,7 @@ Every provider/runtime SDK is an **optional** peer (see `peerDependenciesMeta` i
 
 ### Live tests
 
-`__tests__/live/` runs the storage contract and a slice of the matrix against real services: MinIO (S3Storage, AwsLightStorage; `pgsty/minio`, as MinIO no longer publishes images), Azurite, fake-gcs-server, an SFTP server (atmoz/sftp) and an FTP server (vsftpd). They are skipped unless `LIVE_TESTS=1`, and excluded from `pnpm run test`.
+`__tests__/live/` runs the storage contract and a slice of the matrix against real services: MinIO and SeaweedFS (S3Storage, AwsLightStorage; `pgsty/minio`, as MinIO no longer publishes images), Azurite, fake-gcs-server, an SFTP server (atmoz/sftp), an FTP server (vsftpd), Apache httpd's mod_dav (WebDAV, with `FileETag Digest`: by default Apache hands out weak ETags for files changed in the last second, which `If-Match` never matches), PocketBase, and Supabase's storage-api over Postgres. They are skipped unless `LIVE_TESTS=1`, and excluded from `pnpm run test`. Every image is pinned by digest.
 
 ```bash
 docker compose -f docker-compose.live.yml up -d --wait
@@ -53,7 +53,7 @@ LIVE_TESTS=1 pnpm run test:live
 docker compose -f docker-compose.live.yml down --volumes
 ```
 
-Every test gets a fresh bucket, container or directory. The connection settings default to the compose services and can be pointed elsewhere with `LIVE_S3_ENDPOINT`, `LIVE_S3_ACCESS_KEY`, `LIVE_S3_SECRET_KEY`, `LIVE_S3_REGION`, `LIVE_AZURE_CONNECTION_STRING`, `LIVE_GCS_ENDPOINT`, `LIVE_SFTP_HOST`/`_PORT`/`_USER`/`_PASSWORD` and `LIVE_FTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_HOME` (see `__tests__/live/backends.ts`). CI runs them in `.github/workflows/storage-live.yml` on pull requests touching this package and on `main`.
+Every test gets a fresh bucket, container or directory. The connection settings default to the compose services and can be pointed elsewhere with `LIVE_S3_ENDPOINT`, `LIVE_S3_ACCESS_KEY`, `LIVE_S3_SECRET_KEY`, `LIVE_S3_REGION`, `LIVE_AZURE_CONNECTION_STRING`, `LIVE_GCS_ENDPOINT`, `LIVE_SFTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`, `LIVE_FTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_HOME`, `LIVE_SEAWEEDFS_ENDPOINT`, `LIVE_WEBDAV_URL`/`_USER`/`_PASSWORD`, `LIVE_POCKETBASE_URL`/`_EMAIL`/`_PASSWORD` and `LIVE_SUPABASE_URL`/`_JWT_SECRET` (see `__tests__/live/backends.ts`). A service that can't run a contract scenario declares it in `contractSkips` with the reason (S3 refuses requests signed with a faked clock; fake-gcs-server does not emulate the resumable session status query). CI runs them in `.github/workflows/storage-live.yml` on pull requests touching this package and on `main`.
 
 ## Related
 

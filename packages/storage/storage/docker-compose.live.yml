@@ -76,3 +76,99 @@
             "interval": "2s"
             "timeout": "5s"
             "retries": 30
+
+    # A second S3-compatible server (S3Storage, AwsLightStorage), to catch where S3 implementations differ.
+    "seaweedfs":
+        "image": "chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d"
+        # Every test bucket is a collection with volumes of its own: grow one small volume at a time,
+        # with no cap on their number.
+        "command": ["server", "-dir=/data", "-s3", "-s3.port=8333", "-master.volumeSizeLimitMB=32", "-volume.max=0"]
+        "environment":
+            "WEED_MASTER_VOLUME_GROWTH_COPY_1": "1"
+            "AWS_ACCESS_KEY_ID": "live-access-key"
+            "AWS_SECRET_ACCESS_KEY": "live-secret-key"
+        "ports": ["8333:8333"]
+        "healthcheck":
+            "test": ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8333/healthz"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 60
+
+    # WebDAV: Apache httpd's mod_dav, user "live", password "live-password", served under /dav.
+    "webdav":
+        "image": "httpd:2.4.69@sha256:41163d514c02ac205161c1549b499bc11adfdeb6291735b433d706af7e64382a"
+        "command":
+            - "sh"
+            - "-c"
+            - |
+                htpasswd -cb conf/dav.passwd live live-password
+                mkdir -p dav var && chown www-data dav var
+                cat >> conf/httpd.conf <<'CONF'
+                LoadModule dav_module modules/mod_dav.so
+                LoadModule dav_fs_module modules/mod_dav_fs.so
+                DavLockDB var/DavLock
+                Alias /dav /usr/local/apache2/dav
+                <Directory /usr/local/apache2/dav>
+                    Dav On
+                    FileETag Digest
+                    AuthType Basic
+                    AuthName dav
+                    AuthUserFile conf/dav.passwd
+                    Require valid-user
+                </Directory>
+                CONF
+                exec httpd-foreground
+        "ports": ["8081:80"]
+        "healthcheck":
+            "test": ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/80"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # PocketBase, with the superuser live@example.com / live-password. The tests create their collection.
+    "pocketbase":
+        "image": "ghcr.io/muchobien/pocketbase:0.40.4@sha256:9390b7b63ce114dbab577be72e6ef75f718a19083866607fcbdd1b915632b943"
+        "environment":
+            "PB_ADMIN_EMAIL": "live@example.com"
+            "PB_ADMIN_PASSWORD": "live-password"
+        "ports": ["8090:8090"]
+        "healthcheck":
+            "test": ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8090/api/health"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    # Supabase Storage: the storage-api server on its file backend, over a plain Postgres. The tests
+    # sign their service_role JWT with AUTH_JWT_SECRET.
+    "supabase-db":
+        "image": "postgres:17.11-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+        "environment":
+            # Only reachable on the compose network.
+            "POSTGRES_HOST_AUTH_METHOD": "trust"
+        "healthcheck":
+            "test": ["CMD", "pg_isready", "-U", "postgres"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 30
+
+    "supabase":
+        "image": "supabase/storage-api:v1.79.31@sha256:4e0d73f5c2aef4dfaf31233d4086dde78c55e5d18cf954479795e7dcbb3e1448"
+        "depends_on":
+            "supabase-db":
+                "condition": "service_healthy"
+        "environment":
+            "AUTH_JWT_SECRET": "live-jwt-secret-at-least-32-characters-long"
+            "DATABASE_URL": "postgres://postgres@supabase-db:5432/postgres"
+            "DB_INSTALL_ROLES": "true"
+            "FILE_SIZE_LIMIT": "104857600"
+            "FILE_STORAGE_BACKEND_PATH": "/var/lib/storage"
+            "GLOBAL_S3_BUCKET": "live"
+            "REGION": "local"
+            "STORAGE_BACKEND": "file"
+            "TENANT_ID": "live"
+        "ports": ["5000:5000"]
+        "healthcheck":
+            "test": ["CMD", "node", "-e", "fetch('http://127.0.0.1:5000/status').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+            "interval": "2s"
+            "timeout": "5s"
+            "retries": 60

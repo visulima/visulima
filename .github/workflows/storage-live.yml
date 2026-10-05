@@ -1,7 +1,8 @@
 # Runs @visulima/storage's live tests (the storage contract and the upload handlers end to end)
-# against real services started from packages/storage/storage/docker-compose.live.yml: MinIO for
-# S3Storage and AwsLightStorage, Azurite, fake-gcs-server, an SFTP and an FTP server. The fakes the
-# regular test job uses can't show how a real service answers; this job does.
+# against real services started from packages/storage/storage/docker-compose.live.yml: MinIO and
+# SeaweedFS for S3Storage and AwsLightStorage, Azurite, fake-gcs-server, an SFTP and an FTP server,
+# Apache mod_dav (WebDAV), PocketBase and Supabase's storage-api. The fakes the regular test job
+# uses can't show how a real service answers; this job does.
 
 name: "Storage Live Tests"
 
