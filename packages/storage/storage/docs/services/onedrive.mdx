@@ -1,10 +1,12 @@
 # Microsoft OneDrive
 
-> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Graph-specific behavior.
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, Entra app setup, OAuth wiring, and Graph-specific behavior.
 
 ## Overview
 
-The OneDrive adapter targets Microsoft Graph (`/me/drive` or `/users/{id}/drive`) via the official `@microsoft/microsoft-graph-client`. It supports app-only (client-credentials) auth for service deployments, refresh-token auth for end-user flows, or a pre-built Graph client. Refresh-token caching uses a shared OAuth helper with 60 s leeway.
+`OneDriveStorage` talks to Microsoft Graph through the official `@microsoft/microsoft-graph-client`. It targets one drive — the signed-in user's (`/me/drive`), a given user's (`/users/{id}/drive`), a SharePoint site's default library (`/sites/{id}/drive`) or any drive by ID (`/drives/{id}`) — and maps keys onto item paths below `rootFolderPath` (`avatars/42.png` → `/root:/<rootFolderPath>/avatars/42.png`).
+
+Files up to 250 MB are written with one `PUT …:/content`; larger files use a Graph upload session in 5 MiB chunks. Both replace an existing item (`conflictBehavior: replace`). For SharePoint document libraries addressed by site URL or library name, use the [SharePoint adapter](./sharepoint.mdx), which wraps this one.
 
 ## Installation
 
@@ -20,87 +22,177 @@ yarn add @microsoft/microsoft-graph-client
 pnpm add @microsoft/microsoft-graph-client
 ```
 
-## Usage
+## Provider setup
 
-### App-only (client-credentials)
+1. In the [Microsoft Entra admin center](https://entra.microsoft.com) → **App registrations → New registration**. Note the **Application (client) ID** and **Directory (tenant) ID**.
+2. **Certificates & secrets → New client secret.** Copy the value (shown once).
+3. **API permissions → Microsoft Graph.** Grant the least that covers your target:
+
+    | Auth shape                          | Target                          | Permission                                                                                |
+    | ----------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------- |
+    | `oauth` / `accessToken` (delegated) | `/me/drive` (no target option)  | `Files.ReadWrite` + `offline_access` (for refresh tokens)                                 |
+    | delegated                           | another user's drive, `driveId` | `Files.ReadWrite.All` + `offline_access`                                                  |
+    | delegated                           | `siteId`                        | `Sites.ReadWrite.All` + `offline_access`                                                  |
+    | `clientCredentials` (application)   | `userId`, `driveId`             | `Files.ReadWrite.All` (admin consent)                                                     |
+    | `clientCredentials` (application)   | `siteId` / SharePoint drive     | `Sites.Selected` + a `write` grant on that site, or `Sites.ReadWrite.All` (admin consent) |
+
+    Application permissions always need **Grant admin consent**.
+
+4. For `oauth`, run an interactive sign-in once (authorization-code flow with `offline_access`) and store the refresh token. The adapter refreshes it with scope `https://graph.microsoft.com/.default`, so the token carries whatever was consented. Personal Microsoft accounts use `tenantId: "consumers"`; app-only (`clientCredentials`) tokens don't work for personal OneDrive.
+5. `publicByDefault: true` creates **anonymous** view links. Organizations must allow "Anyone" sharing links in the SharePoint admin center, or `createLink` fails.
+
+Browsers upload to your handler, not Graph, so CORS is configured on your own server. The exception is `getUploadUrl()`: the returned upload-session URL is pre-authenticated and is called directly with `PUT` + `Content-Range`.
+
+## Configuration
 
 ```ts
-import OneDriveStorage from "@visulima/storage/provider/onedrive";
+import { OneDriveStorage } from "@visulima/storage/provider/onedrive";
 
+// Minimal: delegated refresh token from env (ONEDRIVE_REFRESH_TOKEN + ONEDRIVE_CLIENT_ID), targets /me/drive
+const storage = new OneDriveStorage({});
+```
+
+```ts
+// Production: app-only, a user's drive, dedicated folder
 const storage = new OneDriveStorage({
-    clientId: process.env.ONEDRIVE_CLIENT_ID!,
-    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET!,
-    tenantId: process.env.ONEDRIVE_TENANT_ID!,
-    driveUserId: process.env.ONEDRIVE_USER_ID, // target a specific user's drive
-    basePath: "uploads",
+    clientCredentials: {
+        clientId: process.env.ONEDRIVE_CLIENT_ID!,
+        clientSecret: process.env.ONEDRIVE_CLIENT_SECRET!,
+        tenantId: process.env.ONEDRIVE_TENANT_ID!,
+    },
+    userId: process.env.ONEDRIVE_USER_ID!, // app-only tokens can't use /me/drive
+    rootFolderPath: "uploads",
+    maxUploadSize: "1GB", // writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
 });
 ```
 
-### Refresh-token (delegated end-user auth)
+### Options
+
+| Option              | Type                                                        | Default              | Description                                                                                                          |
+| ------------------- | ----------------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `client`            | `Client` (Graph)                                            | —                    | Pre-built Graph client (e.g. with `@azure/identity`). Takes precedence over every auth option.                       |
+| `accessToken`       | `string \| () => string \| Promise<string>`                 | —                    | Static token, or a function called for each Graph request.                                                           |
+| `clientCredentials` | `{ clientId, clientSecret, tenantId }`                      | —                    | App-only auth. Requires `driveId`, `siteId` or `userId`.                                                             |
+| `oauth`             | `{ clientId, clientSecret?, refreshToken, tenantId? }`      | `tenantId: "common"` | Delegated auth; access tokens are cached until ~60 s before expiry.                                                  |
+| `driveId`           | `string`                                                    | —                    | Target `/drives/{id}`.                                                                                               |
+| `siteId`            | `string`                                                    | —                    | Target `/sites/{id}/drive` (the site's default library).                                                             |
+| `userId`            | `string`                                                    | —                    | Target `/users/{id}/drive` (ID or UPN).                                                                              |
+| `rootFolderPath`    | `string`                                                    | drive root           | Folder that acts as the bucket root. `.`/`..` segments are rejected.                                                 |
+| `publicByDefault`   | `boolean`                                                   | `false`              | `getReadUrl()` creates an anonymous `view` link instead of returning the short-lived `@microsoft.graph.downloadUrl`. |
+| `copyTimeoutMs`     | `number`                                                    | `60000`              | How long `copy()` polls Graph's async-copy monitor (1 s interval).                                                   |
+| `metaStorageConfig` | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir          | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                 |
+
+`accessToken`, `clientCredentials` and `oauth` are mutually exclusive, as are `driveId`, `siteId` and `userId`. Auth precedence: `client` → `accessToken` → `clientCredentials` → `oauth` → env.
+
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
+
+### Environment variables
+
+Read only when no auth option and no `client` is passed, in this order:
+
+| Variables                                                                                          | Auth               |
+| -------------------------------------------------------------------------------------------------- | ------------------ |
+| `ONEDRIVE_ACCESS_TOKEN`                                                                            | static token       |
+| `ONEDRIVE_REFRESH_TOKEN` + `ONEDRIVE_CLIENT_ID` (+ `ONEDRIVE_CLIENT_SECRET`, `ONEDRIVE_TENANT_ID`) | refresh token      |
+| `ONEDRIVE_CLIENT_ID` + `ONEDRIVE_CLIENT_SECRET` + `ONEDRIVE_TENANT_ID`                             | client credentials |
+
+Target options (`driveId`, `userId`, …) have no env fallback. Env client credentials without a target fall back to `/me/drive`, which Graph rejects for app-only tokens.
+
+### Auth variants
 
 ```ts
-const storage = new OneDriveStorage({
-    clientId: process.env.ONEDRIVE_CLIENT_ID!,
-    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
-    tenantId: process.env.ONEDRIVE_TENANT_ID, // optional; defaults to `common`
-    refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN!,
+// Delegated refresh token
+new OneDriveStorage({
+    oauth: {
+        clientId: process.env.ONEDRIVE_CLIENT_ID!,
+        clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
+        refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN!,
+        tenantId: process.env.ONEDRIVE_TENANT_ID, // defaults to "common"
+    },
 });
-```
 
-### Pre-built client
+// Token from your own identity layer
+new OneDriveStorage({ accessToken: async () => getTokenFromYourIdentityLayer() });
 
-```ts
+// Pre-built client
 import { Client } from "@microsoft/microsoft-graph-client";
 
-const storage = new OneDriveStorage({
+new OneDriveStorage({
     client: Client.init({ authProvider: async (done) => done(null, await getToken()) }),
 });
 ```
 
-Pre-built clients bypass the adapter's auth bookkeeping entirely.
+## Metadata storage
 
-## Configuration
+Graph can't store the adapter's upload bookkeeping on a `driveItem`, so records live in a `LocalMetaStorage`: one JSON file per upload at `<directory>/<prefix><id><suffix>` (default `<os tmpdir>/Upload_meta/<id>.META`).
 
-### `basePath`
+- **Finished uploads keep their record.** `get()` takes content type, original name and custom metadata from it; `delete()` removes it.
+- **Multi-instance deployments** must share the records: point `metaStorageConfig.directory` at a shared volume, or pass any `MetaStorage` as `metaStorage` (for example `S3MetaStorage` from `@visulima/storage/provider/aws`, or a Redis/database-backed subclass of `MetaStorage`).
+- **Expiration only covers this storage's uploads.** `purge()` walks the meta storage's records. A meta storage that can't list falls back to the drive listing, whose items carry no creation date, so nothing is purged.
+- Keys without a record (items put into the drive by other means) are read, deleted and checked directly by path.
 
-All operations are rooted under `basePath` so the same Microsoft tenant can host multiple logical "buckets":
+## Behaviour & limits
+
+| Topic                 | Behaviour                                                                                                                                                                                                                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable   | Not supported through the handlers (`supportsResumableWrites: false`). A chunk that doesn't start at 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`. TUS and chunked REST clients must send the file in one request.                                                                                                   |
+| Memory                | `write()` buffers the whole body. Cap it with `maxUploadSize`; for multi-GB files let the client upload to `getUploadUrl()` instead.                                                                                                                                                                                                            |
+| Large files           | > 250 MB uses `createUploadSession` and 5 MiB `PUT`s, transparently.                                                                                                                                                                                                                                                                            |
+| Range reads           | Not supported (`supportsRange: false`); `get()` downloads the whole item.                                                                                                                                                                                                                                                                       |
+| `getReadUrl(key)`     | `@microsoft.graph.downloadUrl` (pre-authenticated, short-lived — fetch a fresh one per request), or an anonymous view link with `publicByDefault`. `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.                                                                                                                 |
+| `getUploadUrl(key)`   | A Graph upload-session URL (`conflictBehavior: replace`). The client `PUT`s byte ranges with `Content-Range` (multiples of 320 KiB) — see [Microsoft's docs](https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession). `contentLength` → `BAD_REQUEST` (a session can't enforce it). The uploaded item gets no upload record. |
+| `list()`              | Walks `rootFolderPath` and all sub-folders breadth-first, following `@odata.nextLink`, until `limit` files. IDs are paths relative to the root.                                                                                                                                                                                                 |
+| `copy()`              | Native async copy; polls the monitor URL up to `copyTimeoutMs`.                                                                                                                                                                                                                                                                                 |
+| `move()`              | `PATCH` of name + parent. Drops the source's upload record.                                                                                                                                                                                                                                                                                     |
+| Custom `filename`     | The returned name is the item path; the record maps the upload ID to it.                                                                                                                                                                                                                                                                        |
+| Cancellation, retries | `signal`/`timeout` are best-effort — the SDK can't cancel an in-flight request. `retryConfig` applies (default: 3 retries with exponential backoff).                                                                                                                                                                                            |
+
+## Using it with the handlers
+
+Because writes are single-request, prefer the multipart or REST handlers (or TUS clients that send the whole file in one `PATCH`).
 
 ```ts
-new OneDriveStorage({
-    /* …auth… */
-    basePath: "uploads/avatars",
-});
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const rest = new Rest({ storage });
+
+app.use("/files", rest.handle);
 ```
 
-Keys are then joined as `uploads/avatars/<key>` inside `/drive/root:`.
+```ts
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
-### Drive selection
+const multipart = new Multipart({ storage });
 
-- Default: `/me/drive` (the authenticated user).
-- `driveUserId`: targets `/users/{id}/drive` — useful for app-only auth where there's no "me".
-- Pre-built client: target whatever the client is wired for.
+export const handler = (request: Request): Promise<Response> => multipart.fetch(request);
+```
 
-## URL Generation
+```ts
+import { Files } from "@visulima/storage";
 
-### `getReadUrl(key, options?)`
+const files = new Files({ adapter: storage });
 
-- Default: returns the `@microsoft.graph.downloadUrl` from the item metadata (pre-authenticated, short-lived, ~1 h).
-- `publicByDefault: true`: calls `createLink` (`type: "view", scope: "anonymous"`) to mint an anonymous sharing link.
-- `responseContentDisposition` is not supported.
+await files.upload("contracts/2024/acme.pdf", pdfBuffer, { contentType: "application/pdf" });
 
-### `getUploadUrl(key, options?)`
+const downloadUrl = await files.url("contracts/2024/acme.pdf");
 
-Returns an upload-session URL from `POST /drive/root:/{path}:/createUploadSession`. The caller drives the session with `PUT` requests carrying `Content-Range` headers — see Microsoft's [resumable upload docs](https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession).
+// Large file straight from the browser: hand out an upload session
+const sessionUrl = await files.signedUploadUrl("videos/launch.mp4", { contentType: "video/mp4" });
+```
 
-## Features
+## Troubleshooting
 
-- **Two server-side auth flows** — client-credentials for app deployments, refresh-token for delegated end-user access.
-- **Shared OAuth helper** — refresh-token mode reuses the same caching/leeway logic as the Dropbox adapter.
-- **Upload sessions** — `getUploadUrl()` initiates a Microsoft Graph resumable upload session.
-- **Sharing-link minting** — `publicByDefault` swaps the read-URL strategy without changing the call site.
-
-## Limitations
-
-- Single-shot writes via `write()` buffer the part stream — use `getUploadUrl()` for large transfers.
-- `parentReference.path` requires the literal `/drive/root:` prefix; the adapter handles this for you but `storage.raw` callers should be aware.
-- Read URLs (`@microsoft.graph.downloadUrl`) are short-lived (~1 h) — re-call `getReadUrl()` for each request rather than caching.
+| Symptom                                                                    | Cause / fix                                                                                                             |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `clientCredentials (app-only) auth requires driveId, siteId, or userId`    | App-only tokens can't use `/me/drive`; set a target.                                                                    |
+| `400 BadRequest … /me request is only valid with delegated authentication` | Env client credentials without a target option. Set `userId`, `driveId` or `siteId` in code.                            |
+| `401 InvalidAuthenticationToken`                                           | Expired static token, wrong tenant, or secret expired. Prefer `oauth`/`clientCredentials`, which refresh automatically. |
+| `403 accessDenied`                                                         | Missing permission or admin consent (see the table above); with `Sites.Selected`, the app has no grant on that site.    |
+| `404 itemNotFound` on `list()`                                             | `rootFolderPath` doesn't exist in that drive.                                                                           |
+| `createLink` fails with `publicByDefault`                                  | "Anyone" links are disabled for the tenant or site.                                                                     |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads`       | The client sent a partial chunk. Upload the whole file in one request, or use `getUploadUrl()`.                         |
+| `copy timed out after …ms`                                                 | Large copies run asynchronously in Graph; raise `copyTimeoutMs`.                                                        |

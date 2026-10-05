@@ -31,7 +31,7 @@ export const handleHeadOptionsRequest = <TFile extends UploadFile, NodeResponse 
  * @param next Optional Express next function
  * @param send Function to send regular response
  * @param sendStream Function to send stream response
- * @param parseRangeHeader Function to parse range header
+ * @param resolveRange Resolves the byte range the request asks for (see BaseHandlerCore.resolveRange)
  */
 export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends ServerResponse>(
     file: ResponseFile<TFile> | ResponseList<TFile>,
@@ -44,7 +44,12 @@ export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends 
         stream: Readable,
         options: { headers: Record<string, string | number>; range?: { end: number; start: number }; size?: number; statusCode: number },
     ) => void,
-    parseRangeHeader: (rangeHeader: string | undefined, fileSize: number) => { end: number; start: number } | undefined,
+    resolveRange: (
+        file: { size?: number; stream: Readable },
+        rangeHeader: string | undefined,
+        ifRange: string | undefined,
+        headers: Record<string, unknown>,
+    ) => { end: number; start: number } | undefined,
 ): void => {
     (request as IncomingMessageWithBody).body = (file as ResponseList<TFile>)?.data === undefined ? file : (file as ResponseList<TFile>).data;
 
@@ -58,13 +63,12 @@ export const handleGetRequest = <TFile extends UploadFile, NodeResponse extends 
         if (typeof next === "function") {
             next();
         } else {
-            // Parse range header for partial content requests
-            const range = parseRangeHeader(request.headers.range, streamingFile.size || 0);
+            const range = resolveRange({ size: streamingFile.size, stream: streamingFile.stream }, request.headers.range, request.headers["if-range"] as string | undefined, headers);
 
             // Stream the response directly
             sendStream(response, streamingFile.stream, {
                 headers,
-                range: range || undefined,
+                range,
                 size: streamingFile.size,
                 statusCode,
             });
@@ -179,8 +183,8 @@ export const handlePartialUpload = <TFile extends UploadFile, NodeResponse exten
     // Check if this is a chunked upload initialization (has X-Chunked-Upload header)
     const isChunkedUploadInit = headers["X-Chunked-Upload"] === "true" || headers["x-chunked-upload"] === "true";
 
-    // For chunked upload initialization, include body in response
-    let body: Buffer | string | undefined;
+    // A response that carries its body (a batch delete) sends it; a chunked upload initialization its file.
+    let { body }: { body?: Buffer | string } = file as { body?: string };
 
     // Merge fileHeaders (from ResponseFile) with request headers, prioritizing fileHeaders
     const responseHeaders: Record<string, string> = {

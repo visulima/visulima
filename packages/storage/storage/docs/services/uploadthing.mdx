@@ -4,7 +4,11 @@
 
 ## Overview
 
-The UploadThing adapter wraps `UTApi` from `uploadthing/server`. Uploads are keyed by user-supplied `customId` so subsequent operations (`delete`, `signed URL`, `list`) round-trip on the user's key rather than UploadThing's internal `fileKey`. Read URLs are minted as public CDN URLs (`<appId>.ufs.sh/f/<customId>`) when the ACL is `public-read`, or as signed URLs via `generateSignedURL()` when the ACL is `private`.
+The UploadThing adapter wraps `UTApi` from `uploadthing/server`. Every object is uploaded with your key as its `customId`, so `delete`, `get`, read URLs and `list` all work on your key rather than UploadThing's internal file key.
+
+Read URLs depend on the ACL. With `public-read` (the default) they are permanent CDN URLs (`https://<appId>.ufs.sh/f/<customId>`). With `private` they are signed URLs from `generateSignedURL()`.
+
+Each object is uploaded in a single request. The adapter does not support chunked or resumable writes.
 
 ## Installation
 
@@ -20,77 +24,128 @@ yarn add uploadthing
 pnpm add uploadthing
 ```
 
-## Usage
+## Provider setup
 
-```ts
-import UploadThingStorage from "@visulima/storage/provider/uploadthing";
-
-const storage = new UploadThingStorage({
-    token: process.env.UPLOADTHING_TOKEN!,
-    acl: "public-read",
-});
-```
-
-The `token` is the base64-encoded JSON from your UploadThing dashboard — it embeds both `apiKey` and `appId`. The adapter decodes it once at construction to extract `appId` for CDN URL minting.
+1. Create an app in the [UploadThing dashboard](https://uploadthing.com/dashboard).
+2. Open **API Keys** and copy the **`UPLOADTHING_TOKEN`**. It is a base64-encoded JSON value that holds `apiKey`, `appId` and `regions`. The adapter needs the whole token, not just the API key: it decodes the token to get the `appId` it uses for CDN URLs.
+3. To use `acl: "private"`, make sure your app allows the ACL to be set per request (an app setting in the dashboard). The adapter passes `acl` to every `uploadFiles` call.
+4. Treat the token as a server-side secret. The adapter only runs on the server, and browsers never talk to UploadThing directly through it, so no CORS setup is needed for uploads. Browsers that load `public-read` CDN URLs read them from UploadThing's CDN.
 
 ## Configuration
 
-### Pre-built client
+```ts
+import { UploadThingStorage } from "@visulima/storage/provider/uploadthing";
+
+// Minimal: reads UPLOADTHING_TOKEN from the environment
+const storage = new UploadThingStorage({});
+```
+
+```ts
+import { UploadThingStorage } from "@visulima/storage/provider/uploadthing";
+
+// Production: private files, shared metadata directory, limits
+const storage = new UploadThingStorage({
+    token: process.env.UPLOADTHING_TOKEN,
+    acl: "private",
+    defaultUrlExpiresIn: 900,
+    maxUploadSize: "512MB",
+    allowMIME: ["image/*", "application/pdf"],
+    metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+});
+```
+
+| Option                | Type                         | Default                     | Description                                                                                                                                                 |
+| --------------------- | ---------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `token`               | `string`                     | `UPLOADTHING_TOKEN` env var | Dashboard token (base64 JSON with `apiKey` and `appId`). **Always required**, even with `client`, because the adapter decodes it to get `appId`.            |
+| `client`              | `UTApi`                      | —                           | A pre-built `UTApi` to share an instance or customise `fetch`. If you leave it out, the adapter creates `new UTApi({ defaultKeyType: "customId", token })`. |
+| `acl`                 | `"public-read" \| "private"` | `"public-read"`             | ACL sent with every upload. It also controls `getReadUrl()`: a CDN URL for `public-read`, a signed URL for `private`.                                       |
+| `defaultUrlExpiresIn` | `number` (seconds)           | `3600`                      | How long signed URLs last with `acl: "private"`. Capped at 7 days (604 800 s).                                                                              |
+| `metaStorageConfig`   | `LocalMetaStorageOptions`    | OS temp dir (`Upload_meta`) | `directory` / `prefix` / `suffix` for the local metadata files. See [Metadata storage](#metadata-storage).                                                  |
+
+Common options from `BaseStorageOptions` also apply: `maxUploadSize` (default `"5TB"`), `allowMIME` (default `["*/*"]`), `maxMetadataSize` (default `"8MB"`), `filename` (default: the upload id), `fileNameValidation`, `validation`, `expiration`, `metaStorage`, `onCreate` / `onUpdate` / `onComplete` / `onDelete` / `onError`, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`.
+
+**Environment variables:** `UPLOADTHING_TOKEN`.
+
+If you pass a pre-built client, still pass `token`:
 
 ```ts
 import { UTApi } from "uploadthing/server";
 
 const storage = new UploadThingStorage({
     client: new UTApi({ defaultKeyType: "customId", token: process.env.UPLOADTHING_TOKEN! }),
-    token: process.env.UPLOADTHING_TOKEN!, // still required — used to derive appId
+    token: process.env.UPLOADTHING_TOKEN!, // used to derive appId
 });
 ```
 
-Even with a pre-built client, `token` is required so the adapter can extract `appId` for CDN URLs.
+## Metadata storage
 
-### ACL
+UploadThing has no field for arbitrary metadata, so the adapter keeps upload records as JSON files on **local disk**, by default under `<os tmpdir>/Upload_meta/<id>.META`.
+
+- **Running more than one instance?** Each instance only sees the records on its own disk. Point `metaStorageConfig.directory` at a shared volume, or pass your own `metaStorage` (any `MetaStorage` subclass, such as `S3MetaStorage`) so every instance reads the same records.
+- Upload locks are held per process. Send all requests for one upload to the same instance, or make sure the client never sends them in parallel.
+- **The temp directory is not durable.** In containers and serverless functions it is wiped on restart, and records are lost with it. Without a record, `get` and `delete` fall back to treating the id as the `customId`.
+- Finished uploads **keep** their metadata record. `delete()` removes it.
+
+## Behaviour & limits
+
+| Aspect                     | Behaviour                                                                                                                                                                                                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes | ❌ `supportsResumableWrites: false`. The part is buffered in memory and uploaded in one request. A write that doesn't start at 0, or doesn't carry the whole file, is rejected with `METHOD_NOT_ALLOWED`. The TUS handler doesn't advertise `creation-defer-length` or `concatenation`. |
+| Checksums                  | None advertised (`checksumTypes: []`). A TUS `Upload-Checksum` is rejected.                                                                                                                                                                                                             |
+| Range reads                | ❌ `supportsRange: false`. `get()` downloads the whole object over HTTP.                                                                                                                                                                                                                |
+| `getReadUrl()`             | `public-read`: `https://<appId>.ufs.sh/f/<customId>`. `private`: `generateSignedURL` with `expiresIn` (capped at 7 days). `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.                                                                                  |
+| `getUploadUrl()`           | ❌ `METHOD_NOT_ALLOWED`. For direct browser uploads, use UploadThing's file-router pattern via `storage.raw`.                                                                                                                                                                           |
+| `list(limit)`              | Follows `listFiles` offsets until `limit` items are collected (default 1000). It lists **every** file in the app, keyed by `customId` (or by UploadThing's key for files without one). There is no server-side prefix filter; the `Files` facade filters by prefix itself.              |
+| `copy()` / `move()`        | Copy downloads the object and uploads it again. Move is copy followed by delete.                                                                                                                                                                                                        |
+| Custom `filename`          | The returned name becomes the object's `customId`. The basename of the key is used as the file name.                                                                                                                                                                                    |
+| Expiration / purge         | Uses the base `purge()`, which ages items from `list()`. Read the warning below.                                                                                                                                                                                                        |
+| Retries                    | API calls go through `retryConfig`. By default: 3 retries, exponential backoff starting at 1 s and capped at 30 s, on 408/429/500/502/503/504. `signal` / `timeout` are best effort, because `UTApi` can't cancel a request that is already running.                                    |
+
+> **Expiration warning:** `purge()` walks `list()`, which returns every file in the UploadThing app. Those items carry `modifiedAt` but no `createdAt`. Without `rolling`, nothing is ever purged. With `expiration.rolling: true`, every file in the app older than `maxAge` is deleted, including files this storage didn't create. Use a dedicated UploadThing app if you enable rolling expiration.
+
+## Using it with the handlers
 
 ```ts
-new UploadThingStorage({
-    token: process.env.UPLOADTHING_TOKEN!,
-    acl: "private", // or "public-read" (default)
-});
+// Node (Express, node:http, …)
+import express from "express";
+import { Rest, Tus } from "@visulima/storage/handler/http/node";
+import { UploadThingStorage } from "@visulima/storage/provider/uploadthing";
+
+const storage = new UploadThingStorage({ token: process.env.UPLOADTHING_TOKEN });
+const app = express();
+
+app.use("/upload/rest", new Rest({ storage }).handle);
+// TUS clients must send the whole file in one PATCH (no chunkSize)
+app.use("/upload/tus", new Tus({ storage }).handle);
 ```
-
-- `public-read`: every upload is publicly readable; `getReadUrl()` returns the CDN URL synchronously without a round-trip.
-- `private`: `getReadUrl()` calls `utapi.generateSignedURL()` for each request.
-
-### Default signed URL lifetime
 
 ```ts
-new UploadThingStorage({
-    /* … */
-    defaultUrlExpiresIn: 3600, // seconds; capped at 7 days (604_800)
-});
+// Fetch runtimes (Hono, Bun, Deno, Next.js route handlers, …)
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
 ```
 
-## URL Generation
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
 
-### `getReadUrl(key, options?)`
+const files = new Files({ adapter: storage });
 
-- `public-read` ACL: returns `https://<appId>.ufs.sh/f/<encoded-customId>` synchronously.
-- `private` ACL: returns a signed URL via `generateSignedURL(key, { expiresIn, keyType: "customId" })`. `expiresIn` is clamped to 7 days.
-- `responseContentDisposition` is not supported.
+await files.upload("avatars/1.png", buffer, { contentType: "image/png" });
+const url = await files.url("avatars/1.png");
+```
 
-### `getUploadUrl(key)`
+## Troubleshooting
 
-Throws `METHOD_NOT_ALLOWED`. UploadThing's signed PUT URLs require HMAC signing against a UFS ingest endpoint — out of scope for this adapter. Callers that need direct-from-browser uploads should use UploadThing's [file-router pattern](https://docs.uploadthing.com/) via `storage.raw`.
-
-## Features
-
-- **customId keying** — operations are addressed by your virtual key, not UploadThing's internal fileKey.
-- **ACL-aware reads** — public files use the CDN directly; private files use signed URLs only when needed.
-- **Token-derived `appId`** — no separate config field; the dashboard token already contains everything.
-- **Native `listFiles`** — `storage.list()` round-trips a single `utapi.listFiles({ limit })`.
-
-## Limitations
-
-- No native presigned upload URLs — use the file-router pattern via `storage.raw` for direct-from-browser uploads.
-- `copy()` is download-then-reupload (UploadThing has no server-side copy).
-- `list()` has no server-side prefix filter — prefix filtering happens client-side per page.
-- Signed URLs cap at 7 days.
+| Symptom                                                                     | Cause / fix                                                                                                                                            |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `UploadThing: missing token` / `token is required even when passing client` | Set `UPLOADTHING_TOKEN` or pass `token`. A pre-built `client` doesn't remove the need for it.                                                          |
+| `token is not valid base64` / `does not decode to JSON` / `missing apiKey`  | You passed the bare API key (`sk_…`). Use the full `UPLOADTHING_TOKEN` value from the dashboard.                                                       |
+| `405 Method Not Allowed` on a PATCH / chunk                                 | The client sent part of the file. Upload the whole file in one request (TUS without `chunkSize`, REST `PUT`/`POST` with the full body).                |
+| Upload with `acl: "private"` fails                                          | Your app doesn't allow per-request ACL overrides. Change the app's ACL setting in the dashboard, or use `public-read`.                                 |
+| `get()` answers `fetch failed: 403`                                         | The file is private but the adapter is configured with `public-read`, so it built an unsigned CDN URL. Set `acl` to match how the files were uploaded. |
+| Metadata missing after a restart or on another instance                     | Records live on local disk. Configure a shared `metaStorageConfig.directory` or a custom `metaStorage`.                                                |

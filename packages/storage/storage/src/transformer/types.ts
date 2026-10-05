@@ -225,8 +225,8 @@ export interface AffineOptions extends TransformOptions {
     background?: string;
     /** Interpolation method */
     interpolation?: "nearest" | "bilinear" | "bicubic" | "nohalo" | "lbb" | "vsqbs";
-    /** 2x3 transformation matrix */
-    matrix: [number, number, number, number, number, number];
+    /** 2x2 transformation matrix, flat (`[a, b, c, d]`) or nested — sharp rejects any other shape */
+    matrix: [number, number, number, number] | [[number, number], [number, number]];
 }
 
 /**
@@ -502,8 +502,8 @@ export interface AudioTransformOptions extends TransformOptions {
  * Video resize transformation options
  */
 export interface VideoResizeOptions extends VideoTransformOptions {
-    /** Resize fit mode */
-    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+    /** Resize fit mode (mediabunny has no `inside`/`outside`) */
+    fit?: "cover" | "contain" | "fill";
     /** Height in pixels */
     height?: number;
     /** Position for cover/contain fits */
@@ -718,6 +718,8 @@ export interface MediaTransformQuery {
     cropWidth?: number;
     /** Apply dilation */
     dilate?: boolean;
+    /** Encoder CPU effort for image output (higher is slower but smaller) */
+    effort?: number;
     /** Ensure alpha channel */
     ensureAlpha?: boolean;
     /** Apply erosion */
@@ -754,6 +756,8 @@ export interface MediaTransformQuery {
     left?: number;
     /** Lightness adjustment for modulation */
     lightness?: number;
+    /** Lossless image compression (WebP, AVIF) */
+    lossless?: boolean;
     /** Apply median filter with specified size */
     median?: number;
     /** Apply modulation effects */

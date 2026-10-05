@@ -22,8 +22,9 @@ export interface SftpStorageOptions extends BaseStorageOptions {
 
     /**
      * Logical "bucket root" — virtual keys live under this remote directory.
-     * The adapter creates intermediate directories on write. Leading/trailing
-     * slashes are normalized. Defaults to the connection's home directory.
+     * The adapter creates intermediate directories on write. A leading slash
+     * makes it absolute; otherwise it resolves against the connection's home
+     * directory (the default). Trailing slashes are ignored.
      */
     rootFolderPath?: string;
 }

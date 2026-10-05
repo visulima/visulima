@@ -1,4 +1,5 @@
-import MetaStorage, { setMetaVersion } from "../meta-storage";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
@@ -48,16 +49,17 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async get(id: string): Promise<T> {
         await this.ensureAccess();
 
-        const Key = this.getMetaName(id);
-        const { ETag, Expires, Metadata } = await this.adapter.headObject({
-            Bucket: this.bucket,
-            Key,
-        });
+        const { ETag, Expires, Metadata } = await this.adapter
+            .headObject({
+                Bucket: this.bucket,
+                Key: this.getMetaName(id),
+            })
+            .catch(rethrowNotFound);
 
         if (Expires && isExpired({ expiredAt: Expires } as T)) {
-            await this.delete(Key);
+            await this.delete(id);
 
-            throw new Error(`Metafile ${id} not found`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} expired`);
         }
 
         if (Metadata?.metadata !== undefined) {
@@ -72,7 +74,7 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
             return file;
         }
 
-        throw new Error(`Metafile ${id} not found`);
+        return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} not found`);
     }
 
     public override async touch(id: string, file: T): Promise<T> {

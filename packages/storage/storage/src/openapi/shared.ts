@@ -77,7 +77,7 @@ const getTransformationParameters = (
                 },
             },
             {
-                description: "Resize fit mode",
+                description: "Resize fit mode. `inside` and `outside` apply to images only; video answers 400 for them.",
                 in: "query",
                 name: "fit",
                 schema: {
@@ -698,6 +698,24 @@ const getTransformationErrorResponses = (transform?: TransformType): Record<stri
 
 export { getOrganizedTransformationParameters };
 
+/**
+ * Derives an operationId prefix from a route path: `/files-tus` → `filesTus`, `/` → `root`. Only
+ * ASCII letters and digits, so generated ids are valid identifiers for client generators.
+ * @param path Route path the spec is generated for
+ * @returns camelCase prefix
+ */
+export const operationIdPrefix = (path: string): string => {
+    const words = path.split(/[^A-Z\d]+/i).filter(Boolean);
+
+    if (words.length === 0) {
+        return "root";
+    }
+
+    const prefix = words.map((word, index) => (index === 0 ? word.charAt(0).toLowerCase() : word.charAt(0).toUpperCase()) + word.slice(1)).join("");
+
+    return /^\d/.test(prefix) ? `p${prefix}` : prefix;
+};
+
 export const sharedGet = (
     operationId: string,
     tags: string[] | undefined,
@@ -1005,7 +1023,7 @@ export const sharedFileMetaSchemaObject: Record<string, OpenAPIV3.NonArraySchema
 
 export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject> = {
     FileMeta: {
-        value: [FileMetaExample],
+        value: [FileMetaExample.value],
     },
     FileMetaPagination: {
         value: {
@@ -1027,7 +1045,8 @@ export const sharedFileMetaExampleObject: Record<string, OpenAPIV3.ExampleObject
 
 export const sharedGetList = (operationId: string, tags: string[] | undefined): OpenAPIV3.OperationObject => {
     return {
-        description: "List uploads. Only served when the handler is created with `allowList: true`; otherwise the server answers 404.",
+        description:
+            "List uploads. Only served when the handler is created with `allowList: true`; otherwise the server answers 404. Returns an array of file metadata, or `{ data, meta }` when `page` is set.",
         operationId,
         parameters: [
             {
@@ -1066,7 +1085,17 @@ export const sharedGetList = (operationId: string, tags: string[] | undefined): 
                             },
                         },
                         schema: {
-                            $ref: "#/components/schemas/FileMeta",
+                            oneOf: [
+                                {
+                                    items: {
+                                        $ref: "#/components/schemas/FileMeta",
+                                    },
+                                    type: "array",
+                                },
+                                {
+                                    $ref: "#/components/schemas/FileMetaPagination",
+                                },
+                            ],
                         },
                     },
                 },

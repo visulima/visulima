@@ -1,43 +1,80 @@
 # Bun S3
 
-> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage and Bun-specific limitations (no resumable multipart, client-side copy).
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage and Bun-specific limitations (no resumable uploads, client-side copy).
 
 ## Overview
 
-The Bun S3 adapter is backed by the native [`Bun.S3Client`](https://bun.sh/docs/api/s3) instead of the AWS SDK. Use it when you are already running on Bun and want to skip the AWS SDK dependency — the runtime ships its own zero-dependency S3 client.
+`BunS3Storage` is backed by Bun's built-in [`Bun.S3Client`](https://bun.sh/docs/api/s3) instead of the AWS SDK. Use it when you already run on Bun and want no AWS SDK dependency. It works against any S3-compatible service (AWS S3, Cloudflare R2, MinIO, Tigris, Wasabi, Backblaze B2, …) through `endpoint`.
 
-It works against any S3-compatible backend (AWS S3, Cloudflare R2, MinIO, Tigris, Wasabi, Backblaze B2, …) by pointing `endpoint` at the provider. For Node or edge runtimes use the [`aws`](./amazon-s3.mdx) or [`aws-light`](./aws-light.mdx) provider instead — this adapter requires the Bun runtime (or an injected client).
+`Bun.S3Client` has no low-level multipart or server-side copy API, so this adapter stores each file in **one request** and can't resume uploads. For resumable TUS / chunked uploads use [`S3Storage`](./amazon-s3.mdx) or [`AwsLightStorage`](./aws-light.mdx). Outside Bun the constructor throws unless you pass a `client`.
 
-## Usage
+## Installation
+
+Nothing beyond the package — the S3 client ships with the Bun runtime:
+
+```sh
+bun add @visulima/storage
+```
+
+## Provider setup
+
+Set up the bucket and credentials as for your provider (see [Amazon S3](./amazon-s3.mdx#provider-setup) or the page of your S3-compatible service). The adapter needs:
+
+| Permission (AWS IAM) | Used by                                                    |
+| -------------------- | ---------------------------------------------------------- |
+| `s3:PutObject`       | `write`, `copy`, `move`                                    |
+| `s3:GetObject`       | `get`, `getStream`, `copy`, presigned `GET`                |
+| `s3:DeleteObject`    | `delete`, `move`                                           |
+| `s3:ListBucket`      | `list`, and so that a missing key answers `404`, not `403` |
+
+No multipart actions are needed — Bun handles large single uploads internally. Add a bucket **CORS** rule (origins, `GET`/`PUT`, `AllowedHeaders: ["*"]`) only if browsers use the presigned URLs from `getReadUrl()` / `getUploadUrl()`.
+
+## Configuration
+
+`new BunS3Storage(options)` accepts every [`BaseStorageOptions`](./amazon-s3.mdx#configuration) field (`maxUploadSize`, `allowMIME`, `filename`, `expiration`, hooks, `retryConfig`, …) plus:
+
+| Option               | Type                      | Default                                              | Description                                                                                          |
+| -------------------- | ------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `bucket`             | `string`                  | env `S3_BUCKET` → `AWS_BUCKET`                       | Bucket name.                                                                                         |
+| `region`             | `string`                  | env `S3_REGION` → `AWS_REGION`                       | Bucket region.                                                                                       |
+| `endpoint`           | `string`                  | env `S3_ENDPOINT` → `AWS_ENDPOINT`                   | S3-compatible endpoint (R2, MinIO, …). AWS when unset.                                               |
+| `accessKeyId`        | `string`                  | env `S3_ACCESS_KEY_ID` → `AWS_ACCESS_KEY_ID`         | Access key.                                                                                          |
+| `secretAccessKey`    | `string`                  | env `S3_SECRET_ACCESS_KEY` → `AWS_SECRET_ACCESS_KEY` | Secret key.                                                                                          |
+| `sessionToken`       | `string`                  | —                                                    | STS session token for temporary credentials.                                                         |
+| `acl`                | `string`                  | —                                                    | Canned ACL for uploads, e.g. `"public-read"`.                                                        |
+| `virtualHostedStyle` | `boolean`                 | Bun's default                                        | Use `https://<bucket>.<host>/…` addressing.                                                          |
+| `client`             | `BunS3ClientLike`         | —                                                    | Pre-built `Bun.S3Client` (or the `Bun.s3` singleton, or a stub). All options above are then ignored. |
+| `metaStorageConfig`  | `LocalMetaStorageOptions` | `{ directory: <os tmp>/Upload_meta }`                | Where upload records are kept (`directory`, `prefix`, `suffix`). See below.                          |
+| `metaStorage`        | `MetaStorage`             | `BunS3MetaStorage`                                   | Replace the record store entirely.                                                                   |
+
+The env fallbacks are Bun's own resolution: the adapter passes unset fields as `undefined` to `Bun.S3Client`.
+
+### Minimal
+
+```ts
+import { BunS3Storage } from "@visulima/storage/provider/bun-s3";
+
+// Reads S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY (or the AWS_* names)
+const storage = new BunS3Storage({});
+```
+
+### Production
 
 ```ts
 import { BunS3Storage } from "@visulima/storage/provider/bun-s3";
 
 const storage = new BunS3Storage({
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-    bucket: process.env.S3_BUCKET!,
-    region: process.env.S3_REGION,
-    // endpoint: "https://<account>.r2.cloudflarestorage.com", // for R2/MinIO/etc.
+    bucket: "uploads",
+    endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    region: "auto",
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    maxUploadSize: "100MB", // each upload is buffered in memory, keep this bounded
+    allowMIME: ["image/*", "application/pdf"],
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    logger: console,
 });
 ```
-
-Omitted credential fields fall back to Bun's own environment resolution: `S3_ACCESS_KEY_ID` then `AWS_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` then `AWS_SECRET_ACCESS_KEY`, `S3_REGION` then `AWS_REGION`, `S3_BUCKET` then `AWS_BUCKET`, `S3_ENDPOINT` then `AWS_ENDPOINT`.
-
-## Configuration
-
-### Credentials
-
-| Option            | Env (Bun resolution)                             |
-| ----------------- | ------------------------------------------------ |
-| `accessKeyId`     | `S3_ACCESS_KEY_ID` → `AWS_ACCESS_KEY_ID`         |
-| `secretAccessKey` | `S3_SECRET_ACCESS_KEY` → `AWS_SECRET_ACCESS_KEY` |
-| `region`          | `S3_REGION` → `AWS_REGION`                       |
-| `bucket`          | `S3_BUCKET` → `AWS_BUCKET`                       |
-| `endpoint`        | `S3_ENDPOINT` → `AWS_ENDPOINT`                   |
-| `sessionToken`    | —                                                |
-
-Additional options: `acl` (canned ACL applied to uploads, e.g. `"public-read"`), `virtualHostedStyle` (use `https://<bucket>.<host>/…` addressing), and `metaStorageConfig` (local metafile bookkeeping for the upload lifecycle).
 
 ### Pre-built client
 
@@ -45,40 +82,67 @@ Additional options: `acl` (canned ACL applied to uploads, e.g. `"public-read"`),
 import { S3Client } from "bun";
 import { BunS3Storage } from "@visulima/storage/provider/bun-s3";
 
-const client = new S3Client({
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-    bucket: process.env.S3_BUCKET!,
-});
-
-const storage = new BunS3Storage({ client });
+const storage = new BunS3Storage({ client: new S3Client({ bucket: "uploads" }) });
 ```
 
-When `client` is passed, the inline credential options (`accessKeyId`, `secretAccessKey`, `region`, `bucket`, `endpoint`, `sessionToken`, `acl`, `virtualHostedStyle`) are ignored. You can also pass the `Bun.s3` singleton. Outside Bun, the constructor throws unless `client` is supplied.
+## Metadata storage
 
-## URL Generation
+Upload records are **not** stored in the bucket. `BunS3MetaStorage` is a [`LocalMetaStorage`](./local-disk.mdx): one `<id>.META` JSON file per upload under `metaStorageConfig.directory` (default `<os tmp>/Upload_meta`). Records of finished uploads are kept; `delete()` removes them.
 
-### `getReadUrl(key, options?)`
+What that means:
 
-Returns a presigned `GET` URL via `Bun.S3Client`. Supports `expiresIn`, `responseContentType` (mapped to Bun's `type`), and `responseContentDisposition` (mapped to `contentDisposition`).
+- The default temp directory may be wiped on reboot or container restart. Set `directory` to a persistent path.
+- With several instances, each one only sees its own records unless they share the directory (a shared volume works: writes use lock files across processes), or you pass your own `metaStorage` backed by a shared store.
+- Reads of keys without a record still work: `get`, `getStream` and `delete` fall back to the object key, so files written by other tools can be read and removed.
 
-### `getUploadUrl(key, options?)`
+## Behaviour & limits
 
-Returns a presigned `PUT` URL. Supports `expiresIn` and `contentType`. A `contentLength` cap **cannot** be enforced — Bun's presign has no max-size policy — and is ignored by design.
+| Topic                  | Behaviour                                                                                                                                                                                                                                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable    | ❌ `supportsResumableWrites` is `false`. The TUS handler doesn't advertise `creation-defer-length` / `concatenation` and rejects partial chunks; a chunk not starting at 0 or shorter than the file answers `405 METHOD_NOT_ALLOWED`. Send the whole file in one request (multipart form, single REST `PUT`/`POST`).  |
+| Memory                 | `write` collects the whole body into memory before uploading; `get` and `copy` download the whole object. Bound `maxUploadSize`.                                                                                                                                                                                      |
+| Range reads            | ❌ `supportsRange` is `false`; `Files.download({ range })` throws `METHOD_NOT_ALLOWED`. `getStream` streams the full object.                                                                                                                                                                                          |
+| Read URL               | ✅ `getReadUrl()` — presigned `GET`; honours `expiresIn`, `responseContentType`, `responseContentDisposition`.                                                                                                                                                                                                        |
+| Upload URL             | ✅ `getUploadUrl()` — presigned `PUT`; honours `expiresIn`, `contentType`. Passing `contentLength` rejects with `BAD_REQUEST` (a Bun presign can't enforce a size limit).                                                                                                                                             |
+| `copy` / `move`        | 🔁 Download, then re-upload (and delete for `move`). Not atomic.                                                                                                                                                                                                                                                      |
+| `list(limit)`          | Lists the whole bucket from the root, following continuation tokens until `limit` (default 1000). Every object counts, including ones this storage didn't write. No native `delimiter`; the `Files` facade builds directory views itself.                                                                             |
+| Custom `filename`      | The object key is `filename(file)` (leading `/` stripped); the record stays under the upload id.                                                                                                                                                                                                                      |
+| `delete`               | Idempotent: a missing key resolves instead of throwing.                                                                                                                                                                                                                                                               |
+| Checksums              | No algorithm is supported: a chunk that announces a checksum algorithm is rejected.                                                                                                                                                                                                                                   |
+| Cancellation           | `signal` / `timeout` stop waiting but can't cancel the Bun request; `retries` / `retryConfig` apply.                                                                                                                                                                                                                  |
+| Readiness              | No startup bucket check — bad credentials surface on the first operation.                                                                                                                                                                                                                                             |
+| Expiration / `purge()` | `purge()` works from `list()`, which returns bucket objects without creation times. Without `rolling`, nothing is purged; with `expiration.rolling`, objects whose last modification is older than `maxAge` are deleted — including objects this storage didn't create. Don't enable `rolling` on a bucket you share. |
 
-## Features
+## Using it with the handlers
 
-- **Native single-shot writes** — `write()` uploads the part body in one call; Bun handles large-object chunking internally, so no AWS SDK and no manual multipart wiring.
-- **Streaming reads** — `getStream()` returns the object via `S3File.stream()`, bridged to a Node `Readable`.
-- **Presigned GET/PUT** — both read and upload URLs are minted directly by the runtime client.
-- **Idempotent delete** — `delete()` resolves even when the key (or its metadata) is absent, returning a synthetic deleted file.
-- **`raw` escape hatch** — `storage.raw` exposes the underlying `Bun.S3Client` for advanced calls (`list`, `stat`, `presign`, …).
+Use a handler that sends the whole file in one request:
 
-## Limitations
+```ts
+import { Multipart } from "@visulima/storage/handler/http/bun";
 
-- **No resumable / TUS multipart protocol.** Each `write` uploads the supplied body in one shot. `Bun.S3Client` exposes no low-level multipart primitives (create/upload-part/complete/abort), so resumable uploads are not available — use the [`aws`](./amazon-s3.mdx) or [`aws-light`](./aws-light.mdx) provider for those.
-- **Client-side `copy()` / `move()`** — implemented as read-then-write; Bun has no server-side `CopyObject`.
-- **`getUploadUrl()` cannot enforce `contentLength`** — Bun presign has no max-size policy; the option is ignored.
-- **Checksums are not verified** — `Bun.S3Client.write` has no checksum parameter, so a supplied `checksum`/`checksumAlgorithm` is accepted but not forwarded or enforced server-side (an _unsupported_ algorithm is still rejected up front).
-- **`list()` is single-page** — capped at the requested limit; deep prefix pagination is not surfaced.
-- Requires the **Bun runtime** (or an injected `client`). Not usable on Node or edge runtimes.
+const multipart = new Multipart({ storage });
+
+Bun.serve({ port: 3000, fetch: (request) => multipart.fetch(request) });
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("avatars/1.png", await Bun.file("./1.png").bytes(), { contentType: "image/png" });
+const url = await files.url("avatars/1.png", { expiresIn: 600 });
+const uploadUrl = await files.signedUploadUrl("incoming/photo.jpg", { contentType: "image/jpeg", expiresIn: 600 });
+```
+
+## Troubleshooting
+
+| Symptom                                                                          | Cause / fix                                                                                          |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `BunS3Storage requires the Bun runtime (Bun.S3Client)`                           | Running under Node/edge. Use `S3Storage` / `AwsLightStorage`, or pass `client`.                      |
+| `403` (`AccessDenied`, `ERR_S3_INVALID_SIGNATURE`, `ERR_S3_MISSING_CREDENTIALS`) | Missing or wrong credentials, or a region/endpoint mismatch.                                         |
+| `403` instead of `404` for a missing file                                        | Grant `s3:ListBucket` on the bucket.                                                                 |
+| `405` "does not support chunked or resumable uploads"                            | The client sends chunks (TUS, chunked REST). Send the file in one request, or switch to `S3Storage`. |
+| Uploads lost after restart / other instances answer `404`                        | Records were in the temp directory or on another instance; set a persistent, shared `directory`.     |
+| `BAD_REQUEST` from `getUploadUrl()`                                              | Remove `contentLength`; enforce the size limit elsewhere.                                            |

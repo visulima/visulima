@@ -35,7 +35,7 @@ export type AsyncHandler<Request, Response> = (
     response: Response,
 ) => Promise<void | ResponseFile<UploadFile> | ResponseList<UploadFile> | StreamingResponse>;
 
-export type Handlers = "delete" | "download" | "get" | "head" | "options" | "patch" | "post" | "put";
+export type Handlers = "delete" | "get" | "head" | "options" | "patch" | "post" | "put";
 
 export type MethodHandler<Request, Response> = {
     [h in Handlers]?: AsyncHandler<Request, Response>;
@@ -51,7 +51,11 @@ export type ResponseFile<TFile extends UploadFile> = BaseResponse &
         stream?: Readable;
     };
 
-export type ResponseList<TFile extends UploadFile> = BaseResponse & { data: PaginationResult<TFile> | TFile[] };
+export type ResponseList<TFile extends UploadFile> = BaseResponse & {
+    /** Serialized response body, sent as-is instead of `data` (a batch delete answering its items). */
+    body?: string;
+    data: PaginationResult<TFile> | TFile[];
+};
 
 export interface BaseHandler<TFile extends UploadFile> extends EventEmitter {
     emit: ((event: "error", error: UploadErrorEvent) => boolean) & ((event: UploadEventType, payload: UploadEvent<TFile>) => boolean);

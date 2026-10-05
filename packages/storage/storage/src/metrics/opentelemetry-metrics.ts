@@ -41,7 +41,7 @@ class OpenTelemetryMetrics implements Metrics {
 
     private readonly histograms = new Map<string, ReturnType<Meter["createHistogram"]>>();
 
-    private readonly gauges = new Map<string, ReturnType<Meter["createUpDownCounter"]>>();
+    private readonly gauges = new Map<string, ReturnType<Meter["createGauge"]>>();
 
     /**
      * Creates a new OpenTelemetryMetrics instance.
@@ -106,7 +106,7 @@ class OpenTelemetryMetrics implements Metrics {
                 description: `Gauge for ${name}`,
             };
 
-            this.gauges.set(name, this.meter.createUpDownCounter(name, options));
+            this.gauges.set(name, this.meter.createGauge(name, options));
         }
 
         const gauge = this.gauges.get(name);
@@ -115,10 +115,8 @@ class OpenTelemetryMetrics implements Metrics {
             throw new Error(`Gauge ${name} was not created`);
         }
 
-        // For gauges, we record the delta from current value
-        // In practice, you might want to track the previous value
-        // For simplicity, we'll use add with the value
-        gauge.add(value, attributes);
+        // A gauge reports the current value; recording (not adding) keeps it from accumulating.
+        gauge.record(value, attributes);
     }
 }
 

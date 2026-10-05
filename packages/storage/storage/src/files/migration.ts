@@ -12,7 +12,9 @@ import type { BulkError, FileObject, SyncOptions, SyncProgress, SyncResult, Tran
  * destination-assigned.
  *
  * Like the other bulk methods, `transfer` doesn't throw on partial failure: results come back as
- * `{ transferred, skipped, errors? }`.
+ * `{ transferred, skipped, errors? }`. With `stopOnError: true` the first failure rejects instead.
+ * Each call reports one `transfer` hook event (`keys` = transferred source keys) through the
+ * destination's `hooks.onAction` / `hooks.onError`.
  * @example
  * ```ts
  * const from = new Files({ adapter: new S3Storage({ bucket: "old", ... }) });
@@ -94,53 +96,68 @@ export const transfer = async (source: Files, destination: Files, options: Trans
         }
     };
 
-    if (stopOnError) {
-        // Sequential when stop-on-error so failure semantics are deterministic.
-        try {
-            for await (const file of walk) {
-                if (stopped || signal?.aborted) {
-                    break;
-                }
+    const run = async (): Promise<void> => {
+        if (stopOnError) {
+            // Sequential when stop-on-error so failure semantics are deterministic. The first failure
+            // propagates out of transferOne and rejects transfer().
+            try {
+                for await (const file of walk) {
+                    if (stopped || signal?.aborted) {
+                        break;
+                    }
 
-                try {
                     await transferOne(file.key);
-                } catch {
-                    break;
                 }
+            } finally {
+                // Make sure the underlying listAll generator's `finally` runs (and emits its hook) even
+                // if we broke out early. AsyncIterators don't auto-`return()` from a `for await` that
+                // exits via `break`/`throw` when the iterator is held in a variable.
+                await walk.return?.();
             }
-        } finally {
-            // Make sure the underlying listAll generator's `finally` runs (and emits its hook) even
-            // if we broke out early. AsyncIterators don't auto-`return()` from a `for await` that
-            // exits via `break`/`throw` when the iterator is held in a variable.
-            await walk.return?.();
+
+            return;
         }
 
-        return errors.length > 0 ? { errors, skipped, transferred } : { skipped, transferred };
-    }
+        // Streaming worker pool: N workers pull the next key from the shared async iterator. Avoids
+        // buffering every key from a large bucket in memory before any transfer begins.
+        const width = Math.max(1, concurrency);
 
-    // Streaming worker pool: N workers pull the next key from the shared async iterator. Avoids
-    // buffering every key from a large bucket in memory before any transfer begins.
-    const width = Math.max(1, concurrency);
+        const worker = async (): Promise<void> => {
+            while (!stopped && !signal?.aborted) {
+                // Sequential pull from a shared iterator — workers race on `next()`, the runtime
+                // serializes them so each key is handed out exactly once.
+                const next = await walk.next();
 
-    const worker = async (): Promise<void> => {
-        while (!stopped && !signal?.aborted) {
-            // Sequential pull from a shared iterator — workers race on `next()`, the runtime
-            // serializes them so each key is handed out exactly once.
-            const next = await walk.next();
+                if (next.done) {
+                    return;
+                }
 
-            if (next.done) {
-                return;
+                await transferOne(next.value.key);
             }
+        };
 
-            await transferOne(next.value.key);
+        try {
+            await Promise.all(Array.from({ length: width }, () => worker()));
+        } finally {
+            await walk.return?.();
         }
     };
 
+    // One `transfer` hook event per call, reported through the destination's hooks (the side written).
+    const started = Date.now();
+
     try {
-        await Promise.all(Array.from({ length: width }, () => worker()));
-    } finally {
-        await walk.return?.();
+        await run();
+    } catch (error: unknown) {
+        const message = typeof error === "string" ? error : "Unknown error";
+        const normalized = error instanceof Error ? error : new Error(message, { cause: error });
+
+        destination._emitHook("transfer", { durationMs: Date.now() - started, keys: transferred }, normalized);
+
+        throw normalized;
     }
+
+    destination._emitHook("transfer", { durationMs: Date.now() - started, keys: transferred });
 
     return errors.length > 0 ? { errors, skipped, transferred } : { skipped, transferred };
 };
@@ -149,9 +166,11 @@ export const transfer = async (source: Files, destination: Files, options: Trans
  * Incremental, optionally-pruning mirror from `source` to `destination`. Built entirely on the
  * public {@link Files} surface — no adapter implements anything new.
  *
- * Each source object is compared against its destination counterpart (by size, then etag, then
- * modification time) and only copied when missing or differing; matching objects are skipped. With
- * `prune: true`, destination keys absent from the source are deleted afterwards (full mirror).
+ * Each source object is compared against its destination counterpart (by size, then etag — only
+ * when both sides use the same adapter class — then modification time) and only copied when
+ * missing or differing; matching objects are skipped. With `prune: true`, destination keys absent
+ * from the source are deleted afterwards (full mirror); `prune` rejects when combined with
+ * `transformKey`.
  * Pass `dryRun: true` to compute the plan without writing.
  *
  * Like the other bulk methods, `sync` doesn't throw on partial failure: results come back as
@@ -179,6 +198,17 @@ export const sync = async (source: Files, destination: Files, options: SyncOptio
         stopOnError = false,
         transformKey,
     } = options;
+
+    // Pruning walks the destination under the *source* prefix and keeps only the transformed keys,
+    // so with a transformKey it would delete unrelated destination objects and never prune the
+    // mirrored ones. There is no safe destination scope to derive from an arbitrary function.
+    if (prune && transformKey) {
+        throw new TypeError("sync(): `prune` cannot be combined with `transformKey`; scope the destination with a prefixed Files instance instead");
+    }
+
+    // ETags are provider-specific (S3 multipart "-N" suffixes, GCS/Azure formats), so they are only
+    // comparable when both sides run the same adapter class.
+    const compareEtags = source.adapter.constructor === destination.adapter.constructor;
 
     const uploaded: string[] = [];
     const updated: string[] = [];
@@ -233,7 +263,7 @@ export const sync = async (source: Files, destination: Files, options: SyncOptio
                 // listAll() yields only id/createdAt for several cloud adapters (S3/GCS/Azure `list`
                 // omit size + etag), which would silently collapse the comparison to mtime. Head the
                 // source to recover the strong signals when the walk didn't surface them.
-                if (sourceObject.size === undefined && sourceObject.etag === undefined) {
+                if (sourceObject.size === undefined && (sourceObject.etag === undefined || !compareEtags)) {
                     try {
                         sourceMeta = await source.head(sourceKey, { signal });
                     } catch {
@@ -241,7 +271,7 @@ export const sync = async (source: Files, destination: Files, options: SyncOptio
                     }
                 }
 
-                if (objectsMatch(sourceMeta, destinationObject)) {
+                if (objectsMatch(sourceMeta, destinationObject, compareEtags)) {
                     unchanged.push(sourceKey);
                     done += 1;
                     emit({ done, key: sourceKey, status: "unchanged" });

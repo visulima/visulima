@@ -1,8 +1,11 @@
 /* eslint-disable no-bitwise -- CRC arithmetic */
 import { createHash, getHashes } from "node:crypto";
+import { Readable } from "node:stream";
 import * as zlib from "node:zlib";
 
 import createHttpError from "http-errors";
+
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 
 /** Encodes a CRC as the base64 of its 4 big-endian bytes, the format `Upload-Checksum` uses. */
 const encodeCrc = (crc: number): string => {
@@ -55,7 +58,7 @@ const DIGESTS: Record<string, ((bytes: Uint8Array) => string) | undefined> = {
 let handlerAlgorithms: string[] | undefined;
 
 /**
- * Checksum algorithms the TUS handler can verify itself when the storage can't.
+ * Checksum algorithms the handlers can verify themselves when the storage can't.
  * @returns Lowercase algorithm names
  */
 export const getHandlerChecksumAlgorithms = (): string[] => {
@@ -121,4 +124,46 @@ export const readBoundedBody = async (body: unknown, limit: number): Promise<Buf
     }
 
     return Buffer.concat(chunks);
+};
+
+/**
+ * Largest chunk an `X-Chunk-Checksum` is verified for: it is checked before the chunk is written,
+ * since a sequential-only provider (S3) can't take a stored part back.
+ */
+const MAX_CHECKSUM_CHUNK_SIZE = 64 * 1024 * 1024;
+
+/** Hash algorithm of a bare hex `X-Chunk-Checksum`, by its length (the client sends SHA-1 to SHA-512). */
+const CHECKSUM_ALGORITHM_BY_HEX_LENGTH: Record<number, string> = { 40: "sha1", 64: "sha256", 96: "sha384", 128: "sha512" };
+
+/**
+ * Reads a chunk and checks it against its `X-Chunk-Checksum`: a bare hex digest, or
+ * `&lt;algorithm> &lt;hex or base64 digest>`.
+ * @param body Chunk body
+ * @param contentLength Chunk length
+ * @param checksum Header value
+ * @returns The verified chunk, as a stream to write
+ * @throws {HttpError} 400 for an unknown algorithm, 413 for a chunk too large to verify
+ * @throws {UploadError} CHECKSUM_MISMATCH (460) when the chunk doesn't match
+ */
+export const verifyChunk = async (body: unknown, contentLength: number, checksum: string): Promise<Readable> => {
+    const [first = "", second] = checksum.trim().split(/\s+/u);
+    const algorithm = second === undefined ? CHECKSUM_ALGORITHM_BY_HEX_LENGTH[first.length] : first.toLowerCase().replace("-", "");
+    const expected = second ?? first;
+
+    if (algorithm === undefined || !getHashes().includes(algorithm)) {
+        throw createHttpError(400, "Unsupported X-Chunk-Checksum");
+    }
+
+    if (contentLength > MAX_CHECKSUM_CHUNK_SIZE) {
+        throw createHttpError(413, `Chunks with X-Chunk-Checksum may be at most ${String(MAX_CHECKSUM_CHUNK_SIZE)} bytes`);
+    }
+
+    const bytes = await readBoundedBody(body, contentLength);
+    const digest = computeChecksum(algorithm, bytes);
+
+    if (expected.toLowerCase() !== Buffer.from(digest, "base64").toString("hex") && expected !== digest) {
+        throwErrorCode(ERRORS.CHECKSUM_MISMATCH, "Chunk does not match X-Chunk-Checksum");
+    }
+
+    return Readable.from([bytes]);
 };

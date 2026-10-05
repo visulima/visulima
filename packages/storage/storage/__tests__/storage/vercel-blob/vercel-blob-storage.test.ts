@@ -1,15 +1,17 @@
 import { Readable } from "node:stream";
 
-import { copy, del, head, list, put } from "@vercel/blob";
+import { BlobNotFoundError, copy, del, head, list, put } from "@vercel/blob";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { VercelBlobStorageOptions } from "../../../src/storage/vercel-blob/types";
 import VercelBlobStorage from "../../../src/storage/vercel-blob/vercel-blob-storage";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 // Mock Vercel Blob SDK
 vi.mock(import("@vercel/blob"), () => {
     return {
+        BlobNotFoundError: class extends Error {},
         copy: vi.fn(),
         del: vi.fn(),
         head: vi.fn(),
@@ -71,12 +73,77 @@ describe(VercelBlobStorage, () => {
         });
 
         it("returns undefined when the blob is missing", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
-            vi.mocked(head).mockRejectedValueOnce(new Error("not found"));
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(globalThis.fetch).not.toHaveBeenCalled();
+
+            vi.mocked(head).mockRejectedValueOnce(new Error("rate limited"));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("rate limited");
+        });
+    });
+
+    describe(".delete()", () => {
+        it("keeps the metadata when the blob delete fails", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, url: "https://blob.example/test.mp4" });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+
+            vi.mocked(del).mockRejectedValueOnce(new Error("Vercel Blob: service unavailable"));
+
+            await expect(storage.delete({ id: metafile.id }, { retries: 0 })).rejects.toThrow("service unavailable");
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("treats an already-missing blob as deleted", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, url: "https://blob.example/test.mp4" });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+
+            vi.mocked(del).mockRejectedValueOnce(new BlobNotFoundError());
+
+            await expect(storage.delete({ id: metafile.id })).resolves.toMatchObject({ status: "deleted" });
+            expect(deleteMeta).toHaveBeenCalledWith(metafile.id);
+        });
+
+        it("deletes the blob stored under the ID when there is no metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+
+            vi.mocked(head).mockResolvedValueOnce({
+                contentType: "video/mp4",
+                downloadUrl: "https://blob.example/video.mp4?download=1",
+                etag: "etag-1",
+                pathname: "video.mp4",
+                size: 321,
+                url: "https://blob.example/video.mp4",
+            } as Awaited<ReturnType<typeof head>>);
+
+            const result = await storage.delete({ id: "video.mp4" });
+
+            expect(del).toHaveBeenCalledWith("https://blob.example/video.mp4", expect.anything());
+            expect(result).toMatchObject({ id: "video.mp4", status: "deleted" });
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
+
+            await expect(storage.delete({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
+            expect(del).not.toHaveBeenCalled();
         });
     });
 
@@ -90,11 +157,7 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch HEAD request to return success
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: true,
-                status: 200,
-            });
+            vi.mocked(head).mockResolvedValueOnce({ contentType: "video/mp4", etag: "e", size: 1 } as Awaited<ReturnType<typeof head>>);
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -105,7 +168,7 @@ describe(VercelBlobStorage, () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const exists = await storage.exists({ id: "non-existent-id" });
 
@@ -135,18 +198,14 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch HEAD request to return 404 (doesn't exist)
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-                ok: false,
-                status: 404,
-            });
+            vi.mocked(head).mockRejectedValueOnce(new BlobNotFoundError());
 
             const exists = await storage.exists({ id: metafile.id });
 
             expect(exists).toBe(false);
         });
 
-        it("should return false when fetch throws an error", async () => {
+        it("should return false when the blob lookup throws an error", async () => {
             expect.assertions(1);
 
             // Mock getMeta to return metadata with URL
@@ -155,8 +214,7 @@ describe(VercelBlobStorage, () => {
                 url: "https://example.com/blob/test-file",
             });
 
-            // Mock fetch to throw error
-            (globalThis.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Network error"));
+            vi.mocked(head).mockRejectedValueOnce(new Error("Network error"));
 
             const exists = await storage.exists({ id: metafile.id });
 

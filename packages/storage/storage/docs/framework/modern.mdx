@@ -292,33 +292,11 @@ import { Rest } from "@visulima/storage/handler/http/fetch";
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
 
-// Upload file with raw binary data
-app.post("/files", async (c) => {
-    return await rest.fetch(c.req.raw);
-});
-
-// Create or update file (requires ID in URL)
-app.put("/files/:id", async (c) => {
-    return await rest.fetch(c.req.raw);
-});
-
-// Delete single file
-app.delete("/files/:id", async (c) => {
-    return await rest.fetch(c.req.raw);
-});
-
-// Batch delete multiple files
-app.delete("/files", async (c) => {
-    const url = new URL(c.req.url);
-    // Delete via query parameter: ?ids=id1,id2,id3
-    // Or via JSON body: { "ids": ["id1", "id2"] }
-    return await rest.fetch(c.req.raw);
-});
-
-// Get file metadata
-app.head("/files/:id", async (c) => {
-    return await rest.fetch(c.req.raw);
-});
+// One route per path serves every REST method:
+//   POST /files (upload, or start a chunked upload)     DELETE /files?ids=a,b (batch delete)
+//   PUT / PATCH / GET / HEAD / DELETE /files/:id        OPTIONS (CORS preflight)
+app.all("/files", (c) => rest.fetch(c.req.raw));
+app.all("/files/:id", (c) => rest.fetch(c.req.raw));
 ```
 
 ### REST Handler Features
@@ -339,18 +317,9 @@ import { Tus } from "@visulima/storage/handler/http/fetch";
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });
 
-// TUS endpoints
-app.post("/upload/tus", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
-
-app.patch("/upload/tus/:id", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
-
-app.head("/upload/tus/:id", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
+// TUS clients send OPTIONS, POST, HEAD, PATCH, GET and DELETE: route them all to the handler
+app.all("/upload/tus", (c) => tus.fetch(c.req.raw));
+app.all("/upload/tus/:id", (c) => tus.fetch(c.req.raw));
 ```
 
 ## Image Transformations

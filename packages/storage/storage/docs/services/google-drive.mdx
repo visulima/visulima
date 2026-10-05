@@ -1,10 +1,12 @@
 # Google Drive
 
-> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Drive-specific key resolution.
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, Google Cloud setup, OAuth wiring, and Drive-specific key resolution.
 
 ## Overview
 
-The Google Drive adapter routes virtual keys onto `fileId`s by stamping every upload with an `appProperties.fsdkKey` marker. An LRU cache amortizes the resolve cost. Drive isn't a key-value store, so a virtual key like `"docs/report.pdf"` can technically map to multiple Drive files — the adapter throws if `files.list` returns more than one match, and call sites can drop to `storage.raw` to disambiguate.
+Drive isn't a key-value store: files are addressed by `fileId`, and names aren't unique. `GoogleDriveStorage` therefore stamps every upload with `appProperties.fsdkKey = <key>` (and `fsdkContentType`) and resolves a key with a `files.list` query scoped to `rootFolderId`. Resolved IDs are kept in an in-memory LRU cache.
+
+Keys are **flat**: every file is created directly in `rootFolderId`, named after the last key segment. `reports/2024/q3.pdf` and `archive/q3.pdf` both show up as `q3.pdf` in the Drive UI, but stay distinct keys. Writing an existing key updates that file's content instead of creating a duplicate.
 
 ## Installation
 
@@ -20,94 +22,166 @@ yarn add @googleapis/drive google-auth-library
 pnpm add @googleapis/drive google-auth-library
 ```
 
-## Usage
+## Provider setup
+
+1. In the [Google Cloud console](https://console.cloud.google.com), pick a project and **enable the Google Drive API** (_APIs & Services → Library_).
+2. Choose an identity:
+    - **Service account** (servers): _IAM & Admin → Service accounts → Create_, then _Keys → Add key → JSON_. Use `client_email` + `private_key` (`credentials`) or the file path (`keyFilename`).
+    - **OAuth client** (end-user Drive): _APIs & Services → Credentials → OAuth client ID_; run the consent flow once with `access_type=offline` and the `https://www.googleapis.com/auth/drive` scope to get a refresh token.
+3. Give the identity access to the bucket root:
+    - **Shared Drive (recommended for service accounts):** add the service account email as a member with **Content manager** (needed to delete files; _Contributor_ can't). Pass the Shared Drive ID as `driveId` — it is the last segment of the drive's URL.
+    - **A folder in someone's My Drive:** share the folder with the service account email as **Editor** and pass the folder ID (from its URL) as `rootFolderId`. Service accounts have no storage quota of their own on many projects, so files they create in a personal folder can fail with a quota error — prefer a Shared Drive.
+4. **Domain-wide delegation** (act as a Workspace user): in the Admin console → _Security → API controls → Domain-wide delegation_, authorize the service account's client ID for `https://www.googleapis.com/auth/drive`, then set `subject` to the user's email.
+5. `publicByDefault: true` grants "anyone with the link: reader". Workspace or Shared Drive policies that forbid sharing outside the organization make that call fail.
+
+The adapter always requests the full `https://www.googleapis.com/auth/drive` scope for service-account auth; narrower scopes aren't configurable.
+
+Browsers upload to your handler, not Drive, so CORS is configured on your own server.
+
+## Configuration
 
 ```ts
-import GoogleDriveStorage from "@visulima/storage/provider/google-drive";
+import { GoogleDriveStorage } from "@visulima/storage/provider/google-drive";
 
+// Minimal: service account from env (GOOGLE_DRIVE_CLIENT_EMAIL + GOOGLE_DRIVE_PRIVATE_KEY), My Drive root
+const storage = new GoogleDriveStorage({});
+```
+
+```ts
+// Production: service account in a Shared Drive
 const storage = new GoogleDriveStorage({
+    keyFilename: "/etc/secrets/drive-sa.json",
+    driveId: process.env.GOOGLE_DRIVE_ID, // rootFolderId defaults to the Shared Drive root
+    maxUploadSize: "500MB", // writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+});
+```
+
+### Options
+
+| Option              | Type                                                        | Default                                                      | Description                                                                                                                       |
+| ------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `client`            | `drive_v3.Drive`                                            | —                                                            | Pre-built client (ADC, workload identity, …). Takes precedence. `getUploadUrl()` is unavailable with it.                          |
+| `credentials`       | `{ client_email, private_key }`                             | —                                                            | Inline service-account key (JWT auth).                                                                                            |
+| `keyFilename`       | `string`                                                    | —                                                            | Path to a service-account JSON key.                                                                                               |
+| `oauth`             | `{ clientId, clientSecret, refreshToken }`                  | —                                                            | End-user OAuth; `OAuth2Client` refreshes access tokens itself.                                                                    |
+| `subject`           | `string`                                                    | `GOOGLE_DRIVE_SUBJECT`                                       | User to impersonate via domain-wide delegation. Only used with service-account auth.                                              |
+| `driveId`           | `string`                                                    | `GOOGLE_DRIVE_ID`                                            | Shared Drive ID. Scopes lookups to that drive.                                                                                    |
+| `rootFolderId`      | `string`                                                    | `GOOGLE_DRIVE_ROOT_FOLDER_ID`, else `driveId`, else `"root"` | Folder that holds every file. `"root"` is the identity's My Drive.                                                                |
+| `publicByDefault`   | `boolean`                                                   | `false`                                                      | `write()` adds an "anyone, reader" permission and `getReadUrl()` returns a public download URL. Without it `getReadUrl()` throws. |
+| `fileIdCacheSize`   | `number`                                                    | `1024`                                                       | Capacity of the key → `fileId` LRU cache.                                                                                         |
+| `metaStorageConfig` | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir                                                  | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                              |
+
+Auth precedence: `client` → `credentials` → `keyFilename` → `oauth` → env. `GOOGLE_APPLICATION_CREDENTIALS` / Application Default Credentials are **not** picked up automatically — build a `drive_v3.Drive` with `GoogleAuth` yourself and pass it as `client`.
+
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
+
+### Environment variables
+
+| Variable                                                 | Used for                                                |
+| -------------------------------------------------------- | ------------------------------------------------------- |
+| `GOOGLE_DRIVE_CLIENT_EMAIL` + `GOOGLE_DRIVE_PRIVATE_KEY` | service-account auth when no auth option is passed      |
+| `GOOGLE_DRIVE_KEY_FILE`                                  | service-account key file (checked after the pair above) |
+| `GOOGLE_DRIVE_SUBJECT`                                   | domain-wide delegation subject                          |
+| `GOOGLE_DRIVE_ID`                                        | `driveId`                                               |
+| `GOOGLE_DRIVE_ROOT_FOLDER_ID`                            | `rootFolderId`                                          |
+
+### Auth variants
+
+```ts
+// Inline service account
+new GoogleDriveStorage({
     credentials: {
         client_email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL!,
         private_key: process.env.GOOGLE_DRIVE_PRIVATE_KEY!,
     },
-    driveId: process.env.GOOGLE_DRIVE_ID, // Shared Drive id
-    rootFolderId: process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID,
+    driveId: process.env.GOOGLE_DRIVE_ID,
 });
-```
 
-## Configuration
-
-### Auth precedence
-
-1. `client` — pre-built `drive_v3.Drive` instance.
-2. `credentials` — inline service-account credentials (`client_email` + `private_key`).
-3. `keyFilename` — path to a service-account JSON file.
-4. `oauth` — 3-legged refresh token (`clientId` + `clientSecret` + `refreshToken`).
-5. Env fallbacks: `GOOGLE_DRIVE_CLIENT_EMAIL` + `GOOGLE_DRIVE_PRIVATE_KEY`, or `GOOGLE_DRIVE_KEY_FILE`.
-
-`GOOGLE_DRIVE_SUBJECT` enables domain-wide delegation for service-account auth shapes.
-
-### Shared Drive
-
-Service accounts have a 15 GB personal quota. Production workloads should target a Shared Drive with the service account added as a member:
-
-```ts
-const storage = new GoogleDriveStorage({
-    keyFilename: "/etc/secrets/sa.json",
-    driveId: "0AAbCdEfG...",
-    rootFolderId: "0AAbCdEfG...", // typically the same as driveId
-});
-```
-
-### OAuth (end-user Drive)
-
-```ts
-const storage = new GoogleDriveStorage({
+// End-user Drive via OAuth
+new GoogleDriveStorage({
     oauth: {
         clientId: process.env.GOOGLE_OAUTH_CLIENT_ID!,
         clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
         refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN!,
     },
 });
+
+// Application Default Credentials through a pre-built client
+import { auth, drive } from "@googleapis/drive";
+
+new GoogleDriveStorage({
+    client: drive({ version: "v3", auth: new auth.GoogleAuth({ scopes: ["https://www.googleapis.com/auth/drive"] }) }),
+});
 ```
 
-The `google-auth-library` `OAuth2Client` handles refresh natively — no per-request token plumbing in the adapter.
+## Metadata storage
 
-### Public reads
+Records live in a `LocalMetaStorage`: one JSON file per upload at `<directory>/<prefix><id><suffix>` (default `<os tmpdir>/Upload_meta/<id>.META`). The key itself is stored on the Drive file (`appProperties`), so keys keep resolving without the records.
+
+- **Finished uploads keep their record** (content type, original name, custom metadata, the Drive `fileId`); `delete()` removes it.
+- **Multi-instance deployments** must share the records: point `metaStorageConfig.directory` at a shared volume, or pass any `MetaStorage` as `metaStorage` (for example `S3MetaStorage` from `@visulima/storage/provider/aws`, or a Redis/database-backed subclass of `MetaStorage`). The `fileId` cache is per instance and only an optimization.
+- **Expiration only covers this storage's uploads.** `purge()` walks the meta storage's records; a meta storage that can't list falls back to the Drive listing, whose files carry no creation date, so nothing is purged.
+
+## Behaviour & limits
+
+| Topic                 | Behaviour                                                                                                                                                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable   | Not supported through the handlers (`supportsResumableWrites: false`). A chunk that doesn't start at 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`. TUS and chunked REST clients must send the file in one request.                        |
+| Memory                | `write()` buffers the whole body before the single `files.create` / `files.update` call. Cap it with `maxUploadSize`; for large files let the client upload to `getUploadUrl()`.                                                                                     |
+| Range reads           | Not supported (`supportsRange: false`); `get()` downloads the whole file.                                                                                                                                                                                            |
+| `getReadUrl(key)`     | Only with `publicByDefault: true`: `https://drive.google.com/uc?export=download&id=<fileId>`. Otherwise, and for `responseContentDisposition` / `responseContentType`, `METHOD_NOT_ALLOWED`.                                                                         |
+| `getUploadUrl(key)`   | A Drive resumable-upload session URL (file created in `rootFolderId`, tagged with the key). Requires `credentials`, `keyFilename` or `oauth`; a pre-built `client` → `METHOD_NOT_ALLOWED`. `contentLength` → `BAD_REQUEST`. The uploaded file gets no upload record. |
+| `list()`              | Files directly in `rootFolderId` that carry an `fsdkKey`, following `nextPageToken` (≤ 1000 per page). Files created outside the adapter are skipped.                                                                                                                |
+| Duplicate keys        | If two files carry the same key, lookups throw `multiple files share virtual key` — fix them via `storage.raw`.                                                                                                                                                      |
+| `copy()`              | Native `files.copy`; a file previously stored under the destination key is replaced.                                                                                                                                                                                 |
+| `move()`              | `copy()` + `delete()`.                                                                                                                                                                                                                                               |
+| Custom `filename`     | The returned name is the key stamped on the Drive file; the record maps the upload ID to it.                                                                                                                                                                         |
+| Cancellation, retries | `signal`/`timeout` are best-effort — the SDK can't cancel an in-flight request. `retryConfig` applies (default: 3 retries with exponential backoff).                                                                                                                 |
+
+## Using it with the handlers
+
+Because writes are single-request, prefer the multipart or REST handlers (or TUS clients that send the whole file in one `PATCH`).
 
 ```ts
-const storage = new GoogleDriveStorage({
-    credentials: {
-        /* … */
-    },
-    publicByDefault: true,
-});
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
 
-const url = await storage.getReadUrl("file.mp4");
-// → https://drive.google.com/uc?export=download&id=<fileId>
+const app = express();
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle);
 ```
 
-When `publicByDefault` is set, every `write()` also creates an "anyone with link, reader" permission.
+```ts
+import { Rest } from "@visulima/storage/handler/http/fetch";
 
-## URL Generation
+const rest = new Rest({ storage });
 
-### `getReadUrl(key, options?)`
+export const handler = (request: Request): Promise<Response> => rest.fetch(request);
+```
 
-Requires `publicByDefault: true` — Drive has no signed-URL primitive. Returns the canonical `https://drive.google.com/uc?export=download&id=<fileId>` URL. `responseContentDisposition` is not supported.
+```ts
+import { Files } from "@visulima/storage";
 
-### `getUploadUrl(key, options?)`
+const files = new Files({ adapter: storage });
 
-Returns a resumable-upload session URL (`https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable`). Requires `credentials`, `keyFilename`, or `oauth` — the pre-built `client` escape hatch throws because the adapter can't recover the underlying auth handle to mint tokens.
+await files.upload("exports/report.csv", csvBuffer, { contentType: "text/csv" });
 
-## Features
+const { body } = await files.download("exports/report.csv"); // Buffer
+```
 
-- **Virtual-key routing** — uploads stamp `appProperties.fsdkKey`; reads resolve via `files.list`, cached in an LRU.
-- **Shared-Drive aware** — sets `supportsAllDrives` / `includeItemsFromAllDrives` on every request.
-- **Domain-wide delegation** — pass `subject` (or `GOOGLE_DRIVE_SUBJECT`) to impersonate a workspace user.
-- **Resumable uploads** — `getUploadUrl` initiates a session that the caller can drive directly from a browser.
+## Troubleshooting
 
-## Limitations
-
-- `getReadUrl()` throws `METHOD_NOT_ALLOWED` without `publicByDefault: true`. Use `get()` for private files.
-- Single-shot writes via `write()`; for large files use `getUploadUrl()` and stream against the session URL.
-- Duplicate virtual keys (same `fsdkKey` on multiple Drive files) cause `resolve` to throw — surface via `storage.raw` and reconcile manually.
+| Symptom                                                              | Cause / fix                                                                                                               |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Google Drive storage: missing auth`                                 | No auth option, `client`, or env fallback. `GOOGLE_APPLICATION_CREDENTIALS` alone isn't read — pass a pre-built `client`. |
+| `403 accessNotConfigured`                                            | The Drive API isn't enabled in the service account's project.                                                             |
+| `404 File not found: <rootFolderId>`                                 | The folder/Shared Drive isn't shared with the identity, or the ID is wrong.                                               |
+| `403 storageQuotaExceeded` with a service account                    | Service accounts can't own files in a personal Drive on many projects. Use a Shared Drive (`driveId`).                    |
+| `403 insufficientFilePermissions` on delete                          | Shared Drive role is _Contributor_; use _Content manager_.                                                                |
+| `unauthorized_client` with `subject`                                 | Domain-wide delegation not authorized for the client ID and the `drive` scope.                                            |
+| `getReadUrl() requires … publicByDefault: true`                      | Drive has no signed URLs. Serve private files through `get()` / your handler.                                             |
+| `multiple files share virtual key '…'`                               | Two files carry the same `fsdkKey` (e.g. created by an older version or copied in the UI). Delete one via `storage.raw`.  |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads` | The client sent a partial chunk. Upload the whole file in one request, or use `getUploadUrl()`.                           |

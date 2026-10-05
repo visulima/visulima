@@ -1,9 +1,12 @@
 /* eslint-disable max-classes-per-file, @typescript-eslint/no-useless-constructor, class-methods-use-this -- mock SDK classes for vendor library shape */
+import { Readable } from "node:stream";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GoogleDriveStorage from "../../../src/storage/google-drive/google-drive-storage";
 import type { GoogleDriveStorageOptions } from "../../../src/storage/google-drive/types";
-import { storageOptions } from "../../__helpers__/config";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
+import { metafile, storageOptions } from "../../__helpers__/config";
 
 const makeMockDrive = () => {
     return {
@@ -13,6 +16,7 @@ const makeMockDrive = () => {
             delete: vi.fn(),
             get: vi.fn(),
             list: vi.fn(),
+            update: vi.fn(),
         },
         permissions: {
             create: vi.fn(),
@@ -130,6 +134,46 @@ describe(GoogleDriveStorage, () => {
         });
     });
 
+    describe(".write()", () => {
+        const writeWhole = async (storage: GoogleDriveStorage): Promise<unknown> => {
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, name: "video.mp4", size: 4 });
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+
+            return storage.write({ body: Readable.from([Buffer.from("data")]), contentLength: 4, id: metafile.id, size: 4, start: 0 });
+        };
+
+        it("updates the file already stored under the key instead of creating a duplicate", async () => {
+            expect.assertions(3);
+
+            const storage = new GoogleDriveStorage({
+                ...(storageOptions as GoogleDriveStorageOptions),
+                client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
+            });
+
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [{ id: "file-1" }] } });
+            mockDrive.files.update.mockResolvedValueOnce({ data: { id: "file-1", mimeType: "video/mp4" } });
+
+            await expect(writeWhole(storage)).resolves.toMatchObject({ driveFileId: "file-1", status: "completed" });
+            expect(mockDrive.files.update).toHaveBeenCalledWith(expect.objectContaining({ fileId: "file-1" }));
+            expect(mockDrive.files.create).not.toHaveBeenCalled();
+        });
+
+        it("creates the file when none is stored under the key", async () => {
+            expect.assertions(2);
+
+            const storage = new GoogleDriveStorage({
+                ...(storageOptions as GoogleDriveStorageOptions),
+                client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
+            });
+
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [] } });
+            mockDrive.files.create.mockResolvedValueOnce({ data: { id: "file-2", mimeType: "video/mp4" } });
+
+            await expect(writeWhole(storage)).resolves.toMatchObject({ driveFileId: "file-2", status: "completed" });
+            expect(mockDrive.files.update).not.toHaveBeenCalled();
+        });
+    });
+
     describe(".delete()", () => {
         it("resolves fileId via files.list when no cached entry, then calls files.delete", async () => {
             expect.assertions(2);
@@ -139,7 +183,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },
@@ -166,7 +210,7 @@ describe(GoogleDriveStorage, () => {
                 client: mockDrive as unknown as GoogleDriveStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "file-1" }] },
@@ -233,6 +277,7 @@ describe(GoogleDriveStorage, () => {
             mockDrive.files.list.mockResolvedValueOnce({
                 data: { files: [{ id: "src-id" }] },
             });
+            mockDrive.files.list.mockResolvedValueOnce({ data: { files: [] } });
             mockDrive.files.copy.mockResolvedValueOnce({
                 data: { id: "dst-id", mimeType: "video/mp4", size: "1024" },
             });

@@ -111,9 +111,19 @@ const nuxtModule: any = defineNuxtModule<ModuleOptions>({
 
         // Helper to set CORS headers
         const setCorsHeaders = (event: NitroEvent): void => {
-            const origin = Array.isArray(cors.origin) ? cors.origin.join(", ") : cors.origin || "*";
+            // The header carries one origin: echo the request's when it is allowed (a list joined with
+            // ", " is rejected by every browser).
+            if (Array.isArray(cors.origin)) {
+                const requestOrigin = event.node.req.headers.origin;
 
-            event.node.res.setHeader("Access-Control-Allow-Origin", origin);
+                event.node.res.setHeader("Vary", "Origin");
+
+                if (typeof requestOrigin === "string" && cors.origin.includes(requestOrigin)) {
+                    event.node.res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+                }
+            } else {
+                event.node.res.setHeader("Access-Control-Allow-Origin", cors.origin || "*");
+            }
 
             if (cors.methods) {
                 event.node.res.setHeader("Access-Control-Allow-Methods", cors.methods.join(", "));
@@ -163,7 +173,8 @@ const nuxtModule: any = defineNuxtModule<ModuleOptions>({
 
                 // Check if this URL matches any of our stored handlers
                 for (const [route, { handler, setCorsHeaders: setHeaders }] of handlerStorage.entries()) {
-                    if (url.startsWith(route)) {
+                    // `/api/upload/rest` must not also capture `/api/upload/restricted`.
+                    if (url === route || url.startsWith(`${route}/`) || url.startsWith(`${route}?`)) {
                         setHeaders(event as NitroEvent);
                         await handler.handle((event as NitroEvent).node.req, (event as NitroEvent).node.res);
 

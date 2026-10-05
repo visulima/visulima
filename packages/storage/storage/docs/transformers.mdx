@@ -80,16 +80,17 @@ const avif = await transformer.convertFormat("image-id", "avif", {
 // Rotate
 const rotated = await transformer.rotate("image-id", {
     angle: 90,
-    background: { r: 255, g: 255, b: 255 },
+    background: "#ffffff",
 });
 
-// Apply effects
-const processed = await transformer.transform("image-id", {
-    blur: true,
-    sharpen: true,
-    greyscale: true,
-    gamma: 2.2,
-});
+// Chain several operations: `transform(fileId, steps)` takes an ordered array of steps
+const processed = await transformer.transform("image-id", [
+    { type: "resize", options: { width: 1200, fit: "inside" } },
+    { type: "blur", options: { sigma: 1.5 } },
+    { type: "sharpen", options: {} },
+    { type: "greyscale", options: {} },
+    { type: "format", options: { format: "webp", quality: 80 } },
+]);
 ```
 
 ## Video Transformer
@@ -128,11 +129,17 @@ const result = await transformer.resize("video-id", {
 ### Convert Formats
 
 ```typescript
-const webm = await transformer.transform("video-id", {
-    format: "webm",
+const webm = await transformer.convertFormat("video-id", "webm", {
     codec: "vp9",
     bitrate: 1_500_000,
 });
+
+// Or as steps
+const small = await transformer.transform("video-id", [
+    { type: "resize", options: { width: 1280, height: 720 } },
+    { type: "codec", options: { codec: "vp9" } },
+    { type: "bitrate", options: { bitrate: 1_500_000 } },
+]);
 ```
 
 ### Video Codecs
@@ -178,11 +185,16 @@ const result = await transformer.resample("audio-id", {
 ### Convert Formats
 
 ```typescript
-const mp3 = await transformer.transform("audio-id", {
-    format: "mp3",
+const mp3 = await transformer.convertFormat("audio-id", "mp3", {
     codec: "mp3",
     bitrate: 192_000,
 });
+
+// Or as steps
+const mono = await transformer.transform("audio-id", [
+    { type: "resample", options: { sampleRate: 22_050 } },
+    { type: "bitrate", options: { bitrate: 64_000 } },
+]);
 ```
 
 ### Audio Codecs
@@ -202,6 +214,7 @@ Unified transformer that automatically detects and processes any media type.
 ### Basic Usage
 
 ```typescript
+import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
 import { MediaTransformer } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
@@ -223,15 +236,16 @@ const transformer = new MediaTransformer(storage, {
 
 ```typescript
 // Automatically detects media type and routes to appropriate transformer
+// Query values are strings, exactly as they arrive in a URL
 const result = await transformer.handle("file-id", {
-    width: 800,
-    height: 600,
+    width: "800",
+    height: "600",
     format: "webp",
-    quality: 85,
+    quality: "85",
 });
 
-// Or use URL query string
-const result = await transformer.fetch("file-id", "width=800&height=600&format=webp&quality=85");
+// Or pass the raw query string
+const fromQuery = await transformer.fetch("file-id", "width=800&height=600&format=webp&quality=85");
 ```
 
 ### URL-Based Transformations
@@ -268,6 +282,7 @@ const result = await transformer.fetch("file-id", "width=800&height=600&format=w
 | ----------- | ------ | ---------------- | ---------------------------------- |
 | `width`     | number | Width in pixels  | 1-10000                            |
 | `height`    | number | Height in pixels | 1-10000                            |
+| `fit`       | string | Resize fit mode  | `cover`, `contain`, `fill`         |
 | `codec`     | string | Video codec      | `avc`, `hevc`, `vp8`, `vp9`, `av1` |
 | `bitrate`   | number | Bitrate in bps   | 1000000+                           |
 | `frameRate` | number | Frame rate in Hz | 24, 30, 60                         |
@@ -280,6 +295,13 @@ const result = await transformer.fetch("file-id", "width=800&height=600&format=w
 | `numberOfChannels` | number | Number of channels | 1, 2                                   |
 | `codec`            | string | Audio codec        | `aac`, `opus`, `mp3`, `vorbis`, `flac` |
 | `bitrate`          | number | Bitrate in bps     | 64000+                                 |
+
+Videos accept only `cover`, `contain` and `fill` for `fit`; `inside` and `outside` answer 400.
+
+The response `Content-Type` is the format's registered MIME type, e.g. `video/x-matroska` for
+`mkv`, `video/quicktime` for `mov`, `audio/flac` for `flac`, and `video/ogg` or `audio/ogg` for
+`ogg` depending on the source. Uploads typed `audio/flac`, `audio/m4a`, `audio/opus`, `audio/aiff`,
+`video/matroska` and `video/avi` are recognised alongside the types the `mime` package knows.
 
 ## Caching Transformed Files
 

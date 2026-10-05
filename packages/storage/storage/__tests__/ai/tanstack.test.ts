@@ -41,6 +41,7 @@ describe(createTanstackFileTools, () => {
             "getFileMetadata",
             "getFileUrl",
             "listFiles",
+            "searchFiles",
             "signUploadUrl",
             "uploadFile",
         ]);
@@ -61,7 +62,7 @@ describe(createTanstackFileTools, () => {
     it("omits write tools when readOnly: true", () => {
         const tools = createTanstackFileTools({ files, readOnly: true });
 
-        expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
+        expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "searchFiles"]);
     });
 
     it("requires approval on write tools by default", () => {

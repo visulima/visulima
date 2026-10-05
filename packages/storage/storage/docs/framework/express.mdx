@@ -18,35 +18,12 @@ pnpm add @visulima/storage express
 
 ## Basic File Upload
 
+Node handlers expose two middleware functions:
+
+- **`handle(req, res)`** answers every request itself and never calls `next`. Mount it with `app.use(path, handler.handle)`; anything chained after it never runs.
+- **`upload(req, res, next)`** behaves the same, except that when an upload **completes** it puts the stored file metadata on `req.body` and calls `next()` instead of answering, so your own middleware sends the response. Partial chunks (REST `PATCH`, TUS) are still answered by the handler. `GET` requests also go to `next()` with the file on `req.body` instead of being streamed, so use `upload` only on the upload route.
+
 ### Multipart Handler (Form-based Uploads)
-
-````ts
-import express from "express";
-import { DiskStorage } from "@visulima/storage";
-import { Multipart } from "@visulima/storage/handler/http/node";
-
-const app = express();
-const PORT = 3000;
-
-// Create upload directory if it doesn't exist
-const uploadDirectory = "./uploads";
-
-// Initialize storage and multipart handler
-const storage = new DiskStorage({ directory: uploadDirectory });
-const multipart = new Multipart({ storage });
-
-app.use("/files", multipart.handle, (req, res) => {
-  const file = req.body;
-  res.json(file);
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-## Fetch Method Alternative
-
-For environments that support Web API Request/Response objects, you can also use the `fetch` method directly:
 
 ```ts
 import express from "express";
@@ -56,38 +33,63 @@ import { Multipart } from "@visulima/storage/handler/http/node";
 const app = express();
 const PORT = 3000;
 
-const storage = new DiskStorage({ directory: uploadDirectory });
+const storage = new DiskStorage({ directory: "./uploads" });
 const multipart = new Multipart({ storage });
 
-// Using fetch method with a custom handler
-app.use("/upload", express.raw({ type: "multipart/form-data" }), async (req, res) => {
-  try {
-    // Convert Node.js request to Web API Request
-    const webRequest = new Request(`http://localhost:${PORT}/upload`, {
-      method: req.method,
-      headers: req.headers as any,
-      body: req.body,
-    });
+// Upload: post-process the stored file, then answer yourself
+app.post("/files", multipart.upload, (req, res) => {
+    res.status(201).json(req.body);
+});
+
+// Everything else (GET /files/:id, DELETE /files/:id, OPTIONS) is answered by the handler
+app.use("/files", multipart.handle);
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+```
+
+## Fetch Method Alternative
+
+The Web-standard handlers in `@visulima/storage/handler/http/fetch` expose `fetch(request): Promise<Response>`. The Node handlers don't have it; if you want the Fetch flavour inside Express, convert the request yourself:
+
+```ts
+import { Readable } from "node:stream";
+
+import express from "express";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const app = express();
+const PORT = 3000;
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+app.use("/upload", async (req, res) => {
+    const webRequest = new Request(new URL(req.originalUrl, `http://${req.headers.host}`), {
+        method: req.method,
+        headers: req.headers as Record<string, string>,
+        body: ["GET", "HEAD"].includes(req.method) ? undefined : (Readable.toWeb(req) as ReadableStream),
+        // Required by Node's fetch when the body is a stream
+        duplex: "half",
+    } as RequestInit);
 
     const response = await multipart.fetch(webRequest);
 
-    // Convert back to Express response
     res.status(response.status);
+
     for (const [key, value] of response.headers.entries()) {
-      res.setHeader(key, value);
+        res.setHeader(key, value);
     }
 
-    const body = await response.text();
-    res.send(body);
-  } catch (error) {
-    res.status(500).json({ error: "Upload failed" });
-  }
+    res.send(Buffer.from(await response.arrayBuffer()));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
-````
+```
 
 ### REST Handler (Direct Binary Uploads)
 
@@ -102,41 +104,26 @@ const PORT = 3000;
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
 
-// Upload file with raw binary data
-app.post("/files", rest.handle, (req, res) => {
-    const file = req.body;
-    res.json(file);
-});
-
-// Create or update file (requires ID in URL)
-app.put("/files/:id", rest.handle, (req, res) => {
-    const file = req.body;
-    res.json(file);
-});
-
-// Delete single file
-app.delete("/files/:id", rest.handle, (req, res) => {
-    res.status(204).send();
-});
-
-// Batch delete multiple files via query parameter
-// DELETE /files?ids=id1,id2,id3
-app.delete("/files", rest.handle, (req, res) => {
-    res.status(204).send();
-});
+// One mount serves every route:
+//   POST   /files            upload raw binary (or start a chunked upload)
+//   PUT    /files/:id        create or replace
+//   PATCH  /files/:id        append a chunk
+//   GET    /files/:id        download   HEAD /files/:id  metadata
+//   DELETE /files/:id        delete     DELETE /files?ids=a,b  batch delete
+app.use("/files", rest.handle);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 ```
 
+The handler writes the status code, headers and body itself (e.g. `201` + `Location` for `POST`, `204` for `DELETE`). Don't chain a middleware after `rest.handle` expecting it to run.
+
 ### Choosing Between Handlers
 
 - **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
 - **REST**: Use for direct binary uploads, API-first applications, or when you need PUT support
-- **TUS**: Use for large files or when you need resumable uploads
-
-Note: The `handle` middleware attaches the completed `UploadFile` to `req.body` for POST/PUT uploads and streams/serves files for GET.
+- **TUS**: Use for large files or when you need resumable uploads; mount it with `app.use("/files-tus", tus.handle)` so every method (`OPTIONS`, `POST`, `HEAD`, `PATCH`, `GET`, `DELETE`) reaches it
 
 ## Image Transformations
 
@@ -147,6 +134,7 @@ import express from "express";
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
 import { Multipart } from "@visulima/storage/handler/http/node";
+import type { ResizeOptions } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
 
 const app = express();
@@ -173,13 +161,7 @@ const imageTransformer = new ImageTransformer(storage, {
 // Initialize multipart handler
 const multipart = new Multipart({ storage });
 
-// File upload endpoint
-app.use("/files", multipart.handle, (req, res) => {
-    const file = req.body;
-    res.json(file);
-});
-
-// Image transformation endpoint with query parameters
+// Image transformation endpoint (registered before the handler mount so it wins for GET /files/:id) with query parameters
 // Example URLs:
 // GET /files/image123?width=300&height=200&fit=cover&quality=80
 // GET /files/photo456?width=800&format=webp&lossless=true
@@ -193,18 +175,17 @@ app.get("/files/:id", async (req, res) => {
         const hasTransformParams = width || height || fit || position || quality || lossless || effort || alphaQuality || loop || delay;
 
         if (!hasTransformParams) {
-            // No transformation requested, serve original file
-            // Delegate GET to handler to stream efficiently (incl. range)
-            return multipart.upload(req as any, res as any);
+            // No transformation requested: let the handler stream the original (incl. range requests)
+            return multipart.handle(req, res);
         }
 
         // Parse transformation options
-        const transformOptions: any = {};
+        const transformOptions: ResizeOptions = {};
 
         if (width) transformOptions.width = Number(width);
         if (height) transformOptions.height = Number(height);
-        if (fit) transformOptions.fit = fit;
-        if (position) transformOptions.position = position;
+        if (fit) transformOptions.fit = fit as ResizeOptions["fit"];
+        if (position) transformOptions.position = String(position);
         if (quality) transformOptions.quality = Number(quality);
         if (lossless !== undefined) transformOptions.lossless = lossless === "true";
         if (effort) transformOptions.effort = Number(effort);
@@ -213,7 +194,6 @@ app.get("/files/:id", async (req, res) => {
         if (delay) transformOptions.delay = Number(delay);
 
         // Apply transformation
-        // Use high-level convenience methods when possible
         const result = await imageTransformer.resize(id, transformOptions);
 
         // Set appropriate headers
@@ -231,8 +211,11 @@ app.get("/files/:id", async (req, res) => {
     }
 });
 
+// Upload endpoint and everything else (DELETE, OPTIONS)
+app.use("/files", multipart.handle);
+
 // Programmatic transformation example
-app.post("/transform/:id", async (req, res) => {
+app.post("/transform/:id", express.json(), async (req, res) => {
     try {
         const { id } = req.params;
         const { width, height, fit = "cover", quality = 80, format = "jpeg" } = req.body;
@@ -246,7 +229,7 @@ app.post("/transform/:id", async (req, res) => {
         });
 
         res.json({
-            originalSize: result.originalSize,
+            originalSize: result.originalFile.size,
             transformedSize: result.buffer.length,
             format: result.format,
             url: `/files/${id}?width=${width}&height=${height}&fit=${fit}&quality=${quality}`,
@@ -273,7 +256,7 @@ const imageTransformer = new ImageTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // Maximum image size in bytes (default: 50MB)
     cacheTtl: 3600, // Cache TTL in seconds (default: 3600)
     supportedFormats: ["jpeg", "png"], // Supported input formats (default: all)
-    logger: console, // Logger instance (default: console)
+    logger: console, // Logger instance
 });
 ```
 

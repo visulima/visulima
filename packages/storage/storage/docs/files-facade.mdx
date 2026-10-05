@@ -1,6 +1,6 @@
 # `Files` facade
 
-Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
+Files-SDK–style unified facade over any `BaseStorage` adapter. One small surface (`upload`, `download`, `downloadStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `search`, `url`, `signedUploadUrl`, `signedUpload`) plus a `.raw` escape hatch — works against every adapter the package ships, including the in-memory adapter for tests.
 
 ```ts
 import { Files } from "@visulima/storage";
@@ -29,16 +29,24 @@ For client-driven uploads (browser forms, large resumable files, chunked transfe
 | ----------------- | ---------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------- |
 | `upload`          | `(key, body, opts?) → Promise<FileObject>`           | `(items: BulkUploadItem[], opts?) → Promise<…>` | Accepts any [supported body type](#body-types).                   |
 | `download`        | `(key, opts?) → Promise<DownloadResult>`             | `(keys: string[], opts?) → Promise<…>`          | Optional `range` for byte slices.                                 |
+| `downloadStream`  | `(key, opts?) → Promise<DownloadStreamResult>`       | —                                               | `body` is a Node `Readable`; nothing is buffered in memory.       |
 | `head`            | `(key, opts?) → Promise<FileObject>`                 | `(keys: string[], opts?) → Promise<…>`          | Metadata only.                                                    |
 | `exists`          | `(key, opts?) → Promise<boolean>`                    | `(keys: string[], opts?) → Promise<…>`          | Never throws for a missing object.                                |
 | `delete`          | `(key, opts?) → Promise<void>`                       | `(keys: string[], opts?) → Promise<…>`          | Uses the adapter's native bulk primitive when present.            |
 | `copy`            | `(source, destination, opts?) → Promise<FileObject>` | —                                               | Server-side where supported; download + re-upload otherwise.      |
 | `move`            | `(from, to, opts?) → Promise<FileObject>`            | `(items: BulkMoveItem[], opts?) → Promise<…>`   | Uses native rename where one exists, otherwise `copy` + `delete`. |
 | `list`            | `(opts?) → Promise<FileObject[]>`                    | —                                               | Optional `prefix` filter and `limit`. Single page.                |
+| `list`            | `({ delimiter, … }) → Promise<ListDirectoryResult>`  | —                                               | Directory-style `{ files, prefixes }`.                            |
 | `listAll`         | `(opts?) → AsyncGenerator<FileObject>`               | —                                               | Pages internally; yields one at a time.                           |
+| `search`          | `(pattern, opts?) → AsyncGenerator<FileObject>`      | —                                               | Glob / regex / substring / exact key match over `listAll`.        |
 | `url`             | `(key, opts?) → Promise<string>`                     | —                                               | Signed-read URL when the provider supports it.                    |
 | `signedUploadUrl` | `(key, opts?) → Promise<string>`                     | —                                               | Presigned-PUT URL for direct-from-browser uploads.                |
+| `signedUpload`    | `(key, opts?) → Promise<SignedUpload>`               | —                                               | PUT or size-limited POST contract (`maxSize` / `minSize`).        |
 | `raw` (getter)    | `→ unknown`                                          | —                                               | The adapter's native client (`S3Client`, `BlobServiceClient`, …). |
+| `capabilities`    | `→ StorageCapabilities` (getter)                     | —                                               | Adapter flags, `conditional`, `resumable`, `readonly`, …          |
+| `readonly`        | `() → Files`                                         | —                                               | Locked view sharing adapter, prefix, defaults and hooks.          |
+
+Two top-level functions build on the same surface: `transfer(source, destination)` and `sync(source, destination)` (both covered below).
 
 ## Per-call `OperationOptions`
 
@@ -127,8 +135,9 @@ No S3-style `ETag` capitalization quirks, no Azure-specific fields leaking throu
 `Files` is generic over the adapter type, so `files.raw` is typed to the adapter's native client when you pin it:
 
 ```ts
-import { Files, S3Storage } from "@visulima/storage";
 import type { S3Client } from "@aws-sdk/client-s3";
+import { Files } from "@visulima/storage";
+import { S3Storage } from "@visulima/storage/provider/aws";
 
 const files = new Files({ adapter: new S3Storage({ bucket: "u", region: "us-east-1" }) });
 
@@ -172,7 +181,23 @@ const { body } = await files.download("video.mp4", { range: { start: 0, end: 102
 const { body: tail } = await files.download("video.mp4", { range: { start: 8 * 1024 * 1024 } });
 ```
 
-`range` is the HTTP `bytes=start-end` semantics: both bounds 0-based, `end` inclusive. The facade checks `adapter.supportsRange` and throws synchronously for adapters that don't opt in, so the bandwidth saving is never silently lost client-side.
+`range` is the HTTP `bytes=start-end` semantics: both bounds 0-based, `end` inclusive. The facade checks `adapter.supportsRange` (also exposed as `files.capabilities.range`) and rejects the returned promise for adapters that don't opt in, so the bandwidth saving is never silently lost client-side. Nothing throws synchronously — `await` (or `.catch`) the call to handle it.
+
+### Stream a download
+
+```ts
+const { body, contentType, size } = await files.downloadStream("videos/intro.mp4");
+
+response.setHeader("Content-Type", contentType);
+
+if (size !== undefined) {
+    response.setHeader("Content-Length", String(size));
+}
+
+body.pipe(response);
+```
+
+`downloadStream` is backed by the adapter's `getStream()`, so large objects are never buffered in memory. `body` is a Node `Readable`; `contentType`, `etag`, `lastModified` and `size` come from the adapter's response headers.
 
 ### Upload with progress
 
@@ -206,6 +231,57 @@ await files.upload("backups/db-2026-05.tar.gz", stream, {
 
 `multipart: true` uses the adapter's defaults; pass an object to tune the per-part size and the number of parts uploaded in parallel. Adapters that don't have a multipart primitive ignore the option.
 
+### Resumable uploads across processes
+
+Pass an `UploadControl` to `upload` to pause, resume or abort it. On adapters with `files.capabilities.resumable`, the upload is also written in parts (`multipart.partSize`, default 8 MiB), and the adapter records its progress after every part. `control.toJSON()` returns a small token describing that upload; persist it, and another process can pick the upload up after a crash, restart or redeploy without re-sending the bytes already stored:
+
+```ts
+import { Files, UploadControl } from "@visulima/storage";
+
+// Process A
+const control = new UploadControl();
+
+const upload = files.upload("backups/db.tar", createReadStream(path), { control, size, onProgress: () => saveToken(JSON.stringify(control)) });
+
+// Process B, after process A died
+const token = loadToken(); // { version: 2, key, uploadId, size, loaded, adapter, contentType?, metadata? }
+
+await files.upload("backups/db.tar", createReadStream(path), { control: UploadControl.from(token), size });
+```
+
+On resume the facade reloads the upload by `uploadId` and continues from the offset the adapter reports. That offset can be ahead of `token.loaded` but never behind it: S3 lists the parts it holds, GCS asks the resumable session, the others read their metadata record. The body can be either of these:
+
+- **The full source** (default). The bytes already stored are read and skipped.
+- **Only the rest**. Pass `resumeOffset` with the byte offset where `body` starts, for example `createReadStream(path, { start: token.loaded })` with `resumeOffset: token.loaded`. An offset past the stored one is rejected with `BAD_REQUEST`.
+
+The token only holds the upload id and the offset. The provider session (S3 `UploadId` and parts, GCS resumable-session URI, Azure staged blocks, the partial file on disk) stays in the adapter's **metadata store**, so cross-process resume needs a metadata store both processes can reach:
+
+| Adapter                        | `resumable` | Session kept in                                      | Across processes                                                     |
+| ------------------------------ | ----------- | ---------------------------------------------------- | -------------------------------------------------------------------- |
+| `S3Storage`, `AwsLightStorage` | `true`      | Multipart upload (`UploadId`, parts via `ListParts`) | Yes, with the default bucket-backed meta store                       |
+| `GCStorage`                    | `true`      | Resumable session URI                                | Yes, with the default bucket-backed meta store                       |
+| `AzureStorage`                 | `true`      | Staged blocks, keyed by offset                       | Yes, with the default container-backed meta store                    |
+| `DiskStorage`                  | `true`      | The partial file plus its `.META` record             | Yes, when both processes use the same `directory` (or `metaStorage`) |
+| `MemoryStorage`                | `true`      | The adapter instance                                 | No: resumes only through the same `MemoryStorage` instance           |
+| Every other adapter            | `false`     | — (objects are stored in one request)                | No: a resume token rejects with `METHOD_NOT_ALLOWED`                 |
+
+Adapters with `resumable: false` include OneDrive, SharePoint, Box, Dropbox, Google Drive, WebDAV, FTP, SFTP, Firebase, Supabase, Vercel Blob, Netlify Blobs, UploadThing, PocketBase, Bunny, Cloudinary and Bun S3. A control still pauses and aborts the upload in-process there.
+
+A resume fails clearly instead of starting over or corrupting the object:
+
+- A token for another key, adapter or total size rejects with `BAD_REQUEST`.
+- An upload that no longer exists (deleted, purged after `expiration.maxAge`, or recorded in a meta store this process can't reach) rejects with `FILE_NOT_FOUND`. Start a fresh upload without the token.
+- A stored upload of a different size rejects with `FILE_CONFLICT`.
+- A body that ends before `size` rejects with `BAD_REQUEST`, and the upload stays resumable.
+- An upload that already completed resolves with the stored object.
+
+Some limits apply:
+
+- Parts need a known `size`. A conditional (`ifMatch` / `ifNoneMatch`) or checksummed upload is written in one request, so its token can't be resumed.
+- S3 parts must be at least 5 MiB except for the last one, and GCS parts a multiple of 256 KiB. The 8 MiB default fits both.
+- Parts are sent one after another, so `multipart.concurrency` doesn't apply.
+- `abort()` cancels the call but keeps the session, so the upload can still be resumed. Call `files.adapter.deleteUpload(token.uploadId)` to discard it.
+
 ### Mint a signed URL for a private object
 
 ```ts
@@ -231,6 +307,87 @@ return Response.json({ uploadUrl });
 
 Not every adapter supports presigned PUT. Adapters without a primitive (UploadThing, Bunny) throw `UploadError(METHOD_NOT_ALLOWED)` with a message pointing to the supported alternative.
 
+### Size-limited browser upload (presigned POST)
+
+A presigned PUT URL cannot cap the body size: whoever holds the URL can send any number of bytes. `signedUpload()` returns the whole upload contract instead of a bare URL, and when you pass `maxSize` and/or `minSize` it signs a browser-form **POST policy** with a `content-length-range` condition, which the provider itself enforces (S3 answers `EntityTooLarge` / `EntityTooSmall` before storing anything).
+
+```ts
+const upload = await files.signedUpload(`avatars/${userId}.png`, {
+    contentType: "image/png",
+    expiresIn: 300,
+    maxSize: 5 * 1024 * 1024,
+    minSize: 1,
+});
+
+// Browser side:
+if (upload.method === "POST") {
+    const form = new FormData();
+
+    for (const [name, value] of Object.entries(upload.fields)) {
+        form.append(name, value);
+    }
+
+    form.append("file", file); // the file goes last
+    await fetch(upload.url, { body: form, method: "POST" });
+} else {
+    await fetch(upload.url, { body: file, headers: upload.headers, method: "PUT" });
+}
+```
+
+`SignedUpload` is a union discriminated on `method`:
+
+- `{ method: "PUT", url, headers }` — no size limit requested; the same URL `signedUploadUrl()` returns, plus the headers the client has to send (`Content-Type`, `Content-Length`) so the signature matches.
+- `{ method: "POST", url, fields }` — `maxSize` / `minSize` requested; post `multipart/form-data` with every field, then the file.
+
+Size limits are never silently dropped: on an adapter without POST policy support (`files.capabilities.signedUploadPost === false`) a `maxSize` / `minSize` rejects with `UploadError(METHOD_NOT_ALLOWED)` instead of signing an unbounded upload. Today the S3 adapter (`S3Storage`, including S3-compatible endpoints) and `AwsLightStorage` sign POST policies. An `expiresIn` above `files.capabilities.signedUrlMaxExpiresIn` (7 days for SigV4) rejects with `BAD_REQUEST`, for `url()` and `signedUploadUrl()` too.
+
+> **Why a new method instead of changing `signedUploadUrl()`?** Turning `signedUploadUrl()`'s `Promise<string>` into a union would break every caller that treats the result as a URL string. `signedUploadUrl()` keeps its contract unchanged; `signedUpload()` is the object-returning form, and the only one that accepts `maxSize` / `minSize`.
+
+### Conditional (ETag) operations
+
+Conditional operations put an ETag predicate into the provider request itself, so create-only writes and compare-and-set updates are safe against concurrent writers — the facade never emulates them with a `head()` followed by an unconditional write.
+
+```ts
+// Create only when the key is absent.
+const created = await files.upload("reports/q3.json", body, { ifNoneMatch: "*" });
+
+// Replace only the generation the create returned.
+const replaced = await files.upload("reports/q3.json", nextBody, { ifMatch: created.etag! });
+
+// Read or delete exactly that generation.
+const exact = await files.download("reports/q3.json", { ifMatch: replaced.etag! });
+await files.head("reports/q3.json", { ifMatch: replaced.etag! });
+await files.delete("reports/q3.json", { ifMatch: exact.etag! });
+
+// Copy only if the source is still the staged generation, and only if nothing is published yet.
+const staged = await files.head("staging/report.json");
+await files.copy("staging/report.json", "published/report.json", { ifNoneMatch: "*", sourceIfMatch: staged.etag! });
+```
+
+| Option                | Methods            | Meaning                                                     |
+| --------------------- | ------------------ | ----------------------------------------------------------- |
+| `ifNoneMatch: "*"`    | `upload`, `copy`   | Write only when nothing exists under the (destination) key. |
+| `ifMatch: etag`       | `upload`, `copy`   | Replace only the (destination) object with this ETag.       |
+| `ifMatch: etag`       | `download`, `head` | Exact read: answer only for this generation.                |
+| `ifMatch: etag`       | `delete`           | Delete only this generation.                                |
+| `sourceIfMatch: etag` | `copy`             | Copy only while the source still has this ETag.             |
+
+A predicate that does not hold rejects with `UploadError(ERRORS.PRECONDITION_FAILED)` (HTTP 412) and leaves the stored object untouched — a failed conditional upload also leaves the object's metadata record as it was. ETags compare with or without their surrounding quotes; empty, weak (`W/…`), wildcard and comma-separated values reject with `BAD_REQUEST` before any I/O.
+
+Each primitive is reported separately under `files.capabilities.conditional` (`{ create, replace, read, delete, copy }`). A predicate whose flag is `false` rejects with `METHOD_NOT_ALLOWED` before the adapter is touched — it is never ignored. Conditional uploads are committed in one request: the body is written in a single `write`, so they don't combine with resumable/chunked handler uploads.
+
+| Adapter             | create | replace | read | delete | copy | How                                                                                                                           |
+| ------------------- | ------ | ------- | ---- | ------ | ---- | ----------------------------------------------------------------------------------------------------------------------------- |
+| S3 (`S3Storage`)    | ✅     | ✅      | ✅   | ✅     | ✅   | `If-None-Match` / `If-Match` on CompleteMultipartUpload, GetObject, DeleteObject, CopyObject (+ `x-amz-copy-source-if-match`) |
+| S3 (light)          | ✅     | ✅      | ✅   | ✅     | ✅   | same headers via `aws4fetch`                                                                                                  |
+| Azure Blob          | ❌     | ❌      | ✅   | ✅     | ✅   | access conditions on Get Blob / Delete Blob / Copy Blob                                                                       |
+| WebDAV              | 🟡     | 🟡      | 🟡   | 🟡     | 🟡   | opt-in (`conditional: true`): `If-Match` / `If-None-Match`, `Overwrite: F` and a tagged `If` header on `COPY`                 |
+| Local (disk)        | ✅     | ✅      | ✅   | ✅     | ✅   | compare under the storage lock + atomic rename (process-local lock)                                                           |
+| Memory              | ✅     | ✅      | ✅   | ✅     | ✅   | compare-and-set in one synchronous step                                                                                       |
+| every other adapter | ❌     | ❌      | ❌   | ❌     | ❌   | rejects with `METHOD_NOT_ALLOWED`                                                                                             |
+
+The S3 adapters only claim support against AWS itself: with a custom `endpoint` (MinIO, R2, …) every flag is `false`, because S3-compatible services differ in which conditional headers they honour. Set `conditional: true` (or `false`) in the adapter options to override the detection. `clientDirectUpload` turns conditional support off. WebDAV servers differ the same way, so `WebdavStorage` only sends predicates with `conditional: true`.
+
 ### List a single page
 
 ```ts
@@ -238,6 +395,16 @@ const userFiles = await files.list({ prefix: `users/${userId}/`, limit: 100 });
 ```
 
 `list()` is intentionally simple: one page from the adapter, then filter by `prefix` in memory. Use `listAll` for full-bucket walks.
+
+### Directory-style listing
+
+```ts
+const { files: direct, prefixes } = await files.list({ prefix: "photos/", delimiter: "/" });
+// direct   → objects directly under photos/ (e.g. photos/cover.jpg)
+// prefixes → one entry per "subdirectory" (e.g. ["photos/2024/", "photos/2025/"])
+```
+
+Passing `delimiter` changes the return type to `ListDirectoryResult` (`{ files, prefixes }`). Adapters with `supportsDelimiter` (the S3 family and GCS) collapse prefixes server-side; for every other adapter the facade lists one page and folds the keys itself.
 
 ### Walk every object (paginated async iterable)
 
@@ -250,6 +417,32 @@ for await (const file of files.listAll({ prefix: "avatars/" })) {
 ```
 
 `listAll` pages internally so callers don't have to thread a cursor. Returned keys have any constructor prefix stripped off; out-of-namespace keys are filtered out, mirroring `list()`. Breaking out of the `for await` early still emits the terminal `onAction` / `onError` hook event.
+
+### Search keys
+
+```ts
+// Glob is the default: `*` stays inside a path segment, `**` spans segments.
+for await (const file of files.search("photos/**/*.jpg")) {
+    console.log(file.key);
+}
+
+const pdfs = await Array.fromAsync(files.search("invoices/2024/*.pdf"));
+
+files.search(String.raw`\.(png|jpe?g)$`, { match: "regex", prefix: "uploads/" });
+files.search(/\.(png|jpe?g)$/u); // a RegExp always matches as a regex
+files.search("report", { match: "substring" });
+files.search("invoices/2024/q1.pdf", { match: "exact" });
+files.search("*.PNG", { caseInsensitive: true, limit: 50 });
+```
+
+`search(pattern, options?)` walks every page through `listAll` and yields the objects whose **key** (with any constructor prefix stripped) matches. It is a lazy async iterable: `break`, or `limit`, stops the walk and fetching more pages; `signal` aborts it.
+
+- **`glob`** (default) — anchored to the whole key; `*` and `?` stay within a segment, `**` spans segments (`photos/**/*.jpg` matches at any depth, including none), `[a-z]` and `{a,b}` classes, `!pattern` negation; dotfiles match. A glob without wildcards is an exact match.
+- **`regex`** — a regular expression (a `RegExp` pattern always matches this way). An invalid regex, or one that nests quantifiers (`(a+)+`), rejects with `BAD_REQUEST` before the walk.
+- **`substring`** — the key contains the text. **`exact`** — the key equals the text.
+- **`caseInsensitive`** — any mode.
+
+A glob's (or exact pattern's) literal head becomes the walk's `prefix`, so `"uploads/2024/*.pdf"` only matches keys under `uploads/2024/`. The adapters list without a prefix, though, so the provider listing still covers every key: `search` costs a full `listAll` on any bucket. Regex, substring and case-insensitive searches have no inferable prefix — pass `prefix` to narrow what they match. The `searchFiles` AI tool offers glob, substring and exact matching, not regex: a model-chosen regex could backtrack catastrophically. Options: `match`, `caseInsensitive`, `prefix`, `limit` (maximum matches), `pageSize` (the `listAll` page size) plus `signal` / `timeout` / `retries`. The AI integrations expose it as the read-only `searchFiles` tool (at most 100 matches unless `limit` says otherwise).
 
 ### Copy and rename
 
@@ -310,6 +503,39 @@ Each object is downloaded and re-uploaded with bounded concurrency. By default k
 
 The walk pulls from `source.listAll()` directly via N concurrent workers — no eager buffering of keys, so very large buckets transfer in constant memory.
 
+## Incremental mirror: `sync(source, destination, opts?)`
+
+`sync` copies only what changed. Each source object is compared against the destination (size, then etag, then modification time) and uploaded when missing or different. With `prune: true`, destination keys that no longer exist on the source are deleted after the copy pass.
+
+```ts
+import { sync } from "@visulima/storage";
+
+// Preview the plan without writing anything…
+const plan = await sync(from, to, { prefix: "assets/", prune: true, dryRun: true });
+
+// …then apply it.
+const { uploaded, updated, unchanged, deleted, errors } = await sync(from, to, { prefix: "assets/", prune: true });
+```
+
+Like the bulk methods, `sync` doesn't throw on partial failure — per-key failures land in `errors`. It also accepts `concurrency`, `limit`, `onProgress`, `signal`, `stopOnError` and `transformKey`.
+
+## Capabilities and read-only views
+
+```ts
+if (files.capabilities.range) {
+    await files.download("video.mp4", { range: { start: 0, end: 1023 } });
+}
+
+const ro = files.readonly(); // or: new Files({ adapter, readonly: true })
+
+await ro.download("a.txt"); // ok
+await ro.delete("a.txt"); // rejects with UploadError(ERRORS.READ_ONLY)
+```
+
+`files.capabilities` returns `{ range, metadata, cacheControl, conditional, resumable, signedUploadPost, signedUrlMaxExpiresIn?, readonly }` — the adapter's `supportsRange` / `supportsMetadata` / `supportsCacheControl` flags, its `conditionalSupport` (`{ create, replace, read, delete, copy }`), whether an upload with a `control` can be [resumed in another process](#resumable-uploads-across-processes) (`supportsResumableWrites`), whether `signedUpload()` can sign a size-limited POST policy, the longest `expiresIn` it can sign for (when the provider has a hard ceiling), plus whether this view is read-only. Branch on them before relying on an optional feature.
+
+A read-only view rejects every mutating call (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`, `signedUpload`) before the adapter is touched; reads (including `search`) pass through. `readonly()` shares the original instance's adapter, prefix, defaults and hooks.
+
 ## In-memory adapter for tests
 
 `MemoryStorage` is a `BaseStorage` adapter backed by a `Map<string, MemoryEntry>`. It implements the full surface (including ranged reads) without touching disk or any external service — useful for tests, ephemeral environments, and as a reference implementation.
@@ -351,7 +577,7 @@ try {
 }
 ```
 
-Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_FOUND` (404), `FORBIDDEN` (401/403), `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (unsupported primitive), `STORAGE_ERROR` (everything else). The original error is preserved on `UploadError.detail`.
+Adapters normalize provider-specific error shapes into the same enum: `FILE_NOT_FOUND` (404), `FORBIDDEN` (401/403), `BAD_REQUEST` (400), `METHOD_NOT_ALLOWED` (unsupported primitive), `PRECONDITION_FAILED` (412, a conditional predicate did not hold), `STORAGE_ERROR` (everything else). The original error is preserved on `UploadError.detail`.
 
 → See [Error handling](./error-handling.mdx) for the full enum and how to wrap your own adapter errors.
 

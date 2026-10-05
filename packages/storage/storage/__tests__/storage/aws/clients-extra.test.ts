@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { akamai, backblaze, cloudflare, digitalOcean, hetzner, minio, storj, tigris, wasabi } from "../../../src/storage/aws/clients";
+import { akamai, backblaze, cloudflare, digitalOcean, filebase, hetzner, minio, neon, rustfs, storj, tigris, vultr, wasabi, yandex } from "../../../src/storage/aws/clients";
 
 let savedEnvironment: NodeJS.ProcessEnv;
 
-const PROVIDER_KEY = /^(?:AKAMAI|BACKBLAZE|B2|CLOUDFLARE|SPACES|HETZNER|MINIO|STORJ|TIGRIS|WASABI)_/;
+const PROVIDER_KEY = /^(?:AKAMAI|BACKBLAZE|B2|CLOUDFLARE|SPACES|HETZNER|MINIO|STORJ|TIGRIS|WASABI|VULTR|FILEBASE|YANDEX|NEON|RUSTFS)_/;
 
 const isHostManagedKey = (key: string): boolean => key.startsWith("AWS_") || PROVIDER_KEY.test(key);
 
@@ -83,6 +83,21 @@ describe("additional aws s3-compatible client presets", () => {
                 region: "eu-central-003",
             });
         });
+
+        it("prefers B2_ environment variables over the generic AWS_ ones", () => {
+            process.env.AWS_ACCESS_KEY_ID = "aws-ak";
+            process.env.AWS_SECRET_ACCESS_KEY = "aws-sk";
+            process.env.AWS_REGION = "us-east-1";
+            process.env.B2_APP_KEY_ID = "env-ak";
+            process.env.B2_APP_KEY = "env-sk";
+            process.env.B2_REGION = "eu-central-003";
+
+            expect(backblaze()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "https://s3.eu-central-003.backblazeb2.com",
+                region: "eu-central-003",
+            });
+        });
     });
 
     describe(cloudflare, () => {
@@ -117,7 +132,8 @@ describe("additional aws s3-compatible client presets", () => {
             expect(() => digitalOcean({ key: "ak", region: "nyc3" } as never)).toThrow(/Missing required parameters/);
         });
 
-        it("reads SPACES_* env vars", () => {
+        it("reads SPACES_* env vars, over the generic AWS_* ones", () => {
+            process.env.AWS_REGION = "us-east-1";
             process.env.SPACES_KEY = "env-ak";
             process.env.SPACES_SECRET = "env-sk";
             process.env.SPACES_REGION = "ams3";
@@ -223,6 +239,133 @@ describe("additional aws s3-compatible client presets", () => {
 
         it("throws when region is missing", () => {
             expect(() => wasabi({ ...credentials } as never)).toThrow(/Missing required parameters/);
+        });
+    });
+    describe(vultr, () => {
+        it("reads the location and the provider credentials from the environment", () => {
+            expect.assertions(2);
+
+            process.env.VULTR_ACCESS_KEY = "env-ak";
+            process.env.VULTR_SECRET_KEY = "env-sk";
+            process.env.VULTR_LOCATION = "ams1";
+
+            expect(vultr()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "https://ams1.vultrobjects.com",
+                forcePathStyle: false,
+                region: "ams1",
+            });
+            expect(() => vultr({ ...credentials, location: "" })).toThrow(/Missing required parameters/);
+        });
+    });
+
+    describe(filebase, () => {
+        it("reads credentials and endpoint from the environment", () => {
+            expect.assertions(2);
+
+            expect(() => filebase({ accessKeyId: "ak" })).toThrow(/Missing required parameters/);
+
+            process.env.FILEBASE_ACCESS_KEY = "env-ak";
+            process.env.FILEBASE_SECRET_KEY = "env-sk";
+            process.env.FILEBASE_ENDPOINT = "https://fb.example.test";
+
+            expect(filebase()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "https://fb.example.test",
+                forcePathStyle: true,
+                region: "us-east-1",
+            });
+        });
+    });
+
+    describe(yandex, () => {
+        it("reads credentials, region and endpoint from the environment", () => {
+            expect.assertions(2);
+
+            expect(() => yandex({ secretAccessKey: "sk" })).toThrow(/Missing required parameters/);
+
+            process.env.YANDEX_ACCESS_KEY_ID = "env-ak";
+            process.env.YANDEX_SECRET_ACCESS_KEY = "env-sk";
+            process.env.YANDEX_REGION = "kz1";
+            process.env.YANDEX_ENDPOINT = "https://storage.yandexcloud.kz";
+
+            expect(yandex()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "https://storage.yandexcloud.kz",
+                forcePathStyle: false,
+                region: "kz1",
+            });
+        });
+    });
+
+    describe(neon, () => {
+        it("forces path-style addressing on the branch endpoint", () => {
+            expect.assertions(1);
+
+            expect(neon({ ...credentials, endpoint: "https://br-1.storage.neon.test" })).toStrictEqual({
+                credentials,
+                endpoint: "https://br-1.storage.neon.test",
+                forcePathStyle: true,
+                region: "us-east-1",
+            });
+        });
+
+        it("requires an endpoint and credentials as a pair", () => {
+            expect.assertions(2);
+
+            expect(() => neon(credentials)).toThrow(/Missing required parameters/);
+            expect(() => neon({ accessKeyId: "ak", endpoint: "https://br-1.storage.neon.test" })).toThrow(/Missing required parameters/);
+        });
+
+        it("reads the variables neon injects and leaves absent credentials to the sdk chain", () => {
+            expect.assertions(2);
+
+            process.env.AWS_ENDPOINT_URL_S3 = "https://br-2.storage.neon.test";
+            process.env.NEON_STORAGE_REGION = "eu-central-1";
+
+            expect(neon()).toStrictEqual({ endpoint: "https://br-2.storage.neon.test", forcePathStyle: true, region: "eu-central-1" });
+
+            process.env.AWS_ACCESS_KEY_ID = "env-ak";
+            process.env.AWS_SECRET_ACCESS_KEY = "env-sk";
+
+            expect(neon().credentials).toStrictEqual({ accessKeyId: "env-ak", secretAccessKey: "env-sk" });
+        });
+    });
+
+    describe(rustfs, () => {
+        it("defaults to the local path-style endpoint", () => {
+            expect.assertions(2);
+
+            expect(rustfs(credentials)).toStrictEqual({
+                credentials,
+                endpoint: "http://localhost:9000",
+                forcePathStyle: true,
+                region: "us-east-1",
+            });
+            expect(rustfs({ ...credentials, endpoint: "https://s3.example.test", forcePathStyle: false, region: "eu-west-1" })).toStrictEqual({
+                credentials,
+                endpoint: "https://s3.example.test",
+                forcePathStyle: false,
+                region: "eu-west-1",
+            });
+        });
+
+        it("reads the server-side variable names", () => {
+            expect.assertions(2);
+
+            expect(() => rustfs()).toThrow(/Missing required parameters/);
+
+            process.env.RUSTFS_ACCESS_KEY = "env-ak";
+            process.env.RUSTFS_SECRET_KEY = "env-sk";
+            process.env.RUSTFS_ENDPOINT = "http://rustfs:9000";
+            process.env.RUSTFS_REGION = "local";
+
+            expect(rustfs()).toStrictEqual({
+                credentials: { accessKeyId: "env-ak", secretAccessKey: "env-sk" },
+                endpoint: "http://rustfs:9000",
+                forcePathStyle: true,
+                region: "local",
+            });
         });
     });
 });

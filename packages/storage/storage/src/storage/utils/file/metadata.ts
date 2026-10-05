@@ -67,8 +67,9 @@ export const stringifyMetadata = (metadata: NonNullable<Metadata>): string =>
                 return key;
             }
 
-            // Serialize objects and arrays as JSON before base64 encoding
-            const stringValue = typeof value === "object" ? JSON.stringify(value) : String(value);
+            // Serialize objects, arrays and strings as JSON before base64 encoding, so parseMetadata
+            // gives a string back as a string ("01234", "true" and "42" stay strings).
+            const stringValue = typeof value === "object" || typeof value === "string" ? JSON.stringify(value) : String(value);
             const encodedValue = Buffer.from(stringValue, "utf8").toString("base64");
 
             return `${key} ${encodedValue}`;

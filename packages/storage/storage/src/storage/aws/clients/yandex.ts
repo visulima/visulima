@@ -10,17 +10,18 @@ import type { CreateYandexClientParameters } from "./types";
  * defaults to `ru-central1`. It does not drive the endpoint, so falling back
  * to `AWS_REGION` is safe here.
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `YANDEX_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `YANDEX_SECRET_ACCESS_KEY`
- * - `AWS_REGION` / `YANDEX_REGION` (defaults to `ru-central1`)
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `YANDEX_ACCESS_KEY_ID`, then `AWS_ACCESS_KEY_ID`
  * - `YANDEX_ENDPOINT`
+ * - `YANDEX_REGION`, then `AWS_REGION` (defaults to `ru-central1`)
+ * - `YANDEX_SECRET_ACCESS_KEY`, then `AWS_SECRET_ACCESS_KEY`
  */
 const yandex = (parameters?: CreateYandexClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.YANDEX_ACCESS_KEY_ID;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.YANDEX_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID;
     const endpoint = parameters?.endpoint ?? process.env.YANDEX_ENDPOINT;
-    const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.YANDEX_REGION ?? "ru-central1";
-    const secretAccessKey = parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.YANDEX_SECRET_ACCESS_KEY;
+    const region = parameters?.region ?? process.env.YANDEX_REGION ?? process.env.AWS_REGION ?? "ru-central1";
+    const secretAccessKey = parameters?.secretAccessKey ?? process.env.YANDEX_SECRET_ACCESS_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Yandex Object Storage client.");

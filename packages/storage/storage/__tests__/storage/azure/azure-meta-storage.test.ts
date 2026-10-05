@@ -155,12 +155,20 @@ describe(AzureMetaStorage, () => {
             await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
         });
 
-        it("should throw error when getProperties fails", async () => {
+        it("should report a missing blob as not found", async () => {
             expect.assertions(1);
 
-            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Blob not found"));
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("Blob not found"), { statusCode: 404 }));
 
-            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.UNKNOWN_ERROR);
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+        });
+
+        it("should rethrow other getProperties failures", async () => {
+            expect.assertions(1);
+
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("Server busy"), { statusCode: 503 }));
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Server busy");
         });
     });
 

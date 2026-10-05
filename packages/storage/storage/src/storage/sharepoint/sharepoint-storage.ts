@@ -97,6 +97,8 @@ const parseSiteUrl = (siteUrl: string): { hostname: string; sitePath: string } =
 class SharePointStorage extends BaseStorage<SharePointFile> {
     public static override readonly name: string = "sharepoint";
 
+    public override readonly storageKind: string = "sharepoint";
+
     /** Delegates writes to {@link OneDriveStorage}, which stores each object in a single request. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -117,28 +119,19 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
     public constructor(config: SharePointStorageOptions) {
         super(config);
 
-        const accessToken = config.accessToken ?? process.env.SHAREPOINT_ACCESS_TOKEN ?? process.env.ONEDRIVE_ACCESS_TOKEN;
+        const { accessToken, client, clientCredentials, oauth } = config;
 
-        const clientCredentials =
-            config.clientCredentials ??
-            (() => {
-                const tenantId = process.env.SHAREPOINT_TENANT_ID ?? process.env.ONEDRIVE_TENANT_ID;
-                const clientId = process.env.SHAREPOINT_CLIENT_ID ?? process.env.ONEDRIVE_CLIENT_ID;
-                const clientSecret = process.env.SHAREPOINT_CLIENT_SECRET ?? process.env.ONEDRIVE_CLIENT_SECRET;
-
-                if (tenantId && clientId && clientSecret) {
-                    return { clientId, clientSecret, tenantId };
-                }
-
-                return undefined;
-            })();
-
-        this.oneDriveAuth = {
-            ...(config.client && { client: config.client }),
-            ...(accessToken !== undefined && { accessToken }),
-            ...(clientCredentials && { clientCredentials }),
-            ...(config.oauth && { oauth: config.oauth }),
-        };
+        // The environment is only a fallback: mixed with auth passed in code, OneDrive would refuse
+        // the second credential ("pass exactly one of …").
+        this.oneDriveAuth =
+            client !== undefined || accessToken !== undefined || clientCredentials !== undefined || oauth !== undefined
+                ? {
+                      ...(client && { client }),
+                      ...(accessToken !== undefined && { accessToken }),
+                      ...(clientCredentials && { clientCredentials }),
+                      ...(oauth && { oauth }),
+                  }
+                : SharePointStorage.authFromEnvironment();
 
         this.resolvedConfig = {
             ...config,
@@ -160,6 +153,21 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
 
     public override get raw(): GraphClient {
         return this.client;
+    }
+
+    /** `SHAREPOINT_*` (or `ONEDRIVE_*`) auth: an access token, else client credentials, else none. */
+    private static authFromEnvironment(): Pick<OneDriveStorageOptions, "accessToken" | "clientCredentials"> {
+        const accessToken = process.env.SHAREPOINT_ACCESS_TOKEN ?? process.env.ONEDRIVE_ACCESS_TOKEN;
+
+        if (accessToken) {
+            return { accessToken };
+        }
+
+        const tenantId = process.env.SHAREPOINT_TENANT_ID ?? process.env.ONEDRIVE_TENANT_ID;
+        const clientId = process.env.SHAREPOINT_CLIENT_ID ?? process.env.ONEDRIVE_CLIENT_ID;
+        const clientSecret = process.env.SHAREPOINT_CLIENT_SECRET ?? process.env.ONEDRIVE_CLIENT_SECRET;
+
+        return tenantId && clientId && clientSecret ? { clientCredentials: { clientId, clientSecret, tenantId } } : {};
     }
 
     public async create(config: FileInit, options?: OperationOptions): Promise<SharePointFile> {
@@ -198,10 +206,16 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
         return inner.move(name, destination, options);
     }
 
-    public override async exists(query: FileQuery, _options?: OperationOptions): Promise<boolean> {
+    public override async exists(query: FileQuery, options?: OperationOptions): Promise<boolean> {
         const inner = await this.getInner();
 
-        return inner.exists(query);
+        return inner.exists(query, options);
+    }
+
+    public override async findStoredObject(id: string, options?: OperationOptions): Promise<SharePointFile | undefined> {
+        const inner = await this.getInner();
+
+        return inner.findStoredObject(id, options);
     }
 
     public override async list(limit = 1000, options?: OperationOptions): Promise<SharePointFile[]> {
@@ -218,11 +232,11 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
 
     public override async getStream(
         query: FileQuery,
-        _options?: OperationOptions,
+        options?: OperationOptions,
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         const inner = await this.getInner();
 
-        return inner.getStream(query);
+        return inner.getStream(query, options);
     }
 
     public override async getReadUrl(
@@ -262,10 +276,12 @@ class SharePointStorage extends BaseStorage<SharePointFile> {
 
         // Strip SharePoint-only site-targeting fields from the inherited base
         // config so OneDrive sees a single target (`driveId`).
-        const { documentLibrary, hostname, siteId, sitePath, siteUrl, ...baseConfig } = this.genericConfig as SharePointStorageOptions;
+        const { documentLibrary, expiration, hostname, siteId, sitePath, siteUrl, ...baseConfig } = this.genericConfig as SharePointStorageOptions;
 
         const inner = new OneDriveStorage({
             ...(baseConfig as OneDriveStorageOptions),
+            // This storage runs the purge timer; a second one in the inner storage would never be stopped by close().
+            ...(expiration && { expiration: { ...expiration, purgeInterval: undefined } }),
             ...this.oneDriveAuth,
             driveId,
             ...(this.resolvedConfig.copyTimeoutMs !== undefined && { copyTimeoutMs: this.resolvedConfig.copyTimeoutMs }),

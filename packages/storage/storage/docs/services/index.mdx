@@ -1,0 +1,96 @@
+# Storage Services
+
+Every provider is a `BaseStorage` adapter imported from its own sub-path, so you only install the SDK you use. The same adapter works with the [`Files` facade](../files-facade.mdx) and with the upload handlers (TUS, multipart, REST). Swapping providers means changing the constructor — call sites stay the same.
+
+This page helps you pick one and configure it for production. The per-provider pages cover setup, options and troubleshooting; [Adapter capabilities](./capabilities.mdx) lists URL, copy/move and auth support side by side.
+
+## Choosing a provider
+
+| Adapter                                                                     | Import                    | Peer packages                                                                          | Chunked / resumable writes | Upload metadata by default  |
+| --------------------------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------- | -------------------------- | --------------------------- |
+| [`DiskStorage`](./local-disk.mdx)                                           | `@visulima/storage`       | —                                                                                      | ✅ any offset              | next to the files           |
+| [`MemoryStorage`](./memory.mdx)                                             | `@visulima/storage`       | —                                                                                      | ✅ any offset              | in memory (process-local)   |
+| [`S3Storage`](./amazon-s3.mdx) (+ [S3-compatible](#s3-compatible-services)) | `…/provider/aws`          | `@aws-sdk/client-s3`, `@aws-sdk/credential-providers`, `@aws-sdk/s3-request-presigner` | 🟡 sequential              | in the bucket (`<id>.META`) |
+| [`AwsLightStorage`](./aws-light.mdx)                                        | `…/provider/aws-light`    | `aws4fetch`                                                                            | 🟡 sequential              | in the bucket (`<id>.META`) |
+| [`AzureStorage`](./azure.mdx)                                               | `…/provider/azure`        | `@azure/storage-blob`, `@azure/core-auth`                                              | 🟡 sequential              | in the container            |
+| [`GCStorage`](./google-cloud-storage.mdx)                                   | `…/provider/gcs`          | `google-auth-library`, `gaxios`                                                        | 🟡 sequential              | in the bucket               |
+| [`BunS3Storage`](./bun-s3.mdx)                                              | `…/provider/bun-s3`       | — (Bun built-in)                                                                       | ❌ single request          | local disk                  |
+| [`FirebaseStorage`](./firebase.mdx)                                         | `…/provider/firebase`     | `firebase-admin`                                                                       | ❌ single request          | local disk                  |
+| [`SupabaseStorage`](./supabase.mdx)                                         | `…/provider/supabase`     | `@supabase/storage-js`                                                                 | ❌ single request          | local disk                  |
+| [`VercelBlobStorage`](./vercel-blob.mdx)                                    | `…/provider/vercel`       | `@vercel/blob`                                                                         | ❌ single request          | local disk                  |
+| [`NetlifyBlobStorage`](./netlify-blob.mdx)                                  | `…/provider/netlify`      | `@netlify/blobs`                                                                       | ❌ single request          | local disk                  |
+| [`BunnyStorage`](./bunny.mdx)                                               | `…/provider/bunny`        | `@bunny.net/storage-sdk`                                                               | ❌ single request          | local disk                  |
+| [`CloudinaryStorage`](./cloudinary.mdx)                                     | `…/provider/cloudinary`   | `cloudinary`                                                                           | ❌ single request          | local disk                  |
+| [`UploadThingStorage`](./uploadthing.mdx)                                   | `…/provider/uploadthing`  | `uploadthing`                                                                          | ❌ single request          | local disk                  |
+| [`PocketBaseStorage`](./pocketbase.mdx)                                     | `…/provider/pocketbase`   | `pocketbase`                                                                           | ❌ single request          | local disk                  |
+| [`DropboxStorage`](./dropbox.mdx)                                           | `…/provider/dropbox`      | `dropbox`                                                                              | ❌ single request          | local disk                  |
+| [`GoogleDriveStorage`](./google-drive.mdx)                                  | `…/provider/google-drive` | `@googleapis/drive`, `google-auth-library`                                             | ❌ single request          | local disk                  |
+| [`OneDriveStorage`](./onedrive.mdx)                                         | `…/provider/onedrive`     | `@microsoft/microsoft-graph-client`                                                    | ❌ single request          | local disk                  |
+| [`SharePointStorage`](./sharepoint.mdx)                                     | `…/provider/sharepoint`   | `@microsoft/microsoft-graph-client`                                                    | ❌ single request          | local disk                  |
+| [`BoxStorage`](./box.mdx)                                                   | `…/provider/box`          | `box-typescript-sdk-gen`                                                               | ❌ single request          | local disk                  |
+| [`FtpStorage`](./ftp.mdx)                                                   | `…/provider/ftp`          | `basic-ftp`                                                                            | ❌ single request          | local disk                  |
+| [`SftpStorage`](./sftp.mdx)                                                 | `…/provider/sftp`         | `ssh2-sftp-client`                                                                     | ❌ single request          | local disk                  |
+
+`…` = `@visulima/storage`. Exact export names and options are on each page.
+
+### Chunked and resumable uploads
+
+The `supportsResumableWrites` and `sequentialWrites` flags of an adapter decide what the TUS and chunked-REST handlers accept:
+
+- **Any offset** (disk, memory) — chunks may arrive in any order and be retried; true resumable uploads.
+- **Sequential** (S3 family, Azure, GCS) — resumable, but each chunk must start where the stored upload ends; an out-of-order chunk answers `409`. S3 additionally needs chunks of at least 5 MiB except the last. Upload chunks one at a time and `HEAD` before resuming.
+- **Single request** — the provider stores an object in one call. The TUS handler stops advertising `creation-defer-length`/`concatenation` and rejects partial chunks: the client must send the whole file in one request. Use the multipart or REST handler, or a TUS client with an unlimited chunk size.
+
+### Rules of thumb
+
+- **Large files, flaky networks, resumable uploads** → S3 / S3-compatible, GCS or Azure, with the TUS handler.
+- **Edge / Cloudflare Workers** → [`AwsLightStorage`](./aws-light.mdx) (R2 or any S3 API), [Vercel Blob](./vercel-blob.mdx) or [Netlify Blobs](./netlify-blob.mdx) on their platforms.
+- **Browser uploads straight to the bucket** (server never sees the bytes) → an adapter with `getUploadUrl()` — see [capabilities](./capabilities.mdx#read--write-urls).
+- **Files in a user's drive** (Dropbox, Google Drive, OneDrive, SharePoint, Box) → the matching adapter; these are document stores, not CDNs — expect rate limits and per-call latency.
+- **Tests** → [`MemoryStorage`](./memory.mdx). **Single server with a disk** → [`DiskStorage`](./local-disk.mdx).
+
+### S3-compatible services
+
+`S3Storage` with a client helper from `@visulima/storage/provider/aws/s3/clients` covers [Cloudflare R2](./cloudflare-r2.mdx), [MinIO](./minio.mdx), [DigitalOcean Spaces](./digital-ocean-spaces.mdx), [Backblaze B2](./backblaze-b2.mdx), [Wasabi](./wasabi.mdx), [Hetzner](./hetzner.mdx), [Tigris](./tigris.mdx), [Storj](./storj.mdx), [Alibaba OSS](./alibaba-oss.mdx), [Tencent COS](./tencent-cos.mdx), [Yandex](./yandex-object-storage.mdx), and further helpers (`akamai`, `exoscale`, `filebase`, `ibmCos`, `idriveE2`, `oracleCloud`, `ovhCloud`, `scaleway`, `vultr`) without a dedicated page.
+
+## Upload metadata
+
+Each upload has a metadata record (name, size, offset, provider upload id, user metadata, timestamps) that the handlers need to resume, complete, serve and expire it. **Finished uploads keep their record** — `get()`, `exists()` and expiry use it — until the upload is deleted or purged.
+
+Only the S3 family, Azure and GCS keep records **in the provider** by default. Every other cloud adapter writes them as JSON sidecar files to the **local disk** — by default `<os tmpdir>/Upload_meta`, which is per machine and often wiped on restart or redeploy. That is fine for a single long-lived server with a persistent path, and wrong for:
+
+- several instances behind a load balancer (a chunk or `HEAD` landing on another instance can't find the upload),
+- serverless / container platforms with ephemeral file systems.
+
+Fix it with one of:
+
+```ts
+// 1. A persistent directory shared by every instance (NFS, EFS, a mounted volume, …)
+new DropboxStorage({ /* … */ metaStorageConfig: { directory: "/mnt/shared/upload-meta" } });
+
+// 2. Records in an S3 bucket, for any adapter
+import { S3MetaStorage } from "@visulima/storage/provider/aws";
+
+new DropboxStorage({
+    /* … */
+    metaStorage: new S3MetaStorage({ bucket: "upload-meta", region: "eu-central-1" }),
+});
+```
+
+`GCSMetaStorage` (`…/provider/gcs`) and `AwsLightMetaStorage` (`…/provider/aws-light`) work the same way, or [implement `MetaStorage`](../custom-storage.mdx) on Redis, SQL, KV, …. Stores that implement conditional saves (S3, aws-light, GCS, Azure, local directory, memory) merge concurrent chunk updates safely across instances.
+
+Caveat: `S3MetaStorage`, `GCSMetaStorage` and `AwsLightMetaStorage` don't implement `list()`. Most local-metadata adapters find expired uploads by listing their records, so with one of these stores `purge()` removes nothing — and [PocketBase](./pocketbase.mdx) falls back to listing the whole collection. If you rely on `expiration`, use a shared directory or a custom `MetaStorage` that implements `list()`.
+
+## Production checklist
+
+- [ ] **Install only the peer packages** of the adapter you use (table above).
+- [ ] **Credentials from the environment or a role**, never hard-coded. Grant the **minimum permissions** listed on the provider page — on S3 including `s3:ListBucket`, so missing files answer `404` instead of `403`.
+- [ ] **Metadata storage** is persistent and shared by every instance — see [Upload metadata](#upload-metadata).
+- [ ] **Limits**: set `maxUploadSize` (default `5TB`) and `allowMIME` (default `*/*`); keep client metadata small (S3 caps it at 2 KB).
+- [ ] **Chunk size** of your client matches the adapter: sequential uploads, ≥ 5 MiB on S3; whole-file requests on single-request adapters.
+- [ ] **Expiration**: set `expiration: { maxAge, purgeInterval }` so abandoned uploads are cleaned up. `purge()` only removes uploads this storage created (with a record) — add a provider lifecycle rule (S3 `AbortIncompleteMultipartUpload`, …) for everything else. On serverless, run `storage.purge()` from a scheduled job instead of `purgeInterval`.
+- [ ] **CORS** on the bucket only if browsers talk to it directly (presigned/SAS URLs, direct uploads); on your own upload route otherwise.
+- [ ] **Handlers**: leave `allowList` off unless the route is authenticated; put [authentication](../authenticated-file-uploads.mdx) in front of the upload route.
+- [ ] **Retries and timeouts**: tune `retryConfig` and `defaultTimeout` for your latency budget ([Retry mechanism](../retry-mechanism.mdx)).
+- [ ] **Observability**: pass a `logger` and `metrics` ([Observability](../observability.mdx)); credentials are redacted from the debug log.
+- [ ] **Graceful shutdown**: call `storage.close()` to stop the purge timer.

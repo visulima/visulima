@@ -1,13 +1,14 @@
-import { copy, del, head, list, put } from "@vercel/blob";
+import { BlobNotFoundError, copy, del, get, head, list, put } from "@vercel/blob";
 
 import { detectFileTypeFromBuffer } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { VercelBlobStorageOptions } from "./types";
@@ -27,11 +28,10 @@ import VercelBlobFile from "./vercel-blob-file";
  * - ✅ create, write, delete, get, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and Vercel Blob)
- * - ❌ getStream: Not implemented (use get() for file retrieval)
- * - ❌ list: Not implemented (Vercel Blob API doesn't support listing)
- * - ❌ update: Not implemented (Vercel Blob API doesn't support metadata updates)
- * - ❌ getUrl: Not implemented (Vercel Blob URLs available via Vercel Blob API)
- * - ❌ getUploadUrl: Not implemented (Vercel Blob upload URLs handled internally)
+ * - ✅ list (follows the SDK cursor up to `limit`)
+ * - ✅ `access: "private"` blobs (read through the SDK's authenticated `get()`)
+ * - ❌ getStream: Not implemented natively (falls back to get())
+ * - ❌ getReadUrl / getUploadUrl: Not implemented
  * - ⚠️ Per-operation `signal`/`timeout` are best-effort: the underlying SDK does not support request cancellation, so an in-flight call may complete server-side even after abort. `retries` is honored.
  */
 
@@ -44,6 +44,8 @@ type VercelBlobCredentials = { oidcToken: string; storeId: string; token?: never
 
 class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public static override readonly name: string = "vercel-blob";
+
+    public override readonly storageKind: string = "vercel-blob";
 
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
@@ -67,7 +69,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
     private readonly multipart: boolean | number;
 
-    private readonly access: "public";
+    private readonly access: "private" | "public";
 
     public constructor(config: VercelBlobStorageOptions) {
         super(config);
@@ -144,14 +146,10 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore
+            if (existing !== undefined) {
+                return existing;
             }
 
             // For Vercel Blob, we don't create an empty blob initially
@@ -190,7 +188,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -198,7 +196,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -240,6 +238,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
                     const result = await this.runOperation(options, () =>
                         put(file.name, blob, {
                             access: this.access,
+                            // The upload owns its pathname: a rewrite (or a replaced upload) overwrites it.
+                            allowOverwrite: true,
                             multipart: this.shouldUseMultipart(file),
                             ...this.credentials,
                         }),
@@ -253,10 +253,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -275,27 +272,33 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      */
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<VercelBlobFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id);
+            const meta = await this.findMeta(id);
+            // Without metadata, the blob is looked up by the ID as its pathname.
+            const file = meta ?? (await this.findStoredObject(id, options));
 
-            if (!file.url) {
-                throw new Error(`File ${id} does not have a valid URL`);
+            if (!file) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
             }
 
             const { url } = file;
 
             file.status = "deleted";
 
-            try {
-                await this.runOperation(options, () => del(url, { ...this.credentials }));
-            } catch (error) {
-                this.logger?.error("Failed to delete blob from Vercel Blob:", error);
-
-                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-                await this.onError(httpError);
+            // An upload that never received content has no blob to delete, only its metadata.
+            if (url) {
+                try {
+                    await this.runOperation(options, () => del(url, { ...this.credentials }));
+                } catch (error) {
+                    if (!(error instanceof BlobNotFoundError)) {
+                        throw error;
+                    }
+                }
             }
 
-            await this.deleteMeta(file.id);
+            // Only once the blob is gone, so a failed delete stays retryable.
+            if (meta) {
+                await this.deleteMeta(file.id);
+            }
 
             const deletedFile = { ...file };
 
@@ -314,74 +317,55 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             try {
-                // First check if metadata exists
-                const file = await this.getMeta(id);
+                const file = await this.findMeta(id);
 
-                if (!file.url || file.url.length === 0) {
-                    return false;
-                }
-
-                const { url } = file;
-
-                // Then verify the actual blob exists by checking if URL is accessible
-                const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
-
-                return response.ok;
+                // Through the SDK, not a plain HEAD on the URL, which a private blob refuses.
+                return file?.url ? (await this.statObject(file.url, options)) !== undefined : false;
             } catch {
-                // Return false if metadata doesn't exist or blob doesn't exist
                 return false;
             }
         });
     }
 
-    /**
-     * Answers for a completed upload from its stored blob, since the metadata is deleted on completion.
-     * Only blob metadata is requested — the content is never downloaded. The blob is looked up by the upload's ID as its pathname.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored blob exists.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<VercelBlobFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let blob;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        try {
+            const blob = await this.runOperation(options, () => head(id, this.credentials));
 
-            try {
-                blob = await this.runOperation(options, () => head(id, this.credentials));
-            } catch {
+            return {
+                contentType: blob.contentType,
+                etag: blob.etag,
+                extra: { downloadUrl: blob.downloadUrl, pathname: blob.pathname, url: blob.url },
+                size: blob.size,
+            };
+        } catch (error) {
+            if (error instanceof BlobNotFoundError) {
                 return undefined;
             }
 
-            const file = new VercelBlobFile({ contentType: blob.contentType, id, metadata: {}, size: blob.size });
-
-            return Object.assign(file, {
-                bytesWritten: blob.size,
-                downloadUrl: blob.downloadUrl,
-                ETag: blob.etag,
-                id,
-                name: id,
-                pathname: blob.pathname,
-                status: "completed" as const,
-                url: blob.url,
-            });
-        });
+            throw error;
+        }
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.getMeta(id));
 
-            if (!file.url || file.url.length === 0) {
-                throw new Error("File URL not found");
-            }
-
             const { url } = file;
 
-            // For Vercel Blob, we need to fetch the content
-            // In a real implementation, you might want to use the blob URL directly
-            // and let the client download it, but for compatibility with the interface,
-            // we'll fetch the content
-            const response = await this.runOperation(options, () => fetch(url));
-            const content = Buffer.from(await this.runOperation(options, () => response.arrayBuffer()));
+            if (!url) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "Vercel Blob: the upload has no content yet");
+            }
+
+            // The SDK authenticates the read, which a private blob requires.
+            const content = await this.runOperation(options, async () => {
+                const result = await get(url, { access: this.access, ...this.credentials });
+
+                if (result?.statusCode !== 200) {
+                    return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+                }
+
+                return Buffer.from(await new Response(result.stream).arrayBuffer());
+            });
 
             return {
                 content,
@@ -410,7 +394,7 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             const sourceFile = await this.getMeta(name);
 
             if (!sourceFile.url) {
-                throw new Error("Source file URL not found");
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, "Vercel Blob: the source upload has no content yet");
             }
 
             const sourceUrl = sourceFile.url;
@@ -418,7 +402,8 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             // Use Vercel Blob's copy function
             const result = await this.runOperation(options, () =>
                 copy(sourceUrl, destination, {
-                    access: "public",
+                    access: this.access,
+                    allowOverwrite: true,
                     ...this.credentials,
                 }),
             );
@@ -455,9 +440,25 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.runOperation(options, () => list({ limit, ...this.credentials }));
+                const blobs: Awaited<ReturnType<typeof list>>["blobs"] = [];
+                let cursor: string | undefined;
 
-                return result.blobs.map((blob) => {
+                // A page holds at most 1000 blobs, so follow the cursor until `limit` is reached.
+                while (blobs.length < limit) {
+                    const token = cursor;
+                    const result = await this.runOperation(options, () =>
+                        list({ limit: Math.min(limit - blobs.length, 1000), ...(token && { cursor: token }), ...this.credentials }),
+                    );
+
+                    blobs.push(...result.blobs);
+                    cursor = result.hasMore ? result.cursor : undefined;
+
+                    if (!cursor) {
+                        break;
+                    }
+                }
+
+                return blobs.slice(0, limit).map((blob) => {
                     const file = new VercelBlobFile({
                         contentType: "application/octet-stream", // Default content type
                         metadata: {},
@@ -479,8 +480,6 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
             { limit },
         );
     }
-
-    private internalOnComplete = (file: VercelBlobFile): Promise<void> => this.deleteMeta(file.id);
 
     /**
      * Determines if multipart upload should be used for the given file.

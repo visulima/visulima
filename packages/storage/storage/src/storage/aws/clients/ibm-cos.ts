@@ -11,18 +11,19 @@ import type { CreateIbmCosClientParameters } from "./types";
  * from `AWS_REGION` (which is commonly set to an AWS region in dev/CI and
  * would silently produce a broken endpoint).
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `IBM_COS_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `IBM_COS_SECRET_ACCESS_KEY`
- * - `IBM_COS_REGION` (e.g. `us-south`, `eu-de`, `jp-tok`)
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `IBM_COS_ACCESS_KEY_ID` / `IBM_COS_ACCESS_KEY`, then `AWS_ACCESS_KEY_ID`
  * - `IBM_COS_ENDPOINT`
+ * - `IBM_COS_REGION` (e.g. `us-south`, `eu-de`, `jp-tok`)
+ * - `IBM_COS_SECRET_ACCESS_KEY` / `IBM_COS_SECRET_KEY`, then `AWS_SECRET_ACCESS_KEY`
  */
 const ibmCos = (parameters?: CreateIbmCosClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.IBM_COS_ACCESS_KEY_ID ?? process.env.IBM_COS_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.IBM_COS_ACCESS_KEY_ID ?? process.env.IBM_COS_ACCESS_KEY ?? process.env.AWS_ACCESS_KEY_ID;
     const endpoint = parameters?.endpoint ?? process.env.IBM_COS_ENDPOINT;
     const region = parameters?.region ?? process.env.IBM_COS_REGION;
     const secretAccessKey =
-        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.IBM_COS_SECRET_ACCESS_KEY ?? process.env.IBM_COS_SECRET_KEY;
+        parameters?.secretAccessKey ?? process.env.IBM_COS_SECRET_ACCESS_KEY ?? process.env.IBM_COS_SECRET_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!region || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for IBM Cloud Object Storage client.");

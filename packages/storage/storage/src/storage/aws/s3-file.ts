@@ -1,5 +1,5 @@
 import { File } from "../utils/file";
-import type { Part } from "./s3-base-storage";
+import type { Part } from "./s3-api";
 
 class S3File extends File {
     public Parts?: Part[];

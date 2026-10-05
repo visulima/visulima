@@ -16,7 +16,7 @@ export interface PocketBaseClientLike {
         create: (body: unknown) => Promise<PocketBaseRecord>;
         delete: (id: string) => Promise<boolean>;
         getFirstListItem: (filter: string) => Promise<PocketBaseRecord>;
-        getList: (page: number, perPage: number) => Promise<{ items: PocketBaseRecord[] }>;
+        getList: (page: number, perPage: number) => Promise<{ items: PocketBaseRecord[]; totalPages?: number }>;
         update: (id: string, body: unknown) => Promise<PocketBaseRecord>;
     };
     files: {

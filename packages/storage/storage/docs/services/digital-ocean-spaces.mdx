@@ -4,89 +4,148 @@
 
 ## Overview
 
-DigitalOcean Spaces is an S3-compatible object storage service. It provides a simple, scalable solution for storing and serving files with global CDN integration.
+DigitalOcean Spaces is S3-compatible object storage with an optional built-in CDN. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `digitalOcean()` helper builds the endpoint `https://<region>.digitaloceanspaces.com` and always signs with region `us-east-1`, which is what Spaces expects.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-DigitalOcean Spaces is S3-compatible, so use the S3Storage with Spaces endpoint:
+1. **Create a Space** — Control panel → _Spaces Object Storage_ → _Create a Spaces Bucket_. Note its datacenter (`nyc3`, `ams3`, `fra1`, `sgp1`, …); that is the helper's `region`.
+2. **Create an access key** — _Spaces Object Storage_ → _Access Keys_ → _Create Access Key_. Prefer **Limited Access** with **Read/Write/Delete** on this bucket over full access. The secret is shown once.
+3. **CORS** — needed only when the browser calls Spaces directly (presigned URLs, `clientDirectUpload`). Bucket → _Settings_ → _CORS Configurations_, or with the S3 API:
 
-```typescript
+    ```json
+    {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["https://app.example.com"],
+                "AllowedMethods": ["GET", "HEAD", "PUT"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["ETag"],
+                "MaxAgeSeconds": 3600
+            }
+        ]
+    }
+    ```
+
+4. **Lifecycle** — Spaces accepts S3 lifecycle configuration. Abort multipart uploads this storage didn't start (`purge()` only aborts its own):
+
+    ```json
+    {
+        "Rules": [{ "ID": "abort-incomplete-mpu", "Status": "Enabled", "Prefix": "", "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 7 } }]
+    }
+    ```
+
+    ```sh
+    aws s3api put-bucket-lifecycle-configuration --endpoint-url https://nyc3.digitaloceanspaces.com --bucket uploads --lifecycle-configuration file://lifecycle.json
+    ```
+
+## Configuration
+
+### `digitalOcean()` helper
+
+`import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region: "us-east-1"`, `forcePathStyle: false`):
+
+| Parameter | Type     | Required | Env fallback (in order)                  |
+| --------- | -------- | -------- | ---------------------------------------- |
+| `region`  | `string` | yes      | `SPACES_REGION`, `AWS_REGION`            |
+| `key`     | `string` | yes      | `SPACES_KEY`, `AWS_ACCESS_KEY_ID`        |
+| `secret`  | `string` | yes      | `SPACES_SECRET`, `AWS_SECRET_ACCESS_KEY` |
+
+`region` only picks the endpoint subdomain. `SPACES_REGION` wins over `AWS_REGION`, which is only used when `SPACES_REGION` is unset. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({ bucket: "uploads", ...digitalOcean({ region: "nyc3", key: process.env.SPACES_KEY!, secret: process.env.SPACES_SECRET! }) });
+```
+
+### Production
+
+```ts
 import { S3Storage } from "@visulima/storage/provider/aws";
 import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients";
 
 const storage = new S3Storage({
-    bucket: "my-space",
-    region: "nyc3", // DigitalOcean region
-    endpoint: "https://nyc3.digitaloceanspaces.com",
-    credentials: {
-        accessKeyId: process.env.SPACES_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.SPACES_SECRET_ACCESS_KEY!,
-    },
+    ...digitalOcean({ region: "fra1", key: process.env.SPACES_KEY!, secret: process.env.SPACES_SECRET! }),
+    bucket: "uploads",
+    acl: "private",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-## Configuration
+### Edge (`AwsLightStorage`)
 
-### Using Client Helper
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
-```typescript
-import { digitalOcean } from "@visulima/storage/provider/aws/s3/clients";
-
-const clientConfig = digitalOcean({
-    key: process.env.SPACES_ACCESS_KEY_ID!,
-    secret: process.env.SPACES_SECRET_ACCESS_KEY!,
-    region: "nyc3",
-});
-
-const storage = new S3Storage({
-    bucket: "my-space",
-    ...clientConfig,
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "us-east-1",
+    endpoint: "https://fra1.digitaloceanspaces.com", // path-style: <endpoint>/<bucket>/<key>
+    accessKeyId: process.env.SPACES_KEY!,
+    secretAccessKey: process.env.SPACES_SECRET!,
 });
 ```
 
-### Environment Variables
+## Metadata storage
 
-```typescript
-process.env.SPACES_ACCESS_KEY_ID = "your-access-key";
-process.env.SPACES_SECRET_ACCESS_KEY = "your-secret-key";
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): each upload's record is a zero-byte `<id>.META` object in the Space (JSON in the user-metadata header), kept after completion and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves it. If you make the Space public, the `.META` objects are public too — keep the Space private and serve files through presigned URLs or the CDN with a dedicated prefix.
 
-const storage = new S3Storage({
-    bucket: process.env.SPACES_BUCKET,
-    region: process.env.SPACES_REGION || "nyc3",
-    endpoint: `https://${process.env.SPACES_REGION || "nyc3"}.digitaloceanspaces.com`,
-});
+## Behaviour & limits
+
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
 ```
 
-## Regions
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
 
-Available DigitalOcean Spaces regions:
+const rest = new Rest({ storage });
 
-- `nyc3` - New York 3
-- `sfo3` - San Francisco 3
-- `ams3` - Amsterdam 3
-- `sgp1` - Singapore 1
-- `fra1` - Frankfurt 1
-
-## CDN Integration
-
-DigitalOcean Spaces includes built-in CDN:
-
-```typescript
-// Files are automatically served via CDN
-const file = await storage.get({ id: "file-id" });
-// file.uri includes CDN URL
+export default { fetch: (request: Request) => rest.fetch(request) };
 ```
 
-## Best Practices
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
 
-1. **Choose appropriate region** - Select region closest to your users
-2. **Use CDN** - Leverage built-in CDN for global distribution
-3. **Configure CORS** - Set up CORS for web applications
-4. **Enable versioning** - Use Spaces versioning for important files
-5. **Monitor usage** - Track storage and bandwidth in DigitalOcean dashboard
+const files = new Files({ adapter: storage });
+
+await files.upload("images/hero.jpg", buffer, { contentType: "image/jpeg" });
+const url = await files.url("images/hero.jpg", { expiresIn: 3600 });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                                                |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `403` on missing keys / not ready        | A limited key without access to this bucket, or without list rights. Grant Read/Write/Delete.              |
+| `SignatureDoesNotMatch`                  | Signing region isn't `us-east-1` (set by the helper), or wrong secret.                                     |
+| Requests go to the wrong datacenter      | `SPACES_REGION` is unset, so an `AWS_REGION` meant for AWS was used; set `SPACES_REGION` or pass `region`. |
+| Browser CORS errors                      | Add CORS rules for your origin with `PUT`.                                                                 |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                                 |

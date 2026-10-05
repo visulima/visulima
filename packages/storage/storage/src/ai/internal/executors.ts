@@ -1,4 +1,4 @@
-import type { Files } from "../../files";
+import type { FileObject, Files } from "../../files";
 import type {
     CopyFileInput,
     DeleteFileInput,
@@ -6,10 +6,14 @@ import type {
     GetFileMetadataInput,
     GetFileUrlInput,
     ListFilesInput,
+    SearchFilesInput,
     SignUploadUrlInput,
     UploadFileInput,
 } from "./schemas";
 import { DEFAULT_MAX_DOWNLOAD_BYTES, MAX_DOWNLOAD_BYTES } from "./schemas";
+
+/** Matches a `searchFiles` call returns when the input sets no `limit`. */
+const DEFAULT_SEARCH_LIMIT = 100;
 
 const serializeLastModified = (value: Date | number | string | undefined): string | undefined => {
     if (value === undefined) {
@@ -21,6 +25,46 @@ const serializeLastModified = (value: Date | number | string | undefined): strin
     }
 
     return typeof value === "number" ? new Date(value).toISOString() : value;
+};
+
+/**
+ * Read at most about `maxBytes` of an object without buffering the rest: a ranged read when the
+ * adapter supports it, otherwise a stream abandoned once the cap is reached.
+ */
+const readCapped = async (files: Files, key: string, maxBytes: number): Promise<Buffer> => {
+    if (files.capabilities.range) {
+        const { body } = await files.download(key, { range: { end: maxBytes - 1, start: 0 } });
+
+        return body;
+    }
+
+    const { body } = await files.downloadStream(key);
+    const chunks: Buffer[] = [];
+    let total = 0;
+
+    // Leaving the loop early destroys the stream, so the remainder is never read.
+    for await (const chunk of body) {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string);
+
+        chunks.push(buffer);
+        total += buffer.byteLength;
+
+        if (total >= maxBytes) {
+            break;
+        }
+    }
+
+    return Buffer.concat(chunks);
+};
+
+const toListItem = (item: FileObject): ListFilesItem => {
+    return {
+        contentType: item.contentType,
+        ...(item.etag ? { etag: item.etag } : {}),
+        key: item.key,
+        ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
+        ...(typeof item.size === "number" ? { size: item.size } : {}),
+    };
 };
 
 export interface CopyFileResult {
@@ -90,6 +134,7 @@ export interface Executors {
     getFileMetadata: (files: Files, input: GetFileMetadataInput) => Promise<FileMetadataResult>;
     getFileUrl: (files: Files, input: GetFileUrlInput) => Promise<FileUrlResult>;
     listFiles: (files: Files, input: ListFilesInput) => Promise<ListFilesResult>;
+    searchFiles: (files: Files, input: SearchFilesInput) => Promise<ListFilesResult>;
     signUploadUrl: (files: Files, input: SignUploadUrlInput) => Promise<SignUploadUrlResult>;
     uploadFile: (files: Files, input: UploadFileInput) => Promise<UploadFileResult>;
 }
@@ -130,30 +175,22 @@ export const executors: Executors = {
             );
         }
 
-        const result = await files.download(key);
+        // Unknown size: never pull the whole object just to measure it. Read at most limit + 1 bytes
+        // (a ranged read, or a streamed read cut off at the cap) — one byte over proves it's too big.
+        const body = typeof head.size === "number" ? await files.download(key).then((result) => result.body) : await readCapped(files, key, limit + 1);
 
-        if (result.body.byteLength > limit) {
-            throw new RangeError(
-                `downloadFile refused: "${key}" returned ${result.body.byteLength} bytes which exceeds the maxBytes limit of ${limit}. Use getFileUrl instead.`,
-            );
+        if (body.byteLength > limit) {
+            throw new RangeError(`downloadFile refused: "${key}" returned more than ${limit} bytes, which exceeds the maxBytes limit. Use getFileUrl instead.`);
         }
 
-        if (binary) {
-            return {
-                content: result.body.toString("base64"),
-                contentType: result.contentType,
-                encoding: "base64",
-                key: result.key,
-                ...(typeof result.size === "number" ? { size: result.size } : {}),
-            };
-        }
+        const size = head.size ?? body.byteLength;
 
         return {
-            content: result.body.toString("utf8"),
-            contentType: result.contentType,
-            encoding: "text",
-            key: result.key,
-            ...(typeof result.size === "number" ? { size: result.size } : {}),
+            content: body.toString(binary ? "base64" : "utf8"),
+            contentType: head.contentType,
+            encoding: binary ? "base64" : "text",
+            key: head.key,
+            size,
         };
     },
 
@@ -179,17 +216,17 @@ export const executors: Executors = {
     listFiles: async (files: Files, { limit, prefix }: ListFilesInput): Promise<ListFilesResult> => {
         const results = await files.list({ limit, prefix });
 
-        return {
-            items: results.map((item): ListFilesItem => {
-                return {
-                    contentType: item.contentType,
-                    ...(item.etag ? { etag: item.etag } : {}),
-                    key: item.key,
-                    ...(serializeLastModified(item.lastModified) ? { lastModified: serializeLastModified(item.lastModified) } : {}),
-                    ...(typeof item.size === "number" ? { size: item.size } : {}),
-                };
-            }),
-        };
+        return { items: results.map((item) => toListItem(item)) };
+    },
+
+    searchFiles: async (files: Files, { caseInsensitive, limit, match, pattern, prefix }: SearchFilesInput): Promise<ListFilesResult> => {
+        const items: ListFilesItem[] = [];
+
+        for await (const item of files.search(pattern, { caseInsensitive, limit: limit ?? DEFAULT_SEARCH_LIMIT, match, prefix })) {
+            items.push(toListItem(item));
+        }
+
+        return { items };
     },
 
     signUploadUrl: async (files: Files, { contentType, expiresIn, key }: SignUploadUrlInput): Promise<SignUploadUrlResult> => {

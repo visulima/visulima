@@ -4,18 +4,24 @@ Visulima storage provides consistent error handling across all storage backends 
 
 ## Error Types
 
+Storage and handler code throws two kinds of errors:
+
+- **`UploadError`** — operational failures (not found, locked, read-only, unsupported operation, …). It carries `UploadErrorCode` (an `ERRORS` value), `message` and an optional `detail` with the original provider error. It has **no** `statusCode`; map the code to a status with `ErrorMap[error.UploadErrorCode].statusCode`.
+- **`ValidationError`** — a file failed one of the adapter's validators (`maxUploadSize`, `allowMIME`, file name, or your own `validation` rules). It has `name === "ValidationError"`, `code` (the validator's key: `"size"`, `"mime"`, `"filename"` or your rule name), `statusCode` (413, 415, 400, …), `body` and `headers`. The package exports its type, not the class, so detect it by `name`.
+
 ### Upload Errors
 
 ```typescript
-import { ERRORS, isUploadError, throwErrorCode } from "@visulima/storage";
+import { ErrorMap, ERRORS, isUploadError } from "@visulima/storage";
 
 try {
     await storage.get({ id: "nonexistent" });
 } catch (error) {
     if (isUploadError(error)) {
-        console.log("Error code:", error.UploadErrorCode);
-        console.log("Status:", error.statusCode);
+        console.log("Error code:", error.UploadErrorCode); // e.g. "FileNotFound"
+        console.log("Status:", ErrorMap[error.UploadErrorCode]?.statusCode); // e.g. 404
         console.log("Message:", error.message);
+        console.log("Provider error:", error.detail);
     }
 }
 ```
@@ -38,6 +44,7 @@ enum ERRORS {
     INVALID_RANGE = "InvalidRange",
     INVALID_TYPE = "Invalidtype",
     METHOD_NOT_ALLOWED = "MethodNotAllowed",
+    READ_ONLY = "ReadOnly",
     REQUEST_ABORTED = "RequestAborted",
     REQUEST_ENTITY_TOO_LARGE = "RequestEntityTooLarge",
     STORAGE_BUSY = "StorageBusy",
@@ -52,17 +59,13 @@ enum ERRORS {
 
 ## Error Response Format
 
-All errors follow a consistent format:
+The HTTP handlers turn every error into an `HttpError` (`{ code, message, statusCode, name?, headers?, body? }`), pass it to the storage's `onError` hook, and send it as JSON:
 
-```typescript
-interface HttpError {
-    code: string; // Error code (e.g., "FileNotFound")
-    message: string; // Human-readable message
-    statusCode: number; // HTTP status code
-    name?: string; // Error name
-    body?: any; // Additional error details
-}
+```json
+{ "error": { "code": "FileNotFound", "message": "Not found", "name": "Error" } }
 ```
+
+Errors the handler does not recognise (anything that is not an `UploadError`, `ValidationError` or `http-errors` error) go through `storage.normalizeError()`; when that yields a 5xx status (the usual case), the client gets the generic message `"Something went wrong"`, so paths and SDK messages never reach it. `onError` still receives the original message and details, so log them there. If `onError` sets `body`, that body is sent as-is, so keep internals out of it.
 
 ## Handling Common Errors
 
@@ -79,33 +82,24 @@ try {
 }
 ```
 
-### File Too Large
+### Validation Failures (File Too Large, Unsupported Media Type, …)
+
+`storage.create()` runs the validators and throws a `ValidationError`, not an `UploadError`:
 
 ```typescript
-try {
-    await storage.create({
-        contentType: "image/jpeg",
-        size: 100 * 1024 * 1024, // 100MB
-    });
-} catch (error) {
-    if (isUploadError(error) && error.UploadErrorCode === ERRORS.REQUEST_ENTITY_TOO_LARGE) {
-        return res.status(413).json({ error: "File too large" });
-    }
-    throw error;
-}
-```
+import type { ValidationError } from "@visulima/storage";
 
-### Unsupported Media Type
+const isValidationError = (error: unknown): error is ValidationError => (error as { name?: string })?.name === "ValidationError";
 
-```typescript
 try {
     await storage.create({
         contentType: "application/x-executable",
-        size: 1024,
+        size: 100 * 1024 * 1024, // 100MB
     });
 } catch (error) {
-    if (isUploadError(error) && error.UploadErrorCode === ERRORS.UNSUPPORTED_MEDIA_TYPE) {
-        return res.status(415).json({ error: "Unsupported file type" });
+    if (isValidationError(error)) {
+        // error.code: "size" → 413, "mime" → 415, "filename" → 400, or your own rule name
+        return res.status(error.statusCode).json({ error: error.message, rule: error.code });
     }
     throw error;
 }
@@ -117,6 +111,7 @@ try {
 try {
     await storage.write({
         id: "file-id",
+        start: 0,
         body: stream,
         checksum: "invalid-checksum",
         checksumAlgorithm: "md5",
@@ -133,24 +128,24 @@ try {
 
 ### Custom Error Responses
 
+`onError` returns nothing; it customises the response by mutating the `HttpError` it receives. Setting `body` replaces the default `{ error: { … } }` JSON:
+
 ```typescript
+import { DiskStorage } from "@visulima/storage";
+import type { HttpError } from "@visulima/storage";
+
 const storage = new DiskStorage({
     directory: "./uploads",
     onError: (error: HttpError) => {
-        // Customize error response
-        return {
-            body: {
-                error: {
-                    code: error.code,
-                    message: error.message,
-                    timestamp: new Date().toISOString(),
-                },
-            },
-            headers: {
-                "X-Error-Code": error.code,
-            },
-            statusCode: error.statusCode,
+        // The original message is still available here, even for 500s the client only sees as "Something went wrong"
+        logger.error(error);
+
+        error.body = {
+            code: error.code,
+            message: error.statusCode >= 500 ? "Upload failed" : error.message,
+            timestamp: new Date().toISOString(),
         };
+        error.headers = { ...error.headers, "X-Error-Code": String(error.code) };
     },
 });
 ```
@@ -209,10 +204,14 @@ try {
 
 ### Express Error Middleware
 
+The HTTP handlers answer their own errors. This middleware is for errors your own code throws (e.g. a route that calls the adapter directly):
+
 ```typescript
+import { ErrorMap, isUploadError } from "@visulima/storage";
+
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (isUploadError(error)) {
-        const statusCode = error.statusCode || 500;
+        const statusCode = ErrorMap[error.UploadErrorCode]?.statusCode ?? 500;
         return res.status(statusCode).json({
             error: {
                 code: error.UploadErrorCode,
@@ -238,7 +237,7 @@ app.onError((error, c) => {
                     message: error.message,
                 },
             },
-            error.statusCode || 500,
+            (ErrorMap[error.UploadErrorCode]?.statusCode ?? 500) as ContentfulStatusCode,
         );
     }
 
@@ -248,7 +247,7 @@ app.onError((error, c) => {
 
 ## Best Practices
 
-1. **Always check error types** - Use `isUploadError()` to identify upload errors
+1. **Always check error types** - Use `isUploadError()` for operational errors and `error.name === "ValidationError"` for validator failures
 2. **Handle specific error codes** - Provide user-friendly messages for common errors
 3. **Log errors appropriately** - Include context for debugging
 4. **Return appropriate status codes** - Use standard HTTP status codes

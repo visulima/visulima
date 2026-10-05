@@ -300,6 +300,28 @@ describe(retry, () => {
             expect(function_).toHaveBeenCalledTimes(2);
         });
 
+        it("should fall back to the default backoff when calculateDelay returns undefined", async () => {
+            expect.assertions(2);
+
+            const error = Object.assign(new Error("fail"), { code: "ECONNRESET" });
+            const function_ = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce("success");
+            // Full jitter: pin it to the top of the range.
+            const random = vi.spyOn(Math, "random").mockReturnValue(0.999);
+
+            const resultPromise = retry(function_, { calculateDelay: () => undefined, initialDelay: 1000, maxRetries: 1 });
+
+            // The retry waits for the backoff instead of firing at once.
+            await vi.advanceTimersByTimeAsync(10);
+
+            expect(function_).toHaveBeenCalledTimes(1);
+
+            await vi.runAllTimersAsync();
+
+            await expect(resultPromise).resolves.toBe("success");
+
+            random.mockRestore();
+        });
+
         it("should respect maxDelay", async () => {
             expect.assertions(2);
 

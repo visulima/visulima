@@ -1,6 +1,7 @@
 {
     "title": "Storage Services",
     "pages": [
+        "index",
         "capabilities",
         "amazon-s3",
         "aws-light",
@@ -11,8 +12,11 @@
         "bun-s3",
         "bunny",
         "cloudflare-r2",
+        "cloudinary",
         "digital-ocean-spaces",
         "dropbox",
+        "firebase",
+        "ftp",
         "google-cloud-storage",
         "google-drive",
         "hetzner",
@@ -21,6 +25,9 @@
         "minio",
         "netlify-blob",
         "onedrive",
+        "pocketbase",
+        "sftp",
+        "sharepoint",
         "storj",
         "supabase",
         "tencent-cos",
@@ -28,6 +35,7 @@
         "uploadthing",
         "vercel-blob",
         "wasabi",
+        "webdav",
         "yandex-object-storage"
     ]
 }

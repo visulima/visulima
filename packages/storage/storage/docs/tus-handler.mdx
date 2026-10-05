@@ -28,12 +28,12 @@ const app = express();
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });
 
-// TUS endpoints
-app.post("/upload/tus", tus.handle);
-app.patch("/upload/tus/:id", tus.handle);
-app.head("/upload/tus/:id", tus.handle);
-app.delete("/upload/tus/:id", tus.handle);
+// One mount serves every TUS method: OPTIONS (capability discovery / CORS preflight),
+// POST, HEAD, PATCH, GET and DELETE, on /upload/tus and /upload/tus/:id
+app.use("/upload/tus", tus.handle);
 ```
+
+Don't register individual methods (`app.post`, `app.patch`, …): clients send `OPTIONS` and `GET` too, and those would never reach the handler.
 
 ### Modern Frameworks (Fetch API)
 
@@ -44,23 +44,12 @@ import { Tus } from "@visulima/storage/handler/http/fetch";
 const storage = new DiskStorage({ directory: "./uploads" });
 const tus = new Tus({ storage });
 
-// TUS endpoints
-app.post("/upload/tus", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
-
-app.patch("/upload/tus/:id", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
-
-app.head("/upload/tus/:id", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
-
-app.delete("/upload/tus/:id", async (c) => {
-    return await tus.fetch(c.req.raw);
-});
+// Hono: route every method on the collection and on each upload to the handler
+app.all("/upload/tus", (c) => tus.fetch(c.req.raw));
+app.all("/upload/tus/:id", (c) => tus.fetch(c.req.raw));
 ```
+
+With Hono you can also let `createStorageHandler(app, { path: "/upload/tus", storage, type: "tus" })` from `@visulima/storage/handler/http/hono` register these routes.
 
 ## Client-Side Usage
 
@@ -151,6 +140,14 @@ checked against `maxUploadSize` (413), and an `Upload-Defer-Length` other than `
 //   Upload-Length: 10485760
 ```
 
+### PATCH without Content-Length
+
+A PATCH may send its body with chunked transfer encoding, without `Content-Length`. Memory, local disk, FTP,
+SFTP and the single-request adapters store it, bounded while it streams by the rest of the upload's length (or
+`maxUploadSize` while the length is deferred). Adapters that send a chunk's length to the provider before its
+bytes (S3, S3 light, Google Cloud Storage, Azure; `storage.requiresContentLength`) answer `411 Length Required`
+before reading the body, and the upload stays as it was.
+
 ### Checksum Extension
 
 Verify each chunk. The checksum is the **base64** digest of the chunk's bytes:
@@ -206,8 +203,8 @@ Resumable, chunked TUS uploads need a backend that can append to an upload:
   (`storage.supportsResumableWrites === false`). Send the whole file in one `PATCH` (or with creation-with-upload);
   a partial chunk is rejected with `405` instead of being stored as a truncated file. These adapters don't advertise
   the `creation-defer-length` and `concatenation` extensions.
-- S3, GCS and Azure drop an upload's metadata once it completes, so a `HEAD` after completion answers `404`, as the
-  protocol allows.
+- Every adapter keeps an upload's metadata after it completes, so `HEAD`, `GET` and `DELETE` keep working on a finished
+  upload. They never answer for an object the TUS route didn't create (one without upload metadata): that is a `404`.
 
 ## Status Codes
 
@@ -225,16 +222,31 @@ Resumable, chunked TUS uploads need a backend that can append to an upload:
 
 ## Configuration
 
+The handler has no `onUploadComplete` / `onUploadError` options. React to uploads with the storage's lifecycle hooks, or with the handler's events:
+
 ```typescript
-const tus = new Tus({
-    storage,
-    // Customize TUS behavior
-    onUploadComplete: (file) => {
+const storage = new DiskStorage({
+    directory: "./uploads",
+    onComplete: (file) => {
         console.log("Upload complete:", file.id);
     },
-    onUploadError: (error) => {
-        console.error("Upload error:", error);
+    onError: (error) => {
+        console.error("Upload error:", error.statusCode, error.message);
     },
+});
+
+const tus = new Tus({
+    storage,
+    maxChecksumBufferSize: 32 * 1024 * 1024, // bytes buffered to verify an Upload-Checksum (default 64 MiB)
+    allowMethodOverride: false, // ignore X-HTTP-Method-Override
+});
+
+// Handlers are EventEmitters: one event per upload status ("created", "part", "completed", "deleted"), plus "error"
+tus.on("completed", (file) => {
+    console.log("Upload complete:", file.id, file.request?.url);
+});
+tus.on("error", (error) => {
+    console.error("Upload error:", error);
 });
 ```
 

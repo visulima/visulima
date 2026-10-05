@@ -1,6 +1,6 @@
 # Next.js Integration
 
-Use Visulima Storage with Next.js for file uploads and on-demand image transformations. The `createNextjsHandler` function provides the easiest way to set up upload endpoints with automatic route handling.
+Use Visulima Storage with Next.js for file uploads and on-demand image transformations. `createHandler` from `@visulima/storage/handler/http/nextjs` builds a route handler for each upload protocol.
 
 ## Installation
 
@@ -16,19 +16,21 @@ yarn add @visulima/storage next
 pnpm add @visulima/storage next
 ```
 
-## Recommended: Using `createNextjsHandler`
+## Recommended: Using `createHandler`
 
-The easiest way to use Visulima Storage with Next.js is to use the `createNextjsHandler` function, which automatically handles all HTTP methods for each handler type:
+`createHandler({ storage, type })` returns one function that serves every HTTP method of the chosen protocol. Export it under each method name.
+
+Put the route in an **optional catch-all** segment (`[[...slug]]`). The handlers address uploads as `<base>/<id>` (REST `PATCH /api/files/<id>`, TUS `HEAD /api/tus/<id>`, multipart `GET /api/upload/<id>`); a plain `route.ts` only matches the base path, so those requests would never reach the handler.
 
 ### Multipart Handler
 
 ```ts
-// app/api/upload/multipart/route.ts
+// app/api/upload/[[...slug]]/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createNextjsHandler({ storage, type: "multipart" });
+const handler = createHandler({ storage, type: "multipart" });
 
 export const POST = handler;
 export const GET = handler;
@@ -39,12 +41,12 @@ export const OPTIONS = handler;
 ### REST Handler
 
 ```ts
-// app/api/upload/rest/route.ts
+// app/api/files/[[...slug]]/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createNextjsHandler({ storage, type: "rest" });
+const handler = createHandler({ storage, type: "rest" });
 
 export const POST = handler;
 export const PUT = handler;
@@ -58,12 +60,12 @@ export const OPTIONS = handler;
 ### TUS Handler
 
 ```ts
-// app/api/upload/tus/route.ts
+// app/api/tus/[[...slug]]/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
 
 const storage = new DiskStorage({ directory: "./uploads" });
-const handler = createNextjsHandler({ storage, type: "tus" });
+const handler = createHandler({ storage, type: "tus" });
 
 export const POST = handler;
 export const PATCH = handler;
@@ -78,9 +80,9 @@ export const OPTIONS = handler;
 You can also pass media transformers to enable image/video/audio transformations:
 
 ```ts
-// app/api/upload/multipart/route.ts
+// app/api/upload/[[...slug]]/route.ts
 import { DiskStorage } from "@visulima/storage";
-import { createNextjsHandler } from "@visulima/storage/handler/http/nextjs";
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
 import { MediaTransformer } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
 
@@ -91,7 +93,7 @@ const mediaTransformer = new MediaTransformer(storage, {
     maxImageSize: 10 * 1024 * 1024, // 10MB
 });
 
-const handler = createNextjsHandler({
+const handler = createHandler({
     storage,
     mediaTransformer,
     type: "multipart",
@@ -108,7 +110,7 @@ export const OPTIONS = handler;
 If you need more control, you can manually register routes using the fetch method:
 
 ```ts
-// app/api/upload/route.ts
+// app/api/upload/[[...slug]]/route.ts
 import { DiskStorage } from "@visulima/storage";
 import { Multipart } from "@visulima/storage/handler/http/fetch";
 
@@ -128,9 +130,10 @@ export async function POST(request: Request) {
 ## Image Transformation API Route
 
 ```ts
-// app/api/files/[id]/route.ts
+// app/api/images/[id]/route.ts
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
+import type { ImageFormat, ResizeOptions, TransformationStep } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -161,6 +164,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         const width = searchParams.get("width");
         const height = searchParams.get("height");
         const fit = searchParams.get("fit");
+        const format = searchParams.get("format");
         const position = searchParams.get("position");
         const quality = searchParams.get("quality");
         const lossless = searchParams.get("lossless");
@@ -170,7 +174,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         const delay = searchParams.get("delay");
 
         // Check if any transformation parameters are provided
-        const hasTransformParams = width || height || fit || position || quality || lossless || effort || alphaQuality || loop || delay;
+        const hasTransformParams = width || height || fit || format || position || quality || lossless || effort || alphaQuality || loop || delay;
 
         if (!hasTransformParams) {
             // No transformation requested, serve original file
@@ -196,22 +200,38 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             }
         }
 
-        // Parse transformation options
-        const transformOptions: any = {};
+        // Build the transformation steps
+        const steps: TransformationStep[] = [];
 
-        if (width) transformOptions.width = Number(width);
-        if (height) transformOptions.height = Number(height);
-        if (fit) transformOptions.fit = fit;
-        if (position) transformOptions.position = position;
-        if (quality) transformOptions.quality = Number(quality);
-        if (lossless !== null) transformOptions.lossless = lossless === "true";
-        if (effort) transformOptions.effort = Number(effort);
-        if (alphaQuality) transformOptions.alphaQuality = Number(alphaQuality);
-        if (loop !== null) transformOptions.loop = Number(loop);
-        if (delay) transformOptions.delay = Number(delay);
+        if (width || height || fit || position) {
+            steps.push({
+                type: "resize",
+                options: {
+                    ...(width && { width: Number(width) }),
+                    ...(height && { height: Number(height) }),
+                    ...(fit && { fit: fit as ResizeOptions["fit"] }),
+                    ...(position && { position }),
+                },
+            });
+        }
+
+        if (format || quality || lossless || effort || alphaQuality || loop || delay) {
+            steps.push({
+                type: "format",
+                options: {
+                    ...(format && { format: format as ImageFormat }),
+                    ...(quality && { quality: Number(quality) }),
+                    ...(lossless !== null && { lossless: lossless === "true" }),
+                    ...(effort && { effort: Number(effort) }),
+                    ...(alphaQuality && { alphaQuality: Number(alphaQuality) }),
+                    ...(loop !== null && { loop: Number(loop) }),
+                    ...(delay && { delay: Number(delay) }),
+                },
+            });
+        }
 
         // Apply transformation
-        const result = await imageTransformer.transform(id, transformOptions);
+        const result = await imageTransformer.transform(id, steps);
 
         // Return transformed image
         const response = new NextResponse(result.buffer, {
@@ -286,23 +306,23 @@ export default function ImageUpload() {
                     <h3>Uploaded: {uploadedFile.filename}</h3>
 
                     {/* Original image */}
-                    <img src={`/api/files/${uploadedFile.id}`} alt="Original" style={{ maxWidth: "300px", margin: "10px" }} />
+                    <img src={`/api/images/${uploadedFile.id}`} alt="Original" style={{ maxWidth: "300px", margin: "10px" }} />
 
                     {/* Transformed images */}
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                         <div>
                             <h4>Thumbnail (300x200)</h4>
-                            <img src={`/api/files/${uploadedFile.id}?width=300&height=200&fit=cover&quality=80`} alt="Thumbnail" />
+                            <img src={`/api/images/${uploadedFile.id}?width=300&height=200&fit=cover&quality=80`} alt="Thumbnail" />
                         </div>
 
                         <div>
                             <h4>WebP (800px wide)</h4>
-                            <img src={`/api/files/${uploadedFile.id}?width=800&format=webp&quality=85`} alt="WebP version" />
+                            <img src={`/api/images/${uploadedFile.id}?width=800&format=webp&quality=85`} alt="WebP version" />
                         </div>
 
                         <div>
-                            <h4>Grayscale</h4>
-                            <img src={`/api/files/${uploadedFile.id}?width=400&height=300&grayscale=true`} alt="Grayscale" />
+                            <h4>AVIF (400x300)</h4>
+                            <img src={`/api/images/${uploadedFile.id}?width=400&height=300&format=avif`} alt="AVIF version" />
                         </div>
                     </div>
                 </div>
@@ -330,7 +350,7 @@ interface OptimizedImageProps {
 }
 
 export default function OptimizedImage({ fileId, width, height, alt, quality = 80, fit = "cover" }: OptimizedImageProps) {
-    const transformUrl = `/api/files/${fileId}?width=${width}&height=${height}&fit=${fit}&quality=${quality}&format=webp`;
+    const transformUrl = `/api/images/${fileId}?width=${width}&height=${height}&fit=${fit}&quality=${quality}&format=webp`;
 
     return (
         <Image
@@ -354,6 +374,7 @@ Create server-side transformations for pre-processing:
 // app/api/transform/route.ts
 import { LRUCache } from "lru-cache";
 import { DiskStorage } from "@visulima/storage";
+import type { TransformationStep } from "@visulima/storage/transformer";
 import ImageTransformer from "@visulima/storage/transformer/image";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -372,17 +393,19 @@ const imageTransformer = new ImageTransformer(storage, {
 
 export async function POST(request: NextRequest) {
     try {
-        const { fileId, transformations } = await request.json();
+        // `variants` is an array of step arrays, e.g.
+        // [[{ type: "resize", options: { width: 300 } }], [{ type: "format", options: { format: "webp" } }]]
+        const { fileId, variants } = (await request.json()) as { fileId: string; variants: TransformationStep[][] };
 
         const results = [];
 
-        for (const transform of transformations) {
-            const result = await imageTransformer.transform(fileId, transform);
+        for (const steps of variants) {
+            const result = await imageTransformer.transform(fileId, steps);
+
             results.push({
-                ...transform,
+                steps,
                 size: result.buffer.length,
                 format: result.format,
-                url: `/api/files/${fileId}?${new URLSearchParams(transform as any).toString()}`,
             });
         }
 
@@ -427,7 +450,7 @@ export const imageTransformer = new ImageTransformer(storage, {
 Handle transformation errors gracefully:
 
 ```ts
-// app/api/files/[id]/route.ts
+// app/api/images/[id]/route.ts
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {
         // ... transformation logic ...

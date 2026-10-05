@@ -1,3 +1,4 @@
+import { ERRORS, throwErrorCode } from "../../utils/errors";
 import MetaStorage, { setMetaVersion } from "../meta-storage";
 import type { MetaStorageOptions } from "../meta-storage-options";
 import type { File } from "../utils/file";
@@ -58,7 +59,7 @@ class MemoryMetaStorage<T extends File = File> extends MetaStorage<T> {
         const file = this.store.get(id);
 
         if (!file) {
-            throw new Error(`Meta not found for id: ${id}`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Meta not found for id: ${id}`);
         }
 
         const copy = { ...file };
@@ -66,6 +67,12 @@ class MemoryMetaStorage<T extends File = File> extends MetaStorage<T> {
         setMetaVersion(copy, versionOf(file));
 
         return copy;
+    }
+
+    public override async list(): Promise<T[]> {
+        return [...this.store.values()].map((file) => {
+            return { ...file };
+        });
     }
 
     public override async delete(id: string): Promise<void> {

@@ -3,6 +3,44 @@ import type { Readable } from "node:stream";
 import { PassThrough } from "node:stream";
 
 /**
+ * Picks the Range header to honour: none when an `If-Range` validator doesn't match the file's
+ * strong ETag or its (at least one second old) Last-Modified date, so a resumed download never
+ * mixes two versions of a file (RFC 9110 §13.1.5).
+ * @param range Range request header
+ * @param ifRange If-Range request header
+ * @param headers Response headers carrying the file's ETag / Last-Modified
+ * @returns The Range header to parse, or `undefined` to send the whole file
+ */
+export const rangeIfCurrent = (
+    range: string | undefined,
+    ifRange: string | undefined,
+    headers: Record<string, unknown> | undefined,
+): string | undefined => {
+    if (!range || !ifRange) {
+        return range;
+    }
+
+    const header = (name: string): string | undefined => {
+        const entry = Object.entries(headers ?? {}).find(([key]) => key.toLowerCase() === name);
+
+        return entry === undefined ? undefined : String(entry[1]);
+    };
+    const validator = ifRange.trim();
+
+    // An entity-tag validator must match strongly.
+    if (validator.startsWith("\"") || validator.startsWith("W/")) {
+        return !validator.startsWith("W/") && validator === header("etag") ? range : undefined;
+    }
+
+    // Anything else is an HTTP-date, a strong validator only when Last-Modified is at least one
+    // second before the response is generated: a file changed within that second may change again
+    // under the same date.
+    const lastModified = header("last-modified");
+
+    return validator === lastModified && Date.parse(lastModified) <= Date.now() - 1000 ? range : undefined;
+};
+
+/**
  * Applies an (already parsed) byte range to a file stream.
  * Shared by the Node and Fetch handlers so both send identical 200/206 responses.
  * @param stream Full file stream
@@ -44,35 +82,44 @@ export const applyRange = (
 export const createRangeLimitedStream = (sourceStream: Readable, start: number, end: number): Readable => {
     let bytesRead = 0;
     let bytesSent = 0;
+    let finished = false;
     const contentLength = end - start + 1;
 
-    const passThrough = new PassThrough({
-        // Use appropriate high water mark for better backpressure handling
+    // Stop reading once the range is complete. Unpiping first means no write can follow end()
+    // (which would fail the response with ERR_STREAM_WRITE_AFTER_END); chunks already buffered are
+    // dropped by the `finished` check.
+    const finish = (): void => {
+        finished = true;
+        sourceStream.unpipe(passThrough);
+        passThrough.end();
+        sourceStream.destroy();
+    };
+
+    // Backpressure needs no handling here: the Transform holds back its callback while the readable
+    // side is full, and `pipe` pauses and resumes the source accordingly.
+    const passThrough: PassThrough = new PassThrough({
         highWaterMark: Math.min(64 * 1024, contentLength), // 64KB or content length, whichever is smaller
         transform(chunk: Buffer, _, callback) {
+            if (finished) {
+                callback();
+
+                return;
+            }
+
             const chunkSize = chunk.length;
             const currentPos = bytesRead;
             const endPos = currentPos + chunkSize - 1;
 
             bytesRead += chunkSize;
 
-            // Check if this chunk contains data we need
+            // Chunk is entirely before the range we want
             if (endPos < start) {
-                // Chunk is entirely before the range we want
                 callback();
 
                 return;
             }
 
-            if (currentPos > end) {
-                // Chunk is entirely after the range we want
-                this.end();
-                callback();
-
-                return;
-            }
-
-            // Calculate which part of this chunk to send
+            // The part of this chunk inside the range (a chunk after the range has none)
             const chunkStart = Math.max(0, start - currentPos);
             const chunkEnd = Math.min(chunkSize, end - currentPos + 1);
 
@@ -80,20 +127,11 @@ export const createRangeLimitedStream = (sourceStream: Readable, start: number, 
                 const dataToSend = chunk.subarray(chunkStart, chunkEnd);
 
                 bytesSent += dataToSend.length;
-
-                // Push the data and handle backpressure
-                const canContinue = this.push(dataToSend);
-
-                if (!canContinue) {
-                    // Backpressure: pause the source stream
-                    sourceStream.pause();
-                }
+                this.push(dataToSend);
             }
 
-            // Check if we've sent all the requested data
-            if (bytesSent >= contentLength) {
-                this.end();
-                sourceStream.destroy();
+            if (bytesSent >= contentLength || currentPos > end) {
+                finish();
             }
 
             callback();

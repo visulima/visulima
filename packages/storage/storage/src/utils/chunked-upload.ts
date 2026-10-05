@@ -127,6 +127,18 @@ export const mergeChunks = (chunks: ChunkInfo[], other: ChunkInfo[]): ChunkInfo[
 export const getChunks = (file: UploadFile): ChunkInfo[] => (Array.isArray(file.metadata?._chunks) ? (file.metadata._chunks as ChunkInfo[]) : []);
 
 /**
+ * Metadata to update a chunked upload with: a `_chunks` list from an earlier read gets the chunks
+ * recorded since merged in, so an update never drops one another request recorded (lost update).
+ * @param metadata Incoming metadata
+ * @param stored The record as stored now
+ * @returns The metadata to save
+ */
+export const withRecordedChunks = (metadata: Record<string, unknown>, stored: UploadFile): Record<string, unknown> =>
+    Array.isArray(metadata._chunks) && Array.isArray(stored.metadata?._chunks)
+        ? { ...metadata, _chunks: mergeChunks(getChunks(stored), metadata._chunks as ChunkInfo[]) }
+        : metadata;
+
+/**
  * Whether a chunked upload record has no progress yet (as created by a POST).
  * @param file The file object
  * @returns True if no chunk is recorded and nothing written

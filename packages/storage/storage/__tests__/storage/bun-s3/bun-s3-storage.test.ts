@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import BunS3File from "../../../src/storage/bun-s3/bun-s3-file";
 import BunS3Storage from "../../../src/storage/bun-s3/bun-s3-storage";
 import type { BunS3ClientLike, BunS3StorageOptions } from "../../../src/storage/bun-s3/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeFileRef = (payload = "payload") => {
@@ -112,7 +113,7 @@ describe(BunS3Storage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             const saveMeta = vi.spyOn(storage as unknown as { saveMeta: (f: unknown) => Promise<unknown> }, "saveMeta").mockResolvedValue(undefined);
 
             const file = await storage.create({ contentType: "video/mp4", metadata: { name: "v.mp4", size: 7 }, originalName: "v.mp4", size: 7 });
@@ -145,6 +146,21 @@ describe(BunS3Storage, () => {
             expect(result.bytesWritten).toBe(5);
             expect(result.size).toBe(5);
         });
+
+        it("refuses a part that doesn't match the upload with FILE_CONFLICT", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage(makeClient());
+            const file = new BunS3File({ contentType: "video/mp4", metadata: {}, originalName: "v.mp4", size: 5 });
+
+            file.bytesWritten = 0;
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue(file);
+
+            await expect(storage.write({ body: Readable.from([Buffer.from("hello")]), contentLength: 5, id: file.id, start: 3 })).rejects.toMatchObject({
+                UploadErrorCode: ERRORS.FILE_CONFLICT,
+            });
+        });
     });
 
     describe(".get()", () => {
@@ -154,7 +170,7 @@ describe(BunS3Storage, () => {
             const client = makeClient();
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.get({ id: "file.mp4" });
 
@@ -208,13 +224,17 @@ describe(BunS3Storage, () => {
         });
 
         it("returns undefined when the object is missing", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             const client = makeClient();
 
-            client.__fileRef.stat.mockRejectedValueOnce(new Error("NoSuchKey"));
+            client.__fileRef.stat.mockRejectedValueOnce(Object.assign(new Error("missing"), { code: "NoSuchKey" }));
 
             await expect(makeStorage(client).getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            client.__fileRef.stat.mockRejectedValueOnce(Object.assign(new Error("denied"), { code: "AccessDenied" }));
+
+            await expect(makeStorage(client).getCompletedFile("file.mp4")).rejects.toThrow("denied");
         });
     });
 
@@ -224,7 +244,7 @@ describe(BunS3Storage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.getStream({ id: "file.mp4" });
 
@@ -240,7 +260,7 @@ describe(BunS3Storage, () => {
             const client = makeClient();
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("no meta"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.delete({ id: "anonymous/v.mp4" });
 
@@ -257,7 +277,7 @@ describe(BunS3Storage, () => {
 
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("no meta"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.delete({ id: "anonymous/gone.mp4" });
 
@@ -273,7 +293,7 @@ describe(BunS3Storage, () => {
 
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("no meta"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await expect(storage.delete({ id: "anonymous/x.mp4" })).rejects.toMatchObject({ name: "UploadError" });
         });
@@ -286,7 +306,7 @@ describe(BunS3Storage, () => {
             const client = makeClient();
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("no meta"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const file = await storage.copy("src.mp4", "dest.mp4");
 
@@ -300,7 +320,7 @@ describe(BunS3Storage, () => {
             const client = makeClient();
             const storage = makeStorage(client);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("no meta"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.move("src.mp4", "dest.mp4");
 
@@ -318,6 +338,30 @@ describe(BunS3Storage, () => {
             expect(files).toHaveLength(1);
             expect(files[0]?.bunS3Key).toBe("anonymous/v.mp4");
             expect(files[0]?.ETag).toBe("etag-1");
+        });
+
+        it("follows the continuation token until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const keys = ["a", "b", "c", "d", "e"];
+            const client = makeClient();
+
+            // A bucket that answers at most two keys per page, like S3 caps pages at 1000.
+            vi.mocked(client.list).mockImplementation(async ({ continuationToken, maxKeys = 1000 } = {}) => {
+                const start = Number(continuationToken ?? 0);
+                const end = start + Math.min(maxKeys, 2);
+
+                return {
+                    contents: keys.slice(start, end).map((key) => { return { key }; }),
+                    isTruncated: end < keys.length,
+                    nextContinuationToken: String(end),
+                };
+            });
+
+            const storage = makeStorage(client);
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
         });
     });
 

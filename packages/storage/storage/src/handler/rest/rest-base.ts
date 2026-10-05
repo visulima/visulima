@@ -1,5 +1,9 @@
+import type { Readable } from "node:stream";
+
 import createHttpError from "http-errors";
 
+import { isMetaNotFound } from "../../storage/meta-storage";
+import type { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
 import type { ChunkInfo } from "../../utils/chunked-upload";
 import {
@@ -12,8 +16,11 @@ import {
     validateChunk,
 } from "../../utils/chunked-upload";
 import { ERRORS, isUploadError } from "../../utils/errors";
+import { toLatin1Safe } from "../../utils/headers";
 import { retry } from "../../utils/retry";
+import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile, ResponseList } from "../types";
+import { verifyChunk } from "../utils/checksum";
 import { buildChunkedUploadHeaders, buildFileHeaders, buildFileMetadataHeaders, buildResponseFile } from "../utils/response-builder";
 
 /**
@@ -86,24 +93,18 @@ export const parseBatchDeleteBody = (body: string): string[] | undefined => {
 };
 
 /**
- * Drops the file id segment from a request URL that addresses a single file (PUT/PATCH), so the
+ * Drops the file id segment from a request that addresses a single file (PUT/PATCH), so the
  * Location header can be built from the collection URL like it is for POST (`collection/id.ext`).
- * @param requestUrl Request URL (absolute on fetch runtimes, path-only on Node)
- * @returns The collection URL, keeping origin and query string
+ * @param request Request (URL absolute on fetch runtimes, path-only on Node)
+ * @returns The request, addressing the collection; origin and query string are kept
  */
-const toCollectionUrl = (requestUrl: string): string => {
-    const url = new URL(requestUrl, "http://localhost");
+const toCollection = (request: LocationSource): LocationSource => {
+    const url = new URL(request.url, "http://localhost");
 
     url.pathname = url.pathname.replace(/\/[^/]+\/?$/, "") || "/";
 
-    return /^https?:\/\//i.test(requestUrl) ? url.toString() : `${url.pathname}${url.search}`;
+    return { ...request, url: /^https?:\/\//i.test(request.url) ? url.toString() : `${url.pathname}${url.search}` };
 };
-
-/**
- * Base class containing shared REST API business logic.
- * Platform-agnostic - contains no Node.js or Web API specific code.
- * @template TFile The file type used by this handler.
- */
 
 /**
  * The status a chunked upload has once `chunks` are recorded: "completed" when every byte is
@@ -122,14 +123,51 @@ const reconcileChunkedStatus = (
     return file.status === "completed" ? "part" : file.status;
 };
 
-abstract class RestBase<TFile extends UploadFile> {
+/**
+ * The part of a storage adapter the REST handler uses.
+ */
+export type RestStorage<TFile extends UploadFile> = Pick<
+    BaseStorage<TFile>,
+    | "create"
+    | "deleteUpload"
+    | "deleteUploads"
+    | "findStoredObject"
+    | "getMeta"
+    | "maxUploadSize"
+    | "replaceUpload"
+    | "sequentialWrites"
+    | "update"
+    | "withLock"
+    | "write"
+>;
+
+export interface RestBaseConfig<TFile extends UploadFile> {
+    /** Builds the `Location` of a file from the request it was created or written by. */
+    buildFileUrl: (request: LocationSource, file: TFile) => string;
+
+    /** The storage adapter. */
+    storage: () => RestStorage<TFile>;
+}
+
+/**
+ * Shared REST API logic for the Node.js and Web (fetch) handlers.
+ * Platform-agnostic - contains no Node.js or Web API specific code.
+ * @template TFile The file type used by this handler.
+ */
+class RestBase<TFile extends UploadFile> {
+    public constructor(private readonly config: RestBaseConfig<TFile>) {}
+
+    private get storage(): RestStorage<TFile> {
+        return this.config.storage();
+    }
+
     /**
      * Handle single file deletion.
      * @param id File ID to delete
      * @returns Promise resolving to ResponseFile with deletion result
      */
     public async deleteSingle(id: string): Promise<ResponseFile<TFile>> {
-        const file = await this.storage.delete({ id });
+        const file = await this.storage.deleteUpload(id);
 
         if (file.status === undefined) {
             throw createHttpError(404, "File not found");
@@ -142,7 +180,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * Handle file creation (POST).
      * @param config File initialization config
      * @param isChunkedUpload Whether this is a chunked upload initialization
-     * @param requestUrl Request URL for Location header
+     * @param request Request the Location header is built from
      * @param bodyStream Request body stream (for non-chunked uploads)
      * @param contentLength Content length (for non-chunked uploads)
      * @returns Promise resolving to ResponseFile with upload result
@@ -150,10 +188,15 @@ abstract class RestBase<TFile extends UploadFile> {
     public async handlePost(
         config: FileInit,
         isChunkedUpload: boolean,
-        requestUrl: string,
-        bodyStream: unknown,
+        request: LocationSource,
+        bodyStream: Readable | undefined,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
+        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400.
+        if (isChunkedUpload && config.metadata._totalSize === undefined) {
+            throw createHttpError(400, "X-Total-Size is required for chunked uploads");
+        }
+
         // Validate total size for chunked uploads
         if (isChunkedUpload && config.size !== undefined) {
             const size = typeof config.size === "number" ? config.size : Number.parseInt(String(config.size), 10);
@@ -168,7 +211,7 @@ abstract class RestBase<TFile extends UploadFile> {
 
         // For chunked uploads, don't write data yet - just initialize
         if (isChunkedUpload) {
-            const locationUrl = this.buildFileUrl(requestUrl, file);
+            const locationUrl = this.config.buildFileUrl(request, file);
 
             return buildResponseFile(
                 file,
@@ -183,83 +226,68 @@ abstract class RestBase<TFile extends UploadFile> {
 
         // Write file data for non-chunked uploads
         const completedFile = await this.storage.write({
-            body: bodyStream,
+            // The runtime handlers refuse a non-chunked request without a body.
+            body: bodyStream as Readable,
             contentLength,
             id: file.id,
             start: 0,
         });
 
-        const locationUrl = this.buildFileUrl(requestUrl, completedFile);
+        const locationUrl = this.config.buildFileUrl(request, completedFile);
 
         return buildResponseFile(completedFile, buildFileHeaders(completedFile, locationUrl), 201);
     }
 
     /**
-     * Handle file update or creation (PUT).
+     * Handle file replacement or creation (PUT).
      * @param id File ID from URL
-     * @param config File initialization config (for new files)
-     * @param requestUrl Request URL for Location header
+     * @param config File initialization config (metadata, name, type and size from the request)
+     * @param request Request the Location header is built from
      * @param bodyStream Request body stream
      * @param contentLength Content length
-     * @param metadata Optional metadata to merge (for updates)
-     * @returns Promise resolving to ResponseFile with upload result
+     * @returns Promise resolving to ResponseFile with upload result (200 replaced, 201 created)
+     * @remarks A replacement is validated first and written aside (see `BaseStorage.replaceUpload`);
+     * the old file is only replaced once the new one is complete, so a write failing midway (the
+     * body breaking off, the provider failing) leaves it unchanged.
      */
-    public async handlePut(
-        id: string,
-        config: FileInit,
-        requestUrl: string,
-        bodyStream: unknown,
-        contentLength: number,
-        metadata?: Record<string, unknown>,
-    ): Promise<ResponseFile<TFile>> {
-        // Check if file exists
-        let file: TFile;
-        let isUpdate = false;
+    public async handlePut(id: string, config: FileInit, request: LocationSource, bodyStream: Readable, contentLength: number): Promise<ResponseFile<TFile>> {
+        let exists = true;
 
         try {
             await this.storage.getMeta(id);
-
-            // File exists, this is an update
-            isUpdate = true;
-
-            // Update file metadata if needed
-            if (metadata) {
-                await this.storage.update({ id }, { metadata });
-            }
-
-            // Overwrite file content
-            file = await this.storage.write({
-                body: bodyStream,
-                contentLength,
-                id,
-                start: 0,
-            });
         } catch (error: unknown) {
-            // File doesn't exist, create new one
-            const errorWithCode = error as { code?: string; UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.code === "ENOENT") {
-                if (!CLIENT_FILE_ID_PATTERN.test(id)) {
-                    throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
-                }
-
-                // Create new file under the ID from the URL (providers that assign their own IDs may still override it)
-                const newFile = await this.storage.create({ ...config, id });
-
-                file = await this.storage.write({
-                    body: bodyStream,
-                    contentLength,
-                    id: newFile.id,
-                    start: 0,
-                });
-            } else {
+            if (!isMetaNotFound(error)) {
                 throw error;
             }
+
+            exists = false;
         }
 
-        const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
+        const writeTo = async (target: string): Promise<TFile> => this.storage.write({ body: bodyStream, contentLength, id: target, start: 0 });
+        let file: TFile;
 
-        return buildResponseFile(file, buildFileHeaders(file, locationUrl), isUpdate ? 200 : 201);
+        if (exists) {
+            file = await this.storage.replaceUpload(id, config, writeTo);
+        } else {
+            if (!CLIENT_FILE_ID_PATTERN.test(id)) {
+                throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
+            }
+
+            // No metadata means no upload under this id, so an object already stored there was
+            // written by other means. Creating would replace it (#919).
+            if (await this.storage.findStoredObject(id)) {
+                throw createHttpError(409, "A file with this ID already exists");
+            }
+
+            // Create the file under the ID from the URL (providers that assign their own IDs may still override it)
+            const created = await this.storage.create({ ...config, id });
+
+            file = await writeTo(created.id);
+        }
+
+        const locationUrl = this.config.buildFileUrl(toCollection(request), file);
+
+        return buildResponseFile(file, buildFileHeaders(file, locationUrl), exists ? 200 : 201);
     }
 
     /**
@@ -268,7 +296,7 @@ abstract class RestBase<TFile extends UploadFile> {
      * @param chunkOffset Chunk offset in bytes
      * @param contentLength Chunk content length
      * @param chunkChecksum Optional chunk checksum
-     * @param requestUrl Request URL for Location header
+     * @param request Request the Location header is built from
      * @param bodyStream Request body stream
      * @returns Promise resolving to ResponseFile with upload progress
      */
@@ -277,8 +305,8 @@ abstract class RestBase<TFile extends UploadFile> {
         chunkOffset: number,
         contentLength: number,
         chunkChecksum: string | undefined,
-        requestUrl: string,
-        bodyStream: unknown,
+        request: LocationSource,
+        bodyStream: Readable,
     ): Promise<ResponseFile<TFile>> {
         // Get file metadata
         let file = await this.storage.getMeta(id);
@@ -317,11 +345,11 @@ abstract class RestBase<TFile extends UploadFile> {
         // is stale: providers mark a file completed once the furthest byte is written, so the last
         // chunk arriving first sets it before earlier chunks exist. Reopen the upload instead of
         // answering "complete" for chunks that were never stored.
-        const sequentialWrites = this.storage.sequentialWrites === true;
+        const { sequentialWrites } = this.storage;
 
         if (file.status === "completed") {
             if (isChunkedUploadComplete(getChunks(file), totalSize, file.bytesWritten, sequentialWrites)) {
-                const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), file);
+                const locationUrl = this.config.buildFileUrl(toCollection(request), file);
 
                 return buildResponseFile(
                     file,
@@ -341,7 +369,8 @@ abstract class RestBase<TFile extends UploadFile> {
         // (conflict, transient error, sequential-only provider) would let a later PATCH report the
         // upload complete with bytes missing from storage.
         const written = await this.storage.write({
-            body: bodyStream,
+            // Checked for truthiness: the Node handler reads a missing X-Chunk-Checksum as "".
+            body: chunkChecksum ? await verifyChunk(bodyStream, contentLength, chunkChecksum) : bodyStream,
             contentLength,
             id,
             start: chunkOffset,
@@ -374,7 +403,7 @@ abstract class RestBase<TFile extends UploadFile> {
             return buildResponseFile(
                 completedFile,
                 {
-                    ...buildFileHeaders(completedFile, this.buildFileUrl(toCollectionUrl(requestUrl), completedFile)),
+                    ...buildFileHeaders(completedFile, this.config.buildFileUrl(toCollection(request), completedFile)),
                     ...buildChunkedUploadHeaders(completedFile, true),
                     "x-upload-offset": String(totalSize),
                 },
@@ -453,7 +482,7 @@ abstract class RestBase<TFile extends UploadFile> {
         // For completed uploads, ensure bytesWritten equals totalSize
         const finalFile = isComplete && updatedFile.bytesWritten !== totalSize ? { ...updatedFile, bytesWritten: totalSize } : updatedFile;
 
-        const locationUrl = this.buildFileUrl(toCollectionUrl(requestUrl), finalFile);
+        const locationUrl = this.config.buildFileUrl(toCollection(request), finalFile);
         const headers = {
             ...buildFileHeaders(finalFile, locationUrl),
             ...buildChunkedUploadHeaders(finalFile, isComplete),
@@ -469,28 +498,10 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseFile with metadata headers
      */
     public async handleHead(id: string): Promise<ResponseFile<TFile>> {
-        let file: TFile;
-
-        try {
-            file = await this.storage.getMeta(id);
-        } catch (error) {
-            // Providers that drop the metadata on completion (S3) answer for the stored object
-            // instead, so resuming a finished upload sees it complete rather than a 404 (#915).
-            const completed = isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND ? await this.storage.getCompletedFile?.(id) : undefined;
-
-            if (!completed) {
-                throw error;
-            }
-
-            const size = completed.bytesWritten;
-            const completedFile: TFile = { ...completed, metadata: { ...completed.metadata, _chunks: size > 0 ? [{ length: size, offset: 0 }] : [] } };
-
-            return buildResponseFile(
-                completedFile,
-                { ...buildFileMetadataHeaders(completedFile), ...buildChunkedUploadHeaders(completedFile, true), "x-upload-offset": String(size) },
-                200,
-            );
-        }
+        // Answer from the upload's metadata only. Providers that drop it on completion (S3) answer
+        // 404 for a finished upload: the stored object under the same key can't be told apart from
+        // one the route never created, and describing it would disclose any object in the bucket (#918).
+        let file = await this.storage.getMeta(id);
 
         const isChunkedUploadFile = isChunkedUpload(file);
 
@@ -511,7 +522,7 @@ abstract class RestBase<TFile extends UploadFile> {
         // from the same source, so a client resuming at the offset can finish the upload (#909).
         if (isChunkedUploadFile) {
             const totalSize = getTotalSize(file) || file.size || 0;
-            const sequentialWrites = this.storage.sequentialWrites === true;
+            const { sequentialWrites } = this.storage;
             const chunks = getChunks(file);
             const isComplete = isChunkedUploadComplete(chunks, totalSize, file.bytesWritten, sequentialWrites);
 
@@ -551,8 +562,8 @@ abstract class RestBase<TFile extends UploadFile> {
      * @returns Promise resolving to ResponseList with deletion results
      */
     public async deleteBatch(ids: string[]): Promise<ResponseList<TFile>> {
-        // Use storage-level batch delete if available, otherwise fall back to individual deletes
-        const result = await this.storage.deleteBatch(ids);
+        // Only uploads, as for a single delete: ids without upload metadata fail as not found.
+        const result = await this.storage.deleteUploads(ids);
 
         // If all deletions failed, return error
         if (result.successfulCount === 0 && result.failedCount > 0) {
@@ -561,59 +572,23 @@ abstract class RestBase<TFile extends UploadFile> {
             throw createHttpError(404, `Failed to delete files: ${failedIds}`);
         }
 
-        // Return successful deletions (partial success is OK)
-        // Always include headers for batch operations to indicate results
-        return {
-            data: result.successful,
-            headers:
-                result.failedCount > 0
-                    ? {
-                          "X-Delete-Errors": JSON.stringify(result.failed),
-                          "X-Delete-Failed": String(result.failedCount),
-                          "X-Delete-Successful": String(result.successfulCount),
-                      }
-                    : {
-                          "X-Delete-Successful": String(result.successfulCount),
-                      },
-            statusCode: result.successfulCount === ids.length ? 204 : 207, // 207 Multi-Status for partial success
-        };
-    }
+        // Partial success answers 207 Multi-Status with the deleted files.
+        if (result.failedCount > 0) {
+            return {
+                body: JSON.stringify(result.successful),
+                data: result.successful,
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8",
+                    // Header values must be Latin-1: escape the rest, the value stays valid JSON.
+                    "X-Delete-Errors": toLatin1Safe(JSON.stringify(result.failed), (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`),
+                    "X-Delete-Failed": String(result.failedCount),
+                    "X-Delete-Successful": String(result.successfulCount),
+                },
+                statusCode: 207,
+            };
+        }
 
-    /**
-     * Storage instance for file operations.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected get storage(): {
-        create: (config: FileInit) => Promise<TFile>;
-        delete: (options: { id: string }) => Promise<TFile>;
-        deleteBatch: (ids: string[]) => Promise<{
-            failed: { error: string; id: string }[];
-            failedCount: number;
-            successful: TFile[];
-            successfulCount: number;
-        }>;
-        getCompletedFile?: (id: string) => Promise<TFile | undefined>;
-        getMeta: (id: string) => Promise<TFile>;
-        maxUploadSize: number;
-        sequentialWrites?: boolean;
-        update: (options: { id: string }, updates: { metadata?: Record<string, unknown>; status?: string }) => Promise<TFile>;
-        withLock: <R>(key: string, function_: () => Promise<R>) => Promise<R>;
-        write: (options: { body: unknown; contentLength: number; id: string; start: number }) => Promise<TFile>;
-    } {
-        // This will be overridden by subclasses
-        throw new Error("storage must be implemented");
-    }
-
-    /**
-     * Build file URL from request URL and file data.
-     * @param _requestUrl Request URL string
-     * @param _file File object containing ID and content type
-     * @returns Constructed file URL with extension based on content type
-     */
-    // eslint-disable-next-line class-methods-use-this
-    protected buildFileUrl(_requestUrl: string, _file: TFile): string {
-        // This will be overridden by subclasses
-        throw new Error("buildFileUrl must be implemented");
+        return { data: result.successful, headers: { "X-Delete-Successful": String(result.successfulCount) }, statusCode: 204 };
     }
 }
 

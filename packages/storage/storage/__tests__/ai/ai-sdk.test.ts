@@ -41,6 +41,7 @@ describe(createFileTools, () => {
             "getFileMetadata",
             "getFileUrl",
             "listFiles",
+            "searchFiles",
             "signUploadUrl",
             "uploadFile",
         ]);
@@ -49,7 +50,7 @@ describe(createFileTools, () => {
     it("omits write tools when readOnly: true", () => {
         const tools = createFileTools({ files, readOnly: true });
 
-        expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles"]);
+        expect(Object.keys(tools).toSorted()).toEqual(["downloadFile", "getFileMetadata", "getFileUrl", "listFiles", "searchFiles"]);
     });
 
     it("requires approval on write tools by default", () => {

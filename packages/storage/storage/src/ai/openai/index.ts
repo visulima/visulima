@@ -17,6 +17,7 @@ export {
     agentsGetFileMetadata,
     agentsGetFileUrl,
     agentsListFiles,
+    agentsSearchFiles,
     agentsSignUploadUrl,
     agentsUploadFile,
     createAgentsFileTools,

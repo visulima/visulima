@@ -11,131 +11,19 @@ import type { RetryConfig } from "../../utils/retry";
 import { createRetryWrapper } from "../../utils/retry";
 import LocalMetaStorage from "../local/local-meta-storage";
 import type MetaStorage from "../meta-storage";
+import { getMetaVersion, setMetaVersion } from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { BaseStorageOptions, OperationOptions } from "../types";
-import type { File, FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
+import type { BaseStorageOptions, ConditionalOptions, ConditionalSupport, CopyConditionalOptions, OperationOptions, StoredObject } from "../types";
+import { hasCondition, quoteETag } from "../utils/etag";
+import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
-import { assertNextPartSize, buildRangeHeader, isBadDigest, MIN_PART_SIZE, PART_SIZE, withoutParts } from "./s3-utils";
+import type { Part, S3ApiOperations, S3CompatibleFile } from "./s3-api";
+import { MAX_SIGV4_EXPIRES_IN } from "./s3-post-policy";
+import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, rethrowConditionalFailure, withoutParts } from "./s3-utils";
 
 // Re-exported for existing importers of this module.
+export type { MultipartUpload, Part, S3ApiOperations, S3CallOptions, S3CompatibleFile } from "./s3-api";
 export { buildRangeHeader } from "./s3-utils";
-
-/**
- * Part interface for multipart uploads.
- */
-export interface Part {
-    ETag?: string;
-    PartNumber: number;
-    Size?: number;
-}
-
-/**
- * Base file type for S3-compatible storage.
- */
-export interface S3CompatibleFile extends File {
-    Parts?: Part[];
-    partSize?: number;
-    partsUrls?: string[];
-    UploadId?: string;
-    uri?: string;
-}
-
-/**
- * Per-call options forwarded to the underlying AWS SDK send().
- */
-export interface S3CallOptions {
-    /** Forwarded to `client.send(command, { abortSignal })`. */
-    signal?: AbortSignal;
-}
-
-/**
- * S3 API operations interface that must be implemented by concrete storage classes.
- */
-export interface S3ApiOperations {
-    abortMultipartUpload: (params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions) => Promise<void>;
-
-    checkBucketAccess: (params: { Bucket: string }) => Promise<void>;
-
-    completeMultipartUpload: (
-        params: {
-            Bucket: string;
-            Key: string;
-            Parts: { ETag: string; PartNumber: number }[];
-            UploadId: string;
-        },
-        options?: S3CallOptions,
-    ) => Promise<{ ETag?: string; Location: string }>;
-
-    copyObject: (params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions) => Promise<void>;
-
-    createMultipartUpload: (
-        params: {
-            ACL?: string;
-            Bucket: string;
-            ContentType?: string;
-            Key: string;
-            Metadata?: Record<string, string>;
-        },
-        options?: S3CallOptions,
-    ) => Promise<{ UploadId: string }>;
-
-    deleteObject: (params: { Bucket: string; Key: string }, options?: S3CallOptions) => Promise<void>;
-
-    getObject: (
-        params: { Bucket: string; Key: string; Range?: string },
-        options?: S3CallOptions,
-    ) => Promise<{
-        Body?: ReadableStream | Readable;
-        ContentLength?: number;
-        ContentType?: string;
-        ETag?: string;
-        Expires?: Date;
-        LastModified?: Date;
-        Metadata?: Record<string, string>;
-    }>;
-
-    getPresignedUrl: (params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }) => Promise<string>;
-
-    headObject: (
-        params: { Bucket: string; Key: string },
-        options?: S3CallOptions,
-    ) => Promise<{
-        ContentLength?: number;
-        ContentType?: string;
-        ETag?: string;
-        Expires?: Date;
-        LastModified?: Date;
-        Metadata?: Record<string, string>;
-    }>;
-
-    listObjectsV2: (
-        params: { Bucket: string; ContinuationToken?: string; Delimiter?: string; MaxKeys?: number; Prefix?: string },
-        options?: S3CallOptions,
-    ) => Promise<{
-        CommonPrefixes?: { Prefix?: string }[];
-        Contents?: { Key?: string; LastModified?: Date }[];
-        IsTruncated?: boolean;
-        NextContinuationToken?: string;
-    }>;
-
-    listParts: (
-        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
-        options?: S3CallOptions,
-    ) => Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }>;
-
-    uploadPart: (
-        params: {
-            Body: Readable | ReadableStream | Uint8Array;
-            Bucket: string;
-            ContentLength?: number;
-            ContentMD5?: string;
-            Key: string;
-            PartNumber: number;
-            UploadId: string;
-        },
-        options?: S3CallOptions,
-    ) => Promise<{ ETag: string }>;
-}
 
 /**
  * Base class for S3-compatible storage implementations.
@@ -157,6 +45,21 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
     /** Parts are appended in order (see assertContiguousWrite). */
     public override readonly sequentialWrites: boolean = true;
+
+    /** A part's length goes into the provider request before its bytes, so it must be known. */
+    public override readonly requiresContentLength: boolean = true;
+
+    /**
+     * S3 evaluates `If-Match` / `If-None-Match` on CompleteMultipartUpload, GetObject, DeleteObject
+     * and CopyObject (plus `x-amz-copy-source-if-match`). Enabled through the `conditional` option;
+     * S3-compatible services differ in which of these headers they honour.
+     */
+    public override readonly conditionalSupport: ConditionalSupport;
+
+    /** Set through the `uploadPost` option: not every S3-compatible service accepts browser-form POSTs. */
+    public override readonly supportsUploadPost: boolean;
+
+    public override readonly maxSignedUrlExpiresIn: number | undefined = MAX_SIGV4_EXPIRES_IN;
 
     protected bucket: string;
 
@@ -198,15 +101,30 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         config: Omit<BaseStorageOptions<TFile>, "metaStorage" | "retryConfig"> & {
             bucket: string;
             clientDirectUpload?: boolean;
+
+            /**
+             * Advertise and send conditional (ETag) requests: every kind, or only the ones set. Direct
+             * client uploads never are.
+             */
+            conditional?: boolean | Partial<ConditionalSupport>;
             metaStorage?: MetaStorage<TFile>;
             metaStorageConfig?: unknown;
             partSize?: number | string;
             retryConfig?: RetryConfig;
+            /** Sign browser-form POST policies ({@link BaseStorage.getUploadPost}). */
+            uploadPost?: boolean;
         },
     ) {
         super(config);
 
         this.bucket = config.bucket;
+
+        const { conditional } = config;
+        const enabled = (kind: keyof ConditionalSupport): boolean =>
+            !config.clientDirectUpload && (conditional === true || (typeof conditional === "object" && conditional[kind] === true));
+
+        this.conditionalSupport = { copy: enabled("copy"), create: enabled("create"), delete: enabled("delete"), read: enabled("read"), replace: enabled("replace") };
+        this.supportsUploadPost = config.uploadPost === true;
 
         this.partSize = typeof config.partSize === "string" ? parseBytes(config.partSize) : config.partSize || PART_SIZE;
 
@@ -214,25 +132,34 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             throw new Error("Minimum allowed partSize value is 5MB");
         }
 
-        // Initialize retry wrapper with config or defaults
+        const retryableStatusCodes = config.retryConfig?.retryableStatusCodes ?? [408, 429, 500, 502, 503, 504];
+        const userShouldRetry = config.retryConfig?.shouldRetry;
+
+        // The user's predicate decides first; `undefined` falls through to the S3 defaults.
         const retryConfig: RetryConfig = {
             backoffMultiplier: 2,
             initialDelay: 1000,
             maxDelay: 30_000,
             maxRetries: 3,
-            retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+            ...config.retryConfig,
+            retryableStatusCodes,
             shouldRetry: (error: unknown) => {
-                const errorWithMetadata = error as { retryable?: boolean; statusCode?: number };
+                const decision = userShouldRetry?.(error);
 
-                if (errorWithMetadata.statusCode && [408, 429, 500, 502, 503, 504].includes(errorWithMetadata.statusCode)) {
+                if (decision !== undefined) {
+                    return decision;
+                }
+
+                const sdkError = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean; statusCode?: number };
+                const statusCode = sdkError.statusCode ?? sdkError.$metadata?.httpStatusCode;
+
+                if ((statusCode !== undefined && retryableStatusCodes.includes(statusCode)) || sdkError.$fault === "server" || sdkError.retryable === true) {
                     return true;
                 }
 
-                // Defer to the retry engine's built-in heuristics unless the SDK
-                // explicitly flagged the error retryable.
-                return errorWithMetadata.retryable === true ? true : undefined;
+                // Defer to the retry engine's built-in heuristics.
+                return undefined;
             },
-            ...config.retryConfig,
         };
 
         this.retry = createRetryWrapper(retryConfig);
@@ -266,7 +193,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Creates a new S3 multipart upload.
      */
-    public async create(config: FileInit, options?: OperationOptions): Promise<TFile> {
+    public async create(config: FileInit, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...config };
@@ -285,14 +212,13 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            // A conditional upload always starts a new multipart upload: S3 evaluates the predicate
+            // when the upload completes, against whatever the key holds by then.
+            const conditional = hasCondition(options);
+            const existing = conditional ? undefined : await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore
+            if (existing !== undefined) {
+                return existing;
             }
 
             const s3Api = this.getS3Api();
@@ -324,6 +250,17 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             file.UploadId = UploadId;
             file.bytesWritten = 0;
 
+            // The record of a conditional upload is only saved once S3 accepted the completion, so
+            // a failed predicate leaves the record of the stored object as it was.
+            if (conditional) {
+                file.status = "created";
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
+                await this.onCreate(file);
+                this.parkConditional(file);
+
+                return file;
+            }
+
             if (this.config.clientDirectUpload) {
                 (file as TFile & { partSize?: number }).partSize ??= this.partSize;
             }
@@ -345,168 +282,220 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Writes data to an S3 multipart upload.
      */
-    public async write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile> {
-        return this.instrumentOperation("write", async () => {
-            let file: TFile;
+    public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        // Taken before locking: a lock that can't be acquired must not strand the parked record.
+        const conditional = this.takeConditional(part.id, options);
+        // Read the metadata under the lock: one read before it could be stale by the time a
+        // concurrent write to the same upload released it.
+        const write = async (): Promise<TFile> =>
+            this.instrumentOperation("write", async () => this.withLock(part.id, async () => this.writeLocked(part, options, conditional)));
 
-            if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
-                file = part;
-            } else {
-                file = await this.getMeta(part.id);
+        if (!conditional) {
+            return write();
+        }
 
-                await this.checkIfExpired(file);
+        try {
+            const written = await write();
+
+            if (written.status !== "completed") {
+                return throwErrorCode(ERRORS.FILE_CONFLICT, "A conditional upload has to be written in one request");
             }
 
-            if (file.status === "completed") {
-                return file;
+            return written;
+        } catch (error: unknown) {
+            // Nothing of a failed conditional upload may linger as an unfinished multipart upload.
+            await this.abortMultipartUpload(conditional).catch(() => undefined);
+
+            throw error;
+        }
+    }
+
+    /** {@link S3BaseStorage.write} under the upload's lock; `conditional` is a parked conditional upload. */
+    private async writeLocked(part: FilePart | FileQuery | TFile, options: (ConditionalOptions & OperationOptions) | undefined, conditional?: TFile): Promise<TFile> {
+        let file: TFile;
+
+        if (conditional) {
+            file = conditional;
+        } else if ("contentType" in part && "metadata" in part && !("body" in part) && !("start" in part)) {
+            file = part;
+        } else {
+            file = await this.getMeta(part.id);
+
+            await this.checkIfExpired(file);
+        }
+
+        if (file.status === "completed") {
+            return file;
+        }
+
+        if (typeof part.size === "number" && part.size > 0) {
+            updateSize(file, part.size);
+        }
+
+        if (!partMatch(part, file)) {
+            return throwErrorCode(ERRORS.FILE_CONFLICT);
+        }
+
+        if (this.config.clientDirectUpload) {
+            return this.buildPresigned(file);
+        }
+
+        file.Parts ??= await this.getParts(file);
+        file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
+
+        if (hasContent(part)) {
+            if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
             }
 
-            if (typeof part.size === "number" && part.size > 0) {
-                updateSize(file, part.size);
+            // Parts are appended strictly in order (PartNumber = Parts.length + 1). Persist the
+            // offset S3 reports before rejecting a misplaced chunk, so a stale stored offset
+            // heals and the client's next HEAD sees the real value.
+            try {
+                this.assertContiguousWrite(part, file);
+            } catch (error: unknown) {
+                await this.saveMeta(withoutParts(file));
+
+                throw error;
             }
 
-            if (!partMatch(part, file)) {
-                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            assertNextPartSize(part, file);
+
+            // Detect file type from stream if contentType is not set or is default
+            if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
+                try {
+                    const readable = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body);
+
+                    const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
+
+                    if (fileType?.mime) {
+                        file.contentType = fileType.mime;
+                    }
+
+                    part.body = detectedStream;
+                } catch {
+                    // If file type detection fails, continue with original stream
+                }
             }
 
-            if (this.config.clientDirectUpload) {
-                return this.buildPresigned(file);
+            if (file.Parts.length >= this.MAX_PARTS) {
+                throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
             }
 
-            file.Parts ??= await this.getParts(file);
-            file.bytesWritten = file.Parts.map((item) => item.Size || 0).reduce((p, c) => p + c, 0);
+            const partNumber = file.Parts.length + 1;
+            const s3Api = this.getS3Api();
 
-            const lockToken = await this.lock(part.id);
+            const uploadId = file.UploadId;
+
+            if (!uploadId) {
+                throw new Error("UploadId is required");
+            }
+
+            const partBody = part.body as Readable | ReadableStream | Uint8Array;
+            // A Readable/ReadableStream is consumed on first send and
+            // cannot be replayed; only an in-memory buffer is safe to
+            // retry. Forces maxRetries=0 for stream bodies.
+            const replayable = partBody instanceof Uint8Array;
+            // A body that errors or ends early (the client went away) must fail the part request:
+            // the SDK's HTTP handler doesn't, and a server that waits for the announced length
+            // (SeaweedFS, some S3 gateways) then holds the request, and the upload's lock, forever.
+            const bodyGone = new AbortController();
+
+            if (partBody instanceof Readable) {
+                const abandon = (error?: Error): void => {
+                    if (!partBody.readableEnded) {
+                        bodyGone.abort(error ?? new Error("The upload body ended before its Content-Length"));
+                    }
+                };
+
+                partBody.once("error", abandon);
+                partBody.once("close", () => {
+                    abandon();
+                });
+            }
+
+            let ETag: string;
 
             try {
-                if (hasContent(part)) {
-                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
-                    }
-
-                    // Parts are appended strictly in order (PartNumber = Parts.length + 1). Persist the
-                    // offset S3 reports before rejecting a misplaced chunk, so a stale stored offset
-                    // heals and the client's next HEAD sees the real value.
-                    try {
-                        this.assertContiguousWrite(part, file);
-                    } catch (error: unknown) {
-                        await this.saveMeta(withoutParts(file));
-
-                        throw error;
-                    }
-
-                    assertNextPartSize(part, file);
-
-                    // Detect file type from stream if contentType is not set or is default
-                    if (file.Parts.length === 0 && (!file.contentType || file.contentType === "application/octet-stream")) {
-                        try {
-                            const readable = part.body instanceof Readable ? part.body : Readable.fromWeb(part.body);
-
-                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(readable);
-
-                            if (fileType?.mime) {
-                                file.contentType = fileType.mime;
-                            }
-
-                            part.body = detectedStream;
-                        } catch {
-                            // If file type detection fails, continue with original stream
-                        }
-                    }
-
-                    if (file.Parts.length > this.MAX_PARTS) {
-                        throw new Error(`Exceeded ${this.MAX_PARTS} as part of the upload to ${this.bucket}.`);
-                    }
-
-                    const partNumber = file.Parts.length + 1;
-                    const s3Api = this.getS3Api();
-
-                    const uploadId = file.UploadId;
-
-                    if (!uploadId) {
-                        throw new Error("UploadId is required");
-                    }
-
-                    const partBody = part.body as Readable | ReadableStream | Uint8Array;
-                    // A Readable/ReadableStream is consumed on first send and
-                    // cannot be replayed; only an in-memory buffer is safe to
-                    // retry. Forces maxRetries=0 for stream bodies.
-                    const replayable = partBody instanceof Uint8Array;
-
-                    let ETag: string;
-
-                    try {
-                        ({ ETag } = await this.runOperation(
-                            options,
-                            (signal) =>
-                                s3Api.uploadPart(
-                                    {
-                                        Body: partBody,
-                                        Bucket: this.bucket,
-                                        ContentLength: part.contentLength || 0,
-                                        Key: file.name,
-                                        PartNumber: partNumber,
-                                        UploadId: uploadId,
-                                        ...(part.checksumAlgorithm === "md5" && part.checksum ? { ContentMD5: part.checksum } : {}),
-                                    },
-                                    { signal },
-                                ),
-                            { replayable },
-                        ));
-                    } catch (error: unknown) {
-                        if (isBadDigest(error)) {
-                            return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
-                        }
-
-                        throw error;
-                    }
-
-                    const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
-
-                    file.Parts = [...file.Parts, uploadPart];
-                    file.bytesWritten += part.contentLength || 0;
+                ({ ETag } = await this.runOperation(
+                    options,
+                    (signal) =>
+                        s3Api.uploadPart(
+                            {
+                                Body: partBody,
+                                Bucket: this.bucket,
+                                ContentLength: part.contentLength || 0,
+                                Key: file.name,
+                                PartNumber: partNumber,
+                                UploadId: uploadId,
+                                ...(part.checksumAlgorithm === "md5" && part.checksum ? { ContentMD5: part.checksum } : {}),
+                            },
+                            { signal: signal ? AbortSignal.any([signal, bodyGone.signal]) : bodyGone.signal },
+                        ),
+                    { replayable },
+                ));
+            } catch (error: unknown) {
+                if (isBadDigest(error)) {
+                    return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
                 }
 
-                this.cache.set(file.id, file);
-
-                file.status = getFileStatus(file);
-
-                if (file.status === "completed") {
-                    const [completed] = await this.internalOnComplete(file);
-
-                    delete file.Parts;
-
-                    file.uri = completed.Location;
-                    file.ETag = completed.ETag;
-                } else if (hasContent(part)) {
-                    // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
-                    await this.saveMeta(withoutParts(file));
+                // Report the body's failure, not the abort it caused.
+                if (bodyGone.signal.aborted) {
+                    throw bodyGone.signal.reason;
                 }
-            } finally {
-                await this.unlock(part.id, lockToken);
+
+                throw error;
             }
 
-            return file;
-        });
+            const uploadPart: Part = { ETag, PartNumber: partNumber, Size: part.contentLength };
+
+            file.Parts = [...file.Parts, uploadPart];
+            file.bytesWritten += part.contentLength || 0;
+        }
+
+        this.cache.set(file.id, file);
+
+        file.status = getFileStatus(file);
+
+        if (file.status === "completed") {
+            await this.internalOnComplete(file, conditional ? options : undefined);
+        } else if (hasContent(part) && !conditional) {
+            // Persist the offset after every partial write: HEAD reports it and the next PATCH is checked against it.
+            await this.saveMeta(withoutParts(file));
+        }
+
+        return file;
     }
 
     /**
-     * Deletes an upload and its metadata.
+     * Deletes an upload and its metadata: aborts an unfinished multipart upload, or deletes the
+     * object of a finished one. An object without metadata (completed by an older version, which
+     * dropped it) is deleted too.
      */
-    public async delete({ id }: FileQuery, options?: OperationOptions): Promise<TFile> {
+    public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         return this.instrumentOperation("delete", async () => {
-            const file = await this.getMeta(id);
+            const { file, tracked } = await this.findUpload(id, options);
+            const ifMatch = options?.ifMatch;
 
-            file.status = "deleted";
+            // Remove the data before the metadata, so a failure leaves a record to retry with
+            // instead of an unreachable multipart upload that keeps incurring storage charges.
+            if (file.status === "completed") {
+                const s3Api = this.getS3Api();
 
-            // Sequence the abort before the metadata delete so a partial failure leaves a recoverable
-            // metadata orphan (detectable + retryable) instead of an unreachable multipart upload that
-            // continues to incur storage charges. abortMultipartUpload retries internally via
-            // runOperation, so no extra retry wrapper here.
-            await this.abortMultipartUpload(file, options);
-            await this.deleteMeta(file.id);
+                await this.runOperation(options, (signal) =>
+                    s3Api.deleteObject({ Bucket: this.bucket, Key: file.name, ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }) }, { signal }),
+                ).catch(rethrowConditionalFailure(ifMatch !== undefined));
+            } else if (ifMatch === undefined) {
+                await this.abortMultipartUpload(file, options);
+            } else {
+                return throwErrorCode(ERRORS.PRECONDITION_FAILED, "The upload has no stored object to match");
+            }
 
-            const deletedFile = { ...file };
+            if (tracked) {
+                await this.deleteMeta(file.id);
+            }
+
+            const deletedFile = { ...file, status: "deleted" as const };
 
             await this.onDelete(deletedFile);
 
@@ -515,53 +504,98 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Copies an upload file to a new location.
+     * Copies an upload's object to `destination`, a key in the same bucket. The copy is an object
+     * without upload metadata.
      */
-    public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile> {
+    public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<TFile> {
         return this.instrumentOperation("copy", async () => {
-            S3BaseStorage.assertSafeId(name);
             S3BaseStorage.assertSafeId(destination);
 
-            const sourceFile = await this.getMeta(name);
-            const CopySource = `${this.bucket}/${name}`;
-            const Bucket = this.bucket;
-            // Always copy within the same bucket. Previously a leading-slash in
-            // `destination` would re-target a different bucket parsed from the
-            // path — an undocumented behavior that let any caller cross bucket
-            // boundaries by adding `/`.
-            const Key = destination;
+            const { file } = await this.findUpload(name, options);
 
-            const s3Api = this.getS3Api();
-
-            await this.runOperation(options, (signal) =>
-                s3Api.copyObject(
-                    {
-                        Bucket,
-                        CopySource,
-                        Key,
-                        ...(options?.storageClass && { StorageClass: options.storageClass }),
-                    },
-                    { signal },
-                ),
-            );
-
-            return { ...sourceFile, id: Key, name: Key };
+            return this.copyObject(file, destination, options);
         });
     }
 
     /**
-     * Moves an upload file to a new location.
+     * Copies the staged object over the upload's server-side: CopyObject replaces it in one step,
+     * without the bytes passing through this process. {@link BaseStorage.replaceUpload} then
+     * deletes the staged object and its record.
+     */
+    protected override async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const old = await this.findMeta(id);
+        const name = this.nameOf({ ...config, id });
+
+        // An unfinished upload (a multipart upload to abort), or one stored under another name, has
+        // no object to copy over.
+        if (old !== undefined && (old.status !== "completed" || old.name !== name)) {
+            await this.delete({ id });
+        }
+
+        await this.copyObject(staged, name);
+
+        const { partsUrls: _partsUrls, uri: _uri, ...record } = staged;
+
+        return this.saveMeta({ ...record, ETag: await this.storedETag(name), id, name } as TFile);
+    }
+
+    /**
+     * Moves an upload's object to `destination`, a key in the same bucket, and drops the source
+     * object and its metadata.
      */
     public async move(name: string, destination: string, options?: OperationOptions): Promise<TFile> {
         return this.instrumentOperation("move", async () => {
-            await this.copy(name, destination, options);
+            S3BaseStorage.assertSafeId(destination);
 
+            const { file, tracked } = await this.findUpload(name, options);
+            const moved = await this.copyObject(file, destination, options);
             const s3Api = this.getS3Api();
 
-            await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: name }, { signal }));
+            await this.runOperation(options, (signal) => s3Api.deleteObject({ Bucket: this.bucket, Key: file.name }, { signal }));
 
-            return await this.getMeta(destination);
+            if (tracked) {
+                await this.deleteMeta(file.id);
+            }
+
+            return moved;
         });
+    }
+
+    /**
+     * The uploads {@link BaseStorage.purge} checks: every object in the bucket (purge skips the ones
+     * without upload metadata), and this storage's own unfinished multipart uploads, which no object
+     * listing shows. Another client's multipart upload in a shared bucket is not ours to abort;
+     * untracked leftovers are for an S3 lifecycle rule (AbortIncompleteMultipartUpload).
+     */
+    protected override async listUploads(): Promise<TFile[]> {
+        // Finished uploads: the records of a meta store that enumerates them (local, memory), which
+        // also finds those stored under a custom `filename`. Otherwise the objects, whose metadata is
+        // looked up by key: the upload id unless a custom `filename` is set.
+        const records = await this.meta.list();
+        const uploads = records === undefined ? await this.list(Number.POSITIVE_INFINITY) : records.filter(({ status }) => status === "completed");
+        const s3Api = this.getS3Api();
+        let marker: { KeyMarker?: string; UploadIdMarker?: string } | undefined = {};
+
+        while (marker) {
+            const previous: { KeyMarker?: string; UploadIdMarker?: string } = marker;
+            const page = await this.runOperation(undefined, (signal) => s3Api.listMultipartUploads({ Bucket: this.bucket, ...previous }, { signal }));
+
+            for (const { Key, UploadId } of page.Uploads ?? []) {
+                const file = Key === undefined ? undefined : await this.findMeta(Key);
+
+                if (UploadId !== undefined && file?.UploadId === UploadId) {
+                    uploads.push(file);
+                }
+            }
+
+            // A truncated page without new markers would loop forever; stop instead.
+            marker =
+                page.IsTruncated && (page.NextKeyMarker !== previous.KeyMarker || page.NextUploadIdMarker !== previous.UploadIdMarker)
+                    ? { KeyMarker: page.NextKeyMarker, UploadIdMarker: page.NextUploadIdMarker }
+                    : undefined;
+        }
+
+        return uploads;
     }
 
     /**
@@ -591,7 +625,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 break;
                             }
 
-                            if (Key === undefined) {
+                            if (Key === undefined || this.isMetaKey(Key)) {
                                 continue;
                             }
 
@@ -672,7 +706,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 break;
                             }
 
-                            if (Key === undefined) {
+                            if (Key === undefined || this.isMetaKey(Key)) {
                                 continue;
                             }
 
@@ -704,62 +738,33 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
-     * Checks if a file exists by verifying both metadata and the actual S3 object.
-     * Returns true only if both the metadata and the S3 object exist.
-     * @param query File query containing the file ID to check.
-     * @returns Promise resolving to true if both metadata and S3 object exist, false otherwise.
+     * Whether an upload's object exists: the one its metadata names, or, for an ID without
+     * metadata, the object stored under it. An unfinished upload has no object yet.
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
-        return this.instrumentOperation("exists", async () => {
-            try {
-                // First check if metadata exists
-                await this.getMeta(id);
-
-                // Then verify the actual S3 object exists
-                const s3Api = this.getS3Api();
-
-                await this.runOperation(options, (signal) =>
-                    s3Api.headObject(
-                        {
-                            Bucket: this.bucket,
-                            Key: id,
-                        },
-                        { signal },
-                    ),
-                );
-
-                return true;
-            } catch (error: unknown) {
-                // Check if it's a 404 error (file not found)
-                const errorWithMetadata = error as { $metadata?: { httpStatusCode?: number } };
-
-                if (errorWithMetadata.$metadata?.httpStatusCode === 404) {
-                    return false;
-                }
-
-                // For metadata errors (FILE_NOT_FOUND), also return false
-                return false;
-            }
-        });
+        return this.instrumentOperation("exists", async () => (await this.findStoredObject(await this.storedName(id), options)) !== undefined);
     }
 
     /**
      * Gets an uploaded file by ID.
      */
-    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const s3Api = this.getS3Api();
+            const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
+            const ifMatch = options?.ifMatch;
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified, Metadata } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
-                        Key: id,
+                        Key: key,
+                        ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }),
                         ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
                 ),
-            );
+            ).catch(rethrowConditionalFailure(false));
 
             await this.checkIfExpired({ expiredAt: Expires } as TFile);
 
@@ -802,8 +807,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 id,
                 metadata: meta,
                 modifiedAt: LastModified,
-                name: id,
-                originalName: originalName || id,
+                name: key,
+                originalName: originalName || key,
                 size: Number(ContentLength),
             };
         });
@@ -836,12 +841,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         }
 
         if (file.status === "completed") {
-            const [completed] = await this.internalOnComplete(file);
-
-            delete fileWithParts.Parts;
-            fileWithParts.uri = completed.Location;
-
-            return file;
+            await this.internalOnComplete(file);
         }
 
         return file;
@@ -925,7 +925,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     /**
      * Completes a multipart upload.
      */
-    protected completeMultipartUpload(file: TFile): Promise<{ ETag?: string; Location: string }> {
+    protected async completeMultipartUpload(file: TFile, condition?: ConditionalOptions): Promise<{ ETag?: string; Location: string }> {
         const s3Api = this.getS3Api();
         const uploadId = file.UploadId;
 
@@ -946,31 +946,29 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             s3Api.completeMultipartUpload(
                 {
                     Bucket: this.bucket,
+                    ...(condition?.ifMatch !== undefined && { IfMatch: quoteETag(condition.ifMatch) }),
+                    ...(condition?.ifNoneMatch !== undefined && { IfNoneMatch: condition.ifNoneMatch }),
                     Key: file.name,
                     Parts: parts,
                     UploadId: uploadId,
                 },
                 { signal },
             ),
-        );
+        ).catch(rethrowConditionalFailure(condition?.ifMatch !== undefined));
     }
 
     /**
      * Aborts a multipart upload.
      */
     protected async abortMultipartUpload(file: TFile, options?: OperationOptions): Promise<void> {
-        if (file.status === "completed") {
+        const s3Api = this.getS3Api();
+        const uploadId = file.UploadId;
+
+        if (!uploadId) {
             return;
         }
 
         try {
-            const s3Api = this.getS3Api();
-            const uploadId = file.UploadId;
-
-            if (!uploadId) {
-                return;
-            }
-
             await this.runOperation(options, (signal) =>
                 s3Api.abortMultipartUpload(
                     {
@@ -982,40 +980,111 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 ),
             );
         } catch (error) {
-            this.logger?.error("abortMultipartUploadError: ", error);
-
-            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-            await this.onError(httpError);
+            // NoSuchUpload: already aborted or completed. Any other failure must keep the metadata.
+            if (!isNotFound(error)) {
+                throw error;
+            }
         }
     }
 
-    /**
-     * Answers for a completed upload from its object: the metadata is deleted on completion. The
-     * object is looked up under the upload's ID, which is its key unless a custom `filename` is set.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
         const s3Api = this.getS3Api();
 
-        let head: Awaited<ReturnType<S3ApiOperations["headObject"]>>;
-
         try {
-            head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
-        } catch {
-            return undefined;
+            const head = await this.runOperation(options, (signal) => s3Api.headObject({ Bucket: this.bucket, Key: id }, { signal }));
+
+            return { contentType: head.ContentType, etag: head.ETag, size: head.ContentLength ?? 0 };
+        } catch (error) {
+            if (isNotFound(error)) {
+                return undefined;
+            }
+
+            throw error;
         }
+    }
 
-        const size = head.ContentLength ?? 0;
-        const file = new (this.getFileClass())({ contentType: head.ContentType, id, metadata: {}, size });
-
-        return Object.assign(file, { bytesWritten: size, ETag: head.ETag, name: id, status: "completed" as const });
+    /** Asks S3 for the object's ETag: the record's may predate a write by another client. */
+    protected override async currentETag(file: TFile, options?: OperationOptions): Promise<string | undefined> {
+        return this.storedETag(file.name, options);
     }
 
     /**
-     * Internal onComplete handler.
+     * Whether a bucket key is a metadata record: they live next to the objects when the meta
+     * storage uses the bucket, and must not be listed or purged as uploads of their own.
      */
-    protected internalOnComplete = async (file: TFile): Promise<[{ ETag?: string; Location: string }, TFile]> => {
-        const [completed] = await Promise.all([this.completeMultipartUpload(file), this.deleteMeta(file.id)]);
+    protected isMetaKey(key: string): boolean {
+        const { prefix, suffix } = this.meta;
+
+        return (prefix !== "" || suffix !== "") && key.startsWith(prefix) && key.endsWith(suffix);
+    }
+
+    /**
+     * The upload's metadata, or for an ID without any, the object stored under it. `tracked` tells
+     * whether there is metadata to delete with the upload.
+     */
+    protected async findUpload(id: string, options?: OperationOptions): Promise<{ file: TFile; tracked: boolean }> {
+        S3BaseStorage.assertSafeId(id);
+
+        const meta = await this.findMeta(id);
+
+        if (meta) {
+            return { file: meta, tracked: true };
+        }
+
+        const file = await this.findStoredObject(id, options);
+
+        return file === undefined ? throwErrorCode(ERRORS.FILE_NOT_FOUND) : { file, tracked: false };
+    }
+
+    /**
+     * Copies `file`'s object to `destination` in the same bucket.
+     */
+    protected async copyObject(file: TFile, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<TFile> {
+        const s3Api = this.getS3Api();
+        const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+
+        await this.runOperation(options, (signal) =>
+            s3Api.copyObject(
+                {
+                    // S3 doesn't copy the source's ACL: apply the configured one, as `create` does.
+                    ...(this.getAcl() !== undefined && { ACL: this.getAcl() }),
+                    Bucket: this.bucket,
+                    // The source is "bucket/key" with the key URL-encoded.
+                    CopySource: `${this.bucket}/${file.name
+                        .split("/")
+                        .map((segment) => encodeURIComponent(segment))
+                        .join("/")}`,
+                    // Always the same bucket: a leading "/" in `destination` once re-targeted another one.
+                    Key: destination,
+                    ...(sourceIfMatch !== undefined && { CopySourceIfMatch: quoteETag(sourceIfMatch) }),
+                    ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }),
+                    ...(ifNoneMatch !== undefined && { IfNoneMatch: ifNoneMatch }),
+                    ...(options?.storageClass && { StorageClass: options.storageClass }),
+                },
+                { signal },
+            ),
+        ).catch(rethrowConditionalFailure(ifMatch !== undefined));
+
+        return { ...file, id: destination, name: destination };
+    }
+
+    /**
+     * Completes the multipart upload and keeps the finished upload's metadata, as the other
+     * storages do. A failed completion leaves the metadata of the unfinished upload in place, so it
+     * can be retried or aborted.
+     */
+    protected internalOnComplete = async (file: TFile, condition?: ConditionalOptions): Promise<[{ ETag?: string; Location: string }, TFile]> => {
+        const completed = await this.completeMultipartUpload(file, condition);
+
+        delete file.Parts;
+        file.uri = completed.Location;
+        file.ETag = completed.ETag;
+
+        // Presigned part URLs are only useful while uploading and would bloat the record.
+        const { partsUrls: _partsUrls, ...record } = file;
+
+        setMetaVersion(record, getMetaVersion(file));
+        await this.saveMeta(record as TFile);
 
         return [completed, file];
     };

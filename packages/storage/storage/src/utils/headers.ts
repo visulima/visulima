@@ -8,6 +8,42 @@ import { Accept, ContentDisposition, ContentType } from "@remix-run/headers";
 import type { Headers as UploadHeaders } from "./types";
 
 /**
+ * Formats a date as an HTTP-date (RFC 9110 §5.6.7), the form Last-Modified and If-Range use.
+ * @param value Date, epoch milliseconds or a date string
+ * @returns The HTTP-date, or the value as given when it isn't a valid date
+ */
+export const toHttpDate = (value: Date | number | string): string => {
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? String(value) : date.toUTCString();
+};
+
+/**
+ * Formats an entity tag as the ETag header carries it (RFC 9110 §8.8.3): quoted, keeping a `W/`
+ * prefix. Adapters may hand back a bare value, which If-Match / If-Range would never match.
+ * @param etag ETag as the adapter returned it
+ * @returns The quoted entity tag
+ */
+export const toETagHeader = (etag: string): string => {
+    const weak = etag.startsWith("W/");
+    const tag = weak ? etag.slice(2) : etag;
+
+    if (tag.length > 1 && tag.startsWith("\"") && tag.endsWith("\"")) {
+        return etag;
+    }
+
+    return `${weak ? "W/" : ""}"${tag}"`;
+};
+
+/**
+ * Replaces what a header value can't carry as-is: every UTF-16 code unit outside printable ASCII.
+ * @param value Header value
+ * @param replace Replacement of one code unit
+ * @returns The value, safe to send
+ */
+export const toLatin1Safe = (value: string, replace: (unit: string) => string): string => value.replaceAll(/[^\u0020-\u007E]/g, replace);
+
+/**
  * Cache-Control directive options
  */
 export interface CacheControlOptions {
@@ -120,21 +156,30 @@ export const HeaderUtilities = {
     },
 
     /**
-     * Create Content-Disposition header for file downloads with optional filename.
-     * @param options
-     * @param options.filename Filename for the download
-     * @param options.filenameSplat Alternative filename format
-     * @param options.type Disposition type ('inline' or 'attachment')
-     * @returns Content-Disposition header value string
+     * Create a Content-Disposition header value. A name that isn't plain printable ASCII gets an ASCII
+     * fallback in `filename` and its exact form in `filename*` (RFC 6266 / RFC 8187), so the header
+     * never carries raw non-Latin-1 text, quotes or line breaks.
+     * @param options.filename File name to suggest
+     * @param options.type `inline` or `attachment`
+     * @returns Content-Disposition header value
      */
-    createContentDisposition(options: { filename?: string; filenameSplat?: string; type: "inline" | "attachment" }): string {
-        const disposition = new ContentDisposition({
-            type: options.type,
-            ...(options.filename && { filename: options.filename }),
-            ...(options.filenameSplat && { filenameSplat: options.filenameSplat }),
-        });
+    createContentDisposition(options: { filename?: string; type: "inline" | "attachment" }): string {
+        const { filename, type } = options;
 
-        return disposition.toString();
+        if (!filename) {
+            return type;
+        }
+
+        const fallback = toLatin1Safe(filename, () => "_").replaceAll(/["\\]/gu, "_");
+        const header = `${type}; filename="${fallback}"`;
+
+        if (fallback === filename) {
+            return header;
+        }
+
+        const encoded = encodeURIComponent(filename).replaceAll(/['()*]/gu, (character) => `%${(character.codePointAt(0) ?? 0).toString(16).toUpperCase()}`);
+
+        return `${header}; filename*=UTF-8''${encoded}`;
     },
 
     /**

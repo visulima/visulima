@@ -4,35 +4,79 @@
 
 ## Overview
 
-`MemoryStorage` is a `BaseStorage` adapter backed by an in-process `Map<string, MemoryEntry>`. Nothing is persisted; everything lives in the Node.js heap for the lifetime of the process. It implements the full surface — `create`, `write`, `get`, `getStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `getReadUrl`, `getUploadUrl` — and supports ranged reads (`supportsRange: true`).
+`MemoryStorage` is a `BaseStorage` adapter backed by a `Map` inside the process. Nothing is persisted: everything lives in the Node.js heap until the process exits. It implements the full surface (`create`, `write`, `get`, `getStream`, `exists`, `delete`, `copy`, `move`, `list`, `getReadUrl`, `getUploadUrl`), supports ranged reads, and accepts chunked or resumable writes at any offset.
 
-Use it for:
+**Use it only for tests and single-process tools.** It is not a production store. Data is lost on restart, never evicted, and invisible to other processes or workers.
 
-- **Unit and integration tests** — no temp directories, no cleanup, deterministic state.
-- **Ephemeral environments** — preview deployments, smoke tests, ad-hoc scripts.
-- **Reference implementation** — the simplest possible adapter to read when authoring your own.
+Good uses:
+
+- **Unit and integration tests:** no temp directories, no cleanup, deterministic state.
+- **Ephemeral environments:** smoke tests, preview builds, scripts.
+- **Reference implementation:** the smallest adapter to read when you write your own.
 
 ## Installation
 
-No additional dependencies — the adapter ships with `@visulima/storage`.
+No extra dependencies. The adapter ships with `@visulima/storage`.
 
-## Usage
-
-```typescript
-import { Files } from "@visulima/storage";
-import MemoryStorage from "@visulima/storage/provider/memory";
-
-const files = new Files({ adapter: new MemoryStorage() });
-
-await files.upload("k.txt", "hello");
-const { body } = await files.download("k.txt");
+```ts
+import { MemoryMetaStorage, MemoryStorage } from "@visulima/storage";
+// also available from "@visulima/storage/provider/memory" (default export: MemoryStorage)
 ```
+
+## Provider setup
+
+None. There is no service, credential or CORS configuration.
+
+## Configuration
+
+```ts
+import { MemoryStorage } from "@visulima/storage";
+
+// Minimal
+const storage = new MemoryStorage();
+```
+
+```ts
+import { MemoryStorage } from "@visulima/storage";
+
+// Test fixture with seed data and the same limits as production
+const storage = new MemoryStorage({
+    initial: { "users/1.json": '{"id":1}' },
+    maxUploadSize: "10MB",
+    allowMIME: ["application/json"],
+});
+```
+
+| Option              | Type                                             | Default                 | Description                                                                                                                       |
+| ------------------- | ------------------------------------------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `initial`           | `Record<string, Buffer \| Uint8Array \| string>` | —                       | Seeds the store with `key → bytes` entries. Strings are UTF-8 encoded. Each entry gets a completed metadata record with id = key. |
+| `metaStorageConfig` | `MetaStorageOptions`                             | `{}`                    | `prefix` / `suffix` / `logger` for the default `MemoryMetaStorage`.                                                               |
+| `metaStorage`       | `MetaStorage`                                    | new `MemoryMetaStorage` | Share one metadata store between instances.                                                                                       |
+
+All other `BaseStorageOptions` (`maxUploadSize`, `allowMIME`, `filename`, `validation`, `expiration`, hooks, `logger`, `metrics`, …) work as they do on the other adapters. That lets you test validation and lifecycle hooks with exactly the production settings. `retryConfig` and `defaultTimeout` have no effect. The adapter reads no environment variables.
+
+## Metadata storage
+
+Records live in a `MemoryMetaStorage` (another `Map`) in the same process. They are copied on every read and write, so callers never mutate the store by accident. Finished uploads keep their record. `delete()` removes it, and `purge()` only expires uploads that have a record.
+
+## Behaviour & limits
+
+| Aspect                     | Behaviour                                                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes | ✅ Writes at any offset; out-of-order chunks don't overwrite each other. A `PUT` from byte 0 to a completed upload replaces it.                |
+| Checksums                  | None advertised (`checksumTypes: []`).                                                                                                         |
+| Range reads                | ✅ `supportsRange: true`. An invalid range on `get()` → `BAD_REQUEST`.                                                                         |
+| URLs                       | `getReadUrl(key)` / `getUploadUrl(key)` return a synthetic `memory://${key}`. Nothing listens on that scheme.                                  |
+| `list()`                   | Every stored entry, with size, content type and timestamps. `limit` is ignored.                                                                |
+| `copy()` / `move()`        | Buffer copy. Move is copy followed by delete.                                                                                                  |
+| Conditional ops            | ✅ every `Files` ETag predicate, checked and applied in one synchronous step. Handy for testing compare-and-set code before pointing it at S3. |
+| Isolation                  | Per instance. Two `MemoryStorage` objects never see each other's bytes, even when they share a `metaStorage`.                                  |
 
 ## Seed the store
 
-Pass `initial` to pre-populate the backing map with `key → bytes` entries. Each entry creates a `File` metadata record so subsequent `head`, `download`, `delete` look up by the same key.
+```ts
+import { Files, MemoryStorage } from "@visulima/storage";
 
-```typescript
 const adapter = new MemoryStorage({
     initial: {
         "users/1.json": '{"id":1}',
@@ -42,16 +86,16 @@ const adapter = new MemoryStorage({
 
 const files = new Files({ adapter });
 
-await files.head("users/1.json"); // → FileObject for the seeded entry
+await files.head("users/1.json"); // FileObject for the seeded entry
 ```
-
-`initial` values can be `Buffer`, `Uint8Array`, or `string` (UTF-8 encoded).
 
 ## Inspecting and resetting
 
-The adapter exposes its backing `Map` via `raw`, so tests can assert on internal state directly:
+`raw` returns the `Map` that holds the bytes:
 
-```typescript
+```ts
+import { Files, MemoryStorage } from "@visulima/storage";
+
 const adapter = new MemoryStorage();
 const files = new Files({ adapter });
 
@@ -60,37 +104,56 @@ await files.upload("k.txt", "x");
 expect(adapter.raw.size).toBe(1);
 expect(adapter.raw.has("k.txt")).toBe(true);
 
-adapter.raw.clear(); // wipe everything between tests
+adapter.raw.clear(); // clears the bytes
+adapter.meta.clear(); // clears the upload records too
 ```
 
-The `Files` facade also forwards `raw`:
+## Sharing metadata between instances
 
-```typescript
-files.raw.clear();
-```
-
-## Sharing metadata between facades
-
-Pass a shared `metaStorage` to point a second `MemoryStorage` instance at the same `MemoryMetaStorage`. Rarely needed, but useful for testing meta-only flows.
-
-```typescript
-import MemoryMetaStorage from "@visulima/storage/provider/memory/meta-storage";
+```ts
+import { MemoryMetaStorage, MemoryStorage } from "@visulima/storage";
 
 const meta = new MemoryMetaStorage();
 const a = new MemoryStorage({ metaStorage: meta });
 const b = new MemoryStorage({ metaStorage: meta });
 ```
 
-## Returned URLs
+This is rarely needed. It helps when testing flows that only touch metadata.
 
-`getReadUrl(key)` and `getUploadUrl(key)` return a synthetic `memory://${key}` URL. There's no network behind the scheme — it's a marker that the object is in-process. Consumers that distinguish "private" vs. "public" stores can detect memory by the protocol.
+## Using it with the handlers
+
+```ts
+// Node: e.g. supertest against an Express app
+import express from "express";
+import { MemoryStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const storage = new MemoryStorage();
+const app = express();
+
+app.use("/upload/tus", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch: call the handler directly in a test
+import { MemoryStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage: new MemoryStorage() });
+
+const response = await rest.fetch(new Request("http://localhost/files", { method: "POST", body: "hello", headers: { "content-type": "text/plain" } }));
+```
 
 ## Caveats
 
-- **Process-local** — the store dies when the process exits. Use `DiskStorage` if you need durability between runs.
-- **Unbounded growth** — there is no eviction. Track your test sizes or call `raw.clear()` between cases.
-- **Single-process** — fan-out across workers won't see each other's writes. Use `DiskStorage` or a real provider for multi-process tests.
+- **Process-local:** the store disappears when the process exits. Use `DiskStorage` if data must survive between runs.
+- **Unbounded growth:** there is no eviction. Clear `raw` and `meta` between test cases.
+- **Single process:** workers, cluster forks and serverless invocations each get their own empty store. Use `DiskStorage` on a shared volume, or a real provider, for multi-process tests.
 
-## When in doubt
+## Troubleshooting
 
-The adapter is small (~370 lines) and a useful reference. Skim `packages/storage/storage/src/storage/memory/memory-storage.ts` to see the minimum surface every adapter must implement.
+| Symptom                                      | Cause / fix                                                                                                 |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `FILE_NOT_FOUND` in a second request or test | A different `MemoryStorage` instance (or process) handled it. Share one instance across the app under test. |
+| State leaks between tests                    | Call `adapter.raw.clear()` and `adapter.meta.clear()` in `beforeEach`, or create a new instance per test.   |
+| Heap grows during a long run                 | Nothing is evicted. Set `expiration` with `purgeInterval`, or clear the store yourself.                     |

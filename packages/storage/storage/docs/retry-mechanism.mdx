@@ -4,12 +4,15 @@ All storage backends (AWS S3, Azure, GCS, Vercel Blob, Netlify Blob) include aut
 
 ## Default Behavior
 
-By default, storage operations will retry up to 3 times with exponential backoff:
+By default, storage operations will retry up to 3 times with exponential backoff and **full jitter**:
 
 - Initial delay: 1 second
-- Backoff multiplier: 2x (delays double each retry: 1s → 2s → 4s)
+- Backoff multiplier: 2x — the delay **ceiling** doubles each retry (1s → 2s → 4s), capped at the maximum delay
+- Each actual delay is a random value between 0 and that ceiling, so concurrent clients don't retry in lockstep
 - Maximum delay: 30 seconds
 - Retryable status codes: 408, 429, 500, 502, 503, 504
+
+Pass `calculateDelay` if you need deterministic delays.
 
 ## Basic Configuration
 
@@ -48,26 +51,24 @@ const storage = new AzureStorage({
         maxDelay: 30_000,
         retryableStatusCodes: [408, 429, 500, 502, 503, 504],
         shouldRetry: (error: unknown) => {
-            // Custom retry logic
-            if (error instanceof Error) {
-                const errorCode = (error as any).code;
-
-                // Retry on network errors
-                if (errorCode === "ECONNRESET" || errorCode === "ETIMEDOUT") {
-                    return true;
-                }
+            // Never retry a conflict, even if a heuristic would
+            if ((error as { statusCode?: number }).statusCode === 409) {
+                return false;
             }
 
-            // Retry on specific HTTP status codes
-            if ((error as any).statusCode && [429, 503].includes((error as any).statusCode)) {
+            // Also retry an app-specific transient error the heuristics don't know
+            if ((error as { code?: string }).code === "EPIPE") {
                 return true;
             }
 
-            return false;
+            // `undefined` defers to the built-in heuristics (network errors, retryable status codes, …)
+            return undefined;
         },
     },
 });
 ```
+
+`shouldRetry` is tri-state: `true` forces a retry, `false` suppresses it **without consulting the built-in checks**, and `undefined` defers to them. A `shouldRetry` that ends with `return false` therefore disables every retry it doesn't explicitly allow, including network errors and 5xx responses.
 
 ## Retry Configuration Options
 
@@ -79,7 +80,7 @@ interface RetryConfig {
     /** Initial delay in milliseconds before first retry (default: 1000) */
     initialDelay?: number;
 
-    /** Multiplier for exponential backoff (default: 2) */
+    /** Multiplier for the exponential backoff ceiling; the actual delay is jittered within it (default: 2) */
     backoffMultiplier?: number;
 
     /** Maximum delay in milliseconds between retries (default: 30000) */
@@ -88,10 +89,10 @@ interface RetryConfig {
     /** HTTP status codes that should trigger a retry (default: [408, 429, 500, 502, 503, 504]) */
     retryableStatusCodes?: number[];
 
-    /** Custom function to determine if an error should be retried */
-    shouldRetry?: (error: unknown) => boolean;
+    /** `true` = retry, `false` = don't retry (built-in checks skipped), `undefined` = use the built-in checks */
+    shouldRetry?: (error: unknown) => boolean | undefined;
 
-    /** Custom function to calculate delay for a specific retry attempt */
+    /** Custom delay for a retry attempt (0-indexed); return `undefined` to use the jittered backoff */
     calculateDelay?: (attempt: number, error: unknown) => number | undefined;
 
     /**
@@ -270,7 +271,8 @@ const storage = new NetlifyBlobStorage({
 ## Best Practices
 
 1. **Configure appropriate retry limits** - Too many retries can cause unnecessary delays
-2. **Use exponential backoff** - Prevents overwhelming the service during outages
-3. **Monitor retry patterns** - Log retry attempts to identify persistent issues
-4. **Customize per operation** - Some operations may need different retry strategies
-5. **Handle non-retryable errors** - Distinguish between transient and permanent failures
+2. **Keep the jittered backoff** - Prevents overwhelming the service during outages
+3. **Return `undefined` from `shouldRetry` by default** - Only return `false` for errors you never want retried
+4. **Monitor retry patterns** - Log retry attempts to identify persistent issues
+5. **Customize per operation** - Some operations may need different retry strategies
+6. **Handle non-retryable errors** - Distinguish between transient and permanent failures

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import OneDriveStorage from "../../../src/storage/onedrive/onedrive-storage";
 import type { OneDriveStorageOptions } from "../../../src/storage/onedrive/types";
-import { ERRORS, isUploadError } from "../../../src/utils/errors";
+import { ERRORS, isUploadError, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 interface ApiCall {
@@ -185,7 +185,7 @@ describe(OneDriveStorage, () => {
             });
 
             // delete looks up meta first (will fail to find), then deletes by id
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "folder/sub/file.mp4" });
 
@@ -205,7 +205,7 @@ describe(OneDriveStorage, () => {
                 driveId: "drive-xyz",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "file.mp4" });
 
@@ -222,7 +222,7 @@ describe(OneDriveStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await storage.delete({ id: "foo bar/baz qux.mp4" });
 
@@ -239,7 +239,7 @@ describe(OneDriveStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.api.mockImplementationOnce((url: string) => {
                 const call = makeApi(url);
@@ -394,7 +394,7 @@ describe(OneDriveStorage, () => {
         });
 
         it("returns undefined when the drive item does not exist", async () => {
-            expect.assertions(1);
+            expect.assertions(2);
 
             const storage = new OneDriveStorage({
                 ...(storageOptions as OneDriveStorageOptions),
@@ -404,13 +404,24 @@ describe(OneDriveStorage, () => {
             mockClient.api.mockImplementationOnce((url: string) => {
                 const call = makeApi(url);
 
-                call.get.mockRejectedValue(new Error("itemNotFound"));
+                call.get.mockRejectedValue(Object.assign(new Error("itemNotFound"), { statusCode: 404 }));
                 apiCalls.push(call);
 
                 return call;
             });
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            mockClient.api.mockImplementationOnce((url: string) => {
+                const call = makeApi(url);
+
+                call.get.mockRejectedValue(Object.assign(new Error("accessDenied"), { statusCode: 403 }));
+                apiCalls.push(call);
+
+                return call;
+            });
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("accessDenied");
         });
     });
 

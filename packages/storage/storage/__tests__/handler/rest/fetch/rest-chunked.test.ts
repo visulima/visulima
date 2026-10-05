@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
@@ -79,45 +80,73 @@ describe("fetch RestFetch chunked uploads", () => {
         expect(secondPatch.headers.get("location")).toMatch(new RegExp(String.raw`^${basePath}${id}\.\w+$`, "u"));
     });
 
-    it("should not mark a POST as chunked without a valid total size", async () => {
-        expect.assertions(3);
+    it.each(["abc", "12garbage", "0"])("should refuse a chunked POST without a valid total size (%s)", async (totalSize) => {
+        expect.assertions(1);
 
-        const storage = new MemoryStorage({ path: "/files" });
-        const restHandler = new RestFetch({ storage });
-
+        const restHandler = new RestFetch({ storage: new MemoryStorage({ path: "/files" }) });
         const response = await restHandler.fetch(
             new Request(basePath, {
-                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "abc" },
+                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": totalSize },
                 method: "POST",
             }),
         );
 
-        expect(response.status).toBe(201);
-
-        const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
-
-        expect(file.metadata._chunkedUpload).toBeUndefined();
-        expect(Number.isNaN(file.size)).toBe(false);
+        // No PATCH could ever be accepted for it.
+        expect(response.status).toBe(400);
     });
 
-    it("should not mark a POST as chunked when X-Total-Size has trailing garbage", async () => {
-        expect.assertions(2);
+    it("should verify X-Chunk-Checksum before storing the chunk", async () => {
+        expect.assertions(4);
 
         const storage = new MemoryStorage({ path: "/files" });
         const restHandler = new RestFetch({ storage });
+        const created = await restHandler.fetch(
+            new Request(basePath, { headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "10" }, method: "POST" }),
+        );
+        const id = created.headers.get("x-upload-id") as string;
+        const patch = async (offset: number, body: string, checksum: string): Promise<number> =>
+            restHandler
+                .fetch(
+                    new Request(`${basePath}${id}`, {
+                        body,
+                        headers: { "content-length": String(body.length), "content-type": "application/octet-stream", "x-chunk-checksum": checksum, "x-chunk-offset": String(offset) },
+                        method: "PATCH",
+                    }),
+                )
+                .then((response) => response.status);
+        const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
 
+        // Bare hex, as @visulima/storage-client sends it.
+        await expect(patch(0, "hello", sha256("hello"))).resolves.toBe(202);
+        await expect(patch(5, "world", sha256("WORLD"))).resolves.toBe(460);
+
+        // The refused chunk was not recorded; base64 with an explicit algorithm works too.
+        const afterMismatch = await storage.getMeta(id);
+
+        expect(afterMismatch.metadata._chunks).toStrictEqual([expect.objectContaining({ length: 5, offset: 0 })]);
+        await expect(patch(5, "world", `sha256 ${createHash("sha256").update("world").digest("base64")}`)).resolves.toBe(200);
+    });
+
+    it("should not let X-File-Metadata set internal chunk state", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ maxUploadSize: 100, path: "/files" });
+        const restHandler = new RestFetch({ storage });
         const response = await restHandler.fetch(
             new Request(basePath, {
-                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "12garbage" },
+                headers: {
+                    "content-type": "application/octet-stream",
+                    "x-chunked-upload": "true",
+                    "x-file-metadata": JSON.stringify({ _chunks: [{ length: 50, offset: 0 }], _totalSize: 10_000 }),
+                    "x-total-size": "50",
+                },
                 method: "POST",
             }),
         );
-
-        expect(response.status).toBe(201);
-
         const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
 
-        expect(file.metadata._totalSize).toBeUndefined();
+        expect(file.metadata._totalSize).toBe(50);
+        expect(file.metadata._chunks).toStrictEqual([]);
     });
 
     it.each(["null", "[1,2]", "42", '"text"'])("should ignore non-object X-File-Metadata %s on chunked init", async (metadataHeader) => {

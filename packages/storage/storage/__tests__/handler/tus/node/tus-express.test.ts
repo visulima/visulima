@@ -188,7 +188,7 @@ describe("express Tus", () => {
 
             expect(response.status).toBe(200);
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
-            expect(response.header["upload-offset"]).toBe("64");
+            expect(response.header["upload-offset"]).toBe("0");
             expect(response.header["upload-expires"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-metadata"]).toStrictEqual(expect.stringMatching(/.*\S.*/));
             expect(response.header["upload-length"]).toBeUndefined();
@@ -209,7 +209,7 @@ describe("express Tus", () => {
             expect(response.header["tus-max-size"]).toBe("6442450944");
             expect(response.header["tus-checksum-algorithm"]).toBe("md5,sha1,sha256,sha384,sha512,crc32,crc32c");
             expect(response.header["tus-resumable"]).toStrictEqual(TUS_RESUMABLE);
-            expect(response.header["access-control-allow-methods"]).toBe("DELETE, DOWNLOAD, GET, HEAD, OPTIONS, PATCH, POST");
+            expect(response.header["access-control-allow-methods"]).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST");
             expect(response.header["access-control-allow-headers"]).toBe(
                 "Authorization, Content-Type, Location, Tus-Extension, Tus-Max-Size, Tus-Resumable, Tus-Version, Upload-Checksum, Upload-Concat, Upload-Defer-Length, Upload-Length, Upload-Metadata, Upload-Offset, X-HTTP-Method-Override, X-Requested-With",
             );

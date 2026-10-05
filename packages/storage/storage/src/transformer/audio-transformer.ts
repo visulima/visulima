@@ -23,7 +23,7 @@ import type {
     AudioTransformOptions,
     AudioTransformResult,
 } from "./types";
-import { getFormatFromContentType, isValidMediaType } from "./utils";
+import { getFormatFromContentType, isSupportedFormat, isValidMediaType } from "./utils";
 
 /**
  * Audio transformer that uses storage backends and Mediabunny to retrieve and transform audio files
@@ -60,6 +60,8 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
     TFile,
     TFileReturn
 > {
+    protected override readonly mediaType = "audio" as const;
+
     /**
      * Creates a new AudioTransformer instance.
      * @param storage The storage backend for retrieving and storing audio files.
@@ -135,17 +137,13 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     public async transform(fileId: string, steps: AudioTransformationStep[]): Promise<AudioTransformResult<TFileReturn>> {
         const fileQuery: FileQuery = { id: fileId };
-        const cacheKey = this.generateCacheKey(fileId, steps);
+        const cacheKey = await this.versionedCacheKey(fileId, this.generateCacheKey(fileId, steps));
+        const cached = await this.getCached(cacheKey);
 
-        // Check cache first
-        if (this.cache) {
-            const cached = await Promise.resolve(this.cache.get(cacheKey));
+        if (cached) {
+            this.logger?.debug("Returning cached transformed audio for %s", fileId);
 
-            if (cached) {
-                this.logger?.debug("Returning cached transformed audio for %s", fileId);
-
-                return cached;
-            }
+            return cached;
         }
 
         // Get original audio from storage
@@ -157,12 +155,9 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Apply transformations using Mediabunny
         const transformedBuffer = await this.applyTransformations(originalFile.content, steps);
 
-        const result = await this.createTransformResult(transformedBuffer, originalFile);
+        const result = await this.createTransformResult(transformedBuffer, originalFile, this.determineOutputFormat(steps).fileExtension.slice(1));
 
-        // Cache the result
-        if (this.cache) {
-            this.cache.set(cacheKey, result);
-        }
+        await this.setCached(cacheKey, result);
 
         return result;
     }
@@ -334,7 +329,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
         // Check format support
         const format = getFormatFromContentType(file.contentType);
 
-        if (this.config?.supportedFormats && format && !this.config.supportedFormats.includes(format)) {
+        if (this.config?.supportedFormats && !isSupportedFormat(file.contentType, this.config.supportedFormats)) {
             throw new Error(`Unsupported audio format: ${format}`);
         }
 
@@ -362,7 +357,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Audio transformation result with metadata
      * @private
      */
-    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn): Promise<AudioTransformResult<TFileReturn>> {
+    private async createTransformResult(buffer: Buffer, originalFile: TFileReturn, format: string): Promise<AudioTransformResult<TFileReturn>> {
         // For now, return basic metadata. In a real implementation,
         // you might want to parse the transformed audio to get accurate metadata
         const input = new Input({
@@ -377,7 +372,7 @@ class AudioTransformer<TFile extends File = File, TFileReturn extends FileReturn
             bitrate: this.config.defaultBitrate,
             buffer,
             duration,
-            format: "mp3", // Default, would need to detect actual format
+            format,
             numberOfChannels: audioTrack?.numberOfChannels || 2,
             originalFile,
             sampleRate: audioTrack?.sampleRate || 44_100,

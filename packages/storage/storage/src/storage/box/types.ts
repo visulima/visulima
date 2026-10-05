@@ -63,10 +63,8 @@ export interface BoxStorageOptions extends BaseStorageOptions {
     client?: BoxClient;
 
     /**
-     * Default expiry, in seconds, advertised to callers of `getReadUrl()`.
-     * Box does not document a hard maximum for download URLs (they are
-     * short-lived by API design); this value is forwarded as documentation
-     * only — the actual lifetime is decided by Box. Defaults to 3600.
+     * @deprecated Has no effect. Box fixes the lifetime of download URLs itself, and an expiring
+     * shared link (`unshared_at`) needs a paid Box plan, so `getReadUrl()` can't honour an expiry.
      */
     defaultUrlExpiresIn?: number;
 

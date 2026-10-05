@@ -1,21 +1,21 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Readable } from "node:stream";
 
-import createHttpError, { isHttpError } from "http-errors";
+import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
-import { ERRORS, isUploadError } from "../../utils/errors";
+import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
 import { getRealPath, setHeaders } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
-import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
-import { isValidationError } from "../../utils/validator";
+import type { ResponseBody, UploadResponse } from "../../utils/types";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
 import { applyRange, pipeWithBackpressure } from "../utils/stream-utils";
 import { handleCompletedUpload, handleGetRequest, handleHeadOptionsRequest, handlePartialUpload, handleUploadError } from "../utils/upload-handlers";
-import BaseHandlerCore, { parseFilePath, resolveContentType } from "./base-handler-core";
+import type { LocationSource } from "./base-handler-core";
+import BaseHandlerCore from "./base-handler-core";
 
 const CONTENT_TYPE = "Content-Type";
 
@@ -118,7 +118,7 @@ abstract class BaseHandlerNode<
                         next,
                         this.send.bind(this),
                         this.sendStream.bind(this),
-                        this.parseRangeHeader.bind(this),
+                        this.resolveRange.bind(this),
                     );
                 }
             } else {
@@ -227,65 +227,7 @@ abstract class BaseHandlerNode<
      * @param error Error object to convert to HTTP error response.
      */
     public async sendError(response: NodeResponse, error: Error): Promise<void> {
-        let httpError: HttpError;
-
-        if (isUploadError(error)) {
-            httpError = this.internalErrorResponses[error.UploadErrorCode] as HttpError;
-        } else if (!isValidationError(error) && !isHttpError(error)) {
-            httpError = this.storage.normalizeError(error);
-        } else {
-            // For http-errors, pass through without body - onError will format it
-            httpError = {
-                ...error,
-                code: (error as HttpError).code || error.name,
-                headers: (error as HttpError).headers || {},
-                message: error.message,
-                name: error.name,
-                statusCode: (error as HttpError).statusCode || 500,
-            };
-        }
-
-        // Call onError hook - user can modify the error object in place
-        await this.storage.onError(httpError);
-
-        // Format error response - if body is not set, format it into body.error structure
-        let errorResponse: UploadResponse;
-
-        if (httpError.body) {
-            // If body is already an object, use it directly
-            // If body is a string, wrap it in error structure for consistency
-            if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
-            } else {
-                // Body is a string, wrap it in error structure
-                errorResponse = {
-                    body: {
-                        error: {
-                            code: httpError.code || httpError.name || "Error",
-                            message: httpError.body || httpError.message || "Unknown error",
-                            name: httpError.name || "Error",
-                        },
-                    },
-                    headers: httpError.headers,
-                    statusCode: httpError.statusCode || 500,
-                };
-            }
-        } else {
-            // Format the error properties into a body.error structure
-            errorResponse = {
-                body: {
-                    error: {
-                        code: httpError.code || httpError.name || "Error",
-                        message: httpError.message || "Unknown error",
-                        name: httpError.name || "Error",
-                    },
-                },
-                headers: httpError.headers,
-                statusCode: httpError.statusCode || 500,
-            };
-        }
-
-        this.send(response, errorResponse);
+        this.send(response, await this.buildErrorResponse(error));
     }
 
     /**
@@ -378,9 +320,9 @@ abstract class BaseHandlerNode<
      * @returns Constructed file URL with extension based on content type
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
-        // On Node, request.url is path-only — pass the headers so the base can recover host/proto and
-        // emit an absolute Location when useRelativeLocation is false.
-        return this.buildFileUrlFromString(request.originalUrl || (request.url as string), file, request.headers);
+        const source = this.locationOf(request);
+
+        return this.buildFileUrlFromString(source.url, file, source);
     }
 
     /**
@@ -434,66 +376,14 @@ abstract class BaseHandlerNode<
     }
 
     /**
-     * Streams download of a file with resumable support using HTTP range requests.
-     * @param request Node.js IncomingMessage with optional originalUrl and range header.
-     * @param response Node.js ServerResponse to stream the file to.
-     * @throws {HttpError} When file is not found or streaming is not supported.
+     * What a Location header is built from: a Node request URL is only a path, so its origin comes
+     * from the Host / Forwarded headers and the connection.
+     * @param request Node.js request
+     * @returns The location source
      */
-    public async download(request: NodeRequest & { originalUrl?: string }, response: NodeResponse): Promise<void> {
-        const target = parseFilePath(getRealPath(request));
-
-        if (!target || target.isMetadataRequest) {
-            throw createHttpError(404, "File not found");
-        }
-
-        const { ext, uuid } = target;
-
-        try {
-            // Get file metadata first
-            const fileMeta = await this.storage.getMeta(uuid);
-
-            // Check if streaming is available
-            if (!this.storage.getStream) {
-                await this.sendError(response, createHttpError(501, "Streaming download not supported"));
-
-                return;
-            }
-
-            // Use streaming for better performance
-            const streamResult = await this.storage.getStream({ id: uuid });
-            const contentType = resolveContentType(streamResult.headers?.["Content-Type"] || fileMeta.contentType, ext);
-
-            // Parse range header for resumable downloads
-            const range = this.parseRangeHeader(request.headers.range, streamResult.size || 0);
-
-            // Stream the file directly to response
-            const headers = {
-                ...streamResult.headers,
-                "Accept-Ranges": "bytes",
-                "Content-Disposition": HeaderUtilities.createContentDisposition({
-                    filename: fileMeta.originalName || uuid,
-                    type: "attachment",
-                }),
-                "Content-Type": contentType,
-            };
-
-            this.sendStream(response, streamResult.stream, {
-                headers,
-                range: range || undefined,
-                size: streamResult.size,
-                statusCode: range ? 206 : 200,
-            });
-        } catch (error: unknown) {
-            const errorWithCode = error as { UploadErrorCode?: string };
-
-            if (errorWithCode.UploadErrorCode === ERRORS.FILE_NOT_FOUND || errorWithCode.UploadErrorCode === ERRORS.GONE) {
-                await this.sendError(response, createHttpError(404, "File not found"));
-
-                return;
-            }
-
-            await this.sendError(response, error as Error);
-        }
+    // eslint-disable-next-line class-methods-use-this
+    protected locationOf(request: NodeRequest & { originalUrl?: string }): LocationSource {
+        return { headers: request.headers, socket: request.socket as LocationSource["socket"], url: request.originalUrl || request.url || "" };
     }
 
     /**

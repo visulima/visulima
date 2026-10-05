@@ -8,14 +8,15 @@ import type { CreateAkamaiClientParameters } from "./types";
  * Akamai Cloud Object Storage is the rebranded Linode Object Storage; the
  * underlying `linodeobjects.com` domain is unchanged.
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `AKAMAI_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `AKAMAI_SECRET_ACCESS_KEY`
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `AKAMAI_ACCESS_KEY_ID`, then `AWS_ACCESS_KEY_ID`
+ * - `AKAMAI_SECRET_ACCESS_KEY`, then `AWS_SECRET_ACCESS_KEY`
  * - `AKAMAI_REGION` (e.g. `us-iad-1`)
  */
 const akamai = (parameters?: Partial<CreateAkamaiClientParameters>): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.AKAMAI_ACCESS_KEY_ID;
-    const secretAccessKey = parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.AKAMAI_SECRET_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.AKAMAI_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = parameters?.secretAccessKey ?? process.env.AKAMAI_SECRET_ACCESS_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
     const region = parameters?.region ?? process.env.AKAMAI_REGION;
 
     if (!accessKeyId || !secretAccessKey || !region) {

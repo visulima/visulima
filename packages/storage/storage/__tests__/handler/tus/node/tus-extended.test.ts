@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 
 import supertest from "supertest";
 import { temporaryDirectory } from "tempy";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Tus, TUS_RESUMABLE } from "../../../../src/handler/tus/tus";
 import { serializeMetadata } from "../../../../src/handler/tus/tus-base";
@@ -11,6 +11,8 @@ import DiskStorage from "../../../../src/storage/local/disk-storage";
 import type { File } from "../../../../src/storage/utils/file";
 import { metadata, storageOptions } from "../../../__helpers__/config";
 import app from "../../../__helpers__/express-app";
+
+const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
     const STORE_PATH = "/files";
@@ -24,10 +26,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         const storage = new DiskStorage({
             ...storageOptions,
             directory,
-            expiration: {
-                maxAge: "50ms", // Very short for testing
-                purgeInterval: "100ms",
-            },
+            // Long enough that no test here sees its upload expire, however slow the run (e.g. under coverage).
+            expiration: { maxAge: "1h" },
         });
 
         // Wait for storage to be ready
@@ -52,6 +52,10 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         listener.listen();
 
         agent = supertest.agent(listener);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     afterAll(async () => {
@@ -122,10 +126,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const expiredStorage = new DiskStorage({
                 ...storageOptions,
                 directory: expiredDirectory,
-                expiration: {
-                    maxAge: "50ms",
-                    purgeInterval: "100ms",
-                },
+                // Uploads are expired by moving the clock past maxAge, never by waiting for it.
+                expiration: { maxAge: "1h" },
+                // One file per upload: under the shared helper name, removing an expired upload (fire
+                // and forget) raced the next test's create of the same path.
+                filename: (file) => file.id,
             });
 
             // Wait for storage to be ready
@@ -144,6 +149,11 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             expiredListener.listen();
 
             expiredAgent = supertest.agent(expiredListener);
+        });
+
+        beforeEach(() => {
+            // Only Date is faked: sockets and fs I/O keep their real timers.
+            vi.useFakeTimers({ now: Date.now(), toFake: ["Date"] });
         });
 
         afterAll(async () => {
@@ -178,12 +188,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             const testFileId = createResponse.headers.location.split("/").pop();
 
-            // Wait for the file to expire (50ms + buffer)
-            await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 100);
-            });
+            vi.setSystemTime(Date.now() + TWO_HOURS);
 
             const headResponse = await expiredAgent.head(`${STORE_PATH}-expired/${testFileId}`).set("Tus-Resumable", TUS_RESUMABLE);
 
@@ -204,12 +209,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
 
             const testFileId = createResponse.headers.location.split("/").pop();
 
-            // Wait for the file to expire (50ms + buffer)
-            await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 100);
-            });
+            vi.setSystemTime(Date.now() + TWO_HOURS);
 
             const patchResponse = await expiredAgent
                 .patch(`${STORE_PATH}-expired/${testFileId}`)
@@ -224,14 +224,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should handle purge of expired files", async () => {
             expect.assertions(3);
 
-            // Wait a bit more for expiration
-            await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 200);
-            });
+            vi.setSystemTime(Date.now() + TWO_HOURS);
 
-            // Files should be deleted by expiration, so purge should find 0 items
             const deleted = await expiredServer.storage.purge();
 
             // The purge should work correctly (even if no files to purge)
@@ -351,18 +345,8 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
             const deferredExpiredStorage = new DiskStorage({
                 ...storageOptions,
                 directory: deferredExpiredDirectory,
-                expiration: {
-                    // 50ms was too tight on Windows CI: vitest's per-test
-                    // overhead exceeded the maxAge between this group's POST
-                    // (test 1) and PATCH (test 2), so the PATCH saw 410
-                    // instead of 204. The other groups create a per-test file
-                    // inside one it() and aren't affected.
-                    maxAge: "500ms",
-                    // Bumped so the expired-but-not-purged window is wide
-                    // enough for test 3 (waits 600ms) to observe 410 rather
-                    // than 404 after a purge sweep removed the file.
-                    purgeInterval: "10000ms",
-                },
+                // Test 3 expires the upload by moving the clock past maxAge, never by waiting for it.
+                expiration: { maxAge: "1h" },
             });
 
             // Wait for storage to be ready
@@ -427,14 +411,7 @@ describe("tUS Extended Tests (matching tus-node-server e2e)", () => {
         it("should return 410 for expired deferred upload", async () => {
             expect.assertions(1);
 
-            // Wait for expiration (maxAge is 500ms above; 600ms gives a margin
-            // while staying well under the 10s purgeInterval so the file is
-            // still on disk and we get 410 instead of 404).
-            await new Promise<void>((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, 600);
-            });
+            vi.useFakeTimers({ now: Date.now() + TWO_HOURS, toFake: ["Date"] });
 
             const response = await deferredAgent
                 .patch(`${STORE_PATH}-deferred-expired/${deferredFileId}`)

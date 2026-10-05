@@ -1,12 +1,15 @@
-import { Readable } from "node:stream";
+import { finished, Readable } from "node:stream";
 
 import createHttpError from "http-errors";
 
+import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
+import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import type { Headers } from "../../utils/types";
+import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
-import { computeChecksum, getHandlerChecksumAlgorithms, readBoundedBody } from "./tus-checksum";
+import { computeChecksum, getHandlerChecksumAlgorithms, readBoundedBody } from "../utils/checksum";
 import {
     isNonNegativeInteger,
     parseFinalConcatIds,
@@ -26,7 +29,7 @@ export const DEFAULT_MAX_CHECKSUM_BUFFER_SIZE: number = 64 * 1024 * 1024;
 /**
  * A TUS request, independent of the runtime (Node.js `IncomingMessage` or Web `Request`).
  */
-export interface TusRequest {
+export interface TusRequest extends LocationSource {
     /** Request body stream. */
     body: unknown;
 
@@ -35,9 +38,6 @@ export interface TusRequest {
 
     /** Resolves the upload ID from the URL; throws a 404 HttpError when there is none. */
     resolveId: () => string;
-
-    /** Request URL, used to build `Location`. */
-    url: string;
 }
 
 /**
@@ -46,6 +46,9 @@ export interface TusRequest {
 export interface TusStorage<TFile extends UploadFile> {
     checkIfExpired: (file: TFile) => Promise<unknown>;
     checksumTypes: string[];
+
+    /** Claims an upload for one PATCH across processes; resolves to the release (see `BaseStorage.claimWrite`). */
+    claimWrite?: (id: string) => Promise<() => Promise<void>>;
     config: { useRelativeLocation?: boolean };
     create: (config: FileInit) => Promise<TFile>;
     delete: (options: { id: string }) => Promise<TFile>;
@@ -53,16 +56,19 @@ export interface TusStorage<TFile extends UploadFile> {
     getStream?: (options: { id: string }) => Promise<{ size?: number; stream: unknown }>;
     maxUploadSize: number;
 
+    /** True for adapters that need a chunk's length before storing it (S3 parts, GCS, Azure blocks). */
+    requiresContentLength?: boolean;
+
     /** False for adapters that can only store an object in one request. */
     supportsResumableWrites?: boolean;
     tusExtension: string[];
     update: (options: { id: string }, updates: { id?: string; metadata?: Record<string, unknown>; size?: number }) => Promise<TFile>;
-    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength: number; id: string; start: number }) => Promise<TFile>;
+    write: (options: { body: unknown; checksum?: string; checksumAlgorithm?: string; contentLength?: number; id: string; start: number }) => Promise<TFile>;
 }
 
 export interface TusBaseConfig<TFile extends UploadFile> {
-    /** Builds the `Location` of an upload from the creation request's URL. */
-    buildFileUrl: (requestUrl: string, file: TFile) => string;
+    /** Builds the `Location` of an upload from the creation request. */
+    buildFileUrl: (request: LocationSource, file: TFile) => string;
 
     /** Whether DELETE is refused for finished uploads. */
     disableTerminationForFinishedUploads: () => boolean;
@@ -148,25 +154,30 @@ export class TusBase<TFile extends UploadFile> {
             }
         }
 
-        if (uploadConcat !== undefined) {
+        // A final upload takes its length from the partial uploads; every other upload needs one.
+        if (uploadConcat?.startsWith("final;")) {
             this.requireExtension("concatenation");
 
-            if (uploadConcat === "partial") {
-                return this.createUpload(request, { metadata: { ...metadata, uploadConcat: "partial" }, size: uploadLength }, { "Upload-Concat": "partial" });
-            }
-
-            if (uploadConcat.startsWith("final;")) {
-                return this.createFinalUpload(request, metadata, uploadConcat);
-            }
-
-            throw createHttpError(400, "Invalid Upload-Concat header format");
+            return this.createFinalUpload(request, metadata, uploadConcat);
         }
 
         if (uploadLength === undefined && uploadDeferLength === undefined) {
             throw createHttpError(400, "Either upload-length or upload-defer-length must be specified.");
         }
 
-        return this.createUpload(request, { metadata, size: uploadLength }, uploadLength === undefined ? { "Upload-Defer-Length": "1" } : {});
+        const deferHeaders: Headers = uploadLength === undefined ? { "Upload-Defer-Length": "1" } : {};
+
+        if (uploadConcat !== undefined) {
+            this.requireExtension("concatenation");
+
+            if (uploadConcat !== "partial") {
+                throw createHttpError(400, "Invalid Upload-Concat header format");
+            }
+
+            return this.createUpload(request, { metadata: { ...metadata, uploadConcat: "partial" }, size: uploadLength }, { ...deferHeaders, "Upload-Concat": "partial" });
+        }
+
+        return this.createUpload(request, { metadata, size: uploadLength }, deferHeaders);
     }
 
     /**
@@ -179,17 +190,13 @@ export class TusBase<TFile extends UploadFile> {
 
         const id = request.resolveId();
         const offsetHeader = request.header("upload-offset");
-        const contentType = request.header("content-type");
 
         if (offsetHeader === undefined) {
             throw createHttpError(412, "Missing Upload-Offset header");
         }
 
-        if (contentType === undefined) {
-            throw createHttpError(412, "Content-Type header required");
-        }
-
-        if (contentType !== "application/offset+octet-stream") {
+        // TUS core: a PATCH without this Content-Type "SHOULD" get 415, a missing one included.
+        if (!TusBase.isOffsetOctetStream(request)) {
             throw createHttpError(415, "Unsupported Media Type");
         }
 
@@ -206,7 +213,15 @@ export class TusBase<TFile extends UploadFile> {
         this.patchesInFlight.add(id);
 
         try {
-            return await this.writeChunk(request, id, Number(offsetHeader));
+            // Other processes sharing the meta store: claimed before the offset is read, so a PATCH
+            // racing this one from another process gets 423 instead of passing the same offset check.
+            const release = await this.storage.claimWrite?.(id);
+
+            try {
+                return await this.writeChunk(request, id, Number(offsetHeader));
+            } finally {
+                await release?.();
+            }
         } finally {
             this.patchesInFlight.delete(id);
         }
@@ -252,9 +267,15 @@ export class TusBase<TFile extends UploadFile> {
 
         const file = await this.storage.getMeta(request.resolveId());
 
+        await this.storage.checkIfExpired(file);
+
+        const { [WRITE_CLAIM_KEY]: _claim, ...metadata } = file.metadata ?? {};
+        const data = file.metadata === undefined ? file : { ...file, metadata };
+
+        // `data` is what both the Node and the fetch responders serialize as the JSON body.
         return {
-            ...file,
-            body: file,
+            ...data,
+            data,
             headers: this.buildHeaders(file, {
                 "Content-Type": HeaderUtilities.createContentType({ mediaType: "application/json" }),
             }) as Record<string, string | number>,
@@ -272,29 +293,21 @@ export class TusBase<TFile extends UploadFile> {
 
         const id = request.resolveId();
 
-        try {
-            if (this.config.disableTerminationForFinishedUploads()) {
-                const existing = await this.storage.getMeta(id);
+        // Only uploads: an id without upload metadata may name an object the route never created.
+        // The metadata is read anyway, for the status of the upload.
+        const existing = await this.storage.getMeta(id);
 
-                if (existing.status === "completed") {
-                    throw createHttpError(400, "Termination of finished uploads is disabled");
-                }
-            }
-
-            const file = await this.storage.delete({ id });
-
-            if (file.status === undefined) {
-                throw createHttpError(404, "File not found");
-            }
-
-            return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
-        } catch (error: unknown) {
-            if ((error as { code?: string }).code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
-
-            throw error;
+        if (existing.status === "completed" && this.config.disableTerminationForFinishedUploads()) {
+            throw createHttpError(400, "Termination of finished uploads is disabled");
         }
+
+        const file = await this.storage.delete({ id });
+
+        if (file.status === undefined) {
+            throw createHttpError(404, "File not found");
+        }
+
+        return { ...file, headers: this.buildHeaders(file) as Record<string, string>, statusCode: 204 };
     }
 
     /**
@@ -348,9 +361,16 @@ export class TusBase<TFile extends UploadFile> {
      */
     private async createUpload(request: TusRequest, init: FileInit, extraHeaders: Headers): Promise<ResponseFile<TFile>> {
         const contentLength = TusBase.contentLength(request);
+
+        const hasUpload = TusBase.isOffsetOctetStream(request);
+
+        if (hasUpload) {
+            this.assertWithinLength(0, contentLength, init.size === undefined ? undefined : Number(init.size));
+        }
+
         let file = await this.storage.create(init);
 
-        if (request.header("content-type") === "application/offset+octet-stream" && contentLength !== undefined && contentLength > 0) {
+        if (hasUpload && contentLength !== undefined && contentLength > 0) {
             this.assertResumableWrite(file, 0, contentLength, undefined);
 
             file = await this.storage.write({ ...file, body: request.body, contentLength, start: 0 });
@@ -358,7 +378,7 @@ export class TusBase<TFile extends UploadFile> {
 
         file = TusBase.holdPartialUpload(file);
 
-        const headers: Headers = { ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }), ...extraHeaders };
+        const headers: Headers = { ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request, file) }), ...extraHeaders };
 
         if (file.bytesWritten > 0) {
             headers["Upload-Offset"] = file.bytesWritten.toString();
@@ -384,14 +404,15 @@ export class TusBase<TFile extends UploadFile> {
         }
 
         const file = await this.storage.create({
-            metadata: { ...metadata, partialIds, uploadConcat: `final;${partialIds.join(" ")}` },
+            // HEAD MUST echo Upload-Concat "as received in the upload creation request".
+            metadata: { ...metadata, partialIds, uploadConcat },
             size: partialFiles.reduce((total, partial) => total + (partial.size as number), 0),
         });
 
         await this.concatenateFiles(file, partialFiles);
 
         const headers: Headers = {
-            ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request.url, file) }),
+            ...this.buildHeaders(file, { Location: this.config.buildFileUrl(request, file) }),
             "Upload-Concat": uploadConcat,
         };
 
@@ -457,8 +478,40 @@ export class TusBase<TFile extends UploadFile> {
 
         this.assertResumableWrite(current, uploadOffset, contentLength, deferredSize);
 
+        // TUS allows a chunked PATCH body; an adapter that can't stream one of unknown length
+        // refuses it before a byte is read rather than buffering it.
+        if (contentLength === undefined && this.storage.requiresContentLength) {
+            throw createHttpError(411, "Content-Length is required by this storage backend");
+        }
+
         const size = deferredSize ?? current.size;
+        const limit = this.assertWithinLength(uploadOffset, contentLength, size);
         const { body, native } = await this.prepareChecksum(request, contentLength, size === undefined ? undefined : size - uploadOffset);
+        // Without a Content-Length the body is only known to fit while it streams, and the adapter
+        // gets no length: an unknown one must not read as an empty chunk.
+        let limiter: StreamLength | undefined;
+
+        if (contentLength === undefined && body instanceof Readable) {
+            const bounded = new StreamLength(limit - uploadOffset);
+
+            // It can fail before the adapter attaches its listener, and an unheard 'error' crashes the
+            // process; the adapter still sees it through pipeline()/for-await (`errored`).
+            bounded.on("error", () => {
+                // Reported through the stream's errored state
+            });
+
+            // pipe() doesn't pass the body's failure on: a client that disconnects mid-body would leave
+            // the adapter waiting forever with the upload claimed. pipeline() would destroy the request
+            // on the limiter's own error instead, leaving no socket for the 413.
+            finished(body, (error) => {
+                if (error) {
+                    bounded.destroy(error);
+                }
+            });
+            limiter = body.pipe(bounded);
+        }
+
+        const boundedBody = limiter ?? body;
 
         // The adapter must know the final length when it writes, to finish the upload on its last byte.
         if (deferredSize !== undefined) {
@@ -468,11 +521,16 @@ export class TusBase<TFile extends UploadFile> {
         let file: TFile;
 
         try {
-            file = await this.storage.write({ body, ...native, contentLength: contentLength ?? 0, id, start: uploadOffset });
+            file = await this.storage.write({ body: boundedBody, ...native, contentLength, id, start: uploadOffset });
         } catch (error: unknown) {
             // A rejected chunk must leave the upload as it was.
             if (deferredSize !== undefined) {
                 await this.storage.update({ id }, { size: undefined }).catch(() => undefined);
+            }
+
+            // Adapters wrap the limiter's error, so ask the limiter.
+            if (isStreamLengthError(limiter?.errored)) {
+                throw createHttpError(413, "Chunk exceeds the upload length");
             }
 
             throw error;
@@ -637,6 +695,24 @@ export class TusBase<TFile extends UploadFile> {
         }
     }
 
+    /**
+     * Rejects a chunk that would end past the upload's length, or past the server limit while the
+     * length is deferred (TUS core: the Server "MUST respond with the 413" over its maximum size).
+     * @param offset Offset the chunk starts at
+     * @param contentLength Chunk length, when known
+     * @param size Upload length, when known
+     * @returns The byte the upload may not exceed
+     */
+    private assertWithinLength(offset: number, contentLength: number | undefined, size: number | undefined): number {
+        const limit = typeof size === "number" && !Number.isNaN(size) ? Math.min(size, this.storage.maxUploadSize) : this.storage.maxUploadSize;
+
+        if (contentLength !== undefined && offset + contentLength > limit) {
+            throw createHttpError(413, "Chunk exceeds the upload length");
+        }
+
+        return limit;
+    }
+
     private requireExtension(extension: string): void {
         if (!this.storage.tusExtension.includes(extension)) {
             throw createHttpError(501, `${extension} extension is not supported by this storage backend.`);
@@ -652,6 +728,16 @@ export class TusBase<TFile extends UploadFile> {
         const header = request.header("content-length");
 
         return header !== undefined && isNonNegativeInteger(header) ? Number(header) : undefined;
+    }
+
+    /**
+     * Whether the request body is TUS upload data. Compares the media type only, so parameters
+     * (`; charset=…`) don't turn it into a 415.
+     * @param request TUS request
+     * @returns `true` for `application/offset+octet-stream`
+     */
+    private static isOffsetOctetStream(request: TusRequest): boolean {
+        return request.header("content-type")?.split(";")[0]?.trim().toLowerCase() === "application/offset+octet-stream";
     }
 
     /**

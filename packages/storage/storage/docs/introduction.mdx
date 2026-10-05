@@ -81,9 +81,12 @@ import { Multipart, Rest } from "@visulima/storage/handler/http/node";
 const storage = new DiskStorage({ directory: "./uploads" });
 
 const multipart = new Multipart({ storage });
-app.use("/upload", multipart.handle, (req, res) => {
-    res.json(req.body); // handler writes the stored file metadata to req.body
+// `upload` (unlike `handle`) accepts Express's `next`: once an upload completes it
+// writes the stored file metadata to `req.body` and calls the next middleware.
+app.post("/upload", multipart.upload, (req, res) => {
+    res.json(req.body);
 });
+app.use("/upload", multipart.handle); // GET / DELETE / OPTIONS
 
 const rest = new Rest({ storage });
 app.use("/files", rest.handle);
@@ -131,9 +134,9 @@ Three handlers cover the common upload patterns:
 
 Object storage (service credentials, presigned URLs, S3-style):
 
-- AWS S3 (`S3Storage`, `AWSLightStorage`)
+- AWS S3 (`S3Storage`, `AwsLightStorage`)
 - Azure Blob (`AzureStorage`)
-- Google Cloud Storage (`GcsStorage`)
+- Google Cloud Storage (`GCStorage`)
 - Vercel Blob (`VercelBlobStorage`)
 - Netlify Blobs (`NetlifyBlobStorage`)
 - Local filesystem (`DiskStorage`, `DiskStorageWithChecksum`)
@@ -143,8 +146,9 @@ S3-compatible (branded client configs under `provider/aws/s3/clients`): Cloudfla
 
 Consumer providers (user OAuth or service-credential, all peer-dep gated):
 
-- Dropbox, Google Drive, Microsoft OneDrive, Box
-- Supabase Storage, UploadThing, Bunny Storage
+- Dropbox, Google Drive, Microsoft OneDrive, SharePoint, Box
+- Supabase Storage, UploadThing, Bunny Storage, Cloudinary, Firebase Storage, PocketBase
+- FTP / FTPS (`FtpStorage`), SFTP (`SftpStorage`)
 
 → See [Storage services](./services/capabilities.mdx) for the full capability matrix per provider.
 

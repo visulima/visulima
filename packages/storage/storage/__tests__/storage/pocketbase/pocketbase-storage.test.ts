@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import PocketBaseStorage from "../../../src/storage/pocketbase/pocketbase-storage";
 import type { PocketBaseStorageOptions } from "../../../src/storage/pocketbase/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const { MockClientResponseError } = vi.hoisted(() => {
@@ -227,15 +228,19 @@ describe(PocketBaseStorage, () => {
             await expect(withClient().getCompletedFile("missing.mp4")).resolves.toBeUndefined();
         });
 
-        it("returns undefined when the size cannot be determined", async () => {
-            expect.assertions(1);
+        it("throws when the record lookup or the file HEAD fails", async () => {
+            expect.assertions(2);
+
+            collectionApi.getFirstListItem.mockRejectedValueOnce(new MockClientResponseError(500));
+
+            await expect(withClient().getCompletedFile("key.mp4")).rejects.toBeInstanceOf(MockClientResponseError);
 
             collectionApi.getFirstListItem.mockResolvedValue({ file: "stored.mp4", id: "rec1" });
             mockClient.files.getURL.mockReturnValue("https://pb.example.com/file");
 
-            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 200 }));
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 503 }));
 
-            await expect(withClient().getCompletedFile("key.mp4")).resolves.toBeUndefined();
+            await expect(withClient().getCompletedFile("key.mp4")).rejects.toThrow("503");
 
             fetchSpy.mockRestore();
         });
@@ -247,7 +252,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             collectionApi.getFirstListItem.mockResolvedValue({ file: "f.mp4", id: "rec1" });
             collectionApi.delete.mockResolvedValue(true);
@@ -263,7 +268,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             collectionApi.getFirstListItem.mockRejectedValue(new MockClientResponseError(404));
 
@@ -277,7 +282,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             collectionApi.getFirstListItem.mockResolvedValue({ file: "f.mp4", id: "rec1" });
 
             await expect(storage.exists({ id: "f.mp4" })).resolves.toBe(true);
@@ -288,7 +293,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             collectionApi.getFirstListItem.mockRejectedValue(new MockClientResponseError(404));
 
             await expect(storage.exists({ id: "missing.mp4" })).resolves.toBe(false);
@@ -301,7 +306,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             collectionApi.getFirstListItem.mockResolvedValueOnce({ file: "src.mp4", id: "rec1" });
             mockClient.files.getURL.mockReturnValue("https://pb.example.com/src");
@@ -328,7 +333,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             collectionApi.getFirstListItem
                 .mockResolvedValueOnce({ file: "src.mp4", id: "rec1" })
@@ -382,7 +387,7 @@ describe(PocketBaseStorage, () => {
 
             const storage = withClient();
 
-            vi.spyOn(storage as unknown as { getMetaSafe: () => Promise<unknown> }, "getMetaSafe").mockResolvedValue(undefined);
+            vi.spyOn(storage as unknown as { findMeta: () => Promise<unknown> }, "findMeta").mockResolvedValue(undefined);
 
             collectionApi.getFirstListItem.mockResolvedValue({ file: "f.mp4", id: "rec1" });
             mockClient.files.getToken.mockResolvedValue("tok-xyz");

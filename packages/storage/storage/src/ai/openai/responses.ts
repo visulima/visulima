@@ -73,6 +73,7 @@ export interface ResponsesFileToolsOptions {
 
 const TOOL_NAMES: ReadonlyArray<FileToolName> = [
     "listFiles",
+    "searchFiles",
     "getFileMetadata",
     "downloadFile",
     "getFileUrl",
@@ -112,6 +113,9 @@ const dispatch = async (files: Files, name: FileToolName, args: unknown): Promis
         }
         case "listFiles": {
             return { ok: true, output: await executors.listFiles(files, validated.data as never) };
+        }
+        case "searchFiles": {
+            return { ok: true, output: await executors.searchFiles(files, validated.data as never) };
         }
         case "signUploadUrl": {
             return { ok: true, output: await executors.signUploadUrl(files, validated.data as never) };

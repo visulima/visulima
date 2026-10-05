@@ -1,6 +1,6 @@
 # Batch Operations
 
-Perform multiple file operations in a single request for improved efficiency and reduced API calls. The package offers three layers, each fit for a different surface:
+Perform multiple file operations in a single request for improved efficiency and reduced API calls. The package offers four layers, each fit for a different surface:
 
 - **`Files` facade bulk overloads** — pass an array to `upload` / `download` / `head` / `exists` / `delete` / `move`, get back a structured `{ …, errors? }` result with bounded concurrency.
 - **Cross-provider migration** — `transfer(source, destination, opts?)` streams every object from one `Files` instance to another.
@@ -112,23 +112,15 @@ const response = await fetch("/files", {
 
 ## Response Format
 
-Batch delete returns a multi-status response:
+The REST handler calls the adapter's `deleteBatch` and answers with:
 
-```typescript
-// Status: 204 (No Content) - All deletions successful
-// Status: 207 (Multi-Status) - Partial success
+| Outcome          | Status             | Headers                                                     | Body                                   |
+| ---------------- | ------------------ | ----------------------------------------------------------- | -------------------------------------- |
+| Every id deleted | `204 No Content`   | `X-Delete-Successful`                                       | none                                   |
+| Some ids deleted | `207 Multi-Status` | `X-Delete-Successful`, `X-Delete-Failed`, `X-Delete-Errors` | JSON array of the deleted file records |
+| No id deleted    | `404 Not Found`    | —                                                           | error JSON naming the failed ids       |
 
-// Headers:
-// X-Delete-Successful: 2
-// X-Delete-Failed: 1
-// X-Delete-Errors: [{"error":"File not found","id":"id3"}]
-
-// Body: Array of successfully deleted files
-[
-    { id: "id1", status: "deleted", ... },
-    { id: "id2", status: "deleted", ... },
-]
-```
+`X-Delete-Errors` is a JSON array of `{ "id": string, "error": string }`. The Node and Fetch handlers send the same body.
 
 ## Error Handling
 
@@ -137,17 +129,17 @@ const response = await fetch("/files?ids=id1,id2,id3", {
     method: "DELETE",
 });
 
-const successful = parseInt(response.headers.get("X-Delete-Successful") || "0");
-const failed = parseInt(response.headers.get("X-Delete-Failed") || "0");
-
-if (failed > 0) {
-    const errors = JSON.parse(response.headers.get("X-Delete-Errors") || "[]");
-    console.error("Failed deletions:", errors);
-}
-
-if (successful > 0) {
+if (response.status === 204) {
+    // all deleted
+} else if (response.status === 207) {
     const deletedFiles = await response.json();
-    console.log("Successfully deleted:", deletedFiles.length);
+    const errors = JSON.parse(response.headers.get("X-Delete-Errors") || "[]");
+
+    console.log("Deleted:", deletedFiles.length);
+    console.error("Failed deletions:", errors);
+} else {
+    // 404 when nothing could be deleted, or another error status
+    console.error("Batch delete failed:", await response.json());
 }
 ```
 
@@ -156,21 +148,17 @@ if (successful > 0) {
 ```typescript
 import express from "express";
 import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/node";
 
 const app = express();
 const storage = new DiskStorage({ directory: "./uploads" });
 const rest = new Rest({ storage });
 
-// Batch delete endpoint
-app.delete("/files", rest.handle, (req, res) => {
-    // Response is automatically handled by the handler
-    // Check headers for deletion status
-    const successful = res.getHeader("X-Delete-Successful");
-    const failed = res.getHeader("X-Delete-Failed");
-
-    console.log(`Deleted: ${successful}, Failed: ${failed}`);
-});
+// The handler answers DELETE /files?ids=… (and every other REST route) itself
+app.use("/files", rest.handle);
 ```
+
+`rest.handle` writes the status, headers and body and never calls `next`, so don't chain a middleware after it. To observe deletions, use the adapter's `onDelete` hook.
 
 ## Storage-Level Batch Operations
 
@@ -276,7 +264,7 @@ Azure Blob Storage has a native batch API with specific limits:
 - **Maximum batch request size**: 4 MB
 - **Supported operations**: Delete Blob and Set Blob Tier
 
-> **Note**: Our implementation processes operations in parallel rather than using Azure's native batch API. For optimal performance with Azure, consider limiting batches to 256 operations or less to align with Azure's native batch limits.
+> **Note**: `AzureStorage.deleteBatch` uses the native Blob Batch API and splits the ids into requests of at most 256 sub-requests. `copyBatch` and `moveBatch` are inherited from `BaseStorage` and run the operations in parallel.
 
 ### AWS S3 and S3-Compatible Services
 
@@ -318,8 +306,8 @@ AWS S3 and S3-compatible services (DigitalOcean Spaces, Cloudflare R2, MinIO, Ba
 ## Best Practices
 
 1. **Limit batch size** - Don't exceed 100 files per batch to avoid timeouts (Azure: 256 max for optimal performance)
-2. **Handle partial failures** - Always check `X-Delete-Failed` header or `failedCount` in response
-3. **Use appropriate status codes** - 204 for full success, 207 for partial success
+2. **Handle partial failures** - Check for `207` (and the `X-Delete-Errors` header) over HTTP, or `failedCount` on the adapter result
+3. **Branch on the status code** - 204 all deleted, 207 partial, 404 none deleted
 4. **Log errors** - Track failed operations for debugging
 5. **Consider rate limits** - Batch operations may be rate-limited by storage providers
 6. **Monitor provider quotas** - Be aware of your provider's rate limits and quotas

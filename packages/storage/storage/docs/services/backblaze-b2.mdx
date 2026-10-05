@@ -4,80 +4,142 @@
 
 ## Overview
 
-Backblaze B2 is an S3-compatible cloud storage service with competitive pricing. It provides reliable, cost-effective storage for applications.
+Backblaze B2 exposes an S3-compatible API. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes) against B2's S3 endpoint. The `backblaze()` helper builds the endpoint `https://s3.<region>.backblazeb2.com` and maps the application key to S3 credentials.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Backblaze B2 is S3-compatible, so use the S3Storage with B2 endpoint:
+1. **Create a bucket** — B2 Cloud Storage → _Buckets_ → _Create a Bucket_ (private). The bucket page shows its S3 endpoint, e.g. `s3.us-west-004.backblazeb2.com`; the part between `s3.` and `.backblazeb2.com` is the `region`.
+2. **Create an application key** — _Application Keys_ → _Add a New Application Key_. Restrict it to the bucket with **Read and Write** access (that includes listing, reading, writing and deleting files in the bucket). B2 shows the `keyID` and `applicationKey` once. The master key can't be used with the S3 API.
+3. **CORS** — needed only when the browser calls B2 directly (presigned URLs, `clientDirectUpload`). Set it with the S3 API (`aws s3api put-bucket-cors --endpoint-url https://s3.<region>.backblazeb2.com --bucket uploads --cors-configuration file://cors.json`):
 
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { backblaze } from "@visulima/storage/provider/aws/s3/clients";
+    ```json
+    {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["https://app.example.com"],
+                "AllowedMethods": ["GET", "HEAD", "PUT"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["ETag"],
+                "MaxAgeSeconds": 3600
+            }
+        ]
+    }
+    ```
 
-const clientConfig = backblaze({
-    applicationKeyId: process.env.B2_APP_KEY_ID!,
-    applicationKey: process.env.B2_APP_KEY!,
-    region: process.env.B2_REGION || "us-west-000",
-});
+    You can also manage the rules under bucket → _CORS Rules_ in the web UI; make sure they cover the S3-compatible API.
 
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
+4. **Lifecycle** — add a lifecycle rule with `daysFromStartingToCancelingUnfinishedLargeFiles` (bucket → _Lifecycle Settings_ → custom rules) to cancel multipart uploads this storage didn't start; `purge()` only aborts its own.
 
 ## Configuration
 
-### Environment Variables
+### `backblaze()` helper
 
-```typescript
-process.env.B2_APP_KEY_ID = "your-application-key-id";
-process.env.B2_APP_KEY = "your-application-key";
-process.env.B2_REGION = "us-west-000";
+`import { backblaze } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`):
 
-const clientConfig = backblaze(); // Uses environment variables
+| Parameter          | Type     | Required | Env fallback (in order)                                      |
+| ------------------ | -------- | -------- | ------------------------------------------------------------ |
+| `region`           | `string` | yes      | `B2_REGION`, `BACKBLAZE_REGION`, `AWS_REGION`                |
+| `applicationKeyId` | `string` | yes      | `B2_APP_KEY_ID`, `BACKBLAZE_APP_KEY_ID`, `AWS_ACCESS_KEY_ID` |
+| `applicationKey`   | `string` | yes      | `B2_APP_KEY`, `BACKBLAZE_APP_KEY`, `AWS_SECRET_ACCESS_KEY`   |
+
+The `B2_*` / `BACKBLAZE_*` variables win over the generic `AWS_*` ones. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { backblaze } from "@visulima/storage/provider/aws/s3/clients";
+
+// Reads B2_REGION, B2_APP_KEY_ID, B2_APP_KEY (or the AWS_* equivalents)
+const storage = new S3Storage({ bucket: "uploads", ...backblaze() });
+```
+
+### Production
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { backblaze } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    ...backblaze({
+        region: "us-west-004",
+        applicationKeyId: process.env.B2_APP_KEY_ID!,
+        applicationKey: process.env.B2_APP_KEY!,
+    }),
+    bucket: "uploads",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-### With Explicit Parameters
+### Edge (`AwsLightStorage`)
 
-```typescript
-const clientConfig = backblaze({
-    applicationKeyId: "your-application-key-id",
-    applicationKey: "your-application-key",
-    region: "us-west-000",
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "us-west-004",
+    endpoint: "https://s3.us-west-004.backblazeb2.com",
+    accessKeyId: process.env.B2_APP_KEY_ID!,
+    secretAccessKey: process.env.B2_APP_KEY!,
 });
 ```
 
-## Regions
+## Metadata storage
 
-Backblaze B2 regions:
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): `<id>.META` zero-byte objects in the bucket hold each upload's record in their user-metadata header. They are skipped by `list()` and `purge()`, survive upload completion, and are shared by every instance using the bucket. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-- `us-west-000` - US West
-- `us-west-001` - US West (alternate)
-- `us-west-002` - US West (alternate)
-- `eu-central-003` - EU Central
+## Behaviour & limits
 
-## Features
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`. B2 keeps earlier versions when you overwrite or delete a file unless the bucket's lifecycle is set to keep only the last version — deleted uploads may still count toward storage until then.
 
-- **Cost-Effective**: Competitive pricing for storage and egress
-- **S3-Compatible**: Full S3 API compatibility
-- **Reliable**: High durability and availability
-- **Scalable**: Unlimited storage capacity
+## Using it with the handlers
 
-## Best Practices
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
 
-1. **Choose appropriate region** - Select region closest to your users
-2. **Monitor costs** - Track storage and egress costs
-3. **Use lifecycle policies** - Automatically manage file lifecycle
-4. **Configure CORS** - Set up CORS for web applications
-5. **Enable versioning** - Use B2 versioning for important files
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("backups/db.sql.gz", buffer, { contentType: "application/gzip" });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `403` / `InvalidAccessKeyId`             | Master key used, or the key is restricted to another bucket. Create a bucket-scoped Read and Write key. |
+| `SignatureDoesNotMatch` / wrong host     | `region` doesn't match the bucket's endpoint (often an `AWS_REGION` from elsewhere). Pass `region`.     |
+| Browser CORS errors                      | Add CORS rules that cover the S3-compatible API (see above).                                            |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                              |

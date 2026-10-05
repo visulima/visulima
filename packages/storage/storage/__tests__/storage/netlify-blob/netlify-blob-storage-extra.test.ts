@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import NetlifyBlobFile from "../../../src/storage/netlify-blob/netlify-blob-file";
 import NetlifyBlobStorage from "../../../src/storage/netlify-blob/netlify-blob-storage";
 import type { NetlifyBlobStorageOptions } from "../../../src/storage/netlify-blob/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 // Mock Netlify Blobs SDK
@@ -87,7 +88,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             storage.onCreate = onCreateSpy;
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const file = await storage.create({
@@ -122,7 +123,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
         it("supports TTL string in create config", async () => {
             expect.assertions(1);
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const file = await storage.create({
@@ -196,7 +197,8 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             expect(store.set).toHaveBeenCalledTimes(1);
             expect(result.bytesWritten).toBe(metafile.size);
-            expect(result.url).toBe(`/api/blobs/test-store/${metafile.name}`);
+            // Netlify Blobs has no public URL, so none is made up.
+            expect(result.url).toBeUndefined();
         });
 
         it("throws when part does not match (size mismatch)", async () => {
@@ -252,7 +254,54 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.delete({ id: metafile.id })).rejects.toThrow(/pathname/);
+            await expect(storage.delete({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
+        });
+
+        it("keeps the metadata when the store fails to delete the blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, pathname: metafile.name });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.delete as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Netlify Blobs has generated an internal error"));
+
+            await expect(storage.delete({ id: metafile.id }, { retries: 0 })).rejects.toThrow(/internal error/);
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("deletes the blob stored under the ID when there is no metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.getMetadata as ReturnType<typeof vi.fn>).mockResolvedValue({ etag: "e1", metadata: { contentType: "video/mp4" } });
+
+            const result = await storage.delete({ id: "video.mp4" });
+
+            expect(store.delete).toHaveBeenCalledWith("video.mp4");
+            expect(result).toMatchObject({ contentType: "video/mp4", id: "video.mp4", status: "deleted" });
+            expect(deleteMeta).not.toHaveBeenCalled();
+        });
+
+        it("reports FILE_NOT_FOUND when there is neither metadata nor a blob", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+
+            const { getStore } = await import("@netlify/blobs");
+            const store = getStore({ name: "test-store" });
+
+            (store.getMetadata as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+            await expect(storage.delete({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: "FileNotFound" });
+            expect(store.delete).not.toHaveBeenCalled();
         });
     });
 
@@ -311,7 +360,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.get({ id: metafile.id })).rejects.toThrow(/pathname/);
+            await expect(storage.get({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
 
         it("throws when blob is missing", async () => {
@@ -327,7 +376,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
 
             (store.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
-            await expect(storage.get({ id: metafile.id })).rejects.toThrow(/not found/);
+            await expect(storage.get({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
     });
 
@@ -366,7 +415,7 @@ describe(`${NetlifyBlobStorage.name} additional coverage`, () => {
                 pathname: undefined,
             });
 
-            await expect(storage.copy(metafile.id, "dest")).rejects.toThrow(/pathname/);
+            await expect(storage.copy(metafile.id, "dest")).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
         });
 
         it("move() copies then deletes source", async () => {

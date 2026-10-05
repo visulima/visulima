@@ -1,0 +1,155 @@
+# SFTP
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+The SFTP adapter, built on `ssh2-sftp-client`, stores each key as a remote file under `rootFolderPath`. SFTP has nowhere to keep metadata, so upload records are stored as sidecar JSON on **local disk**. The adapter opens a fresh SSH connection for every operation and closes it afterwards. The SSH channel isn't safe for concurrent use, so connections aren't pooled.
+
+## Installation
+
+```sh
+npm install ssh2-sftp-client
+```
+
+```sh
+yarn add ssh2-sftp-client
+```
+
+```sh
+pnpm add ssh2-sftp-client
+```
+
+## Provider setup
+
+- **Account:** a dedicated SSH user with the SFTP subsystem enabled. Ideally restrict it to SFTP only, for example with OpenSSH `ForceCommand internal-sftp` plus `ChrootDirectory`. It needs read, write, delete and rename permission and the right to create directories under the upload root.
+- **Authentication:** prefer a key pair (`privateKey`, plus `passphrase` if the key is encrypted) over `password`.
+- **Host key verification:** `ssh2` accepts **any** host key unless you verify it. In production, pin the server's key with the `ssh2` connection options `hostVerifier` (and `hostHash`). Without that, a man-in-the-middle can impersonate the server.
+- **Limits:** every operation opens its own SSH connection, so the server's `MaxStartups` / `MaxSessions` settings and rate limits cap how many operations can run at once.
+- **CORS:** not applicable. Browsers go through your handler.
+
+## Configuration
+
+```ts
+import { readFileSync } from "node:fs";
+
+import { SftpStorage } from "@visulima/storage/provider/sftp";
+
+// Minimal
+const storage = new SftpStorage({
+    connection: {
+        host: "sftp.example.com",
+        username: "deploy",
+        privateKey: readFileSync("/path/to/id_ed25519"),
+    },
+    rootFolderPath: "uploads",
+});
+```
+
+```ts
+import { createHash, timingSafeEqual } from "node:crypto";
+import { readFileSync } from "node:fs";
+
+import { SftpStorage } from "@visulima/storage/provider/sftp";
+
+// Expected host key fingerprint (SHA-256 of the raw key), e.g. from `ssh-keyscan host | ssh-keygen -lf -`
+const expected = Buffer.from(process.env.SFTP_HOST_SHA256!, "base64");
+
+// Production: pinned host key, absolute root, shared metadata
+const storage = new SftpStorage({
+    connection: {
+        host: "sftp.example.com",
+        port: 22,
+        username: "uploads",
+        privateKey: readFileSync("/run/secrets/sftp_key"),
+        passphrase: process.env.SFTP_KEY_PASSPHRASE,
+        hostVerifier: (key: Buffer) => {
+            const actual = createHash("sha256").update(key).digest();
+
+            return actual.length === expected.length && timingSafeEqual(actual, expected);
+        },
+        readyTimeout: 20_000,
+    },
+    rootFolderPath: "/srv/uploads",
+    maxUploadSize: "500MB",
+    metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
+    expiration: { maxAge: "7d", purgeInterval: "1h" },
+});
+```
+
+| Option              | Type                      | Default                     | Description                                                                                                                                                                                                     |
+| ------------------- | ------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection`        | `ConnectOptions`          | —                           | **Required.** `ssh2-sftp-client` / `ssh2` connection options: `host`, `port`, `username`, `password`, `privateKey`, `passphrase`, `hostVerifier`, `readyTimeout`, …                                             |
+| `rootFolderPath`    | `string`                  | `""` (login/home directory) | Remote directory that acts as the bucket root. A leading `/` makes it absolute; otherwise it resolves against the login directory. Trailing slashes are ignored. Intermediate directories are created on write. |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | OS temp dir (`Upload_meta`) | `directory` / `prefix` / `suffix` for the local metadata files.                                                                                                                                                 |
+
+Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME`, `maxMetadataSize`, `filename`, `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`. The adapter reads no environment variables.
+
+## Metadata storage
+
+Upload records are JSON sidecars on **local disk**, by default `<os tmpdir>/Upload_meta/<id>.META`. They are not on the SFTP server.
+
+- **Multiple app instances:** set `metaStorageConfig.directory` to a shared volume, or pass a custom `metaStorage`. Otherwise each instance only knows its own uploads. Upload locks are held per process.
+- **Ephemeral disks:** use a persistent directory, not `/tmp`, in containers.
+- `get`, `delete`, `exists`, `copy` and `move` look up the record first. A remote file without one answers `FILE_NOT_FOUND` (`exists` answers `false`).
+- Finished uploads **keep** their record. `delete()` removes it.
+- `purge()` works from the upload **records**, so expiration only removes this storage's own uploads.
+
+## Behaviour & limits
+
+| Aspect                            | Behaviour                                                                                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chunked / resumable writes        | ❌ `supportsResumableWrites: false`. Only a whole-file write at offset 0 is accepted; anything else → `METHOD_NOT_ALLOWED`. The body is buffered in memory before `put`. |
+| Checksums                         | None advertised.                                                                                                                                                         |
+| Range reads                       | ✅ `supportsRange: true`. The server streams only the requested bytes (inclusive `end`).                                                                                 |
+| `getReadUrl()` / `getUploadUrl()` | ❌ `METHOD_NOT_ALLOWED`.                                                                                                                                                 |
+| `list()`                          | Walks `rootFolderPath` recursively and returns every regular file, including files not uploaded through this storage. `limit` is ignored.                                |
+| `copy()`                          | Downloads and uploads again, then writes a new record.                                                                                                                   |
+| `move()`                          | SFTP `rename`. If the rename fails, falls back to copy and delete.                                                                                                       |
+| `exists()`                        | `true` only for a regular file or a symlink. A directory at the path answers `false`.                                                                                    |
+| Retries                           | `retryConfig` (default 3 retries, exponential backoff). Cancelling ends the SSH connection, and aborted operations are never retried.                                    |
+
+## Using it with the handlers
+
+```ts
+// Node
+import express from "express";
+import { Rest, Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/upload/rest", new Rest({ storage }).handle);
+// TUS clients must not set a chunkSize: the whole file goes in one PATCH
+app.use("/upload/tus", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch runtimes (Node-based only: ssh2 needs node:net / node:crypto)
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const multipart = new Multipart({ storage });
+
+export const POST = (request: Request) => multipart.fetch(request);
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("exports/data.json", JSON.stringify(data), { contentType: "application/json" });
+```
+
+## Troubleshooting
+
+| Symptom                                              | Cause / fix                                                                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `All configured authentication methods failed`       | Wrong key or password. An encrypted key also needs `passphrase`. Check the server's `AuthorizedKeysFile`.         |
+| `Timed out while waiting for handshake`              | Firewall, wrong port, or a slow server. Raise `readyTimeout`.                                                     |
+| `Host key verification failed` (your `hostVerifier`) | The server key changed, or you hashed it differently. Re-check the fingerprint.                                   |
+| `Permission denied` on write / `mkdir`               | The user can't write under `rootFolderPath`. With a chroot, paths are relative to the jail.                       |
+| Files land in an unexpected directory                | A relative `rootFolderPath` resolves against the login directory. Use a leading `/` for an absolute path.         |
+| `405` on a TUS PATCH / chunk                         | Send the whole file in one request.                                                                               |
+| `FILE_NOT_FOUND` for a file that exists              | There is no metadata record on this instance. Share the metadata directory.                                       |
+| Intermittent connection errors under load            | Each operation opens its own SSH session. Raise the server's `MaxStartups` / `MaxSessions` or reduce concurrency. |

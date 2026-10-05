@@ -4,88 +4,133 @@
 
 ## Overview
 
-Tencent Cloud Object Storage (COS) is an S3-compatible object storage service. It is accessed through the S3-compatible endpoint, so it works with `S3Storage` plus the bundled `tencent` client preset, which derives the endpoint from the region code.
+Tencent Cloud Object Storage (COS) offers an S3-compatible API. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `tencent()` helper builds the endpoint `https://cos.<region>.myqcloud.com` with virtual-hosted addressing.
+
+**The bucket name must include the APPID suffix** (e.g. `uploads-1250000000`); the S3-compatible API expects the full name.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Tencent COS is S3-compatible, so use `S3Storage` with the `tencent` client preset:
-
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { tencent } from "@visulima/storage/provider/aws/s3/clients";
-
-const clientConfig = tencent({
-    accessKeyId: process.env.TENCENT_SECRET_ID!,
-    secretAccessKey: process.env.TENCENT_SECRET_KEY!,
-    region: process.env.TENCENT_REGION || "ap-guangzhou",
-});
-
-const storage = new S3Storage({
-    bucket: "uploads-1250000000",
-    ...clientConfig,
-});
-```
-
-> **Bucket naming:** the bucket name must include the APPID suffix (e.g. `uploads-1250000000`). The S3-compatible API expects the full form — a bare bucket name will not resolve.
-
-The endpoint defaults to `https://cos.${region}.myqcloud.com` with virtual-hosted-style addressing. Pass `endpoint` (or set `TENCENT_ENDPOINT`) to override it.
+1. **Create a bucket** — COS console → _Bucket List_ → _Create Bucket_; pick the region (`ap-guangzhou`, `ap-singapore`, `eu-frankfurt`, …) and **Private Read/Write** access. The full name shown (`name-APPID`) is your `bucket`.
+2. **Create a sub-user with an API key** — CAM console → _Users_ → _Create User_ with programmatic access; copy the SecretId and SecretKey. Grant it a custom policy scoped to the bucket covering object upload (simple and multipart), download, delete, bucket listing, and listing/aborting multipart uploads — or the preset `QcloudCOSDataFullControl` if a broad policy is acceptable.
+3. **CORS** — needed only when the browser calls COS directly (presigned URLs, `clientDirectUpload`). Bucket → _Security Management_ → _CORS_: origin `https://app.example.com`, methods `GET, HEAD, PUT`, allow-headers `*`, expose-headers `ETag`.
+4. **Lifecycle** — add a lifecycle rule that deletes incomplete multipart uploads (fragments) after N days; `purge()` only aborts uploads this storage started.
 
 ## Configuration
 
-### Environment Variables
+### `tencent()` helper
 
-```typescript
-process.env.TENCENT_SECRET_ID = "your-secret-id";
-process.env.TENCENT_SECRET_KEY = "your-secret-key";
-process.env.TENCENT_REGION = "ap-guangzhou";
+`import { tencent } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`, `forcePathStyle: false`):
 
-const clientConfig = tencent(); // Uses environment variables
+| Parameter         | Type     | Required | Env fallback (in order)                                         |
+| ----------------- | -------- | -------- | --------------------------------------------------------------- |
+| `region`          | `string` | yes      | `TENCENT_REGION` (deliberately not `AWS_REGION`)                |
+| `accessKeyId`     | `string` | yes      | `TENCENT_SECRET_ID`, `AWS_ACCESS_KEY_ID`                        |
+| `secretAccessKey` | `string` | yes      | `TENCENT_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY`                   |
+| `endpoint`        | `string` | no       | `TENCENT_ENDPOINT`; default `https://cos.<region>.myqcloud.com` |
+
+All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { tencent } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
     bucket: "uploads-1250000000",
-    ...clientConfig,
+    ...tencent({ region: "ap-guangzhou", accessKeyId: process.env.TENCENT_SECRET_ID!, secretAccessKey: process.env.TENCENT_SECRET_KEY! }),
 });
 ```
 
-The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` variables are also accepted as fallbacks. The region is **not** read from `AWS_REGION` — it is part of the endpoint hostname, and `AWS_REGION` is commonly set to an AWS region in dev/CI, which would silently produce a broken endpoint. Use `TENCENT_REGION` (or pass `region`).
+### Production
 
-### With Explicit Parameters
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { tencent } from "@visulima/storage/provider/aws/s3/clients";
 
-```typescript
-const clientConfig = tencent({
-    accessKeyId: "your-secret-id",
-    secretAccessKey: "your-secret-key",
-    region: "ap-guangzhou",
+const storage = new S3Storage({
+    ...tencent({
+        region: "ap-singapore",
+        accessKeyId: process.env.TENCENT_SECRET_ID!,
+        secretAccessKey: process.env.TENCENT_SECRET_KEY!,
+    }),
+    bucket: "uploads-1250000000",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-## Regions
+### Edge (`AwsLightStorage`)
 
-Common Tencent COS regions:
+`AwsLightStorage` uses a custom endpoint path-style unless its host starts with the bucket name. Put the bucket in the host to get virtual-hosted addressing:
 
-- `ap-guangzhou` - China (Guangzhou)
-- `ap-shanghai` - China (Shanghai)
-- `ap-beijing` - China (Beijing)
-- `ap-singapore` - Asia Pacific (Singapore)
-- `na-siliconvalley` - North America (Silicon Valley)
-- `eu-frankfurt` - Europe (Frankfurt)
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
-## Features
+const storage = new AwsLightStorage({
+    bucket: "uploads-1250000000",
+    region: "ap-singapore",
+    endpoint: "https://uploads-1250000000.cos.ap-singapore.myqcloud.com",
+    accessKeyId: process.env.TENCENT_SECRET_ID!,
+    secretAccessKey: process.env.TENCENT_SECRET_KEY!,
+});
+```
 
-- **S3-Compatible**: Works through the S3-compatible COS endpoint
-- **Global Regions**: Data centers across China and worldwide
-- **Lifecycle Management**: Automatic tiering and expiration policies
-- **Presigned URLs**: Direct browser uploads and downloads
+## Metadata storage
 
-## Best Practices
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-1. **Always include the APPID suffix** in the bucket name
-2. **Set `TENCENT_REGION` explicitly** - it drives the endpoint hostname; never rely on `AWS_REGION`
-3. **Choose the closest region** - reduce latency for your users
-4. **Use lifecycle policies** - automatically transition or expire objects
-5. **Configure CORS** - set up CORS for browser-based uploads
+## Behaviour & limits
+
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("images/banner.png", buffer, { contentType: "image/png" });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `NoSuchBucket`                           | The bucket name is missing its `-APPID` suffix.                                        |
+| `403` on missing keys / not ready        | The CAM policy doesn't allow listing the bucket.                                       |
+| `SignatureDoesNotMatch` / wrong endpoint | `region` doesn't match the bucket. Set `region` or `TENCENT_REGION`, not `AWS_REGION`. |
+| Browser CORS errors                      | Add a CORS rule for your origin with `PUT` and expose `ETag`.                          |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.             |

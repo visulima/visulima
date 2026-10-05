@@ -158,7 +158,7 @@ describe("fetch Tus extra coverage", () => {
             expect(response.status).toBe(412);
         });
 
-        it("returns 412 when Content-Type header is missing", async () => {
+        it("returns 415 when Content-Type header is missing", async () => {
             expect.assertions(1);
 
             const storage = new DiskStorage({ ...storageOptions, directory });
@@ -204,7 +204,7 @@ describe("fetch Tus extra coverage", () => {
 
             const response = await handler.fetch(cleaned);
 
-            expect(response.status).toBe(412);
+            expect(response.status).toBe(415);
         });
 
         it("returns 415 when Content-Type is wrong", async () => {
@@ -398,5 +398,43 @@ describe("fetch Tus extra coverage", () => {
             // rather than the full URL origin.
             expect(location.startsWith("/")).toBe(true);
         });
+    });
+    it("should write every chunk over DiskStorage, including the ones after the first", async () => {
+        expect.assertions(3);
+
+        const storage = new DiskStorage({ ...storageOptions, directory });
+
+        await waitForReady(storage);
+
+        const handler = new TusFetch({ storage });
+        const created = await handler.fetch(
+            new Request(basePath, {
+                headers: { "Tus-Resumable": TUS_RESUMABLE, "Upload-Length": "10", "Upload-Metadata": `filename ${Buffer.from("chunks.bin").toString("base64")},filetype ${Buffer.from("application/octet-stream").toString("base64")}` },
+                method: "POST",
+            }),
+        );
+        const location = toAbsolute(created.headers.get("location") as string);
+        const patch = async (offset: number, body: string): Promise<number> =>
+            handler
+                .fetch(
+                    new Request(location, {
+                        body,
+                        headers: {
+                            "Content-Length": String(body.length),
+                            "Content-Type": "application/offset+octet-stream",
+                            "Tus-Resumable": TUS_RESUMABLE,
+                            "Upload-Offset": String(offset),
+                        },
+                        method: "PATCH",
+                    }),
+                )
+                .then((response) => response.status);
+
+        await expect(patch(0, "hello")).resolves.toBe(204);
+        await expect(patch(5, "world")).resolves.toBe(204);
+
+        const id = location.split("/").findLast(Boolean) as string;
+
+        await expect(storage.get({ id }).then((file) => file.content.toString())).resolves.toBe("helloworld");
     });
 });

@@ -9,17 +9,18 @@ import type { CreateAlibabaClientParameters } from "./types";
  * from `AWS_REGION` (which is commonly set to an AWS region in dev/CI and
  * would silently produce a broken endpoint).
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `ALIBABA_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `ALIBABA_ACCESS_KEY_SECRET`
- * - `ALIBABA_REGION` (e.g. `cn-hangzhou`, `ap-southeast-1`, `eu-central-1`)
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `ALIBABA_ACCESS_KEY_ID`, then `AWS_ACCESS_KEY_ID`
  * - `ALIBABA_ENDPOINT`
+ * - `ALIBABA_REGION` (e.g. `cn-hangzhou`, `ap-southeast-1`, `eu-central-1`)
+ * - `ALIBABA_ACCESS_KEY_SECRET`, then `AWS_SECRET_ACCESS_KEY`
  */
 const alibaba = (parameters?: CreateAlibabaClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.ALIBABA_ACCESS_KEY_ID;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.ALIBABA_ACCESS_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID;
     const endpoint = parameters?.endpoint ?? process.env.ALIBABA_ENDPOINT;
     const region = parameters?.region ?? process.env.ALIBABA_REGION;
-    const secretAccessKey = parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.ALIBABA_ACCESS_KEY_SECRET;
+    const secretAccessKey = parameters?.secretAccessKey ?? process.env.ALIBABA_ACCESS_KEY_SECRET ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!region || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Alibaba Cloud OSS client.");

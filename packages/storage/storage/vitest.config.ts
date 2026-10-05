@@ -9,6 +9,8 @@ const exclude = [
     "**/.{idea,git,cache,output,temp}/**",
     "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress}.config.*",
     "__tests__/__helpers__/**",
+    // Run by vitest.live.config.ts against real services.
+    "__tests__/live/**",
 ];
 
 // https://vitejs.dev/config/

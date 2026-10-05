@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import createHttpError from "http-errors";
-import typeis, { hasBody } from "type-is";
+import { hasBody, TypeIs } from "type-is";
 
 import { BaseStorage } from "../storage/storage";
 import getLastOne from "./primitives/get-last-one";
@@ -15,27 +15,37 @@ import type { Header, Headers, IncomingMessageWithBody } from "./types";
  */
 export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
 
+const jsonType = new TypeIs(["json"]);
+
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
     // Forwarded: by=<identifier>;for=<identifier>;host=<host>;proto=<http|https>
     let proto = "";
     let host = "";
 
-    const header = getHeader(request, "forwarded");
+    const header = getHeader(request, "forwarded", true);
 
     if (header) {
-        const kvPairs = header.split(";");
+        // RFC 7239: the first element (closest to the client) of a comma-separated list; tokens are
+        // case-insensitive, may be padded, and values may be quoted (a host with a port must be).
+        const [first = ""] = header.split(",");
 
-        kvPairs.forEach((kv) => {
-            const [token, value] = kv.split("=");
+        for (const pair of first.split(";")) {
+            const separator = pair.indexOf("=");
 
-            if (token === "proto") {
-                proto = value as string;
+            if (separator !== -1) {
+                const token = pair.slice(0, separator).trim().toLowerCase();
+                const value = pair
+                    .slice(separator + 1)
+                    .trim()
+                    .replace(/^"(.*)"$/u, "$1");
+
+                if (token === "proto") {
+                    proto = value.toLowerCase();
+                } else if (token === "host") {
+                    host = value;
+                }
             }
-
-            if (token === "host") {
-                host = value as string;
-            }
-        });
+        }
     }
 
     return { host, proto };
@@ -169,7 +179,7 @@ export const getHeader = (request: IncomingMessage, name: string, all = false): 
  * @returns Parsed metadata object, or empty object if not JSON
  */
 export const getMetadata = async (request: IncomingMessageWithBody<Record<string, unknown>>, limit = 16_777_216): Promise<Record<string, unknown>> => {
-    if (!typeis(request, ["json"])) {
+    if (jsonType.request(request) === undefined) {
         return {};
     }
 
@@ -230,7 +240,7 @@ export const setHeaders = (response: ServerResponse, headers: Headers = {}): voi
 
 /**
  * Extracts host with port from a HTTP or HTTPS request.
- * Prefers x-forwarded-host header for proxy compatibility.
+ * Uses the Host header, falling back to X-Forwarded-Host.
  * @param request HTTP request object
  * @returns Host string with port (e.g., "example.com:8080")
  */
@@ -273,25 +283,19 @@ export const getBaseUrl = (request: IncomingMessage): string => {
 export const getRealPath = (request: IncomingMessage & { originalUrl?: string }): string => {
     // Exclude the query params from the path
     // Prefer originalUrl (full path) over url (may be stripped by Express routing)
-    let realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
+    const realPath = (((request.originalUrl || request.url) as string) || "").split("?")[0];
 
     if (!realPath) {
         throw new TypeError("Invalid request URL");
     }
 
+    // An absolute-form request target (RFC 9112 §3.2.2, e.g. through a proxy): take its path
+    if (/^https?:\/\//iu.test(realPath)) {
+        return new URL(realPath).pathname;
+    }
+
     // Ensure path starts with / for consistent parsing
-    if (!realPath.startsWith("/")) {
-        realPath = `/${realPath}`;
-    }
-
-    // If it's an absolute URL, extract the pathname
-    if (realPath.startsWith("http")) {
-        const url = new URL(realPath);
-
-        realPath = url.pathname;
-    }
-
-    return realPath;
+    return realPath.startsWith("/") ? realPath : `/${realPath}`;
 };
 
 /**
@@ -310,6 +314,14 @@ export const uuidRegex: RegExp = /^[\da-z]{4,}(?:-[\da-z]{4,}){2,}$/i;
  * @internal
  */
 export const COMMON_PATH_NAMES: ReadonlyArray<string> = ["files", "metadata", "upload", "download", "http-rest", "http-rest-chunked"];
+
+/**
+ * Drops a trailing `/metadata` or `/download` action segment, which addresses the id before it.
+ * @param segments Non-empty path segments
+ * @returns The segments without the action
+ */
+const withoutActionSegment = (segments: string[]): string[] =>
+    segments.length >= 2 && ["download", "metadata"].includes(segments.at(-1) as string) ? segments.slice(0, -1) : segments;
 
 /**
  * Validates an id taken from a URL path segment. The raw segment is the id, but its URL-decoded
@@ -337,84 +349,23 @@ export const assertSafeUrlId = (id: string): void => {
 };
 
 /**
- * Extracts a UUID identifier from the request URL path.
- * Uses regex pattern to match UUID-like strings in the URL.
+ * Extracts the file id from a Node request: the last path segment with its extension stripped, as
+ * {@link getIdFromRequestUrl} reads it. An earlier "UUID-like" segment is never taken instead: a
+ * mount path such as `/files-by-user` has that shape and would win over a nanoid id.
  * @internal
  * @param request HTTP request object
- * @returns The extracted UUID identifier
- * @throws TypeError if no valid ID is found in the path
- */
-export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => getIdFromPath(getRealPath(request));
-
-/**
- * Extracts a file identifier from a URL path.
- * Skips common path names (`files`, `upload`, …) and rejects segments shorter than 8 characters.
- * @internal
- * @param realPath URL path (without query string)
  * @returns The extracted identifier
- * @throws Error("Invalid request URL") if no valid ID is found in the path
+ * @throws Error("Invalid request URL") if the path does not address a file
+ * @throws {HttpError} 400 when the id is unsafe (path traversal, absolute path, …)
  */
-export const getIdFromPath = (realPath: string): string => {
-    // Extract UUID from the path by finding the last UUID-like segment
-    const segments = realPath.split("/").filter(Boolean);
+export const getIdFromRequest = (request: IncomingMessage & { originalUrl?: string }): string => {
+    const id = getIdFromRequestUrl(getRealPath(request), { stripExtension: true });
 
-    if (segments.length === 0) {
+    if (!id) {
         throw new Error("Invalid request URL");
     }
 
-    // Try to find a UUID-like segment first (check from the end)
-    for (let index = segments.length - 1; index >= 0; index -= 1) {
-        const segment = segments[index];
-
-        if (!segment) {
-            continue;
-        }
-
-        // Remove file extension if present
-        const cleanSegment = segment.replace(/\.[^/.]+$/, "");
-
-        // Skip common path names
-        if (COMMON_PATH_NAMES.includes(cleanSegment.toLowerCase())) {
-            continue;
-        }
-
-        if (uuidRegex.test(cleanSegment)) {
-            BaseStorage.assertSafeId(cleanSegment);
-
-            return cleanSegment;
-        }
-    }
-
-    // If no UUID found, check if the last segment looks like a valid ID
-    const lastSegment = segments[segments.length - 1];
-
-    if (!lastSegment) {
-        throw new Error("Invalid request URL");
-    }
-
-    const cleanLastSegment = lastSegment.replace(/\.[^/.]+$/, "");
-
-    // Reject if it's a common path name
-    if (COMMON_PATH_NAMES.includes(cleanLastSegment.toLowerCase())) {
-        throw new Error("Invalid request URL");
-    }
-
-    // Reject if too short (less than 8 characters) - this catches paths like "/3"
-    if (cleanLastSegment.length < 8) {
-        throw new Error("Invalid request URL");
-    }
-
-    // For paths with multiple segments, if the last segment is >= 8 chars and not a common name, use it
-    // This allows non-UUID IDs (like nanoid) to work
-    if (segments.length > 1) {
-        BaseStorage.assertSafeId(cleanLastSegment);
-
-        return cleanLastSegment;
-    }
-
-    // Single segment paths that aren't UUIDs and aren't common names but are >= 8 chars
-    // These could be valid IDs, but we're conservative and reject them unless they match UUID pattern
-    throw new Error("Invalid request URL");
+    return id;
 };
 
 /**
@@ -431,7 +382,7 @@ export const getIdFromRequestUrl = (url: string, { stripExtension = false }: { s
     let lastSegment: string | undefined;
 
     try {
-        lastSegment = new URL(url, "http://localhost").pathname.split("/").findLast(Boolean);
+        lastSegment = withoutActionSegment(new URL(url, "http://localhost").pathname.split("/").filter(Boolean)).at(-1);
     } catch {
         return undefined;
     }

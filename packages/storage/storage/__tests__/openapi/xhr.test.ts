@@ -13,6 +13,6 @@ describe("openapi:xhr", () => {
         expect.assertions(2);
 
         expect(xhrSwagger("http://localhost", "/files")).toMatchSnapshot();
-        expect(xhrSwagger("http://localhost", "/files", ["test"])).toMatchSnapshot();
+        expect(xhrSwagger("http://localhost", "/files", { tags: ["test"] })).toMatchSnapshot();
     });
 });

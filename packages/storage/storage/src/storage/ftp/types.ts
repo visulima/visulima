@@ -21,8 +21,9 @@ export interface FtpStorageOptions extends BaseStorageOptions {
 
     /**
      * Logical "bucket root" — virtual keys live under this remote directory.
-     * The adapter creates intermediate directories on write. Leading/trailing
-     * slashes are normalized. Defaults to the connection's working directory.
+     * A leading `/` makes it absolute; otherwise it resolves against the
+     * login directory. Trailing slashes are ignored. The adapter creates
+     * intermediate directories on write. Defaults to the login directory.
      */
     rootFolderPath?: string;
 }

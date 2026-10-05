@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { UploadThingStorageOptions } from "../../../src/storage/uploadthing/types";
 import UploadThingFile from "../../../src/storage/uploadthing/uploadthing-file";
 import UploadThingStorage from "../../../src/storage/uploadthing/uploadthing-storage";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions } from "../../__helpers__/config";
 
 const validToken = Buffer.from(JSON.stringify({ apiKey: "sk_test_abc", appId: "test-app" })).toString("base64");
@@ -79,7 +80,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const storage = new UploadThingStorage(buildOptions());
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             const onCreateSpy = vi.fn();
@@ -273,7 +274,7 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
 
             const storage = new UploadThingStorage(buildOptions({ acl: "public-read" }));
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("missing"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.get({ id: "user/orphan.png" });
 
@@ -403,6 +404,23 @@ describe(`${UploadThingStorage.name} additional coverage`, () => {
             expect(result).toHaveLength(2);
             expect(result[0]?.id).toBe("user/file-a");
             expect(result[1]?.id).toBe("ufs-b");
+        });
+
+        it("follows the offset across capped pages until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const storage = new UploadThingStorage(buildOptions());
+            const keys = ["a", "b", "c", "d", "e"];
+
+            // An app that answers at most two files per page.
+            mockUtapi.listFiles.mockImplementation(async ({ limit = 500, offset = 0 }: { limit?: number; offset?: number } = {}) => {
+                const end = offset + Math.min(limit, 2);
+
+                return { files: keys.slice(offset, end).map((key) => { return { key, size: 1 }; }), hasMore: end < keys.length };
+            });
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
         });
     });
 });

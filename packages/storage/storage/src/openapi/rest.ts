@@ -1,18 +1,25 @@
-import { createHash } from "node:crypto";
-
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList, sharedGetMeta } from "./shared";
+import {
+    operationIdPrefix,
+    sharedErrorSchemaObject,
+    sharedFileMetaExampleObject,
+    sharedFileMetaSchemaObject,
+    sharedGet,
+    sharedGetList,
+    sharedGetMeta,
+} from "./shared";
 
 const swaggerSpec = (
     origin: string,
     path: string,
-    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" } = {},
 ): Partial<OpenAPIV3.Document> => {
     const { supportedTransformerFormat, tags, transformer } = { tags: ["REST"], transformer: false, ...options };
 
-    const pathHash = createHash("sha256").update(path).digest("base64");
+    const pathHash = operationIdPrefix(path);
+    const basePath = path.replace(/\/$/, "");
 
     return {
         components: {
@@ -22,6 +29,7 @@ const swaggerSpec = (
                     description: "Upload ID",
                     in: "path",
                     name: "id",
+                    required: true,
                     schema: {
                         type: "string",
                     },
@@ -47,7 +55,8 @@ const swaggerSpec = (
             },
             schemas: {
                 "X-Chunk-Checksum": {
-                    description: "SHA256 checksum of the chunk data for validation. Format: 'sha256 <base64-encoded-checksum>'.",
+                    description:
+                        "Checksum of the chunk, verified before it is stored (460 on mismatch, 413 for chunks over 64 MiB). A bare hex digest (SHA-1, SHA-256, SHA-384 or SHA-512, told apart by length) or '<algorithm> <hex or base64 digest>'.",
                     type: "string",
                 },
                 "X-Chunk-Offset": {
@@ -84,7 +93,7 @@ const swaggerSpec = (
                 ...createPaginationSchemaObject(
                     "FileMetaPagination",
                     {
-                        $ref: "#/components/schemas/PaginationMeta",
+                        $ref: "#/components/schemas/FileMeta",
                     },
                     "#/components/schemas/PaginationMeta",
                 ),
@@ -93,6 +102,8 @@ const swaggerSpec = (
                 ...sharedFileMetaSchemaObject,
             },
         },
+        info: { title: "REST upload API", version: "1.0.0" },
+        openapi: "3.0.3",
         paths: {
             [`${path.replace(/\/$/, "")}/{id}/metadata`]: {
                 get: sharedGetMeta(`${pathHash}RestGetFileMeta`, tags),
@@ -130,7 +141,7 @@ const swaggerSpec = (
                 get: sharedGet(`${pathHash}RestGetFile`, tags, transformer, supportedTransformerFormat),
                 head: {
                     description:
-                        "Get file metadata and upload progress. For chunked uploads, returns progress information including current offset and completion status.",
+                        "Get file metadata and upload progress. For chunked uploads, returns progress information including current offset and completion status. Works for finished uploads too; answers 404 for objects that have no upload metadata (not created through this route).",
                     operationId: `${pathHash}RestHeadFile`,
                     parameters: [
                         {
@@ -220,7 +231,8 @@ const swaggerSpec = (
                     tags,
                 },
                 patch: {
-                    description: "Upload a chunk for chunked uploads. Requires X-Chunk-Offset header and chunk data in the request body.",
+                    description:
+                        "Upload a chunk for chunked uploads. Requires X-Chunk-Offset header and chunk data in the request body (at most 100 MB per chunk). Answers 202 while the upload is incomplete and 200 with X-Upload-Complete: true for the chunk that completes it. S3, Azure and GCS storages only accept chunks in order.",
                     operationId: `${pathHash}RestPatchChunk`,
                     parameters: [
                         {
@@ -260,47 +272,14 @@ const swaggerSpec = (
                     },
                     responses: {
                         200: {
-                            description: "Chunk uploaded successfully",
-                            headers: {
-                                ETag: {
-                                    description: "Upload ETag",
+                            content: {
+                                "application/json": {
                                     schema: {
-                                        example: "d41d8cd98f00b204e9800998ecf8427e",
-                                        type: "string",
-                                    },
-                                },
-                                Location: {
-                                    description: "File URL",
-                                    schema: {
-                                        example: `${origin}${path}/file-id`,
-                                        format: "uri",
-                                        type: "string",
-                                    },
-                                },
-                                "X-Upload-Complete": {
-                                    description: "Indicates if upload is complete",
-                                    schema: {
-                                        $ref: "#/components/schemas/X-Upload-Complete",
-                                    },
-                                },
-                                "X-Upload-Expires": {
-                                    description: "Upload expiration date",
-                                    schema: {
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                        type: "string",
-                                    },
-                                },
-                                "X-Upload-Offset": {
-                                    description: "Current upload offset after this chunk",
-                                    schema: {
-                                        $ref: "#/components/schemas/X-Upload-Offset",
+                                        $ref: "#/components/schemas/FileMeta",
                                     },
                                 },
                             },
-                        },
-                        201: {
-                            description: "Upload completed (all chunks received)",
+                            description: "This chunk completed the upload (all bytes received); the body is the file metadata",
                             headers: {
                                 ETag: {
                                     description: "Upload ETag",
@@ -312,9 +291,15 @@ const swaggerSpec = (
                                 Location: {
                                     description: "File URL",
                                     schema: {
-                                        example: `${origin}${path}/file-id`,
+                                        example: `${origin}${basePath}/file-id`,
                                         format: "uri",
                                         type: "string",
+                                    },
+                                },
+                                "X-Received-Chunks": {
+                                    description: "JSON array of received chunks",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Received-Chunks",
                                     },
                                 },
                                 "X-Upload-Complete": {
@@ -330,6 +315,59 @@ const swaggerSpec = (
                                         example: "2021-08-25T11:12:26.635Z",
                                         format: "date-time",
                                         type: "string",
+                                    },
+                                },
+                                "X-Upload-Offset": {
+                                    description: "Total size of the upload",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Upload-Offset",
+                                    },
+                                },
+                            },
+                        },
+                        202: {
+                            description: "Chunk stored; more chunks are expected",
+                            headers: {
+                                ETag: {
+                                    description: "Upload ETag",
+                                    schema: {
+                                        example: "d41d8cd98f00b204e9800998ecf8427e",
+                                        type: "string",
+                                    },
+                                },
+                                Location: {
+                                    description: "File URL",
+                                    schema: {
+                                        example: `${origin}${basePath}/file-id`,
+                                        format: "uri",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Received-Chunks": {
+                                    description: "JSON array of received chunks",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Received-Chunks",
+                                    },
+                                },
+                                "X-Upload-Complete": {
+                                    description: "Upload is not complete yet",
+                                    schema: {
+                                        enum: ["false"],
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-Expires": {
+                                    description: "Upload expiration date",
+                                    schema: {
+                                        example: "2021-08-25T11:12:26.635Z",
+                                        format: "date-time",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-Offset": {
+                                    description: "Offset to resume from",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Upload-Offset",
                                     },
                                 },
                             },
@@ -397,7 +435,7 @@ const swaggerSpec = (
                     tags,
                 },
                 put: {
-                    description: "Create or update a file. Requires file ID in the URL path. If file exists, it will be overwritten.",
+                    description: String.raw`Create or replace a file under the ID in the URL. An upload created through this route (one with upload metadata) is replaced. For a new ID the ID must match ^[\w-]{1,255}$ (400 otherwise), and an object already stored under that key without upload metadata is never overwritten (409).`,
                     operationId: `${pathHash}RestPutFile`,
                     parameters: [
                         {
@@ -419,7 +457,14 @@ const swaggerSpec = (
                     },
                     responses: {
                         200: {
-                            description: "File updated successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/FileMeta",
+                                    },
+                                },
+                            },
+                            description: "Existing upload replaced",
                             headers: {
                                 ETag: {
                                     description: "Upload ETag",
@@ -431,7 +476,7 @@ const swaggerSpec = (
                                 Location: {
                                     description: "File URL",
                                     schema: {
-                                        example: `${origin}${path}/file-id`,
+                                        example: `${origin}${basePath}/file-id`,
                                         format: "uri",
                                         type: "string",
                                     },
@@ -447,7 +492,14 @@ const swaggerSpec = (
                             },
                         },
                         201: {
-                            description: "File created successfully",
+                            content: {
+                                "application/json": {
+                                    schema: {
+                                        $ref: "#/components/schemas/FileMeta",
+                                    },
+                                },
+                            },
+                            description: "File created",
                             headers: {
                                 ETag: {
                                     description: "Upload ETag",
@@ -459,7 +511,7 @@ const swaggerSpec = (
                                 Location: {
                                     description: "File URL",
                                     schema: {
-                                        example: `${origin}${path}/file-id`,
+                                        example: `${origin}${basePath}/file-id`,
                                         format: "uri",
                                         type: "string",
                                     },
@@ -480,7 +532,7 @@ const swaggerSpec = (
                                     example: {
                                         error: {
                                             code: "BadRequest",
-                                            message: "Request body is required",
+                                            message: 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)',
                                         },
                                     },
                                     schema: {
@@ -488,7 +540,23 @@ const swaggerSpec = (
                                     },
                                 },
                             },
-                            description: "Bad Request",
+                            description: String.raw`Bad Request (e.g. a new ID not matching ^[\w-]{1,255}$)`,
+                        },
+                        409: {
+                            content: {
+                                "application/json": {
+                                    example: {
+                                        error: {
+                                            code: "ConflictError",
+                                            message: "A file with this ID already exists",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Error",
+                                    },
+                                },
+                            },
+                            description: "An object without upload metadata already exists under this ID",
                         },
                         413: {
                             content: {
@@ -702,36 +770,15 @@ const swaggerSpec = (
                         required: false,
                     },
                     responses: {
-                        200: {
-                            description: "The file already exists, send a resume request",
-                            headers: {
-                                ETag: {
-                                    description: "Upload ETag",
+                        201: {
+                            content: {
+                                "application/json": {
                                     schema: {
-                                        example: "d41d8cd98f00b204e9800998ecf8427e",
-                                        type: "string",
-                                    },
-                                },
-                                Location: {
-                                    description: "File URL",
-                                    schema: {
-                                        example: `${origin}${path}/file-id`,
-                                        format: "uri",
-                                        type: "string",
-                                    },
-                                },
-                                "X-Upload-Expires": {
-                                    description: "Upload expiration date",
-                                    schema: {
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                        type: "string",
+                                        $ref: "#/components/schemas/FileMeta",
                                     },
                                 },
                             },
-                        },
-                        201: {
-                            description: "File uploaded successfully or chunked upload session initialized",
+                            description: "File uploaded, or chunked upload session initialized; the body is the file metadata",
                             headers: {
                                 ETag: {
                                     description: "Upload ETag",
@@ -743,9 +790,15 @@ const swaggerSpec = (
                                 Location: {
                                     description: "File URL or chunked upload session URL",
                                     schema: {
-                                        example: `${origin}${path}/file-id`,
+                                        example: `${origin}${basePath}/file-id`,
                                         format: "uri",
                                         type: "string",
+                                    },
+                                },
+                                "X-Chunked-Upload": {
+                                    description: "Present when a chunked upload session was initialized",
+                                    schema: {
+                                        $ref: "#/components/schemas/X-Chunked-Upload-Response",
                                     },
                                 },
                                 "X-Upload-Expires": {
@@ -753,6 +806,14 @@ const swaggerSpec = (
                                     schema: {
                                         example: "2021-08-25T11:12:26.635Z",
                                         format: "date-time",
+                                        type: "string",
+                                    },
+                                },
+                                "X-Upload-ID": {
+                                    description:
+                                        "ID of the chunked upload session (random; send PATCH requests to `<path>/<id>`). Only for chunked upload initialization.",
+                                    schema: {
+                                        example: "V1StGXR8_Z5jdHi6B-myT",
                                         type: "string",
                                     },
                                 },

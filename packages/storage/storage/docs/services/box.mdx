@@ -1,10 +1,12 @@
 # Box
 
-> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Box-specific key-to-fileId resolution.
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, Box app setup, and how keys map onto Box folders and file IDs.
 
 ## Overview
 
-The Box adapter wraps `box-typescript-sdk-gen`'s `BoxClient` with the `BaseStorage` contract. It supports developer tokens, OAuth refresh tokens (handled natively by the SDK's `BoxOAuth`), or a pre-built client. Operations are rooted at a configurable `rootFolderId`, and the adapter resolves virtual keys to Box file ids on every read.
+`BoxStorage` wraps `box-typescript-sdk-gen`'s `BoxClient` in the `BaseStorage` contract. Virtual keys such as `avatars/42.png` are mapped onto Box folders below `rootFolderId`: every path segment but the last becomes a folder (created on first write), the last one is the file name. Box addresses everything by numeric ID, so the adapter resolves keys to IDs by listing folder children and caches the results in memory.
+
+Files up to 50 MB go up with a single `uploadFile` / `uploadFileVersion` call; larger files use Box's chunked upload session API. Writing to a key that already exists uploads a new **version** of that file.
 
 ## Installation
 
@@ -20,71 +22,140 @@ yarn add box-typescript-sdk-gen
 pnpm add box-typescript-sdk-gen
 ```
 
-## Usage
+## Provider setup
 
-```ts
-import BoxStorage from "@visulima/storage/provider/box";
+1. Open the [Box Developer Console](https://app.box.com/developers/console) and create a **Platform App**:
+    - **Server Authentication (Client Credentials Grant)** → use the `ccg` option (recommended for servers).
+    - **Server Authentication (with JWT)** → use the `jwt` option; download the JSON config from the app's _Configuration_ tab.
+    - **User Authentication (OAuth 2.0)** → use the `oauth` option with a refresh token you obtained through Box's authorization-code flow.
+2. Under **Application Scopes**, enable _Read all files and folders stored in Box_ and _Write all files and folders stored in Box_. These cover every call the adapter makes (folder listing, folder creation, upload, download URL, copy, move/rename, delete, shared links).
+3. For CCG with `userId`, also enable the advanced feature **Generate user access tokens**.
+4. Server-auth apps must be **authorized by a Box enterprise admin** (Admin Console → Integrations → Platform Apps Manager) before tokens are issued. Re-authorize after changing scopes.
+5. Pick the bucket root:
+    - A server-auth app with `enterpriseId` acts as its **service account** (`AutomationUser_…@boxdevedition.com`). Folder `"0"` is then the service account's own root, not a user's. To store files in an existing folder, invite the service account to it as _Editor_ and pass that folder's ID as `rootFolderId`.
+    - The folder ID is the number at the end of the folder URL (`https://app.box.com/folder/123456789`).
+6. For `publicByDefault: true`, the enterprise must allow **open** ("People with the link") shared links; otherwise Box answers `access_denied_insufficient_permissions`.
 
-const storage = new BoxStorage({
-    developerToken: process.env.BOX_DEVELOPER_TOKEN!,
-    rootFolderId: "0", // "0" is the All Files root
-});
-```
+A **developer token** (generated on the app's _Configuration_ tab) is enough to try the adapter, but it expires after 60 minutes.
 
 ## Configuration
 
-### Auth precedence
+```ts
+import { BoxStorage } from "@visulima/storage/provider/box";
 
-1. `client` — pre-built `BoxClient`.
-2. `developerToken` — single-token dev/test auth.
-3. `oauth` — `{ clientId, clientSecret, refreshToken }` for OAuth refresh-token flow (handled by `BoxOAuth`).
-4. Env fallback: `BOX_DEVELOPER_TOKEN`.
+// Minimal: developer token, files land in the token owner's root folder
+const storage = new BoxStorage({
+    developerToken: process.env.BOX_DEVELOPER_TOKEN,
+});
+```
 
 ```ts
+// Production: Client Credentials Grant as the service account, dedicated folder
 const storage = new BoxStorage({
-    oauth: {
+    ccg: {
         clientId: process.env.BOX_CLIENT_ID!,
         clientSecret: process.env.BOX_CLIENT_SECRET!,
-        refreshToken: process.env.BOX_REFRESH_TOKEN!,
+        enterpriseId: process.env.BOX_ENTERPRISE_ID,
     },
+    rootFolderId: process.env.BOX_ROOT_FOLDER_ID, // folder shared with the service account
+    maxUploadSize: "200MB", // writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
 });
 ```
 
-### Root folder
+### Options
+
+| Option                | Type                                                        | Default               | Description                                                                                                                                |
+| --------------------- | ----------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `client`              | `BoxClient`                                                 | —                     | Pre-built client; used as-is. Takes precedence over every other auth option.                                                               |
+| `developerToken`      | `string`                                                    | `BOX_DEVELOPER_TOKEN` | Static developer token (60-minute lifetime).                                                                                               |
+| `oauth`               | `{ clientId, clientSecret, refreshToken }`                  | —                     | OAuth 2.0 user app. The refresh token seeds the SDK's in-memory token store; the SDK refreshes access tokens itself.                       |
+| `ccg`                 | `{ clientId, clientSecret, enterpriseId?, userId? }`        | —                     | Client Credentials Grant. `enterpriseId` authenticates as the service account, `userId` as a managed/app user. One of the two is required. |
+| `jwt`                 | `{ configFilePath }` \| `{ configJsonString }`              | —                     | JWT server auth, from the JSON config file downloaded from the developer console.                                                          |
+| `rootFolderId`        | `string`                                                    | `"0"`                 | Box folder that acts as the bucket root. Must exist; sub-folders inside it are created on demand.                                          |
+| `publicByDefault`     | `boolean`                                                   | `false`               | `write()` also creates an `open` shared link, and `getReadUrl()` returns the shared link instead of a short-lived download URL.            |
+| `defaultUrlExpiresIn` | `number`                                                    | —                     | **Deprecated, no effect.** Box decides download-URL lifetime, and expiring shared links need a paid plan.                                  |
+| `metaStorageConfig`   | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir           | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                                       |
+
+`developerToken`, `oauth`, `ccg` and `jwt` are mutually exclusive — passing more than one throws. Auth precedence is `client` → `developerToken` → `oauth` → `ccg` → `jwt` → env `BOX_DEVELOPER_TOKEN`.
+
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
+
+### Environment variables
+
+| Variable              | Used for                                        |
+| --------------------- | ----------------------------------------------- |
+| `BOX_DEVELOPER_TOKEN` | Fallback when no auth option or `client` is set |
+
+## Metadata storage
+
+Box can't hold the adapter's upload bookkeeping, so it lives in a `LocalMetaStorage`: one JSON file per upload at `<directory>/<prefix><id><suffix>` (default `<os tmpdir>/Upload_meta/<id>.META`).
+
+- **Finished uploads keep their record.** `get()` uses it for content type, original name and custom metadata; deleting the upload removes it.
+- **Multi-instance deployments** must share these records. Either point `metaStorageConfig.directory` at a volume all instances mount, or pass any `MetaStorage` implementation as `metaStorage` (for example `S3MetaStorage` from `@visulima/storage/provider/aws`, or your own subclass of `MetaStorage` backed by Redis or a database).
+- **Expiration needs a listable meta storage.** `purge()` walks the meta storage's records, so only uploads this storage created are ever purged. `LocalMetaStorage` can list; a meta storage that can't falls back to Box listings, which carry no creation date, so nothing is purged.
+- Without a record (a file put into Box by other means), `get`/`delete`/`exists` resolve the ID as a key directly.
+
+## Behaviour & limits
+
+| Topic                 | Behaviour                                                                                                                                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable   | Not supported (`supportsResumableWrites: false`). A chunk that doesn't start at offset 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`. TUS and chunked REST clients must send the file in one request. |
+| Memory                | `write()` buffers the whole body before uploading. Cap it with `maxUploadSize`.                                                                                                                                                 |
+| Large files           | > 50 MB uses a Box chunked upload session (SHA-1 digests per part), transparently.                                                                                                                                              |
+| Overwrites            | Writing an existing key uploads a new file version; a folder or web link at that path throws.                                                                                                                                   |
+| Range reads           | Not supported (`supportsRange: false`). `get()` downloads the whole file.                                                                                                                                                       |
+| `getReadUrl(key)`     | Box download URL (short-lived, lifetime decided by Box), or the `open` shared link with `publicByDefault`. `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.                                         |
+| `getUploadUrl()`      | Always `METHOD_NOT_ALLOWED` — Box uploads need a multipart `POST`, not a presigned `PUT`.                                                                                                                                       |
+| `list()`              | Direct **files** of `rootFolderId` only (sub-folders are skipped, not walked), paged 1000 per request with `offset`. IDs returned are file names.                                                                               |
+| `copy()` / `move()`   | Native `copyFile` / `updateFileById` (rename + re-parent); destination folders are created. The copy has no upload record.                                                                                                      |
+| Custom `filename`     | The returned name is the key (and therefore the folder path) the file is stored under; the record maps the upload ID to it.                                                                                                     |
+| Checksums             | None advertised (`checksumTypes: []`); TUS `Upload-Checksum` is verified by the handler instead.                                                                                                                                |
+| Cancellation, retries | `signal`/`timeout` are best-effort — the SDK can't cancel an in-flight request. `retryConfig` applies (default: 3 retries with exponential backoff).                                                                            |
+| ID cache              | Key → file ID and path → folder ID maps live per instance and never expire. Files renamed/removed in Box by other means can leave stale entries until restart.                                                                  |
+
+## Using it with the handlers
+
+Because writes are single-request, prefer the multipart or REST handlers (or TUS clients that send the whole file in one `PATCH`).
 
 ```ts
-new BoxStorage({
-    developerToken: process.env.BOX_DEVELOPER_TOKEN!,
-    rootFolderId: "1234567890", // pre-existing Box folder id
-});
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle);
 ```
-
-All uploads land in this folder; sub-paths in virtual keys are flattened into the file name. To preserve hierarchy, drop to `storage.raw` and use the Box folders API directly.
-
-## URL Generation
-
-### `getReadUrl(key, options?)`
-
-Creates (or returns the existing) shared link via `createSharedLinkForFile` / `getSharedLinkForFile`. Recovers from "shared link already exists" by reading back the current one. `responseContentDisposition` is not supported.
 
 ```ts
-const url = await storage.getReadUrl("avatar.png");
-// → https://app.box.com/s/<token>
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+// Any Fetch-API runtime: Hono, Bun, Deno, Next.js route handlers, …
+export const handler = (request: Request): Promise<Response> => rest.fetch(request);
 ```
 
-### `getUploadUrl(key)`
+```ts
+import { Files } from "@visulima/storage";
 
-Throws `METHOD_NOT_ALLOWED`. Box doesn't expose presigned PUT URLs — uploads go through the SDK or the `POST /files/content` REST endpoint with `Authorization: Bearer …`.
+const files = new Files({ adapter: storage });
 
-## Features
+await files.upload("reports/2024/q3.pdf", pdfBuffer, { contentType: "application/pdf" });
 
-- **Three auth strategies** — developer token, OAuth (BoxOAuth), or bring-your-own client.
-- **Shared-link conflict recovery** — re-uses the existing public link when create fails with "already exists".
-- **404 / not-found tolerance** — `delete()` is idempotent against Box's standard not-found responses.
-- **Native token refresh** — OAuth flow delegates token caching/refresh to the Box SDK, no per-request plumbing.
+const url = await files.url("reports/2024/q3.pdf"); // Box download URL
+```
 
-## Limitations
+## Troubleshooting
 
-- Single-shot writes only — for files larger than 50 MB use `storage.raw.uploads.startCreateFileUploadSessionForExistingFile`.
-- No native presigned upload URLs.
-- Sub-paths in keys are not converted to folder hierarchy — all files land in `rootFolderId`.
+| Symptom                                                              | Cause / fix                                                                                                                                        |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Box storage: missing auth`                                          | No `client`, auth option or `BOX_DEVELOPER_TOKEN`.                                                                                                 |
+| `pass exactly one of developerToken, oauth, ccg, or jwt`             | More than one auth option set.                                                                                                                     |
+| `401` after about an hour                                            | Developer tokens expire after 60 minutes — switch to `ccg`, `jwt` or `oauth`.                                                                      |
+| `403` / `access_denied_insufficient_permissions`                     | App not authorized in the Admin Console, missing write scope, service account not a collaborator on `rootFolderId`, or open shared links disabled. |
+| `404 not_found` for a folder you can see in the web app              | You are authenticated as the service account. Share the folder with it, or use `ccg.userId` to act as that user.                                   |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads` | The client sent a partial chunk. Upload the whole file in one request.                                                                             |
+| `path segment "x" exists but is not a folder`                        | A file occupies a path segment of the key.                                                                                                         |

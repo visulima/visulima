@@ -1,7 +1,7 @@
 import type { Readable } from "node:stream";
 
 import type { BaseStorage } from "../storage/storage";
-import type { OperationOptions } from "../storage/types";
+import type { ConditionalSupport, OperationOptions } from "../storage/types";
 import type { UploadControl } from "./upload-control";
 
 /**
@@ -36,16 +36,35 @@ export type UploadProgressCallback = (event: UploadProgress) => void;
 export type UploadControlState = "aborted" | "completed" | "idle" | "paused" | "uploading";
 
 /**
- * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.serialize}
- * and accepted by {@link UploadControl.from}. Captures the key and bytes observed so a UI can
- * restore progress display across reloads. Note: byte-accurate *resume* of the transfer itself is
- * a protocol concern handled by the TUS / multipart handlers and `@visulima/storage-client`; a
- * rehydrated control restarts the body from the beginning.
+ * Serializable snapshot of an {@link UploadControl}, returned by {@link UploadControl.toJSON} and
+ * accepted by {@link UploadControl.from}. Persist it (a database row, a file, `localStorage`) and
+ * pass `UploadControl.from(token)` as `control` to {@link Files.upload} in a later process to
+ * continue the upload without re-sending the bytes already stored.
+ *
+ * Version 1 tokens (written before resumable uploads) only carry `key` and `loaded`; a control
+ * rebuilt from one starts the upload over.
  */
 export interface UploadControlToken {
+    /** Name of the adapter holding the upload session (e.g. `"s3"`); resuming on another adapter is rejected. */
+    adapter?: string;
+    /** Content type recorded when the upload started. */
+    contentType?: string;
+    /** Caller-facing key being uploaded. */
     key?: string;
+    /** Bytes the adapter confirmed stored (version 1: bytes observed leaving the facade). */
     loaded: number;
-    version: 1;
+    /** Custom metadata recorded when the upload started. */
+    metadata?: Record<string, unknown>;
+    /** Total size of the object in bytes. */
+    size?: number;
+
+    /**
+     * Id of the adapter's upload record. The provider session (S3 `UploadId` and parts, GCS
+     * resumable-session URI, Azure staged blocks, the partial file on disk) is kept in the
+     * adapter's metadata store under this id and reloaded from there on resume.
+     */
+    uploadId?: string;
+    version: 1 | 2;
 }
 
 /**
@@ -84,6 +103,22 @@ export interface UploadOptions {
      * merged {@link OperationOptions.signal}. See {@link UploadControl}.
      */
     control?: UploadControl;
+
+    /**
+     * Replace-if-match: store the body only when the object currently under the key has this ETag.
+     * Evaluated natively by the adapter at commit time; a mismatch (or a missing object) rejects with
+     * `PRECONDITION_FAILED` (412) and leaves the stored object untouched. Requires
+     * `capabilities.conditional.replace`, otherwise the call rejects with `METHOD_NOT_ALLOWED` before
+     * any I/O. Cannot be combined with {@link UploadOptions.ifNoneMatch}.
+     */
+    ifMatch?: string;
+
+    /**
+     * `"*"`: create-only. Store the body only when nothing exists under the key yet; otherwise reject
+     * with `PRECONDITION_FAILED` (412). Requires `capabilities.conditional.create`.
+     */
+    ifNoneMatch?: "*";
+
     metadata?: Record<string, unknown>;
 
     /**
@@ -103,6 +138,15 @@ export interface UploadOptions {
     onProgress?: UploadProgressCallback;
 
     /**
+     * Byte offset of the first byte of `body` within the object, when resuming with a `control`
+     * rebuilt from a token ({@link UploadControl.from}). Defaults to `0`: `body` is the full source
+     * and the bytes the adapter already stored are read and skipped. Pass the offset when `body`
+     * only holds the remainder (e.g. a file stream opened at `token.loaded`); it must not lie past
+     * the stored offset.
+     */
+    resumeOffset?: number;
+
+    /**
      * Explicit byte length. Required for {@link NodeJS.ReadableStream} and Web `ReadableStream`
      * inputs because their length is not derivable from the value itself; ignored otherwise.
      */
@@ -120,6 +164,79 @@ export interface SignedUploadUrlOptions {
     contentLength?: number;
     contentType?: string;
     expiresIn?: number;
+}
+
+export interface SignedUploadOptions extends SignedUploadUrlOptions {
+    /**
+     * Largest accepted body in bytes. Setting `maxSize` or `minSize` makes {@link Files.signedUpload}
+     * sign a `POST` policy whose `content-length-range` the provider enforces; adapters without
+     * presigned POST support (`capabilities.signedUploadPost === false`) reject the call with
+     * `METHOD_NOT_ALLOWED` instead of signing an unbounded URL.
+     */
+    maxSize?: number;
+    /** Smallest accepted body in bytes. See {@link SignedUploadOptions.maxSize}. */
+    minSize?: number;
+}
+
+/**
+ * Upload contract returned by {@link Files.signedUpload}, discriminated on `method`. For `PUT`, send
+ * the raw body to `url` with `headers`. For `POST`, send `multipart/form-data` to `url` with every
+ * entry of `fields` first, then the file as the last field, named `file`.
+ */
+export type SignedUpload = { fields: Record<string, string>; method: "POST"; url: string } | { headers: Record<string, string>; method: "PUT"; url: string };
+
+/** Exact-read / conditional-delete predicate. */
+export interface IfMatchOptions {
+    /**
+     * Proceed only when the stored object's ETag equals this value; otherwise reject with
+     * `PRECONDITION_FAILED` (412). Requires the matching `capabilities.conditional` flag
+     * (`read` for `download`/`head`, `delete` for `delete`).
+     */
+    ifMatch?: string;
+}
+
+export interface HeadOptions extends IfMatchOptions, OperationOptions {}
+
+export interface DeleteOptions extends IfMatchOptions, OperationOptions {}
+
+export interface CopyOptions extends OperationOptions {
+    /** Copy only when the destination currently has this ETag (replace-if-match). */
+    ifMatch?: string;
+    /** `"*"`: copy only when the destination does not exist yet (create-only). */
+    ifNoneMatch?: "*";
+
+    /**
+     * Copy only when the source still has this ETag. Any of the three predicates requires
+     * `capabilities.conditional.copy`; the adapter evaluates them in the same native request.
+     */
+    sourceIfMatch?: string;
+    storageClass?: string;
+}
+
+/** How {@link Files.search} interprets a string pattern. */
+export type SearchMatch = "exact" | "glob" | "regex" | "substring";
+
+export interface SearchOptions extends OperationOptions {
+    /** Match case-insensitively (any mode). Disables the automatic prefix filter of a glob. */
+    caseInsensitive?: boolean;
+    /** Stop after this many matches; the walk stops fetching pages once it is reached. */
+    limit?: number;
+
+    /**
+     * How a string `pattern` is read. `glob` (default) anchors to the whole key, `*` stays within a
+     * path segment, `**` spans segments, and dotfiles match; `regex` is a regular expression
+     * (`RegExp` patterns always are); `substring` is "key contains"; `exact` is "key equals".
+     * @default "glob"
+     */
+    match?: SearchMatch;
+    /** Per-page size requested from the adapter while walking (see {@link Files.listAll}). */
+    pageSize?: number;
+
+    /**
+     * Only walk keys under this prefix. A glob or exact pattern with a literal head is scoped to that
+     * head automatically; pass `prefix` to bound `regex` / `substring` / case-insensitive searches.
+     */
+    prefix?: string;
 }
 
 export interface ListOptions {
@@ -158,15 +275,34 @@ export interface ListAllOptions {
 export interface StorageCapabilities {
     /** The adapter honours an object `cacheControl` directive on write. */
     cacheControl: boolean;
+
+    /**
+     * Which ETag predicates the adapter evaluates natively: create-only and replace-if-match
+     * uploads, exact reads, conditional deletes, and conditional copies. A predicate whose flag is
+     * `false` rejects with `METHOD_NOT_ALLOWED` before any I/O.
+     */
+    conditional: ConditionalSupport;
     /** The adapter persists and returns user-supplied key/value metadata. */
     metadata: boolean;
     /** The adapter honours byte-range downloads (`download({ range })`). */
     range: boolean;
     /** This `Files` view rejects every mutating operation. */
     readonly: boolean;
+
+    /**
+     * Uploads with a `control` are written in parts whose progress the adapter persists in its
+     * metadata store, so `UploadControl.toJSON()` can be resumed by another process (see
+     * {@link UploadControl.from}). `false`: the adapter stores objects in one request; a resume
+     * token is rejected with `METHOD_NOT_ALLOWED`.
+     */
+    resumable: boolean;
+    /** {@link Files.signedUpload} can sign a size-limited `POST` policy (`maxSize` / `minSize`). */
+    signedUploadPost: boolean;
+    /** Longest `expiresIn` (seconds) the adapter can sign for, when the provider has a hard ceiling. */
+    signedUrlMaxExpiresIn?: number;
 }
 
-export interface DownloadOptions extends OperationOptions {
+export interface DownloadOptions extends IfMatchOptions, OperationOptions {
     /**
      * Fetch a contiguous byte slice instead of the whole object. Throws
      * `METHOD_NOT_ALLOWED` when the underlying adapter has `supportsRange =
@@ -279,7 +415,7 @@ export interface FilesOptions<TStorage extends BaseStorage = BaseStorage> {
 
     /**
      * When `true`, every mutating operation (`upload`, `delete`, `copy`, `move`, `signedUploadUrl`)
-     * fails immediately with `FilesError { code: "ReadOnly" }` before the adapter is touched; reads
+     * fails immediately with an `UploadError` whose `UploadErrorCode` is `"ReadOnly"` before the adapter is touched; reads
      * (`download`, `head`, `exists`, `list`, `listAll`, `url`) pass through. Derive a locked view of
      * an existing client with {@link Files.readonly} instead of threading the flag manually.
      * @default false
@@ -450,7 +586,8 @@ export interface SyncOptions extends OperationOptions {
 
     /**
      * Delete destination keys that no longer exist on the source (mirror semantics). Pruning runs
-     * after the copy pass so a failed upload never triggers a delete of its counterpart.
+     * after the copy pass so a failed upload never triggers a delete of its counterpart. Cannot be
+     * combined with {@link SyncOptions.transformKey} — `sync` rejects with a `TypeError`.
      * @default false
      */
     prune?: boolean;

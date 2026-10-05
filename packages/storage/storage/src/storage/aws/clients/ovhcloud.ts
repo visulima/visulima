@@ -14,18 +14,19 @@ import type { CreateOvhCloudClientParameters } from "./types";
  * `AWS_REGION` (commonly set to an AWS region in dev/CI, which would
  * silently produce a broken endpoint).
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `OVHCLOUD_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `OVHCLOUD_SECRET_ACCESS_KEY`
- * - `OVHCLOUD_REGION` (e.g. `gra`, `sbg`, `de`, `uk`, `waw`, `bhs`)
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `OVHCLOUD_ACCESS_KEY_ID` / `OVHCLOUD_ACCESS_KEY`, then `AWS_ACCESS_KEY_ID`
  * - `OVHCLOUD_ENDPOINT`
+ * - `OVHCLOUD_REGION` (e.g. `gra`, `sbg`, `de`, `uk`, `waw`, `bhs`)
+ * - `OVHCLOUD_SECRET_ACCESS_KEY` / `OVHCLOUD_SECRET_KEY`, then `AWS_SECRET_ACCESS_KEY`
  */
 const ovhCloud = (parameters?: CreateOvhCloudClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.OVHCLOUD_ACCESS_KEY_ID ?? process.env.OVHCLOUD_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.OVHCLOUD_ACCESS_KEY_ID ?? process.env.OVHCLOUD_ACCESS_KEY ?? process.env.AWS_ACCESS_KEY_ID;
     const endpoint = parameters?.endpoint ?? process.env.OVHCLOUD_ENDPOINT;
     const rawRegion = parameters?.region ?? process.env.OVHCLOUD_REGION;
     const secretAccessKey =
-        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.OVHCLOUD_SECRET_ACCESS_KEY ?? process.env.OVHCLOUD_SECRET_KEY;
+        parameters?.secretAccessKey ?? process.env.OVHCLOUD_SECRET_ACCESS_KEY ?? process.env.OVHCLOUD_SECRET_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!rawRegion || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for OVHcloud Object Storage client.");

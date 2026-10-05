@@ -223,7 +223,8 @@ export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig 
             }
 
             // Calculate delay for this retry attempt
-            const delay = calculateDelay ? calculateDelay(attempt, error) : calculateExponentialBackoff(attempt, initialDelay, backoffMultiplier, maxDelay);
+            // `undefined` from calculateDelay means "use the default backoff", as documented.
+            const delay = calculateDelay?.(attempt, error) ?? calculateExponentialBackoff(attempt, initialDelay, backoffMultiplier, maxDelay);
 
             // Fire-and-forget retry hook. Invoked once per *retry* attempt — never for the
             // first try. `attempt` is 1-based for observability consumers. Throws are

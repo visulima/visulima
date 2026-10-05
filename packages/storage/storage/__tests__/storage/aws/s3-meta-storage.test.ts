@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import S3MetaStorage from "../../../src/storage/aws/s3-meta-storage";
 import type { S3MetaStorageOptions } from "../../../src/storage/aws/types";
 import { getMetaVersion } from "../../../src/storage/meta-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { metafile } from "../../__helpers__/config";
 
 vi.mock(import("aws-crt"));
@@ -125,7 +126,7 @@ describe(S3MetaStorage, () => {
         });
 
         it("should delete expired metadata", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             const expiredDate = new Date(Date.now() - 1000 * 60 * 60); // 1 hour ago
             const metadata = encodeURIComponent(
@@ -143,9 +144,29 @@ describe(S3MetaStorage, () => {
             });
             s3Mock.on(DeleteObjectCommand).resolves({});
 
-            await expect(metaStorage.get(metafile.id)).rejects.toThrow(`Metafile ${metafile.id} not found`);
+            await expect(metaStorage.get(metafile.id)).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
 
             expect(dataCalls()).toHaveLength(2); // HeadObjectCommand + DeleteObjectCommand
+            // The metafile itself, not `<id>.META.META`
+            expect(s3Mock.commandCalls(DeleteObjectCommand)[0]?.args[0].input.Key).toBe(`${metafile.id}.META`);
+        });
+
+        it("should report a missing metafile as not found", async () => {
+            expect.assertions(1);
+
+            s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+        });
+
+        it("should rethrow other failures", async () => {
+            expect.assertions(1);
+
+            const failure = Object.assign(new Error("Forbidden"), { $metadata: { httpStatusCode: 403 } });
+
+            s3Mock.on(HeadObjectCommand).rejects(failure);
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Forbidden");
         });
     });
 

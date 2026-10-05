@@ -209,6 +209,13 @@ export default createConfig(
         },
     },
     {
+        // Matrix and live suites only call shared suite builders (describeMatrix, describeStorageContract)
+        files: ["__tests__/matrix/**", "__tests__/live/**"],
+        rules: {
+            "sonarjs/no-empty-test-file": "off",
+        },
+    },
+    {
         files: ["src/**"],
         rules: {
             // Switch statements in transformers cover all known step kinds
