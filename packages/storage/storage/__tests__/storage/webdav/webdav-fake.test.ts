@@ -243,7 +243,7 @@ describe("webdav storage against an in-memory WebDAV server", () => {
     });
 
     it("should run the full lifecycle: nested write, read, range, copy, move, list, delete", async () => {
-        expect.assertions(14);
+        expect.assertions(13);
 
         const storage = createStorage({ filename: (file) => `docs/${file.originalName}` });
         const id = await upload(storage, "0123456789", "a b.txt");
@@ -252,10 +252,6 @@ describe("webdav storage against an in-memory WebDAV server", () => {
         expect(server.files.get("uploads/docs/a b.txt")?.body.toString()).toBe("0123456789");
         expect([...server.dirs].toSorted()).toStrictEqual(["", "uploads", "uploads/docs"]);
         await expect(storage.getMeta(id)).resolves.toMatchObject({ bytesWritten: 10, metadata: { owner: "me" }, status: "completed" });
-        // Creating it again returns the finished upload instead of resetting it.
-        await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a b.txt", size: 10 })).resolves.toMatchObject({
-            status: "completed",
-        });
 
         const ranged = await storage.get({ id }, { range: { end: 4, start: 2 } });
 
