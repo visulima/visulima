@@ -2,6 +2,7 @@ import { Readable } from "node:stream";
 
 import createHttpError from "http-errors";
 
+import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
 import StreamLength from "../../utils/pipes/stream-length";
@@ -45,6 +46,9 @@ export interface TusRequest extends LocationSource {
 export interface TusStorage<TFile extends UploadFile> {
     checkIfExpired: (file: TFile) => Promise<unknown>;
     checksumTypes: string[];
+
+    /** Claims an upload for one PATCH across processes; resolves to the release (see `BaseStorage.claimWrite`). */
+    claimWrite?: (id: string) => Promise<() => Promise<void>>;
     config: { useRelativeLocation?: boolean };
     create: (config: FileInit) => Promise<TFile>;
     delete: (options: { id: string }) => Promise<TFile>;
@@ -210,7 +214,15 @@ export class TusBase<TFile extends UploadFile> {
         this.patchesInFlight.add(id);
 
         try {
-            return await this.writeChunk(request, id, Number(offsetHeader));
+            // Other processes sharing the meta store: claimed before the offset is read, so a PATCH
+            // racing this one from another process gets 423 instead of passing the same offset check.
+            const release = await this.storage.claimWrite?.(id);
+
+            try {
+                return await this.writeChunk(request, id, Number(offsetHeader));
+            } finally {
+                await release?.();
+            }
         } finally {
             this.patchesInFlight.delete(id);
         }
@@ -258,10 +270,13 @@ export class TusBase<TFile extends UploadFile> {
 
         await this.storage.checkIfExpired(file);
 
+        const { [WRITE_CLAIM_KEY]: _claim, ...metadata } = file.metadata ?? {};
+        const data = file.metadata === undefined ? file : { ...file, metadata };
+
         // `data` is what both the Node and the fetch responders serialize as the JSON body.
         return {
-            ...file,
-            data: file,
+            ...data,
+            data,
             headers: this.buildHeaders(file, {
                 "Content-Type": HeaderUtilities.createContentType({ mediaType: "application/json" }),
             }) as Record<string, string | number>,

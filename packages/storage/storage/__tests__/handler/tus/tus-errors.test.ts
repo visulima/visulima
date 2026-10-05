@@ -38,7 +38,8 @@ describe("tus error responses", () => {
 
             const storage = new MemoryStorage();
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("db password=hunter2"));
+            // The first storage call of a PATCH.
+            vi.spyOn(storage, "claimWrite").mockRejectedValue(new Error("db password=hunter2"));
 
             const response = await supertest(server(storage))
                 .patch(`/files/${MISSING}`)
@@ -72,7 +73,8 @@ describe("tus error responses", () => {
 
             const storage = new MemoryStorage();
 
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("db password=hunter2"));
+            // The first storage call of a PATCH.
+            vi.spyOn(storage, "claimWrite").mockRejectedValue(new Error("db password=hunter2"));
 
             const response = await new TusFetch({ storage }).fetch(
                 new Request(`http://localhost/files/${MISSING}`, { body: "", headers: { "Content-Type": "application/offset+octet-stream", "Tus-Resumable": TUS_RESUMABLE, "Upload-Offset": "0" }, method: "PATCH" }),

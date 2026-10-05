@@ -187,7 +187,7 @@ describe.runIf(LIVE)("several processes over one service (live)", () => {
             expect(stored.equals(source)).toBe(true);
         });
 
-        it("should let one of two processes PATCHing the same TUS offset win", async () => {
+        it("should refuse the second of two processes PATCHing the same TUS offset", async () => {
             expect.assertions(4);
 
             const { target } = await setup();
@@ -207,11 +207,10 @@ describe.runIf(LIVE)("several processes over one service (live)", () => {
                 ),
             );
 
-            expect(statuses).toContain(204);
-            // The TUS PATCH lock only holds within a process. The loser passes the offset check before
-            // the winner stores its bytes, then gets 404 where its write hits the finished S3 multipart
-            // upload (NoSuchUpload), or 204 on Azure, which stores the same bytes again; never a 5xx.
-            expect(statuses.every((status) => [204, 404, 409, 423].includes(status))).toBe(true);
+            // The winner claims the upload in the shared meta store; the loser is refused without
+            // touching it: 423 while the winner writes, 409 once the offset has moved.
+            expect(statuses.filter((status) => status === 204)).toHaveLength(1);
+            expect(statuses.filter((status) => status === 409 || status === 423)).toHaveLength(1);
             await expect(fetch(url(1, path), { headers: TUS, method: "HEAD" }).then(({ headers }) => headers.get("upload-offset"))).resolves.toBe(
                 String(source.length),
             );

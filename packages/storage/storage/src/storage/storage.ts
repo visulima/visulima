@@ -24,7 +24,7 @@ import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import { getMetaVersion, isMetaNotFound, setMetaVersion } from "./meta-storage";
+import { getMetaVersion, isMetaNotFound, setMetaVersion, WRITE_CLAIM_KEY } from "./meta-storage";
 import type {
     BaseStorageOptions,
     BatchOperationResponse,
@@ -1629,6 +1629,98 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         } finally {
             await this.unlock(key, token);
         }
+    }
+
+    /**
+     * Claims upload `id` for one writer across processes sharing the meta store: a claim token
+     * ({@link WRITE_CLAIM_KEY}) is saved with a compare-and-swap against the record just read. Call
+     * it before reading the state a write depends on (e.g. a TUS offset); while the claim holds,
+     * no other claimant gets in, so that state can only change through the claimant.
+     *
+     * The claim expires LOCK_TTL_MS after its last renewal, so a crashed holder blocks nobody for
+     * long; a live holder renews it until it releases it, at most LOCK_MAX_HOLD_MS.
+     *
+     * Without conditional saves in the meta store (or a store that gives no version), nothing is
+     * claimed, and writers are only serialized within one process.
+     * @param id Upload ID
+     * @returns Releases the claim; never throws
+     * @throws {UploadError} FILE_LOCKED when another writer holds a live claim or wins the race to it;
+     * FILE_NOT_FOUND when there is no such upload
+     */
+    public async claimWrite(id: string): Promise<() => Promise<void>> {
+        const noop = async (): Promise<void> => undefined;
+
+        if (!this.meta.supportsConditionalSave) {
+            return noop;
+        }
+
+        const token = nanoid();
+        const startedAt = Date.now();
+        const isMine = (file: TFile): boolean => (file.metadata?.[WRITE_CLAIM_KEY] as { token?: string } | undefined)?.token === token;
+        const save = async (file: TFile, claim: Record<string, unknown> | undefined): Promise<boolean> => {
+            const version = getMetaVersion(file);
+            const { [WRITE_CLAIM_KEY]: _previous, ...metadata } = file.metadata ?? {};
+
+            if (claim !== undefined) {
+                metadata[WRITE_CLAIM_KEY] = claim;
+            }
+
+            return version !== undefined && (await this.meta.saveIfVersion(id, { ...file, metadata }, version)) !== undefined;
+        };
+
+        let stored: TFile;
+
+        try {
+            stored = await this.meta.get(id);
+        } catch (error: unknown) {
+            if (isMetaNotFound(error)) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            throw error;
+        }
+
+        if (getMetaVersion(stored) === undefined) {
+            return noop;
+        }
+
+        const held = stored.metadata?.[WRITE_CLAIM_KEY] as { expiresAt?: unknown } | undefined;
+
+        if ((typeof held?.expiresAt === "number" && held.expiresAt > startedAt) || !(await save(stored, { expiresAt: startedAt + LOCK_TTL_MS, token }))) {
+            return throwErrorCode(ERRORS.FILE_LOCKED, `Upload ${id} is being written by another request`);
+        }
+
+        // A lost renewal (the record changed meanwhile) is retried on the next tick.
+        const renewal = setInterval(() => {
+            if (Date.now() - startedAt > LOCK_MAX_HOLD_MS) {
+                clearInterval(renewal);
+
+                return;
+            }
+
+            this.meta
+                .get(id)
+                .then(async (file) => isMine(file) && save(file, { expiresAt: Date.now() + LOCK_TTL_MS, token }))
+                .catch(() => undefined);
+        }, LOCK_TTL_MS / 3);
+
+        renewal.unref();
+
+        return async () => {
+            clearInterval(renewal);
+
+            try {
+                for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
+                    const file = await this.meta.get(id);
+
+                    if (!isMine(file) || (await save(file, undefined))) {
+                        return;
+                    }
+                }
+            } catch {
+                // Gone, or the store failing: the claim expires on its own.
+            }
+        };
     }
 
     /**

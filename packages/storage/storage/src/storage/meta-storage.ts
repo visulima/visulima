@@ -10,6 +10,12 @@ import type { File } from "./utils/file";
 export const META_VERSION: unique symbol = Symbol("visulima.storage.metaVersion");
 
 /**
+ * Metadata key of the claim a writer stores on an upload to keep other processes from writing
+ * the same upload at once (see `BaseStorage.claimWrite`). Server bookkeeping, never client data.
+ */
+export const WRITE_CLAIM_KEY = "_writeClaim";
+
+/**
  * Returns the version token {@link MetaStorage.get} attached to `file`, if any.
  * @param file A record read from a meta storage, or a copy of one
  * @returns The version token
