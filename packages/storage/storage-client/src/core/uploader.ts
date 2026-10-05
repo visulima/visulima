@@ -3,6 +3,62 @@ import { validateFile, validateFiles } from "./restrictions";
 import type { FileMeta, HeadersResolver, OnBeforeRequest, UploadRestrictions } from "./types";
 
 /**
+ * Calls each handler with the payload, isolating a throwing handler so the rest still run.
+ */
+const callHandlers = (handlers: Set<UploaderEventHandler> | undefined, event: UploaderEventType, payload: BatchState | UploadItem): void => {
+    handlers?.forEach((handler) => {
+        try {
+            handler(payload);
+        } catch (error) {
+            // eslint-disable-next-line no-console -- Error logging for debugging
+            console.error(`[Uploader] Error in ${event} handler:`, error);
+        }
+    });
+};
+
+/** Per-endpoint event channels every uploader publishes to, keyed by the normalised endpoint URL. */
+const endpointChannels = new Map<string, Map<UploaderEventType, Set<UploaderEventHandler>>>();
+
+/**
+ * Per-endpoint command channels: the uploaders of each endpoint that own items, held weakly so an
+ * uploader that is never cleared can still be garbage-collected.
+ */
+const commandChannels = new Map<string, Set<WeakRef<Uploader>>>();
+
+/** Item / batch id counters shared by every uploader, so a command's id names exactly one item or batch. */
+let itemIdCounter = 0;
+let batchIdCounter = 0;
+
+/**
+ * Generates a unique item ID.
+ */
+const generateItemId = (): string => {
+    itemIdCounter += 1;
+
+    return `item-${String(Date.now())}-${String(itemIdCounter)}`;
+};
+
+/**
+ * Generates a unique batch ID.
+ */
+const generateBatchId = (): string => {
+    batchIdCounter += 1;
+
+    return `batch-${String(Date.now())}-${String(batchIdCounter)}`;
+};
+
+/**
+ * Resolves an endpoint to an absolute URL so `/upload` and `https://host/upload` share a channel.
+ */
+const normalizeEndpoint = (endpoint: string): string => {
+    try {
+        return new URL(endpoint, "window" in globalThis ? globalThis.location.href : "http://localhost").href;
+    } catch {
+        return endpoint;
+    }
+};
+
+/**
  * Upload item state
  */
 export interface UploadItem {
@@ -69,6 +125,11 @@ export type UploaderEventType =
     | "ITEM_FINISH"
     | "ITEM_PROGRESS"
     | "ITEM_START";
+
+/**
+ * A command for the uploaders of an endpoint; see {@link dispatch}.
+ */
+export type UploaderCommand = { id: string; type: "abortBatch" | "abortItem" | "retryBatch" | "retryItem" } | { type: "abortAll" };
 
 /**
  * Event handler function type
@@ -168,9 +229,8 @@ export class Uploader {
 
     private activeUploads = new Map<string, XMLHttpRequest>();
 
-    private itemIdCounter = 0;
-
-    private batchIdCounter = 0;
+    /** This uploader's entry in its endpoint's command channel, while it owns items. */
+    private commandRef: WeakRef<Uploader> | undefined;
 
     /** FIFO queue of item IDs waiting for a concurrency slot. */
     private queue: string[] = [];
@@ -212,7 +272,7 @@ export class Uploader {
         // Reject files that violate the configured restrictions before queuing.
         validateFile(file, this.options.restrictions);
 
-        const id = this.generateItemId();
+        const id = generateItemId();
         const item: UploadItem = {
             batchId,
             completed: 0,
@@ -225,6 +285,7 @@ export class Uploader {
         };
 
         this.items.set(id, item);
+        this.registerCommands();
 
         // Enqueue rather than firing immediately, so a large batch respects the
         // concurrency cap instead of opening one request per file at once.
@@ -245,7 +306,7 @@ export class Uploader {
         // Validate count + per-file restrictions up-front (throws RestrictionError).
         validateFiles(files, this.options.restrictions);
 
-        const batchId = this.generateBatchId();
+        const batchId = generateBatchId();
         const itemIds: string[] = [];
 
         // Create batch state
@@ -273,7 +334,7 @@ export class Uploader {
 
         // Emit batch start event
         batch.status = "uploading";
-        this.emitBatch("BATCH_START", batch);
+        this.emit("BATCH_START", batch);
 
         return itemIds;
     }
@@ -320,11 +381,11 @@ export class Uploader {
         if (hasCompleted) {
             batch.status = "error";
             this.batches.set(batchId, batch);
-            this.emitBatch("BATCH_ERROR", batch);
+            this.emit("BATCH_ERROR", batch);
         } else {
             batch.status = "cancelled";
             this.batches.set(batchId, batch);
-            this.emitBatch("BATCH_CANCELLED", batch);
+            this.emit("BATCH_CANCELLED", batch);
         }
     }
 
@@ -332,13 +393,17 @@ export class Uploader {
      * Aborts all uploads.
      */
     public abort(): void {
-        // Drain queued-but-not-started items first so the concurrency pump can't
-        // restart them once the in-flight uploads settle.
-        const queuedIds = [...this.queue];
+        // Abort not-yet-started items first so the concurrency pump can't restart
+        // them once the in-flight uploads settle. That is every "pending" item: the
+        // queued ones and those waiting on an auto-retry timer, which are in neither
+        // the queue nor `activeUploads`.
+        const pendingIds = this.getItems()
+            .filter((item) => item.status === "pending")
+            .map((item) => item.id);
 
         this.queue = [];
 
-        for (const id of queuedIds) {
+        for (const id of pendingIds) {
             this.abortItemInternal(id, false);
         }
 
@@ -357,6 +422,7 @@ export class Uploader {
     public clear(): void {
         this.abort();
         this.items.clear();
+        this.unregisterCommands();
     }
 
     /**
@@ -444,7 +510,7 @@ export class Uploader {
         batch.errorCount = 0;
         batch.progress = 0;
         this.batches.set(batchId, batch);
-        this.emitBatch("BATCH_START", batch);
+        this.emit("BATCH_START", batch);
     }
 
     /**
@@ -511,7 +577,7 @@ export class Uploader {
         this.batches.set(batchId, batch);
 
         if (!suppressEmit) {
-            this.emitBatch(batch.status === "error" ? "BATCH_ERROR" : "BATCH_CANCELLED", batch);
+            this.emit(batch.status === "error" ? "BATCH_ERROR" : "BATCH_CANCELLED", batch);
         }
     }
 
@@ -549,21 +615,43 @@ export class Uploader {
     }
 
     /**
-     * Generates a unique item ID.
+     * Joins the endpoint's command channel, so {@link dispatch} reaches the items this uploader owns.
      */
-    private generateItemId(): string {
-        this.itemIdCounter += 1;
+    private registerCommands(): void {
+        if (this.commandRef) {
+            return;
+        }
 
-        return `item-${String(Date.now())}-${String(this.itemIdCounter)}`;
+        const key = normalizeEndpoint(this.options.endpoint);
+        let channel = commandChannels.get(key);
+
+        if (!channel) {
+            channel = new Set();
+            commandChannels.set(key, channel);
+        }
+
+        this.commandRef = new WeakRef(this);
+        channel.add(this.commandRef);
     }
 
     /**
-     * Generates a unique batch ID.
+     * Leaves the endpoint's command channel once this uploader owns nothing.
      */
-    private generateBatchId(): string {
-        this.batchIdCounter += 1;
+    private unregisterCommands(): void {
+        if (!this.commandRef) {
+            return;
+        }
 
-        return `batch-${String(Date.now())}-${String(this.batchIdCounter)}`;
+        const key = normalizeEndpoint(this.options.endpoint);
+        const channel = commandChannels.get(key);
+
+        channel?.delete(this.commandRef);
+
+        if (channel?.size === 0) {
+            commandChannels.delete(key);
+        }
+
+        this.commandRef = undefined;
     }
 
     /**
@@ -598,11 +686,16 @@ export class Uploader {
         batch.errorCount = items.filter((item) => item.status === "error").length;
         batch.progress = this.calculateBatchProgress(batch);
 
+        // An aborted item is settled too, or a batch with one would never finish.
+        const abortedCount = items.filter((item) => item.status === "aborted").length;
+        const settled = batch.completedCount + batch.errorCount + abortedCount === batch.totalCount;
+
         // Update batch status
-        if (batch.completedCount + batch.errorCount === batch.totalCount) {
-            if (batch.errorCount > 0 && batch.completedCount > 0) {
-                batch.status = "error";
-            } else if (batch.errorCount === batch.totalCount) {
+        if (settled) {
+            if (abortedCount > 0) {
+                // Same rule as `updateBatchAfterAbort`.
+                batch.status = batch.completedCount > 0 ? "error" : "cancelled";
+            } else if (batch.errorCount > 0) {
                 batch.status = "error";
             } else {
                 batch.status = "completed";
@@ -614,57 +707,31 @@ export class Uploader {
         this.batches.set(batchId, batch);
 
         // Emit batch progress event
-        this.emitBatch("BATCH_PROGRESS", batch);
+        this.emit("BATCH_PROGRESS", batch);
 
         // Check if batch is complete
-        if (batch.completedCount + batch.errorCount === batch.totalCount) {
+        if (settled) {
             if (batch.status === "completed") {
-                this.emitBatch("BATCH_FINISH", batch);
+                this.emit("BATCH_FINISH", batch);
             } else if (batch.status === "error") {
-                this.emitBatch("BATCH_ERROR", batch);
+                this.emit("BATCH_ERROR", batch);
+            } else {
+                this.emit("BATCH_CANCELLED", batch);
             }
 
             // Emit finalize event after a short delay to allow listeners to process
             setTimeout(() => {
-                this.emitBatch("BATCH_FINALIZE", batch);
+                this.emit("BATCH_FINALIZE", batch);
             }, 0);
         }
     }
 
     /**
-     * Emits a batch event to all registered handlers.
+     * Emits an event to this uploader's handlers and to its endpoint's channel.
      */
-    private emitBatch(event: UploaderEventType, batch: BatchState): void {
-        const handlers = this.eventHandlers.get(event);
-
-        if (handlers) {
-            handlers.forEach((handler) => {
-                try {
-                    handler(batch);
-                } catch (error) {
-                    // eslint-disable-next-line no-console -- Error logging for debugging
-                    console.error(`[Uploader] Error in ${event} handler:`, error);
-                }
-            });
-        }
-    }
-
-    /**
-     * Emits an event to all registered handlers.
-     */
-    private emit(event: UploaderEventType, item: UploadItem): void {
-        const handlers = this.eventHandlers.get(event);
-
-        if (handlers) {
-            handlers.forEach((handler) => {
-                try {
-                    handler(item);
-                } catch (error) {
-                    // eslint-disable-next-line no-console -- Error logging for debugging
-                    console.error(`[Uploader] Error in ${event} handler:`, error);
-                }
-            });
-        }
+    private emit(event: UploaderEventType, payload: BatchState | UploadItem): void {
+        callHandlers(this.eventHandlers.get(event), event, payload);
+        callHandlers(endpointChannels.get(normalizeEndpoint(this.options.endpoint))?.get(event), event, payload);
     }
 
     /**
@@ -867,6 +934,14 @@ export class Uploader {
             // regardless of whether the header resolver is async.
             resolveRequestHeaders(this.options.endpoint, "POST", this.options.headers, this.options.onBeforeRequest)
                 .then((customHeaders) => {
+                    // Aborted while the headers resolved: `xhr.abort()` before `send()` neither
+                    // fires "abort" nor stops a later `send()`, so never send and settle here.
+                    if (this.activeUploads.get(item.id) !== xhr) {
+                        reject(new Error("Upload aborted"));
+
+                        return undefined;
+                    }
+
                     for (const [key, value] of Object.entries(customHeaders)) {
                         xhr.setRequestHeader(key, value);
                     }
@@ -902,3 +977,73 @@ export class Uploader {
  * Creates a new uploader instance.
  */
 export const createUploader = (options: UploaderOptions): Uploader => new Uploader(options);
+
+/**
+ * Subscribes to an event of every uploader that uploads to `endpoint`, whichever hook or
+ * adapter created it. Returns the unsubscribe function.
+ */
+export const subscribe = (endpoint: string, event: UploaderEventType, handler: UploaderEventHandler): VoidFunction => {
+    const key = normalizeEndpoint(endpoint);
+    let channel = endpointChannels.get(key);
+
+    if (!channel) {
+        channel = new Map();
+        endpointChannels.set(key, channel);
+    }
+
+    let handlers = channel.get(event);
+
+    if (!handlers) {
+        handlers = new Set();
+        channel.set(event, handlers);
+    }
+
+    handlers.add(handler);
+
+    return () => {
+        handlers.delete(handler);
+
+        if (handlers.size === 0) {
+            channel.delete(event);
+
+            if (channel.size === 0) {
+                endpointChannels.delete(key);
+            }
+        }
+    };
+};
+
+/**
+ * Sends a command to every uploader that uploads to `endpoint`, whichever hook or adapter created
+ * it. Each uploader acts only on the items and batches it owns, so an id no uploader owns is a no-op;
+ * `abortAll` aborts every upload to the endpoint.
+ */
+export const dispatch = (endpoint: string, command: UploaderCommand): void => {
+    const key = normalizeEndpoint(endpoint);
+    const channel = commandChannels.get(key);
+
+    if (!channel) {
+        return;
+    }
+
+    for (const ref of channel) {
+        const uploader = ref.deref();
+
+        // Collected without being cleared: drop its entry.
+        if (!uploader) {
+            channel.delete(ref);
+
+            continue;
+        }
+
+        if (command.type === "abortAll") {
+            uploader.abort();
+        } else {
+            uploader[command.type](command.id);
+        }
+    }
+
+    if (channel.size === 0) {
+        commandChannels.delete(key);
+    }
+};

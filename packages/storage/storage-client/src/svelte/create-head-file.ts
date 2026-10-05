@@ -1,9 +1,10 @@
 import { createQuery } from "@tanstack/svelte-query";
 import type { Readable } from "svelte/store";
-import { derived, get, readable } from "svelte/store";
+import { derived, fromStore } from "svelte/store";
 
 import type { FileHeadMetadata } from "../core";
 import { buildUrl, extractHeadMetadataFromHeaders, fetchHead, storageQueryKeys } from "../core";
+import toReadable from "./to-readable";
 
 export interface CreateHeadFileOptions {
     /** Whether to enable the query */
@@ -37,9 +38,12 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
     const idStore: Readable<string> = typeof id === "object" && "subscribe" in id ? id : derived([], () => id);
     const enabledStore: Readable<boolean> = typeof enabled === "object" && "subscribe" in enabled ? enabled : derived([], () => enabled);
 
+    const idState = fromStore(idStore);
+    const enabledState = fromStore(enabledStore);
+
     const query = createQuery(() => {
-        const currentId = get(idStore);
-        const currentEnabled = get(enabledStore);
+        const currentId = idState.current;
+        const currentEnabled = enabledState.current;
 
         return {
             enabled: currentEnabled && !!currentId,
@@ -52,13 +56,9 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
         };
     });
 
-    const dataStore = (query.data as unknown as Readable<FileHeadMetadata | undefined> | null) ?? readable<FileHeadMetadata | undefined>();
-    const errorStore = (query.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>();
-    const isLoadingStore: Readable<boolean> =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query query type is complex
-        typeof (query.isLoading as any) === "object" && (query.isLoading as any) !== null && "subscribe" in (query.isLoading as any)
-            ? (query.isLoading as unknown as Readable<boolean>)
-            : readable(false);
+    const dataStore = toReadable(() => query.data);
+    const errorStore = toReadable(() => query.error);
+    const isLoadingStore: Readable<boolean> = toReadable(() => query.isLoading);
 
     return {
         data: derived(dataStore, ($data) => $data ?? undefined),

@@ -144,9 +144,9 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
                 const item = itemOrBatch;
                 const uploadError = new Error(item.error ?? "Upload failed");
 
+                // `upload()` rejects with this error, and its catch calls `onError`.
                 error.value = uploadError;
                 isUploading.value = false;
-                onError?.(uploadError);
                 currentItemId.value = undefined;
             }
         };
@@ -158,6 +158,7 @@ export const useMultipartUpload = (options: UseMultipartUploadOptions): UseMulti
 
         // Cleanup on unmount
         onBeforeUnmount(() => {
+            uploaderInstance.abort();
             uploader.off("ITEM_START", onItemStart);
             uploader.off("ITEM_PROGRESS", onItemProgress);
             uploader.off("ITEM_FINISH", onItemFinish);

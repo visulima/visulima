@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UsePasteUploadOptions {
     /** Filter function to determine which files to accept */
@@ -25,9 +25,13 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
     const { filter, onFilesPasted } = options;
 
     const [pastedFiles, setPastedFiles] = useState<File[]>([]);
+    // The paste the element handler took, so the document listener skips it when it bubbles up.
+    const handledEventRef = useRef<Event | undefined>(undefined);
 
     const handlePaste = useCallback(
         (event: React.ClipboardEvent<HTMLElement>): void => {
+            handledEventRef.current = event.nativeEvent;
+
             const { items } = event.clipboardData;
             const files: File[] = [];
 
@@ -64,7 +68,7 @@ export const usePasteUpload = (options: UsePasteUploadOptions = {}): UsePasteUpl
         const handleGlobalPaste = (event: ClipboardEvent): void => {
             const items = event.clipboardData?.items;
 
-            if (!items) {
+            if (!items || event === handledEventRef.current) {
                 return;
             }
 

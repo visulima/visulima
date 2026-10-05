@@ -53,6 +53,31 @@ const uploader = createUploader({
 | `on`            | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Subscribes to uploader events                     |
 | `off`           | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Unsubscribes from uploader events                 |
 
+### `subscribe`
+
+Subscribes to an uploader event for every upload to an endpoint, across all uploaders and adapters. Endpoints are compared as absolute URLs, so `/api/upload` and `https://your-host/api/upload` share events. Returns the unsubscribe function. The listener hooks are built on it.
+
+```ts
+import { subscribe } from "@visulima/storage-client";
+
+const unsubscribe = subscribe("/api/upload/multipart", "ITEM_FINISH", (item) => {
+    console.log("Uploaded:", item);
+});
+
+unsubscribe();
+```
+
+### `dispatch`
+
+Sends a command to every uploader of an endpoint, across all uploaders and adapters, with endpoints compared like `subscribe`'s. Each uploader acts only on the items and batches it owns, so an ID no uploader owns is a no-op; `abortAll` aborts every upload to the endpoint. The abort and retry hooks are built on it.
+
+```ts
+import { dispatch } from "@visulima/storage-client";
+
+dispatch("/api/upload/multipart", { id: "item-123", type: "abortItem" }); // also "abortBatch", "retryItem", "retryBatch"
+dispatch("/api/upload/multipart", { type: "abortAll" });
+```
+
 ### `createMultipartAdapter`
 
 Creates a multipart upload adapter wrapping the `Uploader` with a Promise-based API.
@@ -918,6 +943,8 @@ const { data, isLoading, error, refetch } = useTransformMetadata({
 
 ### Abort Hooks
 
+The abort and retry hooks act on the multipart and batch uploads to their `endpoint`, whichever hook or adapter started them, through [`dispatch`](#dispatch). An ID no upload owns is ignored, and TUS and chunked REST uploads are not reached. The `metadata` option is still accepted but deprecated and unused.
+
 #### `useAbortAll`
 
 ```ts
@@ -956,7 +983,7 @@ retryBatch("batch-123");
 
 ### Event Listener Hooks
 
-All listener hooks accept `endpoint` and `metadata` options, plus an event-specific callback.
+All listener hooks accept an `endpoint` option plus an event-specific callback, and observe every multipart and batch upload to that endpoint, whichever hook or adapter started it. The `metadata` option is still accepted but deprecated and unused.
 
 | Hook                        | Callback           | Callback Signature            |
 | --------------------------- | ------------------ | ----------------------------- |
@@ -967,7 +994,7 @@ All listener hooks accept `endpoint` and `metadata` options, plus an event-speci
 | `useBatchCancelledListener` | `onBatchCancelled` | `(batch: BatchState) => void` |
 | `useBatchFinalizeListener`  | `onBatchFinalize`  | `(batch: BatchState) => void` |
 | `useRetryListener`          | `onRetry`          | `(item: UploadItem) => void`  |
-| `useAllAbortListener`       | `onAbortAll`       | `() => void`                  |
+| `useAllAbortListener`       | `onAbort`          | `(item: UploadItem) => void`  |
 
 ---
 
@@ -1015,6 +1042,8 @@ Solid primitives follow the same API patterns as React hooks but use Solid's rea
 | `createTransformMetadata` | Fetch transformation capabilities |
 
 ### Abort Primitives
+
+The abort and retry hooks act on the multipart and batch uploads to their `endpoint`, whichever hook or adapter started them, through [`dispatch`](#dispatch). An ID no upload owns is ignored, and TUS and chunked REST uploads are not reached. The `metadata` option is still accepted but deprecated and unused.
 
 | Primitive          | Description           |
 | ------------------ | --------------------- |

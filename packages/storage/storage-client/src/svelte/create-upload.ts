@@ -1,5 +1,5 @@
 import type { Readable } from "svelte/store";
-import { derived } from "svelte/store";
+import { derived, readable, writable } from "svelte/store";
 
 import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "../react/types";
 import type { CreateChunkedRestUploadOptions } from "./create-chunked-rest-upload";
@@ -222,8 +222,13 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         throw new Error("No available endpoint for upload");
     };
 
+    // The method of the latest upload, so state follows it rather than a previous upload's result.
+    const lastMethod = writable<UploadMethod | undefined>();
+
     const upload = async (file: File): Promise<UploadResult> => {
         const selectedMethod = determineMethod(file);
+
+        lastMethod.set(selectedMethod);
 
         if (selectedMethod === "tus") {
             if (!tusUpload) {
@@ -258,52 +263,35 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         tusUpload?.reset();
         chunkedRestUpload?.reset();
         multipartUpload?.reset();
+        lastMethod.set(undefined);
     };
 
     // Determine current method based on which store is active
-    const currentMethod = derived(
-        [
-            tusUpload?.isUploading ?? { subscribe: () => () => {} },
-            tusUpload?.result ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.isUploading ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.result ?? { subscribe: () => () => {} },
-            multipartUpload?.isUploading ?? { subscribe: () => () => {} },
-            multipartUpload?.result ?? { subscribe: () => () => {} },
-        ],
-        ([tusIsUploading, tusResult, chunkedRestIsUploading, chunkedRestResult, multipartIsUploading, multipartResult]) => {
-            if (detectedMethod !== "auto") {
-                return detectedMethod;
-            }
+    const currentMethod = derived(lastMethod, (latestMethod): UploadMethod => {
+        if (detectedMethod !== "auto") {
+            return detectedMethod;
+        }
 
-            // If TUS is uploading or has result, it's being used
-            if (tusUpload && (tusIsUploading || tusResult)) {
-                return "tus";
-            }
+        if (latestMethod) {
+            return latestMethod;
+        }
 
-            // If chunked REST is uploading or has result, it's being used
-            if (chunkedRestUpload && (chunkedRestIsUploading || chunkedRestResult)) {
-                return "chunked-rest";
-            }
+        // Default based on available endpoints (priority: chunked-rest > tus > multipart)
+        if (endpointChunkedRest) {
+            return "chunked-rest";
+        }
 
-            // If multipart is uploading or has result, it's being used
-            if (multipartUpload && (multipartIsUploading || multipartResult)) {
-                return "multipart";
-            }
+        if (endpointTus) {
+            return "tus";
+        }
 
-            // Default based on available endpoints (priority: chunked-rest > tus > multipart)
-            if (endpointChunkedRest) {
-                return "chunked-rest";
-            }
+        return "multipart";
+    });
 
-            if (endpointTus) {
-                return "tus";
-            }
+    // Create derived stores for reactive values. A missing endpoint contributes its idle value
+    // (as in the React / Vue hooks), so a method without an endpoint never reads `undefined`.
+    const emptyStore = readable<undefined>();
 
-            return "multipart";
-        },
-    );
-
-    // Create derived stores for reactive values
     const pickError = (
         current: UploadMethod,
         tusError: Error | undefined,
@@ -322,12 +310,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     };
 
     const error = derived(
-        [
-            currentMethod,
-            tusUpload?.error ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.error ?? { subscribe: () => () => {} },
-            multipartUpload?.error ?? { subscribe: () => () => {} },
-        ],
+        [currentMethod, tusUpload?.error ?? emptyStore, chunkedRestUpload?.error ?? emptyStore, multipartUpload?.error ?? emptyStore],
         ([current, tusError, chunkedRestError, multipartError]) => pickError(current, tusError, chunkedRestError, multipartError),
     );
 
@@ -344,7 +327,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     };
 
     const isPaused = derived(
-        [currentMethod, tusUpload?.isPaused ?? { subscribe: () => () => {} }, chunkedRestUpload?.isPaused ?? { subscribe: () => () => {} }],
+        [currentMethod, tusUpload?.isPaused ?? emptyStore, chunkedRestUpload?.isPaused ?? emptyStore],
         ([current, tusPaused, chunkedRestPaused]) => pickIsPaused(current, tusPaused, chunkedRestPaused),
     );
 
@@ -363,9 +346,9 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     const isUploading = derived(
         [
             currentMethod,
-            tusUpload?.isUploading ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.isUploading ?? { subscribe: () => () => {} },
-            multipartUpload?.isUploading ?? { subscribe: () => () => {} },
+            tusUpload?.isUploading ?? readable(false),
+            chunkedRestUpload?.isUploading ?? readable(false),
+            multipartUpload?.isUploading ?? readable(false),
         ],
         ([current, tusIsUploading, chunkedRestIsUploading, multipartIsUploading]) =>
             pickBoolean(current, tusIsUploading, chunkedRestIsUploading, multipartIsUploading),
@@ -384,7 +367,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     };
 
     const offset = derived(
-        [currentMethod, tusUpload?.offset ?? { subscribe: () => () => {} }, chunkedRestUpload?.offset ?? { subscribe: () => () => {} }],
+        [currentMethod, tusUpload?.offset ?? emptyStore, chunkedRestUpload?.offset ?? emptyStore],
         ([current, tusOffset, chunkedRestOffset]) => pickOffset(current, tusOffset, chunkedRestOffset),
     );
 
@@ -401,12 +384,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     };
 
     const progress = derived(
-        [
-            currentMethod,
-            tusUpload?.progress ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.progress ?? { subscribe: () => () => {} },
-            multipartUpload?.progress ?? { subscribe: () => () => {} },
-        ],
+        [currentMethod, tusUpload?.progress ?? readable(0), chunkedRestUpload?.progress ?? readable(0), multipartUpload?.progress ?? readable(0)],
         ([current, tusProgress, chunkedRestProgress, multipartProgress]) => pickProgress(current, tusProgress, chunkedRestProgress, multipartProgress),
     );
 
@@ -428,12 +406,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     };
 
     const result = derived(
-        [
-            currentMethod,
-            tusUpload?.result ?? { subscribe: () => () => {} },
-            chunkedRestUpload?.result ?? { subscribe: () => () => {} },
-            multipartUpload?.result ?? { subscribe: () => () => {} },
-        ],
+        [currentMethod, tusUpload?.result ?? emptyStore, chunkedRestUpload?.result ?? emptyStore, multipartUpload?.result ?? emptyStore],
         ([current, tusResult, chunkedRestResult, multipartResult]) => pickResult(current, tusResult, chunkedRestResult, multipartResult),
     );
 

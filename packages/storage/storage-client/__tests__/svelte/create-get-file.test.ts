@@ -1,185 +1,112 @@
-import { QueryClient } from "@tanstack/svelte-query";
-import { render, waitFor } from "@testing-library/svelte";
+import { waitFor } from "@testing-library/svelte";
 import { get, writable } from "svelte/store";
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CreateGetFileOptions, CreateGetFileReturn } from "../../src/svelte/create-get-file";
 import { createGetFile } from "../../src/svelte/create-get-file";
-import TestComponent from "./TestComponent.svelte";
+import { mountFactory } from "./test-utils";
 
-// Mock fetch globally
 const mockFetch = vi.fn();
+let originalFetch: typeof globalThis.fetch | undefined;
+
+const mountGetFile = (options: CreateGetFileOptions): CreateGetFileReturn => mountFactory(() => createGetFile(options));
+
+const fileResponse = (content: string): Record<string, unknown> => {
+    return {
+        blob: async () => new Blob([content], { type: "image/jpeg" }),
+        headers: new Headers({ "Content-Length": String(content.length), "Content-Type": "image/jpeg" }),
+        ok: true,
+    };
+};
 
 describe(createGetFile, () => {
-    let queryClient: QueryClient;
-
     beforeEach(() => {
-        queryClient = new QueryClient({
-            defaultOptions: {
-                mutations: { retry: false },
-                queries: { retry: false },
-            },
-        });
+        originalFetch = globalThis.fetch;
+        // @ts-expect-error - Mocking fetch for tests
         globalThis.fetch = mockFetch;
         vi.clearAllMocks();
     });
 
-    it("should fetch file successfully", async () => {
-        expect.assertions(8);
+    afterEach(() => {
+        if (originalFetch) {
+            globalThis.fetch = originalFetch;
+        } else {
+            delete (globalThis as { fetch?: typeof fetch }).fetch;
+        }
 
-        const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
-        const mockHeaders = new Headers({
-            "Content-Length": "12",
-            "Content-Type": "image/jpeg",
-        });
-
-        mockFetch.mockResolvedValueOnce({
-            blob: () => Promise.resolve(mockBlob),
-            headers: mockHeaders,
-            ok: true,
-        });
-
-        // Wrap in QueryClientProvider component for Svelte context
-        // Svelte Query needs component context for getContext()
-        const { component } = render(TestComponent, {
-            props: {
-                client: queryClient,
-                options: {
-                    endpoint: "https://api.example.com",
-                    id: "file-123",
-                },
-            },
-        });
-
-        // Access result from component instance
-        // Wait for result to be initialized and stores to be available
-        let result: ReturnType<typeof component.getResult>;
-
-        await waitFor(
-            () => {
-                const r = component.getResult();
-
-                expect(r).toBeDefined();
-                expect(r?.isLoading).toBeDefined();
-
-                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
-
-                expect(r?.data).toBeDefined();
-
-                expectTypeOf(r?.data?.subscribe).toBeFunction();
-
-                result = r!;
-            },
-            { timeout: 2000 },
-        );
-
-        // Wait for query to complete and data to be available
-        await waitFor(
-            () => {
-                expect(get(result.isLoading)).toBe(false);
-                expect(get(result.data)).toBeDefined();
-            },
-            { timeout: 2000 },
-        );
-
-        expect(get(result.data)?.size).toBe(mockBlob.size);
-        expect(get(result.error)).toBeUndefined();
+        vi.restoreAllMocks();
     });
 
-    it("should handle reactive id changes", async () => {
-        expect.assertions(9);
+    it("exposes the fetched blob, meta and loading state, and calls onSuccess", async () => {
+        expect.hasAssertions();
 
-        const id = writable("file-123");
-        const mockBlob1 = new Blob(["content 1"], { type: "image/jpeg" });
-        const mockBlob2 = new Blob(["content 2"], { type: "image/jpeg" });
+        mockFetch.mockResolvedValueOnce(fileResponse("test content"));
 
-        mockFetch
-            .mockResolvedValueOnce({
-                blob: () => Promise.resolve(mockBlob1),
-                headers: new Headers({ "Content-Type": "image/jpeg" }),
-                ok: true,
-            })
-            .mockResolvedValueOnce({
-                blob: () => Promise.resolve(mockBlob2),
-                headers: new Headers({ "Content-Type": "image/jpeg" }),
-                ok: true,
-            });
+        const onSuccess = vi.fn();
+        const result = mountGetFile({ endpoint: "https://api.example.com", id: "file-123", onSuccess });
 
-        const { component } = render(TestComponent, {
-            props: {
-                client: queryClient,
-                options: {
-                    endpoint: "https://api.example.com",
-                    id,
-                },
-            },
+        await waitFor(() => {
+            expect(get(result.data)?.size).toBe(12);
         });
 
-        // Wait for result to be initialized and stores to be available
-        let result: ReturnType<typeof component.getResult>;
+        expect(get(result.isLoading)).toBe(false);
+        expect(get(result.meta)?.contentType).toBe("image/jpeg");
+        expect(get(result.error)).toBeUndefined();
+        expect(onSuccess).toHaveBeenCalledWith(expect.any(Blob), expect.objectContaining({ id: "file-123" }));
+    });
 
-        await waitFor(
-            () => {
-                const r = component.getResult();
+    it("exposes the error and calls onError when the request fails", async () => {
+        expect.hasAssertions();
 
-                expect(r).toBeDefined();
-                expect(r?.isLoading).toBeDefined();
-
-                expectTypeOf(r?.isLoading?.subscribe).toBeFunction();
-
-                expect(r?.data).toBeDefined();
-
-                expectTypeOf(r?.data?.subscribe).toBeFunction();
-
-                result = r!;
+        mockFetch.mockResolvedValueOnce({
+            json: async () => {
+                return { error: { code: "NotFound", message: "File not found" } };
             },
-            { timeout: 2000 },
-        );
+            ok: false,
+            status: 404,
+            statusText: "Not Found",
+        });
 
-        await waitFor(
-            () => {
-                expect(get(result.isLoading)).toBe(false);
-                expect(get(result.data)).toBeDefined();
-            },
-            { timeout: 2000 },
-        );
+        const onError = vi.fn();
+        const result = mountGetFile({ endpoint: "https://api.example.com", id: "missing", onError });
 
-        expect(get(result.data)?.size).toBe(mockBlob1.size);
+        await waitFor(() => {
+            expect(get(result.error)?.message).toBe("File not found");
+        });
+
+        expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "File not found" }));
+    });
+
+    it("refetches when the id store changes", async () => {
+        expect.hasAssertions();
+
+        mockFetch.mockResolvedValueOnce(fileResponse("content 1")).mockResolvedValueOnce(fileResponse("content 22"));
+
+        const id = writable("file-123");
+        const result = mountGetFile({ endpoint: "https://api.example.com", id });
+
+        await waitFor(() => {
+            expect(get(result.data)?.size).toBe(9);
+        });
 
         id.set("file-456");
 
-        // Wait for the query to refetch with the new id
-        await waitFor(
-            () => {
-                expect(get(result.isLoading)).toBe(false);
-                expect(get(result.data)?.size).toBe(mockBlob2.size);
-            },
-            { timeout: 2000 },
-        );
+        await waitFor(() => {
+            expect(get(result.data)?.size).toBe(10);
+        });
+
+        expect(mockFetch).toHaveBeenLastCalledWith("https://api.example.com/file-456", expect.objectContaining({ method: "GET" }));
     });
 
-    it("should respect enabled option", async () => {
-        expect.assertions(1);
+    it("does not fetch while disabled", async () => {
+        expect.hasAssertions();
 
-        const enabled = writable(false);
-
-        render(TestComponent, {
-            props: {
-                client: queryClient,
-                options: {
-                    enabled,
-                    endpoint: "https://api.example.com",
-                    id: "file-123",
-                },
-            },
-        });
+        mountGetFile({ enabled: writable(false), endpoint: "https://api.example.com", id: "file-123" });
 
         await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 50);
+            setTimeout(resolve, 50);
         });
 
-        // Query should not run when disabled
         expect(mockFetch).not.toHaveBeenCalled();
     });
 });

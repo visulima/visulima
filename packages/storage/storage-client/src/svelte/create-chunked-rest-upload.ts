@@ -1,4 +1,4 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 import type { Readable } from "svelte/store";
 import { writable } from "svelte/store";
 
@@ -170,25 +170,23 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
             isPaused.set(adapterInstance.isPaused());
         }, 100);
 
-        // Cleanup on destroy
-        onDestroy(() => {
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return () => {
             clearInterval(checkInterval);
+            adapterInstance.abort();
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);
             adapterInstance.setOnError(undefined);
-        });
+        };
     });
 
     const upload = async (file: File): Promise<UploadResult> => {
         try {
             return await adapterInstance.upload(file);
         } catch (error_) {
-            const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-            error.set(uploadError);
-            onError?.(uploadError);
-            throw uploadError;
+            // Adapter's onError already updated state and invoked callbacks
+            throw error_ instanceof Error ? error_ : new Error(String(error_));
         }
     };
 
@@ -206,12 +204,9 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
         try {
             await adapterInstance.resume();
         } catch (error_) {
-            const uploadError = error_ instanceof Error ? error_ : new Error(String(error_));
-
-            error.set(uploadError);
+            // Adapter's onError already updated state and invoked callbacks
             isUploading.set(false);
-            onError?.(uploadError);
-            throw uploadError;
+            throw error_ instanceof Error ? error_ : new Error(String(error_));
         }
     };
 

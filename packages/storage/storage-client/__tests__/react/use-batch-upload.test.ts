@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useBatchUpload } from "../../src/react/use-batch-upload";
 import { MockXMLHttpRequest } from "../mock-xhr";
+import { HangingXMLHttpRequest } from "../upload-mocks";
 import { renderHookWithQueryClient } from "./test-utils";
 
 describe(useBatchUpload, () => {
@@ -183,5 +184,24 @@ describe(useBatchUpload, () => {
 
         // Clean up
         unmount();
+    });
+    it("should abort the in-flight batch on unmount", async () => {
+        expect.hasAssertions();
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = HangingXMLHttpRequest;
+        HangingXMLHttpRequest.sent.length = 0;
+
+        const { result, unmount } = renderHookWithQueryClient(() => useBatchUpload({ endpoint: "/api/upload" }));
+
+        result.current.uploadBatch([new File(["test1"], "test1.jpg")]);
+
+        await waitFor(() => {
+            expect(HangingXMLHttpRequest.sent).toHaveLength(1);
+        });
+
+        unmount();
+
+        expect(HangingXMLHttpRequest.sent[0]?.abort).toHaveBeenCalledWith();
     });
 });

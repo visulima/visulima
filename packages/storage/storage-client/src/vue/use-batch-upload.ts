@@ -191,6 +191,7 @@ export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadRe
         uploader.on("BATCH_CANCELLED", onBatchCancelled);
 
         onBeforeUnmount(() => {
+            uploaderInstance.abort();
             uploader.off("BATCH_START", onBatchStart);
             uploader.off("BATCH_PROGRESS", onBatchProgress);
             uploader.off("BATCH_FINISH", onBatchFinish);

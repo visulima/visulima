@@ -1,4 +1,4 @@
-import { onDestroy, onMount } from "svelte";
+import { onMount } from "svelte";
 import type { Readable } from "svelte/store";
 import { writable } from "svelte/store";
 
@@ -147,10 +147,10 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
             onSuccess?.(uploadResult);
         });
 
+        // `upload()` rejects with every error the adapter reports here, and its catch calls `onError`.
         adapterInstance.setOnError((uploadError) => {
             error.set(uploadError);
             isUploading.set(false);
-            onError?.(uploadError);
         });
 
         // Sync state with adapter periodically
@@ -159,14 +159,15 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
             isPaused.set(adapterInstance.isPaused());
         }, 100);
 
-        // Cleanup on destroy
-        onDestroy(() => {
+        // onDestroy cannot be registered from inside onMount; its returned cleanup runs on destroy.
+        return () => {
             clearInterval(checkInterval);
+            adapterInstance.abort();
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);
             adapterInstance.setOnError(undefined);
-        });
+        };
     });
 
     const upload = async (file: File): Promise<UploadResult> => {

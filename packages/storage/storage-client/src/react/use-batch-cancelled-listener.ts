@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 
-import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
+import { subscribe } from "../core/uploader";
 
 export interface UseBatchCancelledListenerOptions {
-    /** Upload endpoint URL (used to create uploader instance) */
+    /** Upload endpoint URL whose uploads to observe */
     endpoint: string;
-    /** Additional metadata to include with the upload */
+    /** @deprecated Unused: listeners observe every upload to `endpoint`, so there is nothing to attach metadata to. */
     metadata?: Record<string, string>;
     /** Callback when batch is cancelled */
     onBatchCancelled: (batch: BatchState) => void;
@@ -17,7 +17,7 @@ export interface UseBatchCancelledListenerOptions {
  * @param options Listener configuration options
  */
 export const useBatchCancelledListener = (options: UseBatchCancelledListenerOptions): void => {
-    const { endpoint, metadata, onBatchCancelled } = options;
+    const { endpoint, onBatchCancelled } = options;
 
     const callbackRef = useRef(onBatchCancelled);
 
@@ -26,21 +26,12 @@ export const useBatchCancelledListener = (options: UseBatchCancelledListenerOpti
     }, [onBatchCancelled]);
 
     useEffect(() => {
-        const adapter = createMultipartAdapter({
-            endpoint,
-            metadata,
-        });
-
         const handler = (itemOrBatch: UploadItem | BatchState): void => {
             if ("itemIds" in itemOrBatch) {
                 callbackRef.current(itemOrBatch);
             }
         };
 
-        adapter.uploader.on("BATCH_CANCELLED", handler);
-
-        return () => {
-            adapter.uploader.off("BATCH_CANCELLED", handler);
-        };
-    }, [endpoint, metadata]);
+        return subscribe(endpoint, "BATCH_CANCELLED", handler);
+    }, [endpoint]);
 };

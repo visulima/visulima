@@ -146,10 +146,10 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
             onSuccess?.(uploadResult);
         });
 
+        // `upload()` rejects with every error the adapter reports here, and its catch calls `onError`.
         adapterInstance.setOnError((uploadError) => {
             setError(uploadError);
             setIsUploading(false);
-            onError?.(uploadError);
         });
 
         // Sync state with adapter periodically
@@ -161,6 +161,7 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
         // Cleanup on unmount
         onCleanup(() => {
             clearInterval(checkInterval);
+            adapterInstance.abort();
             adapterInstance.setOnStart(undefined);
             adapterInstance.setOnProgress(undefined);
             adapterInstance.setOnFinish(undefined);

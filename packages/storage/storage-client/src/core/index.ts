@@ -46,7 +46,15 @@ export type {
 export type { UploadControlAttachMeta, UploadControlBinding, UploadControlSnapshot } from "./upload-control";
 export { UploadControl } from "./upload-control";
 // Export new uploader implementation
-export type { BatchState, UploaderOptions as CoreUploaderOptions, Uploader, UploaderEventHandler, UploaderEventType, UploadItem } from "./uploader";
-export { createUploader } from "./uploader";
+export type {
+    BatchState,
+    UploaderOptions as CoreUploaderOptions,
+    Uploader,
+    UploaderCommand,
+    UploaderEventHandler,
+    UploaderEventType,
+    UploadItem,
+} from "./uploader";
+export { createUploader, dispatch, subscribe } from "./uploader";
 export type { UrlStorage, UrlStorageEntry } from "./url-storage";
 export { defaultUrlStorage, LocalStorageUrlStorage, MemoryUrlStorage } from "./url-storage";
