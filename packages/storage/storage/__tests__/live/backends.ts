@@ -32,7 +32,7 @@ export const LIVE = process.env.LIVE_TESTS === "1";
 const env = (name: string, fallback: string): string => process.env[name] ?? fallback;
 
 // The defaults match docker-compose.live.yml.
-const S3 = {
+export const S3 = {
     accessKeyId: env("LIVE_S3_ACCESS_KEY", "live-access-key"),
     endpoint: env("LIVE_S3_ENDPOINT", "http://127.0.0.1:9000"),
     region: env("LIVE_S3_REGION", "us-east-1"),
@@ -45,7 +45,8 @@ const SEAWEEDFS = { ...S3, endpoint: env("LIVE_SEAWEEDFS_ENDPOINT", "http://127.
 export type S3Config = typeof S3;
 // Azurite's documented development account; not a secret.
 const AZURITE_ACCOUNT_KEY = ["Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq", "K1SZFPTOtr", "KBHBeksoGMGw=="].join("/");
-const AZURE_CONNECTION_STRING = env(
+
+export const AZURE_CONNECTION_STRING = env(
     "LIVE_AZURE_CONNECTION_STRING",
     `DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=${AZURITE_ACCOUNT_KEY};BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;`,
 );
