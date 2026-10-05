@@ -103,7 +103,7 @@ describe("fetch MultipartFetch", () => {
             const response = await multipartHandler.fetch(request);
 
             expect(response.status).toBe(204);
-            expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, DOWNLOAD, GET, OPTIONS, POST");
+            expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, GET, OPTIONS, POST");
         });
     });
 });

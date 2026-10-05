@@ -3,9 +3,11 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import type { AwsClient } from "aws4fetch";
 
+import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
 import { S3BaseStorage } from "../aws/s3-base-storage";
-import type { OperationOptions } from "../types";
+import { buildRangeHeader } from "../aws/s3-utils";
+import type { OperationOptions, UploadPostOptions, UploadPostPolicy } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
 import AwsLightFile from "./aws-light-file";
@@ -36,8 +38,8 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  *
  * ## Retry Behavior
  * - All S3 API calls are wrapped with configurable retry logic via `retryConfig` option
- * - Default retryable status codes: 408, 429, 500, 502, 503, 504
- * - Custom `shouldRetry` function can be provided for advanced retry logic
+ * - Default retryable status codes: 408, 429, 500, 502, 503, 504 (`retryConfig.retryableStatusCodes`)
+ * - A custom `shouldRetry` is consulted first; returning `undefined` defers to the defaults
  *
  * ## Multipart Uploads
  * - Large files are automatically split into multipart uploads
@@ -49,10 +51,12 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and S3 object)
- * - ⚠️ getUrl/getUploadUrl: Limited presigned URL support (uses aws4fetch signing)
+ * - ✅ clientDirectUpload: part URLs are SigV4 query-signed (aws4fetch `signQuery`)
  */
 class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
+
+    public override readonly storageKind: string = "aws-light";
 
     private s3Api: AwsLightApiAdapter;
 
@@ -80,21 +84,11 @@ class AwsLightStorage extends S3BaseStorage {
         super({
             ...config,
             bucket,
+            // A custom endpoint is an S3-compatible service, whose support for conditional headers and
+            // browser-form POST uploads is unknown.
+            conditional: config.conditional ?? config.endpoint === undefined,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
-            retryConfig: {
-                ...config.retryConfig,
-                shouldRetry: (error: unknown) => {
-                    const errorWithStatus = error as { retryable?: boolean; statusCode?: number };
-
-                    if (errorWithStatus.statusCode && [408, 429, 500, 502, 503, 504].includes(errorWithStatus.statusCode)) {
-                        return true;
-                    }
-
-                    // Defer to the retry engine's built-in heuristics unless the SDK
-                    // explicitly flagged the error retryable.
-                    return errorWithStatus.retryable === true ? true : undefined;
-                },
-            },
+            uploadPost: config.uploadPost ?? config.endpoint === undefined,
         });
 
         this.s3Api = new AwsLightApiAdapter({
@@ -107,13 +101,15 @@ class AwsLightStorage extends S3BaseStorage {
             sessionToken: config.sessionToken,
         });
 
-        // Override meta storage to use AwsLightMetaStorage
+        // Bucket-backed metadata unless a meta storage, or a local one (`directory`), was configured.
         const { metaStorage, metaStorageConfig } = config;
 
         if (!metaStorage) {
             const metaConfig = { ...config, ...metaStorageConfig, logger: this.logger };
 
-            this.meta = new AwsLightMetaStorage(metaConfig);
+            if (!("directory" in metaConfig)) {
+                this.meta = new AwsLightMetaStorage(metaConfig);
+            }
         }
 
         this.startAccessCheck(async () => this.accessCheck());
@@ -149,15 +145,18 @@ class AwsLightStorage extends S3BaseStorage {
 
     public override async getStream(
         { id }: FileQuery,
-        options?: OperationOptions,
+        options?: OperationOptions & { range?: { end?: number; start: number } },
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
+            const key = await this.readableName(id);
+            const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
-                        Key: id,
+                        Key: key,
+                        ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
                 ),
@@ -165,22 +164,9 @@ class AwsLightStorage extends S3BaseStorage {
 
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
-            // Body from adapter is ReadableStream, convert to Readable
+            // Returned as-is: a proxy that subscribed inside read() re-added its listeners on every
+            // pull and pushed each chunk once per listener.
             const stream: Readable = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as NodeReadableStream<Uint8Array>) : (Body as Readable);
-
-            const readableStream = new Readable({
-                read() {
-                    stream.on("data", (chunk: Buffer) => {
-                        this.push(chunk);
-                    });
-                    stream.on("end", () => {
-                        this.push(null);
-                    });
-                    stream.on("error", (error: Error) => {
-                        this.destroy(error);
-                    });
-                },
-            });
 
             return {
                 headers: {
@@ -188,16 +174,22 @@ class AwsLightStorage extends S3BaseStorage {
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
                     ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
-                stream: readableStream,
+                stream,
             };
         });
     }
 
     public override get raw(): AwsClient {
         return this.s3Api.aws;
+    }
+
+    public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        AwsLightStorage.assertSafeId(key);
+
+        return this.s3Api.presignPost(key, options);
     }
 
     protected getS3Api(): AwsLightApiAdapter {

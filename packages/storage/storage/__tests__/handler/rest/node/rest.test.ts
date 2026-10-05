@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import Rest from "../../../../src/handler/rest/rest";
 import DiskStorage from "../../../../src/storage/local/disk-storage";
+import MemoryStorage from "../../../../src/storage/memory/memory-storage";
 import { storageOptions, testfile } from "../../../__helpers__/config";
 import app from "../../../__helpers__/express-app";
 import { waitForStorageReady } from "../../../__helpers__/utils";
@@ -49,6 +50,20 @@ describe("http Rest", () => {
     });
 
     describe("post", () => {
+        it("should answer an absolute Location unless useRelativeLocation is set", async () => {
+            expect.assertions(1);
+
+            const absoluteApp = express();
+            const absoluteRest = new Rest({ storage: new MemoryStorage({ allowMIME: ["video/*"] }) });
+
+            absoluteApp.use(basePath, absoluteRest.handle);
+
+            const absolute = await supertest(absoluteApp).post(basePath).set("Content-Type", testfile.contentType).send(testfile.asBuffer);
+
+            // Without a forwarded protocol, a plain connection names no scheme.
+            expect(absolute.header.location).toMatch(/^\/\/127\.0\.0\.1:\d+\/http-rest\//u);
+        });
+
         it("should upload file with raw binary data", async () => {
             expect.assertions(4);
 
@@ -198,24 +213,67 @@ describe("http Rest", () => {
             expect(response.header.location).toBeDefined();
         });
 
-        it("should update file with PUT when ID exists", async () => {
-            expect.assertions(2);
+        it("should replace the file with PUT when ID exists", async () => {
+            expect.assertions(3);
 
             // First create a file
             const createResponse = await create();
             const fileId = createResponse.body.id;
 
-            // Then update it with PUT
+            // Then replace it with PUT
             const updatedContent = Buffer.from("updated content");
 
             response = await supertest(app)
                 .put(`${basePath}/${fileId}`)
-                .set("Content-Type", "text/plain")
+                .set("Content-Type", "application/octet-stream")
                 .set("Content-Length", String(updatedContent.length))
                 .send(updatedContent);
 
             expect(response.status).toBe(200);
             expect(response.body.id).toBe(fileId);
+
+            const download = await supertest(app).get(`${basePath}/${fileId}`).buffer(true);
+
+            expect(Buffer.from(download.body as Buffer).toString()).toBe("updated content");
+        });
+
+        it("should validate the replacement like a new upload, keeping the original when refused", async () => {
+            expect.assertions(2);
+
+            const createResponse = await create();
+
+            response = await supertest(app)
+                .put(`${basePath}/${createResponse.body.id}`)
+                .set("Content-Type", "text/plain")
+                .set("Content-Length", "4")
+                .send(Buffer.from("text"));
+
+            expect(response.status).toBe(415);
+
+            const original = await supertest(app).get(`${basePath}/${createResponse.body.id}`);
+
+            expect(original.status).toBe(200);
+        });
+
+        it("should answer 409 for a PUT over a file stored without upload metadata", async () => {
+            expect.assertions(2);
+
+            const { writeFile } = await import("node:fs/promises");
+            const { join } = await import("node:path");
+
+            await writeFile(join(directory, "untracked-file"), "the real file");
+
+            response = await supertest(app)
+                .put(`${basePath}/untracked-file`)
+                .set("Content-Type", "application/octet-stream")
+                .set("Content-Length", "4")
+                .send(Buffer.from("evil"));
+
+            expect(response.status).toBe(409);
+
+            const { readFile } = await import("node:fs/promises");
+
+            await expect(readFile(join(directory, "untracked-file"), "utf8")).resolves.toBe("the real file");
         });
 
         it("should return 400 when no body is provided", async () => {

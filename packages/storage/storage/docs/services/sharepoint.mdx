@@ -1,0 +1,158 @@
+# SharePoint
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+A SharePoint document library is a Microsoft Graph drive. `SharePointStorage` resolves a site and document library to a `driveId`, then delegates every operation to an internal [`OneDriveStorage`](./onedrive.mdx). Uploads, read/upload URLs, listing, copy/move and limits are therefore exactly OneDrive's.
+
+The Graph client is built in the constructor (so bad auth config throws immediately); the site → library → `driveId` lookup runs once, on the first storage operation.
+
+## Installation
+
+```sh
+npm install @microsoft/microsoft-graph-client
+```
+
+```sh
+yarn add @microsoft/microsoft-graph-client
+```
+
+```sh
+pnpm add @microsoft/microsoft-graph-client
+```
+
+## Provider setup
+
+1. Register an app in the [Microsoft Entra admin center](https://entra.microsoft.com) (**App registrations → New registration**) and create a client secret. Note the client ID, tenant ID and secret.
+2. **API permissions → Microsoft Graph**, least privilege first:
+
+    | Auth shape                          | Permission                                                                                                                                                           |
+    | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | `clientCredentials` (app-only)      | `Sites.Selected`, then grant the app `write` on the one site (`POST /sites/{site-id}/permissions` with `roles: ["write"]`) — or `Sites.ReadWrite.All` for every site |
+    | `oauth` / `accessToken` (delegated) | `Sites.ReadWrite.All` + `offline_access`; the signed-in user must be a member of the site                                                                            |
+
+    Both need **Grant admin consent**. The adapter calls `GET /sites/{hostname}:/{path}`, `GET /sites/{id}/drive` or `/drives` (library lookup), then the drive item endpoints.
+
+3. Find the target:
+    - **Site URL** — what you see in the browser, e.g. `https://contoso.sharepoint.com/sites/Marketing`.
+    - **Library** — its display name (`Documents`) or URL name (`Shared Documents`); both match, case-insensitively.
+    - To skip the lookup, take the drive ID from `GET https://graph.microsoft.com/v1.0/sites/{hostname}:/sites/Marketing:/drives` and pass `driveId`.
+4. `publicByDefault: true` needs "Anyone" links enabled for the tenant and site in the SharePoint admin center.
+
+Browsers upload to your handler, not SharePoint, so CORS is configured on your own server.
+
+## Configuration
+
+```ts
+import { SharePointStorage } from "@visulima/storage/provider/sharepoint";
+
+// Minimal: everything from env (SHAREPOINT_SITE_URL + SHAREPOINT_TENANT_ID/CLIENT_ID/CLIENT_SECRET)
+const storage = new SharePointStorage({});
+```
+
+```ts
+// Production
+const storage = new SharePointStorage({
+    siteUrl: "https://contoso.sharepoint.com/sites/Marketing",
+    documentLibrary: "Documents",
+    clientCredentials: {
+        tenantId: process.env.SHAREPOINT_TENANT_ID!,
+        clientId: process.env.SHAREPOINT_CLIENT_ID!,
+        clientSecret: process.env.SHAREPOINT_CLIENT_SECRET!,
+    },
+    rootFolderPath: "uploads",
+    maxUploadSize: "1GB", // writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+});
+```
+
+### Options
+
+| Option              | Type                                                        | Default               | Description                                                                  |
+| ------------------- | ----------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------- |
+| `client`            | `Client` (Graph)                                            | —                     | Pre-built Graph client; also used for site resolution.                       |
+| `accessToken`       | `string \| () => string \| Promise<string>`                 | env, see below        | Static token, or a function called per request.                              |
+| `clientCredentials` | `{ clientId, clientSecret, tenantId }`                      | env, see below        | App-only auth.                                                               |
+| `oauth`             | `{ clientId, clientSecret?, refreshToken, tenantId? }`      | —                     | Delegated refresh-token auth (same as [OneDrive](./onedrive.mdx)).           |
+| `driveId`           | `string`                                                    | `SHAREPOINT_DRIVE_ID` | Library drive ID. Skips site resolution.                                     |
+| `siteId`            | `string`                                                    | `SHAREPOINT_SITE_ID`  | Graph site ID.                                                               |
+| `siteUrl`           | `string`                                                    | `SHAREPOINT_SITE_URL` | Full site URL, parsed into host name + path.                                 |
+| `hostname`          | `string`                                                    | `SHAREPOINT_HOSTNAME` | Host name such as `contoso.sharepoint.com`; combined with `sitePath`.        |
+| `sitePath`          | `string`                                                    | `"/"`                 | Server-relative site path such as `/sites/Marketing` (used with `hostname`). |
+| `documentLibrary`   | `string`                                                    | site default drive    | Library display name or URL name.                                            |
+| `rootFolderPath`    | `string`                                                    | library root          | Folder inside the library that acts as the bucket root.                      |
+| `publicByDefault`   | `boolean`                                                   | `false`               | `getReadUrl()` creates an anonymous view link.                               |
+| `copyTimeoutMs`     | `number`                                                    | `60000`               | Polling budget for Graph's async copy.                                       |
+| `metaStorageConfig` | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir           | Where upload metadata files are written.                                     |
+
+The target is resolved in this order: `driveId` → `siteId` → `siteUrl` → `hostname` + `sitePath`. Without any of them the first operation fails with `BAD_REQUEST`.
+
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
+
+### Environment variables
+
+| Variable                                                                                    | Fallback for                           |
+| ------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `SHAREPOINT_ACCESS_TOKEN`, then `ONEDRIVE_ACCESS_TOKEN`                                     | `accessToken`                          |
+| `SHAREPOINT_TENANT_ID` / `_CLIENT_ID` / `_CLIENT_SECRET`, then the `ONEDRIVE_*` equivalents | `clientCredentials` (all three needed) |
+| `SHAREPOINT_DRIVE_ID`, `SHAREPOINT_SITE_ID`, `SHAREPOINT_SITE_URL`, `SHAREPOINT_HOSTNAME`   | target options                         |
+
+Env credentials are only read when no auth option (`client`, `accessToken`, `clientCredentials`, `oauth`) is passed in code; an access token wins over client credentials. With none of the above, the remaining OneDrive env fallbacks (`ONEDRIVE_REFRESH_TOKEN` + `ONEDRIVE_CLIENT_ID`) apply.
+
+## Metadata storage
+
+Same as [OneDrive](./onedrive.mdx#metadata-storage): records live in a `LocalMetaStorage` (default `<os tmpdir>/Upload_meta/<id>.META`), finished uploads keep theirs, and multi-instance deployments need a shared `metaStorageConfig.directory` or a shared `metaStorage` (e.g. `S3MetaStorage` from `@visulima/storage/provider/aws`). `purge()` only touches uploads that have a record. With `expiration.purgeInterval` one timer runs (the inner OneDrive storage starts none), and `close()` stops it.
+
+## Behaviour & limits
+
+Everything in [OneDrive → Behaviour & limits](./onedrive.mdx#behaviour--limits) applies:
+
+- **Single-request writes** (`supportsResumableWrites: false`): TUS and chunked REST clients must send the whole file in one request; files over 250 MB are pushed to Graph through an upload session behind the scenes. `write()` buffers the body in memory.
+- **No range reads**; `get()` downloads the whole item.
+- `getReadUrl()` → `@microsoft.graph.downloadUrl` or, with `publicByDefault`, an anonymous view link. `getUploadUrl()` → a Graph upload-session URL.
+- `list()` walks the root folder and all sub-folders, paging with `@odata.nextLink`.
+- `signal`/`timeout` are best-effort; `retryConfig` is honoured. `exists()`, `getStream()` and `update()` don't forward per-call options to the inner storage.
+
+## Using it with the handlers
+
+```ts
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const rest = new Rest({ storage });
+
+app.use("/files", rest.handle);
+```
+
+```ts
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const multipart = new Multipart({ storage });
+
+export const handler = (request: Request): Promise<Response> => multipart.fetch(request);
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("briefs/campaign.docx", docxBuffer, {
+    contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+});
+
+const url = await files.url("briefs/campaign.docx");
+```
+
+## Troubleshooting
+
+| Symptom                                                              | Cause / fix                                                                                     |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `missing site targeting` (`BAD_REQUEST`) on the first call           | Set `driveId`, `siteId`, `siteUrl`, or `hostname` (+ `sitePath`), in code or env.               |
+| `site not found for "…"`                                             | Wrong URL/path, or (with `Sites.Selected`) the app has no grant on that site.                   |
+| `document library "…" not found in site "…"`                         | Use the library's display name or URL name exactly as shown in SharePoint, or pass `driveId`.   |
+| `pass exactly one of accessToken, clientCredentials, or oauth`       | More than one auth option passed in code. Keep one.                                             |
+| `403 accessDenied`                                                   | Missing permission/admin consent, or a `Sites.Selected` grant with `read` instead of `write`.   |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads` | The client sent a partial chunk. Upload the whole file in one request, or use `getUploadUrl()`. |

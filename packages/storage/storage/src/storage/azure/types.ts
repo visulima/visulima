@@ -16,9 +16,9 @@ interface ClientConfig {
     accountName?: string;
 
     /**
-     * Azure container name.
+     * Azure container name. Resolved from `AZURE_STORAGE_CONTAINER` when omitted.
      */
-    containerName: string;
+    containerName?: string;
 
     /**
      * Microsoft Entra credential for Azure AD / Managed Identity workloads
@@ -61,9 +61,9 @@ interface ClientConfig {
     connectionString?: string;
 
     /**
-     * Azure container name.
+     * Azure container name. Resolved from `AZURE_STORAGE_CONTAINER` when omitted.
      */
-    containerName: string;
+    containerName?: string;
 
     /**
      * Azure root path.
@@ -82,15 +82,15 @@ export interface AzureStorageOptions extends BaseStorageOptions, ClientConfig {
      * ```ts
      * Using local metafiles
      * const storage = new AzureStorage({
-     *   bucket: 'upload',
+     *   containerName: 'upload',
      *   metaStorageConfig: { directory: '/tmp/upload-metafiles' }
      * })
      * ```
-     * Using a separate bucket for metafiles
+     * Using a separate container for metafiles
      * ```ts
      * const storage = new AzureStorage({
-     *   bucket: 'upload',
-     *   metaStorageConfig: { bucket: 'upload-metafiles' }
+     *   containerName: 'upload',
+     *   metaStorageConfig: { containerName: 'upload-metafiles' }
      * })
      * ```
      */

@@ -93,6 +93,16 @@ describe("baseStorage", () => {
         await expect(storage.validate({ ...metafile, contentType: "application/octet-stream" })).resolves.toBeUndefined();
     });
 
+    it("should resolve file extensions and shorthands in allowMIME", async () => {
+        expect.assertions(3);
+
+        const shorthandStorage = new DiskStorage({ ...storageOptions, allowMIME: ["png", "json"], directory });
+
+        await expect(shorthandStorage.validate({ ...metafile, contentType: "image/png" })).resolves.toBeUndefined();
+        await expect(shorthandStorage.validate({ ...metafile, contentType: "application/json" })).resolves.toBeUndefined();
+        await expect(shorthandStorage.validate({ ...metafile, contentType: "image/jpeg" })).rejects.toHaveProperty("statusCode", 415);
+    });
+
     it("should throw error for expired files", async () => {
         expect.assertions(1);
 

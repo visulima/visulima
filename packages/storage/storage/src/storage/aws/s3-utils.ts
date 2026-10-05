@@ -37,6 +37,37 @@ export const withoutParts = <T extends { Parts?: unknown }>(file: T): T => {
 };
 
 /**
+ * Whether an S3 error is a 404: a missing object (NoSuchKey) or multipart upload (NoSuchUpload).
+ */
+export const isNotFound = (error: unknown): boolean => (error as { $metadata?: { httpStatusCode?: number } } | undefined)?.$metadata?.httpStatusCode === 404;
+
+/**
+ * Rethrows an S3 `412 Precondition Failed` (a conditional header that did not hold) as
+ * `ERRORS.PRECONDITION_FAILED`, any other error unchanged. A write's `If-Match` S3 answers
+ * with `404` when no object is stored under the key, which is the predicate failing too. A
+ * `409 ConditionalRequestConflict` (another conditional write to the key in flight; the multipart
+ * upload can't be completed any more) becomes `ERRORS.FILE_CONFLICT`: the upload has to start again.
+ * @param ifMatch Whether the request was a write that sent `If-Match`
+ * @see https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-requests.html
+ */
+export const rethrowConditionalFailure =
+    (ifMatch: boolean) =>
+    (error: unknown): never => {
+        const { $metadata, code, name } = (error ?? {}) as { $metadata?: { httpStatusCode?: number }; code?: string; name?: string };
+        const status = $metadata?.httpStatusCode;
+
+        if (status === 412 || (ifMatch && status === 404)) {
+            throwErrorCode(ERRORS.PRECONDITION_FAILED, (error as Error).message);
+        }
+
+        if (status === 409 && (code ?? name) === "ConditionalRequestConflict") {
+            throwErrorCode(ERRORS.FILE_CONFLICT, "A concurrent conditional write to the key won; start the upload again");
+        }
+
+        throw error;
+    };
+
+/**
  * Whether an UploadPart failure is S3 rejecting the `Content-MD5` digest.
  */
 export const isBadDigest = (error: unknown): boolean => {

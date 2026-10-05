@@ -64,6 +64,43 @@ export const normalizeBody = async (body: FileBody, sizeHint?: number): Promise<
     throw new TypeError(`Unsupported body type: ${Object.prototype.toString.call(body)}`);
 };
 
+/**
+ * Re-chunk `source` into parts of exactly `partSize` bytes (the last one may be shorter), after
+ * dropping its first `skip` bytes.
+ */
+export const readParts = async function* readParts(source: AsyncIterable<Buffer | Uint8Array | string>, partSize: number, skip = 0): AsyncGenerator<Buffer, void, void> {
+    let pending: Buffer[] = [];
+    let length = 0;
+    let toSkip = skip;
+
+    for await (const raw of source) {
+        let chunk = typeof raw === "string" ? Buffer.from(raw) : Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength);
+
+        if (toSkip > 0) {
+            const dropped = Math.min(toSkip, chunk.length);
+
+            chunk = chunk.subarray(dropped);
+            toSkip -= dropped;
+        }
+
+        pending.push(chunk);
+        length += chunk.length;
+
+        while (length >= partSize) {
+            const joined = Buffer.concat(pending);
+
+            yield joined.subarray(0, partSize);
+
+            pending = [joined.subarray(partSize)];
+            length -= partSize;
+        }
+    }
+
+    if (length > 0) {
+        yield Buffer.concat(pending);
+    }
+};
+
 export const toFileObject = (file: StorageFile, fallbackKey?: string): FileObject => {
     return {
         contentType: file.contentType ?? "application/octet-stream",
@@ -211,17 +248,23 @@ export const safeInvoke = (callback: ((argument: unknown) => void) | undefined, 
  * Decide whether a destination object still matches its source counterpart. Prefers strong signals
  * (size, then etag) and falls back to modification time; when nothing is comparable it treats the
  * pair as matching so a metadata-poor adapter doesn't force endless re-uploads.
+ *
+ * Pass `compareEtags: false` when the two sides run different adapters: ETag formats differ across
+ * providers (S3 multipart `-N` suffixes, GCS/Azure encodings), so a cross-provider ETag mismatch says
+ * nothing about the content. Matching sizes are then confirmed by modification time when available.
  */
-export const objectsMatch = (source: FileObject, destination: FileObject): boolean => {
-    if (typeof source.size === "number" && typeof destination.size === "number" && source.size !== destination.size) {
+export const objectsMatch = (source: FileObject, destination: FileObject, compareEtags = true): boolean => {
+    const sizesKnown = typeof source.size === "number" && typeof destination.size === "number";
+
+    if (sizesKnown && source.size !== destination.size) {
         return false;
     }
 
-    if (source.etag && destination.etag) {
+    if (compareEtags && source.etag && destination.etag) {
         return source.etag === destination.etag;
     }
 
-    if (typeof source.size === "number" && typeof destination.size === "number") {
+    if (sizesKnown && compareEtags) {
         // Sizes match and there is no etag to contradict them.
         return true;
     }

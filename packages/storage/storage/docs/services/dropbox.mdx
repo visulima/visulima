@@ -1,10 +1,12 @@
 # Dropbox
 
-> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Dropbox-specific URL minting.
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, Dropbox app setup, OAuth wiring, and Dropbox-specific URL minting.
 
 ## Overview
 
-The Dropbox adapter wraps the official `dropbox` SDK in the `BaseStorage` contract. It supports static access tokens, refresh-token auth (with built-in caching and 60 s renewal leeway), or a pre-built client for callers that already wire auth themselves. Read URLs are minted from `filesGetTemporaryLink` (4 h cap) or, when `publicByDefault: true`, from a sharing-link with automatic `?dl=0 → ?dl=1` rewriting so the URL serves raw bytes.
+`DropboxStorage` wraps the official `dropbox` SDK in the `BaseStorage` contract. Keys map onto Dropbox paths below `rootFolderPath` (`avatars/42.png` → `/<rootFolderPath>/avatars/42.png`). Files up to 150 MB are uploaded with a single `files/upload`; larger files go through an upload session in 8 MB pieces. Writes always use `overwrite` mode.
+
+Auth can be a static or callable access token, a refresh token (the adapter exchanges and caches access tokens, renewing ~60 s before expiry), or a pre-built `Dropbox` client.
 
 ## Installation
 
@@ -20,91 +22,160 @@ yarn add dropbox
 pnpm add dropbox
 ```
 
-## Usage
+## Provider setup
 
-```ts
-import DropboxStorage from "@visulima/storage/provider/dropbox";
+1. In the [Dropbox App Console](https://www.dropbox.com/developers/apps) create an app with **Scoped access** and choose:
+    - **App folder** — the app only sees `/Apps/<app name>`, and every path (including `rootFolderPath`) is relative to it. Safest choice.
+    - **Full Dropbox** — paths are relative to the account root.
+2. On the **Permissions** tab enable the scopes the adapter calls, then **Submit**:
 
-const storage = new DropboxStorage({
-    refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
-    appKey: process.env.DROPBOX_APP_KEY!,
-    appSecret: process.env.DROPBOX_APP_SECRET,
-    rootFolderPath: "uploads",
-});
-```
+    | Scope                 | Needed for                                                                     |
+    | --------------------- | ------------------------------------------------------------------------------ |
+    | `files.metadata.read` | `list()`, `exists()` / lookups (`files/get_metadata`, `files/list_folder`)     |
+    | `files.content.read`  | `get()`, `getReadUrl()` (`files/download`, `files/get_temporary_link`)         |
+    | `files.content.write` | uploads, upload sessions, `delete()`, `copy()`, `move()`                       |
+    | `sharing.write`       | only with `publicByDefault: true` (`sharing/create_shared_link_with_settings`) |
+
+    Scopes are baked into tokens at issue time — generate a new token after changing them.
+
+3. Get credentials:
+    - **Quick test:** _Settings → Generated access token_. These are short-lived (about 4 hours).
+    - **Production:** run the OAuth code flow once with `token_access_type=offline` to get a **refresh token**, then pass `refreshToken` + `appKey` (+ `appSecret` for a confidential app; omit it for PKCE).
+4. Create `rootFolderPath` if you set one — the adapter never creates folders, and `list()` fails until the folder exists.
+
+Browsers never talk to Dropbox directly through this adapter: they upload to your handler, so CORS is configured on your own server.
 
 ## Configuration
 
-### Static access token
-
-Short-lived tokens (the SDK does no refresh on its own):
-
 ```ts
-const storage = new DropboxStorage({
-    accessToken: process.env.DROPBOX_ACCESS_TOKEN!,
-});
+import { DropboxStorage } from "@visulima/storage/provider/dropbox";
+
+// Minimal: env fallback DROPBOX_REFRESH_TOKEN + DROPBOX_APP_KEY (+ DROPBOX_APP_SECRET)
+const storage = new DropboxStorage({});
 ```
 
-Falls back to `DROPBOX_ACCESS_TOKEN` when no auth option is configured.
-
-### Refresh-token auth
-
-Recommended for long-running apps — the adapter caches the access token and refreshes it inside a 60 s leeway window:
-
 ```ts
+// Production
 const storage = new DropboxStorage({
     refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
     appKey: process.env.DROPBOX_APP_KEY!,
-    appSecret: process.env.DROPBOX_APP_SECRET, // optional for PKCE clients
+    appSecret: process.env.DROPBOX_APP_SECRET, // omit for PKCE clients
+    rootFolderPath: "uploads",
+    maxUploadSize: "500MB", // writes are buffered in memory
+    metaStorageConfig: { directory: "/var/lib/app/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
 });
 ```
 
-### Pre-built client
+### Options
 
-For callers that have wired their own auth:
+| Option                | Type                                                        | Default                   | Description                                                                                                                                         |
+| --------------------- | ----------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `client`              | `Dropbox`                                                   | —                         | Pre-built SDK client (team `pathRoot`, custom headers, shared `DropboxAuth`, …). Takes precedence over everything else.                             |
+| `accessToken`         | `string \| () => string \| Promise<string>`                 | —                         | Static token, or a function called before each operation. The adapter doesn't cache what the function returns.                                      |
+| `refreshToken`        | `string`                                                    | —                         | OAuth refresh token. Requires `appKey`. Mutually exclusive with `accessToken`.                                                                      |
+| `appKey`              | `string`                                                    | —                         | App key (`client_id`). Required with `refreshToken`.                                                                                                |
+| `appSecret`           | `string`                                                    | —                         | App secret (`client_secret`) for confidential apps.                                                                                                 |
+| `rootFolderPath`      | `string`                                                    | account / app-folder root | Folder that acts as the bucket root. Leading/trailing slashes are normalized. Must exist.                                                           |
+| `publicByDefault`     | `boolean`                                                   | `false`                   | `getReadUrl()` creates (or reuses) a public shared link, rewritten to `?dl=1` so it serves raw bytes, instead of a temporary link.                  |
+| `defaultUrlExpiresIn` | `number` (seconds)                                          | `3600`                    | Requested lifetime for `getReadUrl()`, capped at `14400` (4 h). Dropbox temporary links always last 4 h; the value is only checked against the cap. |
+| `metaStorageConfig`   | `LocalMetaStorageOptions` (`directory`, `prefix`, `suffix`) | OS temp dir               | Where upload metadata files are written (see [Metadata storage](#metadata-storage)).                                                                |
+
+Auth precedence: `client` → `accessToken` → `refreshToken` + `appKey` → env. Passing `accessToken` together with any of `refreshToken` / `appKey` / `appSecret` throws.
+
+All `BaseStorageOptions` apply as well: `maxUploadSize`, `allowMIME`, `filename`, `expiration`, `metaStorage`, `retryConfig`, `logger`, `metrics`, the `on*` hooks, and so on.
+
+### Environment variables
+
+Read only when no auth option and no `client` is passed:
+
+| Variable                | Used for                                            |
+| ----------------------- | --------------------------------------------------- |
+| `DROPBOX_ACCESS_TOKEN`  | Static token (checked first)                        |
+| `DROPBOX_REFRESH_TOKEN` | Refresh-token auth, together with `DROPBOX_APP_KEY` |
+| `DROPBOX_APP_KEY`       | App key for refresh-token auth                      |
+| `DROPBOX_APP_SECRET`    | Optional app secret for refresh-token auth          |
+
+### Auth variants
 
 ```ts
+// Static token
+new DropboxStorage({ accessToken: process.env.DROPBOX_ACCESS_TOKEN! });
+
+// Token from your own identity layer, fetched per operation
+new DropboxStorage({ accessToken: async () => tokenCache.get("dropbox") });
+
+// Pre-built client, e.g. for a team space
 import { Dropbox } from "dropbox";
 
-const storage = new DropboxStorage({
-    client: new Dropbox({ accessToken: customToken }),
-});
+new DropboxStorage({ client: new Dropbox({ accessToken, pathRoot: JSON.stringify({ ".tag": "root", root: rootNamespaceId }) }) });
 ```
 
-### Public links
+## Metadata storage
+
+Dropbox has no field for the adapter's upload bookkeeping, so records live in a `LocalMetaStorage`: one JSON file per upload at `<directory>/<prefix><id><suffix>` (default `<os tmpdir>/Upload_meta/<id>.META`).
+
+- **Finished uploads keep their record.** `get()` reads content type, original name and custom metadata from it; `delete()` removes it.
+- **Multi-instance deployments** must share the records: mount a shared volume and point `metaStorageConfig.directory` at it, or pass any `MetaStorage` as `metaStorage` (for example `S3MetaStorage` from `@visulima/storage/provider/aws`, or a Redis/database-backed subclass of `MetaStorage`).
+- **Expiration only covers this storage's uploads.** `purge()` walks the meta storage's records and never lists Dropbox itself. With a meta storage that can't list its records, `purge()` does nothing.
+- Keys without a record (files put into Dropbox by other means) are read, deleted and checked directly by path.
+
+## Behaviour & limits
+
+| Topic                 | Behaviour                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Chunked / resumable   | Not supported (`supportsResumableWrites: false`). A chunk that doesn't start at 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`. TUS and chunked REST clients must send the file in one request. |
+| Memory                | `write()` buffers the whole body before uploading. Cap it with `maxUploadSize`.                                                                                                                                          |
+| Large files           | > 150 MB uses `files/upload_session/*` in 8 MB pieces, transparently.                                                                                                                                                    |
+| Range reads           | Not supported (`supportsRange: false`); `get()` downloads the whole file.                                                                                                                                                |
+| `getReadUrl(key)`     | `files/get_temporary_link` (4 h), or a public shared link with `publicByDefault` (an existing link is reused). `expiresIn` > 14400 or `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.       |
+| `getUploadUrl()`      | Always `METHOD_NOT_ALLOWED` (Dropbox's temporary upload link needs a `POST` with a raw body). Use `storage.raw.filesGetTemporaryUploadLink()` directly if you need it.                                                   |
+| `list()`              | Recursive `files/list_folder` under `rootFolderPath`, following the cursor until `limit` files are collected (max 2000 entries per page). Folders are skipped; IDs are paths relative to the root.                       |
+| `copy()` / `move()`   | Native `files/copy_v2` / `files/move_v2` on keys. The copy has no upload record; `move()` drops the source record.                                                                                                       |
+| Custom `filename`     | The returned name is the path the file is stored under; the record maps the upload ID to it.                                                                                                                             |
+| `delete()`            | Idempotent: Dropbox `not_found` errors are ignored.                                                                                                                                                                      |
+| Cancellation, retries | `signal`/`timeout` are best-effort — the SDK can't cancel an in-flight request. `retryConfig` applies (default: 3 retries with exponential backoff).                                                                     |
+
+## Using it with the handlers
+
+Because writes are single-request, prefer the multipart or REST handlers (or TUS clients that send the whole file in one `PATCH`).
 
 ```ts
-const storage = new DropboxStorage({
-    refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
-    appKey: process.env.DROPBOX_APP_KEY!,
-    publicByDefault: true,
-});
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
 
-const url = await storage.getReadUrl("avatar.png");
-// → https://www.dropbox.com/s/abc?dl=1 (already rewritten for direct download)
+const app = express();
+const rest = new Rest({ storage });
+
+app.use("/files", rest.handle);
 ```
 
-## URL Generation
+```ts
+import { Multipart } from "@visulima/storage/handler/http/fetch";
 
-### `getReadUrl(key, options?)`
+const multipart = new Multipart({ storage });
 
-- Without `publicByDefault`: returns a temporary link via `filesGetTemporaryLink` (max 4 h / 14 400 s).
-- With `publicByDefault`: creates a sharing link (recovers from `shared_link_already_exists` by reusing the existing one).
-- `responseContentDisposition` is not supported — Dropbox has no content-disposition override.
+export const handler = (request: Request): Promise<Response> => multipart.fetch(request);
+```
 
-### `getUploadUrl(key)`
+```ts
+import { Files } from "@visulima/storage";
 
-Throws `METHOD_NOT_ALLOWED`. Dropbox doesn't expose presigned PUT URLs; uploads happen against the SDK or `https://content.dropboxapi.com/2/files/upload` with `Authorization: Bearer …`.
+const files = new Files({ adapter: storage });
 
-## Features
+await files.upload("avatars/42.png", pngBuffer, { contentType: "image/png" });
 
-- **Multiple auth strategies** — static, refresh-token, or bring-your-own client.
-- **Refresh-token caching** — built-in 60 s leeway, no double-refresh storms.
-- **404 / not-found tolerance** — `delete()` is idempotent across both HTTP 404 and Dropbox's tagged `path_lookup/not_found` errors.
-- **Shared-link conflict recovery** — re-uses the existing public link when `sharingCreateSharedLinkWithSettings` fails with `shared_link_already_exists`.
+const url = await files.url("avatars/42.png", { expiresIn: 3600 }); // temporary link
+```
 
-## Limitations
+## Troubleshooting
 
-- Single-shot uploads only: the adapter buffers the part stream and POSTs in one request. For chunked transfers, drop to `storage.raw` and use the SDK's `filesUploadSession*` methods.
-- No native presigned upload URLs.
-- Read URLs are capped at the Dropbox 4 h maximum.
+| Symptom                                                              | Cause / fix                                                                                                 |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `Dropbox storage: missing auth`                                      | No `client`, auth option, or env fallback.                                                                  |
+| `refresh-token auth requires both refreshToken and appKey`           | `appSecret`/`appKey` set without `refreshToken`, or vice versa.                                             |
+| `missing_scope` / `401`                                              | The token was issued before the scope was enabled. Enable the scope, submit, and issue a new refresh token. |
+| `expired_access_token` with a static token                           | Generated tokens are short-lived. Use `refreshToken` + `appKey`, or a callable `accessToken`.               |
+| `path/not_found` on `list()`                                         | `rootFolderPath` doesn't exist. With an App-folder app, the path is relative to `/Apps/<app name>`.         |
+| `METHOD_NOT_ALLOWED … does not support chunked or resumable uploads` | The client sent a partial chunk. Upload the whole file in one request.                                      |
+| `expiresIn … exceeds the 14400s (4h) maximum`                        | Lower `expiresIn`, or use `publicByDefault: true` for a permanent link.                                     |

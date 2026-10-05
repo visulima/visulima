@@ -11,6 +11,8 @@ export type {
     BulkUploadItem,
     BulkUploadOptions,
     BulkUploadResult,
+    CopyOptions,
+    DeleteOptions,
     DownloadOptions,
     DownloadRange,
     DownloadResult,
@@ -19,13 +21,19 @@ export type {
     FileObject,
     FilesHooks,
     FilesOptions,
+    HeadOptions,
     HookActionType,
     HookEvent,
+    IfMatchOptions,
     ListAllOptions,
     ListDirectoryResult,
     ListOptions,
     MultipartOptions,
+    SearchMatch,
+    SearchOptions,
     SignedReadUrlOptions,
+    SignedUpload,
+    SignedUploadOptions,
     SignedUploadUrlOptions,
     StorageCapabilities,
     SyncOptions,
@@ -42,7 +50,9 @@ export type {
 } from "./files";
 export { Files, sync, transfer, UploadControl } from "./files";
 export { waitForStorage } from "./handler/utils/storage-utils";
-export { NoOpMetrics, OpenTelemetryMetrics } from "./metrics";
+// OpenTelemetryMetrics lives on the `@visulima/storage/metrics` sub-path: it statically imports the
+// optional `@opentelemetry/api` peer, which must never be pulled in by the root entry.
+export { default as NoOpMetrics } from "./metrics/no-op-metrics";
 export { default as DiskStorage } from "./storage/local/disk-storage";
 export { default as DiskStorageWithChecksum } from "./storage/local/disk-storage-with-checksum";
 export type { LocalMetaStorageOptions } from "./storage/local/local-meta-storage";
@@ -50,12 +60,15 @@ export { default as LocalMetaStorage } from "./storage/local/local-meta-storage"
 export { default as MemoryMetaStorage } from "./storage/memory/memory-meta-storage";
 export type { MemoryStorageOptions } from "./storage/memory/memory-storage";
 export { default as MemoryStorage } from "./storage/memory/memory-storage";
-export { getMetaVersion, META_VERSION, default as MetaStorage, setMetaVersion } from "./storage/meta-storage";
+export { getMetaVersion, META_VERSION, default as MetaStorage, setMetaVersion, WRITE_CLAIM_KEY } from "./storage/meta-storage";
 export { BaseStorage as AbstractBaseStorage, defaultCloudStorageFileNameValidation, defaultFilesystemFileNameValidation } from "./storage/storage";
 export type {
     BaseStorageOptions,
     BatchOperationResponse,
     BatchOperationResult,
+    ConditionalOptions,
+    ConditionalSupport,
+    CopyConditionalOptions,
     DiskStorageOptions,
     DiskStorageWithChecksumOptions,
     ExpirationOptions,
@@ -66,6 +79,8 @@ export type {
     OnError,
     OnUpdate,
     PurgeList,
+    UploadPostOptions,
+    UploadPostPolicy,
 } from "./storage/types";
 export type { FileInit, FilePart, FileQuery, UploadEventType, UploadFile } from "./storage/utils/file";
 export { File, Metadata } from "./storage/utils/file";

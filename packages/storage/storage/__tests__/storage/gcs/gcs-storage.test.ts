@@ -10,6 +10,7 @@ import GCStorage from "../../../src/storage/gcs/gcs-storage";
 import type { ClientError, GCStorageOptions } from "../../../src/storage/gcs/types";
 import { buildContentRange, getRangeEnd } from "../../../src/storage/gcs/utils";
 import type { FilePart } from "../../../src/storage/utils/file";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { metafile, storageOptions, testfile } from "../../__helpers__/config";
 
 const { mockFetch } = vi.hoisted(() => {
@@ -103,6 +104,19 @@ describe(GCStorage, async () => {
             expect(gcsFile).toMatchSnapshot();
         });
 
+        it("should not open a new session when resuming the existing one fails", async () => {
+            expect.assertions(2);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, uri });
+
+            const mockMakeRequest = vi.fn().mockRejectedValue(Object.assign(new Error("Service Unavailable"), { status: 503 }));
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            await expect(storage.create(metafile)).rejects.toThrow("Service Unavailable");
+            expect(mockMakeRequest).toHaveBeenCalledTimes(1);
+        });
+
         it("should reject when API returns an error", async () => {
             expect.assertions(1);
 
@@ -165,7 +179,7 @@ describe(GCStorage, async () => {
         it("should reject update operation when file is not found", async () => {
             expect.assertions(1);
 
-            mockAuthRequest.mockResolvedValue({});
+            mockAuthRequest.mockRejectedValue(Object.assign(new Error("Not Found"), { response: { status: 404 } }));
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });
@@ -225,10 +239,48 @@ describe(GCStorage, async () => {
                     retry: false,
                     signal: expect.any(AbortSignal),
                     url: uri,
+                    validateStatus: expect.any(Function),
                 },
                 undefined,
             );
             expect(gcsFile).toMatchSnapshot();
+        });
+
+        it("accepts the 308 GCS answers for an incomplete chunk instead of rejecting it", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
+            vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+
+            const mockMakeRequest = vi.fn().mockResolvedValue({ data: "", headers: { get: () => "bytes=0-9" }, status: 308 });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            await storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 });
+
+            const { validateStatus } = mockMakeRequest.mock.calls[0]?.[0] as { validateStatus: (status: number) => boolean };
+
+            expect(validateStatus(308)).toBe(true);
+            expect(validateStatus(201)).toBe(true);
+            expect(validateStatus(400)).toBe(false);
+        });
+
+        it("completes on a 201 and keeps the upload metadata", async () => {
+            expect.assertions(3);
+
+            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 0, createdAt: new Date().toISOString(), uri });
+
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+            const mockMakeRequest = vi.fn().mockResolvedValue({ data: {}, headers: { get: () => undefined }, status: 201 });
+
+            vi.spyOn(storage as unknown as { makeRequest: typeof mockMakeRequest }, "makeRequest").mockImplementation(mockMakeRequest);
+
+            const gcsFile = await storage.write({ body: Readable.from(Buffer.alloc(64)), contentLength: 64, id: metafile.id, start: 0 });
+
+            expect(gcsFile.status).toBe("completed");
+            expect(saveMeta).toHaveBeenCalledWith(expect.objectContaining({ id: metafile.id, status: "completed" }));
+            expect(deleteMeta).not.toHaveBeenCalled();
         });
 
         it("should send normalized error for API failures", async () => {
@@ -355,7 +407,7 @@ describe(GCStorage, async () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (file not found)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await expect(storage.delete(metafile)).rejects.toThrow();
         });
@@ -380,7 +432,7 @@ describe(GCStorage, async () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
+            vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const exists = await storage.exists({ id: "non-existent-id" });
 
@@ -461,7 +513,7 @@ describe(GCStorage, async () => {
                     retry: true,
                     timeout: 60_000,
 
-                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files%2F%D0%BD%D0%BE%D0%B2%D0%BE%D0%B5%20%D0%B8%D0%BC%D1%8F.txt",
                 }),
             );
         });
@@ -501,7 +553,7 @@ describe(GCStorage, async () => {
                     params: {},
                     retry: true,
                     timeout: 60_000,
-                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files/backup.txt",
+                    url: "https://storage.googleapis.com/storage/v1/b/test-bucket/o/testfile.mp4/rewriteTo/b/test-bucket/o/files%2Fbackup.txt",
                 }),
             );
         });
@@ -533,7 +585,8 @@ describe(GCStorage, async () => {
 describe("range utils", () => {
     it.each([
         ["", 0],
-        ["0-0", 0],
+        // The end is inclusive: "bytes=0-0" reports one persisted byte.
+        ["bytes=0-0", 1],
         ["0-1", 2],
         ["0-10000", 10_001],
     ])("should calculate correct range end for input: %s -> %i", (string_, expected) => {
@@ -560,6 +613,8 @@ describe("range utils", () => {
             "bytes 0-79/80",
         ],
         [{ contentLength: 80, size: 80, start: 0 }, "bytes */80"],
+        // The empty last request of a deferred length: GCS takes no "bytes 80-*/80".
+        [{ body, contentLength: 0, size: 80, start: 80 }, "bytes */80"],
     ])("should build correct content range header for input: %o -> %s", (string_, expected) => {
         expect.assertions(1);
 

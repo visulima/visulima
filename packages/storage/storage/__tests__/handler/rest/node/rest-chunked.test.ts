@@ -1,4 +1,5 @@
 import { rm } from "node:fs/promises";
+import { Agent } from "node:http";
 
 import supertest from "supertest";
 import { temporaryDirectory } from "tempy";
@@ -296,17 +297,31 @@ describe("http Rest - Chunked Uploads", () => {
         // Windows reliably drops the socket with ECONNRESET when supertest streams a
         // 101 MB chunk to the in-process app, so we cannot observe the 413 response
         // there. The size guard itself is exercised by lower-level unit tests.
-        it.skipIf(process.platform === "win32")("should return 400 when chunk size exceeds max chunk size", async () => {
+        it.skipIf(process.platform === "win32")("should return 413 when chunk size exceeds max chunk size", async () => {
             expect.assertions(6);
 
             const largeChunk = Buffer.alloc(101 * 1024 * 1024); // 101MB (exceeds 100MB limit)
+            // The handler answers before reading the body. supertest's default `Connection: close`
+            // makes Node close the socket right after that answer while the body is still being
+            // sent (EPIPE); on a kept-alive connection Node drains the rest of the body instead.
+            // `supertest(app)` would wait for its throwaway server to close, which a kept-alive
+            // connection holds open, so the test runs its own server.
+            const agent = new Agent({ keepAlive: true });
+            const server = app.listen(0);
 
-            response = await supertest(app)
-                .patch(`${basePath}/${fileId}`)
-                .set("Content-Type", "application/octet-stream")
-                .set("Content-Length", String(largeChunk.length))
-                .set("X-Chunk-Offset", "0")
-                .send(largeChunk);
+            try {
+                response = await supertest(server)
+                    .patch(`${basePath}/${fileId}`)
+                    .agent(agent)
+                    .set("Content-Type", "application/octet-stream")
+                    .set("Content-Length", String(largeChunk.length))
+                    .set("X-Chunk-Offset", "0")
+                    .send(largeChunk);
+            } finally {
+                agent.destroy();
+                server.closeAllConnections();
+                server.close();
+            }
 
             expect(response.status).toBe(413);
             expect(response.body.error).toBeDefined();

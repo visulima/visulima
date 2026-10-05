@@ -1,5 +1,6 @@
 import type { IncomingMessage } from "node:http";
 
+import { ContentDisposition } from "@remix-run/headers";
 import createHttpError from "http-errors";
 import { hasBody } from "type-is";
 
@@ -46,6 +47,15 @@ export const requirePositiveContentLength = (value: string | null | undefined): 
 };
 
 /**
+ * Drops the `_`-prefixed keys the server keeps its own upload state in (`_totalSize`, `_chunks`, …):
+ * a client setting them could size an upload past `maxUploadSize` or forge received chunks.
+ * @param metadata Client-supplied metadata
+ * @returns The metadata without internal keys
+ */
+export const withoutInternalKeys = (metadata: Record<string, unknown>): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(metadata).filter(([key]) => !key.startsWith("_")));
+
+/**
  * Parses the `X-File-Metadata` header. Only JSON objects are accepted; invalid JSON,
  * `null`, arrays and primitives yield `undefined`.
  * @param value Raw header value
@@ -60,7 +70,7 @@ export const parseMetadataHeader = (value: string | null | undefined): Record<st
         const parsed: unknown = JSON.parse(value);
 
         if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-            return { ...(parsed as Record<string, unknown>) };
+            return withoutInternalKeys(parsed as Record<string, unknown>);
         }
     } catch {
         // Ignore invalid JSON
@@ -92,78 +102,8 @@ export const parseContentDispositionValue = (contentDisposition: string | null |
         return undefined;
     }
 
-    // Safer parsing to avoid ReDoS: find "filename" or "filename*" and extract value
-    // Limit search to prevent excessive backtracking
-    const maxSearchLength = 2000; // Reasonable limit for header values
-    const searchString = contentDisposition.length > maxSearchLength ? contentDisposition.slice(0, Math.max(0, maxSearchLength)) : contentDisposition;
-
-    // Find "filename" or "filename*" (case-insensitive)
-    const filenameIndex = searchString.toLowerCase().indexOf("filename");
-
-    if (filenameIndex === -1) {
-        return undefined;
-    }
-
-    // Find the "=" sign after "filename" (skip optional whitespace and asterisk)
-    let equalsIndex = filenameIndex + 8; // "filename" is 8 chars
-
-    // Skip optional asterisk and whitespace
-    while (
-        equalsIndex < searchString.length &&
-        (searchString[equalsIndex] === "*" || searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")
-    ) {
-        equalsIndex++;
-    }
-
-    if (equalsIndex >= searchString.length || searchString[equalsIndex] !== "=") {
-        return undefined;
-    }
-
-    equalsIndex++; // Skip the "="
-
-    // Skip whitespace after "="
-    while (equalsIndex < searchString.length && (searchString[equalsIndex] === " " || searchString[equalsIndex] === "\t")) {
-        equalsIndex++;
-    }
-
-    if (equalsIndex >= searchString.length) {
-        return undefined;
-    }
-
-    // Extract the value (quoted or unquoted)
-    let valueStart = equalsIndex;
-    let valueEnd: number;
-    const firstChar = searchString[equalsIndex];
-
-    if (firstChar === '"' || firstChar === "'") {
-        // Quoted value: find matching quote
-        valueStart = equalsIndex + 1;
-        valueEnd = searchString.indexOf(firstChar, valueStart);
-
-        if (valueEnd === -1) {
-            // Unclosed quote, use rest of string up to semicolon or end
-            valueEnd = searchString.indexOf(";", valueStart);
-
-            if (valueEnd === -1) {
-                valueEnd = searchString.length;
-            }
-        }
-    } else {
-        // Unquoted value: find semicolon or end of string
-        valueEnd = searchString.indexOf(";", valueStart);
-
-        if (valueEnd === -1) {
-            valueEnd = searchString.length;
-        }
-    }
-
-    if (valueStart >= valueEnd) {
-        return undefined;
-    }
-
-    const filename = searchString.substring(valueStart, valueEnd).trim();
-
-    return filename || undefined;
+    // `filename*` (RFC 8187, e.g. UTF-8''bericht%20%C3%BC.txt) wins over the ASCII `filename`.
+    return ContentDisposition.from(contentDisposition.slice(0, 2000)).preferredFilename || undefined;
 };
 
 /**

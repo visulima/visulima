@@ -1,18 +1,23 @@
-import { createHash } from "node:crypto";
-
-import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList, sharedGetMeta } from "./shared";
+import { operationIdPrefix, sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGetMeta } from "./shared";
 
+/**
+ * OpenAPI description of the TUS handler.
+ * @param path Route path the handler is mounted on
+ * @param options `tags` for the operations. `transformer` / `supportedTransformerFormat` are accepted for
+ * signature compatibility with the other generators but ignored: TUS `GET` answers with the upload's metadata, not its bytes.
+ * @returns OpenAPI document
+ */
 const swaggerSpec = (
     path: string,
-    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" } = {},
 ): Partial<OpenAPIV3.Document> => {
-    const { supportedTransformerFormat, tags, transformer } = { tags: ["Tus"], transformer: false, ...options };
+    const { tags } = { tags: ["Tus"], ...options };
 
-    const pathHash = createHash("sha256").update(path).digest("base64");
-    const getSchemaObject: OpenAPIV3.OperationObject = sharedGet(`${pathHash}TusGetFile`, tags, transformer, supportedTransformerFormat);
+    const pathHash = operationIdPrefix(path);
+    // TUS GET (on `/{id}` and `/{id}/metadata`) answers with the upload's metadata as JSON.
+    const getSchemaObject: OpenAPIV3.OperationObject = sharedGetMeta(`${pathHash}TusGetFile`, tags);
 
     return {
         components: {
@@ -70,18 +75,12 @@ const swaggerSpec = (
                         "The Upload-Offset request and response header indicates a byte offset within a resource. The value MUST be a non-negative integer.",
                     type: "integer",
                 },
-                ...createPaginationSchemaObject(
-                    "FileMetaPagination",
-                    {
-                        $ref: "#/components/schemas/PaginationMeta",
-                    },
-                    "#/components/schemas/PaginationMeta",
-                ),
-                ...createPaginationMetaSchemaObject("PaginationMeta"),
                 ...sharedErrorSchemaObject,
                 ...sharedFileMetaSchemaObject,
             },
         },
+        info: { title: "TUS upload API", version: "1.0.0" },
+        openapi: "3.0.3",
         paths: {
             [`${path.replace(/\/$/, "")}/{id}/metadata`]: {
                 get: {
@@ -363,7 +362,7 @@ const swaggerSpec = (
                                 },
                                 "Upload-Offset": {
                                     schema: {
-                                        $ref: "#/components/schemas/Tus-Resumable",
+                                        $ref: "#/components/schemas/Upload-Offset",
                                     },
                                 },
                             },
@@ -517,7 +516,6 @@ const swaggerSpec = (
                 },
             },
             [path.trimEnd()]: {
-                get: sharedGetList(`${pathHash}TusGetList`, tags),
                 options: {
                     operationId: `${pathHash}TusOptions`,
                     responses: {
@@ -576,8 +574,8 @@ const swaggerSpec = (
                         },
                         {
                             in: "header",
-
                             name: "Tus-Resumable",
+                            required: true,
                             schema: {
                                 $ref: "#/components/schemas/Tus-Resumable",
                             },

@@ -1,0 +1,72 @@
+# WebDAV
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+The WebDAV adapter talks to RFC 4918 servers (Nextcloud, ownCloud, Apache `mod_dav`, rclone `serve webdav`, …; see [Server compatibility](#server-compatibility) for the caveats) over plain `fetch`, using `PROPFIND`, `PUT`, `GET`, `DELETE`, `COPY`, `MOVE` and `MKCOL`. It has no extra dependency. Keys map onto paths under `rootFolderPath`, relative to `url`. WebDAV has no portable metadata store, so upload metadata is kept as sidecar JSON on the local disk.
+
+## Installation
+
+Nothing to install beyond `@visulima/storage`. The adapter uses the global `fetch`.
+
+## Usage
+
+```ts
+import { WebdavStorage } from "@visulima/storage/provider/webdav";
+
+const storage = new WebdavStorage({
+    url: "https://cloud.example.com/remote.php/dav/files/alice",
+    username: process.env.WEBDAV_USERNAME,
+    password: process.env.WEBDAV_PASSWORD,
+    rootFolderPath: "uploads",
+});
+```
+
+Bearer-token servers:
+
+```ts
+const storage = new WebdavStorage({
+    url: "https://dav.example.com",
+    token: process.env.WEBDAV_TOKEN,
+});
+```
+
+## Configuration
+
+| Option              | Type                      | Description                                                                             | Default           |
+| ------------------- | ------------------------- | --------------------------------------------------------------------------------------- | ----------------- |
+| `url`               | `string`                  | WebDAV endpoint. Required (falls back to `WEBDAV_URL`)                                  | —                 |
+| `username`          | `string`                  | HTTP Basic user (falls back to `WEBDAV_USERNAME`)                                       | —                 |
+| `password`          | `string`                  | HTTP Basic password (falls back to `WEBDAV_PASSWORD`)                                   | —                 |
+| `token`             | `string`                  | Sent as `Authorization: Bearer <token>`; wins over Basic (falls back to `WEBDAV_TOKEN`) | —                 |
+| `headers`           | `Record<string, string>`  | Extra headers sent with every request                                                   | —                 |
+| `rootFolderPath`    | `string`                  | Collection acting as the bucket root; missing collections are created on write          | the `url` itself  |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | Where the sidecar metadata is kept                                                      | OS temp directory |
+| `conditional`       | `boolean`                 | Send the `Files` ETag predicates to the server (see below)                              | `false`           |
+
+## Behaviour
+
+- **Single-shot writes**: WebDAV has no partial `PUT`, so each object is uploaded in one request. A chunk that doesn't start at offset 0, or doesn't carry the whole file, is **rejected with `METHOD_NOT_ALLOWED`**. Resumable/chunked uploads (TUS, chunked REST) must send the whole file in one request. `write()` buffers the part in memory.
+- **Missing collections**: when a `PUT`, `COPY` or `MOVE` answers `409 Conflict`, the adapter `MKCOL`s the parent collections and retries once.
+- **Ranged reads**: `supportsRange` is `true`. `get()` / `getStream()` send a `Range` header. If the server ignores it and answers `200`, the adapter slices the body itself.
+- **Server-side copy/move**: `copy()` and `move()` use `COPY` / `MOVE` with `Overwrite: T`; no bytes pass through your process.
+- **Listing**: `list(limit)` walks the tree with `Depth: 1` `PROPFIND`s (most servers disable `Depth: infinity`) and stops at `limit`. Keys are relative to `rootFolderPath`. Files ending in the meta suffix (`.META`) are skipped, and a missing root lists as empty.
+- **Not found vs. failure**: only a `404` reads as a missing file (`getCompletedFile()` → `undefined`, `exists()` → `false`, `get()` → `FILE_NOT_FOUND`). Any other status throws. `5xx` / `429` answers are retried under the retry policy.
+- **Expiry**: completed uploads keep their metadata. `purge()` deletes expired uploads, both the remote file and the metadata.
+- **No URLs**: `getReadUrl()` / `getUploadUrl()` reject with `METHOD_NOT_ALLOWED`; a WebDAV `GET` needs credentials that can't be signed into a URL.
+- **Conditional requests** (`conditional: true`): `ifNoneMatch: "*"` / `ifMatch` uploads go out as `If-None-Match` / `If-Match` on the `PUT`, exact reads and deletes as `If-Match`, and `copy` sends `sourceIfMatch` as `If-Match`, `ifNoneMatch: "*"` as `Overwrite: F` and a destination `ifMatch` as a tagged `If` header (RFC 4918 §10.4). A 412 answers `PRECONDITION_FAILED`. Reported ETags are then the server's (from the response, or a `PROPFIND` when the `PUT` answer has none). It is opt-in because some servers ignore these headers, which would turn a compare-and-set into a plain write. Nextcloud and ownCloud honour them; Apache `mod_dav` only with `FileETag Digest` (see below).
+- **Partial failures**: a `207 Multi-Status` answer to `COPY`, `MOVE` or `DELETE` means some members failed, so the call throws with the first failing status (`412` → `PRECONDITION_FAILED`). In a `PROPFIND` listing, an entry whose own `<status>` is not `2xx` is skipped, relative `href`s resolve against the request URL, and an entry with an undecodable `href` is skipped rather than failing the whole listing (an invalid date or size only drops that field).
+- **Auth**: HTTP Basic or Bearer. Digest auth is not supported; pass a pre-computed `Authorization` through `headers` if your server needs another scheme.
+
+## Server compatibility
+
+| Server                 | Reads, writes, copy, move, delete | `list()`, `exists()`, stored-object lookups | `conditional: true`         |
+| ---------------------- | --------------------------------- | ------------------------------------------- | --------------------------- |
+| Nextcloud, ownCloud    | Yes                               | Yes                                         | Yes                         |
+| Apache `mod_dav`       | Yes                               | Yes                                         | Only with `FileETag Digest` |
+| nginx `dav` (built-in) | Yes                               | No: no `PROPFIND`                           | No                          |
+| rclone `serve webdav`  | Yes                               | Yes                                         | Untested                    |
+
+- **Apache `mod_dav`**: with the default `FileETag MTime Size`, Apache hands out a weak ETag (`W/"…"`) for a file changed within the last second. A weak ETag never satisfies `If-Match`, so a conditional write, read, delete or copy right after an upload answers `412` even though nothing changed. Set `FileETag Digest` for the DAV location. The live tests run against Apache with that setting.
+- **nginx**: the built-in `ngx_http_dav_module` implements only `PUT`, `DELETE`, `MKCOL`, `COPY` and `MOVE`. `PROPFIND` answers `405`, so everything that asks the server about a file fails with that error: `list()`, `exists()`, `findStoredObject()` (and the HTTP handlers' check before a `PUT` creates an id) and the ETag lookups `conditional` needs. `purge()` still works, as it reads the local metadata. To use nginx, add the third-party `nginx-dav-ext-module` (which adds `PROPFIND`) and keep `conditional` off; set `create_full_put_path on` or let the adapter create collections with `MKCOL`.

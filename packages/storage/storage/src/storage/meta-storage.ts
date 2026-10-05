@@ -1,3 +1,4 @@
+import { ERRORS, extractHttpStatus, isUploadError, throwErrorCode } from "../utils/errors";
 import type { MetaStorageOptions } from "./meta-storage-options";
 import type { File } from "./utils/file";
 
@@ -7,6 +8,12 @@ import type { File } from "./utils/file";
  * equality checks and serialization, so a copy of a record has to carry it over explicitly.
  */
 export const META_VERSION: unique symbol = Symbol("visulima.storage.metaVersion");
+
+/**
+ * Metadata key of the claim a writer stores on an upload to keep other processes from writing
+ * the same upload at once (see `BaseStorage.claimWrite`). Server bookkeeping, never client data.
+ */
+export const WRITE_CLAIM_KEY = "_writeClaim";
 
 /**
  * Returns the version token {@link MetaStorage.get} attached to `file`, if any.
@@ -26,6 +33,29 @@ export const setMetaVersion = (file: object, version: string | undefined): void 
     } else {
         Object.defineProperty(file, META_VERSION, { configurable: true, enumerable: false, value: version, writable: true });
     }
+};
+
+/**
+ * Whether `error` is a {@link MetaStorage.get} reporting that no record exists. Every other error
+ * is a failure of the store and must not be read as "absent".
+ * @param error The error thrown by the meta storage
+ * @returns True for a missing record
+ */
+export const isMetaNotFound = (error: unknown): boolean => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND;
+
+/**
+ * Rethrows an error of a backend read, turning a 404 into the FILE_NOT_FOUND that
+ * {@link MetaStorage.get} reports for a missing record.
+ * @param error The backend error
+ */
+export const rethrowNotFound = (error: unknown): never => {
+    const { $metadata, code } = error as { $metadata?: { httpStatusCode?: number }; code?: unknown };
+
+    if (($metadata?.httpStatusCode ?? extractHttpStatus(error) ?? Number(code)) === 404) {
+        return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+    }
+
+    throw error;
 };
 
 /**
@@ -83,10 +113,20 @@ class MetaStorage<T extends File = File> {
 
     /**
      * Retrieves upload metadata.
+     * @throws {UploadError} FILE_NOT_FOUND when no record exists; any other error is a failure of the store
      */
     // eslint-disable-next-line class-methods-use-this
     public async get(_id: string): Promise<T> {
         throw new Error("Not implemented");
+    }
+
+    /**
+     * Lists the stored upload records.
+     * @returns The records, or `undefined` when this store can't enumerate them
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public async list(): Promise<T[] | undefined> {
+        return undefined;
     }
 
     /**

@@ -4,19 +4,23 @@ import type { FilePart } from "../utils/file";
 import { hasContent } from "../utils/file";
 import type GCSFile from "./gcs-file";
 
+/**
+ * The number of bytes a resumable session's `Range` header ("bytes=0-499") reports as persisted:
+ * its end is inclusive, so "bytes=0-0" is one byte.
+ */
 export const getRangeEnd = (range: string): number => {
-    // Match patterns like "bytes 0-499/1234" or "0-499"
     // Input is controlled (HTTP Range header), safe from ReDoS
+    const match = /(\d+)-(\d+)/.exec(range);
 
-    const match = range.match(/(\d+)-(\d+)/);
-
-    const end = match?.[2] ? +match[2] : 0;
-
-    return end > 0 ? end + 1 : 0;
+    return match ? Number(match[2]) + 1 : 0;
 };
 
+/**
+ * The `Content-Range` of a resumable-session request: "bytes FIRST-LAST/TOTAL" for a chunk, and
+ * "bytes *\/TOTAL" without one (a status query, or the empty last request of a deferred length).
+ */
 export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => {
-    if (hasContent(part)) {
+    if (hasContent(part) && part.contentLength !== 0) {
         const end = part.contentLength ? part.start + part.contentLength - 1 : "*";
 
         return `bytes ${part.start}-${end}/${part.size ?? "*"}`;
@@ -25,37 +29,44 @@ export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => 
     return `bytes */${part.size ?? "*"}`;
 };
 
+/**
+ * A custom `shouldRetry` replaces gaxios' own check entirely, so the attempt cap, the per-request
+ * `retry: false` (single-use stream bodies), the retryable methods and status codes are applied here.
+ */
 export const shouldRetry = (error: GaxiosError): boolean => {
-    if (error.response !== undefined) {
-        const { response } = error;
+    const { config, response } = error;
+    const retryConfig = config.retryConfig ?? {};
+    const attempt = retryConfig.currentRetryAttempt ?? 0;
 
-        // Gaxios types `data` as `{}`, so the error envelope's shape is stated
-        // here rather than inferred.
-        const data = response.data as { error?: { errors?: { reason?: string }[] } } | undefined;
-
-        return data?.error?.errors
-            ?.map(({ reason = "" }) => {
-                if (reason === "rateLimitExceeded") {
-                    return true;
-                }
-
-                if (reason === "userRateLimitExceeded") {
-                    return true;
-                }
-
-                return !!(reason && reason.includes("EAI_AGAIN"));
-            })
-            .includes(true)
-            // The optional chain yields `undefined` when the envelope carries no
-            // errors, which is simply "do not retry".
-            ?? false;
+    if (config.retry === false || config.signal?.aborted || attempt >= (retryConfig.retry ?? 0)) {
+        return false;
     }
 
-    return false;
+    if (!(retryConfig.httpMethodsToRetry ?? []).includes((config.method ?? "GET").toUpperCase())) {
+        return false;
+    }
+
+    // No response: a network failure (ETIMEDOUT, EAI_AGAIN, ...).
+    if (response === undefined) {
+        return true;
+    }
+
+    // Gaxios types `data` as `{}`, so the error envelope's shape is stated here rather than inferred.
+    const data = response.data as { error?: { errors?: { reason?: string }[] } } | undefined;
+    const rateLimited = data?.error?.errors?.some(
+        ({ reason = "" }) => reason === "rateLimitExceeded" || reason === "userRateLimitExceeded" || reason.includes("EAI_AGAIN"),
+    );
+
+    return rateLimited === true || (retryConfig.statusCodesToRetry ?? []).some(([min = 0, max = min]) => response.status >= min && response.status <= max);
 };
 
 export const retryOptions: RetryConfig = {
     retry: 3,
     shouldRetry,
-    statusCodesToRetry: [[408, 429, 500, 502, 503, 504], [100, 199], [429], [500, 599]],
+    statusCodesToRetry: [
+        [100, 199],
+        [408, 408],
+        [429, 429],
+        [500, 599],
+    ],
 };

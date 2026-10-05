@@ -13,19 +13,27 @@ Visulima Storage provides two base classes for customization:
 
 ### Extending AbstractBaseStorage
 
-Create a custom storage backend by extending `AbstractBaseStorage`:
+`BaseStorage` is exported from the package root as `AbstractBaseStorage`. A subclass must provide the `meta` storage and implement six abstract methods; everything else has a working default you can override.
 
 ```typescript
-import { AbstractBaseStorage } from "@visulima/storage";
-import type { File, FileInit, FilePart, FileQuery, FileReturn } from "@visulima/storage";
+import type { Readable } from "node:stream";
+
+import type { FileInit, FilePart, FileQuery } from "@visulima/storage";
+import { AbstractBaseStorage, File, LocalMetaStorage } from "@visulima/storage";
+
+// `FileReturn` (what `get()` resolves to) isn't exported from the root; derive it.
+type FileReturn = Awaited<ReturnType<AbstractBaseStorage["get"]>>;
 
 interface MyStorageOptions {
     apiKey: string;
     endpoint: string;
 }
 
-class MyCustomStorage extends AbstractBaseStorage<File, FileReturn> {
+class MyCustomStorage extends AbstractBaseStorage<File> {
     public static override readonly name: string = "my-custom-storage";
+
+    // Where upload metadata lives. Any MetaStorage works (LocalMetaStorage, MemoryMetaStorage, your own).
+    protected meta = new LocalMetaStorage<File>({ directory: "./upload-meta" });
 
     private readonly apiKey: string;
     private readonly endpoint: string;
@@ -41,99 +49,111 @@ class MyCustomStorage extends AbstractBaseStorage<File, FileReturn> {
         this.endpoint = config.endpoint;
     }
 
-    // Implement required abstract methods
-    public override async create(config: FileInit): Promise<File> {
-        // Create file in your storage system
-        const file = await this.createFile(config);
+    public async create(init: FileInit): Promise<File> {
+        const file = new File(init);
 
-        // Save metadata
-        await this.meta.save(file.id, file);
+        await this.validate(file); // maxUploadSize / allowMIME / file name / custom rules
 
-        // Call onCreate hook
+        file.bytesWritten = 0;
+        file.status = "created";
+
+        await this.saveMeta(file);
         await this.onCreate(file);
 
         return file;
     }
 
-    public override async write(part: FilePart | FileQuery): Promise<File> {
-        // Write file data to your storage system
-        const file = await this.writeFile(part);
+    public async write(part: FilePart | FileQuery | File): Promise<File> {
+        const file = await this.getMeta(part.id);
 
-        // Update metadata
-        await this.meta.save(file.id, file);
+        if (!("body" in part) || !part.body) {
+            return file; // metadata-only call (e.g. a HEAD-style offset check)
+        }
 
-        // Call onUpdate hook
-        await this.onUpdate(file);
+        file.bytesWritten = await this.uploadChunk(file.id, part.start, part.body);
+        file.status = file.bytesWritten === file.size ? "completed" : "part";
+
+        await this.saveMeta(file); // persist the offset after every chunk
+        // Don't call onComplete here: the upload handlers call it once the upload completes.
 
         return file;
     }
 
-    public override async get(query: FileQuery): Promise<FileReturn> {
-        // Retrieve file from your storage system
-        const file = await this.getFile(query.id);
+    public async get(query: FileQuery): Promise<FileReturn> {
+        const file = await this.getMeta(query.id);
+        const content = await this.download(file.id);
 
-        return {
-            ...file,
-            stream: await this.getFileStream(query.id),
-        };
+        return { ...file, content, size: content.length } as FileReturn;
     }
 
-    public override async delete(query: FileQuery): Promise<File> {
-        // Delete file from your storage system
-        await this.deleteFile(query.id);
+    public async delete(query: FileQuery): Promise<File> {
+        const file = await this.getMeta(query.id);
 
-        // Delete metadata
-        await this.meta.delete(query.id);
-
-        // Call onDelete hook
-        const file = await this.meta.get(query.id);
+        await this.remove(file.id);
+        await this.deleteMeta(file.id);
         await this.onDelete(file);
 
-        return file;
+        return { ...file, status: "deleted" } as File;
     }
 
-    // Implement other required methods...
-    // - list()
-    // - update()
-    // - copy()
-    // - move()
-    // - exists()
-    // - normalizeError()
+    public async copy(source: string, destination: string): Promise<File> {
+        /* server-side copy in your backend, then save metadata for `destination` */
+    }
+
+    public async move(source: string, destination: string): Promise<File> {
+        const moved = await this.copy(source, destination);
+
+        await this.delete({ id: source });
+
+        return moved;
+    }
+
+    // Backend calls (placeholders for your SDK)
+    private async uploadChunk(id: string, start: number, body: Readable): Promise<number> {
+        /* … */
+    }
+    private async download(id: string): Promise<Buffer> {
+        /* … */
+    }
+    private async remove(id: string): Promise<void> {
+        /* … */
+    }
 }
 ```
 
-### Required Methods
+### Required Members
 
-When extending `AbstractBaseStorage`, you must implement:
+These are `abstract` on `BaseStorage`; the class doesn't compile without them:
 
-#### Core Operations
+- **`meta: MetaStorage<TFile>`** - where upload metadata is stored
+- **`create(file: FileInit, options?): Promise<TFile>`** - start an upload / create a file
+- **`write(part: FilePart | FileQuery | TFile, options?): Promise<TFile>`** - write bytes at `part.start`
+- **`get(query: FileQuery, options?): Promise<FileReturn>`** - file metadata plus its `content` buffer
+- **`delete(query: FileQuery, options?): Promise<TFile>`** - delete a file
+- **`copy(name: string, destination: string, options?): Promise<TFile>`** - copy a file
+- **`move(name: string, destination: string, options?): Promise<TFile>`** - move a file
 
-- **`create(config: FileInit): Promise<File>`** - Create a new file upload
-- **`write(part: FilePart | FileQuery): Promise<File>`** - Write file data
-- **`get(query: FileQuery): Promise<FileReturn>`** - Retrieve file and metadata
-- **`delete(query: FileQuery): Promise<File>`** - Delete a file
-- **`list(limit?: number): Promise<File[]>`** - List files
-- **`update(query: FileQuery, metadata: Partial<File>): Promise<File>`** - Update file metadata
+### Overridable Members (have defaults)
 
-#### Optional Operations
+- **`list(limit?, options?): Promise<TFile[]>`** - default throws `"Not implemented"`; override it to support listing (`Files.list`, REST/multipart `GET` collection)
+- **`getStream(query, options?)`** - default calls `get()` and wraps the buffer; override for real streaming (and `range` support)
+- **`exists(query, options?)`** - default checks the meta storage
+- **`update(query, metadata)`** - default merges into the stored metadata
+- **`getReadUrl(key, options?)` / `getUploadUrl(key, options?)`** - default rejects with `METHOD_NOT_ALLOWED`; back `Files.url()` / `Files.signedUploadUrl()`
+- **`listDirectory(options)`** - default rejects with `METHOD_NOT_ALLOWED`; set `supportsDelimiter = true` when you implement it
+- **`deleteBatch` / `copyBatch` / `moveBatch`** - default loops over the single-item methods
+- **`normalizeError(error: Error): HttpError`** - default maps errors to a generic `HttpError`
+- **`raw`** getter - your native client (default `undefined`)
+- Capability flags: `supportsRange`, `supportsMetadata`, `supportsCacheControl`, `supportsDelimiter` (all `false` by default), and `checksumTypes`
 
-- **`copy(source: string, destination: string, options?: { storageClass?: string }): Promise<File>`** - Copy a file
-- **`move(source: string, destination: string): Promise<File>`** - Move a file
-- **`exists(query: FileQuery): Promise<boolean>`** - Check if file exists
-- **`getStream(query: FileQuery): Promise<{ stream: Readable; headers?: Record<string, string>; size?: number }>`** - Get file as stream
-- **`getUrl(query: FileQuery, expiresIn?: number): Promise<string>`** - Get public URL
-- **`getUploadUrl(query: FileQuery, expiresIn?: number): Promise<string>`** - Get presigned upload URL
-
-#### Error Handling
-
-- **`normalizeError(error: unknown): HttpError`** - Normalize errors to HttpError format
+`MemoryStorage` (`src/storage/memory/memory-storage.ts`) is the smallest complete implementation and a good reference.
 
 ### Using Instrumentation
 
 The base class provides `instrumentOperation()` for automatic metrics collection:
 
 ```typescript
-public override async create(config: FileInit): Promise<File> {
+public async create(config: FileInit): Promise<File> {
     return this.instrumentOperation(
         "create",
         async () => {
@@ -155,6 +175,7 @@ public override async create(config: FileInit): Promise<File> {
 Batch operations are automatically implemented by the base class, but you can override them:
 
 ```typescript
+// import type { BatchOperationResponse } from "@visulima/storage";
 public override async deleteBatch(ids: string[]): Promise<BatchOperationResponse<File>> {
     // Custom batch delete implementation
     const results = await Promise.allSettled(
@@ -313,202 +334,151 @@ const storage = new DiskStorage({
 
 ## Complete Example: Redis Storage Backend
 
-Here's a complete example of a Redis-based storage backend:
+A Redis-backed adapter: bytes in Redis, upload metadata in a `MemoryMetaStorage` (swap in a shared meta storage for multi-process deployments).
 
 ```typescript
-import { Readable } from "node:stream";
-import { AbstractBaseStorage } from "@visulima/storage";
-import { ERRORS, throwErrorCode } from "@visulima/storage";
-import type { File, FileInit, FilePart, FileQuery, FileReturn } from "@visulima/storage";
+import { buffer } from "node:stream/consumers";
+
+import type { FileInit, FilePart, FileQuery } from "@visulima/storage";
+import { AbstractBaseStorage, ERRORS, File, MemoryMetaStorage, throwErrorCode } from "@visulima/storage";
 import Redis from "ioredis";
+
+type FileReturn = Awaited<ReturnType<AbstractBaseStorage["get"]>>;
 
 interface RedisStorageOptions {
     redis: Redis;
     prefix?: string;
 }
 
-class RedisStorage extends AbstractBaseStorage<File, FileReturn> {
+class RedisStorage extends AbstractBaseStorage<File> {
     public static override readonly name: string = "redis";
+
+    protected meta = new MemoryMetaStorage<File>();
 
     private readonly redis: Redis;
     private readonly prefix: string;
 
     public constructor(config: RedisStorageOptions) {
-        super({
-            maxUploadSize: "100MB",
-            allowMIME: ["*/*"],
-        });
+        super({ maxUploadSize: "100MB", allowMIME: ["*/*"] });
 
         this.redis = config.redis;
-        this.prefix = config.prefix || "visulima:";
+        this.prefix = config.prefix ?? "visulima:";
     }
 
-    private getKey(id: string): string {
-        return `${this.prefix}file:${id}`;
+    public override get raw(): Redis {
+        return this.redis;
     }
 
-    private getMetaKey(id: string): string {
-        return `${this.prefix}meta:${id}`;
+    public async create(init: FileInit): Promise<File> {
+        return this.instrumentOperation("create", async () => {
+            const file = new File(init);
+
+            await this.validate(file);
+
+            file.bytesWritten = 0;
+            file.status = "created";
+
+            await this.saveMeta(file);
+            await this.onCreate(file);
+
+            return file;
+        });
     }
 
-    public override async create(config: FileInit): Promise<File> {
-        const file: File = {
-            id: config.id || this.generateId(),
-            name: config.name || "",
-            originalName: config.originalName || "",
-            size: config.size || 0,
-            contentType: config.contentType || "application/octet-stream",
-            status: "created",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            metadata: config.metadata || {},
-        };
+    public async write(part: FilePart | FileQuery | File): Promise<File> {
+        return this.instrumentOperation("write", async () => {
+            const file = await this.getMeta(part.id);
 
-        // Save metadata to Redis
-        await this.redis.set(this.getMetaKey(file.id), JSON.stringify(file));
+            if (!("body" in part) || !part.body) {
+                return file;
+            }
 
-        // Call onCreate hook
-        await this.onCreate(file);
+            const chunk = await buffer(part.body);
 
-        return file;
+            // SETRANGE writes at the chunk's offset and grows the value as needed
+            await this.redis.setrange(this.key(file.id), part.start, chunk);
+
+            file.bytesWritten = await this.redis.strlen(this.key(file.id));
+            file.status = file.bytesWritten === file.size ? "completed" : "part";
+
+            await this.saveMeta(file);
+
+            return file;
+        });
     }
 
-    public override async write(part: FilePart | FileQuery): Promise<File> {
-        const id = "id" in part ? part.id : part.id;
-        const file = await this.get({ id });
+    public async get(query: FileQuery): Promise<FileReturn> {
+        return this.instrumentOperation("get", async () => {
+            const file = await this.getMeta(query.id);
+            const content = await this.redis.getBuffer(this.key(file.id));
 
-        if (!("body" in part) || !part.body) {
-            throw throwErrorCode(ERRORS.BAD_REQUEST, "Body is required");
-        }
+            if (!content) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
 
-        // Convert stream to buffer
-        const chunks: Buffer[] = [];
-        for await (const chunk of part.body) {
-            chunks.push(chunk);
-        }
-        const buffer = Buffer.concat(chunks);
-
-        // Store file data in Redis
-        await this.redis.set(this.getKey(id), buffer);
-
-        // Update file metadata
-        const updatedFile: File = {
-            ...file,
-            size: file.size + buffer.length,
-            status: "completed",
-            updatedAt: new Date(),
-        };
-
-        await this.redis.set(this.getMetaKey(id), JSON.stringify(updatedFile));
-
-        // Call onUpdate hook
-        await this.onUpdate(updatedFile);
-
-        return updatedFile;
+            return { ...file, content, size: content.length } as FileReturn;
+        });
     }
 
-    public override async get(query: FileQuery): Promise<FileReturn> {
-        const metaData = await this.redis.get(this.getMetaKey(query.id));
+    public async delete(query: FileQuery): Promise<File> {
+        return this.instrumentOperation("delete", async () => {
+            const file = await this.getMeta(query.id);
 
-        if (!metaData) {
-            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
-        }
+            await this.redis.del(this.key(file.id));
+            await this.deleteMeta(file.id);
 
-        const file = JSON.parse(metaData) as File;
-        const fileData = await this.redis.getBuffer(this.getKey(query.id));
+            const deleted = { ...file, status: "deleted" } as File;
 
-        if (!fileData) {
-            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
-        }
+            await this.onDelete(deleted);
 
-        // Create readable stream from buffer
-        const stream = Readable.from(fileData);
-
-        return {
-            ...file,
-            stream,
-        };
+            return deleted;
+        });
     }
 
-    public override async delete(query: FileQuery): Promise<File> {
-        const metaData = await this.redis.get(this.getMetaKey(query.id));
+    public async copy(source: string, destination: string): Promise<File> {
+        return this.instrumentOperation("copy", async () => {
+            const file = await this.getMeta(source);
 
-        if (!metaData) {
-            throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
-        }
+            await this.redis.copy(this.key(source), this.key(destination), "REPLACE");
 
-        const file = JSON.parse(metaData) as File;
+            const copied = { ...file, id: destination, name: destination } as File;
 
-        // Delete file data and metadata
-        await Promise.all([this.redis.del(this.getKey(query.id)), this.redis.del(this.getMetaKey(query.id))]);
+            await this.saveMeta(copied);
 
-        // Call onDelete hook
-        await this.onDelete(file);
+            return copied;
+        });
+    }
 
-        return file;
+    public async move(source: string, destination: string): Promise<File> {
+        const moved = await this.copy(source, destination);
+
+        await this.delete({ id: source });
+
+        return moved;
     }
 
     public override async list(limit = 100): Promise<File[]> {
-        const keys = await this.redis.keys(this.getMetaKey("*"));
-        const files: File[] = [];
+        const keys = await this.redis.keys(`${this.prefix}file:*`);
+        const ids = keys.slice(0, limit).map((key) => key.slice(`${this.prefix}file:`.length));
 
-        for (const key of keys.slice(0, limit)) {
-            const metaData = await this.redis.get(key);
-
-            if (metaData) {
-                files.push(JSON.parse(metaData) as File);
-            }
-        }
-
-        return files;
+        return Promise.all(ids.map((id) => this.getMeta(id)));
     }
 
-    public override async update(query: FileQuery, metadata: Partial<File>): Promise<File> {
-        const file = await this.get({ id: query.id });
-        const updatedFile: File = {
-            ...file,
-            ...metadata,
-            updatedAt: new Date(),
-        };
-
-        await this.redis.set(this.getMetaKey(query.id), JSON.stringify(updatedFile));
-        await this.onUpdate(updatedFile);
-
-        return updatedFile;
-    }
-
-    public override normalizeError(error: unknown): HttpError {
-        if (error instanceof Error && error.message.includes("not found")) {
-            return {
-                code: ERRORS.FILE_NOT_FOUND,
-                message: "File not found",
-                statusCode: 404,
-            };
-        }
-
-        return {
-            code: ERRORS.STORAGE_ERROR,
-            message: error instanceof Error ? error.message : "Storage error",
-            statusCode: 500,
-        };
-    }
-
-    private generateId(): string {
-        return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    private key(id: string): string {
+        return `${this.prefix}file:${id}`;
     }
 }
 
 // Usage
-const redis = new Redis(process.env.REDIS_URL);
 const storage = new RedisStorage({
-    redis,
+    redis: new Redis(process.env.REDIS_URL),
     prefix: "myapp:",
 });
 ```
 
 ## Best Practices
 
-1. **Implement Error Normalization** - Always implement `normalizeError()` to provide consistent error responses
+1. **Implement Error Normalization** - Override `normalizeError()` to map your backend's errors to meaningful status codes
 2. **Use Instrumentation** - Wrap operations with `instrumentOperation()` for automatic metrics
 3. **Handle Metadata** - Properly save and retrieve metadata using the `meta` property
 4. **Call Hooks** - Call lifecycle hooks (`onCreate`, `onUpdate`, `onDelete`) at appropriate times. Don't call `onComplete` from `write()`: the upload handlers call it once the upload completes
@@ -516,7 +486,7 @@ const storage = new RedisStorage({
 6. **List Only Verified Checksums** - Put an algorithm in `checksumTypes` only if `write()` really verifies `checksum` against the bytes; the TUS handler verifies the rest itself
 7. **Handle Streams** - Properly handle Readable streams for file data
 8. **Validate Inputs** - Validate file sizes, MIME types, and other constraints
-9. **Handle Concurrency** - Use file locking for concurrent access (base class provides `locker`)
+9. **Handle Concurrency** - Use file locking for concurrent access (the base class provides protected `lock()` / `unlock()`)
 10. **Support Batch Operations** - Implement batch operations for better performance
 11. **Test Thoroughly** - Test all operations including error cases
 12. **Document Your Storage** - Document any limitations or special behavior
@@ -527,6 +497,8 @@ Your custom storage backend works seamlessly with all handlers:
 
 ```typescript
 import { Multipart } from "@visulima/storage/handler/http/fetch";
+import Redis from "ioredis";
+
 import { RedisStorage } from "./redis-storage";
 
 const storage = new RedisStorage({

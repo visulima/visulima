@@ -4,7 +4,7 @@
 
 ## Overview
 
-Vercel Blob Storage is a serverless object storage service optimized for edge deployments. It provides fast, global access to files with automatic CDN distribution.
+`VercelBlobStorage` stores each upload as a **public** Vercel Blob with `put()`, under the upload's name as pathname. Uploads are single-shot: the body is buffered and sent in one call. Upload metadata is kept on local disk. Blobs are served from Vercel's CDN at their public URL.
 
 ## Installation
 
@@ -20,136 +20,139 @@ yarn add @vercel/blob
 pnpm add @vercel/blob
 ```
 
-## Usage
+OIDC auth needs `@vercel/blob >= 2.4.0`, the first release with `oidcToken` and `storeId`.
 
-### On Vercel (recommended): OIDC
+## Provider setup
 
-When a Blob store is connected to a Vercel project, `VERCEL_OIDC_TOKEN` and `BLOB_STORE_ID` are auto-injected. OIDC tokens are short-lived and auto-rotated, so there's no long-lived secret to leak.
+1. **Create a Blob store**: Vercel dashboard → _Storage → Create Database → Blob_, then connect it to your project.
+2. **Credentials** are injected into the project's environment when the store is connected:
+    - `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` on Vercel deployments. OIDC tokens are short-lived and rotated automatically, so there is no long-lived secret to leak. Recommended.
+    - `BLOB_READ_WRITE_TOKEN`, a long-lived token for the whole store. Use it off Vercel (CI, local dev); `vercel env pull` writes it to `.env.local`.
+3. **Access.** A read-write token grants full access to its store; there are no narrower scopes. With the default `access: "public"`, anyone with a blob's URL can read it. Use a private store with `access: "private"` for files that must not be public.
 
-```typescript
+### CORS
+
+Not needed for this adapter: uploads go through your server, and public blob URLs can be loaded by browsers directly.
+
+## Configuration
+
+```ts
 import { VercelBlobStorage } from "@visulima/storage/provider/vercel";
 
-// Zero config — picks up VERCEL_OIDC_TOKEN + BLOB_STORE_ID from process.env.
+// Minimal, on Vercel: picks up VERCEL_OIDC_TOKEN + BLOB_STORE_ID
+const storage = new VercelBlobStorage({});
+```
+
+```ts
+import { VercelBlobStorage } from "@visulima/storage/provider/vercel";
+
+// Off Vercel, production
 const storage = new VercelBlobStorage({
-    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    multipart: 10 * 1024 * 1024, // use multipart put() from 10 MB on
+    maxUploadSize: "500MB",
+    allowMIME: ["image/*", "application/pdf"],
+    retryConfig: { maxRetries: 3, initialDelay: 1000 },
+    expiration: { maxAge: "7d", purgeInterval: "1h" },
+    metaStorageConfig: { directory: "/var/lib/uploads-meta" },
 });
 ```
 
 For runtimes that don't expose `process.env` (Vite, some edge sandboxes), pass the OIDC pair explicitly:
 
-```typescript
+```ts
 const storage = new VercelBlobStorage({
     oidcToken: loadOidcToken(),
-    storeId: loadStoreId(), // accepts "store_<id>" or "<id>"
+    storeId: loadStoreId(), // "store_<id>" or "<id>"
 });
 ```
 
-See [Vercel's OIDC docs](https://vercel.com/docs/vercel-blob/using-blob-sdk#oidc-tokens-recommended) for the full background.
+| Option              | Type                      | Default                                       | Description                                                                                                                            |
+| ------------------- | ------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `token`             | `string`                  | `BLOB_READ_WRITE_TOKEN` → `VERCEL_BLOB_TOKEN` | Read-write (or client) token. Wins over OIDC when set.                                                                                 |
+| `oidcToken`         | `string`                  | `VERCEL_OIDC_TOKEN`                           | OIDC token. Requires `storeId`.                                                                                                        |
+| `storeId`           | `string`                  | `BLOB_STORE_ID`                               | Store ID, `store_<id>` or `<id>`. Requires `oidcToken`.                                                                                |
+| `access`            | `"public" \| "private"`   | `"public"`                                    | Visibility passed to `put()` and `copy()`; must match the store. Private blobs are read through the SDK's authenticated `get()`.       |
+| `multipart`         | `boolean \| number`       | `false`                                       | `true` always uses the SDK's multipart `put()`; a number uses it for files at least that many bytes. The body is still buffered first. |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | `<os tmpdir>/Upload_meta`                     | Where upload metadata is kept, see [Metadata storage](#metadata-storage).                                                              |
 
-### Off Vercel: read-write token
+Credential precedence, first match wins:
 
-For CI, local dev, or anything not running on Vercel, use a long-lived `BLOB_READ_WRITE_TOKEN`:
+1. Explicit `token`.
+2. OIDC pair: `oidcToken` + `storeId`, from options or `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`.
+3. `BLOB_READ_WRITE_TOKEN`, then `VERCEL_BLOB_TOKEN`.
 
-```typescript
-const storage = new VercelBlobStorage({
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-    metaStorageConfig: { directory: "/tmp/upload-metafiles" },
-});
+The constructor throws when nothing is found, and when only one half of the OIDC pair is set, so misconfiguration fails at startup instead of as `401`s at runtime.
+
+All adapters also take the shared `BaseStorageOptions`: `allowMIME`, `maxUploadSize`, `maxMetadataSize`, `filename`, `fileNameValidation`, `expiration`, `retryConfig` (retry-engine defaults: 3 retries, exponential backoff from 1 s), `metaStorage`, `logger`, `metrics` and the lifecycle hooks.
+
+## Metadata storage
+
+Upload records are JSON sidecar files on the **local disk** of the process: `<directory>/<id>.META`, by default under `os.tmpdir()/Upload_meta`.
+
+- **On Vercel Functions** `/tmp` is per instance and short-lived. Records survive only as long as that instance. Use the multipart or REST handler so an upload is created and written in a single request, or pass a shared store via `metaStorage` (for example an `S3MetaStorage` from `@visulima/storage/provider/aws`).
+- **Several long-running instances:** share `metaStorageConfig.directory` on a common volume, or use a shared `metaStorage`.
+- **Finished uploads keep their record**, which holds the blob's `url`, `downloadUrl` and `pathname`. `get()`, `copy()` and `exists()` need it; `delete()` falls back to the blob stored under the ID as pathname.
+
+## Behaviour & limits
+
+| Topic              | Behaviour                                                                                                                                                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uploads            | Single-shot: chunks that don't carry the whole file from offset 0 are rejected with `METHOD_NOT_ALLOWED`. The content type is detected from the bytes when the client sent none.                                                 |
+| Request size       | On Vercel Functions the request body is capped at 4.5 MB, which bounds uploads through your handler. For larger files use Vercel's client uploads (`@vercel/blob/client`) outside this adapter.                                  |
+| Overwrites         | `put()` and `copy()` pass `allowOverwrite: true`: an upload replaces whatever blob is stored under its pathname, and `copy()` replaces the destination. With a custom `filename`, two uploads with the same name share one blob. |
+| Reads              | `get()` reads the blob through the SDK (`get()` with the configured `access` and credentials) and buffers it. No ranged reads.                                                                                                   |
+| URLs               | `getReadUrl()` / `getUploadUrl()` aren't implemented (`METHOD_NOT_ALLOWED`). The public URL is on the upload record as `url` / `downloadUrl`, also returned by `write()` and `list()`.                                           |
+| Listing            | `list(limit)` follows the SDK cursor (1000 blobs per page) through the whole store, recursively. IDs are pathnames.                                                                                                              |
+| Copy / move        | Server-side `copy()`; `move()` is copy + delete.                                                                                                                                                                                 |
+| Expiration / purge | `purge()` walks the metadata records, so it only deletes this storage's own uploads.                                                                                                                                             |
+| Cancellation       | Per-call `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.                                                                                                                 |
+
+`storage.raw` returns `{ put, del, list, copy, credentials }` for direct SDK calls with the resolved credentials.
+
+## Using it with the handlers
+
+```ts
+// app/api/files/[[...slug]]/route.ts (Next.js on Vercel)
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { VercelBlobStorage } from "@visulima/storage/provider/vercel";
+
+const handler = createHandler({ storage: new VercelBlobStorage({}), type: "multipart" });
+
+export const POST = handler;
+export const GET = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
 ```
 
-## Configuration
+```ts
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
 
-### Credential precedence
+const app = express();
+const rest = new Rest({ storage });
 
-The adapter resolves auth credentials in this order — first match wins:
-
-1. Explicit `token` option (RW or client token).
-2. OIDC pair: `oidcToken` + `storeId` (option or `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` env).
-3. `BLOB_READ_WRITE_TOKEN` / `VERCEL_BLOB_TOKEN` env.
-
-If no credentials are found, the constructor throws. Partial OIDC config (only one of `oidcToken`/`storeId` set) also throws, so misconfiguration fails loudly instead of silently falling through to anonymous calls.
-
-### Environment Variables
-
-| Variable                | Purpose                                                                                       |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| `VERCEL_OIDC_TOKEN`     | Short-lived OIDC token, auto-injected on Vercel. Must be paired with `BLOB_STORE_ID`.         |
-| `BLOB_STORE_ID`         | Blob store ID, auto-injected on Vercel. Accepted as `store_<id>` or `<id>` (prefix stripped). |
-| `BLOB_READ_WRITE_TOKEN` | Long-lived read-write token. Used as a fallback when no OIDC pair is configured.              |
-| `VERCEL_BLOB_TOKEN`     | Alias for `BLOB_READ_WRITE_TOKEN`, checked second.                                            |
-
-### Advanced Configuration
-
-```typescript
-const storage = new VercelBlobStorage({
-    // Auth (pick one of token / oidcToken+storeId; otherwise env vars are used)
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-
-    multipart: true, // Enable multipart uploads for large files
-    multipart: 10 * 1024 * 1024, // Or: enable multipart for files > 10MB
-
-    retryConfig: {
-        maxRetries: 3,
-        initialDelay: 1000,
-    },
-    expiration: {
-        maxAge: "7d",
-        purgeInterval: "1h",
-    },
-});
+app.use("/files", rest.handle);
 ```
 
-### Peer dependency
+```ts
+import { Files } from "@visulima/storage";
 
-OIDC support requires `@vercel/blob >= 2.4.0` (the first release with `oidcToken` and `storeId` on `BlobCommandOptions`).
+const files = new Files({ adapter: storage });
 
-## Features
+await files.upload("avatars/user-1.png", buffer, { contentType: "image/png" });
 
-- **Global CDN**: Automatic CDN distribution for fast access
-- **Serverless**: Optimized for edge deployments
-- **Multipart Uploads**: Support for large files
-- **Automatic Retry**: Built-in retry mechanism for transient failures
-
-## Basic Operations
-
-```typescript
-// Create a file
-const file = await storage.create({
-    contentType: "image/jpeg",
-    metadata: { filename: "photo.jpg" },
-});
-
-// Write data
-await storage.write({
-    id: file.id,
-    body: imageStream,
-    contentLength: imageSize,
-});
-
-// Get file
-const fileData = await storage.get({ id: file.id });
-
-// Delete file
-await storage.delete({ id: file.id });
+const entries = await files.list({ prefix: "avatars" });
 ```
 
-## URL Generation
+## Troubleshooting
 
-Vercel Blob automatically generates public URLs:
-
-```typescript
-const file = await storage.get({ id: "file-id" });
-
-// file.url - Public URL
-// file.downloadUrl - Download URL
-// file.pathname - File pathname
-```
-
-## Best Practices
-
-1. **Prefer OIDC on Vercel** - Use `VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID` over long-lived `BLOB_READ_WRITE_TOKEN`. OIDC tokens auto-rotate and can't leak from a checked-in env file.
-2. **Use environment variables** - Store tokens securely off Vercel.
-3. **Enable multipart for large files** - Better performance for files > 10MB.
-4. **Configure retry** - Handle transient failures.
-5. **Use CDN URLs** - Leverage Vercel's global CDN.
-6. **Monitor usage** - Track storage and bandwidth usage.
+| Symptom                                                               | Cause and fix                                                                                                              |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `Vercel Blob credentials are required`                                | No token or OIDC pair found. Connect the store to the project, or set `BLOB_READ_WRITE_TOKEN` (`vercel env pull` locally). |
+| `Vercel Blob OIDC auth requires both oidcToken and storeId`           | Only one of `VERCEL_OIDC_TOKEN` / `BLOB_STORE_ID` is set. Set both, or use a token.                                        |
+| `401` / `403` from the Blob API                                       | The token belongs to another store, was revoked, or the OIDC token expired outside a Vercel deployment.                    |
+| `413 FUNCTION_PAYLOAD_TOO_LARGE`                                      | The request exceeded Vercel's 4.5 MB function body limit. Use client uploads for large files.                              |
+| `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload           | The adapter is single-shot. Send the whole file in one request.                                                            |
+| `404` on `PATCH`/`HEAD` right after `POST`, or `get()` after a deploy | The local metadata lived on another instance. Use a single-request handler or a shared `metaStorage`.                      |
+| `files.url()` rejects with `METHOD_NOT_ALLOWED`                       | Expected. Use the record's public `url`.                                                                                   |

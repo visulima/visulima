@@ -5,7 +5,7 @@ import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import OneDriveFile from "./onedrive-file";
@@ -26,6 +26,7 @@ interface DriveItem {
     cTag?: string;
     eTag?: string;
     file?: { mimeType?: string };
+    folder?: { childCount?: number };
     id: string;
     lastModifiedDateTime?: string;
     name: string;
@@ -273,6 +274,8 @@ const isNotFoundError = (error: unknown): boolean => {
 class OneDriveStorage extends BaseStorage<OneDriveFile> {
     public static override readonly name: string = "onedrive";
 
+    public override readonly storageKind: string = "onedrive";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -337,14 +340,10 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -411,10 +410,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -426,13 +422,7 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<OneDriveFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: OneDriveFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — direct path delete
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.name ?? id;
 
@@ -461,54 +451,33 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         });
     }
 
-    /**
-     * Answers for a completed upload from its stored object, since the metadata is deleted on completion.
-     * Only object metadata is requested — the content is never downloaded. The object is looked up under the upload's ID.
-     * @param id Upload ID.
-     * @param options Operation options.
-     * @returns The completed file, or `undefined` when no stored object exists.
-     */
-    public override async getCompletedFile(id: string, options?: OperationOptions): Promise<OneDriveFile | undefined> {
-        return this.instrumentOperation("getCompletedFile", async () => {
-            let item: DriveItem;
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let item: DriveItem;
 
-            try {
-                item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(id)).get())) as DriveItem;
-            } catch {
+        try {
+            item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(id)).get())) as DriveItem;
+        } catch (error) {
+            if (isNotFoundError(error)) {
                 return undefined;
             }
 
-            const size = item.size ?? 0;
-            const file = new OneDriveFile({
-                contentType: item.file?.mimeType ?? "application/octet-stream",
-                metadata: {},
-                originalName: item.name ?? id,
-                size,
-            });
+            throw error;
+        }
 
-            return Object.assign(file, {
-                bytesWritten: size,
-                driveItemId: item.id,
-                ETag: item.eTag,
-                id,
-                name: id,
-                status: "completed" as const,
-            });
-        });
+        return { contentType: item.file?.mimeType, etag: item.eTag, extra: { driveItemId: item.id, originalName: item.name ?? id }, size: item.size ?? 0 };
     }
 
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: OneDriveFile | undefined;
-            let key = id;
+            // No metadata: direct path lookup.
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.name ?? id;
-            } catch {
-                // direct path lookup
+            // Outside the catch, so an expired upload answers GONE instead of falling back to the path lookup.
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
 
+            const key = stored?.name ?? id;
             const item = (await this.runOperation(options, () => this.client.api(this.itemApiPath(key)).get())) as DriveItem;
             const arrayBuffer = (await this.runOperation(options, () =>
                 this.client.api(this.itemActionPath(key, "content")).responseType(ResponseType.ARRAYBUFFER).get(),
@@ -619,48 +588,50 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             "list",
             async () => {
                 const files: OneDriveFile[] = [];
-                let url: string | null = `${this.folderListChildrenPath()}?$top=${Math.min(limit, 1000)}`;
+                // `children` lists one folder level, so walk the subfolders breadth-first; keys stay relative to the root folder.
+                const folders = [""];
 
-                while (url && files.length < limit) {
-                    const page = (await this.runOperation(options, () => this.client.api(url as string).get())) as {
-                        "@odata.nextLink"?: string;
-                        value: DriveItem[];
-                    };
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const prefix = folder;
+                    let url: string | null = `${this.itemActionPath(prefix, "children")}?$top=${Math.min(limit, 1000)}`;
 
-                    for (const item of page.value) {
-                        if (!item.file) {
-                            continue;
+                    while (url && files.length < limit) {
+                        const page = (await this.runOperation(options, () => this.client.api(url as string).get())) as {
+                            "@odata.nextLink"?: string;
+                            value: DriveItem[];
+                        };
+
+                        for (const item of page.value) {
+                            const key = prefix ? `${prefix}/${item.name}` : item.name;
+
+                            if (item.folder) {
+                                folders.push(key);
+                            }
+
+                            if (!item.file || files.length >= limit) {
+                                continue;
+                            }
+
+                            const file = new OneDriveFile({
+                                contentType: item.file.mimeType ?? "application/octet-stream",
+                                metadata: {},
+                                originalName: item.name,
+                            });
+
+                            file.id = key;
+                            file.name = key;
+                            file.driveItemId = item.id;
+                            file.webUrl = item.webUrl;
+                            file.eTag = item.eTag;
+                            file.ETag = item.eTag;
+                            file.size = item.size ?? 0;
+                            file.modifiedAt = item.lastModifiedDateTime;
+
+                            files.push(file);
                         }
 
-                        const key = this.itemPathToKey(item);
-
-                        if (!key) {
-                            continue;
-                        }
-
-                        const file = new OneDriveFile({
-                            contentType: item.file.mimeType ?? "application/octet-stream",
-                            metadata: {},
-                            originalName: item.name,
-                        });
-
-                        file.id = key;
-                        file.name = key;
-                        file.driveItemId = item.id;
-                        file.webUrl = item.webUrl;
-                        file.eTag = item.eTag;
-                        file.ETag = item.eTag;
-                        file.size = item.size ?? 0;
-                        file.modifiedAt = item.lastModifiedDateTime;
-
-                        files.push(file);
-
-                        if (files.length >= limit) {
-                            break;
-                        }
+                        url = page["@odata.nextLink"] ?? null;
                     }
-
-                    url = page["@odata.nextLink"] ?? null;
                 }
 
                 return files;
@@ -768,10 +739,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         return `${this.basePath}/root:/${encodePathSegments(parts.join("/"))}:/${action}`;
     }
 
-    private folderListChildrenPath(): string {
-        return this.itemActionPath("", "children");
-    }
-
     /**
      * Build a `parentReference.path` for move/copy. Microsoft Graph requires
      * this path to be relative to the drive, prefixed with `/drive/root:` —
@@ -802,21 +769,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
         }
 
         return `/drive/root:/${encodePathSegments(parts.join("/"))}`;
-    }
-
-    private itemPathToKey(item: DriveItem): string {
-        const parentPath = item.parentReference?.path ?? "";
-        const rootMarker = "/root:";
-        const index = parentPath.indexOf(rootMarker);
-        let folder = index === -1 ? "" : parentPath.slice(index + rootMarker.length);
-
-        folder = trimSlashes(decodeURIComponent(folder));
-
-        const stripped = this.rootFolderPath && folder.startsWith(this.rootFolderPath) ? folder.slice(this.rootFolderPath.length) : folder;
-
-        const cleanFolder = trimSlashes(stripped);
-
-        return cleanFolder ? `${cleanFolder}/${item.name}` : item.name;
     }
 
     private async uploadSimple(key: string, data: Buffer, contentType?: string, options?: OperationOptions): Promise<DriveItem> {
@@ -922,8 +874,6 @@ class OneDriveStorage extends BaseStorage<OneDriveFile> {
             });
         }
     }
-
-    private internalOnComplete = (file: OneDriveFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 const baseName = (key: string): string => {

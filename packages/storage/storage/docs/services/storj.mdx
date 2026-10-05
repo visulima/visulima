@@ -4,73 +4,127 @@
 
 ## Overview
 
-Storj is a decentralized, S3-compatible object storage service. Data is encrypted client-side and erasure-coded across thousands of independent storage nodes worldwide. The `storj` client targets the public Storj S3 Gateway (`gateway.storjshare.io`) by default; self-hosted gateways can override the endpoint.
+Storj is decentralized object storage reachable through its S3-compatible gateway. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `storj()` helper targets the hosted gateway `https://gateway.storjshare.io` with region `global`; a self-hosted gateway can be set with `endpoint`.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Storj is S3-compatible via its S3 Gateway:
-
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { storj } from "@visulima/storage/provider/aws/s3/clients";
-
-const clientConfig = storj({
-    accessKeyId: process.env.STORJ_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.STORJ_SECRET_ACCESS_KEY!,
-});
-
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
+1. **Create a bucket** — Storj console → _Browse_ → _New bucket_ (or `uplink mb sj://uploads`).
+2. **Create S3 credentials** — console → _Access Keys_ → _New Access Key_ → type **S3 Credentials**. Scope it to the bucket with read, write, list and delete permissions. The console shows an access key, secret key and endpoint; from the CLI, `uplink share --register` derives the same from an access grant.
+3. **CORS** — only relevant when the browser calls the gateway directly (presigned URLs, `clientDirectUpload`). Uploads through your own handler don't need it. Check Storj's gateway documentation for its CORS behaviour before relying on direct browser access.
+4. **Abandoned multipart uploads** — Storj has no S3 lifecycle rules; `purge()` aborts only uploads this storage started, so list and abort others yourself if a client leaves them behind.
 
 ## Configuration
 
-### Generating credentials
+### `storj()` helper
 
-The `accessKeyId` / `secretAccessKey` pair is derived from a Storj **access grant**, using either the [Storj web console](https://www.storj.io/) or the `uplink share --register` CLI. Each grant scopes the resulting S3 credentials to a set of buckets and operations.
+`import { storj } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region: "global"`, `forcePathStyle: false`):
 
-### Environment Variables
+| Parameter         | Type     | Required | Env fallback (in order)                                                |
+| ----------------- | -------- | -------- | ---------------------------------------------------------------------- |
+| `accessKeyId`     | `string` | yes      | `STORJ_ACCESS_KEY_ID`, `STORJ_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `STORJ_SECRET_ACCESS_KEY`, `STORJ_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
+| `endpoint`        | `string` | no       | `STORJ_ENDPOINT`; default `https://gateway.storjshare.io`              |
 
-```typescript
-process.env.STORJ_ACCESS_KEY_ID = "your-access-key";
-process.env.STORJ_SECRET_ACCESS_KEY = "your-secret-key";
-process.env.STORJ_ENDPOINT = "https://gateway.storjshare.io"; // Optional
+All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 
-const clientConfig = storj(); // Uses environment variables
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { storj } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({ bucket: "uploads", ...storj() });
+```
+
+### Production
+
+Storj stores data in segments of up to 64 MiB, so larger parts mean fewer segments:
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { storj } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    ...storj({
+        accessKeyId: process.env.STORJ_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.STORJ_SECRET_ACCESS_KEY!,
+    }),
+    bucket: "uploads",
+    partSize: "64MB",
+    maxUploadSize: "20GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-### With Explicit Parameters
+`partSize` only affects presigned part uploads (`clientDirectUpload`); for TUS / chunked REST uploads, the part size is the client's chunk size.
 
-```typescript
-const clientConfig = storj({
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key",
-    endpoint: "https://gateway.eu1.storjshare.io", // Optional region-specific gateway
+### Edge (`AwsLightStorage`)
+
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "global",
+    endpoint: "https://gateway.storjshare.io", // path-style: <endpoint>/<bucket>/<key>
+    accessKeyId: process.env.STORJ_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.STORJ_SECRET_ACCESS_KEY!,
 });
 ```
 
-## Features
+## Metadata storage
 
-- **End-to-end encryption**: Data is encrypted client-side before upload
-- **Decentralized**: Erasure-coded across thousands of independent nodes
-- **S3-Compatible**: Works with the AWS S3 SDK via the Storj S3 Gateway
-- **Pay-as-you-go**: Per-GB storage and egress pricing
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-## Best Practices
+## Behaviour & limits
 
-1. **Scope your access grants** — generate per-environment grants restricted to specific buckets / prefixes
-2. **Rotate grants** instead of long-lived root credentials
-3. **Self-host the gateway** for sensitive workloads to keep the encryption boundary in your trust zone
-4. **Pick a regional gateway** (e.g. `gateway.eu1.storjshare.io`) closer to your compute
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("archive/2024.tar", buffer, { contentType: "application/x-tar" });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| `403` / `AccessDenied`                   | The access key isn't scoped to this bucket or lacks list/delete permissions. |
+| `SignatureDoesNotMatch`                  | Credentials registered for another gateway; pass the matching `endpoint`.    |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.   |

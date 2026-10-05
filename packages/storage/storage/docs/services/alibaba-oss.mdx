@@ -4,86 +4,152 @@
 
 ## Overview
 
-Alibaba Cloud Object Storage Service (OSS) is an S3-compatible object storage service. It is accessed through the S3-compatible endpoint, so it works with `S3Storage` plus the bundled `alibaba` client preset, which derives the endpoint from the region code.
+Alibaba Cloud Object Storage Service (OSS) offers an S3-compatible API. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `alibaba()` helper builds the endpoint `https://s3.oss-<region>.aliyuncs.com` with virtual-hosted addressing (`forcePathStyle: false`), which OSS requires.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Alibaba OSS is S3-compatible, so use `S3Storage` with the `alibaba` client preset:
+1. **Create a bucket** — OSS console → _Buckets_ → _Create Bucket_; choose the region (`cn-hangzhou`, `ap-southeast-1`, `eu-central-1`, …) and keep ACL **Private**.
+2. **Create a RAM user with an AccessKey** — RAM console → _Users_ → _Create User_ (OpenAPI access). Copy the AccessKey ID and secret. Attach a custom policy limited to the bucket:
 
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { alibaba } from "@visulima/storage/provider/aws/s3/clients";
+    ```json
+    {
+        "Version": "1",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": ["oss:ListObjects", "oss:ListMultipartUploads"],
+                "Resource": ["acs:oss:*:*:uploads"]
+            },
+            {
+                "Effect": "Allow",
+                "Action": ["oss:PutObject", "oss:GetObject", "oss:DeleteObject", "oss:AbortMultipartUpload", "oss:ListParts"],
+                "Resource": ["acs:oss:*:*:uploads/*"]
+            }
+        ]
+    }
+    ```
 
-const clientConfig = alibaba({
-    accessKeyId: process.env.ALIBABA_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.ALIBABA_ACCESS_KEY_SECRET!,
-    region: process.env.ALIBABA_REGION || "cn-hangzhou",
-});
+    The startup check also issues a `HEAD` on the bucket; grant `oss:GetBucketInfo` on `acs:oss:*:*:uploads` if it fails with `403`.
 
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
-
-The endpoint defaults to `https://s3.oss-${region}.aliyuncs.com` with virtual-hosted-style addressing. Pass `endpoint` (or set `ALIBABA_ENDPOINT`) to override it — for example, when using an internal or accelerated endpoint.
+3. **CORS** — needed only when the browser calls OSS directly (presigned URLs, `clientDirectUpload`). Bucket → _Content Security_ → _CORS_ → rule with your origin, methods `GET, HEAD, PUT`, allowed headers `*`, exposed headers `ETag`.
+4. **Lifecycle** — add a lifecycle rule that deletes parts of incomplete multipart uploads after N days; `purge()` only aborts uploads this storage started.
 
 ## Configuration
 
-### Environment Variables
+### `alibaba()` helper
 
-```typescript
-process.env.ALIBABA_ACCESS_KEY_ID = "your-access-key";
-process.env.ALIBABA_ACCESS_KEY_SECRET = "your-secret-key";
-process.env.ALIBABA_REGION = "cn-hangzhou";
+`import { alibaba } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`, `forcePathStyle: false`):
 
-const clientConfig = alibaba(); // Uses environment variables
+| Parameter         | Type     | Required | Env fallback (in order)                                            |
+| ----------------- | -------- | -------- | ------------------------------------------------------------------ |
+| `region`          | `string` | yes      | `ALIBABA_REGION` (deliberately not `AWS_REGION`)                   |
+| `accessKeyId`     | `string` | yes      | `ALIBABA_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_ID`                       |
+| `secretAccessKey` | `string` | yes      | `ALIBABA_ACCESS_KEY_SECRET`, `AWS_SECRET_ACCESS_KEY`               |
+| `endpoint`        | `string` | no       | `ALIBABA_ENDPOINT`; default `https://s3.oss-<region>.aliyuncs.com` |
+
+All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { alibaba } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    bucket: "uploads",
+    ...alibaba({ region: "eu-central-1", accessKeyId: process.env.ALIBABA_ACCESS_KEY_ID!, secretAccessKey: process.env.ALIBABA_ACCESS_KEY_SECRET! }),
 });
 ```
 
-The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` variables are also accepted as fallbacks. The region is **not** read from `AWS_REGION` — it is part of the endpoint hostname, and `AWS_REGION` is commonly set to an AWS region in dev/CI, which would silently produce a broken endpoint. Use `ALIBABA_REGION` (or pass `region`).
+### Production
 
-### With Explicit Parameters
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { alibaba } from "@visulima/storage/provider/aws/s3/clients";
 
-```typescript
-const clientConfig = alibaba({
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key",
-    region: "cn-hangzhou",
+const storage = new S3Storage({
+    ...alibaba({
+        region: "ap-southeast-1",
+        accessKeyId: process.env.ALIBABA_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.ALIBABA_ACCESS_KEY_SECRET!,
+    }),
+    bucket: "uploads",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-## Regions
+### Edge (`AwsLightStorage`)
 
-Common Alibaba OSS regions:
+`AwsLightStorage` uses a custom endpoint path-style unless its host starts with the bucket name. OSS needs virtual-hosted addressing, so put the bucket in the host:
 
-- `cn-hangzhou` - China (Hangzhou)
-- `cn-shanghai` - China (Shanghai)
-- `cn-beijing` - China (Beijing)
-- `ap-southeast-1` - Asia Pacific SE (Singapore)
-- `us-east-1` - US East (Virginia)
-- `eu-central-1` - EU Central (Frankfurt)
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
-## Features
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "ap-southeast-1",
+    endpoint: "https://uploads.oss-ap-southeast-1.aliyuncs.com",
+    accessKeyId: process.env.ALIBABA_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.ALIBABA_ACCESS_KEY_SECRET!,
+});
+```
 
-- **S3-Compatible**: Works through the S3-compatible OSS endpoint
-- **Global Regions**: Data centers across China and worldwide
-- **Lifecycle Management**: Automatic tiering and expiration policies
-- **Presigned URLs**: Direct browser uploads and downloads
+## Metadata storage
 
-## Best Practices
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record in their user metadata, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-1. **Set `ALIBABA_REGION` explicitly** - it drives the endpoint hostname; never rely on `AWS_REGION`
-2. **Choose the closest region** - reduce latency for your users
-3. **Use lifecycle policies** - automatically transition or expire objects
-4. **Configure CORS** - set up CORS for browser-based uploads
-5. **Use a separate metafiles bucket** - keep upload metadata isolated for resumable uploads
+## Behaviour & limits
+
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size for S3-style multipart except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("docs/terms.pdf", buffer, { contentType: "application/pdf" });
+```
+
+## Troubleshooting
+
+| Symptom                                    | Cause / fix                                                                                     |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `SecondLevelDomainForbidden` / path errors | Path-style addressing. With `AwsLightStorage`, put the bucket in the endpoint host.             |
+| `403` on missing keys / not ready          | The RAM policy lacks `oss:ListObjects` (or bucket-info access for the startup `HEAD`).          |
+| `SignatureDoesNotMatch` / wrong endpoint   | `region` doesn't match the bucket's region. Set `region` or `ALIBABA_REGION`, not `AWS_REGION`. |
+| Browser CORS errors                        | Add a CORS rule for your origin with `PUT` and expose `ETag`.                                   |
+| `400` "chunks of at least 5 MiB" / `409`   | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                      |

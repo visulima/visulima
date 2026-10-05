@@ -4,80 +4,139 @@
 
 ## Overview
 
-Yandex Object Storage is an S3-compatible object storage service. It serves a single global endpoint (`https://storage.yandexcloud.net`) and routes internally, so it works with `S3Storage` plus the bundled `yandex` client preset.
+Yandex Object Storage is S3-compatible. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `yandex()` helper targets the single global endpoint `https://storage.yandexcloud.net`; the region (default `ru-central1`) is only the signing scope.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Yandex Object Storage is S3-compatible, so use `S3Storage` with the `yandex` client preset:
+1. **Create a bucket** — Management console → _Object Storage_ → _Create bucket_ with restricted (private) access.
+2. **Create a service account and a static access key** — _Service accounts_ → _Create_; give it the `storage.editor` role on the folder (or grant it access to the bucket through the bucket ACL/policy). Then _Create new key_ → _Static access key_; copy the key ID and secret.
+3. **CORS** — needed only when the browser calls the bucket directly (presigned URLs, `clientDirectUpload`). Bucket → _CORS_, or `aws s3api put-bucket-cors --endpoint-url https://storage.yandexcloud.net`:
 
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { yandex } from "@visulima/storage/provider/aws/s3/clients";
+    ```json
+    {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["https://app.example.com"],
+                "AllowedMethods": ["GET", "HEAD", "PUT"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["ETag"],
+                "MaxAgeSeconds": 3600
+            }
+        ]
+    }
+    ```
 
-const clientConfig = yandex({
-    accessKeyId: process.env.YANDEX_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.YANDEX_SECRET_ACCESS_KEY!,
-});
-
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
-
-Yandex serves a single global endpoint, so the region is only the SigV4 signing scope and defaults to `ru-central1`. Pass `endpoint` (or set `YANDEX_ENDPOINT`) to override the endpoint.
+4. **Lifecycle** — add a lifecycle rule with `AbortIncompleteMultipartUpload` (bucket → _Lifecycle_, or `put-bucket-lifecycle-configuration`); `purge()` only aborts uploads this storage started.
 
 ## Configuration
 
-### Environment Variables
+### `yandex()` helper
 
-```typescript
-process.env.YANDEX_ACCESS_KEY_ID = "your-access-key";
-process.env.YANDEX_SECRET_ACCESS_KEY = "your-secret-key";
-// Optional — defaults to "ru-central1"
-process.env.YANDEX_REGION = "ru-central1";
+`import { yandex } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`, `forcePathStyle: false`):
 
-const clientConfig = yandex(); // Uses environment variables
+| Parameter         | Type     | Required | Env fallback (in order)                                      |
+| ----------------- | -------- | -------- | ------------------------------------------------------------ |
+| `accessKeyId`     | `string` | yes      | `YANDEX_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_ID`                  |
+| `secretAccessKey` | `string` | yes      | `YANDEX_SECRET_ACCESS_KEY`, `AWS_SECRET_ACCESS_KEY`          |
+| `region`          | `string` | no       | `YANDEX_REGION`, `AWS_REGION`; default `ru-central1`         |
+| `endpoint`        | `string` | no       | `YANDEX_ENDPOINT`; default `https://storage.yandexcloud.net` |
+
+All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { yandex } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({ bucket: "uploads", ...yandex() });
+```
+
+### Production
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { yandex } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    ...yandex({
+        accessKeyId: process.env.YANDEX_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.YANDEX_SECRET_ACCESS_KEY!,
+    }),
+    bucket: "uploads",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` variables are also accepted as fallbacks. Because the region does not drive the endpoint here, falling back to `AWS_REGION` is safe.
+### Edge (`AwsLightStorage`)
 
-### With Explicit Parameters
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
-```typescript
-const clientConfig = yandex({
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key",
+const storage = new AwsLightStorage({
+    bucket: "uploads",
     region: "ru-central1",
+    endpoint: "https://storage.yandexcloud.net", // path-style: <endpoint>/<bucket>/<key>
+    accessKeyId: process.env.YANDEX_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.YANDEX_SECRET_ACCESS_KEY!,
 });
 ```
 
-## Regions
+## Metadata storage
 
-Yandex Object Storage uses a single global endpoint; `region` only sets the SigV4 signing scope:
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-- `ru-central1` - Russia (Central) — default
+## Behaviour & limits
 
-## Features
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
 
-- **S3-Compatible**: Works through the S3-compatible endpoint
-- **Single Global Endpoint**: No per-region endpoint to configure
-- **Lifecycle Management**: Automatic tiering and expiration policies
-- **Presigned URLs**: Direct browser uploads and downloads
+## Using it with the handlers
 
-## Best Practices
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
 
-1. **Leave region as default** unless you have a specific signing requirement
-2. **Use lifecycle policies** - automatically transition or expire objects
-3. **Configure CORS** - set up CORS for browser-based uploads
-4. **Use a separate metafiles bucket** - keep upload metadata isolated for resumable uploads
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("exports/report.csv", buffer, { contentType: "text/csv" });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `403` / `AccessDenied`                   | The service account has no role on the bucket's folder; grant `storage.editor`.            |
+| `SignatureDoesNotMatch`                  | `AWS_REGION` set to an AWS region is used as signing region; pass `region: "ru-central1"`. |
+| Browser CORS errors                      | Add CORS rules for your origin with `PUT`.                                                 |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                 |

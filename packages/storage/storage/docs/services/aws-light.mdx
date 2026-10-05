@@ -4,14 +4,18 @@
 
 ## Overview
 
-AWS Light Storage is a lightweight S3-compatible storage implementation optimized for worker environments. It uses `aws4fetch` instead of the full AWS SDK, making it perfect for Cloudflare Workers, Web Workers, and other edge runtime environments where the AWS SDK cannot run.
+`AwsLightStorage` is the S3 adapter for edge and worker runtimes. It signs requests with [`aws4fetch`](https://github.com/mhart/aws4fetch) (SigV4 over `fetch` + `SubtleCrypto`) instead of the AWS SDK, so it bundles small and runs where the SDK can't. Upload logic, metadata records and limits are shared with [`S3Storage`](./amazon-s3.mdx) — read that page for the details this one links to.
 
-## Key Features
-
-- **Worker Compatible**: Works in Cloudflare Workers, Web Workers, and edge runtimes
-- **Lightweight**: Uses `aws4fetch` (~6.4 KB) instead of the full AWS SDK
-- **S3-Compatible**: Full S3 API compatibility for multipart uploads, presigned URLs, and more
-- **No Node.js Dependencies**: Uses standard Web APIs (`fetch`, `SubtleCrypto`)
+| Feature                                                  | `S3Storage`                    | `AwsLightStorage`                         |
+| -------------------------------------------------------- | ------------------------------ | ----------------------------------------- |
+| Runtime                                                  | Node.js                        | Node.js, Bun, Deno, Cloudflare Workers, … |
+| Peer dependency                                          | `@aws-sdk/*`                   | `aws4fetch`                               |
+| Credentials                                              | AWS credential chain or static | static keys (+ optional session token)    |
+| Resumable multipart uploads, range reads                 | ✅                             | ✅                                        |
+| `getReadUrl()` / `getUploadUrl()`                        | ✅ presigned                   | ❌ `METHOD_NOT_ALLOWED`                   |
+| `clientDirectUpload`                                     | ✅                             | ✅ (query-signed part URLs)               |
+| `acl`                                                    | ✅                             | ❌                                        |
+| Local-directory metadata (`metaStorageConfig.directory`) | ✅                             | ✅                                        |
 
 ## Installation
 
@@ -27,267 +31,166 @@ yarn add aws4fetch
 pnpm add aws4fetch
 ```
 
-## Usage
+**Cloudflare Workers:** `@visulima/storage` imports `node:stream` and `node:util`, so enable Node.js compatibility in `wrangler.toml`:
 
-### Basic Usage
-
-```typescript
-import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
-
-const storage = new AwsLightStorage({
-    bucket: "my-bucket",
-    region: "us-east-1",
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-});
+```toml
+compatibility_flags = ["nodejs_compat"]
 ```
 
-### Cloudflare Workers
+## Provider setup
 
-AWS Light Storage is perfect for Cloudflare Workers:
+Bucket creation, the [minimum IAM policy](./amazon-s3.mdx#2-grant-the-minimum-iam-permissions), [CORS](./amazon-s3.mdx#3-cors-only-for-browser-direct-traffic) and the [abort-incomplete-multipart lifecycle rule](./amazon-s3.mdx#4-lifecycle-rule-for-abandoned-multipart-uploads) are the same as for Amazon S3. Two differences:
 
-```typescript
-export default {
-    async fetch(request: Request, env: any): Promise<Response> {
-        const storage = new AwsLightStorage({
-            bucket: env.S3_BUCKET,
-            region: env.AWS_REGION,
-            accessKeyId: env.AWS_ACCESS_KEY_ID,
-            secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-        });
+- Credentials must be **static keys** (an IAM user's access key, or temporary credentials with `sessionToken`) — there is no credential chain, instance role or SSO.
+- `s3:PutObjectAcl` is never needed (no `acl` support). CORS only matters if the browser reads objects cross-origin or uploads parts itself (`clientDirectUpload`).
 
-        // Use storage...
-        const file = await storage.create({
-            contentType: "image/jpeg",
-            size: 1024,
-        });
-
-        return new Response(JSON.stringify(file));
-    },
-};
-```
-
-### Web Workers
-
-```typescript
-// worker.ts
-import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
-
-self.onmessage = async (event) => {
-    const storage = new AwsLightStorage({
-        bucket: "my-bucket",
-        region: "us-east-1",
-        accessKeyId: event.data.accessKeyId,
-        secretAccessKey: event.data.secretAccessKey,
-    });
-
-    const file = await storage.create(event.data.fileConfig);
-    self.postMessage({ file });
-};
-```
-
-### Custom Endpoint (S3-Compatible Services)
-
-AWS Light Storage works with any S3-compatible service:
-
-```typescript
-import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
-
-// Cloudflare R2
-const r2Storage = new AwsLightStorage({
-    bucket: "my-r2-bucket",
-    region: "auto",
-    endpoint: "https://my-account-id.r2.cloudflarestorage.com",
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-});
-
-// DigitalOcean Spaces
-const spacesStorage = new AwsLightStorage({
-    bucket: "my-space",
-    region: "nyc3",
-    endpoint: "https://nyc3.digitaloceanspaces.com",
-    accessKeyId: process.env.DO_SPACES_KEY!,
-    secretAccessKey: process.env.DO_SPACES_SECRET!,
-});
-
-// MinIO
-const minioStorage = new AwsLightStorage({
-    bucket: "my-bucket",
-    region: "us-east-1",
-    endpoint: "https://minio.example.com",
-    accessKeyId: process.env.MINIO_ACCESS_KEY!,
-    secretAccessKey: process.env.MINIO_SECRET_KEY!,
-});
-```
+For S3-compatible services follow the provider's page ([R2](./cloudflare-r2.mdx), [MinIO](./minio.mdx), [Spaces](./digital-ocean-spaces.mdx), …) for bucket and key creation, then pass `endpoint` + `bucket` as shown [below](#s3-compatible-services).
 
 ## Configuration
 
-### Environment Variables
+`AwsLightStorageOptions` = the [common storage options](./amazon-s3.mdx#common-storage-options) + these:
 
-```typescript
-process.env.S3_BUCKET = "my-bucket";
-process.env.S3_REGION = "us-east-1";
-process.env.AWS_ACCESS_KEY_ID = "your-access-key";
-process.env.AWS_SECRET_ACCESS_KEY = "your-secret-key";
+| Option               | Type                                                    | Default                                      | Description                                                                                                                                                                                                                                                                                                                                          |
+| -------------------- | ------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bucket`             | `string`                                                | `S3_BUCKET` or `AWS_S3_BUCKET` env var       | Bucket name. Required.                                                                                                                                                                                                                                                                                                                               |
+| `region`             | `string`                                                | —                                            | Signing region. Required (no env fallback). `"auto"` for R2.                                                                                                                                                                                                                                                                                         |
+| `accessKeyId`        | `string`                                                | —                                            | Access key. Required (no env fallback).                                                                                                                                                                                                                                                                                                              |
+| `secretAccessKey`    | `string`                                                | —                                            | Secret key. Required (no env fallback).                                                                                                                                                                                                                                                                                                              |
+| `sessionToken`       | `string`                                                | —                                            | Session token for temporary (STS) credentials.                                                                                                                                                                                                                                                                                                       |
+| `endpoint`           | `string`                                                | `https://<bucket>.s3.<region>.amazonaws.com` | S3 API root of an S3-compatible service, **without** the bucket. See [S3-compatible services](#s3-compatible-services).                                                                                                                                                                                                                              |
+| `service`            | `string`                                                | `"s3"`                                       | SigV4 service name.                                                                                                                                                                                                                                                                                                                                  |
+| `partSize`           | `number \| string`                                      | `"16MB"`                                     | Only used by `clientDirectUpload`; must be ≥ 5 MB.                                                                                                                                                                                                                                                                                                   |
+| `clientDirectUpload` | `boolean`                                               | `false`                                      | Return SigV4 query-signed part URLs (`partsUrls`) the client `PUT`s to directly; they expire with `expiration.maxAge` (default 6 h).                                                                                                                                                                                                                 |
+| `metaStorageConfig`  | `AwsLightMetaStorageOptions \| LocalMetaStorageOptions` | metadata in the same bucket                  | `{ bucket?, prefix?, suffix?, accessKeyId?, secretAccessKey?, region?, endpoint?, sessionToken?, service? }` — overrides for the metadata bucket; `{ directory }` keeps it on local disk.                                                                                                                                                            |
+| `conditional`        | `boolean \| Partial<ConditionalSupport>`                | `true` without `endpoint`                    | Send the `Files` ETag predicates as `If-Match` / `If-None-Match` / `x-amz-copy-source-if-match` headers. `false` by default with a custom `endpoint`; set `true` for an S3-compatible service that honours them, or an object (`{ copy: true, read: true }`) to enable only some — see [Conditional requests](./amazon-s3.mdx#conditional-requests). |
+| `uploadPost`         | `boolean`                                               | `true` without `endpoint`                    | Sign browser-form POST policies for `Files.signedUpload(key, { maxSize })`. `false` by default with a custom `endpoint`, as not every S3-compatible service accepts POST uploads (Cloudflare R2 does not); set `true` for one that does.                                                                                                             |
+
+### Minimal example
+
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
 
 const storage = new AwsLightStorage({
-    bucket: process.env.S3_BUCKET!,
-    region: process.env.S3_REGION!,
+    bucket: "my-uploads",
+    region: "eu-central-1",
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
 });
 ```
 
-### Configuration Options
+### Production example (Cloudflare Worker + R2)
 
-| Name               | Type           | Description                                             | Default |
-| :----------------- | :------------- | :------------------------------------------------------ | :------ |
-| bucket             | string         | The name of the S3 bucket to use.                       |         |
-| region             | string         | The AWS region of the bucket.                           |         |
-| accessKeyId        | string         | AWS access key ID.                                      |         |
-| secretAccessKey    | string         | AWS secret access key.                                  |         |
-| sessionToken       | string         | Optional AWS session token (for temporary credentials). |         |
-| endpoint           | string         | Custom S3 endpoint (for S3-compatible services).        | Auto    |
-| service            | string         | AWS service name (usually "s3").                        | "s3"    |
-| clientDirectUpload | boolean        | Enable client-side direct upload with presigned URLs.   | false   |
-| partSize           | number\|string | Part size for multipart uploads.                        | "16MB"  |
-| expiration         | object         | File expiration configuration.                          |         |
-| logger             | Logger         | Logger instance for debugging.                          |         |
-
-## When to Use AWS Light vs AWS S3 Storage
-
-### Use AWS Light Storage When:
-
-- ✅ **Running in Worker Environments**: Cloudflare Workers, Web Workers, or edge runtimes
-- ✅ **Bundle Size Matters**: Need a lightweight solution (~6.4 KB vs ~2MB)
-- ✅ **No Node.js Available**: Running in browser or edge environments without Node.js
-- ✅ **Simple S3 Operations**: Basic upload, download, delete operations are sufficient
-- ✅ **S3-Compatible Services**: Using R2, DigitalOcean Spaces, MinIO, or other S3-compatible services
-
-### Use AWS S3 Storage When:
-
-- ✅ **Node.js Environment**: Running in traditional Node.js servers or applications
-- ✅ **Full AWS SDK Features**: Need advanced AWS SDK features and integrations
-- ✅ **Better Presigned URL Support**: Require robust presigned URL generation
-- ✅ **AWS Ecosystem Integration**: Need to integrate with other AWS services
-- ✅ **Production Node.js Apps**: Standard Node.js backend applications
-
-### Quick Decision Guide
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ Are you running in a worker/edge environment?           │
-│   ├─ YES → Use AWS Light Storage                        │
-│   └─ NO → Continue...                                    │
-│                                                          │
-│ Is bundle size critical?                                │
-│   ├─ YES → Use AWS Light Storage                        │
-│   └─ NO → Continue...                                   │
-│                                                          │
-│ Do you need full AWS SDK features?                      │
-│   ├─ YES → Use AWS S3 Storage                           │
-│   └─ NO → Use AWS Light Storage                         │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Comparison with S3Storage
-
-| Feature              | S3Storage       | AwsLightStorage     |
-| :------------------- | :-------------- | :------------------ |
-| Worker Support       | ❌ No           | ✅ Yes              |
-| Bundle Size          | ~2MB (AWS SDK)  | ~6.4 KB (aws4fetch) |
-| Node.js Required     | ✅ Yes          | ❌ No               |
-| Presigned URLs       | ✅ Full Support | ⚠️ Limited          |
-| All S3 Features      | ✅ Yes          | ✅ Yes              |
-| Edge Runtime Support | ❌ No           | ✅ Yes              |
-
-## Limitations
-
-1. **Presigned URLs**: Full presigned URL generation requires implementing AWS Signature Version 4 query string authentication. Currently, URLs are constructed but signing happens on-demand.
-
-2. **File Type Detection**: File type detection from streams may not work in all worker environments due to Node.js stream dependencies.
-
-## Best Practices
-
-1. **Use in Workers**: Perfect for Cloudflare Workers, Web Workers, and edge runtimes
-2. **Environment Variables**: Store credentials securely using environment variables
-3. **Error Handling**: Implement proper error handling for network failures
-4. **Retry Logic**: Configure retry logic for transient failures
-5. **Monitor Usage**: Track storage usage and costs in your AWS/S3 dashboard
-
-## Examples
-
-### Upload a File
-
-```typescript
-const file = await storage.create({
-    contentType: "image/jpeg",
-    size: 1024 * 1024, // 1MB
-    metadata: {
-        userId: "123",
-        category: "profile",
-    },
-});
-
-await storage.write({
-    id: file.id,
-    body: imageBuffer,
-    contentLength: imageBuffer.length,
-    start: 0,
-});
-```
-
-### Download a File
-
-```typescript
-const fileData = await storage.get({ id: "file-id" });
-console.log(fileData.content); // Buffer
-console.log(fileData.contentType); // "image/jpeg"
-```
-
-### Stream a File
-
-```typescript
-const { stream, size, headers } = await storage.getStream({ id: "file-id" });
-// stream is a Node.js Readable stream
-```
-
-### Delete a File
-
-```typescript
-await storage.delete({ id: "file-id" });
-```
-
-## Migration from S3Storage
-
-If you're migrating from `S3Storage` to `AwsLightStorage`:
-
-1. Install `aws4fetch` instead of `@aws-sdk/client-s3`
-2. Update imports: `S3Storage` → `AwsLightStorage`
-3. Update configuration: Remove `credentials` object, use `accessKeyId` and `secretAccessKey` directly
-4. Test presigned URL functionality if using `clientDirectUpload`
-
-```typescript
-// Before (S3Storage)
-import { S3Storage } from "@visulima/storage/provider/aws";
-
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    region: "us-east-1",
-    credentials: {
-        accessKeyId: "...",
-        secretAccessKey: "...",
-    },
-});
-
-// After (AwsLightStorage)
+```ts
 import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+import { Tus } from "@visulima/storage/handler/http/cloudflare";
 
-const storage = new AwsLightStorage({
-    bucket: "my-bucket",
-    region: "us-east-1",
-    accessKeyId: "...",
-    secretAccessKey: "...",
-});
+interface Env {
+    R2_ACCOUNT_ID: string;
+    R2_ACCESS_KEY_ID: string;
+    R2_SECRET_ACCESS_KEY: string;
+}
+
+export default {
+    async fetch(request: Request, env: Env): Promise<Response> {
+        const storage = new AwsLightStorage({
+            bucket: "my-uploads",
+            region: "auto",
+            endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            accessKeyId: env.R2_ACCESS_KEY_ID,
+            secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+            maxUploadSize: "1GB",
+            allowMIME: ["image/*", "application/pdf"],
+            retryConfig: { maxRetries: 4 },
+        });
+
+        return new Tus({ storage }).fetch(request);
+    },
+};
 ```
+
+Don't configure `expiration.purgeInterval` in a Worker: there is no long-lived process for the timer. Call `storage.purge()` from a [Cron Trigger](https://developers.cloudflare.com/workers/configuration/cron-triggers/) instead, and keep the bucket lifecycle rule.
+
+### S3-compatible services
+
+Always pass both:
+
+- **`endpoint`** — the provider's S3 API root URL. Leave the bucket out of it (no `https://my-bucket.…` host, no `/my-bucket` path); if it is there anyway it's detected and not added twice.
+- **`bucket`** — the bucket name; the adapter appends it to the endpoint (path-style).
+
+```ts
+// Cloudflare R2
+new AwsLightStorage({ bucket: "b", region: "auto", endpoint: "https://<account-id>.r2.cloudflarestorage.com", accessKeyId, secretAccessKey });
+
+// DigitalOcean Spaces (regional endpoint, not https://my-space.nyc3.digitaloceanspaces.com)
+new AwsLightStorage({ bucket: "my-space", region: "nyc3", endpoint: "https://nyc3.digitaloceanspaces.com", accessKeyId, secretAccessKey });
+
+// MinIO
+new AwsLightStorage({ bucket: "b", region: "us-east-1", endpoint: "https://minio.example.com", accessKeyId, secretAccessKey });
+```
+
+The `@visulima/storage/provider/aws/s3/clients` helpers return an AWS SDK `S3ClientConfig` (`credentials: { … }`), so they don't spread into `AwsLightStorage` directly — copy the endpoint/region they document into the fields above.
+
+### Size-limited uploads
+
+`AwsLightStorage` signs SigV4 POST policies (`files.signedUpload(key, { maxSize, minSize })`) with the configured credentials, so S3 enforces the `content-length-range` itself. It still has no presigned GET/PUT URLs (`files.url()` / `files.signedUploadUrl()`).
+
+## Metadata storage
+
+Records are zero-byte `<id>.META` objects in the bucket (user-metadata header, 2 KB S3 limit), exactly as with [`S3Storage`](./amazon-s3.mdx#metadata-storage): shared by every instance, written with `If-Match` conditional saves, hidden from `list()`, kept after an upload completes. Use `metaStorageConfig: { bucket: "my-uploads-meta" }` (plus credentials/endpoint if they differ) for a separate bucket, or pass your own `metaStorage` (KV, D1, Redis, …). `metaStorageConfig: { directory }` keeps the records on local disk (Node.js only; single instance or a shared directory).
+
+## Behaviour & limits
+
+Identical to [`S3Storage`](./amazon-s3.mdx#behaviour--limits): sequential chunks of ≥ 5 MiB (except the last), at most 10,000 parts, `md5` checksums, range reads, native `listDirectory()`, recursive `list(limit)` paged up to `limit`, server-side copy, [custom-filename](./amazon-s3.mdx#custom-filename) and [purge](./amazon-s3.mdx#expiration-and-purge) rules, and the same retry defaults (a custom `shouldRetry` is asked first; returning `undefined` falls back to `retryableStatusCodes`). Differences:
+
+- No `getReadUrl()` / `getUploadUrl()` — `files.url()` and `files.signedUploadUrl()` reject with `METHOD_NOT_ALLOWED`. Stream downloads through your handler (`GET /files/:id`) or use `S3Storage` / [`BunS3Storage`](./bun-s3.mdx) where presigned URLs are needed.
+- The startup check is a `HEAD` on the bucket URL; any non-2xx answer, including `404` for a missing bucket, fails it and is retried on the next request.
+- `storage.raw` is the `AwsClient` from `aws4fetch` — use `raw.fetch()` for signed requests the adapter doesn't wrap.
+
+## Using it with the handlers
+
+**Fetch runtimes** — see the [Worker example](#production-example-cloudflare-worker--r2); with Hono:
+
+```ts
+import { Hono } from "hono";
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+
+const app = new Hono();
+const storage = new AwsLightStorage({ bucket: "my-uploads", region: "eu-central-1", accessKeyId: "…", secretAccessKey: "…" });
+
+createStorageHandler(app, { path: "/files", storage, type: "tus" });
+```
+
+**Node**
+
+```ts
+import { createServer } from "node:http";
+import { Rest } from "@visulima/storage/handler/http/node";
+
+const rest = new Rest({ storage });
+
+createServer(rest.handle).listen(3000);
+```
+
+**Files facade**
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("reports/2025.pdf", pdfBytes, { contentType: "application/pdf" });
+const { body } = await files.download("reports/2025.pdf", { range: { start: 0, end: 1023 } });
+```
+
+## Troubleshooting
+
+| Symptom                                                | Cause / fix                                                                                                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `S3 region is not defined` / `accessKeyId is required` | These options have no env fallback — pass them explicitly (e.g. from Worker `env`).                                                                       |
+| `SignatureDoesNotMatch`                                | `region` doesn't match the bucket (use `"auto"` for R2), wrong secret, or the endpoint includes the bucket in an unexpected form. Pass the bare API root. |
+| `NoSuchBucket` / `404` on every request                | Bucket name wrong, or the endpoint points to another account/region. The startup check reports `Failed to access bucket: 404`.                            |
+| `403` for a missing file instead of `404`              | Key lacks `s3:ListBucket` (or the provider's equivalent "list" permission).                                                                               |
+| `No such module "node:stream"` on Workers              | Add `compatibility_flags = ["nodejs_compat"]`.                                                                                                            |
+| `METHOD_NOT_ALLOWED` from `files.url()`                | Not supported by this adapter; see [Behaviour & limits](#behaviour--limits).                                                                              |
+| `409 FILE_CONFLICT` / `400 … at least 5 MiB`           | Same as [S3](./amazon-s3.mdx#troubleshooting): upload chunks sequentially, ≥ 5 MiB each except the last.                                                  |

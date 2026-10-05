@@ -3,7 +3,9 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
-import type { Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-api";
+import { createS3PostPolicy } from "../aws/s3-post-policy";
+import type { UploadPostOptions, UploadPostPolicy } from "../types";
 import type { AwsLightClientConfig } from "./types";
 
 const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
@@ -116,6 +118,20 @@ const toArray = <T>(value: unknown): T[] => {
 };
 
 /**
+ * An error for a failed S3 request, carrying the HTTP status in both shapes the storage reads
+ * (`statusCode` for retries, `$metadata.httpStatusCode` like the AWS SDK) and the S3 error code.
+ */
+const requestError = (message: string, status: number, body: string): Error => {
+    const code = (parseXml(body).Error as Record<string, unknown> | undefined)?.Code;
+
+    return Object.assign(new Error(`${message}: ${String(status)} ${body}`), {
+        $metadata: { httpStatusCode: status },
+        statusCode: status,
+        ...(typeof code === "string" && { code, name: code }),
+    });
+};
+
+/**
  * Adapter that uses aws4fetch to implement S3ApiOperations interface.
  */
 class AwsLightApiAdapter implements S3ApiOperations {
@@ -123,11 +139,25 @@ class AwsLightApiAdapter implements S3ApiOperations {
 
     private readonly bucket: string;
 
-    private readonly endpoint: string;
+    /** Bucket URL without a trailing slash; object keys are appended to it. */
+    private readonly baseUrl: string;
+
+    private readonly credentials: AwsLightClientConfig;
 
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
-        this.endpoint = config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`;
+
+        const endpoint = new URL(config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`);
+        let path = endpoint.pathname.replace(/\/+$/u, "");
+
+        // A custom endpoint is the service root (path-style, as for R2, MinIO and Spaces) unless it
+        // already names the bucket, in its host (virtual-hosted) or as its last path segment.
+        if (!endpoint.hostname.startsWith(`${config.bucket}.`) && path.split("/").pop() !== config.bucket) {
+            path += `/${encodeURIComponent(config.bucket)}`;
+        }
+
+        this.baseUrl = endpoint.origin + path;
+        this.credentials = config;
 
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
@@ -175,7 +205,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to create multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to create multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -232,7 +262,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to upload part: ${response.status} ${text}`);
+            throw requestError("Failed to upload part", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful PUT requests
@@ -250,6 +280,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -273,6 +305,8 @@ ${partsXml}
             body: xmlBody,
             headers: {
                 "Content-Type": "application/xml",
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
             },
             method: "POST",
             signal: options?.signal,
@@ -281,13 +315,20 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to complete multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to complete multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
+
+        // S3 can answer 200 and still fail the request, with an <Error> body; such errors are
+        // server-side (InternalError, SlowDown), so report them as a retryable 500.
+        if (xml.Error !== undefined) {
+            throw requestError("Failed to complete multipart upload", 500, xmlText);
+        }
+
         const result = (xml.CompleteMultipartUploadResult as Record<string, unknown>) || xml;
 
-        const location = (result.Location as string) || `${this.endpoint}/${params.Key}`;
+        const location = (result.Location as string) || this.buildUrl(params.Key);
         const etag = result.ETag as string | undefined;
 
         return {
@@ -307,8 +348,46 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to abort multipart upload: ${response.status} ${text}`);
+            throw requestError("Failed to abort multipart upload", response.status, text);
         }
+    }
+
+    public async listMultipartUploads(
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }> {
+        const queryParams: Record<string, string> = { uploads: "" };
+
+        if (params.KeyMarker !== undefined) {
+            queryParams["key-marker"] = params.KeyMarker;
+        }
+
+        if (params.UploadIdMarker !== undefined) {
+            queryParams["upload-id-marker"] = params.UploadIdMarker;
+        }
+
+        const response = await this.aws.fetch(this.buildUrl("", queryParams), { method: "GET", signal: options?.signal });
+        const xmlText = await response.text();
+
+        if (!response.ok) {
+            throw requestError("Failed to list multipart uploads", response.status, xmlText);
+        }
+
+        const xml = parseXml(xmlText);
+        const result = (xml.ListMultipartUploadsResult as Record<string, unknown> | undefined) ?? xml;
+
+        return {
+            IsTruncated: result.IsTruncated === "true",
+            NextKeyMarker: result.NextKeyMarker as string | undefined,
+            NextUploadIdMarker: result.NextUploadIdMarker as string | undefined,
+            Uploads: toArray<Record<string, unknown>>(result.Upload).map((upload) => {
+                return {
+                    Initiated: upload.Initiated ? new Date(String(upload.Initiated)) : undefined,
+                    Key: upload.Key as string | undefined,
+                    UploadId: upload.UploadId as string | undefined,
+                };
+            }),
+        };
     }
 
     public async listParts(
@@ -330,7 +409,7 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list parts: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list parts", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -350,7 +429,7 @@ ${partsXml}
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -363,6 +442,10 @@ ${partsXml}
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            headers: {
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.Range !== undefined && { Range: params.Range }),
+            },
             method: "GET",
             signal: options?.signal,
         });
@@ -370,7 +453,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to get object: ${response.status} ${text}`);
+            throw requestError("Failed to get object", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful GET requests
@@ -424,7 +507,8 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to head object: ${response.status} ${text}`);
+            // The status in the SDK's shape, so callers can tell a missing object from a failure.
+            throw requestError("Failed to head object", response.status, text);
         }
 
         const contentLength = response.headers.get("Content-Length");
@@ -453,9 +537,10 @@ ${partsXml}
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            ...(params.IfMatch !== undefined && { headers: { "If-Match": params.IfMatch } }),
             method: "DELETE",
             signal: options?.signal,
         });
@@ -463,13 +548,20 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to delete object: ${response.status} ${text}`);
+            throw requestError("Failed to delete object", response.status, text);
         }
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const headers: Record<string, string> = {
+            ...(params.ACL !== undefined && { "x-amz-acl": params.ACL }),
             "x-amz-copy-source": params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
         };
 
         if (params.StorageClass) {
@@ -491,7 +583,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to copy object: ${response.status} ${text}`);
+            throw requestError("Failed to copy object", response.status, text);
         }
     }
 
@@ -533,7 +625,7 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list objects: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list objects", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -554,23 +646,16 @@ ${partsXml}
         };
     }
 
+    /** A SigV4 query-signed `PUT` URL for one part, usable without credentials until it expires. */
     public async getPresignedUrl(params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }): Promise<string> {
-        // aws4fetch doesn't have built-in presigned URL support
-        // For now, we'll construct a URL that can be signed on-demand
-        // Note: This is a limitation - full presigned URL support would require
-        // implementing AWS Signature Version 4 query string authentication
-        const queryParams: Record<string, string> = {
+        const url = this.buildUrl(params.Key, {
             partNumber: String(params.PartNumber),
             uploadId: params.UploadId,
             "X-Amz-Expires": String(params.expiresIn),
-        };
+        });
+        const signed = await this.aws.sign(url, { aws: { signQuery: true }, method: "PUT" });
 
-        const url = this.buildUrl(params.Key, queryParams);
-
-        // TODO: Implement proper presigned URL generation
-        // For now, return the URL - actual signing will happen when the request is made
-        // This means presigned URLs won't work for clientDirectUpload without additional work
-        return url;
+        return signed.url;
     }
 
     public async putObject(params: {
@@ -625,31 +710,60 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw Object.assign(new Error(`Failed to put object: ${response.status} ${text}`), { statusCode: response.status });
+            throw requestError("Failed to put object", response.status, text);
         }
 
         return { ETag: response.headers?.get("ETag")?.replaceAll(/(^"|"$)/g, "") || undefined };
     }
 
     public async checkBucketAccess(_params: { Bucket: string }): Promise<void> {
-        // Simple HEAD request to check bucket access
+        // HEAD on the bucket: a 404 means it doesn't exist, which must fail the startup check.
         const url = this.buildUrl("");
         const response = await this.aws.fetch(url, {
             method: "HEAD",
         });
 
-        if (!response.ok && response.status !== 404) {
+        if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to access bucket: ${response.status} ${text}`);
+            throw requestError("Failed to access bucket", response.status, text);
         }
+    }
+
+    /**
+     * Signs a browser-form POST policy for `key` against this bucket's URL.
+     */
+    public presignPost(key: string, options?: UploadPostOptions): UploadPostPolicy {
+        const { accessKeyId, region, secretAccessKey, service, sessionToken } = this.credentials;
+
+        return createS3PostPolicy({
+            accessKeyId,
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region,
+            secretAccessKey,
+            service,
+            sessionToken,
+            url: `${this.baseUrl}/`,
+        });
     }
 
     /**
      * Builds S3 API URL.
      */
     private buildUrl(key: string, queryParams?: Record<string, string>): string {
-        const url = new URL(key, this.endpoint);
+        const segments = key.split("/");
+
+        // URLs resolve "." and ".." segments (even percent-encoded), so such a key would address another object.
+        if (segments.some((segment) => segment === "." || segment === "..")) {
+            throw new Error(`Object key "${key}" cannot be addressed: it contains a "." or ".." segment`);
+        }
+
+        const url = new URL(`${this.baseUrl}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`);
 
         if (queryParams) {
             for (const [parameterKey, value] of Object.entries(queryParams)) {

@@ -10,6 +10,7 @@ import { TOOL_SCHEMAS, WRITE_TOOL_NAME_SET } from "../internal/schemas";
 import type { AgentsToolOverrides } from "./types";
 
 type ListFilesOutput = Awaited<ReturnType<typeof executors.listFiles>>;
+type SearchFilesOutput = Awaited<ReturnType<typeof executors.searchFiles>>;
 type GetFileMetadataOutput = Awaited<ReturnType<typeof executors.getFileMetadata>>;
 type DownloadFileOutput = Awaited<ReturnType<typeof executors.downloadFile>>;
 type GetFileUrlOutput = Awaited<ReturnType<typeof executors.getFileUrl>>;
@@ -19,6 +20,7 @@ type CopyFileOutput = Awaited<ReturnType<typeof executors.copyFile>>;
 type SignUploadUrlOutput = Awaited<ReturnType<typeof executors.signUploadUrl>>;
 
 type ListFilesParameters = typeof TOOL_SCHEMAS.listFiles.input;
+type SearchFilesParameters = typeof TOOL_SCHEMAS.searchFiles.input;
 type GetFileMetadataParameters = typeof TOOL_SCHEMAS.getFileMetadata.input;
 type DownloadFileParameters = typeof TOOL_SCHEMAS.downloadFile.input;
 type GetFileUrlParameters = typeof TOOL_SCHEMAS.getFileUrl.input;
@@ -27,35 +29,63 @@ type DeleteFileParameters = typeof TOOL_SCHEMAS.deleteFile.input;
 type CopyFileParameters = typeof TOOL_SCHEMAS.copyFile.input;
 type SignUploadUrlParameters = typeof TOOL_SCHEMAS.signUploadUrl.input;
 
-export const agentsListFiles = (files: Files): FunctionTool<UnknownContext, ListFilesParameters, ListFilesOutput> =>
+export const agentsListFiles = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, ListFilesParameters, ListFilesOutput> =>
     tool({
         description: TOOL_SCHEMAS.listFiles.description,
         execute: (input) => executors.listFiles(files, input),
         name: "listFiles",
+        needsApproval,
         parameters: TOOL_SCHEMAS.listFiles.input,
     });
 
-export const agentsGetFileMetadata = (files: Files): FunctionTool<UnknownContext, GetFileMetadataParameters, GetFileMetadataOutput> =>
+export const agentsSearchFiles = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, SearchFilesParameters, SearchFilesOutput> =>
+    tool({
+        description: TOOL_SCHEMAS.searchFiles.description,
+        execute: (input) => executors.searchFiles(files, input),
+        name: "searchFiles",
+        needsApproval,
+        parameters: TOOL_SCHEMAS.searchFiles.input,
+    });
+
+export const agentsGetFileMetadata = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, GetFileMetadataParameters, GetFileMetadataOutput> =>
     tool({
         description: TOOL_SCHEMAS.getFileMetadata.description,
         execute: (input) => executors.getFileMetadata(files, input),
         name: "getFileMetadata",
+        needsApproval,
         parameters: TOOL_SCHEMAS.getFileMetadata.input,
     });
 
-export const agentsDownloadFile = (files: Files): FunctionTool<UnknownContext, DownloadFileParameters, DownloadFileOutput> =>
+export const agentsDownloadFile = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, DownloadFileParameters, DownloadFileOutput> =>
     tool({
         description: TOOL_SCHEMAS.downloadFile.description,
         execute: (input) => executors.downloadFile(files, input),
         name: "downloadFile",
+        needsApproval,
         parameters: TOOL_SCHEMAS.downloadFile.input,
     });
 
-export const agentsGetFileUrl = (files: Files): FunctionTool<UnknownContext, GetFileUrlParameters, GetFileUrlOutput> =>
+export const agentsGetFileUrl = (
+    files: Files,
+    { needsApproval = false }: { needsApproval?: boolean } = {},
+): FunctionTool<UnknownContext, GetFileUrlParameters, GetFileUrlOutput> =>
     tool({
         description: TOOL_SCHEMAS.getFileUrl.description,
         execute: (input) => executors.getFileUrl(files, input),
         name: "getFileUrl",
+        needsApproval,
         parameters: TOOL_SCHEMAS.getFileUrl.input,
     });
 
@@ -114,6 +144,7 @@ export interface AgentsFileTools {
     getFileMetadata: ReturnType<typeof agentsGetFileMetadata>;
     getFileUrl: ReturnType<typeof agentsGetFileUrl>;
     listFiles: ReturnType<typeof agentsListFiles>;
+    searchFiles: ReturnType<typeof agentsSearchFiles>;
     signUploadUrl: ReturnType<typeof agentsSignUploadUrl>;
     uploadFile: ReturnType<typeof agentsUploadFile>;
 }
@@ -163,30 +194,37 @@ export function createAgentsFileTools({
     readOnly = false,
     requireApproval = true,
 }: AgentsFileToolsOptions): AgentsFileTools | ReadOnlyAgentsFileTools {
-    const approval = (name: FileWriteToolName) => {
-        return {
-            needsApproval: resolveApproval(name, requireApproval),
-        };
+    // `needsApproval` goes into the factory: the SDK's `tool()` normalizes it into an approval
+    // function, so spreading a raw boolean over the built tool would break it at run time.
+    const approval = (name: FileToolName): { needsApproval: boolean } => {
+        const override = overrides?.[name]?.needsApproval;
+
+        if (override !== undefined) {
+            return { needsApproval: override };
+        }
+
+        return { needsApproval: WRITE_TOOL_NAME_SET.has(name as FileWriteToolName) && resolveApproval(name as FileWriteToolName, requireApproval) };
     };
 
     const allTools: AgentsFileTools = {
         copyFile: agentsCopyFile(files, approval("copyFile")),
         deleteFile: agentsDeleteFile(files, approval("deleteFile")),
-        downloadFile: agentsDownloadFile(files),
-        getFileMetadata: agentsGetFileMetadata(files),
-        getFileUrl: agentsGetFileUrl(files),
-        listFiles: agentsListFiles(files),
+        downloadFile: agentsDownloadFile(files, approval("downloadFile")),
+        getFileMetadata: agentsGetFileMetadata(files, approval("getFileMetadata")),
+        getFileUrl: agentsGetFileUrl(files, approval("getFileUrl")),
+        listFiles: agentsListFiles(files, approval("listFiles")),
+        searchFiles: agentsSearchFiles(files, approval("searchFiles")),
         signUploadUrl: agentsSignUploadUrl(files, approval("signUploadUrl")),
         uploadFile: agentsUploadFile(files, approval("uploadFile")),
     };
 
     if (overrides) {
         for (const [name, toolOverrides] of Object.entries(overrides)) {
-            if (name in allTools && toolOverrides) {
+            if (name in allTools && toolOverrides?.description !== undefined) {
                 const key = name as keyof AgentsFileTools;
 
                 Object.assign(allTools, {
-                    [key]: { ...allTools[key], ...toolOverrides },
+                    [key]: { ...allTools[key], description: toolOverrides.description },
                 });
             }
         }

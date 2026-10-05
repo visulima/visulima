@@ -1,8 +1,6 @@
 import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 
-import mime from "mime";
-
 import type { BaseStorage } from "../storage/storage";
 import type { File, FileQuery, FileReturn } from "../storage/utils/file";
 import { NoOpCache } from "../utils/cache";
@@ -18,7 +16,7 @@ import type {
     VideoTransformerConfig,
     VideoTransformResult,
 } from "./types";
-import { isKnownContentType } from "./utils";
+import { getContentTypeFromFormat, getFormatFromContentType, isKnownContentType, sourceVersion } from "./utils";
 import ValidationError from "./validation-error";
 
 /**
@@ -245,7 +243,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Check if we should save/load transformed files from storage
         if (this.config.saveTransformedFiles && this.hasTransformations(parsedQuery)) {
-            const transformedFileId = this.generateTransformedFileId(fileId, parsedQuery, mediaType);
+            const transformedFileId = this.generateTransformedFileId(fileId, parsedQuery, mediaType, sourceVersion(file));
 
             try {
                 // Try to get existing transformed file
@@ -302,7 +300,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
 
         // Save transformed file to storage if enabled and transformations were applied
         if (this.config.saveTransformedFiles && this.hasTransformations(parsedQuery)) {
-            await this.saveTransformedFile(result, fileId, parsedQuery, mediaType);
+            await this.saveTransformedFile(result, fileId, parsedQuery, mediaType, sourceVersion(file));
         }
 
         return result;
@@ -600,13 +598,14 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Validate specific parameter values
-        if (query.fit && !["contain", "cover", "fill", "inside", "outside"].includes(query.fit)) {
+        // mediabunny resizes with fill, contain or cover only.
+        if (query.fit && !["contain", "cover", "fill"].includes(query.fit)) {
             throw new ValidationError(
-                `Invalid fit value: "${query.fit}". Supported values: "cover", "contain", "fill", "inside", "outside"`,
+                `Invalid fit value for video: "${query.fit}". Supported values: "cover", "contain", "fill"`,
                 "INVALID_FIT_VALUE",
                 "video",
                 ["fit"],
-                ["cover", "contain", "fill", "inside", "outside"],
+                ["cover", "contain", "fill"],
             );
         }
 
@@ -677,11 +676,12 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @param originalFileId The original file identifier.
      * @param query The transformation query parameters.
      * @param mediaType The media type (image, video, audio).
+     * @param version Fingerprint of the original (see `sourceVersion`), so a replaced original gets a fresh id.
      * @returns Unique deterministic identifier for the transformed file.
      * @private
      */
     // eslint-disable-next-line class-methods-use-this
-    private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string): string {
+    private generateTransformedFileId(originalFileId: string, query: MediaTransformQuery, mediaType: string, version: string): string {
         // Create a deterministic hash of the transformation parameters
         const transformParameters = Object.keys(query)
             .filter((key) => query[key as keyof MediaTransformQuery] !== undefined)
@@ -689,7 +689,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             .map((key) => `${key}:${query[key as keyof MediaTransformQuery]}`)
             .join("|");
 
-        const hashInput = `${originalFileId}|${mediaType}|${transformParameters}`;
+        const hashInput = `${originalFileId}|${version}|${mediaType}|${transformParameters}`;
         // 64 bits of cache-key entropy gave a 50% collision chance at ~5B entries (birthday bound) but
         // — more importantly — under attacker-controlled inputs a 64-bit prefix is well within
         // brute-force reach. 128 bits is comfortably collision-resistant while keeping the file id short.
@@ -716,10 +716,11 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      * @returns Media transformation result with metadata.
      * @private
      */
+    // eslint-disable-next-line class-methods-use-this
     private createMediaTransformResult(storedFile: TFileReturn, mediaType: string, originalFile: TFileReturn): MediaTransformResult {
         const baseResult = {
             buffer: storedFile.content,
-            format: this.getFormatFromContentType(storedFile.contentType || ""),
+            format: getFormatFromContentType(storedFile.contentType) ?? "",
             mediaType: mediaType as "image" | "video" | "audio",
             originalFile,
             size: storedFile.content.length,
@@ -762,35 +763,24 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
     }
 
     /**
-     * Extracts format from content type.
-     * @param contentType MIME content type string.
-     * @returns Format string extracted from content type.
-     * @private
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private getFormatFromContentType(contentType: string): string {
-        if (!contentType) {
-            return "";
-        }
-
-        // Use mime package to get extension from content type
-        const extension = mime.getExtension(contentType);
-
-        return extension || "application/octet-stream";
-    }
-
-    /**
      * Saves transformed file to storage.
      * @param result The transformation result to save.
      * @param originalFileId The original file identifier.
      * @param query The transformation query parameters.
      * @param mediaType The media type (image, video, audio).
+     * @param version Fingerprint of the original the transform was made from.
      * @returns Promise that resolves when file is saved.
      * @private
      */
-    private async saveTransformedFile(result: MediaTransformResult, originalFileId: string, query: MediaTransformQuery, mediaType: string): Promise<void> {
+    private async saveTransformedFile(
+        result: MediaTransformResult,
+        originalFileId: string,
+        query: MediaTransformQuery,
+        mediaType: string,
+        version: string,
+    ): Promise<void> {
         try {
-            const transformedFileId = this.generateTransformedFileId(originalFileId, query, mediaType);
+            const transformedFileId = this.generateTransformedFileId(originalFileId, query, mediaType, version);
 
             // Create metadata for the transformed file
             const metadata: Record<string, any> = {
@@ -823,7 +813,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             // land on disk / in the bucket and the cache lookup later sees a
             // zero-byte object.
             const created = await this.storage.create({
-                contentType: mime.getType(result.format) ?? undefined,
+                contentType: getContentTypeFromFormat(result.format, result.mediaType),
                 id: transformedFileId,
                 metadata,
                 originalName: `${transformedFileId}.${result.format}`,
@@ -993,17 +983,41 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
                 });
             }
 
+            for (const type of ["blur", "flatten", "flip", "flop", "gamma", "greyscale", "negate", "normalise", "sharpen", "unflatten"] as const) {
+                if (query[type]) {
+                    steps.push({ options: {}, type });
+                }
+            }
+
+            if (query.median) {
+                steps.push({ options: { size: query.median }, type: "median" });
+            }
+
+            if (query.threshold !== undefined) {
+                steps.push({ options: { threshold: query.threshold }, type: "threshold" });
+            }
+
+            const { brightness, hue, lightness, saturation } = query;
+
+            if (brightness !== undefined || hue !== undefined || lightness !== undefined || saturation !== undefined) {
+                steps.push({ options: { brightness, hue, lightness, saturation }, type: "modulate" });
+            }
+
             if (query.format) {
                 steps.push({
                     options: {
+                        effort: query.effort,
                         format: query.format,
+                        lossless: query.lossless,
                         quality: query.quality,
                     },
                     type: "format",
                 });
-            } else if (query.quality) {
+            } else if (query.quality || query.lossless || query.effort !== undefined) {
                 steps.push({
                     options: {
+                        effort: query.effort,
+                        lossless: query.lossless,
                         quality: query.quality,
                     },
                     type: "quality",
@@ -1012,7 +1026,7 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Apply transformations
-        const result = steps.length > 0 ? await this.imageTransformer!.transform(fileId, steps) : await this.imageTransformer!.transform(fileId, []); // No transformations
+        const result = await this.imageTransformer!.transform(fileId, steps);
 
         // Convert to unified result format
         return this.convertImageResult(result);
@@ -1169,63 +1183,16 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             return this.parseURLSearchParams(query);
         }
 
-        const transformQuery: MediaTransformQuery = query;
+        // A record (e.g. the handlers' request query) carries strings like "true"; parse it exactly like a URL query.
+        const parameters = new URLSearchParams();
 
-        if (query.left) {
-            transformQuery.left = Number.parseInt(query.left, 10);
+        for (const [key, value] of Object.entries(query)) {
+            if (value !== undefined) {
+                parameters.set(key, String(value));
+            }
         }
 
-        if (query.top) {
-            transformQuery.top = Number.parseInt(query.top, 10);
-        }
-
-        if (query.cropWidth) {
-            transformQuery.cropWidth = Number.parseInt(query.cropWidth, 10);
-        }
-
-        if (query.cropHeight) {
-            transformQuery.cropHeight = Number.parseInt(query.cropHeight, 10);
-        }
-
-        if (query.angle) {
-            transformQuery.angle = Number.parseInt(query.angle, 10);
-        }
-
-        if (query.quality) {
-            transformQuery.quality = Number.parseInt(query.quality, 10);
-        }
-
-        // Parse image/video parameters
-        if (query.width) {
-            transformQuery.width = Number.parseInt(query.width, 10);
-        }
-
-        if (query.height) {
-            transformQuery.height = Number.parseInt(query.height, 10);
-        }
-
-        if (query.bitrate) {
-            transformQuery.bitrate = Number.parseInt(query.bitrate, 10);
-        }
-
-        if (query.frameRate) {
-            transformQuery.frameRate = Number.parseInt(query.frameRate, 10);
-        }
-
-        if (query.keyFrameInterval) {
-            transformQuery.keyFrameInterval = Number.parseInt(query.keyFrameInterval, 10);
-        }
-
-        // Parse audio parameters
-        if (query.numberOfChannels) {
-            transformQuery.numberOfChannels = Number.parseInt(query.numberOfChannels, 10);
-        }
-
-        if (query.sampleRate) {
-            transformQuery.sampleRate = Number.parseInt(query.sampleRate, 10);
-        }
-
-        return transformQuery;
+        return this.parseURLSearchParams(parameters);
     }
 
     /**
@@ -1270,12 +1237,17 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             query.height = parameters.get("height") ? Number.parseInt(parameters.get("height") as string, 10) : undefined;
         }
 
-        if (parameters.has("fit")) {
-            const fitValue = parameters.get("fit");
+        // Kept as given: `validateQueryParameters` answers unsupported values with a ValidationError.
+        if (parameters.get("fit")) {
+            query.fit = parameters.get("fit") as MediaTransformQuery["fit"];
+        }
 
-            if (fitValue && ["contain", "cover", "fill", "inside", "outside"].includes(fitValue)) {
-                query.fit = fitValue as "cover" | "contain" | "fill" | "inside" | "outside";
-            }
+        if (parameters.has("lossless")) {
+            query.lossless = this.parseBooleanParameter(parameters.get("lossless"));
+        }
+
+        if (parameters.get("effort")) {
+            query.effort = Number.parseInt(parameters.get("effort") as string, 10);
         }
 
         if (parameters.has("position")) {
@@ -1439,13 +1411,8 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
         }
 
         // Parse video parameters
-        if (parameters.has("codec")) {
-            const codecValue = parameters.get("codec");
-            const validCodecs = ["avc", "hevc", "vp8", "vp9", "av1", "aac", "opus", "mp3", "vorbis", "flac"];
-
-            if (codecValue && validCodecs.includes(codecValue)) {
-                query.codec = codecValue as "avc" | "hevc" | "vp8" | "vp9" | "av1" | "aac" | "opus" | "mp3" | "vorbis" | "flac";
-            }
+        if (parameters.get("codec")) {
+            query.codec = parameters.get("codec") as MediaTransformQuery["codec"];
         }
 
         if (parameters.has("bitrate")) {
@@ -1556,7 +1523,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
             query.removeAlpha ||
             query.ensureAlpha ||
             query.format ||
-            query.quality
+            query.quality ||
+            query.lossless ||
+            query.effort !== undefined
         );
     }
 

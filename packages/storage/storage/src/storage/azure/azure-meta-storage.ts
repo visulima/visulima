@@ -1,7 +1,7 @@
 import type { BlobGetPropertiesResponse, BlobItem, BlobServiceClient, ContainerClient, Metadata } from "@azure/storage-blob";
 
 import { ERRORS, throwErrorCode } from "../../utils/errors";
-import MetaStorage, { setMetaVersion } from "../meta-storage";
+import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import { createAzureClient } from "./azure-client";
@@ -38,19 +38,13 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
             throw new Error("Missing required parameter: Azure container name.");
         }
 
-        this.containerClient = this.client.getContainerClient(metaConfig.containerName);
+        this.containerClient = this.client.getContainerClient(containerName);
     }
 
     public override async get(id: string): Promise<T> {
         const appendBlobClient = this.containerClient.getAppendBlobClient(this.getMetaName(id));
 
-        let propertyData: BlobGetPropertiesResponse;
-
-        try {
-            propertyData = await appendBlobClient.getProperties();
-        } catch {
-            throw throwErrorCode(ERRORS.UNKNOWN_ERROR);
-        }
+        const propertyData: BlobGetPropertiesResponse = await appendBlobClient.getProperties().catch(rethrowNotFound);
 
         if (!propertyData.metadata) {
             throw throwErrorCode(ERRORS.FILE_NOT_FOUND);
@@ -159,7 +153,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
         return { [FILE_KEY]: encodeURIComponent(JSON.stringify(transformedMetadata)) };
     }
 
-    public async list(): Promise<T[]> {
+    public override async list(): Promise<T[]> {
         const blobs: BlobItem[] = [];
         const iterator = this.containerClient.listBlobsFlat({
             prefix: this.prefix,

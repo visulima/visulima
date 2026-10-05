@@ -4,7 +4,7 @@ import SftpClient from "ssh2-sftp-client";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import { collectStream, posixDirname, trimSlashes } from "../utils/remote";
@@ -50,11 +50,13 @@ const toAbortError = (reason: unknown): Error => {
  * not pool connections.
  *
  * **Limitations**:
- * - `write()` buffers the full part in memory before uploading (no remote append), so chunked uploads overwrite rather than append.
+ * - `write()` buffers the full part in memory before uploading (no remote append), so only a whole-file write at offset 0 is accepted; chunked writes are rejected with `METHOD_NOT_ALLOWED`.
  * - `getReadUrl` / `getUploadUrl` are not supported — SFTP has no signed-URL concept.
  */
 class SftpStorage extends BaseStorage<SftpFile> {
     public static override readonly name: string = "sftp";
+
+    public override readonly storageKind: string = "sftp";
 
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
@@ -69,10 +71,14 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
     private readonly rootFolderPath: string;
 
+    /** An absolute `rootFolderPath` ("/srv/uploads") stays absolute; a relative one resolves against the home directory. */
+    private readonly absoluteRoot: boolean;
+
     public constructor(config: SftpStorageOptions) {
         super(config);
 
         this.connection = config.connection;
+        this.absoluteRoot = config.rootFolderPath?.startsWith("/") ?? false;
         this.rootFolderPath = trimSlashes(config.rootFolderPath ?? "");
         this.meta = config.metaStorage ?? new SftpMetaStorage(config.metaStorageConfig);
 
@@ -88,15 +94,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
-
-                if (existing.status === "completed") {
-                    return existing;
-                }
-            } catch {
-                // new upload
-            }
+            // Writes go out in one request, so nothing is resumed: a create replaces the stored upload.
+            // Its record is read anyway, so a meta store that fails never has the upload written over.
+            await this.findMeta(file.id);
 
             file.bytesWritten = 0;
             file.status = getFileStatus(file);
@@ -349,6 +349,25 @@ class SftpStorage extends BaseStorage<SftpFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        const stats = await this.runOperation(options, (signal) =>
+            this.run(signal, async (client) => {
+                try {
+                    return await client.stat(path);
+                } catch (error) {
+                    if (isNotFoundError(error)) {
+                        return undefined;
+                    }
+
+                    throw error;
+                }
+            }),
+        );
+
+        return stats === undefined ? undefined : { extra: { path }, size: stats.size };
+    }
+
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
             let file: SftpFile;
@@ -480,7 +499,7 @@ class SftpStorage extends BaseStorage<SftpFile> {
             return "";
         }
 
-        return this.rootFolderPath.startsWith("/") ? `/${parts.join("/")}` : parts.join("/");
+        return this.absoluteRoot ? `/${parts.join("/")}` : parts.join("/");
     }
 
     private pathToKey(path: string): string {

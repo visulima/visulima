@@ -19,6 +19,7 @@ export enum ERRORS {
     INVALID_RANGE = "InvalidRange",
     INVALID_TYPE = "Invalidtype",
     METHOD_NOT_ALLOWED = "MethodNotAllowed",
+    PRECONDITION_FAILED = "PreconditionFailed",
     READ_ONLY = "ReadOnly",
     REQUEST_ABORTED = "RequestAborted",
     REQUEST_ENTITY_TOO_LARGE = "RequestEntityTooLarge",
@@ -60,6 +61,7 @@ export const ErrorMap: ErrorResponses<ERRORS> = (() => {
         InvalidRange: [400, "Invalid or missing content-range header"],
         Invalidtype: [400, 'Invalid or missing "content-type" header'],
         MethodNotAllowed: [405, "Method not allowed"],
+        PreconditionFailed: [412, "Precondition failed"],
         ReadOnly: [403, "Storage instance is read-only"],
         RequestAborted: [499, "Request aborted"],
         RequestEntityTooLarge: [413, "Request entity too large"],
@@ -193,6 +195,9 @@ export const mapStatusToErrorCode = (status?: number): ERRORS => {
         }
         case 410: {
             return ERRORS.GONE;
+        }
+        case 412: {
+            return ERRORS.PRECONDITION_FAILED;
         }
         case 413: {
             return ERRORS.REQUEST_ENTITY_TOO_LARGE;

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Azure Blob Storage is Microsoft's object storage solution for the cloud. Blob Storage is optimized for storing massive amounts of unstructured data, such as text or binary data. Blob Storage is ideal for serving images with on-demand transformations and works seamlessly with Visulima upload's image processing capabilities.
+`AzureStorage` stores every upload as a block blob in one container. Each chunk of a resumable upload (TUS `PATCH`, chunked REST) is staged as one block, and the ordered block list is committed when the last byte arrives. Upload metadata lives next to the blobs as `<id>.META` sidecar blobs in the same container by default. Read and upload URLs are SAS URLs.
 
 ## Installation
 
@@ -20,112 +20,176 @@ yarn add @azure/storage-blob
 pnpm add @azure/storage-blob
 ```
 
-## Usage
+Add `@azure/identity` as well if you authenticate with Microsoft Entra ID (`DefaultAzureCredential`, managed identity).
 
-```ts
-import { LRUCache } from "lru-cache";
-import { AzureStorage } from "@visulima/storage/provider/azure";
-import ImageTransformer from "@visulima/storage/transformer/image";
+## Provider setup
 
-const storage = new AzureStorage({
-    containerName: "upload",
-    connectionString: "your config",
-    maxUploadSize: "1GB",
-    logger: console,
-});
+1. **Create a storage account** (StorageV2 / general-purpose v2) and a **container**, e.g. `uploads`. Leave the container's public access level at _Private_ unless you want anonymous reads.
+2. **Pick an auth method.** The adapter tries them in this order; the first one found wins:
 
-// Initialize cache for transformed images
-const cache = new LRUCache({
-    max: 1000, // Maximum number of cached items
-    ttl: 3600000, // 1 hour in milliseconds
-});
+| Method                       | Where to get it                                                                     | Can mint SAS URLs?                         |
+| ---------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------ |
+| Connection string            | Storage account → _Security + networking → Access keys_                             | Only if it contains `AccountKey=`          |
+| Account name + key           | Same page (`key1` / `key2`)                                                         | Yes (service SAS)                          |
+| Microsoft Entra `credential` | An app registration, managed identity or `az login`, used through `@azure/identity` | Yes (user delegation SAS), unless disabled |
+| Pre-issued SAS token         | Storage account → _Shared access signature_, or `az storage account generate-sas`   | No: the token is appended as-is            |
+| Anonymous (account/endpoint) | Container set to public access                                                      | Read URLs only, no uploads                 |
 
-// Initialize image transformer for on-demand transformations
-const imageTransformer = new ImageTransformer(storage, {
-    cache,
-    maxImageSize: 10 * 1024 * 1024, // 10MB
-    cacheTtl: 3600, // 1 hour
-});
+3. **Grant the minimum access.**
+    - **Microsoft Entra (recommended):** assign **Storage Blob Data Contributor** on the container. It covers reading, writing, deleting and listing blobs and the sidecars. To mint read/upload URLs the principal also needs `Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey/action`, which is account-scoped: add **Storage Blob Delegator** on the storage account when the contributor role is scoped to the container only.
+    - **SAS token:** issue an account SAS for the Blob service (`ss=b`), resource types container + object (`srt=co`) and permissions `racwdl` (read, add, create, write, delete, list). The adapter reads the container properties on startup and lists the container, so an object-only SAS isn't enough.
+    - **Account key / connection string:** grants full account access. Keep it server-side.
 
-// Upload a file
-const file = await storage.put(fileBuffer, { filename: "image.jpg" });
+### CORS
 
-// Transform the uploaded image
-const thumbnail = await imageTransformer.resize(file.id, {
-    width: 300,
-    height: 200,
-    fit: "cover",
-    quality: 80,
-});
+Configure CORS on the **Blob service** only when browsers talk to Azure directly: a `PUT` to a URL from `getUploadUrl()`, or a cross-origin `fetch` of a URL from `getReadUrl()`. Uploads through your own TUS/REST/multipart handler don't need it.
+
+```sh
+az storage cors add --account-name <account> --services b \
+  --methods GET HEAD PUT OPTIONS \
+  --origins https://app.example.com \
+  --allowed-headers '*' \
+  --exposed-headers etag content-length \
+  --max-age 3600
 ```
 
-## Image Transformations
+The browser `PUT` must send `x-ms-blob-type: BlockBlob` (and `x-ms-blob-content-type` to set the stored content type). The SAS can't pin either one.
 
-Azure Blob Storage integrates seamlessly with Visulima upload's image transformation features:
+### Lifecycle
 
-```ts
-// Resize images on-demand
-const resized = await imageTransformer.resize("file-id", {
-    width: 800,
-    height: 600,
-    fit: "cover",
-});
-
-// Convert formats for better performance
-const webp = await imageTransformer.transform("file-id", {
-    format: "webp",
-    quality: 85,
-});
-
-// Crop images
-const cropped = await imageTransformer.crop("file-id", {
-    width: 400,
-    height: 300,
-    left: 100,
-    top: 50,
-});
-```
+Azure discards uncommitted blocks of an abandoned upload by itself after about a week. The zero-byte placeholder blob that `create` writes, and its `.META` sidecar, are only removed when you configure [`expiration`](#behaviour--limits) or delete the upload. Don't add a lifecycle rule that deletes `*.META` blobs: completed uploads keep their sidecar, and the adapter uses it to resolve names.
 
 ## Configuration
 
-| Name             | Type   | Description                                              | Default |
-| :--------------- | :----- | :------------------------------------------------------- | :------ |
-| containerName    | string | The name of the container to use                         |         |
-| connectionString | string | The connection string to use to connect to Azure Storage |         |
-| maxUploadSize    | string | The maximum size of the file to upload                   |         |
-| logger           | Logger | The logger to use                                        |         |
+```ts
+import { AzureStorage } from "@visulima/storage/provider/azure";
 
-## Performance Considerations
-
-1. **CDN Integration**: Use Azure CDN for global content delivery
-2. **Caching**: Enable transformation caching to reduce compute costs
-3. **Access Tiers**: Choose appropriate access tiers (Hot, Cool, Archive)
-4. **Shared Access Signatures**: Use SAS tokens for secure temporary access
-
-## CDN Integration
-
-For optimal performance, integrate with Azure CDN:
+// Minimal: shared key from the environment (AZURE_STORAGE_ACCOUNT + AZURE_STORAGE_ACCOUNT_KEY)
+const storage = new AzureStorage({ containerName: "uploads" });
+```
 
 ```ts
-// Use Azure CDN for transformed images
-const cdnUrl = `https://your-cdn.azureedge.net/upload/${fileId}?width=500&height=500&fit=cover&quality=80`;
+import { DefaultAzureCredential } from "@azure/identity";
+import { AzureStorage } from "@visulima/storage/provider/azure";
 
-// Or generate SAS URLs for private containers
-const sasUrl = await storage.getSasUrl(fileId, {
-    expires: Date.now() + 3600000, // 1 hour
-    permissions: "r", // read-only
-    transform: {
-        width: 500,
-        height: 500,
-        fit: "cover",
-        format: "webp",
-    },
+// Production: managed identity, user delegation SAS, limits and cleanup
+const storage = new AzureStorage({
+    accountName: process.env.AZURE_STORAGE_ACCOUNT,
+    containerName: "uploads",
+    credential: new DefaultAzureCredential(),
+    root: "tenant-a",
+    maxUploadSize: "5GB",
+    allowMIME: ["image/*", "video/*", "application/pdf"],
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    retryConfig: { maxRetries: 5 },
+    logger: console,
 });
 ```
 
-## Cost Optimization
+| Option                 | Type                                                 | Default                                              | Description                                                                                                           |
+| ---------------------- | ---------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `containerName`        | `string`                                             | `AZURE_STORAGE_CONTAINER`                            | Container that holds the blobs (and, by default, the metadata sidecars). Required, from the option or the variable.   |
+| `connectionString`     | `string`                                             | `AZURE_STORAGE_CONNECTION_STRING`                    | Full connection string. Takes precedence over every other auth option.                                                |
+| `accountName`          | `string`                                             | `AZURE_STORAGE_ACCOUNT`                              | Account name. Builds the endpoint `https://<account>.blob.core.windows.net` when `endpoint` is not set.               |
+| `accountKey`           | `string`                                             | `AZURE_STORAGE_ACCOUNT_KEY`                          | Shared key. Needs `accountName`.                                                                                      |
+| `credential`           | `TokenCredential`                                    | —                                                    | Microsoft Entra credential (e.g. `DefaultAzureCredential`). Needs `accountName` or `endpoint`.                        |
+| `useUserDelegationSas` | `boolean`                                            | `true` with `credential`                             | Set `false` to use a `credential` without minting user delegation SAS URLs (`getReadUrl`/`getUploadUrl` then reject). |
+| `sasToken`             | `string`                                             | `AZURE_STORAGE_SAS_TOKEN`                            | Pre-issued SAS token, with or without a leading `?`. Needs `accountName` or `endpoint`.                               |
+| `endpoint`             | `string`                                             | `https://<accountName>.blob.core.windows.net`        | Custom blob endpoint (Azurite, sovereign clouds, private endpoints).                                                  |
+| `root`                 | `string`                                             | `""`                                                 | Prefix prepended to every blob name, e.g. `tenant-a` stores `tenant-a/<name>`. Metadata sidecars are not prefixed.    |
+| `metaStorageConfig`    | `AzureMetaStorageOptions \| LocalMetaStorageOptions` | sidecars in `containerName`                          | Where upload metadata lives, see [Metadata storage](#metadata-storage).                                               |
+| `retryConfig`          | `RetryConfig`                                        | 3 retries, 1 s → 30 s backoff, 408/429/5xx + network | Merged over the defaults.                                                                                             |
 
-1. **Lifecycle Management**: Automatically move old transformations to cooler tiers
-2. **Access Patterns**: Use appropriate access tiers based on transformation frequency
-3. **Caching Strategy**: Cache frequently requested transformations
-4. **Compression**: Use efficient formats to reduce storage and bandwidth costs
+All adapters also take the shared `BaseStorageOptions`: `allowMIME` (default `["*/*"]`), `maxUploadSize` (`"5TB"`), `maxMetadataSize` (`"8MB"`), `filename`, `fileNameValidation`, `assetFolder`, `expiration`, `metaStorage`, `cache`, `logger`, `metrics`, `validation`, `useRelativeLocation` and the `onCreate` / `onUpdate` / `onComplete` / `onDelete` / `onError` hooks.
+
+## Metadata storage
+
+Every upload has a metadata record (size, offset, content type, user metadata, status). By default `AzureStorage` keeps it as an append blob named `<id>.META` in the same container, with the record JSON-encoded in the blob's metadata. The adapter reuses its own authenticated client for this.
+
+- **Multi-instance deployments work out of the box**: every instance reads the same sidecars. Concurrent chunk writes are merged with `If-Match` ETag conditions.
+- **Finished uploads keep their record.** It maps the upload ID to the stored blob name, so don't delete sidecars by hand or with a lifecycle rule.
+- `list()` skips the `.META` sidecars.
+
+Move metadata elsewhere with `metaStorageConfig`:
+
+```ts
+// A separate container (it must exist); auth options here switch to a different account
+new AzureStorage({ containerName: "uploads", metaStorageConfig: { containerName: "uploads-meta" } });
+
+// Local disk: only for single-instance deployments, or a directory every instance shares
+new AzureStorage({ containerName: "uploads", metaStorageConfig: { directory: "/var/lib/uploads-meta" } });
+```
+
+`metaStorageConfig` also accepts `prefix` (default `""`) and `suffix` (default `".META"`). Pass a ready-made `MetaStorage` instance via `metaStorage` to bring your own store; the container-backed one is exported as `AzureMetaStorage` (the misspelled `AzureSMetaStorage` remains as a deprecated alias).
+
+## Behaviour & limits
+
+| Topic              | Behaviour                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resumable uploads  | Supported, **sequential only**: each chunk must start exactly where the stored upload ends, otherwise it's rejected with `409 FILE_CONFLICT`. A single chunk can be at most 4000 MiB (`413`). `create` writes a zero-byte placeholder blob.                                                                                                           |
+| Checksums          | `md5` only, verified by Azure per block (`Upload-Checksum` → `transactionalContentMD5`). A mismatch answers `CHECKSUM_MISMATCH`.                                                                                                                                                                                                                      |
+| Reads              | `get()` downloads the whole blob into memory. Ranged reads aren't supported (`supportsRange` is `false`), so `download({ range })` rejects with `METHOD_NOT_ALLOWED`.                                                                                                                                                                                 |
+| Read URLs          | `getReadUrl()` mints a read-only SAS (default 1 h). `responseContentDisposition` / `responseContentType` are bound into the SAS; with a pre-issued `sasToken` or anonymous access they're rejected with `BAD_REQUEST`.                                                                                                                                |
+| Upload URLs        | `getUploadUrl()` mints a create/write (`cw`) SAS for a direct `PUT`. `contentType` and `contentLength` are rejected with `BAD_REQUEST`: a SAS can't enforce them. Anonymous access can't upload.                                                                                                                                                      |
+| Listing            | `list(limit)` pages through the container (or `root/`) with `listBlobsFlat`, 1000 per page, recursively. `delimiter` listings are synthesized by the `Files` facade from the full listing.                                                                                                                                                            |
+| Copy / move        | Server-side Copy Blob within the container (signed source URL for Entra/SAS auth). `move` is copy + delete.                                                                                                                                                                                                                                           |
+| Batch delete       | `deleteBatch()` uses the Blob Batch API (256 blobs per request) and falls back to one delete per key if the endpoint is unavailable (e.g. Azurite).                                                                                                                                                                                                   |
+| Custom `filename`  | The blob is stored under the returned name; the metadata record maps the upload ID to it, so `get`/`delete`/`copy` by ID keep working.                                                                                                                                                                                                                |
+| Expiration / purge | `purge()` walks the metadata records, so it only removes this storage's own uploads (blob + sidecar), never other blobs in the container.                                                                                                                                                                                                             |
+| Delete             | `delete()` needs the upload's metadata record; a blob written by other means answers `FILE_NOT_FOUND`.                                                                                                                                                                                                                                                |
+| Conditional ops    | `download` / `head` / `delete` with `ifMatch` and `copy` with `sourceIfMatch`, `ifMatch` or `ifNoneMatch: "*"` go out as access conditions; a failed one (`ConditionNotMet`, 412) answers `PRECONDITION_FAILED`. Conditional uploads reject with `METHOD_NOT_ALLOWED`: `create` stores a placeholder blob, so there is no single commit to condition. |
+| Retries            | Status 408/429/500/502/503/504 and `ECONNRESET`/`ETIMEDOUT`/`ENOTFOUND`/`ECONNREFUSED` are retried. Streamed chunks are never replayed, only in-memory buffers.                                                                                                                                                                                       |
+
+`storage.raw` returns the `BlobServiceClient`.
+
+## Using it with the handlers
+
+```ts
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const tus = new Tus({ storage });
+
+// One mount serves every TUS method on /files and /files/:id
+app.use("/files", tus.handle);
+```
+
+```ts
+import { Hono } from "hono";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const app = new Hono();
+const rest = new Rest({ storage });
+
+app.all("/files", (c) => rest.fetch(c.req.raw));
+app.all("/files/:id", (c) => rest.fetch(c.req.raw));
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("avatars/user-1.png", buffer, { contentType: "image/png" });
+
+const readUrl = await files.url("avatars/user-1.png", { expiresIn: 600 });
+const uploadUrl = await files.signedUploadUrl("incoming/video.mp4", { expiresIn: 900 });
+```
+
+For on-demand image resizing on top of this storage, see [Transformers](../transformers.mdx).
+
+## Troubleshooting
+
+| Symptom                                                            | Cause and fix                                                                                                                                 |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Missing required parameter: Azure container name.`                | Pass `containerName` or set `AZURE_STORAGE_CONTAINER`.                                                                                        |
+| `Missing required Azure credentials…`                              | No connection string, key, credential, SAS token or account name was found. Set one of the options or `AZURE_STORAGE_*` variables.            |
+| `403 AuthorizationPermissionMismatch`                              | The Entra principal lacks a data role. Assign **Storage Blob Data Contributor**; role assignments can take a few minutes to apply.            |
+| `403 AuthorizationFailure` on startup with a SAS token             | The SAS can't read the container properties. Use an account SAS with `srt=co` and `sp=racwdl`, and check its expiry and allowed IPs.          |
+| `getReadUrl()` / `getUploadUrl()` reject with `METHOD_NOT_ALLOWED` | The adapter can't sign: use an account key, a connection string with `AccountKey`, or a `credential` (without `useUserDelegationSas: false`). |
+| User delegation SAS fails with 403                                 | The principal can't call `generateUserDelegationKey`; add **Storage Blob Delegator** on the storage account.                                  |
+| Browser `PUT` to the SAS URL fails with a CORS error               | Add a Blob service CORS rule for your origin with `PUT` and `OPTIONS` (see [CORS](#cors)).                                                    |
+| Browser `PUT` answers `400 MissingRequiredHeader`                  | Send `x-ms-blob-type: BlockBlob`.                                                                                                             |
+| `409` on a `PATCH`                                                 | A chunk was sent out of order or retried at a stale offset. Have the client `HEAD` the upload and resume from the returned offset.            |
+| `413` on a `PATCH`                                                 | A chunk is larger than 4000 MiB, or the file exceeds `maxUploadSize`.                                                                         |

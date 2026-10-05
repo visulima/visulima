@@ -5,7 +5,7 @@ import { request } from "gaxios";
 import { GoogleAuth } from "google-auth-library";
 
 import package_ from "../../../package.json";
-import MetaStorage, { setMetaVersion } from "../meta-storage";
+import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import GCSConfig from "./gcs-config";
@@ -128,7 +128,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
 
         const url = this.getMetaPath(id);
 
-        const { data, headers } = await this.makeRequest<T>({ params: { alt: "media" }, url });
+        const { data, headers } = await this.makeRequest<T>({ params: { alt: "media" }, url }).catch(rethrowNotFound);
 
         if (data.metadata && typeof data.metadata === "string") {
             data.metadata = parseMetadata(data.metadata);
@@ -175,7 +175,7 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
      * @returns Full URL path to the metafile in GCS
      */
     private getMetaPath(id: string): string {
-        return `${this.storageBaseURI}/${this.getMetaName(id)}`;
+        return `${this.storageBaseURI}/${encodeURIComponent(this.getMetaName(id))}`;
     }
 
     private async makeRequest<Data = unknown>(data: GaxiosOptions): Promise<GaxiosResponse<Data>> {

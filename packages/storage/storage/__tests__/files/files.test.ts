@@ -1121,12 +1121,34 @@ describe("transfer(source, dest)", () => {
             return original(...arguments_);
         };
 
-        const result = await transfer(source, destination, { stopOnError: true });
+        await expect(transfer(source, destination, { stopOnError: true })).rejects.toThrow("boom");
 
-        expect(result.errors).toBeDefined();
-        expect(result.errors).toHaveLength(1);
-        // a.txt was transferred before the failure; subsequent keys never ran.
-        expect(result.transferred.length).toBeLessThan(3);
+        // The first key was transferred before the failure; later keys never ran.
+        expect(calls).toHaveLength(2);
+        expect(destinationAdapter.raw.size).toBe(1);
+    });
+
+    it("emits one transfer hook event through the destination", async () => {
+        const onAction = vi.fn();
+        const onError = vi.fn();
+        const source = new Files({ adapter: new MemoryStorage({ initial: { "a.txt": "A" } }) });
+        const destination = new Files({ adapter: new MemoryStorage(), hooks: { onAction, onError } });
+
+        await transfer(source, destination);
+
+        const transferEvents = onAction.mock.calls.map(([event]) => event as HookEvent).filter((event) => event.type === "transfer");
+
+        expect(transferEvents).toHaveLength(1);
+        expect(transferEvents[0]?.keys).toEqual(["a.txt"]);
+        expect(transferEvents[0]?.durationMs).toEqual(expect.any(Number));
+
+        const failingDestination = new Files({ adapter: new MemoryStorage(), hooks: { onError } });
+
+        (failingDestination as { upload: unknown }).upload = () => Promise.reject(new Error("boom"));
+
+        await expect(transfer(source, failingDestination, { stopOnError: true })).rejects.toThrow("boom");
+
+        expect(onError.mock.calls.map(([event]) => (event as HookEvent).type)).toContain("transfer");
     });
 });
 
@@ -1351,9 +1373,12 @@ describe("capabilities", () => {
 
         expect(facade.capabilities).toStrictEqual({
             cacheControl: false,
+            conditional: { copy: true, create: true, delete: true, read: true, replace: true },
             metadata: true,
             range: true,
             readonly: false,
+            resumable: true,
+            signedUploadPost: false,
         });
     });
 
@@ -1567,11 +1592,11 @@ describe("upload control", () => {
         expect(control.state).toBe("aborted");
     });
 
-    it("round-trips through serialize()/from()", () => {
+    it("round-trips through toJSON()/from()", () => {
         const control = new UploadControl({ key: "big.bin", loaded: 42 });
-        const token = control.serialize();
+        const token = control.toJSON();
 
-        expect(token).toStrictEqual({ key: "big.bin", loaded: 42, version: 1 });
+        expect(token).toStrictEqual({ key: "big.bin", loaded: 42, version: 2 });
 
         const restored = UploadControl.from(JSON.stringify(token));
 

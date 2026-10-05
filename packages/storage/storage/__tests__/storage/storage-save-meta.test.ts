@@ -167,6 +167,30 @@ describe("baseStorage saveMeta conditional saves", () => {
         ]);
     });
 
+    it("should not drop a chunk recorded after the caller of update read the record", async () => {
+        expect.assertions(1);
+
+        const storage = new MemoryStorage();
+
+        await storage.saveMeta(chunked());
+
+        // The caller read the record, then another process recorded a chunk.
+        const stale = await storage.getMeta("chunked-id");
+        const other = await storage.getMeta("chunked-id");
+
+        other.metadata = { ...other.metadata, _chunks: [{ length: 10, offset: 20 }] };
+        await storage.saveMeta(other);
+
+        await storage.update({ id: "chunked-id" }, { metadata: { ...stale.metadata, _chunks: [{ length: 10, offset: 0 }] } });
+
+        const stored = await storage.getMeta("chunked-id");
+
+        expect(stored.metadata._chunks).toStrictEqual([
+            { length: 10, offset: 20 },
+            { length: 10, offset: 0 },
+        ]);
+    });
+
     it("should merge within the process for a metadata store without conditional saves", async () => {
         expect.assertions(1);
 

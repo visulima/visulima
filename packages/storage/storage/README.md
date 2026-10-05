@@ -84,9 +84,12 @@ import { Multipart, Rest } from "@visulima/storage/handler/http/node";
 const storage = new DiskStorage({ directory: "./uploads" });
 
 const multipart = new Multipart({ storage });
-app.use("/upload", multipart.handle, (req, res) => {
-    res.json(req.body); // handler writes the stored file metadata to req.body
+// `upload` (unlike `handle`) accepts Express's `next`: once an upload completes it
+// writes the stored file metadata to `req.body` and calls the next middleware.
+app.post("/upload", multipart.upload, (req, res) => {
+    res.json(req.body);
 });
+app.use("/upload", multipart.handle); // GET / DELETE / OPTIONS
 
 const rest = new Rest({ storage });
 app.use("/files", rest.handle);
@@ -154,7 +157,7 @@ Subpaths: `@visulima/storage/ai/{sdk,openai,claude,tanstack}` — Vercel AI SDK,
 - [TUS handler](https://visulima.com/docs/packages/storage/tus-handler) · [Chunked uploads](https://visulima.com/docs/packages/storage/chunked-uploads) · [Authenticated uploads](https://visulima.com/docs/packages/storage/authenticated-file-uploads)
 - [Batch operations](https://visulima.com/docs/packages/storage/batch-operations) · [Retry mechanism](https://visulima.com/docs/packages/storage/retry-mechanism) · [Caching](https://visulima.com/docs/packages/storage/caching)
 - [Error handling](https://visulima.com/docs/packages/storage/error-handling) — `UploadError`, `ERRORS` enum, `wrapStorageError`
-- [Observability](https://visulima.com/docs/packages/storage/observability) — metrics, OpenTelemetry, structured logs
+- [Observability](https://visulima.com/docs/packages/storage/observability) — metrics, OpenTelemetry (`@visulima/storage/metrics`), structured logs
 - [OpenAPI export](https://visulima.com/docs/packages/storage/openapi)
 - [Migration guide](./MIGRATION-GUIDE.md) — upgrade notes, including the security fix that makes HTTP file listing opt-in (`allowList`)
 

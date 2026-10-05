@@ -48,6 +48,7 @@ describe(AzureStorage, () => {
         // Create mock container client
         mockContainerClient = {
             getBlockBlobClient: vi.fn().mockReturnValue(mockBlobClient),
+            listBlobsFlat: vi.fn(),
         } as unknown as ContainerClient;
 
         // Mock BlobServiceClient constructor to return our mock instance
@@ -60,47 +61,6 @@ describe(AzureStorage, () => {
         });
 
         storage = new AzureStorage(options);
-    });
-
-    describe(".exists()", () => {
-        it("should return true when both metadata and Azure blob exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
-
-            // Mock blob exists to return true
-            (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(true);
-
-            const exists = await storage.exists({ id: metafile.id });
-
-            expect(exists).toBe(true);
-        });
-
-        it("should return false when metadata does not exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to throw error (metadata doesn't exist)
-            vi.spyOn(storage, "getMeta").mockRejectedValue(new Error("File not found"));
-
-            const exists = await storage.exists({ id: "non-existent-id" });
-
-            expect(exists).toBe(false);
-        });
-
-        it("should return false when metadata exists but Azure blob does not exist", async () => {
-            expect.assertions(1);
-
-            // Mock getMeta to return metadata
-            vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile });
-
-            // Mock blob exists to return false
-            (mockBlobClient.exists as ReturnType<typeof vi.fn>).mockResolvedValue(false);
-
-            const exists = await storage.exists({ id: metafile.id });
-
-            expect(exists).toBe(false);
-        });
     });
 
     describe(".getCompletedFile()", () => {
@@ -125,12 +85,65 @@ describe(AzureStorage, () => {
         });
 
         it("returns undefined when the blob does not exist", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
-            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("BlobNotFound"));
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("BlobNotFound"), { statusCode: 404 }));
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(mockBlobClient.downloadToBuffer).not.toHaveBeenCalled();
+
+            (mockBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("AuthorizationFailure"), { statusCode: 403 }));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("AuthorizationFailure");
+        });
+    });
+
+    describe(".list()", () => {
+        const listing = (names: string[]): void => {
+            vi.mocked(mockContainerClient.listBlobsFlat).mockReturnValue({
+                byPage: () => {
+                    return {
+                        next: async () => {
+                            return {
+                                value: {
+                                    segment: {
+                                        blobItems: names.map((name) => {
+                                            return { deleted: false, name, properties: { createdOn: new Date(), lastModified: new Date() } };
+                                        }),
+                                    },
+                                },
+                            };
+                        },
+                    };
+                },
+            } as unknown as ReturnType<ContainerClient["listBlobsFlat"]>);
+        };
+
+        it("skips the metadata sidecars stored in the same container", async () => {
+            expect.assertions(1);
+
+            listing(["a.bin", "a.bin.META"]);
+
+            await expect(storage.list()).resolves.toStrictEqual([expect.objectContaining({ id: "a.bin" })]);
+        });
+
+        it("lists under root and assetFolder and returns ids that round-trip", async () => {
+            expect.assertions(3);
+
+            const scoped = new AzureStorage({ ...options, assetFolder: "assets", root: "/tenant/" });
+
+            listing(["tenant/assets/a.bin"]);
+
+            const files = await scoped.list();
+
+            expect(mockContainerClient.listBlobsFlat).toHaveBeenCalledWith(
+                expect.objectContaining({ prefix: "tenant/assets/" }),
+            );
+            expect(files.map((file) => file.id)).toStrictEqual(["a.bin"]);
+
+            await scoped.getCompletedFile("a.bin").catch(() => undefined);
+
+            expect(mockContainerClient.getBlockBlobClient).toHaveBeenLastCalledWith("tenant/assets/a.bin");
         });
     });
 
@@ -163,11 +176,12 @@ describe(AzureStorage, () => {
         });
 
         it("commits the contiguous block chain in offset order with the blob headers on completion", async () => {
-            expect.assertions(5);
+            expect.assertions(6);
 
             vi.spyOn(storage, "getMeta").mockResolvedValue({ ...metafile, bytesWritten: 10, size: 20 });
 
             const deleteMeta = vi.spyOn(storage, "deleteMeta").mockResolvedValue(undefined);
+            const saveMeta = vi.spyOn(storage, "saveMeta").mockImplementation(async (file) => file);
 
             (mockBlobClient.getBlockList as ReturnType<typeof vi.fn>).mockResolvedValue({
                 uncommittedBlocks: [
@@ -189,7 +203,9 @@ describe(AzureStorage, () => {
                     metadata: expect.objectContaining({ originalName: metafile.originalName }),
                 }),
             );
-            expect(deleteMeta).toHaveBeenCalledWith(metafile.id);
+            // Completed uploads keep their metadata.
+            expect(deleteMeta).not.toHaveBeenCalled();
+            expect(saveMeta).toHaveBeenCalledWith(expect.objectContaining({ id: metafile.id, status: "completed" }));
             expect(file.bytesWritten).toBe(20);
         });
 
@@ -535,8 +551,9 @@ describe("azureStorage authentication & signed URLs", () => {
         await storage.exists({ id: "file.txt" });
         await storage.get({ id: "file.txt" });
 
-        expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith("uploads/file.txt");
-        expect(mockContainerClient.getBlockBlobClient).not.toHaveBeenCalledWith("file.txt");
+        // The metadata's stored name, under the asset folder.
+        expect(mockContainerClient.getBlockBlobClient).toHaveBeenCalledWith(`uploads/${metafile.name}`);
+        expect(mockContainerClient.getBlockBlobClient).not.toHaveBeenCalledWith(metafile.name);
     });
 
     it("cannot produce signed URLs from a connection string without an account key", async () => {

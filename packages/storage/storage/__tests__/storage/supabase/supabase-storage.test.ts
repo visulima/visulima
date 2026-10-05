@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import SupabaseStorage from "../../../src/storage/supabase/supabase-storage";
 import type { SupabaseStorageOptions } from "../../../src/storage/supabase/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeBucketApi = () => {
@@ -113,7 +114,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({ data: [{ name: "file.mp4" }], error: null });
 
@@ -132,7 +133,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
@@ -151,14 +152,14 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.remove.mockResolvedValueOnce({
                 data: null,
                 error: { message: "Bucket forbidden" },
             });
 
-            await expect(storage.delete({ id: "file.mp4" })).rejects.toMatchObject({ message: "Bucket forbidden" });
+            await expect(storage.delete({ id: "file.mp4" })).rejects.toMatchObject({ message: expect.stringContaining("Bucket forbidden"), UploadErrorCode: ERRORS.STORAGE_ERROR });
         });
     });
 
@@ -172,7 +173,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.copy.mockResolvedValueOnce({ data: { path: "dest.mp4" }, error: null });
 
@@ -193,7 +194,7 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             bucketApi.move.mockResolvedValueOnce({ data: { path: "renamed.mp4" }, error: null });
 
@@ -225,7 +226,7 @@ describe(SupabaseStorage, () => {
         });
 
         it("returns undefined when the object is missing", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             const storage = new SupabaseStorage({
                 ...(storageOptions as SupabaseStorageOptions),
@@ -233,10 +234,14 @@ describe(SupabaseStorage, () => {
                 client: mockClient as unknown as SupabaseStorageOptions["client"],
             });
 
-            bucketApi.info.mockResolvedValueOnce({ data: null, error: new Error("not found") });
+            bucketApi.info.mockResolvedValueOnce({ data: null, error: Object.assign(new Error("Object not found"), { status: 400, statusCode: "404" }) });
 
             await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
             expect(bucketApi.download).not.toHaveBeenCalled();
+
+            bucketApi.info.mockResolvedValueOnce({ data: null, error: Object.assign(new Error("Unauthorized"), { status: 403, statusCode: "403" }) });
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toThrow("Unauthorized");
         });
     });
 

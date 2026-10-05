@@ -13,19 +13,20 @@ import type { CreateOracleCloudClientParameters } from "./types";
  * `AWS_REGION` (commonly set to an AWS region in dev/CI, which would
  * silently produce a broken endpoint).
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `ORACLE_CLOUD_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `ORACLE_CLOUD_SECRET_ACCESS_KEY`
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `ORACLE_CLOUD_ACCESS_KEY_ID` / `ORACLE_CLOUD_ACCESS_KEY`, then `AWS_ACCESS_KEY_ID`
  * - `ORACLE_CLOUD_NAMESPACE`
  * - `ORACLE_CLOUD_REGION` (e.g. `us-ashburn-1`, `eu-frankfurt-1`)
+ * - `ORACLE_CLOUD_SECRET_ACCESS_KEY` / `ORACLE_CLOUD_SECRET_KEY`, then `AWS_SECRET_ACCESS_KEY`
  */
 const oracleCloud = (parameters?: CreateOracleCloudClientParameters): S3ClientConfig => {
     const accessKeyId =
-        parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.ORACLE_CLOUD_ACCESS_KEY_ID ?? process.env.ORACLE_CLOUD_ACCESS_KEY;
+        parameters?.accessKeyId ?? process.env.ORACLE_CLOUD_ACCESS_KEY_ID ?? process.env.ORACLE_CLOUD_ACCESS_KEY ?? process.env.AWS_ACCESS_KEY_ID;
     const namespace = parameters?.namespace ?? process.env.ORACLE_CLOUD_NAMESPACE;
     const region = parameters?.region ?? process.env.ORACLE_CLOUD_REGION;
     const secretAccessKey =
-        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.ORACLE_CLOUD_SECRET_ACCESS_KEY ?? process.env.ORACLE_CLOUD_SECRET_KEY;
+        parameters?.secretAccessKey ?? process.env.ORACLE_CLOUD_SECRET_ACCESS_KEY ?? process.env.ORACLE_CLOUD_SECRET_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
 
     if (!namespace || !region || !accessKeyId || !secretAccessKey) {
         throw new Error("Missing required parameters for Oracle Cloud Object Storage client.");
