@@ -199,7 +199,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         const max = this.adapter.maxSignedUrlExpiresIn;
 
         if (expiresIn !== undefined && max !== undefined && expiresIn > max) {
-            throwErrorCode(ERRORS.BAD_REQUEST, `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`);
+            throwErrorCode(
+                ERRORS.BAD_REQUEST,
+                `expiresIn ${String(expiresIn)} exceeds the ${String(max)} seconds ${this.adapter.constructor.name} can sign for`,
+            );
         }
     }
 
@@ -393,6 +396,13 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
             BaseStorage.assertSafeId(resolved);
 
             const { size: normalizedSize, stream: source } = await normalizeBody(body, options?.size);
+
+            // The adapter reads the body only after `create`, a network call on most adapters. A body
+            // failing before then emits 'error' with no listener, which crashes the process. The
+            // adapter's read still fails with it, through the stream's errored state.
+            source.on("error", () => {
+                // Reported by the adapter's read
+            });
             const size = options?.size ?? normalizedSize;
 
             const userMetadata = options?.metadata ?? {};
@@ -429,7 +439,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
 
             // With a control, write in parts the adapter records one by one, so another process can
             // resume from the stored offset. A conditional or checksummed upload commits in one write.
-            const resumable = control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
+            const resumable =
+                control !== undefined && this.adapter.supportsResumableWrites && !condition && options?.checksum === undefined && size !== undefined;
 
             if (control?._session && !resumable) {
                 throwErrorCode(
@@ -474,8 +485,9 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                         }
                     });
 
-                    stream.pipe(passthrough);
-                    progressStream = passthrough;
+                    // pipeline (not pipe) so a failing body fails the adapter's read instead of leaving it
+                    // waiting on a stream that never ends, with the error unheard.
+                    progressStream = pipeline(stream, passthrough, () => {});
                 }
 
                 const part: FilePart & { multipart?: MultipartOptions | boolean; onProgress?: UploadProgressCallback } = {
