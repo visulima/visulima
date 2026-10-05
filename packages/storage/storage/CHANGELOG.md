@@ -1,3 +1,9 @@
+## @visulima/storage [2.0.32](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.31...@visulima/storage@2.0.32) (2026-10-05)
+
+### Bug Fixes
+
+* **storage:** merge chunk ranges, narrow method overrides, export parseTusMetadata ([#923](https://github.com/visulima/visulima/issues/923)) ([f1c5d75](https://github.com/visulima/visulima/commit/f1c5d75840b692d1b5eeec7e8073616b35389785))
+
 ## @visulima/storage [2.0.31](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.30...@visulima/storage@2.0.31) (2026-10-05)
 
 ### Bug Fixes
