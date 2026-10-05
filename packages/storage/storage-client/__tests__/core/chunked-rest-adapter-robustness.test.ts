@@ -94,7 +94,7 @@ describe("chunked-rest adapter robustness", () => {
             }
         });
 
-        // Eight chunks drained by four workers.
+        // Eight chunks, the first refused.
         await expect(adapter.upload(new File(["x".repeat(800)], "a.bin"))).rejects.toThrow(/Failed to upload chunk/);
 
         // Give any still-running worker the chance to send its next chunk.
@@ -102,6 +102,75 @@ describe("chunked-rest adapter robustness", () => {
 
         expect(patches().length).toBeLessThanOrEqual(4);
         expect(patches().every(({ signal }) => signal?.aborted)).toBe(true);
+    });
+
+    it("sends one chunk at a time", async () => {
+        expect.assertions(2);
+
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, retry: false });
+        let inFlight = 0;
+        let maxInFlight = 0;
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            switch (init?.method) {
+                case "PATCH": {
+                    inFlight += 1;
+                    maxInFlight = Math.max(maxInFlight, inFlight);
+
+                    return delayed(init, 5, respond()).finally(() => {
+                        inFlight -= 1;
+                    });
+                }
+                case "POST": {
+                    return respond({ "X-Upload-ID": "file-1" });
+                }
+                default: {
+                    return respond({ "X-Upload-Offset": "400" });
+                }
+            }
+        });
+
+        await adapter.upload(new File(["x".repeat(400)], "a.bin"));
+
+        // The server answers a PATCH that overlaps another with 423 Locked, and S3 only appends.
+        expect(patches()).toHaveLength(4);
+        expect(maxInFlight).toBe(1);
+    });
+
+    it("rejects with \"Upload aborted\" when aborted while a chunk is in flight", async () => {
+        expect.assertions(1);
+
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, retry: false });
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            switch (init?.method) {
+                case "PATCH": {
+                    return delayed(init, 1000, respond());
+                }
+                case "POST": {
+                    return respond({ "X-Upload-ID": "file-1" });
+                }
+                default: {
+                    return respond({ "X-Upload-Offset": "0" });
+                }
+            }
+        });
+
+        const uploadPromise = adapter.upload(new File(["x".repeat(200)], "a.bin"));
+
+        await vi.waitFor(
+            () => {
+                if (patches().length === 0) {
+                    throw new Error("no PATCH sent yet");
+                }
+            },
+            { interval: 1 },
+        );
+
+        adapter.abort();
+
+        // Not the fetch's own AbortError.
+        await expect(uploadPromise).rejects.toThrow("Upload aborted");
     });
 
     it("clear() aborts the running upload so it reports no further progress", async () => {

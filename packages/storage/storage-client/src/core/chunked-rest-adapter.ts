@@ -538,8 +538,9 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             pending.push({ endOffset, startOffset });
         }
 
-        // Drain the queue with a bounded worker pool so we never fire every PATCH at once.
-        const CONCURRENCY = 4;
+        // One chunk at a time: the server refuses a PATCH while another one writes the same upload
+        // (423 Locked), and an append-only backend such as S3 needs the chunks in order.
+        const CONCURRENCY = 1;
         let nextIndex = 0;
 
         let completedMeta: Partial<UploadResult> | undefined;
@@ -589,7 +590,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             try {
                 await worker();
             } catch (error) {
-                failure ??= { error };
+                // An abort surfaces as the fetch's own AbortError; report it as the adapter's abort.
+                failure ??= { error: signal.aborted ? new Error("Upload aborted") : error };
                 abortController.abort();
                 flushPauseWaiters();
             }
