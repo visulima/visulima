@@ -1,3 +1,10 @@
+## @visulima/email-verifier [1.0.32](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.31...@visulima/email-verifier@1.0.32) (2026-10-05)
+
+
+### Dependencies
+
+* **lru-cache:** 11.5.2 → 11.5.3
+
 ## @visulima/email-verifier [1.0.31](https://github.com/visulima/visulima/compare/@visulima/email-verifier@1.0.30...@visulima/email-verifier@1.0.31) (2026-10-05)
 
 
