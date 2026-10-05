@@ -82,25 +82,35 @@ export const validateChunk = (chunkOffset: number, chunkLength: number, totalSiz
 };
 
 /**
- * Tracks a chunk in the metadata chunks array (idempotent).
+ * Records a chunk in the chunks array (idempotent), merging overlapping or adjacent ranges.
+ *
+ * The list is stored in the upload's metadata and sent back in `X-Received-Chunks`, and object
+ * metadata is small (S3 allows 2 KiB, Azure and R2 8 KiB). One entry per chunk would outgrow it
+ * after a few dozen chunks and fail the save, so the list holds one range per contiguous run of
+ * bytes. A range keeps its `checksum` until it is extended; a re-sent identical chunk updates it.
  * @param chunks Existing chunks array
  * @param chunkInfo New chunk information to track
- * @returns Updated chunks array
+ * @returns The ranges, sorted by offset
  */
 export const trackChunk = (chunks: ChunkInfo[], chunkInfo: ChunkInfo): ChunkInfo[] => {
-    // Check if this chunk was already uploaded (idempotency)
-    const existingChunk = chunks.find((chunk) => chunk.offset === chunkInfo.offset && chunk.length === chunkInfo.length);
+    const merged: ChunkInfo[] = [];
 
-    if (!existingChunk) {
-        return [...chunks, chunkInfo];
+    // Stable sort, so for an identical chunk the new one comes last and its checksum wins.
+    for (const chunk of [...chunks, chunkInfo].toSorted((a, b) => a.offset - b.offset)) {
+        const last = merged.at(-1);
+
+        if (last === undefined || chunk.offset > last.offset + last.length) {
+            merged.push({ ...chunk });
+        } else if (chunk.offset === last.offset && chunk.length === last.length) {
+            if (chunk.checksum) {
+                last.checksum = chunk.checksum;
+            }
+        } else if (chunk.offset + chunk.length > last.offset + last.length) {
+            merged[merged.length - 1] = { length: chunk.offset + chunk.length - last.offset, offset: last.offset };
+        }
     }
 
-    // Update checksum if provided
-    if (chunkInfo.checksum && existingChunk.checksum !== chunkInfo.checksum) {
-        return chunks.map((chunk) => (chunk.offset === chunkInfo.offset ? { ...chunk, checksum: chunkInfo.checksum } : chunk));
-    }
-
-    return chunks;
+    return merged;
 };
 
 /**

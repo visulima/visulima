@@ -117,7 +117,7 @@ console.log(`Uploaded: ${offset} bytes, Complete: ${complete}`);
 - `X-Chunked-Upload`: Indicates chunked upload mode
 - `X-Upload-Offset`: Current upload offset in bytes
 - `X-Upload-Complete`: "true" when upload is complete, "false" otherwise (on `PATCH` and `HEAD`)
-- `X-Received-Chunks`: JSON array of received chunks `[{ offset, length }]`
+- `X-Received-Chunks`: JSON array of the byte ranges received, `[{ offset, length }]`, sorted by offset. Contiguous chunks are merged into one range, so the list stays short however many chunks an upload takes
 
 ## Complete Example
 
@@ -188,8 +188,8 @@ async function resumeUpload(uploadId: string, file: File, chunkSize = 524288) {
         const start = i * chunkSize;
         const end = Math.min(start + chunkSize, totalSize);
 
-        // Skip already uploaded chunks
-        const chunkUploaded = receivedChunks.some((chunk: { offset: number; length: number }) => chunk.offset === start && chunk.length === end - start);
+        // Skip chunks a received range already covers
+        const chunkUploaded = receivedChunks.some((range: { offset: number; length: number }) => range.offset <= start && range.offset + range.length >= end);
 
         if (chunkUploaded) {
             continue;

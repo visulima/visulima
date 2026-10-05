@@ -101,7 +101,10 @@ describe("fetch RestFetch chunked uploads", () => {
         const storage = new MemoryStorage({ path: "/files" });
         const restHandler = new RestFetch({ storage });
         const created = await restHandler.fetch(
-            new Request(basePath, { headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "10" }, method: "POST" }),
+            new Request(basePath, {
+                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "10" },
+                method: "POST",
+            }),
         );
         const id = created.headers.get("x-upload-id") as string;
         const patch = async (offset: number, body: string, checksum: string): Promise<number> =>
@@ -109,7 +112,12 @@ describe("fetch RestFetch chunked uploads", () => {
                 .fetch(
                     new Request(`${basePath}${id}`, {
                         body,
-                        headers: { "content-length": String(body.length), "content-type": "application/octet-stream", "x-chunk-checksum": checksum, "x-chunk-offset": String(offset) },
+                        headers: {
+                            "content-length": String(body.length),
+                            "content-type": "application/octet-stream",
+                            "x-chunk-checksum": checksum,
+                            "x-chunk-offset": String(offset),
+                        },
                         method: "PATCH",
                     }),
                 )
@@ -349,13 +357,38 @@ describe("fetch RestFetch chunked uploads", () => {
 
         const meta = await storage.getMeta(id);
 
-        expect(meta.metadata._chunks).toHaveLength(4);
+        // Every chunk recorded: a lost one would leave a gap between two ranges.
+        expect(meta.metadata._chunks).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
         expect(meta.status).toBe("completed");
 
         const file = await storage.get({ id });
 
         expect(Buffer.from(file.content).equals(Buffer.from(bytes))).toBe(true);
         expect(file.size).toBe(bytes.byteLength);
+    });
+
+    it("should keep the chunk list one range however many chunks an upload takes", async () => {
+        expect.assertions(4);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const bytes = new Uint8Array(200 * 100).map((_, index) => index % 251);
+        const created = await restHandler.fetch(initChunkedUpload(bytes.byteLength));
+        const id = created.headers.get("x-upload-id") as string;
+        let last: Response | undefined;
+
+        for (let offset = 0; offset < bytes.byteLength; offset += 100) {
+            last = await restHandler.fetch(patchChunk(id, offset, bytes.slice(offset, offset + 100)));
+        }
+
+        // One entry per chunk would outgrow object metadata (S3 allows 2 KiB) after a few dozen.
+        expect(last?.headers.get("x-upload-complete")).toBe("true");
+        expect(JSON.parse(last?.headers.get("x-received-chunks") as string)).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
+
+        const meta = await storage.getMeta(id);
+
+        expect(meta.metadata._chunks).toStrictEqual([{ length: bytes.byteLength, offset: 0 }]);
+        expect(JSON.stringify(meta.metadata).length).toBeLessThan(200);
     });
 
     it("should keep chunk records a slow concurrent write would overwrite (#902)", async () => {
@@ -405,7 +438,7 @@ describe("fetch RestFetch chunked uploads", () => {
 
         const meta = await storage.getMeta(id);
 
-        expect(meta.metadata._chunks).toHaveLength(3);
+        expect(meta.metadata._chunks).toStrictEqual([{ length: 30, offset: 0 }]);
         expect(meta.status).toBe("completed");
     });
 });
