@@ -126,8 +126,8 @@ export class Tus<
     }
 
     /**
-     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
-     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * Applies X-HTTP-Method-Override, which TUS core says the server must use as the request's
+     * method. Only a POST tunnelled to PATCH or DELETE is honoured; see {@link resolveMethodOverride}.
      * @param request Node.js IncomingMessage
      */
     protected override normalizeRequest(request: NodeRequest): void {
@@ -135,7 +135,7 @@ export class Tus<
             return;
         }
 
-        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined, request.method);
+        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined, request.method ?? "");
 
         if (override !== undefined) {
             request.method = override;

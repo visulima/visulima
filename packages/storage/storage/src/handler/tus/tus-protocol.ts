@@ -111,7 +111,7 @@ const OVERRIDABLE_METHODS = new Set(["DELETE", "PATCH"]);
  * @returns The upper-cased method, or undefined when the header is absent or names the request's own method
  * @throws {HttpError} 400 for an override other than `POST` to `PATCH` or `DELETE`
  */
-export const resolveMethodOverride = (header: string | undefined, method: string | undefined): string | undefined => {
+export const resolveMethodOverride = (header: string | undefined, method: string): string | undefined => {
     if (header === undefined || header.trim() === "") {
         return undefined;
     }

@@ -129,8 +129,8 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     }
 
     /**
-     * TUS core: X-HTTP-Method-Override "MUST be interpreted as the request's method by the
-     * Server, if the header is presented. The actual method of the request MUST be ignored."
+     * Applies X-HTTP-Method-Override, which TUS core says the server must use as the request's
+     * method. Only a POST tunnelled to PATCH or DELETE is honoured; see {@link resolveMethodOverride}.
      * @param request Web API Request
      * @returns The request with the overridden method
      */
