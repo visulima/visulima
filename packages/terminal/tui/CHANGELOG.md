@@ -1,3 +1,10 @@
+## @visulima/tui [4.0.29](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.28...@visulima/tui@4.0.29) (2026-10-05)
+
+
+### Dependencies
+
+* **@visulima/string:** upgraded to 3.1.1
+
 ## @visulima/tui [4.0.28](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.27...@visulima/tui@4.0.28) (2026-10-04)
 
 ## @visulima/tui [4.0.27](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.26...@visulima/tui@4.0.27) (2026-10-04)
