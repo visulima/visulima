@@ -203,9 +203,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             // A conditional upload always starts a new multipart upload: S3 evaluates the predicate
             // when the upload completes, against whatever the key holds by then.
             const conditional = hasCondition(options);
-            const existing = conditional ? undefined : await this.findMeta(file.id);
+            const existing = conditional ? undefined : await this.findResumable(file.id);
 
-            if (existing !== undefined && existing.bytesWritten >= 0) {
+            if (existing !== undefined) {
                 return existing;
             }
 

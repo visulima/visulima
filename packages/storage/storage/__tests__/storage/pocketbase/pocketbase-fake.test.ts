@@ -187,7 +187,7 @@ describe("pocketbase against an in-memory collection", () => {
         expect(pb.records.size).toBe(1);
         await expect(storage.getMeta(id)).resolves.toMatchObject({ bytesWritten: 5, metadata: { kept: "yes" }, status: "completed" });
         await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).resolves.toMatchObject({
-            status: "completed",
+            status: "created",
         });
     });
 

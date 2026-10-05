@@ -216,9 +216,9 @@ describe("vercel-blob against an in-memory blob store", () => {
             status: "completed",
         });
         expect(blob.store.size).toBe(1);
-        // create() with the same id hands back the existing upload.
+        // create() with the same id starts a fresh upload that replaces the stored one.
         await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).resolves.toMatchObject({
-            status: "completed",
+            status: "created",
         });
     });
 

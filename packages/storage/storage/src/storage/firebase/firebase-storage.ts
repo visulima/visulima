@@ -129,9 +129,9 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
 
             await this.validate(file);
 
-            const existing = await this.findMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-            if (existing !== undefined && existing.bytesWritten >= 0) {
+            if (existing !== undefined) {
                 return existing;
             }
 

@@ -204,7 +204,7 @@ describe("sftp storage against an in-memory SFTP server", () => {
         expect(server.files.get(`uploads/${id}`)?.body.toString()).toBe("hello");
         await expect(storage.getMeta(id)).resolves.toMatchObject({ bytesWritten: 5, metadata: { owner: "me" }, status: "completed" });
         await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).resolves.toMatchObject({
-            status: "completed",
+            status: "created",
         });
     });
 

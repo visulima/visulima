@@ -92,11 +92,9 @@ class SftpStorage extends BaseStorage<SftpFile> {
 
             await this.validate(file);
 
-            const existing = await this.findMeta(file.id);
-
-            if (existing !== undefined && existing.status === "completed") {
-                return existing;
-            }
+            // Writes go out in one request, so nothing is resumed: a create replaces the stored upload.
+            // Its record is read anyway, so a meta store that fails never has the upload written over.
+            await this.findMeta(file.id);
 
             file.bytesWritten = 0;
             file.status = getFileStatus(file);

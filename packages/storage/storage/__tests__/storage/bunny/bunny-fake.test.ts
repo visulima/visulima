@@ -172,15 +172,14 @@ describe("bunny against an in-memory storage zone", () => {
 
         expect(zone.objects.get(`/${id}`)?.body.toString()).toBe("hello");
         await expect(storage.getMeta(id)).resolves.toMatchObject({ bytesWritten: 5, metadata: { kept: "yes" }, status: "completed" });
-        // A repeated create of the same id answers the stored upload instead of starting over.
+        // A repeated create of the same id starts a fresh upload that replaces the stored one.
         await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).resolves.toMatchObject({
-            status: "completed",
+            status: "created",
         });
-        // A write to a completed upload is a no-op, not a second upload.
         await expect(storage.write({ body: Readable.from([Buffer.from("other")]), contentLength: 5, id, start: 0 })).resolves.toMatchObject({
             status: "completed",
         });
-        expect(zone.objects.get(`/${id}`)?.body.toString()).toBe("hello");
+        expect(zone.objects.get(`/${id}`)?.body.toString()).toBe("other");
     });
 
     it("should refuse a chunked upload, leave nothing stored and still accept the whole file afterwards", async () => {

@@ -187,7 +187,7 @@ class GCStorage extends BaseStorage<GCSFile> {
 
             await this.validate(file);
 
-            const existing = await this.findMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
             if (existing) {
                 // Errors from the resumed session propagate: swallowing them would open a second session for the same upload.

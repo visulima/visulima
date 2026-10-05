@@ -66,15 +66,15 @@ describe("ftp storage against an in-memory FTP server", () => {
         expect(server.files.get(`uploads/${id}`)?.body.toString()).toBe("hello");
         await expect(storage.getMeta(id)).resolves.toMatchObject({ bytesWritten: 5, metadata: { owner: "me" }, status: "completed" });
 
-        // Creating it again returns the finished upload instead of resetting it.
+        // Creating it again starts a fresh upload that replaces the finished one.
         await expect(storage.create({ contentType: "text/plain", id, metadata: {}, originalName: "a.txt", size: 5 })).resolves.toMatchObject({
             id,
-            status: "completed",
+            status: "created",
         });
-        // Writing to a completed upload is a no-op.
-        await expect(storage.write({ body: Readable.from([Buffer.from("x")]), contentLength: 1, id, start: 0 })).resolves.toMatchObject({
-            size: 5,
-        });
+
+        await storage.write({ body: Readable.from([Buffer.from("world")]), contentLength: 5, id, start: 0 });
+
+        expect(server.files.get(`uploads/${id}`)?.body.toString()).toBe("world");
     });
 
     it.each([

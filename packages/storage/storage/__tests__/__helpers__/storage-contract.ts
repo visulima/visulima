@@ -97,6 +97,18 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(storage.exists({ id })).resolves.toBe(true);
         });
 
+        it("should store the new content when a key is uploaded again", async () => {
+            expect.assertions(2);
+
+            const files = new Files({ adapter: backend.createStorage() });
+
+            await files.upload("again.txt", "first");
+            await files.upload("again.txt", "second");
+
+            await expect(textOf(files, "again.txt")).resolves.toBe("second");
+            await expect(files.head("again.txt")).resolves.toHaveProperty("size", 6);
+        });
+
         it.skipIf(skip["copy and move"] !== undefined)("should copy and move an upload", async () => {
             expect.assertions(3);
 

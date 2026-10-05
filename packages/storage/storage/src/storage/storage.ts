@@ -836,6 +836,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
+     * The unfinished upload a `create` under `id` resumes. A completed one is not resumed: the
+     * create starts a fresh upload that replaces it, so re-uploading a key stores the new content.
+     * @param id File ID of the upload.
+     * @returns The unfinished upload's metadata, or `undefined` when there is none to resume.
+     */
+    protected async findResumable(id: string): Promise<TFile | undefined> {
+        const meta = await this.findMeta(id);
+
+        return meta?.status === "completed" ? undefined : meta;
+    }
+
+    /**
      * The name an upload is stored under: the one its metadata records (a custom `filename` differs
      * from the ID), or the ID itself for an object without metadata.
      * @param id File ID of the upload.
