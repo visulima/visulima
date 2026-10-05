@@ -53,7 +53,11 @@ LIVE_TESTS=1 pnpm run test:live
 docker compose -f docker-compose.live.yml down --volumes
 ```
 
-Every test gets a fresh bucket, container or directory. The connection settings default to the compose services and can be pointed elsewhere with `LIVE_S3_ENDPOINT`, `LIVE_S3_ACCESS_KEY`, `LIVE_S3_SECRET_KEY`, `LIVE_S3_REGION`, `LIVE_AZURE_CONNECTION_STRING`, `LIVE_GCS_ENDPOINT`, `LIVE_SFTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`, `LIVE_FTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_HOME`, `LIVE_SEAWEEDFS_ENDPOINT`, `LIVE_WEBDAV_URL`/`_USER`/`_PASSWORD`, `LIVE_POCKETBASE_URL`/`_EMAIL`/`_PASSWORD` and `LIVE_SUPABASE_URL`/`_JWT_SECRET` (see `__tests__/live/backends.ts`). A service that can't run a contract scenario declares it in `contractSkips` with the reason (S3 refuses requests signed with a faked clock; fake-gcs-server does not emulate the resumable session status query). CI runs them in `.github/workflows/storage-live.yml` on pull requests touching this package and on `main`.
+Every test gets a fresh bucket, container or directory. The connection settings default to the compose services and can be pointed elsewhere with `LIVE_S3_ENDPOINT`, `LIVE_S3_ACCESS_KEY`, `LIVE_S3_SECRET_KEY`, `LIVE_S3_REGION`, `LIVE_AZURE_CONNECTION_STRING`, `LIVE_GCS_ENDPOINT`, `LIVE_SFTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`, `LIVE_FTP_HOST`/`_PORT`/`_USER`/`_PASSWORD`/`_HOME`, `LIVE_SEAWEEDFS_ENDPOINT`, `LIVE_WEBDAV_URL`/`_USER`/`_PASSWORD`, `LIVE_POCKETBASE_URL`/`_EMAIL`/`_PASSWORD` and `LIVE_SUPABASE_URL`/`_JWT_SECRET` (see `__tests__/live/backends.ts`). A service that can't run a contract scenario declares it in `contractSkips` with the reason (S3 refuses requests signed with a faked clock; fake-gcs-server does not emulate the resumable session status query).
+
+`__tests__/live/concurrency/` forks worker processes (`worker.ts`, bundled with esbuild into `node_modules/.cache/storage-live/`) over one MinIO bucket or Azurite container and its meta store: chunked REST PATCHes from three processes, two TUS PATCHes of one offset, two create-only uploads of one key, resume after the uploading process is killed, and concurrent purges. The TUS PATCH lock is per process, so across processes the losing PATCH gets 404 (S3: its write hits the finished multipart upload) or also 204 (Azure); the test pins that down and the byte-exact result.
+
+CI runs them in `.github/workflows/storage-live.yml` on pull requests touching this package and on `main`.
 
 ## Related
 
