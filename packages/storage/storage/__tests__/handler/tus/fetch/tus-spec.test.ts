@@ -112,6 +112,27 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             await expect(offsetOf(url)).resolves.toBe("5");
         });
 
+        it("should accept the PATCH media type with parameters and refuse another one with 415", async () => {
+            expect.assertions(5);
+
+            const { create, offsetOf, patch, send } = setup();
+            const url = await create(10);
+
+            await expect(statusOf(patch(url, 0, "hello", { "Content-Type": "Application/Offset+Octet-Stream; charset=binary" }))).resolves.toBe(204);
+            await expect(statusOf(patch(url, 5, "world", { "Content-Type": "application/octet-stream" }))).resolves.toBe(415);
+            await expect(offsetOf(url)).resolves.toBe("5");
+
+            // creation-with-upload compares the media type the same way.
+            const created = await send(
+                "POST",
+                BASE,
+                { "Content-Type": "application/offset+octet-stream; charset=binary", "Upload-Length": "5", "Upload-Metadata": `name ${b64("a.bin")}` },
+                "hello",
+            );
+
+            expect(created.headers.get("upload-offset")).toBe("5");
+        });
+
         it("should reject a malformed Upload-Offset with 400", async () => {
             expect.assertions(3);
 

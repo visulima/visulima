@@ -47,7 +47,7 @@ const PROCESSES: Record<string, () => [BaseStorage, BaseStorage]> = {
 
 const metaOf = (storage: BaseStorage): MetaStorage => (storage as unknown as { meta: MetaStorage }).meta;
 
-describe.each(Object.entries(PROCESSES))("tus PATCH across processes (%s)", (_name, setup) => {
+describe.each(Object.entries(PROCESSES))("tus PATCH across processes (%s)", (name, setup) => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -58,11 +58,22 @@ describe.each(Object.entries(PROCESSES))("tus PATCH across processes (%s)", (_na
         await Promise.all(storages.map(async (storage) => storage.ensureReady()));
 
         const handlers = storages.map((storage) => new TusFetch({ storage }));
-        const send = async (process: number, method: string, url: string, headers: Record<string, string> = {}, body?: string): Promise<Response> =>
+        const send = async (
+            process: number,
+            method: string,
+            url: string,
+            headers: Record<string, string> = {},
+            body?: ReadableStream<Uint8Array> | string,
+        ): Promise<Response> =>
             (handlers[process] as TusFetch).fetch(
-                new Request(url, { body, headers: { ...TUS, ...(body === undefined ? {} : { "Content-Length": String(body.length) }), ...headers }, method }),
+                new Request(url, {
+                    body,
+                    ...(typeof body === "object" ? { duplex: "half" } : {}),
+                    headers: { ...TUS, ...(typeof body === "string" ? { "Content-Length": String(body.length) } : {}), ...headers },
+                    method,
+                }),
             );
-        const patch = async (process: number, url: string, offset: number, body: string): Promise<Response> =>
+        const patch = async (process: number, url: string, offset: number, body: ReadableStream<Uint8Array> | string): Promise<Response> =>
             send(process, "PATCH", url, { "Content-Type": "application/offset+octet-stream", "Upload-Offset": String(offset) }, body);
         const created = await send(0, "POST", BASE, { "Upload-Length": "10", "Upload-Metadata": `name ${Buffer.from("a.txt").toString("base64")}` });
         const url = new URL(created.headers.get("location") as string, BASE).toString();
@@ -121,6 +132,56 @@ describe.each(Object.entries(PROCESSES))("tus PATCH across processes (%s)", (_na
 
         expect(results.filter(({ status }) => status === "fulfilled")).toHaveLength(1);
         expect(results.find(({ status }) => status === "rejected")).toMatchObject({ reason: { UploadErrorCode: "FileLocked" } });
+    });
+
+    /** A chunked body (no Content-Length) sending `chunks`, then failing when `fail` is set. */
+    const chunkedBody = (chunks: string[], fail = false): ReadableStream<Uint8Array> =>
+        new ReadableStream<Uint8Array>({
+            pull(controller) {
+                const chunk = chunks.shift();
+
+                if (chunk !== undefined) {
+                    controller.enqueue(new TextEncoder().encode(chunk));
+                } else if (fail) {
+                    controller.error(new Error("client disconnected"));
+                } else {
+                    controller.close();
+                }
+            },
+        });
+
+    // S3 needs a Content-Length (411), so it never reads a chunked body.
+    it.skipIf(name === "s3")("should fail a chunked PATCH whose client disconnects mid-body and release the upload", async () => {
+        expect.assertions(3);
+
+        const { id, patch, send, storages, url } = await start();
+
+        await expect(patch(0, url, 0, chunkedBody(["01234"], true)).then(({ status }) => status)).resolves.toBeGreaterThanOrEqual(400);
+        // Neither the in-process lock nor the cross-process claim outlives the failed PATCH.
+        await expect(metaOf(storages[0]).get(id)).resolves.not.toHaveProperty(["metadata", WRITE_CLAIM_KEY]);
+
+        const { headers } = await send(1, "HEAD", url);
+        const offset = Number(headers.get("upload-offset"));
+
+        await expect(patch(0, url, offset, "0123456789".slice(offset)).then(({ status }) => status)).resolves.toBe(204);
+    });
+
+    it.skipIf(name === "s3")("should answer 413 to a chunked PATCH running past the upload length, keeping the offset", async () => {
+        expect.assertions(4);
+
+        const { id, patch, send, storages, url } = await start();
+
+        await expect(patch(0, url, 0, chunkedBody(["01234", "56789", "overflow"])).then(({ status }) => status)).resolves.toBe(413);
+        await expect(metaOf(storages[0]).get(id)).resolves.not.toHaveProperty(["metadata", WRITE_CLAIM_KEY]);
+
+        const { headers } = await send(1, "HEAD", url);
+        const offset = Number(headers.get("upload-offset"));
+
+        await expect(patch(1, url, offset, "0123456789".slice(offset)).then(({ status }) => status)).resolves.toBe(204);
+
+        const { content } = await storages[1].get({ id });
+
+        expect(Buffer.from(content).toString()).toBe("0123456789");
     });
 
     it("should not be blocked by the expired claim of a crashed process", async () => {

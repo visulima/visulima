@@ -1,11 +1,11 @@
-import { Readable } from "node:stream";
+import { finished, Readable } from "node:stream";
 
 import createHttpError from "http-errors";
 
 import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
-import StreamLength from "../../utils/pipes/stream-length";
+import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import type { Headers } from "../../utils/types";
 import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
@@ -190,14 +190,13 @@ export class TusBase<TFile extends UploadFile> {
 
         const id = request.resolveId();
         const offsetHeader = request.header("upload-offset");
-        const contentType = request.header("content-type");
 
         if (offsetHeader === undefined) {
             throw createHttpError(412, "Missing Upload-Offset header");
         }
 
         // TUS core: a PATCH without this Content-Type "SHOULD" get 415, a missing one included.
-        if (contentType !== "application/offset+octet-stream") {
+        if (!TusBase.isOffsetOctetStream(request)) {
             throw createHttpError(415, "Unsupported Media Type");
         }
 
@@ -363,13 +362,15 @@ export class TusBase<TFile extends UploadFile> {
     private async createUpload(request: TusRequest, init: FileInit, extraHeaders: Headers): Promise<ResponseFile<TFile>> {
         const contentLength = TusBase.contentLength(request);
 
-        if (request.header("content-type") === "application/offset+octet-stream") {
+        const hasUpload = TusBase.isOffsetOctetStream(request);
+
+        if (hasUpload) {
             this.assertWithinLength(0, contentLength, init.size === undefined ? undefined : Number(init.size));
         }
 
         let file = await this.storage.create(init);
 
-        if (request.header("content-type") === "application/offset+octet-stream" && contentLength !== undefined && contentLength > 0) {
+        if (hasUpload && contentLength !== undefined && contentLength > 0) {
             this.assertResumableWrite(file, 0, contentLength, undefined);
 
             file = await this.storage.write({ ...file, body: request.body, contentLength, start: 0 });
@@ -488,7 +489,29 @@ export class TusBase<TFile extends UploadFile> {
         const { body, native } = await this.prepareChecksum(request, contentLength, size === undefined ? undefined : size - uploadOffset);
         // Without a Content-Length the body is only known to fit while it streams, and the adapter
         // gets no length: an unknown one must not read as an empty chunk.
-        const boundedBody = contentLength === undefined && body instanceof Readable ? body.pipe(new StreamLength(limit - uploadOffset)) : body;
+        let limiter: StreamLength | undefined;
+
+        if (contentLength === undefined && body instanceof Readable) {
+            const bounded = new StreamLength(limit - uploadOffset);
+
+            // It can fail before the adapter attaches its listener, and an unheard 'error' crashes the
+            // process; the adapter still sees it through pipeline()/for-await (`errored`).
+            bounded.on("error", () => {
+                // Reported through the stream's errored state
+            });
+
+            // pipe() doesn't pass the body's failure on: a client that disconnects mid-body would leave
+            // the adapter waiting forever with the upload claimed. pipeline() would destroy the request
+            // on the limiter's own error instead, leaving no socket for the 413.
+            finished(body, (error) => {
+                if (error) {
+                    bounded.destroy(error);
+                }
+            });
+            limiter = body.pipe(bounded);
+        }
+
+        const boundedBody = limiter ?? body;
 
         // The adapter must know the final length when it writes, to finish the upload on its last byte.
         if (deferredSize !== undefined) {
@@ -503,6 +526,11 @@ export class TusBase<TFile extends UploadFile> {
             // A rejected chunk must leave the upload as it was.
             if (deferredSize !== undefined) {
                 await this.storage.update({ id }, { size: undefined }).catch(() => undefined);
+            }
+
+            // Adapters wrap the limiter's error, so ask the limiter.
+            if (isStreamLengthError(limiter?.errored)) {
+                throw createHttpError(413, "Chunk exceeds the upload length");
             }
 
             throw error;
@@ -700,6 +728,16 @@ export class TusBase<TFile extends UploadFile> {
         const header = request.header("content-length");
 
         return header !== undefined && isNonNegativeInteger(header) ? Number(header) : undefined;
+    }
+
+    /**
+     * Whether the request body is TUS upload data. Compares the media type only, so parameters
+     * (`; charset=…`) don't turn it into a 415.
+     * @param request TUS request
+     * @returns `true` for `application/offset+octet-stream`
+     */
+    private static isOffsetOctetStream(request: TusRequest): boolean {
+        return request.header("content-type")?.split(";")[0]?.trim().toLowerCase() === "application/offset+octet-stream";
     }
 
     /**
