@@ -411,7 +411,7 @@ interface FileHeadMetadata {
     uploadComplete?: boolean;
     uploadExpires?: string;
     chunkedUpload?: boolean;
-    receivedChunks?: number[];
+    receivedChunks?: { length: number; offset: number }[];
 }
 ```
 
@@ -502,23 +502,23 @@ const {
 
 **Options: `UseUploadOptions`**
 
-| Property              | Type                           | Default                   | Description                                |
-| --------------------- | ------------------------------ | ------------------------- | ------------------------------------------ |
-| `endpointMultipart`   | `string`                       | -                         | Multipart upload endpoint URL              |
-| `endpointTus`         | `string`                       | -                         | TUS upload endpoint URL                    |
-| `endpointChunkedRest` | `string`                       | -                         | Chunked REST upload endpoint URL           |
-| `method`              | `UploadMethod`                 | auto-detected             | Upload method to use                       |
-| `chunkSize`           | `number`                       | 5 MiB                     | Chunk size                                 |
-| `tusThreshold`        | `number`                       | `10485760` (10MB)         | File size threshold for auto-selecting TUS |
-| `metadata`            | `Record<string, string>`       | -                         | Additional metadata                        |
-| `retry`               | `boolean`                      | -                         | Enable automatic retry (TUS/chunked only)  |
-| `maxRetries`          | `number`                       | -                         | Maximum retry attempts (TUS/chunked only)  |
-| `onStart`             | `() => void`                   | -                         | Called when upload starts                  |
-| `onProgress`          | `(progress: number) => void`   | -                         | Called when progress updates               |
-| `onSuccess`           | `(file: UploadResult) => void` | -                         | Called on success                          |
-| `onError`             | `(error: Error) => void`       | -                         | Called on failure                          |
-| `onPause`             | `() => void`                   | -                         | Called when paused (TUS/chunked only)      |
-| `onResume`            | `() => void`                   | -                         | Called when resumed (TUS/chunked only)     |
+| Property              | Type                           | Default           | Description                                |
+| --------------------- | ------------------------------ | ----------------- | ------------------------------------------ |
+| `endpointMultipart`   | `string`                       | -                 | Multipart upload endpoint URL              |
+| `endpointTus`         | `string`                       | -                 | TUS upload endpoint URL                    |
+| `endpointChunkedRest` | `string`                       | -                 | Chunked REST upload endpoint URL           |
+| `method`              | `UploadMethod`                 | auto-detected     | Upload method to use                       |
+| `chunkSize`           | `number`                       | 5 MiB             | Chunk size                                 |
+| `tusThreshold`        | `number`                       | `10485760` (10MB) | File size threshold for auto-selecting TUS |
+| `metadata`            | `Record<string, string>`       | -                 | Additional metadata                        |
+| `retry`               | `boolean`                      | -                 | Enable automatic retry (TUS/chunked only)  |
+| `maxRetries`          | `number`                       | -                 | Maximum retry attempts (TUS/chunked only)  |
+| `onStart`             | `() => void`                   | -                 | Called when upload starts                  |
+| `onProgress`          | `(progress: number) => void`   | -                 | Called when progress updates               |
+| `onSuccess`           | `(file: UploadResult) => void` | -                 | Called on success                          |
+| `onError`             | `(error: Error) => void`       | -                 | Called on failure                          |
+| `onPause`             | `() => void`                   | -                 | Called when paused (TUS/chunked only)      |
+| `onResume`            | `() => void`                   | -                 | Called when resumed (TUS/chunked only)     |
 
 #### `useMultipartUpload`
 

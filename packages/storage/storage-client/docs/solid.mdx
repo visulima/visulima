@@ -439,7 +439,7 @@ function UploadStatus({ fileId }: { fileId: string }) {
                             Upload in progress: {data()?.uploadOffset} / {data()?.contentLength} bytes
                         </p>
                     )}
-                    {data()?.receivedChunks && <p>Received chunks: {data()?.receivedChunks.length}</p>}
+                    {data()?.receivedChunks && <p>Received ranges: {data()?.receivedChunks.length}</p>}
                 </div>
             )}
         </>

@@ -15,8 +15,8 @@ export interface FileHeadMetadata {
     etag?: string;
     /** Last modified date */
     lastModified?: string;
-    /** Received chunk offsets (chunked uploads) */
-    receivedChunks?: number[];
+    /** Byte ranges the server holds (chunked uploads); contiguous chunks are merged into one range */
+    receivedChunks?: { length: number; offset: number }[];
     /** Whether upload is complete (chunked uploads) */
     uploadComplete?: boolean;
     /** Upload expiration date */
@@ -114,7 +114,7 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
                 if (receivedChunks) {
                     try {
-                        fileMeta.receivedChunks = JSON.parse(receivedChunks) as number[];
+                        fileMeta.receivedChunks = JSON.parse(receivedChunks) as { length: number; offset: number }[];
                     } catch {
                         // Ignore parse errors
                     }

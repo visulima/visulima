@@ -352,7 +352,7 @@ const { data, isLoading } = useHeadFile({
     <div v-else-if="data">
         <p v-if="data.uploadComplete">Upload complete</p>
         <p v-else>Upload in progress: {{ data.uploadOffset }} / {{ data.contentLength }} bytes</p>
-        <p v-if="data.receivedChunks">Received chunks: {{ data.receivedChunks.length }}</p>
+        <p v-if="data.receivedChunks">Received ranges: {{ data.receivedChunks.length }}</p>
     </div>
 </template>
 ```

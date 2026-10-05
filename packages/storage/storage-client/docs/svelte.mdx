@@ -500,7 +500,7 @@ export const storage = new DiskStorage({
       <p>Upload in progress: {$data.uploadOffset} / {$data.contentLength} bytes</p>
     {/if}
     {#if $data.receivedChunks}
-      <p>Received chunks: {$data.receivedChunks.length}</p>
+      <p>Received ranges: {$data.receivedChunks.length}</p>
     {/if}
   </div>
 {/if}
