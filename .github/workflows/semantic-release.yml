@@ -49,7 +49,7 @@ jobs:
         # `head_commit` is null on workflow_dispatch, so manual runs are unaffected.
         if: "github.repository == 'visulima/visulima' && !contains(github.event.head_commit.message, '[skip release]')"
         runs-on: "ubuntu-latest"
-        timeout-minutes: 30
+        timeout-minutes: 60
         permissions:
             actions: "read" # to map Lint/Tests workflow runs to their job names
             contents: "read"
@@ -65,7 +65,8 @@ jobs:
               # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
               # Plain shell + gh api waits for every check-run on the commit
               # except this job, the release job, and the ignore list to terminate in success.
-              timeout-minutes: 30
+              # Build Native alone takes ~40 minutes from the push, so the deadline is 55.
+              timeout-minutes: 58
               shell: "bash"
               env:
                   GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -88,7 +89,7 @@ jobs:
                   IGNORE_CHECKS: "[\"Semantic Release\",\"Build packages\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\"]"
               run: |
                   set -euo pipefail
-                  deadline=$(( $(date +%s) + 1680 ))
+                  deadline=$(( $(date +%s) + 3300 ))
                   while :; do
                       # Job (= check-run) names of every run of an ignored workflow for this commit.
                       ignored_jobs=$(
@@ -99,16 +100,26 @@ jobs:
                                   fi
                               done | jq -Rsc 'split("\n") | map(select(length > 0))'
                       )
-                      runs=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, .status, .conclusion // ""] | @tsv')
+                      # Only the newest check-run of each name counts: a re-run, or a run set that
+                      # superseded a cancelled one, must clear the failure the older attempt left.
+                      runs=$(
+                          gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, (.id | tostring), .status, .conclusion // ""] | @tsv' \
+                              | sort -t $'\t' -k1,1 -k2,2nr | awk -F '\t' '!seen[$1]++' | cut -f 1,3,4
+                      )
                       pending=0
+                      pending_names=""
                       failed=""
                       while IFS=$'\t' read -r name status conclusion; do
                           [ -z "${name:-}" ] && continue
                           if [ "$name" = "$SELF_CHECK_NAME" ]; then continue; fi
+                          # A matrix job cancelled before its matrix expanded keeps the template as its
+                          # name; it never ran, and the run that superseded it reports the expanded jobs.
+                          case "$name" in *'${{'*) continue ;; esac
                           if jq -e --arg n "$name" --argjson list "$IGNORE_CHECKS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
                           if jq -e --arg n "$name" --argjson list "$ignored_jobs" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
                           if [ "$status" != "completed" ]; then
                               pending=$((pending + 1))
+                              pending_names+="$name, "
                               continue
                           fi
                           case "$conclusion" in
@@ -125,9 +136,9 @@ jobs:
                           echo "All checks completed successfully"
                           exit 0
                       fi
-                      echo "$pending checks still pending, waiting 30s..."
+                      echo "$pending checks still pending (${pending_names%, }), waiting 30s..."
                       if [ "$(date +%s)" -ge "$deadline" ]; then
-                          echo "Timed out after 28 minutes"
+                          echo "Timed out after 55 minutes"
                           exit 1
                       fi
                       sleep 30
