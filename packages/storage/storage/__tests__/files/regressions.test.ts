@@ -231,3 +231,38 @@ describe("files regressions", () => {
         expect(adapter.captured[1]?.contentType).toBe("text/plain");
     });
 });
+
+describe("retry hooks", () => {
+    /** Runs one operation through the adapter's retry engine, failing transiently `failures` times. */
+    class FlakyOperationStorage extends MemoryStorage {
+        public async flaky(failures: number, options?: OperationOptions): Promise<string> {
+            let calls = 0;
+
+            return this.runOperation(options, async () => {
+                calls += 1;
+
+                if (calls <= failures) {
+                    throw Object.assign(new Error("transient"), { code: "ECONNRESET" });
+                }
+
+                return "ok";
+            });
+        }
+    }
+
+    it("runs the adapter's retryConfig.onRetry and a per-call onRetry, not just the per-call one", async () => {
+        expect.assertions(3);
+
+        const adapterAttempts: number[] = [];
+        const perCallAttempts: number[] = [];
+        const storage = new FlakyOperationStorage({
+            retryConfig: { initialDelay: 1, maxRetries: 2, onRetry: (attempt) => adapterAttempts.push(attempt) },
+        });
+
+        await expect(storage.flaky(1, { retries: { initialDelay: 1, maxRetries: 2, onRetry: (attempt) => perCallAttempts.push(attempt) } })).resolves.toBe(
+            "ok",
+        );
+        expect(adapterAttempts).toStrictEqual([1]);
+        expect(perCallAttempts).toStrictEqual([1]);
+    });
+});
