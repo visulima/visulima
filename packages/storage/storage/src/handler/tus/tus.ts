@@ -135,7 +135,7 @@ export class Tus<
             return;
         }
 
-        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined);
+        const override = resolveMethodOverride(getHeader(request, "x-http-method-override") || undefined, request.method);
 
         if (override !== undefined) {
             request.method = override;

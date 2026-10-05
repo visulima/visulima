@@ -360,6 +360,47 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             expect(response.status).toBe(400);
             expect(response.headers.get("tus-resumable")).toBe("1.0.0");
         });
+
+        it("should tunnel a DELETE through a POST", async () => {
+            expect.assertions(3);
+
+            const { create, send } = setup();
+            const url = await create(5);
+
+            await expect(statusOf(send("POST", url, { "X-HTTP-Method-Override": "DELETE" }))).resolves.toBe(204);
+            await expect(statusOf(send("HEAD", url))).resolves.toBe(404);
+        });
+
+        it("should treat an override naming the request's own method as no override", async () => {
+            expect.assertions(1);
+
+            const { send } = setup();
+
+            await expect(statusOf(send("POST", BASE, { "Upload-Length": "5", "X-HTTP-Method-Override": "POST" }))).resolves.toBe(201);
+        });
+
+        // A POST tunnelled to a read would pass anything that authorizes the request as a write.
+        it.each([
+            ["POST", "GET"],
+            ["POST", "HEAD"],
+            ["POST", "OPTIONS"],
+            ["PATCH", "DELETE"],
+            ["HEAD", "PATCH"],
+        ])("should reject a %s overridden to %s with 400 and leave the upload as it was", async (method, override) => {
+            expect.assertions(4);
+
+            const { create, offsetOf, send } = setup();
+            const url = await create(5);
+            const response = await send(method, url, {
+                "Content-Type": "application/offset+octet-stream",
+                "Upload-Offset": "0",
+                "X-HTTP-Method-Override": override,
+            });
+
+            expect(response.status).toBe(400);
+            expect(response.headers.get("upload-offset")).toBeNull();
+            await expect(offsetOf(url)).resolves.toBe("0");
+        });
     });
 
     describe("hardening", () => {
