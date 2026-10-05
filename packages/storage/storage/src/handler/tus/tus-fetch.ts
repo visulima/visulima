@@ -175,7 +175,7 @@ export class Tus<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
     protected buildFileUrlForTus(request: LocationSource, file: TFile): string {
         const { pathname, search } = new URL(request.url);
 
-        return `${this.locationOrigin(request.url)}${pathname}/${file.id}${search}`;
+        return `${this.locationOrigin(request.url)}${pathname.replace(/\/$/, "")}/${file.id}${search}`;
     }
 
     /**

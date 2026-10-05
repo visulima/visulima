@@ -367,6 +367,30 @@ describe("fetch RestFetch chunked uploads", () => {
         expect(file.size).toBe(bytes.byteLength);
     });
 
+    // A chunk whose body broke off stores only what arrived (disk resolves such a write with the
+    // offset it reached), so only that much may be recorded as received.
+    it("should record only the bytes the adapter confirmed for a chunk", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const write = storage.write.bind(storage);
+
+        storage.write = async (part: FilePart | FileQuery | UploadFile): Promise<UploadFile> => {
+            const file = await write(part);
+
+            return "start" in part && part.start === 0 ? { ...file, bytesWritten: 2, status: "part" } : file;
+        };
+
+        const restHandler = new RestFetch({ storage });
+        const created = await restHandler.fetch(initChunkedUpload(10));
+        const id = created.headers.get("x-upload-id") as string;
+        const response = await restHandler.fetch(patchChunk(id, 0, new Uint8Array(5)));
+        const meta = await storage.getMeta(id);
+
+        expect(response.headers.get("x-upload-offset")).toBe("2");
+        expect(meta.metadata._chunks).toStrictEqual([{ length: 2, offset: 0 }]);
+    });
+
     it("should keep the chunk list one range however many chunks an upload takes", async () => {
         expect.assertions(4);
 

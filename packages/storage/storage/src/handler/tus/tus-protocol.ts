@@ -171,11 +171,14 @@ export const parseFinalConcatIds = (header: string): string[] => {
  * @throws {HttpError} 412 if version doesn't match or header is missing
  */
 export const validateTusResumable = (tusResumable: string | undefined): void => {
+    // TUS core: the 412 for an unsupported version MUST carry the versions the server supports.
+    const headers = { "Tus-Version": TUS_VERSION_VERSION };
+
     if (!tusResumable) {
-        throw createHttpError(412, "Missing Tus-Resumable header");
+        throw createHttpError(412, "Missing Tus-Resumable header", { headers });
     }
 
     if (tusResumable !== TUS_RESUMABLE_VERSION) {
-        throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`);
+        throw createHttpError(412, `Unsupported TUS version: ${tusResumable}. Server supports: ${TUS_RESUMABLE_VERSION}`, { headers });
     }
 };

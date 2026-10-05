@@ -1,5 +1,6 @@
 import { Readable } from "node:stream";
 
+import type { MultipartPart } from "@remix-run/multipart-parser";
 import createHttpError from "http-errors";
 
 import type { BaseStorage } from "../../storage/storage";
@@ -8,6 +9,51 @@ import { toETagHeader } from "../../utils/headers";
 import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
 import { withoutInternalKeys } from "../utils/request-parser";
+
+/** Room for the non-file form fields on top of the one file part. */
+const FIELDS_ALLOWANCE = 1024 * 1024;
+
+/**
+ * Parser limits for a request carrying a single file part: without them the parser would
+ * buffer up to 1000 parts and ~20 times `maxFileSize` before the handler sees any of it.
+ * @param maxFileSize Maximum size of the file part
+ * @param maxHeaderSize Maximum size of a part's headers
+ * @returns Options for `parseMultipartRequest`
+ */
+export const multipartLimits = (
+    maxFileSize: number,
+    maxHeaderSize: number,
+): { maxFileSize: number; maxHeaderSize: number; maxParts: number; maxTotalSize: number } => {
+    return { maxFileSize, maxHeaderSize, maxParts: 100, maxTotalSize: maxFileSize + FIELDS_ALLOWANCE };
+};
+
+/**
+ * Collects the parts of a multipart request, allowing exactly one file part.
+ * @param parts Parts yielded by the parser
+ * @returns The file part and every part (for the form fields)
+ */
+export const collectParts = async (parts: AsyncIterable<MultipartPart>): Promise<{ filePart: MultipartPart; parts: MultipartPart[] }> => {
+    const collected: MultipartPart[] = [];
+    let filePart: MultipartPart | undefined;
+
+    for await (const part of parts) {
+        if (part.isFile) {
+            if (filePart) {
+                throw createHttpError(413, "Only one file per request is allowed");
+            }
+
+            filePart = part;
+        }
+
+        collected.push(part);
+    }
+
+    if (!filePart) {
+        throw createHttpError(400, "No file found in multipart request");
+    }
+
+    return { filePart, parts: collected };
+};
 
 /**
  * The part of a storage adapter the multipart handler uses.

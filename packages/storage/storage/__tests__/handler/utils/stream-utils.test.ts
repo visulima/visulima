@@ -135,7 +135,8 @@ describe("stream-utils", () => {
             expect.assertions(1);
 
             const source = new PassThrough();
-            const destination = new PassThrough();
+            // A response that has not sent its headers yet.
+            const destination = Object.assign(new PassThrough(), { removeHeader: () => undefined });
             let sentError: Error | undefined;
             const sendError = async (_response: unknown, error: Error) => {
                 sentError = error;
@@ -341,7 +342,7 @@ describe("stream-utils", () => {
             expect.assertions(1);
 
             const source = new PassThrough();
-            const destination = new PassThrough();
+            const destination = Object.assign(new PassThrough(), { removeHeader: () => undefined });
             const destroyed = new Promise<Error>((resolve) => {
                 destination.on("error", resolve);
             });
