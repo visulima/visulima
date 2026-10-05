@@ -68,7 +68,12 @@ const BACKENDS: Record<string, () => Promise<Backend>> = {
     disk: async () => {
         const directory = await mkdtemp(join(tmpdir(), "storage-client-live-"));
 
-        return { cleanup: async () => rm(directory, { force: true, recursive: true }), storage: new DiskStorage({ directory }) };
+        // An aborted upload's write can still be closing its files and saving its record when the
+        // test ends, so the directory may not be empty on the first try (ENOTEMPTY in CI).
+        return {
+            cleanup: async () => rm(directory, { force: true, maxRetries: 10, recursive: true, retryDelay: 100 }),
+            storage: new DiskStorage({ directory }),
+        };
     },
 };
 
