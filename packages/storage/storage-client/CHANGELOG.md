@@ -1,3 +1,18 @@
+## @visulima/storage-client [1.0.8](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.7...@visulima/storage-client@1.0.8) (2026-10-05)
+
+### Bug Fixes
+
+* **storage:** merge chunk ranges, narrow method overrides, export parseTusMetadata ([#923](https://github.com/visulima/visulima/issues/923)) ([f1c5d75](https://github.com/visulima/visulima/commit/f1c5d75840b692d1b5eeec7e8073616b35389785))
+
+### Continuous Integration
+
+* fix the release gate for superseded runs and slow native builds ([#924](https://github.com/visulima/visulima/issues/924)) ([fcbb915](https://github.com/visulima/visulima/commit/fcbb915f028d0878c40d8972323b4d07728d3436))
+
+
+### Dependencies
+
+* **@visulima/storage:** upgraded to 2.0.32
+
 ## @visulima/storage-client [1.0.7](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.6...@visulima/storage-client@1.0.7) (2026-10-04)
 
 ### Bug Fixes
