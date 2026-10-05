@@ -192,9 +192,9 @@ processed on its own: `onComplete` and the `completed` event fire for the final 
 
 Clients behind proxies that only allow `GET`/`POST` can send the real method in `X-HTTP-Method-Override`; the
 handler uses it in place of the request method, as the protocol requires. Only a `POST` may be overridden, and only
-to `PATCH` or `DELETE`, the methods such proxies block; any other override is a `400`. A `POST` tunnelled to `GET`
-or `HEAD` would otherwise be a read to anything in front of the handler that sees a write. The method changes inside the handler,
-after routing and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may `DELETE`) must
+to `PATCH` or `DELETE`, the methods such proxies block. An override naming the request's own method is ignored; any
+other is a `400`. A `POST` tunnelled to `GET` or `HEAD` would otherwise be a read to anything in front of the handler
+that sees a write. The method changes inside the handler, after routing and middleware ran, so middleware that authorizes by HTTP method (e.g. only admins may `DELETE`) must
 also check this header — or turn the override off:
 
 ```typescript
