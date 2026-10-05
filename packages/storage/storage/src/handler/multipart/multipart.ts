@@ -1,6 +1,4 @@
-/* eslint-disable max-classes-per-file */
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { Readable } from "node:stream";
 
 import type { MultipartPart } from "@remix-run/multipart-parser";
 import { MaxFileSizeExceededError, MultipartParseError, parseMultipartRequest } from "@remix-run/multipart-parser/node";
@@ -35,7 +33,7 @@ class Multipart<
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "options", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "options", "post"];
 
     private readonly multipartBase: MultipartBase<TFile>;
 
@@ -56,48 +54,10 @@ class Multipart<
         this.maxFileSize = options.maxFileSize ?? Math.min(this.storage.maxUploadSize, 1024 * 1024 * 1024);
         this.maxHeaderSize = options.maxHeaderSize ?? 64 * 1024; // 64KB default
 
-        // Create MultipartBase instance with access to this Multipart instance
-        const multipartInstance = this;
-
-        this.multipartBase = new (class extends MultipartBase<TFile> {
-            // eslint-disable-next-line class-methods-use-this
-            protected override get storage() {
-                return multipartInstance.storage;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get maxFileSize() {
-                return multipartInstance.maxFileSize;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override get maxHeaderSize() {
-                return multipartInstance.maxHeaderSize;
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override buildFileUrl(requestUrl: string, file: TFile): string {
-                return multipartInstance.buildFileUrl({ url: requestUrl } as NodeRequest & { originalUrl?: string }, file);
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected override createStreamFromBytes(bytes: unknown): unknown {
-                if (bytes instanceof Uint8Array || Buffer.isBuffer(bytes)) {
-                    return Readable.from(Buffer.from(bytes));
-                }
-
-                if (typeof bytes === "number") {
-                    return Readable.from(Buffer.alloc(0));
-                }
-
-                return Readable.from(Buffer.from(String(bytes)));
-            }
-
-            // eslint-disable-next-line class-methods-use-this
-            protected createEmptyStream(): unknown {
-                return Readable.from(new Uint8Array(0));
-            }
-        })();
+        this.multipartBase = new MultipartBase<TFile>({
+            buildFileUrl: (source, file) => this.buildFileUrlFromString(source.url, file, source),
+            storage: () => this.storage,
+        });
     }
 
     /**
@@ -129,9 +89,7 @@ class Multipart<
                 throw createHttpError(400, "No file found in multipart request");
             }
 
-            const requestUrl = (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "";
-
-            return this.multipartBase.handlePost(filePart, parts, requestUrl);
+            return this.multipartBase.handlePost(filePart, parts, this.locationOf(request));
         } catch (error) {
             if (error instanceof MaxFileSizeExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
@@ -158,15 +116,10 @@ class Multipart<
         try {
             const id = getIdFromRequest(request);
 
-            return this.multipartBase.handleDelete(id);
+            // Awaited, so the catch below maps its errors.
+            return await this.multipartBase.handleDelete(id);
         } catch (error: unknown) {
             this.checkForUndefinedIdOrPath(error);
-
-            const errorWithCode = error as { code?: string };
-
-            if (errorWithCode.code === "ENOENT") {
-                throw createHttpError(404, "File not found");
-            }
 
             throw error;
         }

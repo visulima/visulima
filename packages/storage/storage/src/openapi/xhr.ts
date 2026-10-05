@@ -1,18 +1,24 @@
-import { createHash } from "node:crypto";
-
 import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
 import type { OpenAPIV3 } from "openapi-types";
 
-import { sharedErrorSchemaObject, sharedFileMetaExampleObject, sharedFileMetaSchemaObject, sharedGet, sharedGetList, sharedGetMeta } from "./shared";
+import {
+    operationIdPrefix,
+    sharedErrorSchemaObject,
+    sharedFileMetaExampleObject,
+    sharedFileMetaSchemaObject,
+    sharedGet,
+    sharedGetList,
+    sharedGetMeta,
+} from "./shared";
 
 const swaggerSpec = (
     origin: string,
     path: string,
-    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" },
+    options: { supportedTransformerFormat?: string[]; tags?: string[] | undefined; transformer?: boolean | "audio" | "video" | "image" } = {},
 ): Partial<OpenAPIV3.Document> => {
     const { supportedTransformerFormat, tags, transformer } = { tags: ["Multipart"], transformer: false, ...options };
 
-    const pathHash = createHash("sha256").update(path).digest("base64");
+    const pathHash = operationIdPrefix(path);
 
     return {
         components: {
@@ -22,6 +28,7 @@ const swaggerSpec = (
                     description: "Upload ID",
                     in: "path",
                     name: "id",
+                    required: true,
                     schema: {
                         type: "string",
                     },
@@ -49,7 +56,7 @@ const swaggerSpec = (
                 ...createPaginationSchemaObject(
                     "FileMetaPagination",
                     {
-                        $ref: "#/components/schemas/PaginationMeta",
+                        $ref: "#/components/schemas/FileMeta",
                     },
                     "#/components/schemas/PaginationMeta",
                 ),
@@ -58,13 +65,15 @@ const swaggerSpec = (
                 ...sharedFileMetaSchemaObject,
             },
         },
+        info: { title: "Multipart upload API", version: "1.0.0" },
+        openapi: "3.0.3",
         paths: {
             [`${path.replace(/\/$/, "")}/{id}/metadata`]: {
                 get: sharedGetMeta(`${pathHash}MultipartGetFileMeta`, tags),
             },
             [`${path.replace(/\/$/, "")}/{id}`]: {
                 delete: {
-                    description: "Cancel upload",
+                    description: "Delete an uploaded file",
                     operationId: `${pathHash}MultipartCancel`,
                     parameters: [
                         {
@@ -75,12 +84,15 @@ const swaggerSpec = (
                         204: {
                             description: "No Content",
                         },
+                        404: {
+                            $ref: "#/components/responses/404",
+                        },
                     },
 
-                    summary: "Cancel upload",
+                    summary: "Delete file",
                     tags,
                 },
-                get: sharedGet(`${pathHash}TusGetFile`, tags, transformer, supportedTransformerFormat),
+                get: sharedGet(`${pathHash}MultipartGetFile`, tags, transformer, supportedTransformerFormat),
             },
             [path.trimEnd()]: {
                 get: sharedGetList(`${pathHash}MultipartGetList`, tags),
@@ -112,35 +124,14 @@ const swaggerSpec = (
                     },
                     responses: {
                         200: {
-                            description: "The file already exists, send a resume request",
-                            headers: {
-                                ETag: {
-                                    description: "Upload ETag",
+                            content: {
+                                "application/json": {
                                     schema: {
-                                        example: "d41d8cd98f00b204e9800998ecf8427e",
-                                        type: "string",
-                                    },
-                                },
-                                Location: {
-                                    description: "Resumable URI",
-                                    schema: {
-                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
-                                        format: "uri",
-                                        type: "string",
-                                    },
-                                },
-                                "X-Upload-Expires": {
-                                    description: "Upload expiration date",
-                                    schema: {
-                                        example: "2021-08-25T11:12:26.635Z",
-                                        format: "date-time",
-                                        type: "string",
+                                        $ref: "#/components/schemas/FileMeta",
                                     },
                                 },
                             },
-                        },
-                        201: {
-                            description: "Upload accepted, send the file contents",
+                            description: "File stored; the body is its metadata",
                             headers: {
                                 ETag: {
                                     description: "Upload ETag",
@@ -150,9 +141,9 @@ const swaggerSpec = (
                                     },
                                 },
                                 Location: {
-                                    description: "Resumable URI",
+                                    description: "URL of the stored file (`<path>/<id>.<extension>`)",
                                     schema: {
-                                        example: `${origin}/files?uploadType=Upload&upload_id=2b62dbec20048158af963572fbdf89c6`,
+                                        example: `${origin}${path.replace(/\/$/, "")}/V1StGXR8_Z5jdHi6B-myT.png`,
                                         format: "uri",
                                         type: "string",
                                     },

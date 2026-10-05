@@ -1,5 +1,6 @@
 import createHttpError from "http-errors";
 
+import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import { Metadata } from "../../storage/utils/file";
 import { getIdFromRequestUrl } from "../../utils/http";
 
@@ -21,7 +22,7 @@ const BASE64_PATTERN = /^[a-z\d+/]*={0,2}$/i;
  * Metadata keys the server stores on an upload for its own bookkeeping. They are never echoed
  * back in `Upload-Metadata`, and a client can't set them.
  */
-const INTERNAL_METADATA_KEYS = new Set(["partialIds", "uploadConcat"]);
+const INTERNAL_METADATA_KEYS = new Set(["partialIds", "uploadConcat", WRITE_CLAIM_KEY]);
 
 /**
  * Parse TUS protocol metadata string into object.

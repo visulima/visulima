@@ -35,13 +35,13 @@ const createHandlerFunction =
  * ```ts
  * import { Hono } from "hono";
  * import { DiskStorage } from "@visulima/storage";
- * import { createHonoHandler } from "@visulima/storage/handler/http/hono";
+ * import { createStorageHandler } from "@visulima/storage/handler/http/hono";
  *
  * const app = new Hono();
  * const storage = new DiskStorage({ directory: "./uploads" });
  *
  * // Multipart handler - automatically registers POST, GET, DELETE, OPTIONS
- * createHonoHandler(app, {
+ * createStorageHandler(app, {
  *   path: "/files",
  *   storage,
  *   type: "multipart"
@@ -51,13 +51,13 @@ const createHandlerFunction =
  * ```ts
  * import { Hono } from "hono";
  * import { DiskStorage } from "@visulima/storage";
- * import { createHonoHandler } from "@visulima/storage/handler/http/hono";
+ * import { createStorageHandler } from "@visulima/storage/handler/http/hono";
  *
  * const app = new Hono();
  * const storage = new DiskStorage({ directory: "./uploads" });
  *
  * // REST handler - automatically registers POST, PUT, PATCH, GET, HEAD, DELETE, OPTIONS
- * createHonoHandler(app, {
+ * createStorageHandler(app, {
  *   path: "/files-rest",
  *   storage,
  *   type: "rest"
@@ -67,13 +67,13 @@ const createHandlerFunction =
  * ```ts
  * import { Hono } from "hono";
  * import { DiskStorage } from "@visulima/storage";
- * import { createHonoHandler } from "@visulima/storage/handler/http/hono";
+ * import { createStorageHandler } from "@visulima/storage/handler/http/hono";
  *
  * const app = new Hono();
  * const storage = new DiskStorage({ directory: "./uploads" });
  *
  * // TUS handler - automatically registers POST, PATCH, HEAD, GET, DELETE, OPTIONS
- * createHonoHandler(app, {
+ * createStorageHandler(app, {
  *   path: "/files-tus",
  *   storage,
  *   type: "tus"
@@ -106,39 +106,10 @@ export const createStorageHandler = <TFile extends UploadFile>(app: Hono, config
     // Create the handler function
     const handlerFunction = createHandlerFunction(handler);
 
-    // Register routes based on handler type
-    switch (type) {
-        case "multipart": {
-            // Multipart: POST, GET, DELETE, OPTIONS
-            app.post(path, handlerFunction);
-            app.get(`${path}/:id?/:metadata?`, handlerFunction);
-            app.delete(`${path}/:id`, handlerFunction);
-            app.on("OPTIONS", path, handlerFunction);
-            break;
-        }
-        case "rest": {
-            // REST: POST, PUT, PATCH, GET, HEAD, DELETE, OPTIONS
-            app.post(path, handlerFunction);
-            app.put(`${path}/:id`, handlerFunction);
-            app.patch(`${path}/:id`, handlerFunction);
-            app.get(`${path}/:id?`, handlerFunction);
-            app.on("HEAD", `${path}/:id`, handlerFunction);
-            app.delete(`${path}/:id?`, handlerFunction);
-            app.on("OPTIONS", path, handlerFunction);
-            break;
-        }
-        case "tus": {
-            // TUS: POST, PATCH, HEAD, GET, DELETE, OPTIONS
-            // Use app.all() to handle all methods on both base path and with ID
-            app.all(path, handlerFunction);
-            app.all(`${path}/:id`, handlerFunction);
-            break;
-        }
-        default: {
-            // This should never happen due to TypeScript narrowing, but satisfies linter
-            throw new Error(`Unknown handler type: ${String(type)}`);
-        }
-    }
+    // Every method on the collection and below it: the handler answers 405 for the ones it doesn't
+    // serve, and preflights (OPTIONS /:id), /:id/metadata and /:id/download reach it.
+    app.all(path, handlerFunction);
+    app.all(`${path}/*`, handlerFunction);
 };
 
 /**

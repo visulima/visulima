@@ -4,81 +4,160 @@
 
 ## Overview
 
-Wasabi is an S3-compatible cloud storage service with predictable pricing and no egress fees. It provides high-performance storage for applications.
+Wasabi is S3-compatible hot storage with no egress fees. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `wasabi()` helper builds the regional endpoint `https://s3.<region>.wasabisys.com`.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Wasabi is S3-compatible, so use the S3Storage with Wasabi endpoint:
+1. **Create a bucket** — Wasabi console → _Buckets_ → _Create Bucket_; note the region (`us-east-1`, `eu-central-1`, `ap-northeast-1`, …).
+2. **Create a sub-user with an access key** — _Users_ → _Create User_ (programmatic access), then attach a policy. Wasabi uses AWS-style IAM policies:
 
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { wasabi } from "@visulima/storage/provider/aws/s3/clients";
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": ["s3:ListBucket", "s3:ListBucketMultipartUploads"],
+                "Resource": "arn:aws:s3:::uploads"
+            },
+            {
+                "Effect": "Allow",
+                "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"],
+                "Resource": "arn:aws:s3:::uploads/*"
+            }
+        ]
+    }
+    ```
 
-const clientConfig = wasabi({
-    accessKeyId: process.env.WASABI_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.WASABI_SECRET_ACCESS_KEY!,
-    region: process.env.WASABI_REGION || "us-east-1",
-});
+    `s3:ListBucket` is required so a missing key answers `404` rather than `403`.
 
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
+3. **CORS** — needed only when the browser calls Wasabi directly (presigned URLs, `clientDirectUpload`). Bucket → _Settings_ → _CORS_, or `aws s3api put-bucket-cors --endpoint-url https://s3.<region>.wasabisys.com`:
+
+    ```json
+    {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["https://app.example.com"],
+                "AllowedMethods": ["GET", "HEAD", "PUT"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["ETag"],
+                "MaxAgeSeconds": 3600
+            }
+        ]
+    }
+    ```
+
+4. **Minimum storage duration** — Wasabi bills deleted objects for their minimum retention period (90 days on pay-as-you-go). Purging abandoned uploads early with `expiration` frees the bucket but not that charge.
 
 ## Configuration
 
-### Environment Variables
+### `wasabi()` helper
 
-```typescript
-process.env.WASABI_ACCESS_KEY_ID = "your-access-key";
-process.env.WASABI_SECRET_ACCESS_KEY = "your-secret-key";
-process.env.WASABI_REGION = "us-east-1";
+`import { wasabi } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`, `apiVersion: "2006-03-01"`):
 
-const clientConfig = wasabi(); // Uses environment variables
+| Parameter         | Type     | Required | Env fallback (in order)                                                  |
+| ----------------- | -------- | -------- | ------------------------------------------------------------------------ |
+| `region`          | `string` | yes      | `WASABI_REGION`, `AWS_REGION`                                            |
+| `accessKeyId`     | `string` | yes      | `WASABI_ACCESS_KEY_ID`, `WASABI_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string` | yes      | `WASABI_SECRET_ACCESS_KEY`, `WASABI_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
+
+`WASABI_REGION` wins over `AWS_REGION`. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
+
+### Minimal
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { wasabi } from "@visulima/storage/provider/aws/s3/clients";
+
+const storage = new S3Storage({ bucket: "uploads", ...wasabi() });
+```
+
+### Production
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { wasabi } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    ...wasabi({
+        region: "eu-central-1",
+        accessKeyId: process.env.WASABI_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.WASABI_SECRET_ACCESS_KEY!,
+    }),
+    bucket: "uploads",
+    maxUploadSize: "10GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-### With Explicit Parameters
+### Edge (`AwsLightStorage`)
 
-```typescript
-const clientConfig = wasabi({
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key",
-    region: "us-east-1",
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "eu-central-1",
+    endpoint: "https://s3.eu-central-1.wasabisys.com", // path-style: <endpoint>/<bucket>/<key>
+    accessKeyId: process.env.WASABI_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.WASABI_SECRET_ACCESS_KEY!,
 });
 ```
 
-## Regions
+## Metadata storage
 
-Wasabi regions:
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-- `us-east-1` - US East (N. Virginia)
-- `us-west-1` - US West (Oregon)
-- `eu-central-1` - EU Central (Amsterdam)
-- `eu-west-1` - EU West (London)
-- `ap-northeast-1` - Asia Pacific (Tokyo)
+## Behaviour & limits
 
-## Features
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
 
-- **Predictable Pricing**: No egress fees, simple pricing model
-- **S3-Compatible**: Full S3 API compatibility
-- **High Performance**: Fast upload and download speeds
-- **Global Regions**: Multiple regions worldwide
+## Using it with the handlers
 
-## Best Practices
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
 
-1. **Choose appropriate region** - Select region closest to your users
-2. **Monitor usage** - Track storage usage in Wasabi dashboard
-3. **Use lifecycle policies** - Automatically manage file lifecycle
-4. **Configure CORS** - Set up CORS for web applications
-5. **Enable versioning** - Use Wasabi versioning for important files
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("media/clip.mp4", buffer, { contentType: "video/mp4" });
+```
+
+## Troubleshooting
+
+| Symptom                                              | Cause / fix                                                                                                |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `403` on missing keys / not ready                    | The sub-user policy lacks `s3:ListBucket` on the bucket.                                                   |
+| `PermanentRedirect` / `AuthorizationHeaderMalformed` | `region` doesn't match the bucket's region (without `WASABI_REGION`, an `AWS_REGION` set for AWS is used). |
+| Browser CORS errors                                  | Add CORS rules for your origin with `PUT`.                                                                 |
+| `400` "chunks of at least 5 MiB" / `409`             | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.                                 |

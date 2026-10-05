@@ -5,15 +5,16 @@ import type { CreateBackblazeClientParameters } from "./types";
 /**
  * Create a Backblaze B2 client, compatible with the S3 API.
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `B2_REGION`
- * - `B2_APP_KEY_ID`
- * - `B2_APP_KEY`
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `B2_APP_KEY` / `BACKBLAZE_APP_KEY`, then `AWS_SECRET_ACCESS_KEY`
+ * - `B2_APP_KEY_ID` / `BACKBLAZE_APP_KEY_ID`, then `AWS_ACCESS_KEY_ID`
+ * - `B2_REGION` / `BACKBLAZE_REGION`, then `AWS_REGION`
  */
 const backblaze = (parameters?: CreateBackblazeClientParameters): S3ClientConfig => {
-    const applicationKey = parameters?.applicationKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.B2_APP_KEY ?? process.env.BACKBLAZE_APP_KEY;
-    const applicationKeyId = parameters?.applicationKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.B2_APP_KEY_ID ?? process.env.BACKBLAZE_APP_KEY_ID;
-    const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.B2_REGION ?? process.env.BACKBLAZE_REGION;
+    const applicationKey = parameters?.applicationKey ?? process.env.B2_APP_KEY ?? process.env.BACKBLAZE_APP_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
+    const applicationKeyId = parameters?.applicationKeyId ?? process.env.B2_APP_KEY_ID ?? process.env.BACKBLAZE_APP_KEY_ID ?? process.env.AWS_ACCESS_KEY_ID;
+    const region = parameters?.region ?? process.env.B2_REGION ?? process.env.BACKBLAZE_REGION ?? process.env.AWS_REGION;
 
     if (!region || !applicationKeyId || !applicationKey) {
         throw new Error("Missing required parameters for Backblaze B2 client.");

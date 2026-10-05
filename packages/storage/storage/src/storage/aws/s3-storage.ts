@@ -1,16 +1,18 @@
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+import { toHttpDate } from "../../utils/headers";
 import type { HttpError } from "../../utils/types";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, UploadPostOptions, UploadPostPolicy } from "../types";
 import type { FileInit, FileQuery } from "../utils/file";
 import { S3BaseStorage } from "./s3-base-storage";
 import S3ClientAdapter from "./s3-client-adapter";
 import S3File from "./s3-file";
 import S3MetaStorage from "./s3-meta-storage";
+import { createS3PostPolicy } from "./s3-post-policy";
 import { buildRangeHeader } from "./s3-utils";
 import type { AwsError, S3StorageOptions } from "./types";
 
@@ -37,10 +39,10 @@ import type { AwsError, S3StorageOptions } from "./types";
  *
  * ## Retry Behavior
  * - All S3 API calls are wrapped with configurable retry logic via `retryConfig` option
- * - Default retryable status codes: 408 (Request Timeout), 429 (Too Many Requests),
+ * - Default retryable status codes (`retryConfig.retryableStatusCodes`): 408 (Request Timeout), 429 (Too Many Requests),
  * 500 (Internal Server Error), 502 (Bad Gateway), 503 (Service Unavailable), 504 (Gateway Timeout)
  * - Retries server-side faults ($fault === "server") automatically
- * - Custom `shouldRetry` function can be provided for advanced retry logic
+ * - A custom `shouldRetry` is consulted first; returning `undefined` defers to the defaults
  * - Default retry configuration: maxRetries: 3, initialDelay: 1000ms, maxDelay: 30000ms, backoffMultiplier: 2 (exponential backoff)
  * - Retry wrapper handles transient network errors and rate limiting
  *
@@ -54,11 +56,13 @@ import type { AwsError, S3StorageOptions } from "./types";
  * - ✅ create, write, delete, get, getStream, list, update, copy, move
  * - ✅ Batch operations: deleteBatch, copyBatch, moveBatch (inherited from BaseStorage)
  * - ✅ exists: Implemented (checks metadata and S3 object)
- * - ❌ getUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
- * - ❌ getUploadUrl: Not implemented (presigned URLs available via buildPresigned for clientDirectUpload)
+ * - ✅ getReadUrl / getUploadUrl: presigned GET / PUT URLs (`@aws-sdk/s3-request-presigner`)
+ * - ✅ clientDirectUpload: presigned part URLs for direct client uploads
  */
 class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
+
+    public override readonly storageKind: string = "s3";
 
     private s3Api: S3ClientAdapter;
 
@@ -86,38 +90,34 @@ class S3Storage extends S3BaseStorage {
         // Initialize client before calling super
         const client = new S3Client(config);
 
-        super({
-            bucket,
-            clientDirectUpload: config.clientDirectUpload,
-            expiration: config.expiration?.maxAge ? { maxAge: String(config.expiration.maxAge) } : undefined,
-            filename: config.filename,
-            logger: config.logger,
-            metaStorage: config.metaStorage,
-            metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
-            partSize: config.partSize,
-            retryConfig: {
-                ...config.retryConfig,
-                shouldRetry: (error: unknown) => {
-                    // AWS SDK v3 errors
-                    const errorWithMetadata = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean };
+        // The SDK wraps a streamed body (aws-chunked encoding for its default checksum) in a stream
+        // that takes over the body's errors with no listener of its own: a body that breaks off
+        // raised an uncaught exception. The failure still reaches the caller through the request.
+        client.middlewareStack.add(
+            (next) => async (arguments_) => {
+                const { body } = arguments_.request as { body?: unknown };
 
-                    if (errorWithMetadata.$metadata) {
-                        const statusCode = errorWithMetadata.$metadata.httpStatusCode;
+                if (body instanceof Readable) {
+                    body.on("error", () => {});
+                }
 
-                        if (statusCode && [408, 429, 500, 502, 503, 504].includes(statusCode)) {
-                            return true;
-                        }
-
-                        if (errorWithMetadata.$fault === "server") {
-                            return true;
-                        }
-                    }
-
-                    // Defer to the retry engine's built-in heuristics unless the SDK
-                    // explicitly flagged the error retryable.
-                    return errorWithMetadata.retryable === true ? true : undefined;
-                },
+                return next(arguments_);
             },
+            { name: "visulimaBodyErrorGuard", step: "finalizeRequest" },
+        );
+
+        // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
+        // support for conditional headers and browser-form POST uploads is unknown.
+        const aws = config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL;
+
+        // Pass the whole config on: the base storage reads allowMIME, maxUploadSize, the hooks,
+        // validation, acl, … from it, and they were silently dropped by an explicit allowlist.
+        super({
+            ...config,
+            bucket,
+            conditional: config.conditional ?? aws,
+            metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
+            uploadPost: config.uploadPost ?? aws,
         });
 
         this.s3Api = new S3ClientAdapter(client, bucket);
@@ -135,9 +135,7 @@ class S3Storage extends S3BaseStorage {
             }
         }
 
-        if (this.config.clientDirectUpload) {
-            this.onCreate = async () => {}; // TODO: remove hook
-        }
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     /**
@@ -172,12 +170,13 @@ class S3Storage extends S3BaseStorage {
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             const s3Api = this.getS3Api();
+            const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
             const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
-                        Key: id,
+                        Key: key,
                         ...(rangeHeader !== undefined && { Range: rangeHeader }),
                     },
                     { signal },
@@ -196,7 +195,7 @@ class S3Storage extends S3BaseStorage {
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
                     ...(Expires && { "X-Upload-Expires": Expires.toString() }),
-                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
+                    ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
                 stream: Body as Readable,
@@ -231,6 +230,30 @@ class S3Storage extends S3BaseStorage {
         });
 
         return getSignedUrl(this.rawClient, command, { expiresIn: options?.expiresIn ?? 3600 });
+    }
+
+    public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        S3Storage.assertSafeId(key);
+
+        const { accessKeyId, secretAccessKey, sessionToken } = await this.rawClient.config.credentials();
+        // Let the SDK resolve the bucket URL (virtual-hosted or path-style, custom endpoint): presign a
+        // bucket-level request and keep only its origin and path.
+        const bucketUrl = new URL(await getSignedUrl(this.rawClient, new ListObjectsV2Command({ Bucket: this.bucket }), { expiresIn: 60 }));
+
+        return createS3PostPolicy({
+            accessKeyId,
+            acl: this.getAcl(),
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region: await this.rawClient.config.region(),
+            secretAccessKey,
+            sessionToken,
+            url: bucketUrl.origin + bucketUrl.pathname,
+        });
     }
 
     protected getS3Api(): S3ClientAdapter {

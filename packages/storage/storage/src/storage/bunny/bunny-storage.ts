@@ -4,7 +4,7 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunnyFile from "./bunny-file";
@@ -138,6 +138,8 @@ const wrapBunnyError = (error: unknown, operation: string): UploadError => {
 class BunnyStorage extends BaseStorage<BunnyFile> {
     public static override readonly name: string = "bunny";
 
+    public override readonly storageKind: string = "bunny";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -181,14 +183,10 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -275,10 +273,7 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -290,26 +285,23 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunnyFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: BunnyFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as path
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.bunnyPath ?? toBunnyPath(file?.name ?? id);
 
-            // The Bunny SDK's `remove` returns `(await fetch(...)).ok` —
-            // `true` on 2xx, `false` on any non-2xx (incl. 404). It only
-            // throws on network errors. We treat `false` as "best-effort
-            // delete" (missing-or-failed) since the response status is
-            // unrecoverable from the boolean; idempotent delete is the
-            // intended contract here.
+            // The Bunny SDK's `remove` returns `(await fetch(...)).ok` — `false` on any non-2xx, 404
+            // included, and only throws on network errors. A `false` is only a success when the
+            // object is really gone, so look it up before dropping the metadata.
+            let removed: boolean;
+
             try {
-                await this.runOperation(options, () => BunnyStorageSDK.file.remove(this.client, path));
+                removed = await this.runOperation(options, () => BunnyStorageSDK.file.remove(this.client, path));
             } catch (error) {
                 throw wrapBunnyError(error, "delete");
+            }
+
+            if (!removed && (await this.findStoredObject(fromBunnyPath(path), options)) !== undefined) {
+                return throwErrorCode(ERRORS.STORAGE_ERROR, `Bunny Storage: failed to delete "${path}"`);
             }
 
             if (file) {
@@ -332,17 +324,42 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = toBunnyPath(id);
+        let entry: BunnyStorageSDK.file.StorageFile;
+
+        try {
+            entry = await this.runOperation(options, () => BunnyStorageSDK.file.get(this.client, path));
+        } catch (error) {
+            if (/^file not found/iu.test((error as { message?: string } | null)?.message ?? "")) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        if (entry.isDirectory) {
+            return undefined;
+        }
+
+        return {
+            contentType: entry.contentType ?? undefined,
+            etag: entry.checksum ?? undefined,
+            extra: { bunnyChecksum: entry.checksum ?? undefined, bunnyPath: path, modifiedAt: entry.lastChanged?.toISOString() },
+            size: typeof entry.length === "number" ? entry.length : 0,
+        };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: BunnyFile | undefined;
-            let path: string;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                path = stored.bunnyPath ?? toBunnyPath(stored.name ?? id);
-            } catch {
-                path = toBunnyPath(id);
+            // Outside the try: an expired upload must answer GONE, not fall back to its object.
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const path = stored ? (stored.bunnyPath ?? toBunnyPath(stored.name ?? id)) : toBunnyPath(id);
 
             let entry: BunnyStorageSDK.file.StorageFile;
 
@@ -425,37 +442,52 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                let entries: BunnyStorageSDK.file.StorageFile[];
+                const files: BunnyFile[] = [];
+                // Bunny lists one directory level at a time, so walk the subdirectories breadth-first.
+                const folders = ["/"];
 
-                try {
-                    entries = await this.runOperation(options, () => BunnyStorageSDK.file.list(this.client, "/"));
-                } catch (error) {
-                    throw wrapBunnyError(error, "list");
-                }
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const directory = folder;
+                    let entries: BunnyStorageSDK.file.StorageFile[];
 
-                return entries
-                    .filter((entry) => !entry.isDirectory)
-                    .slice(0, limit)
-                    .map((entry) => {
+                    try {
+                        entries = await this.runOperation(options, () => BunnyStorageSDK.file.list(this.client, directory));
+                    } catch (error) {
+                        throw wrapBunnyError(error, "list");
+                    }
+
+                    for (const entry of entries) {
                         const path =
                             entry.path.endsWith(entry.objectName) || !entry.objectName ? entry.path : `${entry.path.replace(/\/+$/u, "")}/${entry.objectName}`;
-                        const key = fromBunnyPath(path);
-                        const file = new BunnyFile({
-                            contentType: entry.contentType || "application/octet-stream",
-                            metadata: {},
-                            originalName: key,
-                        });
+                        // Bunny reports paths as `/{zone}/{key}`; ids carry only the key.
+                        const zonePrefix = `/${entry.storageZoneName || this.zoneName}/`;
+                        const key = fromBunnyPath(path.startsWith(zonePrefix) ? path.slice(zonePrefix.length) : path).replace(/\/+$/u, "");
 
-                        file.id = key;
-                        file.name = key;
-                        file.bunnyPath = toBunnyPath(key);
-                        file.bunnyChecksum = entry.checksum ?? undefined;
-                        file.ETag = entry.checksum ?? undefined;
-                        file.size = entry.length;
-                        file.modifiedAt = entry.lastChanged?.toISOString();
+                        if (entry.isDirectory) {
+                            folders.push(`${toBunnyPath(key)}/`);
+                        } else if (files.length < limit) {
+                            const file = new BunnyFile({
+                                contentType: entry.contentType || "application/octet-stream",
+                                metadata: {},
+                                originalName: key,
+                            });
 
-                        return file;
-                    });
+                            file.id = key;
+                            file.name = key;
+                            file.bunnyPath = toBunnyPath(key);
+                            file.bunnyChecksum = entry.checksum ?? undefined;
+                            file.ETag = entry.checksum ?? undefined;
+                            file.size = entry.length;
+                            // purge() ages non-rolling uploads by createdAt; without it nothing ever expires.
+                            file.createdAt = entry.dateCreated?.toISOString();
+                            file.modifiedAt = entry.lastChanged?.toISOString();
+
+                            files.push(file);
+                        }
+                    }
+                }
+
+                return files;
             },
             { limit },
         );
@@ -489,8 +521,6 @@ class BunnyStorage extends BaseStorage<BunnyFile> {
             "Bunny Storage: presigned PUT URLs are not supported — writes go through the Storage API with an AccessKey header. Upload server-side via the SDK or proxy through your application.",
         );
     }
-
-    private internalOnComplete = (file: BunnyFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default BunnyStorage;

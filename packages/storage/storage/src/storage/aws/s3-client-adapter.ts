@@ -19,6 +19,7 @@ import {
     DeleteObjectCommand,
     GetObjectCommand,
     HeadObjectCommand,
+    ListMultipartUploadsCommand,
     ListObjectsV2Command,
     ListPartsCommand,
     UploadPartCommand,
@@ -26,7 +27,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import type { Part, S3ApiOperations, S3CallOptions } from "./s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "./s3-api";
 
 // Use global ReadableStream type for interface compatibility
 type ReadableStream = globalThis.ReadableStream;
@@ -110,6 +111,8 @@ class S3ClientAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -118,6 +121,8 @@ class S3ClientAdapter implements S3ApiOperations {
     ): Promise<{ ETag?: string; Location: string }> {
         const command = new CompleteMultipartUploadCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { IfNoneMatch: params.IfNoneMatch }),
             Key: params.Key,
             MultipartUpload: {
                 Parts: params.Parts.map(({ ETag, PartNumber }) => {
@@ -149,10 +154,33 @@ class S3ClientAdapter implements S3ApiOperations {
         await this.client.send(command, sendOptions(options));
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
+    public async listMultipartUploads(
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }> {
+        const response = await this.client.send(
+            new ListMultipartUploadsCommand({ Bucket: params.Bucket, KeyMarker: params.KeyMarker, UploadIdMarker: params.UploadIdMarker }),
+            sendOptions(options),
+        );
+
+        return {
+            IsTruncated: response.IsTruncated,
+            NextKeyMarker: response.NextKeyMarker,
+            NextUploadIdMarker: response.NextUploadIdMarker,
+            Uploads: response.Uploads?.map(({ Initiated, Key, UploadId }) => {
+                return { Initiated, Key, UploadId };
+            }),
+        };
+    }
+
+    public async listParts(
+        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }> {
         const command = new ListPartsCommand({
             Bucket: params.Bucket,
             Key: params.Key,
+            PartNumberMarker: params.PartNumberMarker,
             UploadId: params.UploadId,
         });
 
@@ -172,11 +200,11 @@ class S3ClientAdapter implements S3ApiOperations {
             }
         }
 
-        return { Parts: parts.length > 0 ? parts : undefined };
+        return { IsTruncated: response.IsTruncated, NextPartNumberMarker: response.NextPartNumberMarker, Parts: parts.length > 0 ? parts : undefined };
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string; Range?: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -189,6 +217,7 @@ class S3ClientAdapter implements S3ApiOperations {
     }> {
         const command = new GetObjectCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
             Key: params.Key,
             ...(params.Range !== undefined && { Range: params.Range }),
         });
@@ -250,19 +279,27 @@ class S3ClientAdapter implements S3ApiOperations {
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const command = new DeleteObjectCommand({
             Bucket: params.Bucket,
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
             Key: params.Key,
         });
 
         await this.client.send(command, sendOptions(options));
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const commandInput: CopyObjectCommandInput = {
+            ...(params.ACL !== undefined && { ACL: params.ACL as CopyObjectCommandInput["ACL"] }),
             Bucket: params.Bucket,
             CopySource: params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { CopySourceIfMatch: params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { IfMatch: params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { IfNoneMatch: params.IfNoneMatch }),
             Key: params.Key,
         };
 

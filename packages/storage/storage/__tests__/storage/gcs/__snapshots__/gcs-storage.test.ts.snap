@@ -53,6 +53,8 @@ exports[`gcs > .write() > should make API request and set file status and bytesW
 {
   "bytesWritten": 64,
   "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "expiredAt": 1643763600000,
   "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
   "metadata": {
     "custom": "",

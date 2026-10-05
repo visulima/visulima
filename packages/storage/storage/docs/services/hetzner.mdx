@@ -4,79 +4,145 @@
 
 ## Overview
 
-Hetzner Object Storage is an S3-compatible object storage service hosted in Hetzner data centers (Falkenstein, Nuremberg, Helsinki). It's priced per TB and well-suited for European workloads with data-residency requirements.
+Hetzner Object Storage is S3-compatible storage in Hetzner's EU locations. Use [`S3Storage`](./amazon-s3.mdx) (Node.js) or [`AwsLightStorage`](./aws-light.mdx) (edge runtimes). The `hetzner()` helper takes a location (`fsn1`, `nbg1` or `hel1`), uses it as the region and builds `https://<location>.your-objectstorage.com`.
 
 ## Installation
 
 ```sh
-npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+# S3Storage (Node.js)
+pnpm add @visulima/storage @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner
+
+# or AwsLightStorage (edge)
+pnpm add @visulima/storage aws4fetch
 ```
 
-## Usage
+## Provider setup
 
-Hetzner Object Storage is S3-compatible, so use the S3Storage with the Hetzner endpoint:
+1. **Create a bucket** — Hetzner Console → your project → _Object Storage_ → _Create Bucket_; pick the location and keep visibility **private**.
+2. **Create S3 credentials** — project → _Security_ → _S3 credentials_ → _Generate credentials_. The secret is shown once. Credentials are per project and reach every bucket in it, so put uploads in their own project if you need isolation.
+3. **CORS** — needed only when the browser calls the bucket directly (presigned URLs, `clientDirectUpload`). Set it through the S3 API:
 
-```typescript
-import { S3Storage } from "@visulima/storage/provider/aws";
-import { hetzner } from "@visulima/storage/provider/aws/s3/clients";
+    ```json
+    {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["https://app.example.com"],
+                "AllowedMethods": ["GET", "HEAD", "PUT"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["ETag"],
+                "MaxAgeSeconds": 3600
+            }
+        ]
+    }
+    ```
 
-const clientConfig = hetzner({
-    accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
-    location: "fsn1", // fsn1 | nbg1 | hel1
-});
+    ```sh
+    aws s3api put-bucket-cors --endpoint-url https://fsn1.your-objectstorage.com --bucket uploads --cors-configuration file://cors.json
+    ```
 
-const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
-});
-```
+4. **Lifecycle** — if your plan supports S3 lifecycle rules, add `AbortIncompleteMultipartUpload` (see [Amazon S3](./amazon-s3.mdx)); `purge()` only aborts uploads this storage started.
 
 ## Configuration
 
-### Locations
+### `hetzner()` helper
 
-| Code   | Site            |
-| ------ | --------------- |
-| `fsn1` | Falkenstein, DE |
-| `nbg1` | Nuremberg, DE   |
-| `hel1` | Helsinki, FI    |
+`import { hetzner } from "@visulima/storage/provider/aws/s3/clients"` returns an `S3ClientConfig` (`credentials`, `endpoint`, `region`, `forcePathStyle: false`):
 
-The `location` is used as both the AWS region and the endpoint subdomain (`https://<location>.your-objectstorage.com`).
+| Parameter         | Type                         | Required | Env fallback (in order)                                                    |
+| ----------------- | ---------------------------- | -------- | -------------------------------------------------------------------------- |
+| `location`        | `"fsn1" \| "hel1" \| "nbg1"` | yes      | `HETZNER_LOCATION`                                                         |
+| `accessKeyId`     | `string`                     | yes      | `HETZNER_ACCESS_KEY_ID`, `HETZNER_ACCESS_KEY`, `AWS_ACCESS_KEY_ID`         |
+| `secretAccessKey` | `string`                     | yes      | `HETZNER_SECRET_ACCESS_KEY`, `HETZNER_SECRET_KEY`, `AWS_SECRET_ACCESS_KEY` |
 
-### Environment Variables
+Any other location throws `Invalid Hetzner location`. All other options are the [`S3Storage` options](./amazon-s3.mdx#configuration).
 
-```typescript
-process.env.HETZNER_ACCESS_KEY_ID = "your-access-key";
-process.env.HETZNER_SECRET_ACCESS_KEY = "your-secret-key";
-process.env.HETZNER_LOCATION = "fsn1";
+### Minimal
 
-const clientConfig = hetzner(); // Uses environment variables
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { hetzner } from "@visulima/storage/provider/aws/s3/clients";
+
+// Reads HETZNER_LOCATION and the access key env vars
+const storage = new S3Storage({ bucket: "uploads", ...hetzner() });
+```
+
+### Production
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { hetzner } from "@visulima/storage/provider/aws/s3/clients";
+
 const storage = new S3Storage({
-    bucket: "my-bucket",
-    ...clientConfig,
+    ...hetzner({
+        location: "fsn1",
+        accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
+    }),
+    bucket: "uploads",
+    maxUploadSize: "5GB",
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
+    logger: console,
 });
 ```
 
-### With Explicit Parameters
+### Edge (`AwsLightStorage`)
 
-```typescript
-const clientConfig = hetzner({
-    accessKeyId: "your-access-key",
-    secretAccessKey: "your-secret-key",
-    location: "nbg1",
+```ts
+import { AwsLightStorage } from "@visulima/storage/provider/aws-light";
+
+const storage = new AwsLightStorage({
+    bucket: "uploads",
+    region: "fsn1",
+    endpoint: "https://fsn1.your-objectstorage.com", // path-style: <endpoint>/<bucket>/<key>
+    accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
 });
 ```
 
-## Features
+## Metadata storage
 
-- **EU data residency**: All locations are in the EU (Germany, Finland)
-- **S3-Compatible**: Works with the AWS S3 SDK and any S3-compatible tooling
-- **Flat pricing**: Transparent per-TB pricing with no surprise egress fees on most plans
+Same as [Amazon S3](./amazon-s3.mdx#metadata-storage): zero-byte `<id>.META` objects in the bucket hold each upload's record, are skipped by `list()`/`purge()`, kept after completion, and shared by every instance. `metaStorageConfig: { bucket }` or `{ directory }` moves them.
 
-## Best Practices
+## Behaviour & limits
 
-1. **Pin your location** — keep buckets close to your compute to minimize latency
-2. **Use environment variables** — never hard-code keys
-3. **Configure CORS** in the Hetzner console for browser uploads
-4. **Generate scoped keys** per environment / service via the Hetzner console
+See [Amazon S3](./amazon-s3.mdx#behaviour--limits): sequential writes, 5 MiB minimum part size except for the last part, range reads, native `delimiter` listing, presigned URLs with `S3Storage`, `purge()` limited to this storage's uploads.
+
+## Using it with the handlers
+
+```ts
+// Node (Express)
+import express from "express";
+import { Tus } from "@visulima/storage/handler/http/node";
+
+const app = express();
+
+app.use("/files", new Tus({ storage }).handle);
+```
+
+```ts
+// Fetch
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export default { fetch: (request: Request) => rest.fetch(request) };
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("invoices/2024-01.pdf", buffer, { contentType: "application/pdf" });
+```
+
+## Troubleshooting
+
+| Symptom                                  | Cause / fix                                                                        |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `Invalid Hetzner location`               | `location`/`HETZNER_LOCATION` must be `fsn1`, `nbg1` or `hel1`.                    |
+| `NoSuchBucket` / `SignatureDoesNotMatch` | The bucket lives in another location than the endpoint; use the bucket's location. |
+| `403`                                    | Credentials from another project. Generate S3 credentials in the bucket's project. |
+| Browser CORS errors                      | Put CORS rules on the bucket (see above).                                          |
+| `400` "chunks of at least 5 MiB" / `409` | Use a client chunk size ≥ 5 MiB and resume from the offset `HEAD` returns.         |

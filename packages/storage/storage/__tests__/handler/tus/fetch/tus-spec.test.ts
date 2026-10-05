@@ -70,6 +70,32 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             await expect(last.text()).resolves.toBe("");
         });
 
+        it("should give a second client creating an identical file its own upload (#921)", async () => {
+            expect.assertions(6);
+
+            const { create, patch, storage } = setup();
+            const sameFile = { "Upload-Metadata": `filename ${b64("contract.pdf")},lastModified ${b64("1700000000000")}` };
+            const alice = await create(10, sameFile);
+
+            await patch(alice, 0, "ALICE");
+
+            const bob = await create(10, sameFile);
+
+            expect(bob).not.toBe(alice);
+
+            await patch(bob, 0, "BOB!!");
+
+            const done = await patch(alice, 5, "ALICE");
+
+            expect(done.status).toBe(204);
+
+            const id = new URL(alice).pathname.split("/").pop() as string;
+            const stored = await storage.get({ id });
+
+            expect(Buffer.from(stored.content).toString()).toBe("ALICEALICE");
+            await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
+        });
+
         it("should answer 409 without modifying the upload when Upload-Offset does not match", async () => {
             expect.assertions(4);
 
@@ -84,6 +110,27 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             expect(stale.status).toBe(409);
             expect(ahead.status).toBe(409);
             await expect(offsetOf(url)).resolves.toBe("5");
+        });
+
+        it("should accept the PATCH media type with parameters and refuse another one with 415", async () => {
+            expect.assertions(5);
+
+            const { create, offsetOf, patch, send } = setup();
+            const url = await create(10);
+
+            await expect(statusOf(patch(url, 0, "hello", { "Content-Type": "Application/Offset+Octet-Stream; charset=binary" }))).resolves.toBe(204);
+            await expect(statusOf(patch(url, 5, "world", { "Content-Type": "application/octet-stream" }))).resolves.toBe(415);
+            await expect(offsetOf(url)).resolves.toBe("5");
+
+            // creation-with-upload compares the media type the same way.
+            const created = await send(
+                "POST",
+                BASE,
+                { "Content-Type": "application/offset+octet-stream; charset=binary", "Upload-Length": "5", "Upload-Metadata": `name ${b64("a.bin")}` },
+                "hello",
+            );
+
+            expect(created.headers.get("upload-offset")).toBe("5");
         });
 
         it("should reject a malformed Upload-Offset with 400", async () => {
@@ -211,7 +258,46 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
         });
     });
 
+    describe("size limits", () => {
+        it("should answer 413 for a chunk past the upload length or past maxUploadSize while deferred", async () => {
+            expect.assertions(5);
+
+            const { create, offsetOf, patch, send } = setup({ maxUploadSize: 100 });
+            const url = await create(10);
+
+            await expect(statusOf(patch(url, 5, "x".repeat(12)))).resolves.toBe(409);
+            await expect(statusOf(patch(url, 0, "x".repeat(12)))).resolves.toBe(413);
+
+            const deferred = await send("POST", BASE, { "Upload-Defer-Length": "1" });
+            const deferredUrl = new URL(deferred.headers.get("location") as string, BASE).toString();
+
+            await expect(statusOf(patch(deferredUrl, 0, "x".repeat(150)))).resolves.toBe(413);
+            await expect(offsetOf(deferredUrl)).resolves.toBe("0");
+        });
+    });
+
+    describe("get", () => {
+        it("should answer GET <upload>/metadata with the upload as JSON", async () => {
+            expect.assertions(3);
+
+            const { create, send } = setup();
+            const url = await create(10);
+            const response = await send("GET", `${url}/metadata`);
+
+            expect(response.status).toBe(200);
+            await expect(response.json()).resolves.toMatchObject({ id: new URL(url).pathname.split("/").pop(), size: 10 });
+        });
+    });
+
     describe("concatenation", () => {
+        it("should require a length for a partial upload", async () => {
+            expect.assertions(1);
+
+            const { send } = setup();
+
+            await expect(statusOf(send("POST", BASE, { "Upload-Concat": "partial" }))).resolves.toBe(400);
+        });
+
         it("should concatenate partial uploads referenced by absolute and relative URL", async () => {
             expect.assertions(7);
 
@@ -240,7 +326,8 @@ describe("tus 1.0 spec compliance (fetch handler)", () => {
             const head = await send("HEAD", new URL(final.headers.get("location") as string, BASE).toString());
 
             expect(head.headers.get("upload-length")).toBe("11");
-            expect(head.headers.get("upload-concat")).toMatch(/^final;/);
+            // As received in the creation request, not rebuilt from the parsed ids.
+            expect(head.headers.get("upload-concat")).toBe(`final;${first} ${new URL(second).pathname}`);
             // Internal bookkeeping keys are not echoed as client metadata.
             expect(head.headers.get("upload-metadata") ?? "").not.toMatch(/partialIds|uploadConcat/);
         });

@@ -1,21 +1,35 @@
 import { EventEmitter } from "node:events";
-import type { IncomingMessage } from "node:http";
+import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
+import type { Readable } from "node:stream";
 import { format } from "node:url";
 
 import { paginate } from "@visulima/pagination";
-import createHttpError from "http-errors";
+import createHttpError, { isHttpError } from "http-errors";
 import mime from "mime";
 
 import type { BaseStorage } from "../../storage/storage";
 import type { UploadFile } from "../../storage/utils/file";
 import type MediaTransformer from "../../transformer/media-transformer";
+import { getContentTypeFromFormat } from "../../transformer/utils";
 import type { ErrorResponses } from "../../utils/errors";
-import { ErrorMap, ERRORS } from "../../utils/errors";
-import { HeaderUtilities } from "../../utils/headers";
+import { ErrorMap, ERRORS, isUploadError } from "../../utils/errors";
+import { HeaderUtilities, toETagHeader, toHttpDate } from "../../utils/headers";
 import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
-import type { ResponseBodyType } from "../../utils/types";
+import type { HttpError, ResponseBody, ResponseBodyType, UploadResponse } from "../../utils/types";
+import { isValidationError } from "../../utils/validator";
 import type { ResponseFile, ResponseList, UploadOptions } from "../types";
 import { parseIntegerHeader } from "../utils/request-parser";
+import { rangeIfCurrent } from "../utils/stream-utils";
+
+/**
+ * What a `Location` is built from: the request URL, plus on Node the headers and connection its
+ * origin is recovered from (a Node request URL is only a path).
+ */
+export interface LocationSource {
+    headers?: IncomingHttpHeaders;
+    socket?: { encrypted?: boolean };
+    url: string;
+}
 
 /**
  * A file addressed by a GET/download path.
@@ -23,10 +37,12 @@ import { parseIntegerHeader } from "../utils/request-parser";
 export interface FileTarget {
     /** Extension given in the URL (`id.ext`), used to refine image content types. */
     ext?: string;
+    /** Whether `/:id/download` was requested (served as an attachment). */
+    isDownloadRequest: boolean;
+    /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
+    isGeneratedId: boolean;
     /** Whether `/:id/metadata` was requested. */
     isMetadataRequest: boolean;
-    /** Whether the id has the shape of a generated id; other ids may also be a collection path. */
-    isUuidLike: boolean;
     /** The file id. */
     uuid: string;
 }
@@ -58,16 +74,28 @@ export const parseFilePath = (path: string): FileTarget | undefined => {
 
     assertSafeUrlId(uuid);
 
-    return { ext: extensionMatch?.[2], isMetadataRequest: hasActionSegment && lastSegment === "metadata", isUuidLike: uuidRegex.test(uuid), uuid };
+    return {
+        ext: extensionMatch?.[2],
+        isDownloadRequest: hasActionSegment && lastSegment === "download",
+        // Generated ids: UUID-like, or a 21-character nanoid.
+        isGeneratedId: uuidRegex.test(uuid) || /^[\w-]{21}$/u.test(uuid),
+        isMetadataRequest: hasActionSegment && lastSegment === "metadata",
+        uuid,
+    };
 };
 
 /**
  * Refines an image content type from the extension given in the URL (e.g. `id.webp`).
- * @param contentType Stored content type
+ * @param contentType Stored content type; a provider may report none for an object stored without one
  * @param extension Extension from the URL
- * @returns The content type to serve
+ * @returns The content type to serve, `application/octet-stream` when none is known
  */
-export const resolveContentType = (contentType: string, extension: string | undefined): string => {
+export const resolveContentType = (contentType: string | undefined, extension: string | undefined): string => {
+    // The URL's extension never types an untyped file: "id.html" must not turn its bytes into a page.
+    if (!contentType) {
+        return "application/octet-stream";
+    }
+
     if (extension === undefined || !contentType.includes("image")) {
         return contentType;
     }
@@ -81,8 +109,8 @@ export const resolveContentType = (contentType: string, extension: string | unde
 const fileStateHeaders = (file: Pick<UploadFile, "ETag" | "expiredAt" | "modifiedAt"> | undefined): Record<string, string> => {
     return {
         ...(file?.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
-        ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": file.modifiedAt.toString() }),
-        ...(file?.ETag === undefined ? {} : { ETag: file.ETag }),
+        ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": toHttpDate(file.modifiedAt) }),
+        ...(file?.ETag === undefined ? {} : { ETag: toETagHeader(file.ETag) }),
     };
 };
 
@@ -192,63 +220,74 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
 
     /**
      * Parses HTTP Range header and returns start/end byte positions for partial content requests.
+     * A malformed or multi-range header is ignored (the full file is sent); an end past the file is
+     * read as the remainder of the file (RFC 9110 §14.1.2).
      * @param rangeHeader HTTP Range header value (e.g., "bytes=0-1023").
      * @param fileSize Total size of the file in bytes.
-     * @returns Object with start and end positions, or undefined if range is invalid.
+     * @returns Object with start and end positions, or undefined if the range is to be ignored.
+     * @throws {HttpError} 416 with `Content-Range: bytes *\/size` when no requested byte exists.
      */
     // eslint-disable-next-line class-methods-use-this
     public parseRangeHeader(rangeHeader: string | undefined, fileSize: number): { end: number; start: number } | undefined {
-        if (!rangeHeader?.startsWith("bytes=")) {
+        const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader?.trim() ?? "");
+
+        // Callers pass 0 for an unknown size: send the whole file then.
+        if (!match || (!match[1] && !match[2]) || fileSize <= 0) {
             return undefined;
         }
 
-        const ranges = rangeHeader.slice(6).split(",");
-
-        if (ranges.length !== 1) {
-            // Multiple ranges not supported
-            return undefined;
-        }
-
-        const range = ranges[0]?.trim();
-
-        if (!range) {
-            return undefined;
-        }
-
-        const parts = range.split("-");
-
-        if (parts.length !== 2) {
-            return undefined;
-        }
-
-        const [startString, endString] = parts;
+        const [, startString, endString] = match;
         let start: number;
-        let end: number;
+        let end = fileSize - 1;
 
-        if (startString && endString) {
-            // bytes=start-end
-            start = Number.parseInt(startString, 10);
-            end = Number.parseInt(endString, 10);
-        } else if (startString && !endString) {
-            // bytes=start- (open-ended range)
-            start = Number.parseInt(startString, 10);
-            end = fileSize - 1;
-        } else if (!startString && endString) {
-            // bytes=-end (suffix range)
-            const suffixLength = Number.parseInt(endString, 10);
+        if (startString) {
+            start = Number(startString);
 
-            start = Math.max(0, fileSize - suffixLength);
-            end = fileSize - 1;
+            if (endString) {
+                end = Math.min(Number(endString), fileSize - 1);
+
+                if (Number(endString) < start) {
+                    return undefined;
+                }
+            }
         } else {
-            return undefined; // Invalid range (both empty)
+            // bytes=-N: the last N bytes
+            const suffixLength = Number(endString);
+
+            start = suffixLength === 0 ? fileSize : Math.max(0, fileSize - suffixLength);
         }
 
-        // Validate range
-        if (Number.isNaN(start) || Number.isNaN(end) || start >= fileSize || end >= fileSize || start > end) {
-            return undefined;
+        if (start >= fileSize) {
+            throw createHttpError(416, "Range not satisfiable", { headers: { "Content-Range": `bytes */${String(fileSize)}` } });
         }
 
         return { end, start };
+    }
+
+    /**
+     * The byte range a GET of a streamed file asks for: its `Range` header, dropped when an
+     * `If-Range` no longer matches the file. The file's stream is destroyed when the range can't be
+     * satisfied, since no response will consume it.
+     * @param file Streamed file response.
+     * @param rangeHeader `Range` header value.
+     * @param ifRange `If-Range` header value.
+     * @param headers Headers of the file response, compared against `If-Range`.
+     * @returns The range to send, or `undefined` for the whole file.
+     * @throws {HttpError} 416 when no requested byte exists.
+     */
+    public resolveRange(
+        file: { size?: number; stream: Readable },
+        rangeHeader: string | undefined,
+        ifRange: string | undefined,
+        headers: Record<string, unknown>,
+    ): { end: number; start: number } | undefined {
+        try {
+            return this.parseRangeHeader(rangeIfCurrent(rangeHeader, ifRange, headers), file.size || 0);
+        } catch (error) {
+            file.stream.destroy();
+
+            throw error;
+        }
     }
 
     /**
@@ -257,33 +296,55 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
      *
      * When `useRelativeLocation` is `false` (the default) the absolute origin is resolved from, in
      * order: an absolute `requestUrl` (the fetch runtimes pass `request.url`, which carries the
-     * origin), then the host/proto derived from `requestHeaders` (the Node runtimes pass the request
-     * headers, since `request.url` there is only a path). If neither yields a host the Location
-     * stays relative rather than emitting a bogus `http://localhost` origin.
+     * origin), then the host/proto derived from the headers of `request` (the Node runtimes pass it,
+     * since `request.url` there is only a path). When no proxy header names the protocol, a TLS
+     * connection gives `https:` and any other stays protocol-relative (`//host`). If neither yields
+     * a host the Location stays relative rather than emitting a bogus `http://localhost` origin.
      * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
      * @param file File object containing ID and content type
-     * @param requestHeaders Optional request headers used to recover host/proto on Node runtimes.
+     * @param request Headers and connection of a Node request, to recover its host/proto.
      * @returns Constructed file URL with extension based on content type
      */
-    protected buildFileUrlFromString(requestUrl: string, file: TFile, requestHeaders?: IncomingMessage["headers"]): string {
+    protected buildFileUrlFromString(requestUrl: string, file: TFile, request?: Omit<LocationSource, "url">): string {
         const url = new URL(requestUrl, "http://localhost");
         const { pathname } = url;
         const query = Object.fromEntries(url.searchParams.entries());
         const relative = format({ pathname: `${pathname.replace(/\/$/, "")}/${file.id}`, query });
 
-        let baseUrl = "";
+        return `${this.locationOrigin(requestUrl, request)}${relative}.${mime.getExtension(file.contentType)}`;
+    }
 
-        if (!this.storage.config.useRelativeLocation) {
-            // An absolute requestUrl (fetch runtimes) already carries the origin.
-            if (/^https?:\/\//iu.test(requestUrl)) {
-                baseUrl = url.origin;
-            } else if (requestHeaders) {
-                // Node runtimes: request.url is a path, so recover host/proto from the headers.
-                baseUrl = getBaseUrl({ headers: requestHeaders } as IncomingMessage);
-            }
+    /**
+     * The origin an absolute `Location` starts with, or `""` for a relative one: `useRelativeLocation`
+     * is set, or neither an absolute `requestUrl` nor the request headers name a host.
+     * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
+     * @param request Headers and connection of a Node request.
+     * @returns The origin, or `""`.
+     */
+    protected locationOrigin(requestUrl: string, request?: Omit<LocationSource, "url">): string {
+        if (this.storage.config.useRelativeLocation) {
+            return "";
         }
 
-        return `${baseUrl}${relative}.${mime.getExtension(file.contentType)}`;
+        // An absolute requestUrl (fetch runtimes) already carries the origin.
+        if (/^https?:\/\//iu.test(requestUrl)) {
+            return new URL(requestUrl).origin;
+        }
+
+        if (!request?.headers) {
+            return "";
+        }
+
+        // Node runtimes: request.url is a path, so recover host/proto from the headers.
+        const base = getBaseUrl({ headers: request.headers } as IncomingMessage);
+
+        if (!base.startsWith("//")) {
+            return base;
+        }
+
+        // No forwarded protocol. A plain connection may sit behind a TLS-terminating proxy, where
+        // "http:" would be mixed content, so only TLS on this connection names a scheme.
+        return request.socket?.encrypted ? `https:${base}` : base;
     }
 
     /**
@@ -300,6 +361,60 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         return HeaderUtilities.getPreferredMediaType(acceptHeader, supportedTypes);
+    }
+
+    /**
+     * Converts an error into the response sent to the client, after the storage's onError hook ran.
+     * @param error Error to convert
+     * @returns The error response
+     */
+    protected async buildErrorResponse(error: Error): Promise<UploadResponse> {
+        let httpError: HttpError;
+        let unexpected = false;
+
+        if (isUploadError(error)) {
+            // A custom code (throwErrorCode accepts any string) has no mapped response.
+            httpError = (this.internalErrorResponses[error.UploadErrorCode] ?? this.internalErrorResponses[ERRORS.UNKNOWN_ERROR]) as HttpError;
+        } else if (!isValidationError(error) && !isHttpError(error)) {
+            httpError = this.storage.normalizeError(error);
+            unexpected = true;
+        } else {
+            // For http-errors, pass through without body - onError will format it
+            httpError = {
+                ...error,
+                code: (error as HttpError).code || error.name,
+                headers: (error as HttpError).headers || {},
+                message: error.message,
+                name: error.name,
+                statusCode: (error as HttpError).statusCode || 500,
+            };
+        }
+
+        // Call onError hook - user can modify the error object in place
+        await this.storage.onError(httpError);
+
+        // An unexpected error's message carries internals (paths, SDK text); onError has seen it, the client doesn't.
+        if (unexpected && (httpError.statusCode ?? 500) >= 500 && httpError.body === undefined) {
+            httpError = { ...httpError, message: ErrorMap.UnknownError.message };
+        }
+
+        // A body object set by onError is sent as-is; otherwise the error is formatted into
+        // `body.error`, with a string body as its message.
+        if (typeof httpError.body === "object" && httpError.body !== null) {
+            return { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
+        }
+
+        return {
+            body: {
+                error: {
+                    code: httpError.code || httpError.name || "Error",
+                    message: httpError.body || httpError.message || "Unknown error",
+                    name: httpError.name || "Error",
+                },
+            },
+            headers: httpError.headers,
+            statusCode: httpError.statusCode || 500,
+        };
     }
 
     /**
@@ -363,7 +478,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 throw error;
             }
 
-            if (!target.isUuidLike) {
+            if (!target.isGeneratedId) {
                 // Ambiguous segment that is not a stored file - treat as list request
                 return undefined;
             }
@@ -372,8 +487,26 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         try {
-            return (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+            // Not every adapter checks expiry on read; the metadata decides for all of them.
+            await this.storage.checkIfExpired(fileMeta);
+
+            const response =
+                (await this.getTransformedResponse(target.uuid, searchParams)) ?? (await this.getStoredFileResponse(fileMeta, target.ext, hasRange));
+
+            if (target.isDownloadRequest) {
+                response.headers = {
+                    ...response.headers,
+                    "Content-Disposition": HeaderUtilities.createContentDisposition({ filename: fileMeta.originalName || target.uuid, type: "attachment" }),
+                };
+            }
+
+            return response;
         } catch (error: unknown) {
+            // The storage refuses an expired upload on read; answer 410 like TUS does, not 404.
+            if ((error as { UploadErrorCode?: string }).UploadErrorCode === ERRORS.GONE) {
+                throw createHttpError(410, "File has expired");
+            }
+
             if (isNotFound(error)) {
                 throw createHttpError(404, "File not found");
             }
@@ -432,7 +565,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 content: transformed.buffer,
                 headers: {
                     "Content-Length": String(transformed.size),
-                    "Content-Type": `${transformed.mediaType}/${transformed.format}`,
+                    "Content-Type": getContentTypeFromFormat(transformed.format, transformed.mediaType) ?? "application/octet-stream",
                     "X-Media-Type": transformed.mediaType,
                     "X-Original-Format": transformed.originalFile?.contentType?.split("/")[1] || "",
                     "X-Transformed-Format": transformed.format,
@@ -470,7 +603,13 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 return {
                     ...fileMeta,
                     contentType,
-                    headers: { ...streamResult.headers, "Accept-Ranges": "bytes", "Content-Type": contentType },
+                    headers: {
+                        ...Object.fromEntries(
+                            Object.entries(streamResult.headers ?? {}).map(([name, value]) => [name, name.toLowerCase() === "etag" ? toETagHeader(value) : value]),
+                        ),
+                        "Accept-Ranges": "bytes",
+                        "Content-Type": contentType,
+                    },
                     size: streamResult.size ?? fileMeta.size,
                     statusCode: 200,
                     stream: streamResult.stream,
@@ -486,7 +625,7 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
         }
 
         const file = await this.storage.get({ id: fileMeta.id });
-        const contentType = resolveContentType(file.contentType, extension);
+        const contentType = resolveContentType(file.contentType || fileMeta.contentType, extension);
 
         return {
             ...file,

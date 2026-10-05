@@ -1,3 +1,39 @@
+## @visulima/storage [2.0.30](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.29...@visulima/storage@2.0.30) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** S3 chunked REST completion, ListParts paging, HEAD after completion ([#915](https://github.com/visulima/visulima/issues/915), [#916](https://github.com/visulima/visulima/issues/916)) ([#917](https://github.com/visulima/visulima/issues/917)) ([85bdd14](https://github.com/visulima/visulima/commit/85bdd142b6790f72a3b61e228b35f3d6d5d85ce7))
+* **storage:** stop re-sending the completing chunk on resume ([#913](https://github.com/visulima/visulima/issues/913)) ([#914](https://github.com/visulima/visulima/issues/914)) ([d477200](https://github.com/visulima/visulima/commit/d47720029253c47a6e0cf7da188a3f077d128e28))
+
+## @visulima/storage [2.0.29](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.28...@visulima/storage@2.0.29) (2026-10-04)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.28
+
+## @visulima/storage [2.0.28](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.27...@visulima/storage@2.0.28) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** chunked uploads over S3 and dropped clients ([#907](https://github.com/visulima/visulima/issues/907)-[#910](https://github.com/visulima/visulima/issues/910)) ([#911](https://github.com/visulima/visulima/issues/911)) ([e97f5fd](https://github.com/visulima/visulima/commit/e97f5fda30447dc880ecbd23074b4141ff3e1f34)), closes [#908](https://github.com/visulima/visulima/issues/908) [#909](https://github.com/visulima/visulima/issues/909) [#908](https://github.com/visulima/visulima/issues/908) [#909](https://github.com/visulima/visulima/issues/909) [#909](https://github.com/visulima/visulima/issues/909)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.27
+
+## @visulima/storage [2.0.27](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.26...@visulima/storage@2.0.27) (2026-10-04)
+
+### Bug Fixes
+
+* **storage:** lazy s3 readiness and concurrent chunked patch progress ([#905](https://github.com/visulima/visulima/issues/905), [#902](https://github.com/visulima/visulima/issues/902)) ([#906](https://github.com/visulima/visulima/issues/906)) ([42ab722](https://github.com/visulima/visulima/commit/42ab7223481aabf795dd564553e2bfe885793271))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.26
+
 ## @visulima/storage [2.0.26](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.25...@visulima/storage@2.0.26) (2026-10-03)
 
 ### Bug Fixes

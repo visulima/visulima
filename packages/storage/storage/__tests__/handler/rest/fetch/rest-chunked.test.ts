@@ -1,10 +1,11 @@
 import { Buffer } from "node:buffer";
+import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
 import RestFetch from "../../../../src/handler/rest/rest-fetch";
 import MemoryStorage from "../../../../src/storage/memory/memory-storage";
-import type { FilePart, FileQuery } from "../../../../src/storage/utils/file";
+import type { FilePart, FileQuery, UploadFile } from "../../../../src/storage/utils/file";
 import { ERRORS, throwErrorCode } from "../../../../src/utils/errors";
 
 describe("fetch RestFetch chunked uploads", () => {
@@ -79,45 +80,73 @@ describe("fetch RestFetch chunked uploads", () => {
         expect(secondPatch.headers.get("location")).toMatch(new RegExp(String.raw`^${basePath}${id}\.\w+$`, "u"));
     });
 
-    it("should not mark a POST as chunked without a valid total size", async () => {
-        expect.assertions(3);
+    it.each(["abc", "12garbage", "0"])("should refuse a chunked POST without a valid total size (%s)", async (totalSize) => {
+        expect.assertions(1);
 
-        const storage = new MemoryStorage({ path: "/files" });
-        const restHandler = new RestFetch({ storage });
-
+        const restHandler = new RestFetch({ storage: new MemoryStorage({ path: "/files" }) });
         const response = await restHandler.fetch(
             new Request(basePath, {
-                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "abc" },
+                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": totalSize },
                 method: "POST",
             }),
         );
 
-        expect(response.status).toBe(201);
-
-        const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
-
-        expect(file.metadata._chunkedUpload).toBeUndefined();
-        expect(Number.isNaN(file.size)).toBe(false);
+        // No PATCH could ever be accepted for it.
+        expect(response.status).toBe(400);
     });
 
-    it("should not mark a POST as chunked when X-Total-Size has trailing garbage", async () => {
-        expect.assertions(2);
+    it("should verify X-Chunk-Checksum before storing the chunk", async () => {
+        expect.assertions(4);
 
         const storage = new MemoryStorage({ path: "/files" });
         const restHandler = new RestFetch({ storage });
+        const created = await restHandler.fetch(
+            new Request(basePath, { headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "10" }, method: "POST" }),
+        );
+        const id = created.headers.get("x-upload-id") as string;
+        const patch = async (offset: number, body: string, checksum: string): Promise<number> =>
+            restHandler
+                .fetch(
+                    new Request(`${basePath}${id}`, {
+                        body,
+                        headers: { "content-length": String(body.length), "content-type": "application/octet-stream", "x-chunk-checksum": checksum, "x-chunk-offset": String(offset) },
+                        method: "PATCH",
+                    }),
+                )
+                .then((response) => response.status);
+        const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
 
+        // Bare hex, as @visulima/storage-client sends it.
+        await expect(patch(0, "hello", sha256("hello"))).resolves.toBe(202);
+        await expect(patch(5, "world", sha256("WORLD"))).resolves.toBe(460);
+
+        // The refused chunk was not recorded; base64 with an explicit algorithm works too.
+        const afterMismatch = await storage.getMeta(id);
+
+        expect(afterMismatch.metadata._chunks).toStrictEqual([expect.objectContaining({ length: 5, offset: 0 })]);
+        await expect(patch(5, "world", `sha256 ${createHash("sha256").update("world").digest("base64")}`)).resolves.toBe(200);
+    });
+
+    it("should not let X-File-Metadata set internal chunk state", async () => {
+        expect.assertions(2);
+
+        const storage = new MemoryStorage({ maxUploadSize: 100, path: "/files" });
+        const restHandler = new RestFetch({ storage });
         const response = await restHandler.fetch(
             new Request(basePath, {
-                headers: { "content-type": "application/octet-stream", "x-chunked-upload": "true", "x-total-size": "12garbage" },
+                headers: {
+                    "content-type": "application/octet-stream",
+                    "x-chunked-upload": "true",
+                    "x-file-metadata": JSON.stringify({ _chunks: [{ length: 50, offset: 0 }], _totalSize: 10_000 }),
+                    "x-total-size": "50",
+                },
                 method: "POST",
             }),
         );
-
-        expect(response.status).toBe(201);
-
         const file = await storage.getMeta(response.headers.get("x-upload-id") as string);
 
-        expect(file.metadata._totalSize).toBeUndefined();
+        expect(file.metadata._totalSize).toBe(50);
+        expect(file.metadata._chunks).toStrictEqual([]);
     });
 
     it.each(["null", "[1,2]", "42", '"text"'])("should ignore non-object X-File-Metadata %s on chunked init", async (metadataHeader) => {
@@ -299,5 +328,84 @@ describe("fetch RestFetch chunked uploads", () => {
 
         expect(Buffer.from(file.content).toString("latin1")).toBe("AAAAABBBBB");
         expect(file.size).toBe(10);
+    });
+
+    it("should complete an upload whose chunks are PATCHed concurrently (#902)", async () => {
+        expect.assertions(6);
+
+        const storage = new MemoryStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const bytes = new Uint8Array(40_000).map((_, index) => index % 251);
+
+        const createResponse = await restHandler.fetch(initChunkedUpload(bytes.byteLength));
+        const id = createResponse.headers.get("x-upload-id") as string;
+
+        const responses = await Promise.all(
+            [0, 10_000, 20_000, 30_000].map(async (offset) => restHandler.fetch(patchChunk(id, offset, bytes.slice(offset, offset + 10_000)))),
+        );
+
+        expect(responses.map((response) => response.status).toSorted()).toStrictEqual([200, 202, 202, 202]);
+        expect(responses.filter((response) => response.headers.get("x-upload-complete") === "true")).toHaveLength(1);
+
+        const meta = await storage.getMeta(id);
+
+        expect(meta.metadata._chunks).toHaveLength(4);
+        expect(meta.status).toBe("completed");
+
+        const file = await storage.get({ id });
+
+        expect(Buffer.from(file.content).equals(Buffer.from(bytes))).toBe(true);
+        expect(file.size).toBe(bytes.byteLength);
+    });
+
+    it("should keep chunk records a slow concurrent write would overwrite (#902)", async () => {
+        expect.assertions(4);
+
+        let releaseFirstChunk!: () => void;
+        const firstChunkGate = new Promise<void>((resolve) => {
+            releaseFirstChunk = resolve;
+        });
+
+        // The write for offset 0 reads the file record, then stalls until the other chunks are
+        // recorded, so the record it saves afterwards carries a stale (empty) `_chunks`.
+        class SlowFirstChunkStorage extends MemoryStorage {
+            public override async write(part: FilePart | FileQuery): Promise<UploadFile> {
+                if ("start" in part && part.start === 0 && part.body) {
+                    const { body } = part;
+
+                    return super.write({
+                        ...part,
+                        body: (async function* gated() {
+                            await firstChunkGate;
+                            yield* body as AsyncIterable<Uint8Array>;
+                        })() as unknown as FilePart["body"],
+                    });
+                }
+
+                return super.write(part);
+            }
+        }
+
+        const storage = new SlowFirstChunkStorage({ path: "/files" });
+        const restHandler = new RestFetch({ storage });
+        const bytes = new Uint8Array(30).map((_, index) => 65 + (index % 26));
+
+        const createResponse = await restHandler.fetch(initChunkedUpload(bytes.byteLength));
+        const id = createResponse.headers.get("x-upload-id") as string;
+
+        const first = restHandler.fetch(patchChunk(id, 0, bytes.slice(0, 10)));
+        const others = await Promise.all([10, 20].map(async (offset) => restHandler.fetch(patchChunk(id, offset, bytes.slice(offset, offset + 10)))));
+
+        releaseFirstChunk();
+
+        const firstResponse = await first;
+
+        expect(others.map((response) => response.status)).toStrictEqual([202, 202]);
+        expect(firstResponse.headers.get("x-upload-complete")).toBe("true");
+
+        const meta = await storage.getMeta(id);
+
+        expect(meta.metadata._chunks).toHaveLength(3);
+        expect(meta.status).toBe("completed");
     });
 });

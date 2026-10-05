@@ -1,0 +1,79 @@
+# Runs @visulima/storage's live tests (the storage contract and the upload handlers end to end)
+# against real services started from packages/storage/storage/docker-compose.live.yml: MinIO and
+# SeaweedFS for S3Storage and AwsLightStorage, Azurite, fake-gcs-server, an SFTP and an FTP server,
+# Apache mod_dav (WebDAV), PocketBase and Supabase's storage-api. The fakes the regular test job
+# uses can't show how a real service answers; this job does.
+
+name: "Storage Live Tests"
+
+on: # yamllint disable-line rule:truthy
+    pull_request:
+        types: ["opened", "synchronize", "reopened"]
+        branches: ["main"]
+        paths:
+            - "packages/storage/storage/**"
+            - ".github/workflows/storage-live.yml"
+    push:
+        branches: ["main"]
+        paths:
+            - "packages/storage/storage/**"
+            - ".github/workflows/storage-live.yml"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: "${{ github.event_name == 'pull_request' }}"
+
+permissions:
+    contents: "read" # to fetch code (actions/checkout)
+
+jobs:
+    storage-live:
+        name: "Storage live tests"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        env:
+            COMPOSE_FILE: "packages/storage/storage/docker-compose.live.yml"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+
+            - name: "Setup resources and environment"
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
+              with:
+                  node-version: "24"
+                  install-node-gyp: "true"
+                  cache-prefix: "storage-live"
+                  skip-playwright: "true"
+                  enable-nx-cache: "false"
+                  # This job never publishes, so the provenance-only npm upgrade is unneeded.
+                  upgrade-npm-version: false
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages.
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            # The tests import the package from src/; its workspace dependencies resolve through dist/.
+            - name: "Build workspace dependencies"
+              run: "pnpm --filter \"@visulima/storage^...\" run build"
+
+            # Blocks until every service passes its health check.
+            - name: "Start services"
+              run: "docker compose up --detach --wait"
+
+            - name: "Run live tests"
+              run: "pnpm --filter \"@visulima/storage\" run test:live"
+              env:
+                  LIVE_TESTS: "1"
+
+            - name: "Service logs"
+              if: "${{ failure() }}"
+              run: "docker compose logs"
+
+            - name: "Stop services"
+              if: "${{ always() }}"
+              run: "docker compose down --volumes"

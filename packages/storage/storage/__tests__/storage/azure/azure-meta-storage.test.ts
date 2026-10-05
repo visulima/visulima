@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AzureMetaStorage from "../../../src/storage/azure/azure-meta-storage";
 import type { AzureMetaStorageOptions } from "../../../src/storage/azure/types";
+import { getMetaVersion } from "../../../src/storage/meta-storage";
 import { ERRORS } from "../../../src/utils/errors";
 import { metafile } from "../../__helpers__/config";
 
@@ -154,12 +155,20 @@ describe(AzureMetaStorage, () => {
             await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
         });
 
-        it("should throw error when getProperties fails", async () => {
+        it("should report a missing blob as not found", async () => {
             expect.assertions(1);
 
-            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Blob not found"));
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("Blob not found"), { statusCode: 404 }));
 
-            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.UNKNOWN_ERROR);
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+        });
+
+        it("should rethrow other getProperties failures", async () => {
+            expect.assertions(1);
+
+            (mockAppendBlobClient.getProperties as ReturnType<typeof vi.fn>).mockRejectedValue(Object.assign(new Error("Server busy"), { statusCode: 503 }));
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Server busy");
         });
     });
 
@@ -188,6 +197,35 @@ describe(AzureMetaStorage, () => {
             const result = await metaStorage.touch(metafile.id, metafile);
 
             expect(result).toBe(metafile);
+        });
+    });
+
+    describe("conditional saves", () => {
+        it("should attach the ETag read by get() and save with an ifMatch condition", async () => {
+            expect.assertions(3);
+
+            vi.mocked(mockAppendBlobClient.getProperties).mockResolvedValueOnce({
+                etag: '"v1"',
+                metadata: { file: encodeURIComponent(JSON.stringify(metafile)) },
+            } as never);
+            vi.mocked(mockAppendBlobClient.setMetadata).mockResolvedValueOnce({ etag: '"v2"' } as never);
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(getMetaVersion(file)).toBe('"v1"');
+
+            await metaStorage.saveIfVersion(metafile.id, file, '"v1"');
+
+            expect(mockAppendBlobClient.setMetadata).toHaveBeenCalledWith(expect.any(Object), { conditions: { ifMatch: '"v1"' } });
+            expect(getMetaVersion(file)).toBe('"v2"');
+        });
+
+        it.each([412, 404])("should report a %d failed condition as undefined", async (statusCode) => {
+            expect.assertions(1);
+
+            vi.mocked(mockAppendBlobClient.setMetadata).mockRejectedValueOnce(Object.assign(new Error("ConditionNotMet"), { statusCode }));
+
+            await expect(metaStorage.saveIfVersion(metafile.id, { ...metafile }, '"v1"')).resolves.toBeUndefined();
         });
     });
 });

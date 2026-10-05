@@ -4,9 +4,9 @@
 
 ## Overview
 
-The Bunny Storage adapter wraps `@bunny.net/storage-sdk`. Writes go through the Storage API with an `AccessKey` header; reads go through `BunnyStorageSDK.file.get(...).data()` for server-side fetches or, when a Pull Zone hostname is configured via `publicBaseUrl`, through that public origin.
+The Bunny Storage adapter wraps `@bunny.net/storage-sdk`. Writes go through the Storage API, authenticated with the zone's `AccessKey`. Server-side reads use `file.get(...).data()`. Public read URLs need a Pull Zone (or another CDN hostname) configured as `publicBaseUrl`.
 
-Bunny Storage does not expose presigned upload URLs or signed-read URL primitives, so this adapter follows the same pattern as UploadThing: public reads via a configured CDN base URL, server-side writes via the SDK.
+Bunny Storage has no presigned upload URLs and no signed read URLs. The adapter writes on the server and builds public URLs from your CDN hostname.
 
 ## Installation
 
@@ -22,32 +22,51 @@ yarn add @bunny.net/storage-sdk
 pnpm add @bunny.net/storage-sdk
 ```
 
-## Usage
+## Provider setup
+
+1. In the bunny.net dashboard, create a **Storage Zone** and pick its **main storage region**. It must match the adapter's `region`.
+2. Open the zone's **FTP & API Access** page and copy the **password**. This is the `accessKey` the Storage API expects. The read-only password can't write, so use the full one.
+3. Optional: to hand out read URLs, create a **Pull Zone** with the Storage Zone as its origin, and pass its hostname (or your custom domain) as `publicBaseUrl`. Files in a Pull Zone are public. If browsers read the files from another origin with `fetch`/XHR, enable CORS headers in the Pull Zone's header settings. Plain `<img>`/`<a>` links don't need CORS.
+4. Keep the access key on the server. Browsers can't upload to the Storage API directly, because uploads need the `AccessKey` header. Proxy uploads through your handler.
+
+Valid `region` values (`BunnyStorageSDK.regions.StorageRegion`): `de` (Falkenstein), `uk` (London), `ny` (New York), `la` (Los Angeles), `sg` (Singapore), `se` (Stockholm), `br` (São Paulo), `jh` (Johannesburg), `syd` (Sydney). Any other value throws `unsupported region` at construction.
+
+## Configuration
 
 ```ts
 import { BunnyStorage } from "@visulima/storage/provider/bunny";
 
+// Minimal: reads BUNNY_STORAGE_ZONE / BUNNY_STORAGE_ACCESS_KEY / BUNNY_STORAGE_REGION
+const storage = new BunnyStorage({});
+```
+
+```ts
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+// Production
 const storage = new BunnyStorage({
-    zone: process.env.BUNNY_STORAGE_ZONE!,
-    accessKey: process.env.BUNNY_STORAGE_ACCESS_KEY!,
-    region: "de", // BunnyStorageSDK.regions.StorageRegion.*
+    zone: process.env.BUNNY_STORAGE_ZONE,
+    accessKey: process.env.BUNNY_STORAGE_ACCESS_KEY,
+    region: "de",
     publicBaseUrl: "https://cdn.example.com",
+    maxUploadSize: "1GB",
+    metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
+    expiration: { maxAge: "24h", purgeInterval: "1h" },
 });
 ```
 
-## Configuration
+| Option              | Type                      | Default                                                                        | Description                                                                                             |
+| ------------------- | ------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `zone`              | `string`                  | `BUNNY_STORAGE_ZONE`, then `STORAGE_ZONE`                                      | Storage Zone name. Ignored when `client` is passed.                                                     |
+| `accessKey`         | `string`                  | `BUNNY_STORAGE_ACCESS_KEY`, then `BUNNY_ACCESS_KEY`, then `STORAGE_ACCESS_KEY` | Storage Zone password. Ignored when `client` is passed.                                                 |
+| `region`            | `BunnyStorageRegion`      | `BUNNY_STORAGE_REGION`, then `STORAGE_REGION`                                  | Main storage region (see the list above). Ignored when `client` is passed.                              |
+| `client`            | `StorageZone`             | —                                                                              | A pre-built zone from `BunnyStorageSDK.zone.connect_with_accesskey(...)`.                               |
+| `publicBaseUrl`     | `string`                  | —                                                                              | Pull Zone or CDN origin used by `getReadUrl()`. Without it, `getReadUrl()` throws `METHOD_NOT_ALLOWED`. |
+| `metaStorageConfig` | `LocalMetaStorageOptions` | OS temp dir (`Upload_meta`)                                                    | `directory` / `prefix` / `suffix` for local metadata files.                                             |
 
-### Credentials
+`zone`, `accessKey` and `region` are all required unless you pass `client`. Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME`, `maxMetadataSize`, `filename`, `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`.
 
-| Option      | Env (visulima)             | Env (SDK alias)      |
-| ----------- | -------------------------- | -------------------- |
-| `zone`      | `BUNNY_STORAGE_ZONE`       | `STORAGE_ZONE`       |
-| `accessKey` | `BUNNY_STORAGE_ACCESS_KEY` | `STORAGE_ACCESS_KEY` |
-| `region`    | `BUNNY_STORAGE_REGION`     | `STORAGE_REGION`     |
-
-`BUNNY_ACCESS_KEY` is also accepted as an alias for `accessKey`. Region must be one of the values in `BunnyStorageSDK.regions.StorageRegion` (e.g. `"de"`, `"uk"`, `"ny"`, `"la"`, `"sg"`, `"se"`, `"br"`, `"jh"`, `"syd"`).
-
-### Pre-built client
+With a pre-built client:
 
 ```ts
 import * as BunnyStorageSDK from "@bunny.net/storage-sdk";
@@ -59,52 +78,76 @@ const client = BunnyStorageSDK.zone.connect_with_accesskey(
     process.env.BUNNY_STORAGE_ACCESS_KEY!,
 );
 
-const storage = new BunnyStorage({
-    client,
-    publicBaseUrl: "https://cdn.example.com",
-});
+const storage = new BunnyStorage({ client, publicBaseUrl: "https://my-pull-zone.b-cdn.net" });
 ```
 
-When `client` is passed, `zone`, `accessKey`, and `region` are ignored.
+## Metadata storage
 
-### `publicBaseUrl`
+Upload records are JSON files on **local disk**, by default `<os tmpdir>/Upload_meta/<id>.META`. Bunny has no field for arbitrary metadata.
 
-`getReadUrl()` joins `publicBaseUrl` with the object key. Without `publicBaseUrl`, the adapter throws `METHOD_NOT_ALLOWED` from `getReadUrl()` — the raw Storage API URL requires an `AccessKey` header and cannot be handed out to clients.
+- On more than one instance, or with an ephemeral `/tmp`, set `metaStorageConfig.directory` to a shared persistent volume, or pass a custom `metaStorage`. Upload locks are held per process.
+- Without a record, `get` and `delete` treat the id as the object path.
+- Finished uploads **keep** their record. `delete()` removes it.
+- `purge()` lists upload **records** (not the zone's files), so expiration only removes this storage's own uploads.
 
-Configure a Bunny Pull Zone (or any CDN/proxy fronting the Storage Zone) and pass its hostname:
+## Behaviour & limits
+
+| Aspect                     | Behaviour                                                                                                                                                                              |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes | ❌ `supportsResumableWrites: false`. Only a whole-file write at offset 0 is accepted. Anything else → `METHOD_NOT_ALLOWED`. The body is buffered in memory.                            |
+| Checksums                  | `sha256`. A TUS `Upload-Checksum: sha256 …` is sent to Bunny as its `Checksum` header. If Bunny rejects it, the upload fails with `CHECKSUM_MISMATCH` (TUS 460).                       |
+| Range reads                | ❌ `supportsRange: false`.                                                                                                                                                             |
+| `getReadUrl()`             | `${publicBaseUrl}/${key}`, unsigned. `expiresIn` is ignored. Without `publicBaseUrl`, or with `responseContentDisposition` / `responseContentType` → `METHOD_NOT_ALLOWED`.             |
+| `getUploadUrl()`           | ❌ `METHOD_NOT_ALLOWED`.                                                                                                                                                               |
+| `list(limit)`              | **Recursive**: walks the zone's directories breadth-first from `/` until `limit` files are collected (default 1000). Keys are relative to the zone root. Directories are not returned. |
+| `copy()` / `move()`        | Copy downloads the object and uploads it again. Move is copy followed by delete.                                                                                                       |
+| `delete()`                 | Deleting an object that is already gone counts as success. The adapter only reports an error if the object still exists afterwards.                                                    |
+| Custom `filename`          | The returned value becomes the object path (`/<name>`).                                                                                                                                |
+| Retries                    | `retryConfig` (default 3 retries, exponential backoff, 408/429/5xx). `signal` / `timeout` are best effort: the SDK can't cancel a request that is already running.                     |
+
+Custom metadata and `cacheControl` are not sent to Bunny. Configure caching on the Pull Zone.
+
+## Using it with the handlers
 
 ```ts
-new BunnyStorage({
-    /* … */
-    publicBaseUrl: "https://my-pull-zone.b-cdn.net",
-});
+// Node
+import express from "express";
+import { Rest } from "@visulima/storage/handler/http/node";
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+const storage = new BunnyStorage({ region: "de", publicBaseUrl: "https://cdn.example.com" });
+const app = express();
+
+app.use("/upload", new Rest({ storage }).handle);
 ```
 
-## URL Generation
+```ts
+// Fetch runtimes
+import { Tus } from "@visulima/storage/handler/http/fetch";
 
-### `getReadUrl(key, options?)`
+const tus = new Tus({ storage });
 
-- Returns `${publicBaseUrl}/${key}` when `publicBaseUrl` is set.
-- Throws `METHOD_NOT_ALLOWED` when `publicBaseUrl` is unset.
-- Throws `METHOD_NOT_ALLOWED` when `responseContentDisposition` is supplied — Bunny Storage and Pull Zone URLs have no equivalent override.
-- `expiresIn` is accepted but not consumed by the adapter; downstream Pull-Zone token-signing (if any) is the caller's responsibility.
+export default { fetch: (request: Request) => tus.fetch(request) };
+```
 
-### `getUploadUrl(key)`
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
 
-Throws `METHOD_NOT_ALLOWED`. Bunny Storage has no presigned PUT primitive — writes must go through the Storage API with an `AccessKey` header. Upload server-side via `storage.write()` or proxy through your application.
+const files = new Files({ adapter: storage });
 
-## Features
+await files.upload("images/logo.svg", svg, { contentType: "image/svg+xml" });
+const url = await files.url("images/logo.svg"); // https://cdn.example.com/images/logo.svg
+```
 
-- **SHA256 checksum hint** — when `part.checksum` is provided with `checksumAlgorithm: "sha256"`, it is forwarded as `sha256Checksum` to the Bunny SDK so the server can verify the upload.
-- **Soft delete** — `delete()` swallows `FILE_NOT_FOUND` errors so removing a missing key is idempotent.
-- **Public-URL minting** — `getReadUrl()` joins `publicBaseUrl + key` synchronously when a Pull Zone is configured.
-- **`raw` escape hatch** — `storage.raw` exposes the connected `StorageZone` for advanced SDK calls (`BunnyStorageSDK.file.list`, etc.).
+## Troubleshooting
 
-## Limitations
-
-- No native server-side `copy()` — implemented as download + re-upload.
-- No presigned upload URLs (`getUploadUrl()` throws `METHOD_NOT_ALLOWED`).
-- No signed-read URLs — `getReadUrl()` requires `publicBaseUrl` and ignores `expiresIn`.
-- No `responseContentDisposition` override — Bunny Storage / Pull Zone URLs cannot bind a Content-Disposition response header.
-- `list()` paginates client-side over a flat directory listing — large prefixes round-trip the full directory.
-- Custom `metadata` and `cacheControl` upload options are not supported (configure cache behavior on the Pull Zone instead).
+| Symptom                                     | Cause / fix                                                                                    |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `Bunny Storage: missing credentials`        | Set all three: `zone`, `accessKey` and `region` (or the matching environment variables).       |
+| `unsupported region "…"`                    | Use one of the region codes listed above. It must be the zone's **main** region.               |
+| `403` / `FORBIDDEN` (`Unauthorized access`) | Wrong password, the read-only password, or a region that doesn't match the zone's main region. |
+| `400 BAD_REQUEST` (`Unable to upload file`) | An invalid path. With a sha256 checksum it is reported as `CHECKSUM_MISMATCH` instead.         |
+| `getReadUrl()` → `405`                      | Set `publicBaseUrl` to a Pull Zone or CDN hostname.                                            |
+| Browser `fetch` of the CDN URL fails (CORS) | Enable CORS headers on the Pull Zone.                                                          |
+| `405` on a TUS PATCH / chunk                | Send the whole file in one request.                                                            |

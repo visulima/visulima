@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import DropboxStorage from "../../../src/storage/dropbox/dropbox-storage";
 import type { DropboxStorageOptions } from "../../../src/storage/dropbox/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeMockClient = () => {
@@ -14,6 +15,7 @@ const makeMockClient = () => {
         filesCopyV2: vi.fn(),
         filesDeleteV2: vi.fn(),
         filesDownload: vi.fn(),
+        filesGetMetadata: vi.fn(),
         filesGetTemporaryLink: vi.fn(),
         filesMoveV2: vi.fn(),
         filesUpload: vi.fn(),
@@ -145,7 +147,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.delete({ id: "folder/file.mp4" });
 
@@ -161,7 +163,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(new FakeDropboxResponseError(404, {}));
 
@@ -176,7 +178,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(
                 new FakeDropboxResponseError(409, {
@@ -225,6 +227,56 @@ describe(DropboxStorage, () => {
                 from_path: "/uploads/src.mp4",
                 to_path: "/uploads/dst.mp4",
             });
+        });
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from the file metadata without downloading", async () => {
+            expect.assertions(5);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.filesGetMetadata.mockResolvedValueOnce({ result: { ".tag": "file", name: "video.mp4", rev: "rev-1", size: 321 } });
+
+            const file = await storage.getCompletedFile("video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 321,
+                ETag: "rev-1",
+                id: "video.mp4",
+                path: "/video.mp4",
+                size: 321,
+                status: "completed",
+            });
+            expect(mockClient.filesGetMetadata).toHaveBeenCalledWith({ path: "/video.mp4" });
+            expect(mockClient.filesGetMetadata).toHaveBeenCalledTimes(1);
+            expect(mockClient.filesDownload).not.toHaveBeenCalled();
+            expect(file?.name).toBe("video.mp4");
+        });
+
+        it("returns undefined when the path is missing or not a file", async () => {
+            expect.assertions(4);
+
+            const storage = new DropboxStorage({
+                ...(storageOptions as DropboxStorageOptions),
+                accessToken: "tok",
+            });
+
+            mockClient.filesGetMetadata.mockRejectedValueOnce(new FakeDropboxResponseError(409, { error: { ".tag": "path", path: { ".tag": "not_found" } } }));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
+
+            mockClient.filesGetMetadata.mockRejectedValueOnce(new FakeDropboxResponseError(500, {}));
+
+            await expect(storage.getCompletedFile("file.mp4")).rejects.toBeInstanceOf(FakeDropboxResponseError);
+
+            mockClient.filesGetMetadata.mockResolvedValueOnce({ result: { ".tag": "folder", name: "dir" } });
+
+            await expect(storage.getCompletedFile("dir")).resolves.toBeUndefined();
+            expect(mockClient.filesDownload).not.toHaveBeenCalled();
         });
     });
 
@@ -343,7 +395,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.filesDeleteV2.mockRejectedValueOnce(econnreset()).mockRejectedValueOnce(econnreset()).mockResolvedValueOnce({});
 
@@ -361,7 +413,7 @@ describe(DropboxStorage, () => {
                 accessToken: "tok",
             });
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const controller = new AbortController();
 

@@ -3,7 +3,7 @@ import { UTApi, UTFile } from "uploadthing/server";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { UploadThingStorageOptions } from "./types";
@@ -78,6 +78,8 @@ const basename = (key: string): string => {
 class UploadThingStorage extends BaseStorage<UploadThingFile> {
     public static override readonly name: string = "uploadthing";
 
+    public override readonly storageKind: string = "uploadthing";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -134,14 +136,10 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -215,10 +213,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -230,13 +225,7 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<UploadThingFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: UploadThingFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as customId
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.customId ?? file?.name ?? id;
 
@@ -260,16 +249,34 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const url = await this.resolveFetchUrl(id, options);
+        const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+
+        if (response.status === 404) {
+            return undefined;
+        }
+
+        if (!response.ok) {
+            throw new Error(`UploadThing: HEAD ${url} answered ${String(response.status)}`);
+        }
+
+        return {
+            contentType: response.headers.get("content-type") ?? undefined,
+            etag: response.headers.get("etag") ?? undefined,
+            extra: { customId: id },
+            size: Number(response.headers.get("content-length") ?? 0) || 0,
+        };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: UploadThingFile | undefined;
+            const stored = await this.findMeta(id);
             let key = id;
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 key = stored.customId ?? stored.name ?? id;
-            } catch {
-                // direct fetch by id
             }
 
             const url = await this.resolveFetchUrl(key, options);
@@ -343,9 +350,21 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const result = await this.runOperation(options, () => this.utapi.listFiles({ limit }));
+                const entries: Awaited<ReturnType<UTApi["listFiles"]>>["files"][number][] = [];
 
-                return result.files.map((entry) => {
+                // The service caps a page below `limit`, so follow the offset while it reports more.
+                while (entries.length < limit) {
+                    const offset = entries.length;
+                    const result = await this.runOperation(options, () => this.utapi.listFiles({ limit: limit - offset, offset }));
+
+                    entries.push(...result.files);
+
+                    if (!result.hasMore || result.files.length === 0) {
+                        break;
+                    }
+                }
+
+                return entries.slice(0, limit).map((entry) => {
                     const key = entry.customId ?? entry.key;
                     const file = new UploadThingFile({
                         contentType: "application/octet-stream",
@@ -417,8 +436,6 @@ class UploadThingStorage extends BaseStorage<UploadThingFile> {
 
         return ufsUrl;
     }
-
-    private internalOnComplete = (file: UploadThingFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default UploadThingStorage;

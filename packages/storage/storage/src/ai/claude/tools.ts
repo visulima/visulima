@@ -57,6 +57,7 @@ export interface ClaudeWriteToolOptions {
 }
 
 type ListFilesShape = (typeof TOOL_SCHEMAS.listFiles.input)["shape"];
+type SearchFilesShape = (typeof TOOL_SCHEMAS.searchFiles.input)["shape"];
 type GetFileMetadataShape = (typeof TOOL_SCHEMAS.getFileMetadata.input)["shape"];
 type DownloadFileShape = (typeof TOOL_SCHEMAS.downloadFile.input)["shape"];
 type GetFileUrlShape = (typeof TOOL_SCHEMAS.getFileUrl.input)["shape"];
@@ -71,6 +72,15 @@ export const claudeListFiles = (files: Files): SdkMcpToolDefinition<ListFilesSha
         TOOL_SCHEMAS.listFiles.description,
         TOOL_SCHEMAS.listFiles.input.shape,
         wrap((input) => executors.listFiles(files, input)),
+        { annotations: READ_ANNOTATIONS },
+    );
+
+export const claudeSearchFiles = (files: Files): SdkMcpToolDefinition<SearchFilesShape> =>
+    tool(
+        "searchFiles",
+        TOOL_SCHEMAS.searchFiles.description,
+        TOOL_SCHEMAS.searchFiles.input.shape,
+        wrap((input) => executors.searchFiles(files, input)),
         { annotations: READ_ANNOTATIONS },
     );
 

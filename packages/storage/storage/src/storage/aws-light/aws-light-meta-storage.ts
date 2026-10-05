@@ -1,4 +1,5 @@
-import MetaStorage from "../meta-storage";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
@@ -11,6 +12,12 @@ import type { AwsLightMetaStorageOptions } from "./types";
  * Optimized for worker environments (Cloudflare Workers, Web Workers, etc.).
  */
 class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
+    /**
+     * Uses `If-Match` conditional writes (S3, R2, MinIO). A service that ignores the header
+     * degrades to plain overwrites, as before.
+     */
+    public override readonly supportsConditionalSave: boolean = true;
+
     private readonly adapter: AwsLightApiAdapter;
 
     private readonly bucket: string;
@@ -42,16 +49,17 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async get(id: string): Promise<T> {
         await this.ensureAccess();
 
-        const Key = this.getMetaName(id);
-        const { Expires, Metadata } = await this.adapter.headObject({
-            Bucket: this.bucket,
-            Key,
-        });
+        const { ETag, Expires, Metadata } = await this.adapter
+            .headObject({
+                Bucket: this.bucket,
+                Key: this.getMetaName(id),
+            })
+            .catch(rethrowNotFound);
 
         if (Expires && isExpired({ expiredAt: Expires } as T)) {
-            await this.delete(Key);
+            await this.delete(id);
 
-            throw new Error(`Metafile ${id} not found`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} expired`);
         }
 
         if (Metadata?.metadata !== undefined) {
@@ -61,10 +69,12 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
                 file.metadata = parseMetadata(file.metadata);
             }
 
+            setMetaVersion(file, ETag);
+
             return file;
         }
 
-        throw new Error(`Metafile ${id} not found`);
+        return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} not found`);
     }
 
     public override async touch(id: string, file: T): Promise<T> {
@@ -81,6 +91,29 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.put(id, file);
+
+        return file;
+    }
+
+    public override async saveIfVersion(id: string, file: T, version: string): Promise<T | undefined> {
+        try {
+            await this.put(id, file, version);
+        } catch (error) {
+            // 412: the ETag no longer matches (or the object is gone); 409: a concurrent conditional write.
+            const { statusCode } = error as { statusCode?: number };
+
+            if (statusCode === 412 || statusCode === 409) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        return file;
+    }
+
+    private async put(id: string, file: T, ifMatch?: string): Promise<void> {
         await this.ensureAccess();
 
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
@@ -90,16 +123,16 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
         }
 
         const metadata = encodeURIComponent(JSON.stringify(transformedMetadata));
-
-        await this.adapter.putObject({
+        const result = await this.adapter.putObject({
             Bucket: this.bucket,
             ContentLength: 0,
             ContentType: "application/json",
+            IfMatch: ifMatch,
             Key: this.getMetaName(id),
             Metadata: { metadata },
         });
 
-        return file;
+        setMetaVersion(file, result?.ETag);
     }
 }
 

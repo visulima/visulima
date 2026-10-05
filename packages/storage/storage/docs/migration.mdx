@@ -5,6 +5,97 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 
 # Migration Guide
 
+## Resumable `Files.upload` with `UploadControl`
+
+`UploadControl.toJSON()` now returns a version 2 token that another process can resume (see [Resumable uploads across processes](./files-facade#resumable-uploads-across-processes)). This changes a few behaviours for uploads that pass a `control`:
+
+- On adapters with `files.capabilities.resumable` (S3, aws-light, GCS, Azure, Disk, Memory), a `control` upload with a known `size` is written in parts of `multipart.partSize` bytes (default 8 MiB), one adapter `write` each, instead of in one `write`. On S3 that means a multipart upload with several parts. A `multipart.partSize` below 5 MiB, which used to be ignored, is now rejected by S3 for every part but the last one.
+- `onProgress` reports the bytes the adapter confirmed, once per part, instead of once per body chunk.
+- `serialize()` is deprecated in favour of `toJSON()`. Both return the version 2 token. A version 1 token (`{ key, loaded, version: 1 }`) still works with `UploadControl.from()`, but it carries no session, so the upload starts over as before.
+- `files.capabilities` gained `resumable`.
+
+## Upgrading past 2.0.30: upload ids, `HEAD` and `PUT` (security fix)
+
+### Summary
+
+- **Upload ids are random** instead of hashed from the client's file name, size and `lastModified` ([#921](https://github.com/visulima/visulima/issues/921)).
+- **Finished uploads keep their metadata on every provider.** S3 and compatibles, Azure and GCS used to drop it on completion, so `HEAD`, `GET`, `DELETE`, `exists`, `copy` and `move` on a finished upload failed there.
+- **`HEAD` answers only for uploads** ([#918](https://github.com/visulima/visulima/issues/918)). In 2.0.30 it fell back to the stored object, which disclosed the existence, size, type and ETag of any object in the bucket, nested keys via `%2F` included.
+- **`PUT` never replaces an object the upload route didn't create** ([#919](https://github.com/visulima/visulima/issues/919)).
+
+### `HEAD` and `PUT`
+
+`HEAD` (and `GET`) answer from the upload's metadata, so a finished upload answers `200` with `X-Upload-Complete: true`, and an object without upload metadata answers `404`.
+
+`PUT /<id>` now:
+
+- **replaces** the upload when `<id>` has upload metadata, finished or not. The replacement is validated like a new upload (size, type) and gets the metadata of the `PUT` request. It used to answer `200` without changing a finished file.
+- **answers `409`** when `<id>` has no upload metadata but the provider stores an object under that key: an app file sharing the bucket, or an upload finished before this release on S3, Azure or GCS.
+- **fails with the provider's error** when it can't tell whether such an object exists, for example when the credentials may not read it. On S3, a missing object answers `403` instead of `404` without `s3:ListBucket`, so grant it to keep creating files with `PUT`.
+
+With a custom `filename`, the object key differs from the id and the `PUT` check can't see the object. Use server-generated ids (`POST`) there.
+
+### Upload ids are random
+
+Every handler (`Tus`, `Multipart`, `Rest` `POST`) now gives each new upload a random id. The id used to be hashed from the file's name, size and `lastModified`, all sent by the client, so a second client creating an "identical" file got the same id, reset the first client's upload and mixed its bytes into it ([#921](https://github.com/visulima/visulima/issues/921)).
+
+Creating the same file twice now starts two uploads. To resume, keep the upload URL from the first create, as tus clients (including `@visulima/storage-client`) already do. Ids you choose yourself with `PUT` or `storage.create({ id })` are unchanged.
+
+The Node `Tus` and `Multipart` handlers read the id from the last path segment, as the fetch handlers and the Node `Rest` handler already do. A mount path shaped like an id (for example `/files-by-user`) is no longer taken as the id, and `/<id>/metadata` resolves to `<id>`.
+
+### Other changes in this release
+
+- **Re-uploading a key replaces it.** `create()` + `write()` (and `Files.upload`) of an id whose upload already finished now stores the new content on every remote provider, FTP, SFTP and WebDAV. Before, they kept the old object and reported success. `create()` of a finished id returns a fresh `created` record instead of the stored one.
+- **The `@aws-sdk/*` peers need `>=3.919.0`**: older `@aws-sdk/client-s3` versions drop `IfMatch` / `IfNoneMatch` from CopyObject, so a conditional copy ran without its condition.
+- **Presigned POST is off for custom S3 endpoints by default.** With an `endpoint` (including the `cloudflare()` preset and `AWS_ENDPOINT_URL*`), `capabilities.signedUploadPost` is `false` and `signedUpload(key, { maxSize })` answers `METHOD_NOT_ALLOWED`; R2 has no POST uploads. MinIO, SeaweedFS and similar servers need `uploadPost: true`. POST policies now sign the configured `acl`, so a client must send that field as given.
+- **S3 conditional failures:** an `If-Match` write against a missing object answers `PRECONDITION_FAILED` (was a raw `404`), and `409 ConditionalRequestConflict` answers `FILE_CONFLICT` and aborts the multipart upload. `conditional` also accepts per-operation flags (`{ copy: true, read: true }`), which is what R2 supports.
+- **Resume tokens record the adapter's `storageKind`** (`"s3"`, `"gcs"`, …) instead of its class name; tokens with the class name still load.
+- **`retryConfig` applies to every adapter.** It used to take effect only on S3, Azure, Netlify and GCS. `maxRetries: 0` now really disables retries.
+- **`list()` walks subfolders and provider pages.** Supabase, OneDrive, SharePoint and Bunny list files in subfolders, keyed by their full path (`user/123/file`). Vercel Blob, UploadThing, Cloudinary, Bun S3 and PocketBase return up to `limit` objects across provider pages, so `Files.listAll`, `transfer` and `sync` see every object.
+- **Reads under a custom `filename` work** on S3, aws-light, GCS and Azure: objects are looked up by their stored name, not the upload id.
+- **Azure `exists()`** answers `true` for blobs without upload metadata, and throws on errors other than `404`.
+- **`DiskStorageWithChecksum.delete()`** throws `FILE_NOT_FOUND` for an unknown id, like `DiskStorage`, instead of returning `{ id }`.
+- **Multipart uploads** no longer fire `onUpdate`, and form fields named `name`, `title`, `originalName` or `filename` no longer replace the uploaded file's name.
+- **Transforms** answer with the real media type (`video/x-matroska`, `video/quicktime`, `audio/flac`, …). Video answers `400` for `fit=inside` and `fit=outside`.
+- **Breaking: `OpenTelemetryMetrics` moved to `@visulima/storage/metrics`.** The package root imported `@opentelemetry/api` (an optional peer), so `import { Files } from "@visulima/storage"` crashed without it installed. Change `import { OpenTelemetryMetrics } from "@visulima/storage"` to `import { OpenTelemetryMetrics } from "@visulima/storage/metrics"`.
+- **HTTP `DELETE` only removes uploads.** Every handler (`Rest`, including batch delete, `Tus`, `Multipart`) answers `404` for an id without upload metadata, on every provider, so a route can't delete an object it never created. Delete such objects through the `Files` facade or the adapter.
+- **`expiration.maxAge` now also expires finished uploads on S3, aws-light, Azure and GCS.** They keep their metadata now, so `purge()` treats them like on every other provider. If you set `maxAge` only to clean up abandoned uploads, raise it or remove it. S3 `purge()` only touches this storage's own uploads; abort other incomplete multipart uploads with an `AbortIncompleteMultipartUpload` lifecycle rule.
+- **Azure `root` now prefixes every blob path** (`<root>/<assetFolder>/<name>`). It used to scope only `list()`, so blobs written before were stored without it. If you set `root`, move existing blobs under it (for example with `azcopy`) or drop the option. **SFTP** treats an absolute `rootFolderPath` as absolute instead of relative to the home directory.
+- **`X-Chunk-Checksum` is verified**, so a checksummed chunk may be at most 64 MiB (`413` above) and must use a known format (`400` otherwise). See [Chunked uploads](./chunked-uploads).
+- **The Node handlers' `download()` method is gone**, and `DOWNLOAD` is no longer listed in `Access-Control-Allow-Methods`. `GET /<id>/download` serves the file as an attachment.
+- **Node handlers send an absolute `Location`** built from the `Host` / `Forwarded` headers, like the fetch handlers. This now includes the Node `Tus` handler. The scheme comes from `Forwarded: proto=` / `X-Forwarded-Proto`; without one it is `https:` only when the connection itself is TLS, and otherwise left out (`//host/files/<id>`), so a TLS-terminating proxy that doesn't forward the protocol gets no mixed-content `http:` URL. Set `useRelativeLocation: true` to keep relative ones.
+- **TUS `PATCH` status codes:**
+    - A `PATCH` without `Content-Type: application/offset+octet-stream` answers `415` (it was `412`). Parameters are allowed (`application/offset+octet-stream; charset=binary`).
+    - A `PATCH` without `Content-Length` answers `411` on S3, aws-light, GCS and Azure, which can't stream a body of unknown length. It used to store 0 bytes and answer `204`. Other adapters accept a chunked body; one that runs past `Upload-Length` answers `413` (it was `500`), and the upload keeps its offset.
+    - A client that disconnects in the middle of a chunked `PATCH` fails that request, so the next `PATCH` isn't locked out.
+- **Concurrent TUS `PATCH`es across processes:** before it writes, a `PATCH` claims its upload in the shared meta store (`BaseStorage.claimWrite`, a `_writeClaim` entry saved with a conditional write, expiring 30 seconds after its last renewal). A concurrent `PATCH` of the same upload from another process answers `423`, or `409` once the offset has moved. Within one process `PATCH`es were already serialized. The claim is internal: it is never part of the metadata clients see. A meta store without conditional saves claims nothing.
+- **The fetch `Tus` handler no longer serves `download`.** Serve files with a `Rest` handler (`GET /<id>/download` sends an attachment) or through the `Files` facade.
+- **`Last-Modified` is an HTTP-date** (`Thu, 01 Jan 2026 00:00:00 GMT`, RFC 9110 §5.6.7) on every handler, so it can be sent back as `If-Range`. It used to be the stored ISO string. A date `If-Range` is honoured only when `Last-Modified` is at least one second old (RFC 9110 §13.1.5).
+- **`ETag` is always quoted.** An adapter returning a bare value (`abc`) is sent as `"abc"`, keeping a `W/` prefix, so `If-Range` and `If-Match` can match it.
+- **Hono:** `createStorageHandler(app, { path })` registers `app.all(path)` and ``app.all(`${path}/*`)``, so every method on the collection and below it reaches the storage handler (which answers `405` for methods it doesn't serve). A route you register later under the same prefix, such as ``app.get(`${path}/stats`)``, is shadowed and never reached. Register such routes before calling `createStorageHandler`, or under another prefix.
+- **`createClaudeFileTools().allowedTools` lists only the tools that don't need approval.** The Claude Agent SDK auto-approves every `allowedTools` entry without calling `canUseTool`, so the approval-gated write tools are left out. Pass the returned `canUseTool` (or your own) to decide on them.
+- **`Files.download({ range })` on an adapter without range support** throws an `UploadError` with `METHOD_NOT_ALLOWED` (it was a plain `Error`). Check `files.capabilities.range` first.
+- **`purge()` only deletes uploads.** On every provider it skips ids without upload metadata and ages an upload by its metadata (`createdAt`, or `modifiedAt` with `rolling`), not by the provider listing. Before, adapters whose metadata store can't list (and Supabase, Cloudinary, UploadThing, Bun S3, GCS, Firebase, Netlify by default) purged any object in the bucket old enough, while Firebase, Netlify and Bun S3 purged nothing because their listings carry no dates. S3 `purge()` now sees every object, not only the first 1000.
+- **A failing metadata store fails the operation.** Reads, deletes, copies and purges used to treat any metadata error as "no metadata" and fall back to the raw key; now only a missing record does.
+- **`PUT` replacing an upload writes the new file aside first** (`BaseStorage.replaceUpload`) and only puts it in place once it is complete: local disk renames it over the old file, S3 and S3 light copy it server-side, other adapters copy it through the adapter. If the body breaks off while it is written, the old file stays as it was and the staging upload is deleted. If the provider fails while the replacement is put in place, the staged replacement is kept (and logged) as the only complete copy, since the swap may already have removed the old file. The staging upload is a regular upload under a `<random>.replace` id, so `onCreate` / `onDelete` fire for it; local disk and S3 swap the object without firing `onCreate` / `onDelete` for the replaced id itself (other adapters fire both while copying through the adapter), so a hook that tracks uploads by `id` should treat a `PUT` response as the update. A process that crashes mid-`PUT` leaves an unfinished upload that `purge()` removes once it expires (`expiration.maxAge`). A `filename` option whose name doesn't depend on the id can't be replaced this way and answers `FILE_CONFLICT`. S3 copies now apply the configured `acl`, as uploads already did.
+- **`getCompletedFile()` is deprecated**; use `findStoredObject()`. Custom adapters implement the protected `statObject()` instead of overriding it.
+- **S3 metadata lookups need `s3:ListBucket`**: without it a missing record answers `403`, which now surfaces as a `500` instead of being read as "not found".
+- **Locks are renewed while held**, for at most 15 minutes; a holder that hangs longer loses the lock 30 seconds later.
+- **`zod` is an optional peer dependency.** Only the AI entries (`@visulima/storage/ai/*`) use it, so it is no longer installed with the package. If you use them, install `zod` 4 (`npm install zod`); the AI SDKs those entries wrap usually bring it already.
+- **aws-light `clientDirectUpload` works**: part URLs are SigV4 query-signed. Its startup check now fails on a missing bucket (`404`), and `metaStorageConfig.directory` keeps metadata on local disk instead of being ignored.
+- **S3 and aws-light layer a custom `retryConfig.shouldRetry`** over their defaults instead of discarding it: it is asked first, and `undefined` falls back to `retryableStatusCodes` (now honoured too).
+- **GCS supports a deferred upload length** (TUS `Upload-Defer-Length`) instead of crashing in `create()`, and a `clientDirectUpload` upload now saves its metadata record and fires `onCreate`.
+- **Azure reads `AZURE_STORAGE_CONTAINER`** when `containerName` is not passed. The meta storage is exported as `AzureMetaStorage`; the misspelled `AzureSMetaStorage` is a deprecated alias.
+- **SharePoint only reads env credentials when no auth is passed in code**, so `oauth`/`clientCredentials` in code no longer clash with `SHAREPOINT_*`/`ONEDRIVE_*` variables. `expiration.purgeInterval` starts one purge timer, which `close()` stops; `exists()` and `getStream()` forward per-call options.
+- **Reading an expired upload answers `GONE` on every provider.** Google Drive, Bun S3, Supabase, Firebase, Cloudinary and UploadThing fell back to reading the raw key, and S3, aws-light, Azure and GCS never checked the upload's expiry on read. On the other adapters, `create()`, `get()` and `delete()` no longer treat a failing metadata store as "no metadata" either.
+- **Cloudinary `get()` and `copy()` work for `private` / `authenticated` assets**: they use the signed `private_download_url` that `getReadUrl()` returns instead of the unsigned delivery URL.
+- **FTP resolves `rootFolderPath` like SFTP**: a relative path (and no `rootFolderPath` at all) is resolved against the login directory for every operation (write, read, `list()`, delete), a leading `/` makes it absolute. It used to be taken from the server root `/` for writes and reads, which on a server that doesn't chroot the user is not where the docs said files go. If you relied on that, prefix `rootFolderPath` with `/`.
+- **`DiskStorageWithChecksum` honours `checksum: false`**: it no longer hashes uploads or sets `file.hash`.
+- **Vercel Blob overwrites and supports private stores.** `put()` and `copy()` pass `allowOverwrite: true` (`@vercel/blob` 2.x refuses an existing pathname otherwise), `access: "private"` is accepted, and `get()`/`exists()` go through the SDK instead of fetching the blob URL. A part mismatch, an unsupported checksum and a read before any content now throw `UploadError`s (`FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`, `FILE_NOT_FOUND`).
+- **Netlify Blob records no longer carry a made-up `url`** (`/api/blobs/<store>/<key>`, which nothing served); `NetlifyBlobFile.url` is deprecated. Missing content and part/checksum errors throw `UploadError`s (`FILE_NOT_FOUND`, `FILE_CONFLICT`, `UNSUPPORTED_CHECKSUM_ALGORITHM`) instead of plain `Error`s.
+- **Firebase, Supabase and Bun S3 throw `UploadError`s**: SDK failures map to codes by HTTP status (`404` → `FILE_NOT_FOUND`, `403` → `FORBIDDEN`, …), and a part mismatch or unsupported checksum answers `FILE_CONFLICT` / `UNSUPPORTED_CHECKSUM_ALGORITHM` instead of a plain `Error` (a `500`).
+- **S3-compatible client helpers prefer provider-specific environment variables** (`B2_REGION`, `SPACES_REGION`, `WASABI_REGION`, `MINIO_*`, …) over the generic `AWS_*` ones, which are now only a fallback. Before, an `AWS_REGION` set for AWS silently overrode them.
+
 ## Upgrading past 2.0.23: file listing is opt-in (security fix)
 
 ### Summary
@@ -50,7 +141,7 @@ The option works the same on every handler (`Rest`, `Multipart`, `Tus`) and runt
 
 ```ts
 // Next.js
-const handler = createNextjsHandler({ allowList: true, storage, type: "rest" });
+const handler = createHandler({ allowList: true, storage, type: "rest" });
 
 // SolidStart
 const handler = createSolidStartHandler({ allowList: true, storage, type: "rest" });

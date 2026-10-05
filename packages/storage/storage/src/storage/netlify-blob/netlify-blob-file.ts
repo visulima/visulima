@@ -2,7 +2,7 @@ import { File } from "../utils/file";
 
 class NetlifyBlobFile extends File {
     /**
-     * The blob's public URL
+     * @deprecated Never set: Netlify Blobs has no public URL. Serve blobs through your handler's `GET`.
      */
     public url?: string;
 

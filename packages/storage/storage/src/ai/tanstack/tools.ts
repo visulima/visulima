@@ -7,6 +7,7 @@ import { TOOL_SCHEMAS } from "../internal/schemas";
 import type { ToolOptions } from "./types";
 
 type ListFilesParameters = typeof TOOL_SCHEMAS.listFiles.input;
+type SearchFilesParameters = typeof TOOL_SCHEMAS.searchFiles.input;
 type GetFileMetadataParameters = typeof TOOL_SCHEMAS.getFileMetadata.input;
 type DownloadFileParameters = typeof TOOL_SCHEMAS.downloadFile.input;
 type GetFileUrlParameters = typeof TOOL_SCHEMAS.getFileUrl.input;
@@ -35,6 +36,13 @@ export const downloadFile = (files: Files): ServerTool<DownloadFileParameters, n
         inputSchema: TOOL_SCHEMAS.downloadFile.input,
         name: "downloadFile",
     }).server((input) => executors.downloadFile(files, input)) as ServerTool<DownloadFileParameters, never, "downloadFile">;
+
+export const searchFiles = (files: Files): ServerTool<SearchFilesParameters, never, "searchFiles"> =>
+    toolDefinition({
+        description: TOOL_SCHEMAS.searchFiles.description,
+        inputSchema: TOOL_SCHEMAS.searchFiles.input,
+        name: "searchFiles",
+    }).server((input) => executors.searchFiles(files, input)) as ServerTool<SearchFilesParameters, never, "searchFiles">;
 
 export const getFileUrl = (files: Files): ServerTool<GetFileUrlParameters, never, "getFileUrl"> =>
     toolDefinition({

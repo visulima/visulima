@@ -1,24 +1,29 @@
+import { randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
-import { copyFile, open, stat, truncate } from "node:fs/promises";
-import type { Readable } from "node:stream";
+import { copyFile, open, rename, stat, truncate } from "node:fs/promises";
+import type { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream";
 
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
-import { isAbsolute, join } from "@visulima/path";
+import { dirname, isAbsolute, join } from "@visulima/path";
 import etag from "etag";
 
 import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
-import { streamChecksum } from "../../utils/pipes/stream-checksum";
-import StreamLength from "../../utils/pipes/stream-length";
+import { toHttpDate } from "../../utils/headers";
+import { isStreamChecksumError, streamChecksum } from "../../utils/pipes/stream-checksum";
+import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
+import { retry } from "../../utils/retry";
 import type { HttpError } from "../../utils/types";
 import type MetaStorage from "../meta-storage";
+import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage, defaultFilesystemFileNameValidation } from "../storage";
-import type { DiskStorageOptions, OperationOptions } from "../types";
-import type { FileInit, FilePart, FileQuery, UploadEventType } from "../utils/file";
+import type { ConditionalOptions, ConditionalSupport, CopyConditionalOptions, DiskStorageOptions, OperationOptions, StoredObject } from "../types";
+import { assertCondition, hasCondition } from "../utils/etag";
+import type { FileInit, FilePart, FileQuery } from "../utils/file";
 import { File, getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { FileReturn } from "../utils/file/types";
 import LocalMetaStorage from "./local-meta-storage";
@@ -44,9 +49,18 @@ import LocalMetaStorage from "./local-meta-storage";
 class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public static override readonly name: string = "disk";
 
+    public override readonly storageKind: string = "disk";
+
     public override checksumTypes: string[] = ["md5", "sha1"];
 
     public override readonly supportsRange: boolean = true;
+
+    /**
+     * Predicates are compared under the storage lock of the key, and a conditional upload lands
+     * through an atomic rename. The lock is process-local: writers in another process are not
+     * excluded.
+     */
+    public override readonly conditionalSupport: ConditionalSupport = { copy: true, create: true, delete: true, read: true, replace: true };
 
     public override get raw(): { directory: string } {
         return { directory: this.directory };
@@ -77,16 +91,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             this.meta = new LocalMetaStorage(metaConfig);
         }
 
-        this.isReady = false;
-        this.accessCheck()
-            .then(() => {
-                this.isReady = true;
-
-                return undefined;
-            })
-            .catch((error) => {
-                this.logger?.error("Storage access check failed: %O", error);
-            });
+        this.startAccessCheck(async () => this.accessCheck());
     }
 
     /**
@@ -102,13 +107,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Creates a new file upload and saves its metadata.
      * @param fileInit File initialization configuration.
      * @returns Promise resolving to the created file object.
-     * @throws {Error} If validation fails or file already exists and is completed.
+     * @throws {Error} If validation fails.
      * @remarks
      * Supports TTL (time-to-live) option in fileInit.
-     * Creates the file on disk if it doesn't exist.
-     * Returns existing file if it's already completed.
+     * An upload already stored under the same id is replaced: its content is discarded and the
+     * new upload starts empty.
      */
-    public async create(fileInit: FileInit): Promise<TFile> {
+    public async create(fileInit: FileInit, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         return this.instrumentOperation("create", async () => {
             // Handle TTL option
             const processedConfig = { ...fileInit };
@@ -128,16 +133,6 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             const file = new File(processedConfig);
 
-            try {
-                const existing = await this.getMeta(file.id);
-
-                if (existing.status === "completed") {
-                    return existing;
-                }
-            } catch {
-                // ignore
-            }
-
             file.name = this.namingFunction(file as TFile);
 
             // Only set default size if size is NaN (not if it's undefined for defer-length)
@@ -153,10 +148,40 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             await this.validate(file as TFile);
 
+            DiskStorage.assertSafeId(file.id);
+
+            // A conditional upload leaves the stored file and record alone: its write stores the body
+            // next to the target and renames it into place once the predicate holds.
+            if (hasCondition(options)) {
+                assertCondition(await this.eTagOf(file.name), options);
+                file.bytesWritten = 0;
+                file.status = getFileStatus(file);
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
+                await this.onCreate(file as TFile);
+                this.parkConditional(file as TFile);
+
+                return file as TFile;
+            }
+
             const path = this.getFilePath(file.name);
+            let previous: TFile | undefined;
 
             try {
+                previous = await this.meta.get(file.id);
+            } catch (error: unknown) {
+                if (!isMetaNotFound(error)) {
+                    throw error;
+                }
+            }
+
+            try {
+                // The content of a replaced upload (or an orphan without metadata) must not trail the new one.
+                if (previous !== undefined && previous.name !== file.name) {
+                    await remove(this.getFilePath(previous.name));
+                }
+
                 await ensureFile(path);
+                await truncate(path, 0);
                 file.bytesWritten = 0;
             } catch (error: unknown) {
                 const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
@@ -187,152 +212,214 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Uses file locking to prevent concurrent writes.
      * Updates file status to "completed" when all bytes are written.
      */
-    public async write(part: FilePart | FileQuery | TFile): Promise<TFile> {
-        return this.instrumentOperation("write", async () => {
-            let file: TFile;
+    public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        // Taken before locking: a lock that can't be acquired must not strand the parked record.
+        const conditional = this.takeConditional(part.id, options);
 
-            const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
+        // Lock before reading the metadata, so the offset checked and extended is the one stored
+        // after any earlier write finished.
+        return this.instrumentOperation("write", async () =>
+            this.withLock(part.id, async () => {
+                if (conditional) {
+                    return this.writeConditional(conditional, part, options);
+                }
 
-            if (isFullFile) {
-                // part is a full file object (not a FilePart)
-                file = part;
-            } else {
-                // part is FilePart or FileQuery
-                file = await this.getMeta(part.id);
+                let file: TFile;
 
-                await this.checkIfExpired(file);
-            }
+                const isFullFile = "contentType" in part && "metadata" in part && !("body" in part) && !("start" in part);
 
-            if (file.status === "completed") {
-                return file;
+                if (isFullFile) {
+                    // part is a full file object (not a FilePart)
+                    file = part;
+                } else {
+                    // part is FilePart or FileQuery
+                    file = await this.getMeta(part.id);
+
+                    await this.checkIfExpired(file);
+                }
+
+                if (file.status === "completed") {
+                    return file;
+                }
+
+                if (part.size !== undefined) {
+                    updateSize(file, part.size);
+                }
+
+                if (!partMatch(part, file)) {
+                    return throwErrorCode(ERRORS.FILE_CONFLICT);
+                }
+
+                const path = this.getFilePath(file.name);
+
+                try {
+                    const startPosition = (part as FilePart).start || 0;
+
+                    await ensureFile(path);
+
+                    // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0)
+                    if (file.bytesWritten === 0) {
+                        file.bytesWritten = startPosition;
+                    }
+
+                    if (hasContent(part)) {
+                        if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
+                            return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
+                        }
+
+                        // Detect file type from stream if contentType is not set or is default
+                        // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
+                        // For chunked uploads, only detect on the first chunk (offset 0)
+                        const isFirstChunk = part.start === 0 || part.start === undefined;
+
+                        if (
+                            isFirstChunk &&
+                            (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
+                            (!file.contentType || file.contentType === "application/octet-stream")
+                        ) {
+                            try {
+                                const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
+
+                                // Update contentType if file type was detected
+                                if (fileType?.mime) {
+                                    file.contentType = fileType.mime;
+                                }
+
+                                // Use the stream from file type detection
+
+                                part.body = detectedStream;
+                            } catch {
+                                // If file type detection fails, continue with original stream
+                                // This is not a critical error
+                            }
+                        }
+
+                        // Create lazyWritePart ensuring body stream and signal are preserved
+                        const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
+                        const lazyWritePart = { ...file, ...part, body: part.body, name: file.name, start: startPosition } as FilePart &
+                            TFile & { signal?: AbortSignal };
+
+                        // Explicitly preserve body stream reference and signal
+
+                        if (signalFromPart) {
+                            lazyWritePart.signal = signalFromPart;
+                        }
+
+                        const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
+
+                        if (errorCode) {
+                            await truncate(path, file.bytesWritten);
+
+                            return throwErrorCode(errorCode);
+                        }
+
+                        if (Number.isNaN(bytesWritten)) {
+                            // An aborted keepPartial (checksum-less) write resolves with NaN and
+                            // no error code. The pipeline did not complete, so the declared
+                            // contentLength must not be credited (that plus Math.max(x, NaN) would
+                            // persist NaN as the offset). Re-derive the real offset from disk.
+                            const { size } = await stat(path);
+
+                            file.bytesWritten = size;
+                        } else {
+                            // The bytes that actually landed: a body shorter than its Content-Length
+                            // leaves the upload incomplete at its real offset.
+                            file.bytesWritten = bytesWritten;
+                        }
+
+                        file.status = getFileStatus(file);
+                        file.modifiedAt = new Date().toISOString();
+
+                        await this.saveMeta(file);
+                    } else {
+                        await ensureFile(path);
+                        file.bytesWritten = 0;
+                    }
+
+                    return file;
+                } catch (error: unknown) {
+                    // Preserve UploadError instances (they already have the correct error code)
+                    if (isUploadError(error)) {
+                        throw error;
+                    }
+
+                    const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+                    await this.onError(httpError);
+
+                    return throwErrorCode(ERRORS.FILE_ERROR, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
+                }
+            }),
+        );
+    }
+
+    /**
+     * Store the body of a conditional upload in a sibling file, then — still under the key's lock —
+     * check the predicate and rename it over the target. A failed predicate leaves the target and
+     * its record untouched.
+     */
+    private async writeConditional(file: TFile, part: FilePart | FileQuery | TFile, options: ConditionalOptions | undefined): Promise<TFile> {
+        const target = file.name;
+        const staged = { ...file, name: `${target}.${randomUUID()}.conditional` } as TFile;
+        const stagedPath = this.getFilePath(staged.name);
+
+        try {
+            if (!hasContent(part)) {
+                return throwErrorCode(ERRORS.BAD_REQUEST, "A conditional upload needs a body");
             }
 
             if (part.size !== undefined) {
-                updateSize(file, part.size);
+                updateSize(staged, part.size);
             }
 
-            if (!partMatch(part, file)) {
-                return throwErrorCode(ERRORS.FILE_CONFLICT);
+            await ensureFile(stagedPath);
+
+            const [bytesWritten, errorCode] = await this.lazyWrite({ ...staged, ...part, body: part.body, name: staged.name, start: 0 });
+
+            if (errorCode) {
+                return throwErrorCode(errorCode);
             }
 
-            const path = this.getFilePath(file.name);
+            staged.bytesWritten = bytesWritten;
+            staged.status = getFileStatus(staged);
 
-            const lockToken = await this.lock(path);
-
-            try {
-                const startPosition = (part as FilePart).start || 0;
-
-                await ensureFile(path);
-
-                // Only reset bytesWritten to startPosition if it's the first write (bytesWritten is 0)
-                if (file.bytesWritten === 0) {
-                    file.bytesWritten = startPosition;
-                }
-
-                if (hasContent(part)) {
-                    if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
-                    }
-
-                    // Detect file type from stream if contentType is not set or is default
-                    // Only detect on first write (when bytesWritten is 0 or NaN, and start is 0 or undefined)
-                    // For chunked uploads, only detect on the first chunk (offset 0)
-                    const isFirstChunk = part.start === 0 || part.start === undefined;
-
-                    if (
-                        isFirstChunk &&
-                        (file.bytesWritten === 0 || Number.isNaN(file.bytesWritten)) &&
-                        (!file.contentType || file.contentType === "application/octet-stream")
-                    ) {
-                        try {
-                            const { fileType, stream: detectedStream } = await detectFileTypeFromStream(part.body);
-
-                            // Update contentType if file type was detected
-                            if (fileType?.mime) {
-                                file.contentType = fileType.mime;
-                            }
-
-                            // Use the stream from file type detection
-
-                            part.body = detectedStream;
-                        } catch {
-                            // If file type detection fails, continue with original stream
-                            // This is not a critical error
-                        }
-                    }
-
-                    // Create lazyWritePart ensuring body stream and signal are preserved
-                    const signalFromPart = (part as FilePart & { signal?: AbortSignal }).signal;
-                    const lazyWritePart = { ...file, ...part, body: part.body } as FilePart & TFile & { signal?: AbortSignal };
-
-                    // Explicitly preserve body stream reference and signal
-
-                    if (signalFromPart) {
-                        lazyWritePart.signal = signalFromPart;
-                    }
-
-                    const [bytesWritten, errorCode] = await this.lazyWrite(lazyWritePart);
-
-                    if (errorCode) {
-                        await truncate(path, file.bytesWritten);
-
-                        return throwErrorCode(errorCode);
-                    }
-
-                    if (Number.isNaN(bytesWritten)) {
-                        // An aborted keepPartial (checksum-less) write resolves with NaN and
-                        // no error code. The pipeline did not complete, so the declared
-                        // contentLength must not be credited (that plus Math.max(x, NaN) would
-                        // persist NaN as the offset). Re-derive the real offset from disk.
-                        const { size } = await stat(path);
-
-                        file.bytesWritten = size;
-                    } else {
-                        // Update bytesWritten to the expected position after writing
-                        const expectedBytesWritten = startPosition + (part.contentLength || 0);
-
-                        file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
-                        // Also update with the actual bytes written from lazyWrite
-                        file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
-                    }
-
-                    const previousStatus = file.status as UploadEventType | undefined;
-
-                    file.status = getFileStatus(file);
-
-                    await this.saveMeta(file);
-
-                    // Call onComplete hook when file status becomes "completed"
-                    // Note: onComplete in storage layer doesn't have request/response context
-                    // It's only called from handlers with full context
-                    const currentStatus = file.status;
-                    const wasNotCompletedBefore = previousStatus !== undefined && (previousStatus as string) !== "completed";
-
-                    if (currentStatus === "completed" && wasNotCompletedBefore) {
-                        // Storage-level onComplete is a no-op since it doesn't have response context
-                        // The actual onComplete is called from handlers with response object
-                    }
-                } else {
-                    await ensureFile(path);
-                    file.bytesWritten = 0;
-                }
-
-                return file;
-            } catch (error: unknown) {
-                // Preserve UploadError instances (they already have the correct error code)
-                if (isUploadError(error)) {
-                    throw error;
-                }
-
-                const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
-
-                await this.onError(httpError);
-
-                return throwErrorCode(ERRORS.FILE_ERROR, (typeof httpError.message === "string" ? httpError.message : String(error)) || String(error));
-            } finally {
-                await this.unlock(path, lockToken);
+            if (staged.status !== "completed") {
+                return throwErrorCode(ERRORS.FILE_CONFLICT, "A conditional upload has to be written in one request");
             }
-        });
+
+            assertCondition(await this.eTagOf(target), options);
+            await ensureDir(dirname(this.getFilePath(target)));
+            await rename(stagedPath, this.getFilePath(target));
+        } finally {
+            await remove(stagedPath);
+        }
+
+        staged.name = target;
+        staged.ETag = await this.eTagOf(target);
+        staged.modifiedAt = new Date().toISOString();
+
+        return this.saveMeta(staged);
+    }
+
+    /**
+     * Strong ETag of the file stored under `name` (the one {@link DiskStorage.get} reports), or
+     * `undefined` when there is none.
+     */
+    // Limitation: hashes the whole file per conditional check; persisting the ETag on write would avoid it.
+    private async eTagOf(name: string): Promise<string | undefined> {
+        try {
+            return etag(await readFile(this.getFilePath(name), { buffer: true }));
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === "ENOENT") {
+                return undefined;
+            }
+
+            throw error;
+        }
+    }
+
+    protected override async currentETag(file: TFile): Promise<string | undefined> {
+        return this.eTagOf(file.name);
     }
 
     /**
@@ -346,7 +433,18 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * For large files, consider using getStream() instead.
      * Includes ETag (MD5 hash) for content verification.
      */
-    public async get({ id }: FileQuery, options?: OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
+    public async get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions & { range?: { end?: number; start: number } }): Promise<FileReturn> {
+        if (options?.ifMatch !== undefined) {
+            const { ifMatch, ...rest } = options;
+
+            // The check and the read share the key's lock, so no conditional write lands in between.
+            return this.withLockWhenFree(id, async () => {
+                assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
+
+                return this.get({ id }, rest);
+            });
+        }
+
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.meta.get(id));
             const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
@@ -500,7 +598,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                         "Content-Length": String(size || bytesWritten),
                         "Content-Type": contentType,
                         ...(expiredAt && { "X-Upload-Expires": expiredAt.toString() }),
-                        ...(modifiedAt && { "Last-Modified": modifiedAt.toString() }),
+                        ...(modifiedAt && { "Last-Modified": toHttpDate(modifiedAt) }),
                         // Note: ETag requires reading the file content, so we don't include it for streaming
                         // Clients can use HEAD requests to get ETag if needed
                     },
@@ -517,6 +615,22 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         });
     }
 
+    protected override async statObject(id: string): Promise<StoredObject | undefined> {
+        let stats: Awaited<ReturnType<typeof stat>>;
+
+        try {
+            stats = await stat(this.getFilePath(id));
+        } catch (error: unknown) {
+            if ((error as { code?: string }).code === "ENOENT") {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        return stats.isFile() ? { size: stats.size } : undefined;
+    }
+
     /**
      * Deletes an upload and its metadata.
      * @param query File query containing the file ID to delete.
@@ -524,7 +638,17 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public async delete({ id }: FileQuery): Promise<TFile> {
+    public async delete({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        if (options?.ifMatch !== undefined) {
+            const { ifMatch } = options;
+
+            return this.withLockWhenFree(id, async () => {
+                assertCondition(await this.currentETag(await this.getMeta(id)), { ifMatch });
+
+                return this.delete({ id });
+            });
+        }
+
         return this.instrumentOperation("delete", async () => {
             const file = await this.getMeta(id);
 
@@ -540,23 +664,64 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     }
 
     /**
+     * Renames the staged file over the upload's, which replaces it in one step.
+     */
+    protected override async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const old = await this.findMeta(id);
+        const name = this.nameOf({ ...config, id });
+
+        // An unfinished upload, or one stored under another name, has nothing to rename over.
+        if (old !== undefined && (old.status !== "completed" || old.name !== name)) {
+            await this.delete({ id });
+        }
+
+        const path = this.getFilePath(name);
+
+        await ensureDir(dirname(path));
+        await rename(this.getFilePath(staged.name), path);
+
+        const replaced = await this.saveMeta({ ...staged, id, name });
+
+        await this.deleteMeta(staged.id);
+
+        return replaced;
+    }
+
+    /**
      * Copies an upload file to a new location.
      * @param name Source file name/ID.
      * @param destination Destination file name/ID.
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public async copy(name: string, destination: string): Promise<TFile> {
+    public async copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions): Promise<TFile> {
+        const { ifMatch, ifNoneMatch, sourceIfMatch } = options ?? {};
+
+        if (sourceIfMatch !== undefined || ifMatch !== undefined || ifNoneMatch !== undefined) {
+            // Lock both keys, so neither changes between the checks and the copy.
+            return this.withLockWhenFree(name, async () => {
+                const check = async (): Promise<TFile> => {
+                    assertCondition(await this.currentETag(await this.getMeta(name)), { ifMatch: sourceIfMatch });
+                    assertCondition(await this.eTagOf(destination), { ifMatch, ifNoneMatch });
+
+                    return this.copy(name, destination);
+                };
+
+                return name === destination ? check() : this.withLockWhenFree(destination, check);
+            });
+        }
+
         return this.instrumentOperation("copy", async () => {
             DiskStorage.assertSafeId(name);
             DiskStorage.assertSafeId(destination);
 
             const sourceFile = await this.getMeta(name);
+            const destinationPath = this.getFilePath(destination);
 
-            await copyFile(this.getFilePath(sourceFile.name), this.getFilePath(destination));
+            await ensureDir(dirname(destinationPath));
+            await copyFile(this.getFilePath(sourceFile.name), destinationPath);
 
-            // Return source file metadata with destination name
-            return { ...sourceFile, name: destination };
+            return this.saveMeta({ ...sourceFile, id: destination, name: destination });
         });
     }
 
@@ -574,8 +739,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             // Get source metadata first to get the actual file name
             const sourceFile = await this.getMeta(name);
+
+            if (name === destination) {
+                return sourceFile;
+            }
+
             const source = this.getFilePath(sourceFile.name);
             const destinationPath = this.getFilePath(destination);
+
+            await ensureDir(dirname(destinationPath));
 
             try {
                 await move(source, destinationPath);
@@ -593,8 +765,11 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 }
             }
 
-            // Return moved file with destination name and correct ID
-            return { ...sourceFile, id: sourceFile.id, name: destination };
+            const moved = await this.saveMeta({ ...sourceFile, id: destination, name: destination });
+
+            await this.deleteMeta(name);
+
+            return moved;
         });
     }
 
@@ -655,7 +830,13 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         return join(this.directory, filename);
     }
 
-    protected lazyWrite(part: File & FilePart): Promise<[number, ERRORS?]> {
+    /**
+     * Streams the part body to disk at `part.start`.
+     * @param part The part to write
+     * @param transforms Extra transforms the body passes through before it lands on disk
+     * @returns The offset after the write, or NaN with an error code when the write failed
+     */
+    protected lazyWrite(part: File & FilePart, transforms: Transform[] = []): Promise<[number, ERRORS?]> {
         return new Promise((resolve, reject) => {
             const destination = createWriteStream(this.getFilePath(part.name), { flags: "r+", start: part.start });
             const lengthChecker = new StreamLength(part.contentLength || (part.size as number) - part.start);
@@ -670,16 +851,34 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 checksumChecker.destroy();
             };
 
-            const failWithCode = (code?: ERRORS): void => {
-                cleanupStreams();
-                resolve([Number.NaN, code]);
+            // Settle only once the file is closed: the caller stats it next to find the real offset,
+            // and on Windows the last write can still be in flight when a failure is reported.
+            const settle = (outcome: () => void): void => {
+                if (destination.closed) {
+                    outcome();
+                } else {
+                    destination.once("close", outcome);
+                }
             };
 
-            lengthChecker.on("error", () => {
-                failWithCode(ERRORS.FILE_CONFLICT);
+            const failWithCode = (code?: ERRORS): void => {
+                cleanupStreams();
+                settle(() => {
+                    resolve([Number.NaN, code]);
+                });
+            };
+
+            // Only their own errors mean too long / mismatch: pipeline also destroys them with the
+            // body's error, which must surface as that error (Windows reports these first).
+            lengthChecker.on("error", (error) => {
+                if (isStreamLengthError(error)) {
+                    failWithCode(ERRORS.FILE_CONFLICT);
+                }
             });
-            checksumChecker.on("error", () => {
-                failWithCode(ERRORS.CHECKSUM_MISMATCH);
+            checksumChecker.on("error", (error) => {
+                if (isStreamChecksumError(error)) {
+                    failWithCode(ERRORS.CHECKSUM_MISMATCH);
+                }
             });
 
             part.body.on("aborted", () => {
@@ -687,7 +886,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
             });
             part.body.on("error", (error) => {
                 cleanupStreams();
-                reject(error);
+                settle(() => {
+                    reject(error);
+                });
             });
 
             // Check if signal is already aborted before starting pipeline
@@ -708,13 +909,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     lengthChecker.destroy();
                     checksumChecker.destroy();
                     part.body.destroy();
-                    resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    settle(() => {
+                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                    });
                 };
 
                 signal.addEventListener("abort", onAbort, { once: true });
             }
 
-            pipeline(part.body, lengthChecker, checksumChecker, destination, (error) => {
+            pipeline([part.body, lengthChecker, checksumChecker, ...transforms, destination], (error) => {
                 if (signal && onAbort) {
                     signal.removeEventListener("abort", onAbort);
                 }
@@ -724,19 +927,39 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                     // Check if error is due to abort signal
                     if (signal?.aborted) {
-                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                        settle(() => {
+                            resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                        });
 
                         return;
                     }
 
                     // Convert other pipeline errors to error codes
-                    resolve([Number.NaN, ERRORS.FILE_ERROR]);
+                    settle(() => {
+                        resolve([Number.NaN, ERRORS.FILE_ERROR]);
+                    });
 
                     return;
                 }
 
                 resolve([part.start + destination.bytesWritten]);
             });
+        });
+    }
+
+    /**
+     * Runs `function_` under the key's lock, waiting briefly while another request holds it: the
+     * lock fails fast, and a conditional read or delete must not answer 423 for a concurrent one.
+     * @param key Lock key
+     * @param function_ Work to do under the lock
+     * @returns What `function_` returns
+     */
+    private async withLockWhenFree<R>(key: string, function_: () => Promise<R>): Promise<R> {
+        return retry(async () => this.withLock(key, function_), {
+            initialDelay: 1,
+            maxDelay: 50,
+            maxRetries: 20,
+            shouldRetry: (error) => isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_LOCKED,
         });
     }
 

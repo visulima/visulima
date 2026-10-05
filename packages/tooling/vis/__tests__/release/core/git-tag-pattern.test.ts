@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createOrUpdateFloatingTag, renderTagPattern } from "../../../src/release/core/git";
+import { createOrUpdateFloatingTag, floatingMajorTagFor, renderTagPattern } from "../../../src/release/core/git";
 import { MockRunner } from "../../../src/release/core/shell-runner";
 
 describe(renderTagPattern, () => {
@@ -157,5 +157,17 @@ describe(createOrUpdateFloatingTag, () => {
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
         expect(tagCall!.args).toStrictEqual(["tag", "-f", "-s", "v1"]);
+    });
+});
+
+describe(floatingMajorTagFor, () => {
+    it.each([
+        ["@acme/cli", "1.2.3", "acme-cli-v1"],
+        ["cli", "2.0.0-beta.1", "cli-v2"],
+        ["", "1.0.0", undefined],
+        ["cli", "", undefined],
+    ])("%s@%s → %s", (name, version, expected) => {
+        expect.hasAssertions();
+        expect(floatingMajorTagFor(name, version)).toBe(expected);
     });
 });

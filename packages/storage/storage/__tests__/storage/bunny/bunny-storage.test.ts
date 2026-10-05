@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import BunnyStorage from "../../../src/storage/bunny/bunny-storage";
 import type { BunnyStorageOptions } from "../../../src/storage/bunny/types";
-import { ERRORS } from "../../../src/utils/errors";
-import { storageOptions } from "../../__helpers__/config";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
+import { metafile, storageOptions } from "../../__helpers__/config";
 
 const makeStorageFile = (overrides: Record<string, unknown> = {}) => {
     return {
@@ -170,7 +170,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.remove.mockResolvedValueOnce(true);
 
@@ -180,21 +180,41 @@ describe(BunnyStorage, () => {
             expect(result.status).toBe("deleted");
         });
 
-        it("treats a falsy SDK response as a best-effort delete (Bunny's remove returns boolean, never throws on 404)", async () => {
-            expect.assertions(2);
+        it("treats a falsy SDK response as deleted when the object is gone (Bunny's remove returns false on 404)", async () => {
+            expect.assertions(3);
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
-            // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx
-            // (incl. 404). We rely on idempotent delete: missing key = success.
+            // Real SDK: `(await fetch(...)).ok` — returns `false` for any non-2xx (incl. 404).
             fileMock.remove.mockResolvedValueOnce(false);
+            fileMock.get.mockRejectedValueOnce(new Error("File not found"));
 
             const result = await storage.delete({ id: "user/file.mp4" });
 
             expect(fileMock.remove).toHaveBeenCalledWith(expect.anything(), "/user/file.mp4");
+            expect(fileMock.get).toHaveBeenCalledWith(expect.anything(), "/user/file.mp4");
             expect(result.status).toBe("deleted");
+        });
+
+        it("fails and keeps the metadata when remove reports failure and the object is still there", async () => {
+            expect.assertions(2);
+
+            const storage = new BunnyStorage(baseOptions);
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue({
+                ...metafile,
+                bunnyPath: "/user/file.mp4",
+            });
+
+            const deleteMeta = vi.spyOn(storage, "deleteMeta");
+
+            fileMock.remove.mockResolvedValueOnce(false);
+            fileMock.get.mockResolvedValueOnce(makeStorageFile({ objectName: "file.mp4", path: "/zone/user/" }));
+
+            await expect(storage.delete({ id: metafile.id })).rejects.toMatchObject({ UploadErrorCode: "StorageError" });
+            expect(deleteMeta).not.toHaveBeenCalled();
         });
 
         it("wraps network errors thrown by remove() via wrapBunnyError", async () => {
@@ -202,7 +222,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.remove.mockRejectedValueOnce(new TypeError("fetch failed"));
 
@@ -218,7 +238,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
 
@@ -234,7 +254,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             // The real SDK throws a plain `Error` whose message is
             // `File not found: ${path}` with NO status/statusCode field.
@@ -254,7 +274,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockRejectedValueOnce(new Error("Unauthorized access to storage zone: test-zone"));
 
@@ -273,7 +293,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockRejectedValueOnce(new Error("An unknown error has occurred during the request."));
 
@@ -289,13 +309,47 @@ describe(BunnyStorage, () => {
     // If a future release renames these, the regex inference in
     // `wrapBunnyError` would silently fall through to STORAGE_ERROR — this
     // suite traps that drift at the test layer.
+    describe(".getCompletedFile()", () => {
+        it("answers from the object description without downloading the content", async () => {
+            expect.assertions(6);
+
+            const entry = makeStorageFile();
+
+            fileMock.get.mockResolvedValueOnce(entry);
+
+            const file = await new BunnyStorage(baseOptions).getCompletedFile("user/file.bin");
+
+            expect(file).toMatchObject({
+                bunnyChecksum: "ABCD1234",
+                bunnyPath: "/user/file.bin",
+                bytesWritten: 7,
+                contentType: "application/octet-stream",
+                id: "user/file.bin",
+                status: "completed",
+            });
+            expect(file?.size).toBe(7);
+            expect(fileMock.get).toHaveBeenCalledWith(expect.anything(), "/user/file.bin");
+            expect(fileMock.get).toHaveBeenCalledTimes(1);
+            expect(entry.data).not.toHaveBeenCalled();
+            expect(file?.name).toBe("user/file.bin");
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(1);
+
+            fileMock.get.mockRejectedValueOnce(new Error("File not found: /missing"));
+
+            await expect(new BunnyStorage(baseOptions).getCompletedFile("missing")).resolves.toBeUndefined();
+        });
+    });
+
     describe("sdk error format regression guard (pin @bunny.net/storage-sdk@0.3.1)", () => {
         it("maps 'Unable to upload file. ...' (400) to BAD_REQUEST on upload (via copy)", async () => {
             expect.assertions(1);
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
             fileMock.upload.mockRejectedValueOnce(new Error("Unable to upload file. Either invalid path specified, either provided checksum invalid"));
@@ -310,7 +364,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const sdkError = new Error("File not found: /missing");
 
@@ -326,51 +380,28 @@ describe(BunnyStorage, () => {
     });
 
     describe(".list()", () => {
-        // Bunny's `GET /{zone}/{path}/` is NON-recursive — it returns only the
-        // immediate children of a single directory. The SDK call sent by
-        // `BunnyStorage.list()` is `file.list(client, "/")`, so the mock
-        // models the response shape of "root of the zone": files at the root
-        // and directory entries (which would have to be fetched separately to
-        // descend into them). The adapter is expected to filter directories
-        // out and surface only files — without trying to descend.
-        it("filters directories and returns only top-level files", async () => {
-            expect.assertions(4);
+        // Bunny's `GET /{zone}/{path}/` returns only the immediate children of one directory, so the
+        // adapter lists each directory entry it meets in turn and surfaces only files.
+        it("descends into directories and returns files by their full key", async () => {
+            expect.assertions(3);
 
             const storage = new BunnyStorage(baseOptions);
 
-            fileMock.list.mockResolvedValueOnce([
-                makeStorageFile({ isDirectory: true, length: 0, objectName: "subdir", path: "/zone/" }),
-                makeStorageFile({ objectName: "a.bin", path: "/zone/" }),
-                makeStorageFile({ checksum: null, objectName: "b.bin", path: "/zone/" }),
-            ]);
+            fileMock.list.mockImplementation(async (_client: unknown, path: string) =>
+                path === "/"
+                    ? [
+                        makeStorageFile({ isDirectory: true, length: 0, objectName: "subdir", path: "/zone/" }),
+                        makeStorageFile({ objectName: "a.bin", path: "/zone/" }),
+                    ]
+                    : [makeStorageFile({ checksum: null, objectName: "b.bin", path: "/zone/subdir/" })],
+            );
 
             const items = await storage.list();
 
-            expect(fileMock.list).toHaveBeenCalledWith(expect.anything(), "/");
-            expect(items).toHaveLength(2);
-            expect(items.map((f) => f.name)).toStrictEqual(["zone/a.bin", "zone/b.bin"]);
-            expect(items.some((f) => f.name?.includes("subdir"))).toBe(false);
-        });
-
-        it("does NOT descend into subdirectories (Bunny list is non-recursive)", async () => {
-            expect.assertions(2);
-
-            const storage = new BunnyStorage(baseOptions);
-
-            // Real Bunny would only return immediate children of "/". The
-            // adapter must therefore never expose nested entries from a
-            // single `list("/")` call — even if a misbehaving mock supplied
-            // them. We verify the adapter doesn't issue follow-up requests
-            // and reports exactly what the SDK gave back.
-            fileMock.list.mockResolvedValueOnce([
-                makeStorageFile({ isDirectory: true, length: 0, objectName: "nested", path: "/zone/" }),
-                makeStorageFile({ objectName: "top.bin", path: "/zone/" }),
-            ]);
-
-            const items = await storage.list();
-
-            expect(fileMock.list).toHaveBeenCalledTimes(1);
-            expect(items.map((f) => f.name)).toStrictEqual(["zone/top.bin"]);
+            expect(fileMock.list.mock.calls.map(([, path]) => path)).toStrictEqual(["/", "/subdir/"]);
+            // The zone segment of Bunny's path is stripped, so the ids round-trip to get/delete.
+            expect(items.map((f) => f.id)).toStrictEqual(["a.bin", "subdir/b.bin"]);
+            expect(items.some((f) => f.id === "subdir")).toBe(false);
         });
 
         it("respects the limit", async () => {
@@ -440,7 +471,7 @@ describe(BunnyStorage, () => {
 
             const storage = new BunnyStorage(baseOptions);
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             fileMock.get.mockResolvedValueOnce(makeStorageFile());
             fileMock.upload.mockResolvedValueOnce(true);

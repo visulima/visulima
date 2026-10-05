@@ -4,6 +4,7 @@ import { format } from "node:url";
 import type { UploadFile } from "../../storage/utils/file";
 import { getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
 import type { UploadResponse } from "../../utils/types";
+import type { LocationSource } from "../base/base-handler-core";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
 import type { TusRequest } from "./tus-base";
@@ -31,7 +32,7 @@ export class Tus<
     /**
      * Limiting enabled http method handler
      */
-    public static override readonly methods: Handlers[] = ["delete", "download", "get", "head", "options", "patch", "post"];
+    public static override readonly methods: Handlers[] = ["delete", "get", "head", "options", "patch", "post"];
 
     public override disableTerminationForFinishedUploads = false;
 
@@ -44,7 +45,7 @@ export class Tus<
         this.disableTerminationForFinishedUploads = options.disableTerminationForFinishedUploads ?? false;
         this.allowMethodOverride = options.allowMethodOverride ?? true;
         this.tusBase = new TusBase<TFile>({
-            buildFileUrl: (requestUrl, file) => this.buildFileUrlForTus(requestUrl, file),
+            buildFileUrl: (request, file) => this.buildFileUrlForTus(request, file),
             disableTerminationForFinishedUploads: () => this.disableTerminationForFinishedUploads,
             maxChecksumBufferSize: options.maxChecksumBufferSize,
             storage: () => this.storage,
@@ -157,25 +158,15 @@ export class Tus<
 
     /**
      * Build file URL for TUS uploads (without file extension).
-     * @param requestUrl Request URL string
+     * @param request Request the upload was created by
      * @param file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
-    protected buildFileUrlForTus(requestUrl: string, file: TFile): string {
-        const url = new URL(requestUrl, "http://localhost");
-        const { pathname } = url;
+    protected buildFileUrlForTus(request: LocationSource, file: TFile): string {
+        const url = new URL(request.url, "http://localhost");
         const query = Object.fromEntries(url.searchParams.entries());
-        const relative = format({ pathname: `${pathname}/${file.id}`, query });
 
-        if (this.storage.config.useRelativeLocation) {
-            return relative;
-        }
-
-        // Only an absolute requestUrl yields a real origin; a bare path can't (the previous
-        // getBaseUrl({ url }) always returned "" because no host header reaches this method).
-        const origin = /^https?:\/\//iu.test(requestUrl) ? url.origin : "";
-
-        return origin + relative;
+        return this.locationOrigin(request.url, request) + format({ pathname: `${url.pathname}/${file.id}`, query });
     }
 
     /**
@@ -185,6 +176,7 @@ export class Tus<
      */
     private toTusRequest(request: NodeRequest): TusRequest {
         return {
+            ...this.locationOf(request),
             get body() {
                 return getRequestStream(request);
             },
@@ -202,7 +194,6 @@ export class Tus<
                     throw error;
                 }
             },
-            url: (request as NodeRequest & { originalUrl?: string }).originalUrl || request.url || "",
         };
     }
 }

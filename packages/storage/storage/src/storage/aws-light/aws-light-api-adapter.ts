@@ -3,61 +3,132 @@ import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
 import { AwsClient } from "aws4fetch";
 
-import type { Part, S3ApiOperations, S3CallOptions } from "../aws/s3-base-storage";
+import type { MultipartUpload, Part, S3ApiOperations, S3CallOptions } from "../aws/s3-api";
+import { createS3PostPolicy } from "../aws/s3-post-policy";
+import type { UploadPostOptions, UploadPostPolicy } from "../types";
 import type { AwsLightClientConfig } from "./types";
 
+const XML_ENTITIES: Record<string, string> = { amp: "&", apos: "'", gt: ">", lt: "<", quot: '"' };
+
+/** Decodes the predefined XML entities and numeric character references. */
+const decodeXmlText = (text: string): string =>
+    text.replaceAll(/&(#x[\da-f]+|#\d+|[a-z]+);/giu, (entity, name: string) => {
+        if (name.startsWith("#x") || name.startsWith("#X")) {
+            return String.fromCodePoint(Number.parseInt(name.slice(2), 16));
+        }
+
+        if (name.startsWith("#")) {
+            return String.fromCodePoint(Number.parseInt(name.slice(1), 10));
+        }
+
+        return XML_ENTITIES[name] ?? entity;
+    });
+
 /**
- * Simple XML parser for S3 API responses.
- * Uses regex-based parsing for simplicity and cross-platform compatibility.
+ * Minimal XML parser for S3 API responses. An element with child elements becomes an object, one
+ * with only text becomes its (trimmed, decoded) text, and repeated sibling elements (`&lt;Part>`,
+ * `&lt;Contents>`, `&lt;CommonPrefixes>`) become an array. Empty elements are left out. A single linear
+ * scan, so no regex backtracking on the response.
  */
-const parseXml = (text: string): Record<string, unknown> => {
-    const result: Record<string, unknown> = {};
+export const parseXml = (text: string): Record<string, unknown> => {
+    let position = 0;
 
-    // Remove XML declaration and namespaces
-    // Input is controlled (S3 API responses), safe from ReDoS
-    const cleanText = text.replaceAll(/<\?xml[^>]*\?>/g, "").replaceAll(/xmlns[^=]*="[^"]*"/g, "");
+    const parseContent = (): Record<string, unknown> | string => {
+        const element: Record<string, unknown> = {};
+        let content = "";
+        let hasChildren = false;
 
-    // Extract tags and their content
-    const tagRegex = /<([^>]+)>([^<]*)<\/\1>/g;
-    const matches = [...cleanText.matchAll(tagRegex)];
+        while (position < text.length) {
+            const tagStart = text.indexOf("<", position);
 
-    for (const match of matches) {
-        const [, tagName, content] = match;
+            if (tagStart === -1) {
+                content += text.slice(position);
+                position = text.length;
+                break;
+            }
 
-        if (tagName && content?.trim()) {
-            if (result[tagName]) {
-                // Multiple children with same tag - convert to array
-                if (!Array.isArray(result[tagName])) {
-                    result[tagName] = [result[tagName]];
-                }
+            content += text.slice(position, tagStart);
 
-                (result[tagName] as unknown[]).push(content.trim());
+            if (text.startsWith("<![CDATA[", tagStart)) {
+                const end = text.indexOf("]]>", tagStart);
+                const stop = end === -1 ? text.length : end;
+
+                // CDATA is literal text: keep it apart from entity decoding by escaping its ampersands.
+                content += text.slice(tagStart + 9, stop).replaceAll("&", "&amp;");
+                position = stop + 3;
+                continue;
+            }
+
+            const tagEnd = text.indexOf(">", tagStart);
+
+            if (tagEnd === -1) {
+                position = text.length;
+                break;
+            }
+
+            position = tagEnd + 1;
+
+            // Closing tag of the element being parsed.
+            if (text[tagStart + 1] === "/") {
+                break;
+            }
+
+            // XML declaration, comment or doctype.
+            if (text[tagStart + 1] === "?" || text[tagStart + 1] === "!") {
+                continue;
+            }
+
+            const tag = text.slice(tagStart + 1, tagEnd);
+            const selfClosing = tag.endsWith("/");
+            const [name] = (selfClosing ? tag.slice(0, -1) : tag).trim().split(/\s/u);
+            const value = selfClosing ? "" : parseContent();
+
+            hasChildren = true;
+
+            if (!name || value === "") {
+                continue;
+            }
+
+            const existing = element[name];
+
+            if (existing === undefined) {
+                element[name] = value;
+            } else if (Array.isArray(existing)) {
+                existing.push(value);
             } else {
-                result[tagName] = content.trim();
+                element[name] = [existing, value];
             }
         }
+
+        return hasChildren ? element : decodeXmlText(content.trim());
+    };
+
+    const root = parseContent();
+
+    return typeof root === "string" ? {} : root;
+};
+
+/** A repeated XML element as an array: absent → [], a single element → [element]. */
+const toArray = <T>(value: unknown): T[] => {
+    if (value === undefined) {
+        return [];
     }
 
-    // Handle nested structures
-    // Input is controlled (S3 API responses), safe from ReDoS
+    return (Array.isArray(value) ? value : [value]) as T[];
+};
 
-    const nestedRegex = /<([^>]+)>([\s\S]*?)<\/\1>/g;
-    let nestedMatch;
+/**
+ * An error for a failed S3 request, carrying the HTTP status in both shapes the storage reads
+ * (`statusCode` for retries, `$metadata.httpStatusCode` like the AWS SDK) and the S3 error code.
+ */
+const requestError = (message: string, status: number, body: string): Error => {
+    const code = (parseXml(body).Error as Record<string, unknown> | undefined)?.Code;
 
-    // eslint-disable-next-line no-cond-assign
-    while ((nestedMatch = nestedRegex.exec(cleanText)) !== null) {
-        const [, tagName, innerContent] = nestedMatch;
-
-        if (tagName && innerContent?.includes("<")) {
-            const nested = parseXml(innerContent);
-
-            if (Object.keys(nested).length > 0) {
-                result[tagName] = nested;
-            }
-        }
-    }
-
-    return result;
+    return Object.assign(new Error(`${message}: ${String(status)} ${body}`), {
+        $metadata: { httpStatusCode: status },
+        statusCode: status,
+        ...(typeof code === "string" && { code, name: code }),
+    });
 };
 
 /**
@@ -68,11 +139,25 @@ class AwsLightApiAdapter implements S3ApiOperations {
 
     private readonly bucket: string;
 
-    private readonly endpoint: string;
+    /** Bucket URL without a trailing slash; object keys are appended to it. */
+    private readonly baseUrl: string;
+
+    private readonly credentials: AwsLightClientConfig;
 
     public constructor(config: AwsLightClientConfig & { bucket: string }) {
         this.bucket = config.bucket;
-        this.endpoint = config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`;
+
+        const endpoint = new URL(config.endpoint || `https://${config.bucket}.s3.${config.region}.amazonaws.com`);
+        let path = endpoint.pathname.replace(/\/+$/u, "");
+
+        // A custom endpoint is the service root (path-style, as for R2, MinIO and Spaces) unless it
+        // already names the bucket, in its host (virtual-hosted) or as its last path segment.
+        if (!endpoint.hostname.startsWith(`${config.bucket}.`) && path.split("/").pop() !== config.bucket) {
+            path += `/${encodeURIComponent(config.bucket)}`;
+        }
+
+        this.baseUrl = endpoint.origin + path;
+        this.credentials = config;
 
         this.aws = new AwsClient({
             accessKeyId: config.accessKeyId,
@@ -120,7 +205,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to create multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to create multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
@@ -177,7 +262,7 @@ class AwsLightApiAdapter implements S3ApiOperations {
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to upload part: ${response.status} ${text}`);
+            throw requestError("Failed to upload part", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful PUT requests
@@ -195,6 +280,8 @@ class AwsLightApiAdapter implements S3ApiOperations {
     public async completeMultipartUpload(
         params: {
             Bucket: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
             Key: string;
             Parts: { ETag: string; PartNumber: number }[];
             UploadId: string;
@@ -218,6 +305,8 @@ ${partsXml}
             body: xmlBody,
             headers: {
                 "Content-Type": "application/xml",
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
             },
             method: "POST",
             signal: options?.signal,
@@ -226,13 +315,20 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to complete multipart upload: ${response.status} ${xmlText}`);
+            throw requestError("Failed to complete multipart upload", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
+
+        // S3 can answer 200 and still fail the request, with an <Error> body; such errors are
+        // server-side (InternalError, SlowDown), so report them as a retryable 500.
+        if (xml.Error !== undefined) {
+            throw requestError("Failed to complete multipart upload", 500, xmlText);
+        }
+
         const result = (xml.CompleteMultipartUploadResult as Record<string, unknown>) || xml;
 
-        const location = (result.Location as string) || `${this.endpoint}/${params.Key}`;
+        const location = (result.Location as string) || this.buildUrl(params.Key);
         const etag = result.ETag as string | undefined;
 
         return {
@@ -252,12 +348,58 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to abort multipart upload: ${response.status} ${text}`);
+            throw requestError("Failed to abort multipart upload", response.status, text);
         }
     }
 
-    public async listParts(params: { Bucket: string; Key: string; UploadId: string }, options?: S3CallOptions): Promise<{ Parts?: Part[] }> {
+    public async listMultipartUploads(
+        params: { Bucket: string; KeyMarker?: string; UploadIdMarker?: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextKeyMarker?: string; NextUploadIdMarker?: string; Uploads?: MultipartUpload[] }> {
+        const queryParams: Record<string, string> = { uploads: "" };
+
+        if (params.KeyMarker !== undefined) {
+            queryParams["key-marker"] = params.KeyMarker;
+        }
+
+        if (params.UploadIdMarker !== undefined) {
+            queryParams["upload-id-marker"] = params.UploadIdMarker;
+        }
+
+        const response = await this.aws.fetch(this.buildUrl("", queryParams), { method: "GET", signal: options?.signal });
+        const xmlText = await response.text();
+
+        if (!response.ok) {
+            throw requestError("Failed to list multipart uploads", response.status, xmlText);
+        }
+
+        const xml = parseXml(xmlText);
+        const result = (xml.ListMultipartUploadsResult as Record<string, unknown> | undefined) ?? xml;
+
+        return {
+            IsTruncated: result.IsTruncated === "true",
+            NextKeyMarker: result.NextKeyMarker as string | undefined,
+            NextUploadIdMarker: result.NextUploadIdMarker as string | undefined,
+            Uploads: toArray<Record<string, unknown>>(result.Upload).map((upload) => {
+                return {
+                    Initiated: upload.Initiated ? new Date(String(upload.Initiated)) : undefined,
+                    Key: upload.Key as string | undefined,
+                    UploadId: upload.UploadId as string | undefined,
+                };
+            }),
+        };
+    }
+
+    public async listParts(
+        params: { Bucket: string; Key: string; PartNumberMarker?: string; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ IsTruncated?: boolean; NextPartNumberMarker?: string; Parts?: Part[] }> {
         const queryParams: Record<string, string> = { uploadId: params.UploadId };
+
+        if (params.PartNumberMarker !== undefined) {
+            queryParams["part-number-marker"] = params.PartNumberMarker;
+        }
+
         const url = this.buildUrl(params.Key, queryParams);
         const response = await this.aws.fetch(url, {
             method: "GET",
@@ -267,19 +409,16 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list parts: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list parts", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
-        const listPartsResult = (xml.ListPartsResult as Record<string, unknown>) || xml;
-        let parts: unknown[] = [];
-
-        if (listPartsResult.Part) {
-            parts = Array.isArray(listPartsResult.Part) ? listPartsResult.Part : [listPartsResult.Part];
-        }
+        const listPartsResult = (xml.ListPartsResult as Record<string, unknown> | undefined) ?? xml;
 
         return {
-            Parts: (parts as Record<string, unknown>[]).map((part: Record<string, unknown>) => {
+            IsTruncated: listPartsResult.IsTruncated === "true" || listPartsResult.IsTruncated === true,
+            NextPartNumberMarker: listPartsResult.NextPartNumberMarker === undefined ? undefined : String(listPartsResult.NextPartNumberMarker),
+            Parts: toArray<Record<string, unknown>>(listPartsResult.Part).map((part) => {
                 return {
                     ETag: (part.ETag as string)?.replaceAll(/(^"|"$)/g, ""),
                     PartNumber: Number(part.PartNumber) || 0,
@@ -290,7 +429,7 @@ ${partsXml}
     }
 
     public async getObject(
-        params: { Bucket: string; Key: string },
+        params: { Bucket: string; IfMatch?: string; Key: string; Range?: string },
         options?: S3CallOptions,
     ): Promise<{
         Body?: ReadableStream | Readable;
@@ -303,6 +442,10 @@ ${partsXml}
     }> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            headers: {
+                ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+                ...(params.Range !== undefined && { Range: params.Range }),
+            },
             method: "GET",
             signal: options?.signal,
         });
@@ -310,7 +453,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to get object: ${response.status} ${text}`);
+            throw requestError("Failed to get object", response.status, text);
         }
 
         // Note: Response body is consumed by the fetch, so we don't need to read it for successful GET requests
@@ -364,7 +507,8 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to head object: ${response.status} ${text}`);
+            // The status in the SDK's shape, so callers can tell a missing object from a failure.
+            throw requestError("Failed to head object", response.status, text);
         }
 
         const contentLength = response.headers.get("Content-Length");
@@ -393,9 +537,10 @@ ${partsXml}
         };
     }
 
-    public async deleteObject(params: { Bucket: string; Key: string }, options?: S3CallOptions): Promise<void> {
+    public async deleteObject(params: { Bucket: string; IfMatch?: string; Key: string }, options?: S3CallOptions): Promise<void> {
         const url = this.buildUrl(params.Key);
         const response = await this.aws.fetch(url, {
+            ...(params.IfMatch !== undefined && { headers: { "If-Match": params.IfMatch } }),
             method: "DELETE",
             signal: options?.signal,
         });
@@ -403,13 +548,20 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to delete object: ${response.status} ${text}`);
+            throw requestError("Failed to delete object", response.status, text);
         }
     }
 
-    public async copyObject(params: { Bucket: string; CopySource: string; Key: string; StorageClass?: string }, options?: S3CallOptions): Promise<void> {
+    public async copyObject(
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        options?: S3CallOptions,
+    ): Promise<void> {
         const headers: Record<string, string> = {
+            ...(params.ACL !== undefined && { "x-amz-acl": params.ACL }),
             "x-amz-copy-source": params.CopySource,
+            ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
+            ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),
+            ...(params.IfNoneMatch !== undefined && { "If-None-Match": params.IfNoneMatch }),
         };
 
         if (params.StorageClass) {
@@ -431,7 +583,7 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to copy object: ${response.status} ${text}`);
+            throw requestError("Failed to copy object", response.status, text);
         }
     }
 
@@ -473,53 +625,37 @@ ${partsXml}
         const xmlText = await response.text();
 
         if (!response.ok) {
-            throw new Error(`Failed to list objects: ${response.status} ${xmlText}`);
+            throw requestError("Failed to list objects", response.status, xmlText);
         }
 
         const xml = parseXml(xmlText);
-        const listResult = (xml.ListBucketResult as Record<string, unknown>) || xml;
-        const contents = listResult.Contents || (Array.isArray(listResult.Contents) ? listResult.Contents : []);
-
-        // The regex parseXml above can't preserve repeated <CommonPrefixes> siblings, so pull them
-        // straight from the raw XML. Input is a controlled S3 response, so the pattern is ReDoS-safe.
-        const commonPrefixes: { Prefix?: string }[] = [];
-
-        for (const match of xmlText.matchAll(/<CommonPrefixes>\s*<Prefix>([^<]*)<\/Prefix>\s*<\/CommonPrefixes>/g)) {
-            commonPrefixes.push({ Prefix: match[1] });
-        }
+        const listResult = (xml.ListBucketResult as Record<string, unknown> | undefined) ?? xml;
 
         return {
-            CommonPrefixes: commonPrefixes,
-            Contents: Array.isArray(contents)
-                ? (contents as Record<string, unknown>[]).map((item) => {
-                      return {
-                          Key: item.Key as string | undefined,
-                          LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
-                      };
-                  })
-                : [],
+            CommonPrefixes: toArray<Record<string, unknown>>(listResult.CommonPrefixes).map((prefix) => {
+                return { Prefix: prefix.Prefix as string | undefined };
+            }),
+            Contents: toArray<Record<string, unknown>>(listResult.Contents).map((item) => {
+                return {
+                    Key: item.Key as string | undefined,
+                    LastModified: item.LastModified ? new Date(String(item.LastModified)) : undefined,
+                };
+            }),
             IsTruncated: listResult.IsTruncated === "true" || listResult.IsTruncated === true,
             NextContinuationToken: listResult.NextContinuationToken as string | undefined,
         };
     }
 
+    /** A SigV4 query-signed `PUT` URL for one part, usable without credentials until it expires. */
     public async getPresignedUrl(params: { Bucket: string; expiresIn: number; Key: string; PartNumber: number; UploadId: string }): Promise<string> {
-        // aws4fetch doesn't have built-in presigned URL support
-        // For now, we'll construct a URL that can be signed on-demand
-        // Note: This is a limitation - full presigned URL support would require
-        // implementing AWS Signature Version 4 query string authentication
-        const queryParams: Record<string, string> = {
+        const url = this.buildUrl(params.Key, {
             partNumber: String(params.PartNumber),
             uploadId: params.UploadId,
             "X-Amz-Expires": String(params.expiresIn),
-        };
+        });
+        const signed = await this.aws.sign(url, { aws: { signQuery: true }, method: "PUT" });
 
-        const url = this.buildUrl(params.Key, queryParams);
-
-        // TODO: Implement proper presigned URL generation
-        // For now, return the URL - actual signing will happen when the request is made
-        // This means presigned URLs won't work for clientDirectUpload without additional work
-        return url;
+        return signed.url;
     }
 
     public async putObject(params: {
@@ -527,11 +663,17 @@ ${partsXml}
         Bucket: string;
         ContentLength?: number;
         ContentType?: string;
+        /** Conditional write: only replace the object while it still has this ETag. */
+        IfMatch?: string;
         Key: string;
         Metadata?: Record<string, string>;
-    }): Promise<void> {
+    }): Promise<{ ETag?: string }> {
         const url = this.buildUrl(params.Key);
         const headers: Record<string, string> = {};
+
+        if (params.IfMatch !== undefined) {
+            headers["If-Match"] = params.IfMatch.startsWith('"') ? params.IfMatch : `"${params.IfMatch}"`;
+        }
 
         if (params.ContentType) {
             headers["Content-Type"] = params.ContentType;
@@ -568,29 +710,60 @@ ${partsXml}
         if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to put object: ${response.status} ${text}`);
+            throw requestError("Failed to put object", response.status, text);
         }
+
+        return { ETag: response.headers?.get("ETag")?.replaceAll(/(^"|"$)/g, "") || undefined };
     }
 
     public async checkBucketAccess(_params: { Bucket: string }): Promise<void> {
-        // Simple HEAD request to check bucket access
+        // HEAD on the bucket: a 404 means it doesn't exist, which must fail the startup check.
         const url = this.buildUrl("");
         const response = await this.aws.fetch(url, {
             method: "HEAD",
         });
 
-        if (!response.ok && response.status !== 404) {
+        if (!response.ok) {
             const text = await response.text();
 
-            throw new Error(`Failed to access bucket: ${response.status} ${text}`);
+            throw requestError("Failed to access bucket", response.status, text);
         }
+    }
+
+    /**
+     * Signs a browser-form POST policy for `key` against this bucket's URL.
+     */
+    public presignPost(key: string, options?: UploadPostOptions): UploadPostPolicy {
+        const { accessKeyId, region, secretAccessKey, service, sessionToken } = this.credentials;
+
+        return createS3PostPolicy({
+            accessKeyId,
+            bucket: this.bucket,
+            contentType: options?.contentType,
+            expiresIn: options?.expiresIn,
+            key,
+            maxSize: options?.maxSize,
+            minSize: options?.minSize,
+            region,
+            secretAccessKey,
+            service,
+            sessionToken,
+            url: `${this.baseUrl}/`,
+        });
     }
 
     /**
      * Builds S3 API URL.
      */
     private buildUrl(key: string, queryParams?: Record<string, string>): string {
-        const url = new URL(key, this.endpoint);
+        const segments = key.split("/");
+
+        // URLs resolve "." and ".." segments (even percent-encoded), so such a key would address another object.
+        if (segments.some((segment) => segment === "." || segment === "..")) {
+            throw new Error(`Object key "${key}" cannot be addressed: it contains a "." or ".." segment`);
+        }
+
+        const url = new URL(`${this.baseUrl}/${segments.map((segment) => encodeURIComponent(segment)).join("/")}`);
 
         if (queryParams) {
             for (const [parameterKey, value] of Object.entries(queryParams)) {

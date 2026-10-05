@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GCSMetaStorage from "../../../src/storage/gcs/gcs-meta-storage";
 import type { GCSMetaStorageOptions } from "../../../src/storage/gcs/types";
+import { getMetaVersion } from "../../../src/storage/meta-storage";
+import { ERRORS } from "../../../src/utils/errors";
 import { metafile } from "../../__helpers__/config";
 
 const mockAuthRequest = vi.fn();
@@ -123,6 +125,18 @@ describe(GCSMetaStorage, async () => {
 
             expect(file.metadata).toEqual({ foo: "bar" });
         });
+
+        it("should report a missing object as not found and rethrow other failures", async () => {
+            expect.assertions(2);
+
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Not Found"), { response: { status: 404 } }));
+
+            await expect(metaStorage.get("non-existent-id")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Backend Error"), { response: { status: 503 } }));
+
+            await expect(metaStorage.get(metafile.id)).rejects.toThrow("Backend Error");
+        });
     });
 
     describe(".delete()", () => {
@@ -146,6 +160,57 @@ describe(GCSMetaStorage, async () => {
             const result = await metaStorage.touch(metafile.id, metafile);
 
             expect(result).toBe(metafile);
+        });
+    });
+
+    describe("requests", () => {
+        it("should send the object name, upload type and Content-Type when saving", async () => {
+            expect.assertions(2);
+
+            mockAuthRequest.mockResolvedValueOnce({ data: { generation: "7" }, status: 200 });
+
+            await metaStorage.save(metafile.id, metafile);
+
+            const options = mockAuthRequest.mock.calls[1]?.[0] as { headers: Record<string, string>; params: Record<string, string> };
+
+            expect(options.params).toStrictEqual(expect.objectContaining({ name: `${metafile.id}.META`, uploadType: "media" }));
+            expect(options.headers["Content-Type"]).toBe("application/json; charset=utf-8");
+        });
+
+        it("should download the object content when reading", async () => {
+            expect.assertions(1);
+
+            mockAuthRequest.mockResolvedValueOnce({ data: { ...metafile }, headers: new Headers(), status: 200 });
+
+            await metaStorage.get(metafile.id);
+
+            expect(mockAuthRequest.mock.calls[1]?.[0].params).toStrictEqual(expect.objectContaining({ alt: "media" }));
+        });
+    });
+
+    describe("conditional saves", () => {
+        it("should attach the generation read by get() and save with ifGenerationMatch", async () => {
+            expect.assertions(3);
+
+            mockAuthRequest.mockResolvedValueOnce({ data: { ...metafile }, headers: new Headers({ "x-goog-generation": "7" }), status: 200 });
+            mockAuthRequest.mockResolvedValueOnce({ data: { generation: "8" }, status: 200 });
+
+            const file = await metaStorage.get(metafile.id);
+
+            expect(getMetaVersion(file)).toBe("7");
+
+            await metaStorage.saveIfVersion(metafile.id, file, "7");
+
+            expect(mockAuthRequest.mock.calls[2]?.[0].params).toStrictEqual(expect.objectContaining({ ifGenerationMatch: "7" }));
+            expect(getMetaVersion(file)).toBe("8");
+        });
+
+        it("should report a failed precondition as undefined", async () => {
+            expect.assertions(1);
+
+            mockAuthRequest.mockRejectedValueOnce(Object.assign(new Error("Precondition Failed"), { response: { status: 412 } }));
+
+            await expect(metaStorage.saveIfVersion(metafile.id, { ...metafile }, "7")).resolves.toBeUndefined();
         });
     });
 });

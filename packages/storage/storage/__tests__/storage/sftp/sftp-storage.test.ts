@@ -10,7 +10,7 @@ import type { SftpStorageOptions } from "../../../src/storage/sftp/types";
 import { metadata, storageOptions, testfile } from "../../__helpers__/config";
 
 const { control, store } = vi.hoisted(() => {
-    return { control: { renameThrows: false, uploadThrows: false }, store: new Map<string, Buffer>() };
+    return { control: { renameThrows: false, statThrows: false, uploadThrows: false }, store: new Map<string, Buffer>() };
 });
 
 vi.mock(import("ssh2-sftp-client"), () => {
@@ -70,6 +70,25 @@ vi.mock(import("ssh2-sftp-client"), () => {
         }
 
         // eslint-disable-next-line class-methods-use-this
+        public async stat(path: string): Promise<{ size: number }> {
+            if (control.statThrows) {
+                throw new Error("Permission denied");
+            }
+
+            const data = store.get(normalize(path));
+
+            if (!data) {
+                const error = new Error("No such file") as Error & { code: string };
+
+                error.code = "ENOENT";
+
+                throw error;
+            }
+
+            return { size: data.length };
+        }
+
+        // eslint-disable-next-line class-methods-use-this
         public async exists(path: string): Promise<false | string> {
             return store.has(normalize(path)) ? "-" : false;
         }
@@ -103,6 +122,7 @@ describe(SftpStorage, () => {
     beforeEach(() => {
         store.clear();
         control.renameThrows = false;
+        control.statThrows = false;
         control.uploadThrows = false;
         metaDirectory = join(tmpdir(), `sftp-meta-${Math.random().toString(36).slice(2)}`);
         storage = makeStorage(metaDirectory);
@@ -110,6 +130,27 @@ describe(SftpStorage, () => {
 
     afterEach(async () => {
         await rm(metaDirectory, { force: true, recursive: true });
+    });
+
+    it("describes a file stored without upload metadata", async () => {
+        expect.assertions(2);
+
+        store.set("uploads/existing.bin", testfile.asBuffer);
+
+        await expect(storage.getCompletedFile("existing.bin")).resolves.toMatchObject({
+            id: "existing.bin",
+            size: testfile.asBuffer.length,
+            status: "completed",
+        });
+        await expect(storage.getCompletedFile("missing.bin")).resolves.toBeUndefined();
+    });
+
+    it("fails the existence lookup closed when the server errors", async () => {
+        expect.assertions(1);
+
+        control.statThrows = true;
+
+        await expect(storage.getCompletedFile("existing.bin", { retries: 0 })).rejects.toThrow("Permission denied");
     });
 
     it("creates, writes and reads a file round-trip", async () => {

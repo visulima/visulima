@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import FirebaseFile from "../../../src/storage/firebase/firebase-file";
 import FirebaseStorage from "../../../src/storage/firebase/firebase-storage";
 import type { FirebaseStorageOptions } from "../../../src/storage/firebase/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const initializeApp = vi.fn(() => {
@@ -157,7 +158,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             const saveMeta = vi.spyOn(storage as unknown as { saveMeta: (f: unknown) => Promise<unknown> }, "saveMeta").mockResolvedValue(undefined);
 
             const file = await storage.create({ contentType: "video/mp4", metadata: { name: "v.mp4", size: 5 }, originalName: "v.mp4", size: 5 });
@@ -208,13 +209,49 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.get({ id: "file.mp4" });
 
             expect(gcsFile.download).toHaveBeenCalledTimes(1);
             expect(result.content.toString()).toBe("hello");
             expect(result.contentType).toBe("video/mp4");
+        });
+
+        it("reports a missing object as FILE_NOT_FOUND", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage();
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+            gcsFile.download.mockRejectedValueOnce(Object.assign(new Error("No such object"), { code: 404 }));
+
+            await expect(storage.get({ id: "missing.mp4" })).rejects.toMatchObject({ UploadErrorCode: ERRORS.FILE_NOT_FOUND });
+        });
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from object metadata without downloading the content", async () => {
+            expect.assertions(5);
+
+            const storage = makeStorage();
+            const file = await storage.getCompletedFile("file.mp4");
+
+            expect(file).toMatchObject({ bytesWritten: 5, contentType: "video/mp4", ETag: "etag-1", id: "file.mp4", size: 5, status: "completed" });
+            expect(mockBucket.file).toHaveBeenCalledWith("file.mp4");
+            expect(gcsFile.getMetadata).toHaveBeenCalledTimes(1);
+            expect(gcsFile.download).not.toHaveBeenCalled();
+            expect(file?.path).toBe("file.mp4");
+        });
+
+        it("returns undefined when the object is missing", async () => {
+            expect.assertions(1);
+
+            const storage = makeStorage();
+
+            gcsFile.getMetadata.mockRejectedValueOnce(Object.assign(new Error("No such object"), { code: 404 }));
+
+            await expect(storage.getCompletedFile("missing.mp4")).resolves.toBeUndefined();
         });
     });
 
@@ -224,7 +261,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const result = await storage.delete({ id: "file.mp4" });
 
@@ -239,7 +276,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             await expect(storage.exists({ id: "file.mp4" })).resolves.toBe(true);
         });
@@ -249,7 +286,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
             gcsFile.exists.mockRejectedValueOnce(new Error("boom"));
 
             await expect(storage.exists({ id: "file.mp4" })).resolves.toBe(false);
@@ -262,7 +299,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const file = await storage.copy("source.mp4", "dest.mp4");
 
@@ -277,7 +314,7 @@ describe(FirebaseStorage, () => {
 
             const storage = makeStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             const file = await storage.move("source.mp4", "renamed.mp4");
 

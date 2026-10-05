@@ -128,24 +128,42 @@ describe("express Rest", () => {
             expect(response.header.location).toBeDefined();
         });
 
-        it("should update file with PUT when ID exists", async () => {
-            expect.assertions(2);
+        it("should replace the file with PUT when ID exists", async () => {
+            expect.assertions(3);
 
             // First create a file
             const createResponse = await create();
             const fileId = createResponse.body.id;
 
-            // Then update it with PUT
+            // Then replace it with PUT
             const updatedContent = Buffer.from("updated content");
 
             response = await supertest(app)
                 .put(`${basePath}/${fileId}`)
-                .set("Content-Type", "text/plain")
+                .set("Content-Type", "application/octet-stream")
                 .set("Content-Length", String(updatedContent.length))
                 .send(updatedContent);
 
             expect(response.status).toBe(200);
             expect(response.body.id).toBe(fileId);
+
+            const download = await supertest(app).get(`${basePath}/${fileId}`).buffer(true);
+
+            expect(Buffer.from(download.body as Buffer).toString()).toBe("updated content");
+        });
+
+        it("should validate the replacement like a new upload", async () => {
+            expect.assertions(1);
+
+            const createResponse = await create();
+
+            response = await supertest(app)
+                .put(`${basePath}/${createResponse.body.id}`)
+                .set("Content-Type", "text/plain")
+                .set("Content-Length", "4")
+                .send(Buffer.from("text"));
+
+            expect(response.status).toBe(415);
         });
 
         it("should return 400 when no body is provided", async () => {

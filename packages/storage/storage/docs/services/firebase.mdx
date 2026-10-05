@@ -1,0 +1,168 @@
+# Firebase Storage
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+Firebase Storage is a Google Cloud Storage bucket. `FirebaseStorage` resolves a `firebase-admin` app, takes its `Bucket`, and uploads each object in one `file.save()` call. Unlike [`GCStorage`](./google-cloud-storage.mdx) it mints signed read and upload URLs, but it doesn't support chunked or resumable uploads. Upload metadata is kept on local disk.
+
+## Installation
+
+```sh
+npm install firebase-admin
+```
+
+```sh
+yarn add firebase-admin
+```
+
+```sh
+pnpm add firebase-admin
+```
+
+## Provider setup
+
+1. **Enable Cloud Storage** in the Firebase console (_Build → Storage → Get started_). This creates the default bucket, `<project-id>.appspot.com` or `<project-id>.firebasestorage.app` depending on when the project was created. The name is shown at the top of the _Files_ tab.
+2. **Get service-account credentials**: _Project settings → Service accounts → Generate new private key_. The JSON file holds `client_email` and `private_key`. On Google Cloud you can instead pass an `app` initialised with Application Default Credentials.
+3. **Permissions.** The Firebase Admin SDK bypasses Firebase Security Rules; only IAM applies. The default `firebase-adminsdk` account has broad project roles. For a dedicated account, grant **Storage Object User** (`roles/storage.objectUser`: object create, get, list, delete) on the bucket.
+4. **Signing.** With `credentials` or a key file, URLs are signed locally with the private key. With an `app` that uses Application Default Credentials, signing calls the IAM `signBlob` API: grant the identity **Service Account Token Creator** on itself.
+
+### CORS
+
+Needed when a browser `PUT`s to a `getUploadUrl()` URL or reads a `getReadUrl()` URL with `fetch`. Firebase buckets are GCS buckets, so the CORS config is the same:
+
+```json
+[
+    {
+        "origin": ["https://app.example.com"],
+        "method": ["GET", "HEAD", "PUT"],
+        "responseHeader": ["Content-Type"],
+        "maxAgeSeconds": 3600
+    }
+]
+```
+
+```sh
+gcloud storage buckets update gs://my-project.appspot.com --cors-file=cors.json
+```
+
+## Configuration
+
+```ts
+import { FirebaseStorage } from "@visulima/storage/provider/firebase";
+
+// Minimal: FIREBASE_STORAGE_BUCKET + GOOGLE_APPLICATION_CREDENTIALS from the environment
+const storage = new FirebaseStorage({});
+```
+
+```ts
+import { FirebaseStorage } from "@visulima/storage/provider/firebase";
+
+// Production
+const storage = new FirebaseStorage({
+    bucket: "my-project.appspot.com",
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    credentials: {
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY!,
+    },
+    defaultUrlExpiresIn: 900,
+    maxUploadSize: "100MB",
+    metaStorageConfig: { directory: "/var/lib/uploads-meta" },
+});
+```
+
+Reuse an initialised app, or pass a `@google-cloud/storage` `Bucket` directly, with `app`:
+
+```ts
+import { getApp } from "firebase-admin/app";
+
+const storage = new FirebaseStorage({ app: getApp(), bucket: "my-project.appspot.com" });
+```
+
+| Option                | Type                          | Default                                                           | Description                                                                                                          |
+| --------------------- | ----------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `bucket`              | `string`                      | `FIREBASE_STORAGE_BUCKET`                                         | Bucket name. Required unless `app` is a `Bucket`.                                                                    |
+| `projectId`           | `string`                      | `FIREBASE_PROJECT_ID` → `GOOGLE_CLOUD_PROJECT` → `GCLOUD_PROJECT` | Google Cloud project ID, used when the adapter initialises the app.                                                  |
+| `credentials`         | `{ clientEmail, privateKey }` | `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY`                  | Service-account credentials. Escaped `\n` sequences in the key are turned into newlines.                             |
+| `serviceAccountPath`  | `string`                      | `GOOGLE_APPLICATION_CREDENTIALS`                                  | Path to a service-account JSON key, read when `credentials` are incomplete.                                          |
+| `app`                 | `App \| Bucket`               | —                                                                 | Pre-built `firebase-admin` app, or a `Bucket` used as-is. Skips app initialisation and the credential options above. |
+| `appName`             | `string`                      | default app                                                       | Named `firebase-admin` app to reuse or create. An existing app with that name wins over the credential options.      |
+| `publicBaseUrl`       | `string`                      | —                                                                 | `getReadUrl()` returns `${publicBaseUrl}/${key}` instead of a signed URL (public bucket or CDN).                     |
+| `defaultUrlExpiresIn` | `number`                      | `3600`                                                            | Expiry in seconds for signed URLs.                                                                                   |
+| `metaStorageConfig`   | `LocalMetaStorageOptions`     | `<os tmpdir>/Upload_meta`                                         | Where upload metadata is kept, see [Metadata storage](#metadata-storage).                                            |
+
+All adapters also take the shared `BaseStorageOptions`: `allowMIME`, `maxUploadSize`, `maxMetadataSize`, `filename`, `fileNameValidation`, `expiration`, `retryConfig` (retry-engine defaults: 3 retries, exponential backoff from 1 s), `metaStorage`, `logger`, `metrics` and the lifecycle hooks.
+
+## Metadata storage
+
+Upload records are JSON sidecar files on the **local disk** of the process: `<directory>/<id>.META`, by default under `os.tmpdir()/Upload_meta`. Nothing is written to the bucket besides the files themselves.
+
+- **Single instance:** point `metaStorageConfig.directory` at a persistent path; the OS temp directory may be wiped on restart.
+- **Several instances or serverless:** each instance only sees its own records, so an upload created on one instance is unknown to another. Use a directory on a volume every instance mounts (`metaStorageConfig: { directory: "/mnt/shared/uploads-meta" }`), or pass a shared store via `metaStorage`, for example an `S3MetaStorage` from `@visulima/storage/provider/aws`.
+- **Finished uploads keep their record.** It maps the upload ID to the object path (relevant with a custom `filename`). Reads by a key that has no record fall back to the bucket path of the same name.
+
+## Behaviour & limits
+
+| Topic              | Behaviour                                                                                                                                                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Uploads            | Single-shot: the body is buffered in memory and saved in one request. A chunk that doesn't start at offset 0 or doesn't carry the whole file is rejected with `METHOD_NOT_ALLOWED`, and the TUS handler stops advertising `creation-defer-length` / `concatenation`. |
+| Large files        | Have the client upload directly with `getUploadUrl()`.                                                                                                                                                                                                               |
+| Reads              | `get()` downloads the whole object. No ranged reads.                                                                                                                                                                                                                 |
+| Read URLs          | `getReadUrl()` returns a V2 signed `GET` URL from `getSignedUrl()`, honouring `responseContentDisposition` / `responseContentType`. With `publicBaseUrl` it returns the public URL and rejects those overrides with `BAD_REQUEST`.                                   |
+| Upload URLs        | `getUploadUrl()` returns a signed `PUT` URL bound to `contentType` when given. `contentLength` is rejected with `BAD_REQUEST`: a signed PUT can't enforce it.                                                                                                        |
+| Listing            | `list(limit)` returns up to `limit` objects of the bucket, without prefix filtering. Listed entries carry no creation time.                                                                                                                                          |
+| Copy / move        | Server-side `copy()` / `move()` within the bucket.                                                                                                                                                                                                                   |
+| Expiration / purge | `purge()` relies on `list()`, whose entries carry no creation time, so `expiration` currently removes nothing. Expired uploads are still refused on read (`GONE`).                                                                                                   |
+| Cancellation       | Per-call `signal` / `timeout` are best-effort: the SDK can't cancel an in-flight request. `retries` is honoured.                                                                                                                                                     |
+
+`storage.raw` returns the `Bucket`.
+
+## Using it with the handlers
+
+Prefer the multipart or REST handler, which create and write an upload in one request. TUS sends `POST` and `PATCH` separately, so with local metadata both must reach the same instance.
+
+```ts
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
+
+const app = express();
+const multipart = new Multipart({ storage });
+
+app.use("/files", multipart.handle);
+```
+
+```ts
+import { Hono } from "hono";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const app = new Hono();
+const rest = new Rest({ storage });
+
+app.all("/files", (c) => rest.fetch(c.req.raw));
+app.all("/files/:id", (c) => rest.fetch(c.req.raw));
+```
+
+```ts
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("avatars/user-1.png", buffer, { contentType: "image/png" });
+
+const readUrl = await files.url("avatars/user-1.png", { expiresIn: 600 });
+const uploadUrl = await files.signedUploadUrl("incoming/video.mp4", { contentType: "video/mp4", expiresIn: 900 });
+```
+
+## Troubleshooting
+
+| Symptom                                                               | Cause and fix                                                                                                                                          |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ``Firebase storage: `bucket` is required``                            | Pass `bucket` or set `FIREBASE_STORAGE_BUCKET`.                                                                                                        |
+| `service-account credentials are required`                            | Provide `credentials`, `serviceAccountPath`, the `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PRIVATE_KEY` pair, `GOOGLE_APPLICATION_CREDENTIALS`, or an `app`. |
+| `error:1E08010C:DECODER routines::unsupported` / invalid PEM          | The private key lost its newlines. Keep the `-----BEGIN PRIVATE KEY-----` block intact or store it with literal `\n` escapes.                          |
+| `getReadUrl()` rejects with `METHOD_NOT_ALLOWED` and a signing error  | The credentials can't sign. With Application Default Credentials grant **Service Account Token Creator**, or use a key file.                           |
+| `403` on upload                                                       | The service account lacks object permissions on the bucket, or the bucket name points at another project.                                              |
+| `METHOD_NOT_ALLOWED` on a TUS `PATCH` / chunked REST upload           | The adapter is single-shot. Send the whole file in one request or use `getUploadUrl()`.                                                                |
+| `404` on `PATCH`/`HEAD` right after `POST`                            | The request reached another instance with its own local metadata. Share `metaStorageConfig.directory` or use a shared `metaStorage`.                   |
+| Browser `PUT` fails with a CORS error, or `403 SignatureDoesNotMatch` | Configure bucket CORS, and send the same `Content-Type` that was passed as `contentType` to `getUploadUrl()`.                                          |

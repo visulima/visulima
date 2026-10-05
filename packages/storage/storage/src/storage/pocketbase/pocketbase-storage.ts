@@ -3,7 +3,7 @@ import PocketBase, { ClientResponseError } from "pocketbase";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import PocketBaseFile from "./pocketbase-file";
@@ -35,7 +35,8 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, "PocketBase: client has no files.getURL()");
     }
 
-    return resolver(record, filename, options);
+    // The SDK's FileService reads its client off `this`.
+    return resolver.call(client.files, record, filename, options);
 };
 
 /**
@@ -62,6 +63,8 @@ const fileUrl = (client: PocketBaseClientLike, record: PocketBaseRecord, filenam
  */
 class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public static override readonly name: string = "pocketbase";
+
+    public override readonly storageKind: string = "pocketbase";
 
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
@@ -157,14 +160,10 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -225,10 +224,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -240,13 +236,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: PocketBaseFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by key.
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.path ?? file?.name ?? id;
 
@@ -283,15 +273,8 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let key = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                key = meta.path ?? id;
-            } catch {
-                // direct key lookup
-            }
+            const meta = await this.findMeta(id);
+            const key = meta?.path ?? id;
 
             await this.ensureAuth();
 
@@ -309,17 +292,50 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        await this.ensureAuth();
+
+        let record: PocketBaseRecord;
+
+        try {
+            record = await this.findRecord(id, options);
+        } catch (error) {
+            if (isNotFound(error)) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        const url = fileUrl(this.client, record, String(record[this.fileField] ?? ""));
+        const response = await this.runOperation(options, () => fetch(url, { method: "HEAD" }));
+
+        if (response.status === 404) {
+            return undefined;
+        }
+
+        if (!response.ok) {
+            throw new Error(`PocketBase: HEAD ${url} answered ${String(response.status)}`);
+        }
+
+        return {
+            contentType: response.headers.get("content-type") ?? undefined,
+            extra: { bucket: this.collectionName, path: id },
+            size: Number(response.headers.get("content-length") ?? 0) || 0,
+        };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let key = id;
-            let stored: PocketBaseFile | undefined;
+            // No metadata — treat `id` as a logical key.
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a logical key.
+            // Outside the lookup: an expired upload must answer GONE, not fall back to its record.
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored ? (stored.path ?? stored.name ?? id) : id;
 
             await this.ensureAuth();
 
@@ -351,7 +367,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<PocketBaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
@@ -389,7 +405,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
     public async move(name: string, destination: string, options?: OperationOptions): Promise<PocketBaseFile> {
         return this.instrumentOperation("move", async () => {
             const file = await this.copy(name, destination, options);
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.ensureAuth();
@@ -420,9 +436,26 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             async () => {
                 await this.ensureAuth();
 
-                const { items } = await this.runOperation(options, () => this.client.collection(this.collectionName).getList(1, limit));
+                const items: PocketBaseRecord[] = [];
+                const perPage = Math.min(limit, 500);
 
-                return (items ?? []).map((record) => {
+                let page = 0;
+
+                // The server caps `perPage`, so walk the pages until `limit` is reached.
+                while (items.length < limit) {
+                    page += 1;
+
+                    const current = page;
+                    const result = await this.runOperation(options, () => this.client.collection(this.collectionName).getList(current, perPage));
+
+                    items.push(...(result.items ?? []));
+
+                    if ((result.items ?? []).length === 0 || current >= (result.totalPages ?? current)) {
+                        break;
+                    }
+                }
+
+                return items.slice(0, limit).map((record) => {
                     const key = String(record[this.keyField] ?? record.id);
                     const filename = String(record[this.fileField] ?? "");
 
@@ -465,7 +498,7 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
         await this.ensureAuth();
 
         let lookupKey = key;
-        const meta = await this.getMetaSafe(key);
+        const meta = await this.findMeta(key);
 
         if (meta?.path) {
             lookupKey = meta.path;
@@ -510,16 +543,6 @@ class PocketBaseStorage extends BaseStorage<PocketBaseFile> {
             await this.runOperation(options, () => this.client.collection(this.collectionName).create(form));
         }
     }
-
-    private async getMetaSafe(id: string): Promise<PocketBaseFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
-    }
-
-    private internalOnComplete = (file: PocketBaseFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default PocketBaseStorage;

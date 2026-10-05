@@ -29,7 +29,7 @@ class TestStorage extends BaseStorage {
     }
 
     protected override getRetryConfig(): RetryConfig | undefined {
-        return this.retryConfig;
+        return this.retryConfig ?? super.getRetryConfig();
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -411,6 +411,26 @@ describe("baseStorage.runOperation", () => {
             await expect(storage.run({ retries: { maxRetries: 0 } }, function_)).rejects.toThrow();
 
             expect(function_).toHaveBeenCalledTimes(1);
+        });
+
+        it("honours the retryConfig option when the adapter does not override getRetryConfig", async () => {
+            expect.assertions(4);
+
+            const noRetries = makeStorageWith({ retryConfig: { maxRetries: 0 } });
+            const failOnce = vi.fn<() => Promise<string>>().mockRejectedValueOnce(econnreset()).mockResolvedValueOnce("ok");
+
+            await expect(noRetries.run(undefined, failOnce)).rejects.toThrow("connection reset");
+
+            expect(failOnce).toHaveBeenCalledTimes(1);
+
+            const fastRetries = makeStorageWith({ retryConfig: { initialDelay: 0, maxRetries: 1 } });
+            const alwaysFail = vi.fn(async () => {
+                throw econnreset();
+            });
+
+            await expect(fastRetries.run(undefined, alwaysFail)).rejects.toThrow("connection reset");
+
+            expect(alwaysFail).toHaveBeenCalledTimes(2);
         });
 
         it("retries a retryable error up to the configured maxRetries", async () => {

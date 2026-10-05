@@ -1,0 +1,147 @@
+# Cloudinary
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage.
+
+## Overview
+
+The Cloudinary adapter stores each object as a Cloudinary asset whose `public_id` is the key. Each upload is buffered and sent in one `upload_stream` request with `overwrite: true`. One adapter instance works with a single **resource type** (`raw`, `image` or `video`) and a single **delivery type** (`upload`, `private` or `authenticated`). Every call (`upload`, `destroy`, `resource`, `resources`, URLs) is scoped to that pair.
+
+Read URLs are Cloudinary delivery URLs. Cloudinary has no presigned `PUT`, so `getUploadUrl()` is not implemented.
+
+## Installation
+
+```sh
+npm install cloudinary
+```
+
+```sh
+yarn add cloudinary
+```
+
+```sh
+pnpm add cloudinary
+```
+
+## Provider setup
+
+1. In the [Cloudinary console](https://console.cloudinary.com/), open **Settings → API Keys** and note the **cloud name**, **API key** and **API secret**. The console also shows a `CLOUDINARY_URL` (`cloudinary://<key>:<secret>@<cloud>`) that holds all three.
+2. Choose the resource type to match what you store:
+    - `raw` (the default) for arbitrary files: PDFs, archives, JSON. They are delivered as-is.
+    - `image` / `video` for media that should get Cloudinary transformations. Cloudinary only accepts real images or videos for these types.
+3. Choose the delivery type:
+    - `upload`: public delivery URLs.
+    - `private` / `authenticated`: the asset is not public, and `getReadUrl()` returns a signed `private_download_url`.
+4. The adapter signs every upload with the API secret, so you don't need **upload presets**. Presets only matter for unsigned browser uploads, which this adapter doesn't do. The API key also needs Admin API access, because `get`, `exists`, `list` and `getCompletedFile` call `api.resource` / `api.resources`.
+5. Keep the API secret on the server. Uploads go through your handler, so no CORS setup is needed on Cloudinary. Delivery URLs are served by Cloudinary's CDN.
+
+## Configuration
+
+```ts
+import { CloudinaryStorage } from "@visulima/storage/provider/cloudinary";
+
+// Minimal: reads CLOUDINARY_URL (or CLOUDINARY_CLOUD_NAME / _API_KEY / _API_SECRET)
+const storage = new CloudinaryStorage({});
+```
+
+```ts
+import { CloudinaryStorage } from "@visulima/storage/provider/cloudinary";
+
+// Production: private images, shared metadata, limits
+const storage = new CloudinaryStorage({
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    resourceType: "image",
+    type: "authenticated",
+    defaultUrlExpiresIn: 600,
+    allowMIME: ["image/*"],
+    maxUploadSize: "50MB",
+    metaStorageConfig: { directory: "/mnt/shared/upload-meta" },
+});
+```
+
+| Option                | Type                                       | Default                                                         | Description                                                                                 |
+| --------------------- | ------------------------------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `cloudName`           | `string`                                   | `CLOUDINARY_CLOUD_NAME`, then the host part of `CLOUDINARY_URL` | Cloud name. Required unless `client` is passed. Ignored when `client` is passed.            |
+| `apiKey`              | `string`                                   | `CLOUDINARY_API_KEY`, then `CLOUDINARY_URL`                     | API key. Ignored when `client` is passed.                                                   |
+| `apiSecret`           | `string`                                   | `CLOUDINARY_API_SECRET`, then `CLOUDINARY_URL`                  | API secret. Ignored when `client` is passed.                                                |
+| `client`              | `typeof cloudinary.v2`                     | —                                                               | A pre-configured `v2` namespace. When set, the adapter does not call `cloudinary.config()`. |
+| `resourceType`        | `"raw" \| "image" \| "video"`              | `"raw"`                                                         | Resource type used for every call.                                                          |
+| `type`                | `"upload" \| "private" \| "authenticated"` | `"upload"`                                                      | Delivery type. `private` and `authenticated` need signed URLs.                              |
+| `secure`              | `boolean`                                  | `true`                                                          | Build `https://` delivery URLs.                                                             |
+| `defaultUrlExpiresIn` | `number` (seconds)                         | `3600`                                                          | How long signed `private_download_url`s last on non-public delivery types.                  |
+| `metaStorageConfig`   | `LocalMetaStorageOptions`                  | OS temp dir (`Upload_meta`)                                     | `directory` / `prefix` / `suffix` for local metadata files.                                 |
+
+Common options from `BaseStorageOptions` also apply: `maxUploadSize` (`"5TB"`), `allowMIME` (`["*/*"]`), `maxMetadataSize` (`"8MB"`), `filename` (the upload id), `fileNameValidation`, `validation`, `expiration`, `metaStorage`, the `on*` hooks, `logger`, `metrics`, `cache`, `retryConfig`, `defaultTimeout`, `defaultSignal` and `useRelativeLocation`. `assetFolder` is accepted but ignored by this adapter. To store assets in a folder, use a `filename` that returns a path such as `uploads/<id>`.
+
+**Environment variables:** `CLOUDINARY_URL`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`. Explicit options take precedence, then the individual variables, then `CLOUDINARY_URL`.
+
+## Metadata storage
+
+Upload records are JSON files on **local disk**, by default `<os tmpdir>/Upload_meta/<id>.META`.
+
+- On more than one instance, or in a container with an ephemeral `/tmp`, set `metaStorageConfig.directory` to a shared persistent volume, or pass a custom `metaStorage`. Upload locks are held per process.
+- Without a record, `get`, `delete` and `exists` treat the id as a Cloudinary `public_id`.
+- Finished uploads **keep** their record. `delete()` and `move()` remove it.
+
+## Behaviour & limits
+
+| Aspect                     | Behaviour                                                                                                                                                                                                                   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chunked / resumable writes | ❌ `supportsResumableWrites: false`. Anything other than a whole-file write at offset 0 is rejected with `METHOD_NOT_ALLOWED`. The body is buffered in memory before upload.                                                |
+| Checksums                  | None advertised.                                                                                                                                                                                                            |
+| Range reads                | ❌ `supportsRange: false`.                                                                                                                                                                                                  |
+| `get()`                    | Calls `api.resource` for metadata, then downloads the URL `getReadUrl()` returns: the public delivery URL for `upload`, a signed `private_download_url` for `private` / `authenticated`.                                    |
+| `getReadUrl()`             | `type: "upload"`: the public delivery URL, which never expires. Other types: `private_download_url` with `expiresIn` (default `defaultUrlExpiresIn`). `responseContentDisposition` / `responseContentType` → `BAD_REQUEST`. |
+| `getUploadUrl()`           | ❌ `METHOD_NOT_ALLOWED`.                                                                                                                                                                                                    |
+| `list(limit)`              | Pages `api.resources` (500 per page) with `next_cursor` until `limit` (default 1000). Lists every asset of the configured resource type and delivery type, not only this storage's uploads. No prefix filter on the server. |
+| `copy()`                   | Cloudinary uploads from the source's `getReadUrl()` URL (signed for `private` / `authenticated`).                                                                                                                           |
+| `move()`                   | `uploader.rename` (server-side).                                                                                                                                                                                            |
+| Custom `filename`          | The returned value becomes the `public_id`.                                                                                                                                                                                 |
+| Expiration / purge         | The base `purge()` ages the items from `list()` by `createdAt`. This includes assets this storage didn't create; see the warning below.                                                                                     |
+| Retries                    | `retryConfig` (default 3 retries, exponential backoff, 408/429/5xx). `signal` / `timeout` are best effort: the SDK can't cancel a request that is already running.                                                          |
+
+> **Expiration warning:** with `expiration.maxAge` set, `purge()` deletes **every** asset of the configured resource type and delivery type that is older than `maxAge`, including assets uploaded by other means. Use a dedicated cloud, or don't set `expiration` on this adapter.
+
+## Using it with the handlers
+
+```ts
+// Node
+import express from "express";
+import { Multipart } from "@visulima/storage/handler/http/node";
+import { CloudinaryStorage } from "@visulima/storage/provider/cloudinary";
+
+const storage = new CloudinaryStorage({ resourceType: "image" });
+const app = express();
+
+app.use("/upload", new Multipart({ storage }).handle);
+```
+
+```ts
+// Fetch runtimes
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const rest = new Rest({ storage });
+
+export const POST = (request: Request) => rest.fetch(request);
+```
+
+```ts
+// Files facade
+import { Files } from "@visulima/storage";
+
+const files = new Files({ adapter: storage });
+
+await files.upload("avatars/42", imageBuffer, { contentType: "image/png" });
+const url = await files.url("avatars/42");
+```
+
+## Troubleshooting
+
+| Symptom                        | Cause / fix                                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cloudName is required`        | Set `cloudName`, `CLOUDINARY_CLOUD_NAME` or `CLOUDINARY_URL`.                                                                                                       |
+| `Invalid image file` on upload | `resourceType: "image"` / `"video"` only accepts media. Use `"raw"` for other files.                                                                                |
+| `getReadUrl()` → `BAD_REQUEST` | `responseContentDisposition` / `responseContentType` aren't supported. Set the disposition with a Cloudinary delivery transformation (for example `fl_attachment`). |
+| `405` on a TUS PATCH / chunk   | Send the whole file in one request.                                                                                                                                 |
+| `401` / `Must supply api_key`  | The credentials are missing or wrong. A wrong secret fails every signed call.                                                                                       |

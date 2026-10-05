@@ -3,7 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import CloudinaryFile from "./cloudinary-file";
@@ -81,6 +81,8 @@ const parseCloudinaryUrl = (url: string | undefined): { apiKey?: string; apiSecr
 class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
     public static override readonly name: string = "cloudinary";
 
+    public override readonly storageKind: string = "cloudinary";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -147,14 +149,10 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -217,10 +215,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -232,13 +227,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: CloudinaryFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by id.
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.path ?? file?.name ?? id;
 
@@ -270,15 +259,8 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let key = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                key = meta.path ?? id;
-            } catch {
-                // direct key lookup
-            }
+            const meta = await this.findMeta(id);
+            const key = meta?.path ?? id;
 
             try {
                 await this.runOperation(options, () =>
@@ -295,16 +277,40 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        let resource: Awaited<ReturnType<typeof cloudinary.api.resource>>;
+
+        try {
+            resource = await this.runOperation(options, () =>
+                this.client.api.resource(id, {
+                    resource_type: this.resourceType,
+                    type: this.deliveryType,
+                }),
+            );
+        } catch (error) {
+            if (((error as { http_code?: number }).http_code ?? (error as { error?: { http_code?: number } }).error?.http_code) === 404) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        return {
+            contentType: resource.resource_type && resource.format ? `${resource.resource_type}/${resource.format}` : undefined,
+            etag: resource.version === undefined ? undefined : String(resource.version),
+            extra: { path: id },
+            size: typeof resource.bytes === "number" ? resource.bytes : 0,
+        };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let key = id;
-            let stored: CloudinaryFile | undefined;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 key = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a Cloudinary public id.
             }
 
             const resource = await this.runOperation(options, () =>
@@ -314,15 +320,9 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
                 }),
             );
 
-            const response = await this.runOperation(options, () =>
-                fetch(
-                    this.client.url(key, {
-                        resource_type: this.resourceType,
-                        secure: this.secure,
-                        type: this.deliveryType,
-                    }),
-                ),
-            );
+            // A private/authenticated asset is only served through a signed URL.
+            const url = await this.getReadUrl(key);
+            const response = await this.runOperation(options, () => fetch(url));
 
             if (!response.ok) {
                 throw new Error(`Cloudinary: object not found at "${key}"`);
@@ -350,14 +350,10 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<CloudinaryFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
-            const sourceUrl = this.client.url(source, {
-                resource_type: this.resourceType,
-                secure: this.secure,
-                type: this.deliveryType,
-            });
+            const sourceUrl = await this.getReadUrl(source);
 
             await this.runOperation(options, () =>
                 this.client.uploader.upload(sourceUrl, {
@@ -384,7 +380,7 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
 
     public async move(name: string, destination: string, options?: OperationOptions): Promise<CloudinaryFile> {
         return this.instrumentOperation("move", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             await this.runOperation(options, () =>
@@ -417,15 +413,30 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { resources } = await this.runOperation(options, () =>
-                    this.client.api.resources({
-                        max_results: limit,
-                        resource_type: this.resourceType,
-                        type: this.deliveryType,
-                    }),
-                );
+                const resources: CloudinaryResource[] = [];
+                let cursor: string | undefined;
 
-                return ((resources ?? []) as CloudinaryResource[]).map((entry) => {
+                // The Admin API caps a page at 500 resources, so follow `next_cursor` until `limit` is reached.
+                while (resources.length < limit) {
+                    const token = cursor;
+                    const page = (await this.runOperation(options, () =>
+                        this.client.api.resources({
+                            max_results: Math.min(limit - resources.length, 500),
+                            resource_type: this.resourceType,
+                            type: this.deliveryType,
+                            ...(token && { next_cursor: token }),
+                        }),
+                    )) as { next_cursor?: string; resources?: CloudinaryResource[] };
+
+                    resources.push(...(page.resources ?? []));
+                    cursor = page.next_cursor;
+
+                    if (!cursor) {
+                        break;
+                    }
+                }
+
+                return resources.slice(0, limit).map((entry) => {
                     const file = new CloudinaryFile({
                         contentType: entry.resource_type && entry.format ? `${entry.resource_type}/${entry.format}` : "application/octet-stream",
                         metadata: {},
@@ -503,16 +514,6 @@ class CloudinaryStorage extends BaseStorage<CloudinaryFile> {
             stream.end(buffer);
         });
     }
-
-    private async getMetaSafe(id: string): Promise<CloudinaryFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
-    }
-
-    private internalOnComplete = (file: CloudinaryFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default CloudinaryStorage;

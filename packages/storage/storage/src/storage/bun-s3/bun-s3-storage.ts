@@ -5,12 +5,12 @@ import type { UploadError } from "../../utils/errors";
 import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import BunS3File from "./bun-s3-file";
 import BunS3MetaStorage from "./bun-s3-meta-storage";
-import type { BunS3ClientLike, BunS3StorageOptions } from "./types";
+import type { BunS3ClientLike, BunS3ListEntry, BunS3StorageOptions } from "./types";
 
 const toKey = (key: string): string => key.replace(/^\/+/u, "");
 
@@ -92,6 +92,8 @@ const resolveClient = (config: BunS3StorageOptions): BunS3ClientLike => {
 class BunS3Storage extends BaseStorage<BunS3File> {
     public static override readonly name: string = "bun-s3";
 
+    public override readonly storageKind: string = "bun-s3";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -120,14 +122,10 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -160,7 +158,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -168,7 +166,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -192,10 +190,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -207,13 +202,7 @@ class BunS3Storage extends BaseStorage<BunS3File> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<BunS3File> {
         return this.instrumentOperation("delete", async () => {
-            let file: BunS3File | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — delete by id as key
-            }
+            const file = await this.findMeta(id);
 
             const key = file?.bunS3Key ?? toKey(file?.name ?? id);
 
@@ -247,17 +236,32 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const key = toKey(id);
+        let stat: Awaited<ReturnType<BunS3ClientLike["stat"]>>;
+
+        try {
+            stat = await this.runOperation(options, () => this.client.file(key).stat());
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return undefined;
+            }
+
+            throw wrapBunS3Error(error, "stat");
+        }
+
+        return { contentType: stat.type, etag: stat.etag ?? undefined, extra: { bunS3ETag: stat.etag ?? undefined, bunS3Key: key }, size: stat.size ?? 0 };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: BunS3File | undefined;
-            let key: string;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.bunS3Key ?? toKey(stored.name ?? id);
-            } catch {
-                key = toKey(id);
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored?.bunS3Key ?? toKey(stored?.name ?? id);
 
             const ref = this.client.file(key);
 
@@ -297,15 +301,13 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         options?: OperationOptions,
     ): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
-            let stored: BunS3File | undefined;
-            let key: string;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
-                key = stored.bunS3Key ?? toKey(stored.name ?? id);
-            } catch {
-                key = toKey(id);
+            if (stored) {
+                await this.checkIfExpired(stored);
             }
+
+            const key = stored?.bunS3Key ?? toKey(stored?.name ?? id);
 
             const ref = this.client.file(key);
 
@@ -379,16 +381,31 @@ class BunS3Storage extends BaseStorage<BunS3File> {
         return this.instrumentOperation(
             "list",
             async () => {
-                let response: Awaited<ReturnType<BunS3ClientLike["list"]>>;
+                const entries: (BunS3ListEntry & { key: string })[] = [];
+                let continuationToken: string | undefined;
 
-                try {
-                    response = await this.runOperation(options, () => this.client.list({ maxKeys: limit }));
-                } catch (error) {
-                    throw wrapBunS3Error(error, "list");
+                // S3 caps a page at 1000 keys, so follow the continuation token until `limit` is reached.
+                while (entries.length < limit) {
+                    const token = continuationToken;
+                    let response: Awaited<ReturnType<BunS3ClientLike["list"]>>;
+
+                    try {
+                        response = await this.runOperation(options, () =>
+                            this.client.list({ maxKeys: limit - entries.length, ...(token && { continuationToken: token }) }),
+                        );
+                    } catch (error) {
+                        throw wrapBunS3Error(error, "list");
+                    }
+
+                    entries.push(...(response.contents ?? []).filter((entry): entry is BunS3ListEntry & { key: string } => Boolean(entry.key)));
+                    continuationToken = response.isTruncated ? response.nextContinuationToken : undefined;
+
+                    if (!continuationToken) {
+                        break;
+                    }
                 }
 
-                return (response.contents ?? [])
-                    .filter((entry): entry is typeof entry & { key: string } => Boolean(entry.key))
+                return entries
                     .slice(0, limit)
                     .map((entry) => {
                         const key = toKey(entry.key);
@@ -439,8 +456,6 @@ class BunS3Storage extends BaseStorage<BunS3File> {
             ...(options?.contentType && { type: options.contentType }),
         });
     }
-
-    private internalOnComplete = (file: BunS3File): Promise<void> => this.deleteMeta(file.id);
 }
 
 export default BunS3Storage;

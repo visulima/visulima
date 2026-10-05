@@ -12,6 +12,6 @@ describe("openapi:tus", () => {
     it("should match snapshot with custom options", () => {
         expect.assertions(1);
 
-        expect(tusSwagger("/files", ["test"])).toMatchSnapshot();
+        expect(tusSwagger("/files", { tags: ["test"] })).toMatchSnapshot();
     });
 });

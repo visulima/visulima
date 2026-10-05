@@ -8,7 +8,7 @@ export interface FileInit {
 
     /**
      * Explicit identifier. When provided, the File constructor uses it directly
-     * instead of deriving an id from originalName/size/mtime. Lets callers map a
+     * instead of generating a random one (nanoid). Lets callers map a
      * user-chosen storage key (e.g. `"avatars/abc.png"`) onto the metadata id.
      */
     id?: string;

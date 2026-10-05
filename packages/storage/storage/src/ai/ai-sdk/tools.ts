@@ -10,6 +10,7 @@ import type {
     GetFileMetadataInput,
     GetFileUrlInput,
     ListFilesInput,
+    SearchFilesInput,
     SignUploadUrlInput,
     UploadFileInput,
 } from "../internal/schemas";
@@ -17,6 +18,7 @@ import { TOOL_SCHEMAS } from "../internal/schemas";
 import type { ToolOptions } from "./types";
 
 type ListFilesOutput = Awaited<ReturnType<typeof executors.listFiles>>;
+type SearchFilesOutput = Awaited<ReturnType<typeof executors.searchFiles>>;
 type GetFileMetadataOutput = Awaited<ReturnType<typeof executors.getFileMetadata>>;
 type DownloadFileOutput = Awaited<ReturnType<typeof executors.downloadFile>>;
 type GetFileUrlOutput = Awaited<ReturnType<typeof executors.getFileUrl>>;
@@ -30,6 +32,13 @@ export const listFiles = (files: Files): Tool<ListFilesInput, ListFilesOutput> =
         description: TOOL_SCHEMAS.listFiles.description,
         execute: (input) => executors.listFiles(files, input),
         inputSchema: TOOL_SCHEMAS.listFiles.input,
+    });
+
+export const searchFiles = (files: Files): Tool<SearchFilesInput, SearchFilesOutput> =>
+    tool({
+        description: TOOL_SCHEMAS.searchFiles.description,
+        execute: (input) => executors.searchFiles(files, input),
+        inputSchema: TOOL_SCHEMAS.searchFiles.input,
     });
 
 export const getFileMetadata = (files: Files): Tool<GetFileMetadataInput, GetFileMetadataOutput> =>

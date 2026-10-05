@@ -9,15 +9,16 @@ import type { CreateExoscaleClientParameters } from "./types";
  * `AWS_REGION` (which is commonly set to an AWS region in dev/CI and would
  * silently produce a broken endpoint).
  *
- * Optionally, you can omit the parameters and use the following environment variables:
- * - `AWS_ACCESS_KEY_ID` / `EXOSCALE_ACCESS_KEY_ID`
- * - `AWS_SECRET_ACCESS_KEY` / `EXOSCALE_SECRET_ACCESS_KEY`
+ * Optionally, you can omit the parameters and use the following environment variables (the
+ * first one set wins; a provider-specific variable wins over the generic `AWS_*` one):
+ * - `EXOSCALE_ACCESS_KEY_ID` / `EXOSCALE_ACCESS_KEY`, then `AWS_ACCESS_KEY_ID`
+ * - `EXOSCALE_SECRET_ACCESS_KEY` / `EXOSCALE_SECRET_KEY`, then `AWS_SECRET_ACCESS_KEY`
  * - `EXOSCALE_ZONE` (e.g. `ch-gva-2`, `de-fra-1`, `at-vie-1`)
  */
 const exoscale = (parameters?: CreateExoscaleClientParameters): S3ClientConfig => {
-    const accessKeyId = parameters?.accessKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.EXOSCALE_ACCESS_KEY_ID ?? process.env.EXOSCALE_ACCESS_KEY;
+    const accessKeyId = parameters?.accessKeyId ?? process.env.EXOSCALE_ACCESS_KEY_ID ?? process.env.EXOSCALE_ACCESS_KEY ?? process.env.AWS_ACCESS_KEY_ID;
     const secretAccessKey =
-        parameters?.secretAccessKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.EXOSCALE_SECRET_ACCESS_KEY ?? process.env.EXOSCALE_SECRET_KEY;
+        parameters?.secretAccessKey ?? process.env.EXOSCALE_SECRET_ACCESS_KEY ?? process.env.EXOSCALE_SECRET_KEY ?? process.env.AWS_SECRET_ACCESS_KEY;
     const zone = parameters?.zone ?? process.env.EXOSCALE_ZONE;
 
     if (!zone || !accessKeyId || !secretAccessKey) {

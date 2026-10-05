@@ -1,13 +1,30 @@
 import { DeleteObjectCommand, HeadBucketCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-providers";
 
-import MetaStorage from "../meta-storage";
+import { ERRORS, throwErrorCode } from "../../utils/errors";
+import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
 import { isExpired } from "../utils/file";
 import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import type { S3MetaStorageOptions } from "./types";
 
+/**
+ * Whether an S3 error is a failed conditional write: 412 when the ETag no longer matches (or the
+ * object is gone), 409 when another conditional write to the key was in flight.
+ */
+const isConditionalWriteConflict = (error: unknown): boolean => {
+    const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+
+    return status === 412 || status === 409;
+};
+
 class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
+    /**
+     * Uses `If-Match` conditional writes. An S3-compatible service that ignores the header
+     * degrades to plain overwrites, as before.
+     */
+    public override readonly supportsConditionalSave: boolean = true;
+
     private readonly bucket: string;
 
     private readonly client: S3Client;
@@ -47,14 +64,13 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async get(id: string): Promise<T> {
         await this.ensureAccess();
 
-        const Key = this.getMetaName(id);
-        const parameters = { Bucket: this.bucket, Key };
-        const { Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters));
+        const parameters = { Bucket: this.bucket, Key: this.getMetaName(id) };
+        const { ETag, Expires, Metadata } = await this.client.send(new HeadObjectCommand(parameters)).catch(rethrowNotFound);
 
         if (Expires && isExpired({ expiredAt: Expires } as T)) {
-            await this.delete(Key);
+            await this.delete(id);
 
-            throw new Error(`Metafile ${id} not found`);
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} expired`);
         }
 
         if (Metadata?.metadata !== undefined) {
@@ -64,10 +80,12 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
                 file.metadata = parseMetadata(file.metadata);
             }
 
+            setMetaVersion(file, ETag);
+
             return file;
         }
 
-        throw new Error(`Metafile ${id} not found`);
+        return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} not found`);
     }
 
     public override async touch(id: string, file: T): Promise<T> {
@@ -83,6 +101,26 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
     }
 
     public override async save(id: string, file: T): Promise<T> {
+        await this.put(id, file);
+
+        return file;
+    }
+
+    public override async saveIfVersion(id: string, file: T, version: string): Promise<T | undefined> {
+        try {
+            await this.put(id, file, version);
+        } catch (error) {
+            if (isConditionalWriteConflict(error)) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        return file;
+    }
+
+    private async put(id: string, file: T, ifMatch?: string): Promise<void> {
         await this.ensureAccess();
 
         const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
@@ -95,13 +133,14 @@ class S3MetaStorage<T extends File = File> extends MetaStorage<T> {
         const parameters = {
             Bucket: this.bucket,
             ContentLength: 0,
+            IfMatch: ifMatch,
             Key: this.getMetaName(id),
             Metadata: { metadata },
         };
 
-        await this.client.send(new PutObjectCommand(parameters));
+        const result = await this.client.send(new PutObjectCommand(parameters));
 
-        return file;
+        setMetaVersion(file, result?.ETag);
     }
 }
 

@@ -5,7 +5,7 @@ import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { createOAuthRefreshHandle } from "../../utils/oauth-refresh";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import DropboxFile from "./dropbox-file";
@@ -237,6 +237,8 @@ const resolveAuth = (options: DropboxStorageOptions): ResolvedAuth => {
 class DropboxStorage extends BaseStorage<DropboxFile> {
     public static override readonly name: string = "dropbox";
 
+    public override readonly storageKind: string = "dropbox";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -284,14 +286,10 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -359,10 +357,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -374,13 +369,7 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<DropboxFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: DropboxFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // no metadata — direct path delete
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.path ?? this.keyToPath(file?.name ?? id);
 
@@ -412,16 +401,40 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const path = this.keyToPath(id);
+        let data: files.FileMetadataReference | files.FolderMetadataReference | files.DeletedMetadataReference;
+
+        try {
+            await this.authHandle.ensureAccessToken();
+
+            const response = await this.runOperation(options, () => this.client.filesGetMetadata({ path }));
+
+            data = response.result;
+        } catch (error) {
+            if (isNotFoundError(error)) {
+                return undefined;
+            }
+
+            throw error;
+        }
+
+        if (data[".tag"] !== "file") {
+            return undefined;
+        }
+
+        return { etag: data.rev, extra: { originalName: data.name, path }, size: data.size ?? 0 };
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
-            let stored: DropboxFile | undefined;
+            const stored = await this.findMeta(id);
             let path = this.keyToPath(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                // An expired upload answers GONE instead of falling back to a direct path lookup.
+                await this.checkIfExpired(stored);
                 path = stored.path ?? this.keyToPath(stored.name ?? id);
-            } catch {
-                // direct path lookup
             }
 
             await this.authHandle.ensureAccessToken();
@@ -510,17 +523,31 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             async () => {
                 await this.authHandle.ensureAccessToken();
 
-                const response = await this.runOperation(options, () =>
+                let { result } = await this.runOperation(options, () =>
                     this.client.filesListFolder({
-                        limit,
+                        // Dropbox rejects a per-request limit above 2000.
+                        limit: Math.min(limit, 2000),
                         path: this.rootFolderPath ? `/${this.rootFolderPath}` : "",
                         recursive: true,
                     }),
                 );
-                const { result } = response;
+                const entries = [...result.entries];
+
+                // `limit` is only a per-page hint and folders take entries too, so follow the cursor.
+                while (result.has_more && entries.length < limit) {
+                    const { cursor } = result;
+
+                    ({ result } = await this.runOperation(options, () => this.client.filesListFolderContinue({ cursor })));
+                    entries.push(...result.entries);
+                }
+
                 const files: DropboxFile[] = [];
 
-                for (const entry of result.entries) {
+                for (const entry of entries) {
+                    if (files.length >= limit) {
+                        break;
+                    }
+
                     const tag = (entry as { ".tag"?: string })[".tag"];
 
                     if (tag !== "file") {
@@ -700,8 +727,6 @@ class DropboxStorage extends BaseStorage<DropboxFile> {
             throw error;
         }
     }
-
-    private internalOnComplete = (file: DropboxFile): Promise<void> => this.deleteMeta(file.id);
 }
 
 const isNotFoundError = (error: unknown): boolean => {

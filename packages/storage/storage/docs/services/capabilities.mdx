@@ -9,36 +9,84 @@ Legend:
 - ❌ **not supported** — the adapter throws `METHOD_NOT_ALLOWED` or `STORAGE_ERROR`
 - 🔁 **simulated** — implemented via `download` + reupload or similar fallback
 
+## Uploads, reads & listing
+
+From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsRange` and `supportsDelimiter` (also exposed as `files.capabilities`).
+
+| Adapter        | Chunked / resumable writes   | Ranged reads | Native `delimiter` listing | Upload metadata by default |
+| -------------- | ---------------------------- | ------------ | -------------------------- | -------------------------- |
+| S3 / R2 / etc. | 🟡 sequential, ≥ 5 MiB parts | ✅           | ✅                         | bucket (`<id>.META`)       |
+| S3 (light)     | 🟡 sequential, ≥ 5 MiB parts | ✅           | ✅                         | bucket (`<id>.META`)       |
+| Azure Blob     | 🟡 sequential                | ❌           | 🔁                         | container                  |
+| GCS            | 🟡 sequential                | ❌           | ✅                         | bucket                     |
+| Local (disk)   | ✅ any offset                | ✅           | 🔁                         | upload directory           |
+| Memory         | ✅ any offset                | ✅           | 🔁                         | in-process                 |
+| FTP / SFTP     | ❌ single request            | ✅           | 🔁                         | local disk                 |
+| All others     | ❌ single request            | ❌           | 🔁                         | local disk                 |
+
+"Single request" adapters store each object in one call: the TUS handler rejects partial chunks, so clients must send the whole file per request. "Local disk" metadata defaults to the OS temp directory — see [Upload metadata](./index.mdx#upload-metadata) before running several instances.
+
 ## Read & write URLs
 
-| Adapter        | `getReadUrl()`                                           | `getUploadUrl()`                       |
-| -------------- | -------------------------------------------------------- | -------------------------------------- |
-| S3 / R2 / etc. | ✅ presigned `GET`                                       | ✅ presigned `PUT`                     |
-| S3 (light)     | 🟡 limited (aws4fetch signing)                           | 🟡 limited (aws4fetch signing)         |
-| Azure Blob     | ✅ SAS                                                   | ❌                                     |
-| GCS            | ✅ V4 signed URL                                         | ❌ (resumable URLs handled internally) |
-| Vercel Blob    | ✅ public URL                                            | ❌ (use Vercel client tokens)          |
-| Netlify Blobs  | ✅ signed URL                                            | ❌                                     |
-| Local (disk)   | 🟡 path-based URL                                        | ❌                                     |
-| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link          | ❌                                     |
-| Google Drive   | 🟡 only when `publicByDefault: true`                     | ✅ resumable session URL               |
-| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`        | ✅ `createUploadSession`               |
-| Box            | ✅ shared download link                                  | ❌                                     |
-| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                             | ✅ `createSignedUploadUrl`             |
-| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private) | ❌                                     |
-| Bunny Storage  | 🟡 via `publicBaseUrl` (Pull Zone)                       | ❌                                     |
-| Memory         | 🟡 synthetic `memory://${key}`                           | 🟡 synthetic `memory://${key}`         |
+`Files.url()` calls `getReadUrl()` and `Files.signedUploadUrl()` calls `getUploadUrl()`. Adapters that don't implement a method inherit the `BaseStorage` default, which rejects with `METHOD_NOT_ALLOWED`.
+
+| Adapter        | `getReadUrl()`                                                   | `getUploadUrl()`                       |
+| -------------- | ---------------------------------------------------------------- | -------------------------------------- |
+| S3 / R2 / etc. | ✅ presigned `GET`                                               | ✅ presigned `PUT`                     |
+| S3 (light)     | ❌                                                               | ❌                                     |
+| Bun S3         | ✅ `presign` (`GET`)                                             | ✅ `presign` (`PUT`)                   |
+| Azure Blob     | ✅ SAS                                                           | ✅ SAS (`cw` permissions)              |
+| GCS            | ❌                                                               | ❌ (resumable URLs handled internally) |
+| Firebase       | ✅ V2 signed URL, or `publicBaseUrl`                             | ✅ V2 signed `PUT`                     |
+| Vercel Blob    | ❌                                                               | ❌ (use Vercel client tokens)          |
+| Netlify Blobs  | ❌                                                               | ❌                                     |
+| Local (disk)   | ❌                                                               | ❌                                     |
+| FTP / SFTP     | ❌                                                               | ❌                                     |
+| Dropbox        | ✅ temporary link (≤ 4 h) or public shared link                  | ❌                                     |
+| Google Drive   | 🟡 only when `publicByDefault: true`                             | ✅ resumable session URL               |
+| OneDrive       | ✅ `@microsoft.graph.downloadUrl` or `createLink`                | ✅ `createUploadSession`               |
+| SharePoint     | ✅ same as OneDrive                                              | ✅ same as OneDrive                    |
+| Box            | ✅ short-lived download URL (shared link with `publicByDefault`) | ❌                                     |
+| Supabase       | ✅ `createSignedUrl` (≤ 7 d)                                     | ✅ `createSignedUploadUrl`             |
+| UploadThing    | ✅ CDN URL (public ACL) or `generateSignedURL` (private)         | ❌                                     |
+| Bunny Storage  | 🟡 only with `publicBaseUrl` (Pull Zone)                         | ❌                                     |
+| Cloudinary     | ✅ delivery URL, or `private_download_url` for non-public types  | ❌                                     |
+| PocketBase     | ✅ file URL (`publicBaseUrl` or a fresh file token)              | ❌                                     |
+| Memory         | 🟡 synthetic `memory://${key}`                                   | 🟡 synthetic `memory://${key}`         |
+| WebDAV         | ❌                                                               | ❌                                     |
+
+## Presigned POST (size-limited uploads)
+
+`Files.signedUpload(key, { maxSize, minSize })` signs a browser-form POST policy whose `content-length-range` the provider enforces. Adapters without one reject a size limit with `METHOD_NOT_ALLOWED`; `files.capabilities.signedUploadPost` reports which is which.
+
+| Adapter       | `getUploadPost()`                                             | `signedUrlMaxExpiresIn` |
+| ------------- | ------------------------------------------------------------- | ----------------------- |
+| S3 (AWS)      | ✅ SigV4 POST policy (`content-length-range`)                 | 604800 (7 d)            |
+| S3 (light)    | ✅ SigV4 POST policy (`content-length-range`), AWS            | 604800 (7 d)            |
+| S3-compatible | 🟡 off unless `uploadPost: true` (R2 accepts no POST uploads) | 604800 (7 d)            |
+| every other   | ❌ `METHOD_NOT_ALLOWED`                                       | —                       |
+
+## Conditional (ETag) operations
+
+Reported per primitive under `files.capabilities.conditional`; a predicate the adapter cannot evaluate natively rejects with `METHOD_NOT_ALLOWED`, and a predicate that does not hold with `PRECONDITION_FAILED` (412). See [Conditional (ETag) operations](../files-facade.mdx#conditional-etag-operations).
+
+| Adapter         | create (`ifNoneMatch: "*"`)                            | replace (`ifMatch`) | read (`ifMatch`) | delete (`ifMatch`) | copy (`sourceIfMatch` + dest) |
+| --------------- | ------------------------------------------------------ | ------------------- | ---------------- | ------------------ | ----------------------------- |
+| S3 (AWS)        | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| S3 (light)      | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| S3-compatible   | 🟡 off unless `conditional` (`true`, or per operation) | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Azure Blob      | ❌                                                     | ❌                  | ✅               | ✅                 | ✅                            |
+| WebDAV          | 🟡 off unless `conditional: true`                      | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Local (disk)    | ✅ (process-local lock)                                | ✅                  | ✅               | ✅                 | ✅                            |
+| Memory          | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| everything else | ❌                                                     | ❌                  | ❌               | ❌                 | ❌                            |
 
 ## URL options
 
 | Adapter        | `expiresIn` cap | `responseContentDisposition`                                                |
 | -------------- | --------------- | --------------------------------------------------------------------------- |
 | S3 / R2 / etc. | 7 d (SigV4 max) | ✅ forwarded as `ResponseContentDisposition`                                |
-| Azure Blob     | none (SAS)      | ✅ via SAS query                                                            |
-| GCS            | 7 d             | ✅ `response-content-disposition`                                           |
-| Vercel Blob    | n/a (public)    | ❌                                                                          |
-| Netlify Blobs  | varies          | ❌                                                                          |
-| Local (disk)   | n/a             | ❌                                                                          |
+| Azure Blob     | none (SAS)      | 🟡 via SAS query; rejected (`BAD_REQUEST`) with SAS-token or anonymous auth |
 | Dropbox        | 4 h             | ❌ — temporary links have no override                                       |
 | Google Drive   | n/a             | ❌ — `webContentLink` has no override                                       |
 | OneDrive       | n/a             | ❌ — Graph download URLs have no overrides                                  |
@@ -46,45 +94,58 @@ Legend:
 | Supabase       | 7 d             | 🟡 mapped to Supabase `download` option (filename round-trips when present) |
 | UploadThing    | 7 d             | ❌ — no override on UFS/CDN URLs                                            |
 | Bunny Storage  | n/a (public)    | ❌ — no override on Storage / Pull Zone URLs                                |
+| Cloudinary     | n/a             | ❌ — rejected with `BAD_REQUEST`                                            |
 | Memory         | n/a             | ❌                                                                          |
 
 ## Server-side operations
 
-| Adapter        | `copy()`               | `move()`             | `list()` prefix filter         |
-| -------------- | ---------------------- | -------------------- | ------------------------------ |
-| S3 / R2 / etc. | ✅ CopyObject          | 🔁 copy + delete     | ✅ `Prefix`                    |
-| Azure Blob     | ✅ Copy Blob           | 🔁 copy + delete     | ✅ `prefix`                    |
-| GCS            | ✅ copy                | 🔁 copy + delete     | ✅ `prefix`                    |
-| Vercel Blob    | ✅ copy                | 🔁 copy + delete     | ✅ `prefix`                    |
-| Netlify Blobs  | 🔁 copy + delete       | 🔁 copy + delete     | ✅ `prefix`                    |
-| Local (disk)   | ✅ fs.copyFile         | ✅ fs.rename         | ✅ recursive scan              |
-| Dropbox        | ✅ filesCopyV2         | ✅ filesMoveV2       | 🟡 recursive listing of root   |
-| Google Drive   | ✅ files.copy          | 🔁 copy + delete     | 🟡 virtual-key + appProperties |
-| OneDrive       | ✅ async copy          | ✅ patch parent      | 🟡 folder root, paginated      |
-| Box            | ✅ copyFile            | ✅ updateFile parent | 🟡 folder root, cached IDs     |
-| Supabase       | ✅ bucket.copy         | ✅ bucket.move       | ❌ root only (per page limit)  |
-| UploadThing    | 🔁 download + reupload | 🔁 copy + delete     | 🟡 client-side prefix filter   |
-| Bunny Storage  | 🔁 download + reupload | 🔁 copy + delete     | 🟡 root listing, client-side   |
-| Memory         | ✅ Map clone           | ✅ copy + delete     | ✅ in-memory prefix scan       |
+| Adapter        | `copy()`               | `move()`                                | `list()` prefix filter                |
+| -------------- | ---------------------- | --------------------------------------- | ------------------------------------- |
+| S3 / R2 / etc. | ✅ CopyObject          | 🔁 copy + delete                        | ✅ `Prefix`                           |
+| Azure Blob     | ✅ Copy Blob           | 🔁 copy + delete                        | 🟡 configured `root` only             |
+| GCS            | ✅ copy                | 🔁 copy + delete                        | ✅ `prefix`                           |
+| Vercel Blob    | ✅ copy                | 🔁 copy + delete                        | 🟡 facade-side filter                 |
+| Netlify Blobs  | 🔁 download + reupload | 🔁 copy + delete                        | ✅ `prefix`                           |
+| Local (disk)   | ✅ fs.copyFile         | ✅ fs.rename (copy + delete on `EXDEV`) | ✅ recursive scan                     |
+| Dropbox        | ✅ filesCopyV2         | ✅ filesMoveV2                          | 🟡 recursive listing of root          |
+| Google Drive   | ✅ files.copy          | 🔁 copy + delete                        | 🟡 virtual-key + appProperties        |
+| OneDrive       | ✅ async copy          | ✅ patch parent                         | 🟡 recursive walk, client-side        |
+| SharePoint     | ✅ same as OneDrive    | ✅ same as OneDrive                     | 🟡 same as OneDrive                   |
+| Box            | ✅ copyFile            | ✅ updateFile parent                    | 🟡 folder root, cached IDs            |
+| Supabase       | ✅ bucket.copy         | ✅ bucket.move                          | 🟡 recursive walk, paged              |
+| UploadThing    | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 client-side prefix filter          |
+| Bunny Storage  | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 recursive walk, client-side        |
+| Firebase       | ✅ GCS copy            | ✅ GCS move                             | ✅ `prefix`                           |
+| Cloudinary     | ✅ upload from URL     | ✅ `uploader.rename`                    | 🟡 all assets of the configured types |
+| PocketBase     | 🔁 download + reupload | 🔁 copy + delete                        | 🟡 client-side                        |
+| FTP / SFTP     | 🔁 download + reupload | ✅ rename (copy + delete fallback)      | 🟡 recursive walk, client-side        |
+| Memory         | ✅ Map clone           | ✅ copy + delete                        | ✅ in-memory prefix scan              |
+| WebDAV         | ✅ `COPY`              | ✅ `MOVE`                               | 🟡 `Depth: 1` walk of root            |
 
 ## Auth model
 
-| Adapter        | Auth shapes                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------------- |
-| S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                  |
-| Azure Blob     | connection string, account key, SAS token, AAD                                                       |
-| GCS            | service-account JSON, ADC, key file, OAuth                                                           |
-| Vercel Blob    | OIDC (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`, recommended on Vercel), `BLOB_READ_WRITE_TOKEN`         |
-| Netlify Blobs  | env-injected on Netlify, explicit token otherwise                                                    |
-| Local (disk)   | filesystem permissions                                                                               |
-| Dropbox        | access token, refresh token + app key (+ secret), pre-built `Dropbox`                                |
-| Google Drive   | service-account JSON, key file, OAuth (refresh token), JWT, env (`GOOGLE_APPLICATION_CREDENTIALS`)   |
-| OneDrive       | static access token, client-credentials (app-only), refresh token + redirect, pre-built Graph client |
-| Box            | developer token, OAuth, CCG (enterprise / user), JWT, env                                            |
-| Supabase       | service-role key (env or explicit), pre-built `StorageClient`                                        |
-| UploadThing    | dashboard token (base64 JSON with `apiKey` + `appId`)                                                |
-| Bunny Storage  | zone + access key + region (env or explicit), pre-built `StorageZone`                                |
-| Memory         | none (in-process only)                                                                               |
+| Adapter        | Auth shapes                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S3 / R2 / etc. | static / SSO / EC2 / env (AWS SDK credential chain)                                                                                                    |
+| Azure Blob     | connection string, account key, SAS token, AAD                                                                                                         |
+| GCS            | service-account JSON, ADC, key file, OAuth                                                                                                             |
+| Vercel Blob    | OIDC (`VERCEL_OIDC_TOKEN` + `BLOB_STORE_ID`, recommended on Vercel), `BLOB_READ_WRITE_TOKEN`                                                           |
+| Netlify Blobs  | env-injected on Netlify, explicit token otherwise                                                                                                      |
+| Local (disk)   | filesystem permissions                                                                                                                                 |
+| Dropbox        | access token, refresh token + app key (+ secret), pre-built `Dropbox`                                                                                  |
+| Google Drive   | service-account JSON, key file, OAuth (refresh token), JWT, env (`GOOGLE_DRIVE_CLIENT_EMAIL` + `GOOGLE_DRIVE_PRIVATE_KEY`, or `GOOGLE_DRIVE_KEY_FILE`) |
+| OneDrive       | static access token, client-credentials (app-only), refresh token + redirect, pre-built Graph client                                                   |
+| Box            | developer token, OAuth, CCG (enterprise / user), JWT, env                                                                                              |
+| Supabase       | service-role key (env or explicit), pre-built `StorageClient`                                                                                          |
+| UploadThing    | dashboard token (base64 JSON with `apiKey` + `appId`)                                                                                                  |
+| Bunny Storage  | zone + access key + region (env or explicit), pre-built `StorageZone`                                                                                  |
+| Firebase       | an initialized `firebase-admin` bucket (its service account)                                                                                           |
+| SharePoint     | same as OneDrive (env `SHAREPOINT_*` / `ONEDRIVE_*`)                                                                                                   |
+| Cloudinary     | `CLOUDINARY_URL`, or cloud name + API key + secret (env or explicit)                                                                                   |
+| PocketBase     | superuser email + password (env `POCKETBASE_ADMIN_*`), auth token, pre-built client                                                                    |
+| FTP / SFTP     | connection options (password, key)                                                                                                                     |
+| Memory         | none (in-process only)                                                                                                                                 |
+| WebDAV         | HTTP Basic (`username` + `password`), Bearer `token`, custom `headers`                                                                                 |
 
 ## Error normalization
 
@@ -100,6 +161,7 @@ Mapping rule of thumb:
 | 405         | `METHOD_NOT_ALLOWED`       |
 | 409         | `FILE_CONFLICT`            |
 | 410         | `GONE`                     |
+| 412         | `PRECONDITION_FAILED`      |
 | 413         | `REQUEST_ENTITY_TOO_LARGE` |
 | 415         | `UNSUPPORTED_MEDIA_TYPE`   |
 | 422         | `UNPROCESSABLE_ENTITY`     |

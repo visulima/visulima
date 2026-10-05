@@ -1,14 +1,11 @@
 import { Readable } from "node:stream";
 
-import { isHttpError } from "http-errors";
-
 import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
-import { ERRORS, isUploadError } from "../../utils/errors";
+import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
 import pick from "../../utils/primitives/pick";
-import type { HttpError, ResponseBody, UploadResponse } from "../../utils/types";
-import { isValidationError } from "../../utils/validator";
+import type { UploadResponse } from "../../utils/types";
 import type { Handlers, ResponseFile, ResponseList, UploadOptions } from "../types";
 import { waitForStorage } from "../utils/storage-utils";
 import { applyRange } from "../utils/stream-utils";
@@ -68,14 +65,18 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
 
         try {
             await waitForStorage(this.storage);
-        } catch {
+        } catch (error: unknown) {
+            this.logger?.error("Storage is not ready: %O", error);
+
             return this.createErrorResponse({ UploadErrorCode: ERRORS.STORAGE_ERROR } as UploadError);
         }
 
         try {
             const file = await handler.call(this, request);
 
-            return this.handleFetchResponse(request, file);
+            // Awaited, so a failure while building the response (an onComplete hook, an invalid header
+            // value) still becomes an error response instead of a rejected fetch().
+            return await this.handleFetchResponse(request, file);
         } catch (error: unknown) {
             const errorObject = error instanceof Error ? error : new Error(String(error));
             const uError = pick(errorObject, ["name", ...(Object.getOwnPropertyNames(errorObject) as (keyof Error)[])]) as UploadError;
@@ -149,11 +150,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             const { headers, statusCode } = file as ResponseFile<TFile>;
 
             return new Response(undefined, {
-                headers: this.convertHeaders({
-                    ...headers,
-                    "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
-                }),
+                headers: this.convertHeaders({ ...headers }),
                 status: statusCode,
             });
         }
@@ -168,7 +165,13 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
                 body = JSON.stringify(file.data);
             } else if (file.stream) {
                 // Streaming response, with range support for partial content requests
-                const ranged = applyRange(file.stream, file.size, this.parseRangeHeader(request.headers.get("range") ?? undefined, file.size || 0));
+                const range = this.resolveRange(
+                    { size: file.size, stream: file.stream },
+                    request.headers.get("range") ?? undefined,
+                    request.headers.get("if-range") ?? undefined,
+                    responseHeaders,
+                );
+                const ranged = applyRange(file.stream, file.size, range);
 
                 Object.assign(responseHeaders, ranged.headers);
                 status = ranged.partial ? 206 : statusCode;
@@ -180,8 +183,6 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             return new Response(body, {
                 headers: this.convertHeaders({
                     ...responseHeaders,
-                    "Access-Control-Expose-Headers":
-                        "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
                 }),
                 status,
             });
@@ -242,8 +243,6 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
         };
         const convertedHeaders = this.convertHeaders({
             ...allHeaders,
-            "Access-Control-Expose-Headers":
-                "location,upload-expires,upload-offset,upload-length,upload-metadata,upload-defer-length,tus-resumable,tus-extension,tus-max-size,tus-version,tus-checksum-algorithm,cache-control,x-upload-id,x-upload-offset,x-upload-complete,x-chunked-upload,x-received-chunks",
             ...(basicFile.hash === undefined ? {} : { [`X-Range-${basicFile.hash?.algorithm.toUpperCase()}`]: basicFile.hash?.value }),
         });
 
@@ -258,6 +257,11 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
             convertedHeaders.location = String(headers.Location);
         } else if (headers.location && !convertedHeaders.location && !convertedHeaders.Location) {
             convertedHeaders.location = String(headers.location);
+        }
+
+        // A response that carries its body (a batch delete) sends it as-is, as on Node.
+        if ("body" in file && typeof file.body === "string") {
+            return this.createResponse({ body: file.body, headers: convertedHeaders, statusCode });
         }
 
         // For successful responses, include the file data in the body
@@ -297,9 +301,23 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
     // eslint-disable-next-line class-methods-use-this
     protected convertHeaders(headers: Record<string, number | string | string[]>): Record<string, string> {
         const result: Record<string, string> = {};
+        const exposed: string[] = [];
 
         for (const [key, value] of Object.entries(headers)) {
-            result[key] = Array.isArray(value) ? value.join(", ") : String(value);
+            const text = Array.isArray(value) ? value.join(", ") : String(value);
+
+            if (key.toLowerCase() === "access-control-expose-headers") {
+                exposed.unshift(text);
+            } else {
+                result[key] = text;
+                exposed.push(key.toLowerCase());
+            }
+        }
+
+        // Expose every header the response sets, as the Node handlers do, so a cross-origin client
+        // can read each one, the response that completes an upload included.
+        if (exposed.length > 0) {
+            result["Access-Control-Expose-Headers"] = exposed.join(",");
         }
 
         return result;
@@ -355,65 +373,7 @@ abstract class BaseHandlerFetch<TFile extends UploadFile> extends BaseHandlerCor
      * @returns Web API Response object with error details
      */
     protected async createErrorResponse(error: Error): Promise<globalThis.Response> {
-        let httpError: HttpError;
-
-        if (isUploadError(error)) {
-            httpError = this.internalErrorResponses[error.UploadErrorCode] as HttpError;
-        } else if (!isValidationError(error) && !isHttpError(error)) {
-            httpError = this.storage.normalizeError(error);
-        } else {
-            // For http-errors, pass through without body - onError will format it
-            httpError = {
-                ...error,
-                code: (error as HttpError).code || error.name,
-                headers: (error as HttpError).headers || {},
-                message: error.message,
-                name: error.name,
-                statusCode: (error as HttpError).statusCode || 500,
-            };
-        }
-
-        // Call onError hook - user can modify the error object in place
-        await this.storage.onError(httpError);
-
-        // Format error response - if body is not set, format it into body.error structure
-        let errorResponse: UploadResponse;
-
-        if (httpError.body) {
-            // If body is already an object, use it directly
-            // If body is a string, wrap it in error structure for consistency
-            if (typeof httpError.body === "object" && httpError.body !== null) {
-                errorResponse = { body: httpError.body as unknown as ResponseBody, headers: httpError.headers, statusCode: httpError.statusCode };
-            } else {
-                // Body is a string, wrap it in error structure
-                errorResponse = {
-                    body: {
-                        error: {
-                            code: httpError.code || httpError.name || "Error",
-                            message: httpError.body || httpError.message || "Unknown error",
-                            name: httpError.name || "Error",
-                        },
-                    },
-                    headers: httpError.headers,
-                    statusCode: httpError.statusCode || 500,
-                };
-            }
-        } else {
-            // Format the error properties into a body.error structure
-            errorResponse = {
-                body: {
-                    error: {
-                        code: httpError.code || httpError.name || "Error",
-                        message: httpError.message || "Unknown error",
-                        name: httpError.name || "Error",
-                    },
-                },
-                headers: httpError.headers,
-                statusCode: httpError.statusCode || 500,
-            };
-        }
-
-        return this.createResponse(errorResponse);
+        return this.createResponse(await this.buildErrorResponse(error));
     }
 
     /**

@@ -1,17 +1,20 @@
 import { Readable } from "node:stream";
-import { setInterval } from "node:timers";
 import { inspect } from "node:util";
 
 import { parseBytes } from "@visulima/humanizer";
 import { isAbsolute, normalize } from "@visulima/path";
-import typeis from "type-is";
+import mimeTypes from "mime";
+import { nanoid } from "nanoid";
+import { DEFAULT_LOOKUP, TypeIs } from "type-is";
 
 import NoOpMetrics from "../metrics/no-op-metrics";
 import type { Cache } from "../utils/cache";
 import { NoOpCache } from "../utils/cache";
+import { isFreshChunkedRecord, mergeChunkedProgress, withRecordedChunks } from "../utils/chunked-upload";
 // @ts-expect-error - UploadError is used for type checking in error handling
 import type { ErrorResponses, UploadError } from "../utils/errors";
 import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
+import { toHttpDate } from "../utils/headers";
 import Locker from "../utils/locker";
 import toMilliseconds from "../utils/primitives/to-milliseconds";
 import type { RetryConfig } from "../utils/retry";
@@ -21,9 +24,22 @@ import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
 import ValidationError from "../utils/validation-error";
 import { Validator } from "../utils/validator";
 import type MetaStorage from "./meta-storage";
-import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
-import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
-import { isExpired, updateMetadata } from "./utils/file";
+import { getMetaVersion, isMetaNotFound, setMetaVersion, WRITE_CLAIM_KEY } from "./meta-storage";
+import type {
+    BaseStorageOptions,
+    BatchOperationResponse,
+    ConditionalOptions,
+    ConditionalSupport,
+    CopyConditionalOptions,
+    OperationOptions,
+    PurgeList,
+    StoredObject,
+    UploadPostOptions,
+    UploadPostPolicy,
+} from "./types";
+import { assertCondition, hasCondition } from "./utils/etag";
+import type { FileInit, FilePart, FileQuery } from "./utils/file";
+import { File, isExpired, updateMetadata } from "./utils/file";
 import type { FileReturn } from "./utils/file/types";
 
 const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
@@ -49,6 +65,15 @@ const redactSecrets = (config: Record<string, unknown>): Record<string, unknown>
 
     return out;
 };
+
+/** Longest a lock is renewed for; after that it expires LOCK_TTL_MS later like an abandoned one. */
+const LOCK_MAX_HOLD_MS = 15 * 60 * 1000;
+
+/** How long an upload lock outlives its holder; a held lock is renewed well before this runs out. */
+const LOCK_TTL_MS = 30_000;
+
+/** Conditional saves of a chunked record before giving up on a record that keeps changing. */
+const CONDITIONAL_SAVE_ATTEMPTS = 20;
 
 const defaults: BaseStorageOptions = {
     allowMIME: ["*/*"],
@@ -192,6 +217,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     public isReady = true;
 
+    /**
+     * Backend access probe registered by {@link BaseStorage.startAccessCheck}.
+     */
+    protected accessProbe?: () => Promise<unknown>;
+
+    private readyPromise?: Promise<void>;
+
     public errorResponses = {} as ErrorResponses;
 
     public cache: Cache<string, TFile>;
@@ -258,11 +290,63 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public readonly supportsResumableWrites: boolean = true;
 
+    /**
+     * Adapter capability flag: when `true`, the adapter only appends, so a write has to start
+     * where the stored upload ends ({@link BaseStorage.assertContiguousWrite}). Its `bytesWritten`
+     * is then always the length of the stored prefix, and a "completed" status it reports is
+     * final. Adapters that write at any offset keep `false`: their `bytesWritten` is only the
+     * furthest byte written, and a chunked upload's progress comes from its recorded chunks.
+     */
+    public readonly sequentialWrites: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter has to know a chunk's length before it can
+     * stream it to the provider (an S3 part, a GCS `Content-Range`, an Azure block). The TUS handler
+     * then answers a PATCH without `Content-Length` with 411 Length Required instead of buffering an
+     * unbounded body. Adapters that stream a body of unknown length keep `false`.
+     */
+    public readonly requiresContentLength: boolean = false;
+
+    /**
+     * Adapter capability flags: which ETag predicates ({@link ConditionalOptions}) the adapter
+     * evaluates natively. All `false` by default; the `Files` facade rejects a predicate whose flag
+     * is off with `METHOD_NOT_ALLOWED` and surfaces the flags as `Files.capabilities.conditional`.
+     */
+    public readonly conditionalSupport: ConditionalSupport = { copy: false, create: false, delete: false, read: false, replace: false };
+
+    /**
+     * Adapter capability flag: when `true`, {@link BaseStorage.getUploadPost} signs a browser-form
+     * `POST` policy whose size range the provider enforces. Defaults to `false`.
+     */
+    public readonly supportsUploadPost: boolean = false;
+
+    /**
+     * Stable identifier of the adapter, written into resume tokens (`UploadControl.toJSON()`). Unlike
+     * `constructor.name` it survives minifiers and is inherited by subclasses.
+     */
+    public readonly storageKind: string = this.constructor.name;
+
+    /**
+     * Longest `expiresIn` (seconds) the adapter can sign a URL or upload policy for, when the
+     * provider has a hard ceiling (SigV4: 7 days). `undefined` when unknown or unlimited.
+     */
+    public readonly maxSignedUrlExpiresIn: number | undefined = undefined;
+
     public maxUploadSize: number;
 
     protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
 
     protected locker: Locker;
+
+    /** Tail of the in-flight metadata saves per chunked-upload id, see {@link BaseStorage.saveMeta}. */
+    private readonly chunkedMetaSaves = new Map<string, Promise<unknown>>();
+
+    /**
+     * Upload records of in-flight conditional uploads, by id. A conditional `create` parks its record
+     * here instead of saving it over the one the predicate is about; the `write` that commits the
+     * bytes takes it back, so a failed predicate leaves the stored record untouched.
+     */
+    private readonly pendingConditional = new Map<string, TFile>();
 
     protected namingFunction: (file: TFile) => string;
 
@@ -284,7 +368,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     protected autoPurgeTimer?: ReturnType<typeof setInterval>;
 
     protected constructor(config: BaseStorageOptions<TFile>) {
-        const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
+        // An option explicitly set to `undefined` (e.g. a subclass forwarding `filename: config.filename`)
+        // must not replace its default.
+        const definedConfig = Object.fromEntries(Object.entries(config).filter(([, value]) => value !== undefined)) as Partial<BaseStorageOptions<TFile>>;
+        const options = { ...defaults, ...definedConfig } as Required<BaseStorageOptions<TFile>>;
 
         this.onCreate = options.onCreate;
         this.onUpdate = options.onUpdate;
@@ -303,9 +390,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             this.assetFolder = normalize(options.assetFolder);
         }
 
+        // A write can outlast the lock TTL, so a held lock is renewed and another request can't take it
+        // over mid-write; a hung holder (a stalled body, a provider call without timeout) loses it
+        // after LOCK_MAX_HOLD_MS.
         this.locker = new Locker({
             max: 1000,
-            ttl: 30_000,
+            maxHoldMs: LOCK_MAX_HOLD_MS,
+            ttl: LOCK_TTL_MS,
             ttlAutopurge: true,
         });
 
@@ -351,7 +442,10 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         const mime: Required<ValidatorConfig<TFile>> = {
             isValid(file) {
-                return !!typeis.is(file.contentType, this.value as string[]);
+                // type-is 3 resolves only the json/multipart/urlencoded shorthands; keep 2.x's file extensions ("png").
+                const lookup = (value: string): string | string[] | undefined => DEFAULT_LOOKUP(value) ?? mimeTypes.getType(value) ?? undefined;
+
+                return new TypeIs(this.value as string[], { lookup }).is(file.contentType) !== undefined;
             },
             // @TODO: add better error handling for mime types
             response: ErrorMap.UnsupportedMediaType,
@@ -408,6 +502,18 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getUploadUrl()`);
     }
 
+    /**
+     * Signs a browser-form `POST` upload of a single object to `key`, whose policy makes the provider
+     * enforce `minSize`/`maxSize` (and `contentType`, when given). Adapters that set
+     * {@link BaseStorage.supportsUploadPost} override this.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no POST policy support.
+     * @param _key Storage key.
+     * @param _options Size range, content type and expiry of the policy.
+     */
+    public async getUploadPost(_key: string, _options?: UploadPostOptions): Promise<UploadPostPolicy> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not support presigned POST uploads`);
+    }
+
     public get tusExtension(): string[] {
         const extensions = ["creation", "creation-with-upload", "termination", "checksum"];
 
@@ -430,6 +536,29 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async validate(file: TFile): Promise<void> {
         await this.validation.verify(file);
+    }
+
+    /**
+     * Validates an upload before it is created, named as `create` would name it, so a caller can
+     * refuse it before touching an existing file (e.g. a REST `PUT` replacing one).
+     * @param config Upload to validate.
+     * @throws {ValidationError} When the upload is not allowed.
+     */
+    public async validateInit(config: FileInit): Promise<void> {
+        const file = new File(config) as TFile;
+
+        file.name = this.namingFunction(file);
+
+        await this.validate(file);
+    }
+
+    /**
+     * The name `create` stores an upload under.
+     * @param config Upload, with its `id`.
+     * @returns The stored name.
+     */
+    protected nameOf(config: FileInit): string {
+        return this.namingFunction(new File(config) as TFile);
     }
 
     /**
@@ -490,11 +619,128 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
     public async saveMeta(file: TFile): Promise<TFile> {
         BaseStorage.assertSafeId(file.id);
+
+        // A chunked upload's progress (`_chunks`, `bytesWritten`) only grows, but a provider write
+        // saves the record it read before storing its bytes, and several PATCHes write it at once.
+        // A save that would drop progress another request stored in the meantime has to merge it
+        // in (#902). A fresh record (e.g. a new POST for the same id) replaces the stored one.
+        if (!Array.isArray(file.metadata?._chunks) || isFreshChunkedRecord(file)) {
+            return this.persistMeta(file);
+        }
+
+        if (this.meta.supportsConditionalSave) {
+            return this.saveChunkedMetaConditionally(file);
+        }
+
+        // Without conditional saves, merge with what is stored, one save per id at a time. This
+        // only serializes saves within this process.
+        const save = (this.chunkedMetaSaves.get(file.id) ?? Promise.resolve())
+            .catch(() => undefined)
+            .then(async () => {
+                // A record that can't be read fails the save rather than overwriting its progress.
+                mergeChunkedProgress(file, await this.meta.get(file.id), this.sequentialWrites);
+
+                return this.persistMeta(file);
+            });
+
+        this.chunkedMetaSaves.set(file.id, save);
+
+        try {
+            return await save;
+        } finally {
+            if (this.chunkedMetaSaves.get(file.id) === save) {
+                this.chunkedMetaSaves.delete(file.id);
+            }
+        }
+    }
+
+    private async persistMeta(file: TFile): Promise<TFile> {
         this.updateTimestamps(file);
 
         this.cache.set(file.id, file);
 
         return this.meta.save(file.id, file);
+    }
+
+    /**
+     * Saves a chunked record with an optimistic compare-and-swap, safe across processes. The
+     * record normally carries the version its writer read, so there is no extra read; only
+     * when another request saved in between is the stored record read and merged, then the
+     * save retried.
+     */
+    private async saveChunkedMetaConditionally(file: TFile): Promise<TFile> {
+        this.updateTimestamps(file);
+
+        let version = getMetaVersion(file);
+
+        for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
+            if (version === undefined) {
+                // A record that can't be read (deleted, or the store failing) fails the save
+                // rather than overwriting its progress.
+                const stored = await this.meta.get(file.id);
+                const storedVersion = getMetaVersion(stored);
+
+                mergeChunkedProgress(file, stored, this.sequentialWrites);
+
+                // The store gave no version to compare against (e.g. a service without ETags).
+                if (storedVersion === undefined) {
+                    return this.persistMeta(file);
+                }
+
+                version = storedVersion;
+            }
+
+            const saved = await this.meta.saveIfVersion(file.id, file, version);
+
+            if (saved !== undefined) {
+                this.cache.set(file.id, file);
+
+                return saved;
+            }
+
+            version = undefined;
+        }
+
+        return throwErrorCode(ERRORS.FILE_LOCKED, `Metadata of ${file.id} kept changing while saving it`);
+    }
+
+    /**
+     * Resolves once the storage is ready. Runs the access probe registered by
+     * {@link BaseStorage.startAccessCheck} if it has not succeeded yet; a failed probe is thrown
+     * to the caller and forgotten, so the next call retries it (e.g. after a transient network
+     * error at startup) instead of the storage staying unready forever.
+     */
+    public async ensureReady(): Promise<void> {
+        if (this.isReady || this.accessProbe === undefined) {
+            return;
+        }
+
+        this.readyPromise ??= this.accessProbe().then(
+            () => {
+                this.isReady = true;
+            },
+            (error: unknown) => {
+                this.readyPromise = undefined;
+
+                throw error;
+            },
+        );
+
+        await this.readyPromise;
+    }
+
+    /**
+     * Marks the storage unready and starts probing the backend with `probe`; {@link BaseStorage.isReady}
+     * turns true once it succeeds. Call it at the end of the subclass constructor, after the
+     * backend client exists. A failure is logged here and retried by {@link BaseStorage.ensureReady}.
+     */
+    protected startAccessCheck(probe: () => Promise<unknown>): void {
+        this.accessProbe = probe;
+        this.isReady = false;
+
+        this.ensureReady().catch((error: unknown) => {
+            this.logger?.error("Storage access check failed: %O", error);
+        });
     }
 
     /**
@@ -535,26 +781,202 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
+     * Describes the object stored under an ID that has no upload metadata: a finished upload whose
+     * metadata the provider dropped, or an object written by other means. Used so the REST `PUT`
+     * doesn't create a file over an existing object (#919). Never expose the result to a caller: it
+     * answers for any object in the bucket (#918).
+     * @param id Key of the object.
+     * @param options Operation options.
+     * @returns The stored object as a completed file, or `undefined` when none exists. Any other
+     * failure throws, so a failed lookup never reads as "absent".
+     */
+    public async findStoredObject(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+        return this.instrumentOperation("findStoredObject", async () => {
+            const object = await this.statObject(id, options);
+
+            if (object === undefined) {
+                return undefined;
+            }
+
+            const file = new File({ contentType: object.contentType, id, metadata: {}, size: object.size }) as TFile;
+
+            return Object.assign(file, { bytesWritten: object.size ?? Number.NaN, ETag: object.etag, name: id, status: "completed" as const }, object.extra);
+        });
+    }
+
+    /**
+     * @deprecated Use {@link BaseStorage.findStoredObject}.
+     */
+    public async getCompletedFile(id: string, options?: OperationOptions): Promise<TFile | undefined> {
+        return this.findStoredObject(id, options);
+    }
+
+    /**
+     * Reports the object stored under `id`, for {@link BaseStorage.findStoredObject}. Providers that
+     * can describe an object without reading it override this; the default reports none.
+     * @param _id Key of the object.
+     * @param _options Operation options.
+     * @returns The object, or `undefined` only when none is stored; any other failure throws.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected async statObject(_id: string, _options?: OperationOptions): Promise<StoredObject | undefined> {
+        return undefined;
+    }
+
+    /**
+     * The upload's metadata, or `undefined` when it has none.
+     * @param id File ID of the upload.
+     * @returns The metadata, or `undefined` when there is none. Any other failure of the meta
+     * storage throws, so it never reads as a missing upload.
+     */
+    protected async findMeta(id: string): Promise<TFile | undefined> {
+        try {
+            return await this.getMeta(id);
+        } catch (error: unknown) {
+            if (isMetaNotFound(error)) {
+                return undefined;
+            }
+
+            throw error;
+        }
+    }
+
+    /**
+     * The unfinished upload a `create` under `id` resumes. A completed one is not resumed: the
+     * create starts a fresh upload that replaces it, so re-uploading a key stores the new content.
+     * @param id File ID of the upload.
+     * @returns The unfinished upload's metadata, or `undefined` when there is none to resume.
+     */
+    protected async findResumable(id: string): Promise<TFile | undefined> {
+        const meta = await this.findMeta(id);
+
+        return meta?.status === "completed" ? undefined : meta;
+    }
+
+    /**
+     * The name an upload is stored under: the one its metadata records (a custom `filename` differs
+     * from the ID), or the ID itself for an object without metadata.
+     * @param id File ID of the upload.
+     * @returns The stored name.
+     */
+    protected async storedName(id: string): Promise<string> {
+        const meta = await this.findMeta(id);
+
+        return meta?.name ?? id;
+    }
+
+    /**
+     * {@link BaseStorage.storedName} for a read: an expired upload answers GONE instead of being served.
+     * @param id File ID of the upload.
+     * @returns The stored name.
+     * @throws {UploadError} If the upload has expired (ERRORS.GONE).
+     */
+    protected async readableName(id: string): Promise<string> {
+        const meta = await this.findMeta(id);
+
+        if (meta !== undefined) {
+            await this.checkIfExpired(meta);
+        }
+
+        return meta?.name ?? id;
+    }
+
+    /**
      * Retrieves upload metadata by file ID.
      * @param id File ID to retrieve metadata for.
      * @returns Promise resolving to the file metadata object.
-     * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND).
-     * @remarks Caches the retrieved metadata for faster subsequent access.
+     * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND). Any other
+     * failure of the meta storage is rethrown as-is, so it never reads as a missing upload.
+     * @remarks Caches the retrieved metadata for faster subsequent access. With `ifMatch` (an exact
+     * read, only set by the `Files` facade on adapters declaring `conditionalSupport.read`) it
+     * answers only for the expected generation, see {@link BaseStorage.currentETag}.
      */
-    public async getMeta(id: string, _options?: OperationOptions): Promise<TFile> {
+    public async getMeta(id: string, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
+        let copy: TFile;
+
         try {
             const file = await this.meta.get(id);
 
             this.cache.set(file.id, file);
 
-            return { ...file };
+            copy = { ...file };
+
+            // Keep the version the record was read at, so saving the copy can be conditional.
+            setMetaVersion(copy, getMetaVersion(file));
         } catch (error: unknown) {
             const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
 
             await this.onError(httpError);
 
-            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            if (isMetaNotFound(error)) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            throw error;
         }
+
+        if (options?.ifMatch !== undefined) {
+            assertCondition(await this.currentETag(copy, options), { ifMatch: options.ifMatch });
+        }
+
+        return copy;
+    }
+
+    /**
+     * The ETag of the object an upload record describes, as the conditional checks see it. Defaults
+     * to the ETag the record stores; adapters whose records may be stale (another client can write
+     * the object) override this to ask the object itself.
+     * @param file Upload record.
+     * @param _options Per-call signal/timeout/retries.
+     * @returns The current ETag, or `undefined` when nothing is stored.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected async currentETag(file: TFile, _options?: OperationOptions): Promise<string | undefined> {
+        return file.ETag;
+    }
+
+    /**
+     * The ETag of the object stored under `name`, as {@link BaseStorage.statObject} reports it.
+     * @param name Key of the object.
+     * @param options Per-call signal/timeout/retries.
+     * @returns The ETag, or `undefined` when nothing is stored.
+     */
+    protected async storedETag(name: string, options?: OperationOptions): Promise<string | undefined> {
+        const object = await this.statObject(name, options);
+
+        return object?.etag;
+    }
+
+    /**
+     * Park the record of a conditional upload until its commit (see {@link BaseStorage.takeConditional}).
+     * @param file Record of the conditional upload.
+     * @throws {UploadError} FILE_LOCKED when another conditional upload of the same id is in flight
+     */
+    protected parkConditional(file: TFile): void {
+        if (this.pendingConditional.has(file.id)) {
+            throwErrorCode(ERRORS.FILE_LOCKED, `A conditional upload of ${file.id} is already in progress`);
+        }
+
+        this.pendingConditional.set(file.id, file);
+    }
+
+    /**
+     * Take back the parked record of a conditional upload.
+     * @param id File ID of the upload.
+     * @returns The record, or `undefined` when `id` has no conditional upload in flight.
+     */
+    protected takeConditional(id: string, options?: ConditionalOptions): TFile | undefined {
+        // Only a write that carries the predicate may commit a parked conditional upload: an
+        // unconditional writer racing for the same key must not commit it without the check.
+        if (!hasCondition(options)) {
+            return undefined;
+        }
+
+        const file = this.pendingConditional.get(id);
+
+        this.pendingConditional.delete(id);
+
+        return file;
     }
 
     /**
@@ -585,7 +1007,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @remarks
      * Errors during individual file deletions are logged but do not stop the purge process.
      * Files with corrupted metadata are skipped with a warning.
-     * Uses rolling expiration if configured (based on modifiedAt) or fixed expiration (based on createdAt).
+     * Only uploads with metadata are deleted, aged by it: rolling expiration if configured (based on
+     * modifiedAt) or fixed expiration (based on createdAt).
      */
     public async purge(maxAge?: number | string): Promise<PurgeList> {
         return this.instrumentOperation("purge", async () => {
@@ -594,16 +1017,34 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             if (maxAgeMs) {
                 const before = Date.now() - maxAgeMs;
-                const list = await this.list();
-                const expired = list.filter(
-                    (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
-                );
+                const rollingMaxAgeMs = this.expiration?.rolling ? toMilliseconds(this.expiration.maxAge) : undefined;
+                const time = (value: unknown): number => Number(new Date(value as number | string));
+                // Rolling expiration prolongs an upload on every save (see updateTimestamps), not only on
+                // writes: the last save is its expiredAt minus maxAge.
+                const lastActive = (item: TFile): number => {
+                    if (!this.expiration?.rolling) {
+                        return time(item.createdAt);
+                    }
 
-                for await (const { id, ...rest } of expired) {
+                    const lastSave = item.expiredAt && rollingMaxAgeMs ? time(item.expiredAt) - rollingMaxAgeMs : 0;
+
+                    return Math.max(time(item.modifiedAt || item.createdAt), lastSave);
+                };
+
+                for (const { id } of await this.listUploads()) {
                     try {
+                        // Only uploads: `listUploads` may fall back to `list`, which yields any stored
+                        // object, and `delete` removes some of those. The age comes from the metadata
+                        // too, as a listing may carry no dates.
+                        const file = await this.findMeta(id);
+
+                        if (file === undefined || lastActive(file) >= before) {
+                            continue;
+                        }
+
                         const deleted = await this.delete({ id });
 
-                        purged.items.push({ ...deleted, ...rest });
+                        purged.items.push({ ...deleted, ...file });
                     } catch (error: unknown) {
                         // If delete fails (e.g., corrupted metadata, file already deleted),
                         // log the error but continue purging other files
@@ -625,6 +1066,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     }
 
     /**
+     * Uploads {@link BaseStorage.purge} checks for expiry, by upload id: the records of the meta
+     * storage, or {@link BaseStorage.list} when it can't enumerate them. `list` yields stored names,
+     * which differ from the upload ids under a custom `filename`, and often no `createdAt`.
+     */
+    protected async listUploads(): Promise<TFile[]> {
+        return (await this.meta.list()) ?? this.list();
+    }
+
+    /**
      * Gets an uploaded file by ID.
      * @param query File query containing the file ID to retrieve.
      * @param query.id File ID to retrieve.
@@ -633,7 +1083,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      * @remarks This method loads the entire file content into memory. For large files, use getStream() instead.
      */
-    public abstract get({ id }: FileQuery, options?: OperationOptions): Promise<TFileReturn>;
+    public abstract get({ id }: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFileReturn>;
 
     /**
      * Gets an uploaded file as a readable stream for efficient large file handling.
@@ -659,7 +1109,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                     "Content-Length": String(file.size),
                     "Content-Type": file.contentType,
                     ...(file.ETag && { ETag: file.ETag }),
-                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
+                    ...(file.modifiedAt && { "Last-Modified": toHttpDate(file.modifiedAt) }),
                 },
                 size: typeof file.size === "number" ? file.size : undefined,
                 stream,
@@ -726,6 +1176,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 delete (processedMetadata as Record<string, unknown>).ttl;
             }
 
+            processedMetadata.metadata &&= withRecordedChunks(processedMetadata.metadata, file);
+
             updateMetadata(file as File, processedMetadata);
 
             await this.saveMeta(file);
@@ -744,7 +1196,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the created file object.
      */
-    public abstract create(file: FileInit, options?: OperationOptions): Promise<TFile>;
+    public abstract create(file: FileInit, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
 
     /**
      * Writes part and/or returns status of an upload.
@@ -752,7 +1204,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @param options Optional per-call signal/timeout/retries.
      * @returns Promise resolving to the updated file object.
      */
-    public abstract write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile>;
+    public abstract write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
 
     /**
      * Deletes an upload and its metadata.
@@ -762,7 +1214,129 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to the deleted file object with status: "deleted".
      * @throws {UploadError} If the file metadata cannot be found.
      */
-    public abstract delete(query: FileQuery, options?: OperationOptions): Promise<TFile>;
+    public abstract delete(query: FileQuery, options?: ConditionalOptions & OperationOptions): Promise<TFile>;
+
+    /**
+     * Deletes an upload this storage created. Unlike {@link BaseStorage.delete}, which some
+     * providers apply to any object stored under a key, an ID without upload metadata is refused:
+     * it may name an object the upload routes never created.
+     * @param id File ID of the upload.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns The deleted file.
+     * @throws {UploadError} FILE_NOT_FOUND when the ID has no upload metadata.
+     */
+    public async deleteUpload(id: string, options?: OperationOptions): Promise<TFile> {
+        if ((await this.findMeta(id)) === undefined) {
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+
+        return this.delete({ id }, options);
+    }
+
+    /**
+     * {@link BaseStorage.deleteBatch} for uploads this storage created: IDs without upload metadata
+     * fail as not found instead of being deleted (see {@link BaseStorage.deleteUpload}).
+     * @param ids File IDs of the uploads.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns The deleted files and the failures, untracked IDs first.
+     */
+    public async deleteUploads(ids: string[], options?: OperationOptions): Promise<BatchOperationResponse<TFile>> {
+        const metas = await Promise.all(ids.map(async (id) => this.findMeta(id)));
+        const known = ids.filter((_, index) => metas[index] !== undefined);
+        const untracked = ids
+            .filter((_, index) => metas[index] === undefined)
+            .map((id) => {
+                return { error: "File not found", id };
+            });
+        const deleted = known.length > 0 ? await this.deleteBatch(known, options) : { failed: [], failedCount: 0, successful: [], successfulCount: 0 };
+
+        return {
+            failed: [...untracked, ...deleted.failed],
+            failedCount: untracked.length + deleted.failedCount,
+            successful: deleted.successful,
+            successfulCount: deleted.successfulCount,
+        };
+    }
+
+    /**
+     * Replaces the upload `id` with the bytes `write` stores, keeping the old file until the new one
+     * is complete. `write` stores the replacement under a staging upload (`create`d from `config`
+     * under a fresh id); only once it completed is it committed over `id` by
+     * {@link BaseStorage.commitReplacement}. A failing `write` (the client breaking off, the
+     * provider failing) deletes the staging upload and leaves `id` untouched. A staging upload a
+     * crashed process leaves behind is an ordinary unfinished upload, which `purge` removes once it expires.
+     * @param id File ID of the upload to replace.
+     * @param config The replacement, validated like a new upload under `id`.
+     * @param write Stores the replacement's bytes under the staging upload's id.
+     * @returns The replaced upload.
+     */
+    public async replaceUpload(id: string, config: FileInit, write: (stagingId: string) => Promise<TFile>): Promise<TFile> {
+        return this.instrumentOperation("replaceUpload", async () => {
+            await this.validateInit({ ...config, id });
+
+            // Dots never appear in generated ids nor in ids a client may choose with PUT, so the
+            // staging id collides with no upload and can't be addressed through the handlers.
+            const stagingId = `${nanoid()}.replace`;
+
+            // A `filename` that ignores the id would stage the replacement over the live file.
+            if (this.nameOf({ ...config, id: stagingId }) === this.nameOf({ ...config, id })) {
+                throwErrorCode(ERRORS.FILE_CONFLICT, "The `filename` option names the replacement like the file it replaces; it must depend on the id");
+            }
+
+            const staging = await this.create({ ...config, id: stagingId });
+            let staged: TFile;
+
+            try {
+                staged = await write(staging.id);
+
+                if (staged.status !== "completed") {
+                    throwErrorCode(ERRORS.FILE_CONFLICT, "The replacement ended before all of its bytes were stored");
+                }
+            } catch (error: unknown) {
+                await this.deleteUpload(staging.id).catch(() => undefined);
+
+                throw error;
+            }
+
+            let replaced: TFile;
+
+            try {
+                replaced = await this.commitReplacement(id, config, staged);
+            } catch (error: unknown) {
+                // The swap may have removed the old file already: keep the staged replacement, the
+                // only complete copy left. It is an ordinary upload, which purge removes once expired.
+                this.logger?.error(`Replacing ${id} failed; the replacement is kept as upload ${staging.id}`);
+
+                throw error;
+            }
+
+            // Gone already when an override moved it into place.
+            await this.deleteUpload(staging.id).catch(() => undefined);
+
+            return replaced;
+        });
+    }
+
+    /**
+     * Puts a completed staging upload in place of the upload `id`, for {@link BaseStorage.replaceUpload}.
+     * The default copies it through the adapter: it deletes `id`, creates it anew from `config` and
+     * writes the staged bytes. Only a provider failure during that copy can lose the old file; the
+     * client's body is fully stored by then. Adapters that can swap an object in one step override it.
+     * @param id File ID of the upload to replace.
+     * @param config The replacement.
+     * @param staged The completed staging upload; {@link BaseStorage.replaceUpload} deletes it once
+     * this succeeded, and keeps it when this fails (it may be the only complete copy left).
+     * @returns The replaced upload.
+     */
+    protected async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const { size, stream } = await this.getStream({ id: staged.id });
+
+        await this.delete({ id });
+
+        const created = await this.create({ ...config, id });
+
+        return this.write({ body: stream, contentLength: size ?? staged.size, id: created.id, start: 0 });
+    }
 
     /**
      * Copies an upload file to a new location.
@@ -772,7 +1346,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * @returns Promise resolving to the copied file object.
      * @throws {UploadError} If the source file cannot be found.
      */
-    public abstract copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile>;
+    public abstract copy(name: string, destination: string, options?: CopyConditionalOptions & OperationOptions & { storageClass?: string }): Promise<TFile>;
 
     /**
      * Moves an upload file to a new location.
@@ -1050,6 +1624,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
     protected async unlock(key: string, token?: string): Promise<void> {
         if (token === undefined) {
             // Legacy path: delete unconditionally. Newer callers should pass the token returned by lock().
+            // The renewal timer of the deleted lock stops on its next tick.
             this.locker.delete(key);
 
             return;
@@ -1072,6 +1647,98 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         } finally {
             await this.unlock(key, token);
         }
+    }
+
+    /**
+     * Claims upload `id` for one writer across processes sharing the meta store: a claim token
+     * ({@link WRITE_CLAIM_KEY}) is saved with a compare-and-swap against the record just read. Call
+     * it before reading the state a write depends on (e.g. a TUS offset); while the claim holds,
+     * no other claimant gets in, so that state can only change through the claimant.
+     *
+     * The claim expires LOCK_TTL_MS after its last renewal, so a crashed holder blocks nobody for
+     * long; a live holder renews it until it releases it, at most LOCK_MAX_HOLD_MS.
+     *
+     * Without conditional saves in the meta store (or a store that gives no version), nothing is
+     * claimed, and writers are only serialized within one process.
+     * @param id Upload ID
+     * @returns Releases the claim; never throws
+     * @throws {UploadError} FILE_LOCKED when another writer holds a live claim or wins the race to it;
+     * FILE_NOT_FOUND when there is no such upload
+     */
+    public async claimWrite(id: string): Promise<() => Promise<void>> {
+        const noop = async (): Promise<void> => undefined;
+
+        if (!this.meta.supportsConditionalSave) {
+            return noop;
+        }
+
+        const token = nanoid();
+        const startedAt = Date.now();
+        const isMine = (file: TFile): boolean => (file.metadata?.[WRITE_CLAIM_KEY] as { token?: string } | undefined)?.token === token;
+        const save = async (file: TFile, claim: Record<string, unknown> | undefined): Promise<boolean> => {
+            const version = getMetaVersion(file);
+            const { [WRITE_CLAIM_KEY]: _previous, ...metadata } = file.metadata ?? {};
+
+            if (claim !== undefined) {
+                metadata[WRITE_CLAIM_KEY] = claim;
+            }
+
+            return version !== undefined && (await this.meta.saveIfVersion(id, { ...file, metadata }, version)) !== undefined;
+        };
+
+        let stored: TFile;
+
+        try {
+            stored = await this.meta.get(id);
+        } catch (error: unknown) {
+            if (isMetaNotFound(error)) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+            }
+
+            throw error;
+        }
+
+        if (getMetaVersion(stored) === undefined) {
+            return noop;
+        }
+
+        const held = stored.metadata?.[WRITE_CLAIM_KEY] as { expiresAt?: unknown } | undefined;
+
+        if ((typeof held?.expiresAt === "number" && held.expiresAt > startedAt) || !(await save(stored, { expiresAt: startedAt + LOCK_TTL_MS, token }))) {
+            return throwErrorCode(ERRORS.FILE_LOCKED, `Upload ${id} is being written by another request`);
+        }
+
+        // A lost renewal (the record changed meanwhile) is retried on the next tick.
+        const renewal = setInterval(() => {
+            if (Date.now() - startedAt > LOCK_MAX_HOLD_MS) {
+                clearInterval(renewal);
+
+                return;
+            }
+
+            this.meta
+                .get(id)
+                .then(async (file) => isMine(file) && save(file, { expiresAt: Date.now() + LOCK_TTL_MS, token }))
+                .catch(() => undefined);
+        }, LOCK_TTL_MS / 3);
+
+        renewal.unref();
+
+        return async () => {
+            clearInterval(renewal);
+
+            try {
+                for (let attempt = 1; attempt <= CONDITIONAL_SAVE_ATTEMPTS; attempt += 1) {
+                    const file = await this.meta.get(id);
+
+                    if (!isMine(file) || (await save(file, undefined))) {
+                        return;
+                    }
+                }
+            } catch {
+                // Gone, or the store failing: the claim expires on its own.
+            }
+        };
     }
 
     /**
@@ -1158,8 +1825,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
         const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
 
-        if (maxAgeMs && !file.expiredAt) {
-            file.expiredAt = this.expiration?.rolling ? Date.now() + maxAgeMs : +new Date(file.createdAt) + maxAgeMs;
+        if (maxAgeMs && this.expiration?.rolling) {
+            // Rolling: every save extends the expiry, never shortening a longer one set explicitly (ttl).
+            file.expiredAt = Math.max(Date.now() + maxAgeMs, file.expiredAt ? +new Date(file.expiredAt) : 0);
+        } else if (maxAgeMs && !file.expiredAt) {
+            file.expiredAt = +new Date(file.createdAt) + maxAgeMs;
         }
 
         return file;
@@ -1167,13 +1837,12 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
     /**
      * Backend-resolved retry configuration that {@link runOperation} layers
-     * per-call overrides on top of. Subclasses that build a `RetryConfig`
-     * (S3, Azure, Netlify, …) override this; the default (`undefined`) makes
-     * `runOperation` fall back to the retry engine's own defaults.
+     * per-call overrides on top of. Defaults to the `retryConfig` option;
+     * subclasses that build their own `RetryConfig` (S3, Azure, Netlify, …)
+     * override this. Unset options fall back to the retry engine's defaults.
      */
-    // eslint-disable-next-line class-methods-use-this
     protected getRetryConfig(): RetryConfig | undefined {
-        return undefined;
+        return this.genericConfig.retryConfig;
     }
 
     /**

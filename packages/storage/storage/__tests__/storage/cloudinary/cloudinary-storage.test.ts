@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import CloudinaryStorage from "../../../src/storage/cloudinary/cloudinary-storage";
 import type { CloudinaryStorageOptions } from "../../../src/storage/cloudinary/types";
+import { ERRORS, UploadError } from "../../../src/utils/errors";
 import { storageOptions } from "../../__helpers__/config";
 
 const makeMockClient = () => {
@@ -180,13 +181,79 @@ describe(CloudinaryStorage, () => {
         });
     });
 
+    describe("private assets", () => {
+        it("reads and copies them through signed download URLs", async () => {
+            expect.assertions(3);
+
+            const storage = newStorage({ type: "private" });
+            const signed = "https://api.cloudinary.com/v1_1/demo/raw/download?signature=abc";
+
+            mockClient.utils.private_download_url.mockReturnValue(signed);
+            mockClient.api.resource.mockResolvedValueOnce({ bytes: 4, format: "mp4", resource_type: "raw", version: 7 });
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+                arrayBuffer: async () => Buffer.from("data"),
+                ok: true,
+            } as unknown as Response);
+
+            await expect(storage.get({ id: "secret.mp4" })).resolves.toHaveProperty("content", Buffer.from("data"));
+            expect(fetchSpy).toHaveBeenCalledWith(signed);
+
+            await storage.copy("secret.mp4", "copy.mp4");
+
+            expect(mockClient.uploader.upload).toHaveBeenCalledWith(signed, expect.objectContaining({ public_id: "copy.mp4", type: "private" }));
+
+            fetchSpy.mockRestore();
+        });
+    });
+
+    describe(".getCompletedFile()", () => {
+        it("answers from the resource details without downloading the content", async () => {
+            expect.assertions(5);
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+            fetchSpy.mockClear();
+            mockClient.api.resource.mockResolvedValueOnce({ bytes: 4, format: "mp4", resource_type: "video", version: 7 });
+
+            const file = await newStorage().getCompletedFile("anonymous/video.mp4");
+
+            expect(file).toMatchObject({
+                bytesWritten: 4,
+                contentType: "video/mp4",
+                ETag: "7",
+                id: "anonymous/video.mp4",
+                path: "anonymous/video.mp4",
+                status: "completed",
+            });
+            expect(file?.size).toBe(4);
+            expect(mockClient.api.resource).toHaveBeenCalledWith("anonymous/video.mp4", expect.objectContaining({ resource_type: expect.any(String) }));
+            expect(fetchSpy).not.toHaveBeenCalled();
+            expect(mockClient.url).not.toHaveBeenCalled();
+
+            fetchSpy.mockRestore();
+        });
+
+        it("returns undefined when the resource is missing", async () => {
+            expect.assertions(2);
+
+            mockClient.api.resource.mockRejectedValueOnce({ error: { http_code: 404, message: "Resource not found" } });
+
+            await expect(newStorage().getCompletedFile("missing")).resolves.toBeUndefined();
+
+            mockClient.api.resource.mockRejectedValueOnce({ error: { http_code: 420, message: "Rate Limit Exceeded" } });
+
+            await expect(newStorage().getCompletedFile("file")).rejects.toMatchObject({ error: { http_code: 420 } });
+        });
+    });
+
     describe(".delete()", () => {
         it("calls uploader.destroy with the resolved key", async () => {
             expect.assertions(2);
 
             const storage = newStorage();
 
-            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new Error("not found"));
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
 
             mockClient.uploader.destroy.mockResolvedValueOnce({ result: "ok" });
 
@@ -266,6 +333,27 @@ describe(CloudinaryStorage, () => {
 
             expect(mockClient.api.resources).toHaveBeenCalledWith(expect.objectContaining({ max_results: 50 }));
             expect(files[0]?.id).toBe("a.mp4");
+        });
+
+        it("follows next_cursor across capped pages until the limit is reached", async () => {
+            expect.assertions(2);
+
+            const storage = newStorage();
+            const ids = ["a", "b", "c", "d", "e"];
+
+            // An account that answers at most two resources per page (the Admin API caps pages at 500).
+            mockClient.api.resources.mockImplementation(async ({ max_results: maxResults, next_cursor: cursor }: { max_results: number; next_cursor?: string }) => {
+                const start = Number(cursor ?? 0);
+                const end = start + Math.min(maxResults, 2);
+
+                return {
+                    next_cursor: end < ids.length ? String(end) : undefined,
+                    resources: ids.slice(start, end).map((id) => { return { public_id: id }; }),
+                };
+            });
+
+            await expect(storage.list()).resolves.toHaveLength(5);
+            await expect(storage.list(3)).resolves.toHaveLength(3);
         });
     });
 

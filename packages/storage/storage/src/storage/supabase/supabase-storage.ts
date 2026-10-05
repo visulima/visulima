@@ -1,16 +1,32 @@
+import type { FileObject } from "@supabase/storage-js";
 import { StorageClient } from "@supabase/storage-js";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import type { UploadError } from "../../utils/errors";
+import { ERRORS, throwErrorCode, wrapStorageError } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { BaseStorage } from "../storage";
-import type { OperationOptions } from "../types";
+import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { trimTrailingSlashes } from "../utils/remote";
 import SupabaseFile from "./supabase-file";
 import SupabaseMetaStorage from "./supabase-meta-storage";
 import type { SupabaseStorageOptions } from "./types";
 
 const MAX_SIGNED_URL_SECONDS = 60 * 60 * 24 * 7;
+
+/** Entries per `list` request; a shorter page ends a folder. */
+const LIST_PAGE_SIZE = 1000;
+
+/**
+ * A Supabase storage error as an UploadError. Supabase answers some failures (a missing object)
+ * with HTTP 400 and the real status as a string `statusCode` ("404"), which wins.
+ */
+const toUploadError = (error: unknown, operation: string): UploadError => {
+    const { status, statusCode } = (error ?? {}) as { status?: number; statusCode?: string };
+
+    return wrapStorageError(error, { adapter: "Supabase", operation, status: Number(statusCode) || status });
+};
 
 /**
  * Translate a `responseContentDisposition` header value into Supabase's
@@ -74,6 +90,8 @@ const collectStream = async (stream: AsyncIterable<Uint8Array | Buffer>): Promis
 class SupabaseStorage extends BaseStorage<SupabaseFile> {
     public static override readonly name: string = "supabase";
 
+    public override readonly storageKind: string = "supabase";
+
     /** Stores each object in a single request, so chunked/resumable uploads are rejected. */
     public override readonly supportsResumableWrites: boolean = false;
 
@@ -107,7 +125,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                 throw new Error("Supabase storage: `serviceKey` is required (or set SUPABASE_SERVICE_ROLE_KEY / SUPABASE_KEY).");
             }
 
-            const storageUrl = url.replace(/\/+$/, "") + (url.endsWith("/storage/v1") ? "" : "/storage/v1");
+            const storageUrl = trimTrailingSlashes(url) + (url.endsWith("/storage/v1") ? "" : "/storage/v1");
 
             this.storageClient = new StorageClient(
                 storageUrl,
@@ -138,14 +156,10 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             await this.validate(file);
 
-            try {
-                const existing = await this.getMeta(file.id);
+            const existing = await this.findResumable(file.id);
 
-                if (existing.bytesWritten >= 0) {
-                    return existing;
-                }
-            } catch {
-                // ignore — new upload
+            if (existing !== undefined) {
+                return existing;
             }
 
             file.bytesWritten = 0;
@@ -178,7 +192,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             }
 
             if (!partMatch(part, file)) {
-                throw new Error("File part does not match");
+                return throwErrorCode(ERRORS.FILE_CONFLICT);
             }
 
             const lockToken = await this.lock(part.id);
@@ -186,7 +200,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
             try {
                 if (hasContent(part)) {
                     if (this.isUnsupportedChecksum(part.checksumAlgorithm)) {
-                        throw new Error("Unsupported checksum algorithm");
+                        return throwErrorCode(ERRORS.UNSUPPORTED_CHECKSUM_ALGORITHM);
                     }
 
                     this.assertWholeFileWrite(part, file);
@@ -205,7 +219,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                     );
 
                     if (error) {
-                        throw error;
+                        throw toUploadError(error, "write");
                     }
 
                     file.bytesWritten = buffer.length;
@@ -216,10 +230,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
                 file.status = getFileStatus(file);
 
-                if (file.status === "completed") {
-                    await this.internalOnComplete(file);
-                }
-
+                // Completed uploads keep their metadata.
                 await this.saveMeta(file);
 
                 return file;
@@ -231,13 +242,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async delete({ id }: FileQuery, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("delete", async () => {
-            let file: SupabaseFile | undefined;
-
-            try {
-                file = await this.getMeta(id);
-            } catch {
-                // No metadata — fall back to direct delete by id.
-            }
+            const file = await this.findMeta(id);
 
             const path = file?.path ?? file?.name ?? id;
 
@@ -245,7 +250,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
             // Supabase returns no error for missing files; surface upstream errors only.
             if (error && error.message && !/not.*found/i.test(error.message)) {
-                throw error;
+                throw toUploadError(error, "delete");
             }
 
             if (file) {
@@ -269,15 +274,8 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let path = id;
-
-            try {
-                const meta = await this.getMeta(id);
-
-                path = meta.path ?? id;
-            } catch {
-                // direct path lookup
-            }
+            const meta = await this.findMeta(id);
+            const path = meta?.path ?? id;
 
             const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).exists(path));
 
@@ -289,22 +287,40 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         });
     }
 
+    protected override async statObject(id: string, options?: OperationOptions): Promise<StoredObject | undefined> {
+        const { data: info, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).info(id));
+
+        if (error) {
+            const { status, statusCode } = error as { status?: number; statusCode?: string };
+
+            if (status === 404 || statusCode === "404") {
+                return undefined;
+            }
+
+            throw toUploadError(error, "stat");
+        }
+
+        return info ? { contentType: info.contentType ?? undefined, etag: info.etag, extra: { bucket: this.bucket, path: id }, size: info.size ?? 0 } : undefined;
+    }
+
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             let path = id;
-            let stored: SupabaseFile | undefined;
+            const stored = await this.findMeta(id);
 
-            try {
-                stored = await this.checkIfExpired(await this.getMeta(id));
+            if (stored) {
+                await this.checkIfExpired(stored);
                 path = stored.path ?? stored.name ?? id;
-            } catch {
-                // No metadata — treat `id` as a bucket-relative path.
             }
 
             const { data, error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).download(path));
 
-            if (error || !data) {
-                throw error ?? new Error(`Supabase: object not found at "${path}"`);
+            if (error) {
+                throw toUploadError(error, "get");
+            }
+
+            if (!data) {
+                return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Supabase: object not found at "${path}"`);
             }
 
             const content = Buffer.from(await this.runOperation(options, () => data.arrayBuffer()));
@@ -326,14 +342,14 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<SupabaseFile> {
         return this.instrumentOperation("copy", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
             const target = destination;
 
             const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).copy(source, target));
 
             if (error) {
-                throw error;
+                throw toUploadError(error, "copy");
             }
 
             const file = new SupabaseFile({
@@ -353,13 +369,13 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
 
     public async move(name: string, destination: string, options?: OperationOptions): Promise<SupabaseFile> {
         return this.instrumentOperation("move", async () => {
-            const meta = await this.getMetaSafe(name);
+            const meta = await this.findMeta(name);
             const source = meta?.path ?? name;
 
             const { error } = await this.runOperation(options, () => this.storageClient.from(this.bucket).move(source, destination));
 
             if (error) {
-                throw error;
+                throw toUploadError(error, "move");
             }
 
             const file = new SupabaseFile({
@@ -387,34 +403,47 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         return this.instrumentOperation(
             "list",
             async () => {
-                const { data, error } = await this.runOperation(options, () =>
-                    this.storageClient.from(this.bucket).list("", {
-                        limit,
-                    }),
-                );
+                const files: SupabaseFile[] = [];
+                // Supabase lists one folder level at a time, so walk the subfolders breadth-first.
+                const folders = [""];
 
-                if (error) {
-                    throw error;
+                for (let folder = folders.shift(); folder !== undefined && files.length < limit; folder = folders.shift()) {
+                    const prefix = folder;
+
+                    let offset = 0;
+
+                    while (files.length < limit) {
+                        const start = offset;
+                        const { data, error } = await this.runOperation(options, () =>
+                            this.storageClient.from(this.bucket).list(prefix, { limit: LIST_PAGE_SIZE, offset: start }),
+                        );
+
+                        if (error) {
+                            throw toUploadError(error, "list");
+                        }
+
+                        const entries = data ?? [];
+
+                        for (const entry of entries) {
+                            const key = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+                            // Folders come back as entries with a null `id`; they are not files.
+                            if (entry.id === null) {
+                                folders.push(key);
+                            } else if (files.length < limit) {
+                                files.push(this.toListedFile(entry, key));
+                            }
+                        }
+
+                        if (entries.length < LIST_PAGE_SIZE) {
+                            break;
+                        }
+
+                        offset += entries.length;
+                    }
                 }
 
-                return (data ?? []).map((entry) => {
-                    const file = new SupabaseFile({
-                        contentType: entry.metadata?.mimetype ?? "application/octet-stream",
-                        metadata: entry.metadata ?? {},
-                        originalName: entry.name,
-                    });
-
-                    file.id = entry.name;
-                    file.name = entry.name;
-                    file.path = entry.name;
-                    file.bucket = this.bucket;
-                    file.size = typeof entry.metadata?.size === "number" ? entry.metadata.size : undefined;
-                    file.createdAt = entry.created_at ?? undefined;
-                    file.modifiedAt = entry.updated_at ?? undefined;
-                    file.ETag = entry.metadata?.eTag ?? entry.id ?? undefined;
-
-                    return file;
-                });
+                return files;
             },
             { limit },
         );
@@ -454,15 +483,24 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
         return data.signedUrl;
     }
 
-    private async getMetaSafe(id: string): Promise<SupabaseFile | undefined> {
-        try {
-            return await this.getMeta(id);
-        } catch {
-            return undefined;
-        }
-    }
+    private toListedFile(entry: FileObject, key: string): SupabaseFile {
+        const file = new SupabaseFile({
+            contentType: entry.metadata?.mimetype ?? "application/octet-stream",
+            metadata: entry.metadata ?? {},
+            originalName: entry.name,
+        });
 
-    private internalOnComplete = (file: SupabaseFile): Promise<void> => this.deleteMeta(file.id);
+        file.id = key;
+        file.name = key;
+        file.path = key;
+        file.bucket = this.bucket;
+        file.size = typeof entry.metadata?.size === "number" ? entry.metadata.size : undefined;
+        file.createdAt = entry.created_at ?? undefined;
+        file.modifiedAt = entry.updated_at ?? undefined;
+        file.ETag = entry.metadata?.eTag ?? entry.id ?? undefined;
+
+        return file;
+    }
 }
 
 export default SupabaseStorage;

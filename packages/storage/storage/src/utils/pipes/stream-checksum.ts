@@ -2,6 +2,15 @@ import type { BinaryToTextEncoding, Hash } from "node:crypto";
 import { createHash } from "node:crypto";
 import { PassThrough, Transform } from "node:stream";
 
+const STREAM_CHECKSUM_MISMATCH = "ERR_STREAM_CHECKSUM_MISMATCH";
+
+/**
+ * Whether an error is StreamChecksum's own "digest does not match" error.
+ * @param error Stream error
+ * @returns `true` for the mismatch error
+ */
+export const isStreamChecksumError = (error: unknown): boolean => (error as { code?: string } | null)?.code === STREAM_CHECKSUM_MISMATCH;
+
 /**
  * Transform stream that validates checksums as data passes through.
  * Calculates hash of streaming data and validates against expected checksum.
@@ -62,7 +71,7 @@ export class StreamChecksum extends Transform {
         this.digest = this.hash.digest(this.encoding);
 
         if (this.checksum && this.checksum !== this.digest) {
-            callback(new Error("Checksum mismatch"));
+            callback(Object.assign(new Error("Checksum mismatch"), { code: STREAM_CHECKSUM_MISMATCH }));
         } else {
             callback();
         }
