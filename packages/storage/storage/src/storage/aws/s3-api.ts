@@ -60,7 +60,7 @@ export interface S3ApiOperations {
     ) => Promise<{ ETag?: string; Location: string }>;
 
     copyObject: (
-        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
         options?: S3CallOptions,
     ) => Promise<void>;
 

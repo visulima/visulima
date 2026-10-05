@@ -553,10 +553,11 @@ ${partsXml}
     }
 
     public async copyObject(
-        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
         options?: S3CallOptions,
     ): Promise<void> {
         const headers: Record<string, string> = {
+            ...(params.ACL !== undefined && { "x-amz-acl": params.ACL }),
             "x-amz-copy-source": params.CopySource,
             ...(params.CopySourceIfMatch !== undefined && { "x-amz-copy-source-if-match": params.CopySourceIfMatch }),
             ...(params.IfMatch !== undefined && { "If-Match": params.IfMatch }),

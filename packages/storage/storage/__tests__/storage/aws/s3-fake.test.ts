@@ -668,6 +668,25 @@ describe("s3Storage against an in-memory S3", () => {
         );
     });
 
+    it("should keep the configured ACL on objects a server-side copy writes", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage({ acl: "public-read" });
+        const id = await upload(storage, "hello");
+
+        s3.sent.length = 0;
+
+        // S3 doesn't copy the source's ACL: a replace (or copy) must send the configured one.
+        await storage.replaceUpload(id, { contentType: "text/plain", metadata: {}, size: 5 }, async (stagingId) =>
+            storage.write({ body: Readable.from([Buffer.from("world")]), contentLength: 5, id: stagingId, start: 0 }),
+        );
+
+        const copies = s3.sent.filter(({ name }) => name === "CopyObjectCommand");
+
+        expect(copies.length).toBeGreaterThan(0);
+        expect(copies.every(({ input }) => input.ACL === "public-read")).toBe(true);
+    });
+
     it("should not claim conditional support for a custom endpoint unless told to", () => {
         expect.assertions(3);
 

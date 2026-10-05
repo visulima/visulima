@@ -16,8 +16,8 @@ const isQuantifier = (source: string, index: number): boolean =>
  * proof: it catches the common exponential forms without fully parsing the expression.
  */
 const nestsQuantifiers = (source: string): boolean => {
-    // One entry per open group: whether it contains a quantifier.
-    const groups: boolean[] = [];
+    // One entry per open group: whether it contains a quantifier or an alternation.
+    const groups: { alternation: boolean; quantified: boolean }[] = [];
     let inClass = false;
 
     for (let index = 0; index < source.length; index += 1) {
@@ -30,19 +30,23 @@ const nestsQuantifiers = (source: string): boolean => {
         } else {
             switch (char) {
                 case "(": {
-                    groups.push(false);
+                    groups.push({ alternation: false, quantified: false });
 
                     break;
                 }
                 case ")": {
-                    const quantified = groups.pop() ?? false;
+                    const group = groups.pop() ?? { alternation: false, quantified: false };
 
-                    if (quantified && isQuantifier(source, index + 1)) {
+                    // `(a+)*` and `(a|aa)*`: a repeated group whose body can match one input in
+                    // several ways backtracks exponentially.
+                    if ((group.quantified || group.alternation) && isQuantifier(source, index + 1)) {
                         return true;
                     }
 
-                    if (quantified && groups.length > 0) {
-                        groups[groups.length - 1] = true;
+                    const parent = groups.at(-1);
+
+                    if (group.quantified && parent) {
+                        parent.quantified = true;
                     }
 
                     break;
@@ -52,9 +56,20 @@ const nestsQuantifiers = (source: string): boolean => {
 
                     break;
                 }
+                case "|": {
+                    const current = groups.at(-1);
+
+                    if (current) {
+                        current.alternation = true;
+                    }
+
+                    break;
+                }
                 default: {
-                    if (groups.length > 0 && isQuantifier(source, index)) {
-                        groups[groups.length - 1] = true;
+                    const current = groups.at(-1);
+
+                    if (current && isQuantifier(source, index)) {
+                        current.quantified = true;
                     }
                 }
             }

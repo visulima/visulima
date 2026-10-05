@@ -217,7 +217,7 @@ export interface CopyOptions extends OperationOptions {
 export type SearchMatch = "exact" | "glob" | "regex" | "substring";
 
 export interface SearchOptions extends OperationOptions {
-    /** Match case-insensitively (any mode). Disables the automatic prefix push-down of a glob. */
+    /** Match case-insensitively (any mode). Disables the automatic prefix filter of a glob. */
     caseInsensitive?: boolean;
     /** Stop after this many matches; the walk stops fetching pages once it is reached. */
     limit?: number;

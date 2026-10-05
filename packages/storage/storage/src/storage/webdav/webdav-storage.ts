@@ -183,8 +183,9 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             if (hasCondition(options)) {
                 file.bytesWritten = 0;
                 file.status = getFileStatus(file);
-                this.parkConditional(file);
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
                 await this.onCreate(file);
+                this.parkConditional(file);
 
                 return file;
             }

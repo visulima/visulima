@@ -242,8 +242,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             // a failed predicate leaves the record of the stored object as it was.
             if (conditional) {
                 file.status = "created";
-                this.parkConditional(file);
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
                 await this.onCreate(file);
+                this.parkConditional(file);
 
                 return file;
             }
@@ -1011,6 +1012,8 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         await this.runOperation(options, (signal) =>
             s3Api.copyObject(
                 {
+                    // S3 doesn't copy the source's ACL: apply the configured one, as `create` does.
+                    ...(this.getAcl() !== undefined && { ACL: this.getAcl() }),
                     Bucket: this.bucket,
                     // The source is "bucket/key" with the key URL-encoded.
                     CopySource: `${this.bucket}/${file.name

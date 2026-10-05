@@ -154,8 +154,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 assertCondition(await this.eTagOf(file.name), options);
                 file.bytesWritten = 0;
                 file.status = getFileStatus(file);
-                this.parkConditional(file as TFile);
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
                 await this.onCreate(file as TFile);
+                this.parkConditional(file as TFile);
 
                 return file as TFile;
             }

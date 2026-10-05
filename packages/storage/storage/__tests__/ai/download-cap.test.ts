@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { executors } from "../../src/ai/internal/executors";
-import { downloadFileInputSchema, MAX_DOWNLOAD_BYTES } from "../../src/ai/internal/schemas";
+import { downloadFileInputSchema, MAX_DOWNLOAD_BYTES, searchFilesInputSchema } from "../../src/ai/internal/schemas";
 import { Files } from "../../src/files";
 import MemoryStorage from "../../src/storage/memory/memory-storage";
 
@@ -51,5 +51,15 @@ describe("downloadFile maxBytes cap", () => {
             await expect(executors.downloadFile(files, { key: "small.txt", maxBytes: 10 })).resolves.toMatchObject({ content: "hello", size: 5 });
             expect(get).not.toHaveBeenCalled();
         });
+    });
+});
+
+describe("searchFiles input", () => {
+    it("should not let a model pick regex matching", () => {
+        expect.assertions(2);
+
+        // A model-chosen regex could backtrack catastrophically; Files.search keeps it for callers.
+        expect(searchFilesInputSchema.safeParse({ match: "regex", pattern: "^(a|aa)*$" }).success).toBe(false);
+        expect(searchFilesInputSchema.safeParse({ match: "glob", pattern: "reports/**/*.csv" }).success).toBe(true);
     });
 });

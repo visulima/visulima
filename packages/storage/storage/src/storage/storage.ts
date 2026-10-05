@@ -1258,7 +1258,14 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
 
             // Dots never appear in generated ids nor in ids a client may choose with PUT, so the
             // staging id collides with no upload and can't be addressed through the handlers.
-            const staging = await this.create({ ...config, id: `${nanoid()}.replace` });
+            const stagingId = `${nanoid()}.replace`;
+
+            // A `filename` that ignores the id would stage the replacement over the live file.
+            if (this.nameOf({ ...config, id: stagingId }) === this.nameOf({ ...config, id })) {
+                throwErrorCode(ERRORS.FILE_CONFLICT, "The `filename` option names the replacement like the file it replaces; it must depend on the id");
+            }
+
+            const staging = await this.create({ ...config, id: stagingId });
             let staged: TFile;
 
             try {
@@ -1273,12 +1280,22 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
                 throw error;
             }
 
+            let replaced: TFile;
+
             try {
-                return await this.commitReplacement(id, config, staged);
-            } finally {
-                // Gone already when an override moved it into place.
-                await this.deleteUpload(staging.id).catch(() => undefined);
+                replaced = await this.commitReplacement(id, config, staged);
+            } catch (error: unknown) {
+                // The swap may have removed the old file already: keep the staged replacement, the
+                // only complete copy left. It is an ordinary upload, which purge removes once expired.
+                this.logger?.error(`Replacing ${id} failed; the replacement is kept as upload ${staging.id}`);
+
+                throw error;
             }
+
+            // Gone already when an override moved it into place.
+            await this.deleteUpload(staging.id).catch(() => undefined);
+
+            return replaced;
         });
     }
 
@@ -1289,7 +1306,8 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * client's body is fully stored by then. Adapters that can swap an object in one step override it.
      * @param id File ID of the upload to replace.
      * @param config The replacement.
-     * @param staged The completed staging upload; {@link BaseStorage.replaceUpload} deletes it afterwards.
+     * @param staged The completed staging upload; {@link BaseStorage.replaceUpload} deletes it once
+     * this succeeded, and keeps it when this fails (it may be the only complete copy left).
      * @returns The replaced upload.
      */
     protected async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {

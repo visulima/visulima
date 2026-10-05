@@ -290,10 +290,11 @@ class S3ClientAdapter implements S3ApiOperations {
     }
 
     public async copyObject(
-        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
         options?: S3CallOptions,
     ): Promise<void> {
         const commandInput: CopyObjectCommandInput = {
+            ...(params.ACL !== undefined && { ACL: params.ACL as CopyObjectCommandInput["ACL"] }),
             Bucket: params.Bucket,
             CopySource: params.CopySource,
             ...(params.CopySourceIfMatch !== undefined && { CopySourceIfMatch: params.CopySourceIfMatch }),

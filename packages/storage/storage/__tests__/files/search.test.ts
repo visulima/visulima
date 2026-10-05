@@ -75,7 +75,7 @@ describe("files.search", () => {
     });
 
     it("should reject an invalid or backtracking-prone regex and an invalid limit", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const files = createFiles();
         const badRequest = expect.objectContaining({ UploadErrorCode: ERRORS.BAD_REQUEST });
@@ -84,6 +84,8 @@ describe("files.search", () => {
         await expect(search(files, "(a+)+$", { match: "regex" })).rejects.toThrow(badRequest);
         // The backtracking-prone shape under test, as a pattern string rather than a regex literal.
         await expect(search(files, String.raw`(\w*)*x`, { match: "regex" })).rejects.toThrow(badRequest);
+        // A repeated alternation whose branches overlap backtracks exponentially too.
+        await expect(search(files, "^(a|aa)*$", { match: "regex" })).rejects.toThrow(badRequest);
         await expect(search(files, "*", { limit: 0 })).rejects.toThrow(badRequest);
     });
 });

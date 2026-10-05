@@ -1400,9 +1400,10 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
      * A string is a glob by default (`*` within a segment, `**` across segments, `?`, `[a-z]`,
      * `{a,b}`, `!negation`; anchored to the whole key; dotfiles match). Pass `match` for `regex`,
      * `substring` or `exact`, or a `RegExp` directly. Keys are matched without the constructor
-     * prefix. A glob's (or exact pattern's) literal head is pushed down as the listing prefix, so
-     * `"uploads/2024/*.pdf"` only walks `uploads/2024`; other modes walk everything unless `prefix`
-     * bounds them.
+     * prefix. A glob's (or exact pattern's) literal head becomes the walk's `prefix`, so only keys
+     * under `uploads/2024/` are matched for `"uploads/2024/*.pdf"`. The adapters' `list` takes no
+     * prefix, so the provider listing itself still covers the whole bucket: on large buckets, keep
+     * keys under a constructor `prefix` or use `list({ prefix })` where the adapter supports it.
      * @throws {UploadError} BAD_REQUEST for an invalid regex, one that nests quantifiers (`(a+)+`), or an invalid `limit`
      * @example
      * ```ts

@@ -27,18 +27,20 @@ export const listFilesInputSchema: z.ZodObject<{
 export const searchFilesInputSchema: z.ZodObject<{
     caseInsensitive: z.ZodOptional<z.ZodBoolean>;
     limit: z.ZodOptional<z.ZodNumber>;
-    match: z.ZodOptional<z.ZodEnum<{ exact: "exact"; glob: "glob"; regex: "regex"; substring: "substring" }>>;
+    match: z.ZodOptional<z.ZodEnum<{ exact: "exact"; glob: "glob"; substring: "substring" }>>;
     pattern: z.ZodString;
     prefix: z.ZodOptional<z.ZodString>;
 }> = z.object({
     caseInsensitive: z.boolean().optional().meta({ description: "Match case-insensitively" }),
     limit: z.int().positive().max(1000).optional().meta({ description: "Maximum number of matches to return (default 100)" }),
+    // No regex: the pattern comes from a model that may be prompt-injected, and a backtracking
+    // expression would block the event loop. Callers that need regex use Files.search directly.
     match: z
-        .enum(["glob", "regex", "substring", "exact"])
+        .enum(["glob", "substring", "exact"])
         .optional()
-        .meta({ description: 'How to read pattern: "glob" (default; * within a path segment, ** across segments), "regex", "substring" or "exact"' }),
+        .meta({ description: 'How to read pattern: "glob" (default; * within a path segment, ** across segments), "substring" or "exact"' }),
     pattern: z.string().trim().min(1).max(256).meta({ description: "Pattern the whole object key must match, e.g. reports/**/*.csv" }),
-    prefix: z.string().trim().optional().meta({ description: "Only search keys under this prefix (recommended for regex and substring searches)" }),
+    prefix: z.string().trim().optional().meta({ description: "Only search keys under this prefix (recommended for substring searches)" }),
 });
 
 export const getFileMetadataInputSchema: z.ZodObject<{

@@ -148,8 +148,9 @@ class MemoryStorage<TFile extends File = File> extends BaseStorage<TFile> {
             // commits; failing fast here only saves reading a body that cannot be stored.
             if (hasCondition(options)) {
                 assertCondition(this.store.get(file.name)?.eTag, options);
-                this.parkConditional(file);
+                // Parked only once onCreate accepted it: a parked record nothing takes locks its key.
                 await this.onCreate(file);
+                this.parkConditional(file);
 
                 return file;
             }

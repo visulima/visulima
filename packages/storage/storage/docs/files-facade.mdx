@@ -442,7 +442,7 @@ files.search("*.PNG", { caseInsensitive: true, limit: 50 });
 - **`substring`** — the key contains the text. **`exact`** — the key equals the text.
 - **`caseInsensitive`** — any mode.
 
-A glob's (or exact pattern's) literal head is pushed down as the walk's `prefix`, so `"uploads/2024/*.pdf"` only walks `uploads/2024/`. Regex, substring and case-insensitive searches have no inferable prefix — pass `prefix` to bound them. Options: `match`, `caseInsensitive`, `prefix`, `limit` (maximum matches), `pageSize` (the `listAll` page size) plus `signal` / `timeout` / `retries`. The AI integrations expose it as the read-only `searchFiles` tool (at most 100 matches unless `limit` says otherwise).
+A glob's (or exact pattern's) literal head becomes the walk's `prefix`, so `"uploads/2024/*.pdf"` only matches keys under `uploads/2024/`. The adapters list without a prefix, though, so the provider listing still covers every key: `search` costs a full `listAll` on any bucket. Regex, substring and case-insensitive searches have no inferable prefix — pass `prefix` to narrow what they match. The `searchFiles` AI tool offers glob, substring and exact matching, not regex: a model-chosen regex could backtrack catastrophically. Options: `match`, `caseInsensitive`, `prefix`, `limit` (maximum matches), `pageSize` (the `listAll` page size) plus `signal` / `timeout` / `retries`. The AI integrations expose it as the read-only `searchFiles` tool (at most 100 matches unless `limit` says otherwise).
 
 ### Copy and rename
 
