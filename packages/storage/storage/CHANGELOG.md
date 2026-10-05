@@ -1,3 +1,17 @@
+## @visulima/storage [2.0.31](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.30...@visulima/storage@2.0.31) (2026-10-05)
+
+### Bug Fixes
+
+* **storage:** security fixes ([#918](https://github.com/visulima/visulima/issues/918), [#919](https://github.com/visulima/visulima/issues/919), [#921](https://github.com/visulima/visulima/issues/921)) and storage bug hunt ([#920](https://github.com/visulima/visulima/issues/920)) ([2d86ad0](https://github.com/visulima/visulima/commit/2d86ad09a4367355557ccbeb5520d200b91a6cb1))
+
+
+### Dependencies
+
+* **@remix-run/multipart-parser:** 0.16.3 → 1.0.0
+* **file-type:** 22.0.1 → 22.1.1
+* **lru-cache:** 11.5.2 → 11.5.3
+* **type-is:** ^2.1.0 → ^3.0.0
+
 ## @visulima/storage [2.0.30](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.29...@visulima/storage@2.0.30) (2026-10-04)
 
 ### Bug Fixes
