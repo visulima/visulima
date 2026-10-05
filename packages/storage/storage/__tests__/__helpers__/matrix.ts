@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { Readable } from "node:stream";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Multipart as MultipartFetch, Rest as RestFetch, Tus as TusFetch } from "../../src/handler/http/fetch";
 import { Multipart as MultipartNode, Rest as RestNode, Tus as TusNode } from "../../src/handler/http/node";
@@ -347,7 +347,19 @@ export const describeMatrix = (provider: MatrixProvider): void => {
             await putBody(send, path, brokenBody(), 5);
 
             await expect(readText(send, path)).resolves.toBe("hello");
-            await expect(uploadIds(storage)).resolves.toStrictEqual(before);
+            // Over node http the client drops its own request, so the PUT can return before the server
+            // has removed the staging upload: wait for that cleanup instead of racing it.
+            await expect(
+                vi.waitFor(async () => {
+                    const after = await uploadIds(storage);
+
+                    if (after.length !== before.length) {
+                        throw new Error("staging upload not cleaned up yet");
+                    }
+
+                    return after;
+                }),
+            ).resolves.toStrictEqual(before);
 
             await expect(putBody(send, path, "world!", 6)).resolves.toBe(200);
             await expect(readText(send, path)).resolves.toBe("world!");

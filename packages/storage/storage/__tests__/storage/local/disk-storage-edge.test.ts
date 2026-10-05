@@ -127,8 +127,14 @@ describe("diskStorage edge cases", () => {
             const written = storage.write({ ...part(file, ""), body, contentLength: 10, signal: controller.signal } as FilePart);
 
             body.write("01234");
-            await new Promise((resolve) => {
-                setTimeout(resolve, 20);
+            // Abort once the bytes are on disk, not after a fixed delay: on a busy runner the write
+            // may not have started yet, and an abort before any byte landed rightly keeps none.
+            await vi.waitFor(async () => {
+                const { size } = await stat(join(directory, file.name));
+
+                if (size < 5) {
+                    throw new Error("not written yet");
+                }
             });
             controller.abort();
 
