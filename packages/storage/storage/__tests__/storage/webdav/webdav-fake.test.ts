@@ -17,7 +17,7 @@ const BASE_PATH = "/remote.php/dav/files/alice";
  * In-memory WebDAV server behind a `fetch` stub: a tree of collections and files that answers
  * the RFC 4918 verbs the adapter uses. PUT/COPY/MOVE into a missing collection answer 409 like
  * a real server, MKCOL on an existing collection 405. `fail` forces a status for one method,
- * `ignoreRange` makes GET answer 200 with the whole body. `If-Match` / `If-None-Match`,
+ * `reply` a whole response, `ignoreRange` makes GET answer 200 with the whole body. `If-Match` / `If-None-Match`,
  * `Overwrite: F` and tagged `If` headers answer 412 when they do not hold.
  */
 const server = {
@@ -27,6 +27,7 @@ const server = {
     files: new Map<string, { body: Buffer; contentType: string; etag?: string; modifiedAt: Date }>(),
     generation: 0,
     ignoreRange: false,
+    reply: {} as Record<string, () => Response>,
     requests: [] as string[],
 };
 
@@ -65,6 +66,12 @@ const handle = async (url: string, init: RequestInit = {}): Promise<Response> =>
 
     if (headers.get("authorization") !== server.auth) {
         return new Response(null, { status: 401 });
+    }
+
+    const reply = server.reply[method];
+
+    if (reply) {
+        return reply();
     }
 
     if (server.fail[method]) {
@@ -210,6 +217,7 @@ describe("webdav storage against an in-memory WebDAV server", () => {
     beforeEach(() => {
         server.dirs = new Set([""]);
         server.fail = {};
+        server.reply = {};
         server.files.clear();
         server.ignoreRange = false;
         server.requests = [];
@@ -399,6 +407,57 @@ describe("webdav storage against an in-memory WebDAV server", () => {
             status: "completed",
         });
         await expect(storage.getCompletedFile("dir")).resolves.toBeUndefined();
+    });
+
+    it("should list past failed, malformed and relative multistatus entries (RFC 4918 §8.3, §14.24)", async () => {
+        expect.assertions(1);
+
+        const storage = createStorage();
+        const ok = "<D:propstat><D:prop><D:resourcetype/><D:getcontentlength>3</D:getcontentlength></D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat>";
+        const entries = [
+            `<D:response><D:href>${BASE_PATH}/uploads/</D:href><D:propstat><D:prop><D:resourcetype><D:collection/></D:resourcetype></D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat></D:response>`,
+            // Relative to the Request-URI (the collection), not to the endpoint URL.
+            `<D:response><D:href>relative.txt</D:href>${ok}</D:response>`,
+            // The resource itself failed.
+            `<D:response><D:href>${BASE_PATH}/uploads/gone.txt</D:href><D:status>HTTP/1.1 404 Not Found</D:status></D:response>`,
+            `<D:response><D:href>${BASE_PATH}/uploads/bad%E0%A4%A.txt</D:href>${ok}</D:response>`,
+            `<D:response><D:href>${BASE_PATH}/uploads/undated.txt</D:href><D:propstat><D:prop><D:resourcetype/><D:getlastmodified>not a date</D:getlastmodified></D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat></D:response>`,
+        ];
+
+        server.reply.PROPFIND = () => new Response(`<?xml version="1.0"?><D:multistatus xmlns:D="DAV:">${entries.join("")}</D:multistatus>`, { status: 207 });
+
+        const listed = await storage.list();
+
+        expect(listed.map((file) => [file.id, file.size, file.modifiedAt]).toSorted()).toStrictEqual([
+            ["relative.txt", 3, undefined],
+            ["undated.txt", undefined, undefined],
+        ]);
+    });
+
+    it("should fail a COPY, MOVE or DELETE answered with a 207 of failed members", async () => {
+        expect.assertions(4);
+
+        const storage = createStorage();
+        const id = await upload(storage, "hello");
+        const multistatus = (status: string) => () =>
+            new Response(
+                `<?xml version="1.0"?><D:multistatus xmlns:D="DAV:"><D:response><D:href>${BASE_PATH}/uploads/x</D:href><D:status>HTTP/1.1 ${status}</D:status></D:response></D:multistatus>`,
+                { status: 207 },
+            );
+
+        server.reply.DELETE = multistatus("423 Locked");
+
+        await expect(storage.delete({ id }, { retries: 0 })).rejects.toThrow("423");
+        // The file is still there, so is its record.
+        await expect(storage.getMeta(id)).resolves.toMatchObject({ status: "completed" });
+
+        server.reply = { COPY: multistatus("412 Precondition Failed") };
+
+        await expect(storage.copy(id, "copy.txt", { retries: 0 })).rejects.toMatchObject({ UploadErrorCode: ERRORS.PRECONDITION_FAILED });
+
+        server.reply = { MOVE: multistatus("507 Insufficient Storage") };
+
+        await expect(storage.move(id, "moved.txt", { retries: 0 })).rejects.toThrow("507");
     });
 
     it("should send basic or bearer credentials and surface auth failures", async () => {

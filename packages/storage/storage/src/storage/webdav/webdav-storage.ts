@@ -60,6 +60,17 @@ const elementText = (xml: string, name: string): string | undefined => {
     return text || undefined;
 };
 
+/** Status code of a `&lt;status>` line (`HTTP/1.1 404 Not Found`), or `undefined`. */
+const statusCodeOf = (line: string | undefined): number | undefined => {
+    const match = /^\S+\s+(\d{3})\b/u.exec(line ?? "");
+
+    return match ? Number(match[1]) : undefined;
+};
+
+const isSuccess = (status: number): boolean => status >= 200 && status < 300;
+
+const PROPSTAT = /<(?:[\w.-]+:)?propstat\b[\s\S]*?<\/(?:[\w.-]+:)?propstat\s*>/giu;
+
 /** `If-Match` / `If-None-Match` request headers of a predicate. */
 const conditionHeaders = (condition: ConditionalOptions | undefined): Record<string, string> => {
     return {
@@ -79,6 +90,19 @@ const httpError = async (response: Response, method: string, path: string): Prom
     return Object.assign(new Error(`WebDAV ${method} /${path} failed: ${String(response.status)} ${response.statusText}`.trim()), {
         statusCode: response.status,
     });
+};
+
+/**
+ * A 207 to COPY / MOVE / DELETE reports members that failed (RFC 4918 §9.6.1, §9.8.5, §9.9.4): the
+ * operation did not fully happen. Fails with the first non-2xx status it lists.
+ */
+const multistatusError = async (response: Response, method: string, path: string): Promise<Error> => {
+    const xml = await response.text();
+    const statuses = [...xml.matchAll(/<(?:[\w.-]+:)?status\b[^>]*>([\s\S]*?)<\/(?:[\w.-]+:)?status\s*>/giu)].map(([, line]) => statusCodeOf(line?.trim()));
+    // The 3xx-5xx a Response can carry; anything else reads as a server failure.
+    const failed = statuses.find((status) => status !== undefined && status >= 300 && status <= 599);
+
+    return httpError(new Response(null, { status: failed ?? 500, statusText: "Multi-Status" }), method, path);
 };
 
 const toFile = (key: string, entry: DavEntry): WebdavFile => {
@@ -366,6 +390,10 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
                     throwErrorCode(ERRORS.PRECONDITION_FAILED, "There is no stored file to match");
                 }
 
+                if (response.status === 207) {
+                    throw await multistatusError(response, "DELETE", path);
+                }
+
                 if (!response.ok && response.status !== 404) {
                     throw await httpError(response, "DELETE", path);
                 }
@@ -598,6 +626,10 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             throwErrorCode(ERRORS.FILE_NOT_FOUND);
         }
 
+        if (response.status === 207) {
+            throw await multistatusError(response, method, from);
+        }
+
         if (!response.ok) {
             throw await httpError(response, method, from);
         }
@@ -628,7 +660,8 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
      * @returns The entries, or `undefined` when the resource does not exist (404). Other failures throw.
      */
     private async propfind(path: string, depth: "0" | "1", signal: AbortSignal | undefined): Promise<DavEntry[] | undefined> {
-        const response = await this.request("PROPFIND", depth === "1" && path ? `${path}/` : path, signal, {
+        const target = depth === "1" && path ? `${path}/` : path;
+        const response = await this.request("PROPFIND", target, signal, {
             body: PROPFIND_BODY,
             headers: { "Content-Type": "application/xml; charset=utf-8", Depth: depth },
         });
@@ -643,35 +676,50 @@ class WebdavStorage extends BaseStorage<WebdavFile> {
             throw await httpError(response, "PROPFIND", path);
         }
 
-        return this.parseMultistatus(await response.text());
+        return this.parseMultistatus(await response.text(), this.toUrl(target));
     }
 
-    private parseMultistatus(xml: string): DavEntry[] {
+    /**
+     * Entries of a PROPFIND multistatus.
+     * @param xml Response body
+     * @param requestUrl URL the PROPFIND went to: a relative href resolves against it (RFC 4918 §8.3)
+     * @returns The entries; one that can't be read is left out rather than failing the listing
+     */
+    private parseMultistatus(xml: string, requestUrl: string): DavEntry[] {
         const entries: DavEntry[] = [];
 
         for (const [, body = ""] of xml.matchAll(/<(?:[\w.-]+:)?response\b[^>]*>([\s\S]*?)<\/(?:[\w.-]+:)?response\s*>/giu)) {
             const href = elementText(body, "href");
+            // A <status> of the response itself, not of a propstat, reports the resource failed (RFC 4918 §14.24).
+            const status = statusCodeOf(elementText(body.replaceAll(PROPSTAT, ""), "status"));
 
-            if (!href) {
+            if (!href || (status !== undefined && !isSuccess(status))) {
                 continue;
             }
 
-            const fullPath = trimSlashes(decodeURIComponent(new URL(href, this.baseUrl).pathname));
+            let fullPath: string;
+
+            try {
+                fullPath = trimSlashes(decodeURIComponent(new URL(href, requestUrl).pathname));
+            } catch {
+                // A malformed href (bad percent-encoding) names no resource we could address.
+                continue;
+            }
 
             if (this.basePath && fullPath !== this.basePath && !fullPath.startsWith(`${this.basePath}/`)) {
                 continue;
             }
 
-            const size = elementText(body, "getcontentlength");
-            const modified = elementText(body, "getlastmodified");
+            const size = Number(elementText(body, "getcontentlength") ?? Number.NaN);
+            const modified = Date.parse(elementText(body, "getlastmodified") ?? "");
 
             entries.push({
                 contentType: elementText(body, "getcontenttype"),
                 etag: elementText(body, "getetag"),
                 isCollection: /<(?:[\w.-]+:)?collection\b/iu.test(elementText(body, "resourcetype") ?? ""),
-                modifiedAt: modified ? new Date(modified).toISOString() : undefined,
+                modifiedAt: Number.isNaN(modified) ? undefined : new Date(modified).toISOString(),
                 path: this.basePath ? fullPath.slice(this.basePath.length + 1) : fullPath,
-                size: size === undefined ? undefined : Number(size),
+                size: Number.isNaN(size) ? undefined : size,
             });
         }
 
