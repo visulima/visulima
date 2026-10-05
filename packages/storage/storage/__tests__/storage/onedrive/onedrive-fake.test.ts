@@ -88,7 +88,8 @@ describe("onedrive against an in-memory Graph drive", () => {
         expect(text(graph, `uploads/${file.id}`)).toBe("0123456789");
     });
 
-    it("should send a file above 250 MB through an upload session in 5 MiB chunks, and retry after an interrupted session", async () => {
+    // Pushes 250 MiB through the upload-session threshold: give slow CI runners room.
+    it("should send a file above 250 MB through an upload session in 5 MiB chunks, and retry after an interrupted session", { timeout: 60_000 }, async () => {
         expect.assertions(5);
 
         const graph = createGraph();

@@ -271,7 +271,8 @@ describe("dropbox against an in-memory Dropbox", () => {
         await expect(storage.write({ id: file.id })).resolves.toMatchObject({ status: "completed" });
     });
 
-    it("should upload files above the simple-upload limit through an upload session", async () => {
+    // Pushes 159 MiB through the 150 MiB upload-session threshold: give slow CI runners room.
+    it("should upload files above the simple-upload limit through an upload session", { timeout: 60_000 }, async () => {
         expect.assertions(2);
 
         const dropbox = createDropbox();

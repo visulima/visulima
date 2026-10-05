@@ -82,8 +82,8 @@ describe("files.search", () => {
 
         await expect(search(files, "(", { match: "regex" })).rejects.toThrow(badRequest);
         await expect(search(files, "(a+)+$", { match: "regex" })).rejects.toThrow(badRequest);
-        // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/empty-string-repetition -- the backtracking-prone shape is what is under test
-        await expect(search(files, /(\w*)*x/u)).rejects.toThrow(badRequest);
+        // The backtracking-prone shape under test, as a pattern string rather than a regex literal.
+        await expect(search(files, String.raw`(\w*)*x`, { match: "regex" })).rejects.toThrow(badRequest);
         await expect(search(files, "*", { limit: 0 })).rejects.toThrow(badRequest);
     });
 });

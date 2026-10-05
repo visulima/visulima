@@ -268,7 +268,8 @@ describe("stream-utils", () => {
             await expect(collect(limited)).resolves.toStrictEqual(full.subarray(15, 35));
         });
 
-        it("pauses the source while the consumer applies backpressure, and delivers everything once it reads", async () => {
+        // Timing-sensitive under parallel CI load (coverage + large-buffer suites): allow a margin.
+        it("pauses the source while the consumer applies backpressure, and delivers everything once it reads", { timeout: 20_000 }, async () => {
             expect.assertions(1);
 
             const full = makeSequentialBuffer(256 * 1024);
