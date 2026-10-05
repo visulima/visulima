@@ -104,6 +104,9 @@ Create uploads with metadata:
 //   Upload-Metadata: filename dGVzdC5qcGc=,filetype aW1hZ2UvanBlZw==
 ```
 
+An upload with `Upload-Length: 0` is an empty file: the `POST` stores it and completes it (`onComplete` fires), and
+`HEAD` answers `Upload-Length: 0` and `Upload-Offset: 0`.
+
 Code in front of the handler (an authorization or size check) can read the header with `parseTusMetadata`, the
 parser the handler itself uses, so both agree on every header; it throws a `400` `HttpError` where the handler would:
 

@@ -109,6 +109,29 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(files.head("again.txt")).resolves.toHaveProperty("size", 6);
         });
 
+        it("should store and read back an empty file", async () => {
+            expect.assertions(7);
+
+            const storage = backend.createStorage();
+            const files = new Files({ adapter: storage });
+
+            await files.upload("empty.txt", "");
+            await files.upload("empty.bin", Buffer.alloc(0));
+
+            await expect(files.download("empty.txt")).resolves.toHaveProperty("body", Buffer.alloc(0));
+            await expect(files.download("empty.bin")).resolves.toHaveProperty("body", Buffer.alloc(0));
+            await expect(files.head("empty.txt")).resolves.toHaveProperty("size", 0);
+            await expect(files.exists("empty.bin")).resolves.toBe(true);
+            await expect(storage.getMeta("empty.txt")).resolves.toMatchObject({ size: 0, status: "completed" });
+            await expect(Promise.resolve(backend.hasObject("empty.txt"))).resolves.toBe(true);
+
+            // Replacing a file with nothing leaves an empty file, not the old bytes.
+            await files.upload("again.txt", "first");
+            await files.upload("again.txt", "");
+
+            await expect(textOf(files, "again.txt")).resolves.toBe("");
+        });
+
         it.skipIf(skip["copy and move"] !== undefined)("should copy and move an upload", async () => {
             expect.assertions(3);
 
@@ -453,6 +476,24 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(rest.fetch(request(location, "PUT", "world"))).resolves.toHaveProperty("status", 200);
             await expect(rest.fetch(request(location, "DELETE"))).resolves.toHaveProperty("status", 204);
             await expect(rest.fetch(request(location, "HEAD"))).resolves.toHaveProperty("status", 404);
+        });
+
+        it.skipIf(skip["REST lifecycle"] !== undefined)("should take an empty REST upload and an empty PUT replace", async () => {
+            expect.assertions(6);
+
+            const rest = new RestFetch({ storage: backend.createStorage() });
+            const request = (url: string, method: string, body = ""): Request =>
+                new Request(url, { body, headers: { "content-length": String(body.length), "content-type": "text/plain" }, method });
+            const read = async (url: string): Promise<string> => rest.fetch(new Request(url)).then(async (response) => response.text());
+            const created = await rest.fetch(request("https://app.test/files", "POST"));
+            const location = created.headers.get("location") as string;
+
+            expect(created.status).toBe(201);
+            await expect(read(location)).resolves.toBe("");
+            await expect(rest.fetch(request(location, "PUT", "hello"))).resolves.toHaveProperty("status", 200);
+            await expect(read(location)).resolves.toBe("hello");
+            await expect(rest.fetch(request(location, "PUT"))).resolves.toHaveProperty("status", 200);
+            await expect(read(location)).resolves.toBe("");
         });
 
         it.skipIf(skip["REST lifecycle"] !== undefined)("should keep the file a REST PUT fails to replace and leave no staged upload behind", async () => {

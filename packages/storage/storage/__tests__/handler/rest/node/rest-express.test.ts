@@ -90,22 +90,23 @@ describe("express Rest", () => {
             expect(response.header.location).toBeDefined();
         });
 
-        it("should return 400 when no body is provided", async () => {
+        it("should return 400 when Content-Length is missing", async () => {
             expect.assertions(2);
 
-            response = await supertest(app).post(basePath);
+            // Without Transfer-Encoding, a body-less POST goes out with Content-Length: 0.
+            response = await supertest(app).post(basePath).set("Transfer-Encoding", "chunked");
 
             expect(response.status).toBe(400);
             expect(response.body.error).toBeDefined();
         });
 
-        it("should return 400 when Content-Length is 0", async () => {
+        it("should create an empty file when Content-Length is 0", async () => {
             expect.assertions(2);
 
             response = await supertest(app).post(basePath).set("Content-Type", testfile.contentType).set("Content-Length", "0").send("");
 
-            expect(response.status).toBe(400);
-            expect(response.body.error).toBeDefined();
+            expect(response.status).toBe(201);
+            expect(response.body).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
         });
     });
 
@@ -166,16 +167,25 @@ describe("express Rest", () => {
             expect(response.status).toBe(415);
         });
 
-        it("should return 400 when no body is provided", async () => {
+        it("should return 400 when Content-Length is missing", async () => {
             expect.assertions(2);
 
             // Use a valid UUID-like ID format
             const fileId = "123-456-789";
 
-            response = await supertest(app).put(`${basePath}/${fileId}`);
+            response = await supertest(app).put(`${basePath}/${fileId}`).set("Transfer-Encoding", "chunked");
 
             expect(response.status).toBe(400);
             expect(response.body.error).toBeDefined();
+        });
+
+        it("should create an empty file when Content-Length is 0", async () => {
+            expect.assertions(2);
+
+            response = await supertest(app).put(`${basePath}/empty-put`).set("Content-Type", testfile.contentType).set("Content-Length", "0").send("");
+
+            expect(response.status).toBe(201);
+            expect(response.body).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
         });
     });
 

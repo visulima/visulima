@@ -5,6 +5,14 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 
 # Migration Guide
 
+## Empty files are valid uploads
+
+A 0-byte file is now stored on every handler and adapter instead of being refused or left without an object:
+
+- **REST:** a `POST` or `PUT` with `Content-Length: 0` creates (`201`) or replaces (`200`) an empty file. It used to answer `400` ("Content-Length is required and must be greater than 0"). A request without `Content-Length` (for example a chunked transfer-encoded body) still answers `400`. A chunked upload created with `X-Total-Size: 0` is complete at once: the `POST` answers `201` with `X-Upload-Complete: true`, `HEAD` reports `X-Upload-Offset: 0`, and no `PATCH` is needed. It used to answer `400`. `@visulima/storage-client` sends 0-byte files this way.
+- **TUS:** `Upload-Length: 0` creates an upload that is complete at once (`onComplete` fires on the `POST`), and `HEAD` answers `Upload-Length: 0` and `Upload-Offset: 0`. `HEAD` used to omit `Upload-Length`, so the upload looked like one with a deferred length.
+- **Adapters and `Files.upload(key, "")`:** a declared size of `0` stays `0` instead of reading as "unknown", and the empty object is written to the provider. On S3 and aws-light an empty upload completes as a multipart upload with one empty part. `DiskStorageWithChecksum` records the hash of the empty file.
+
 ## Resumable `Files.upload` with `UploadControl`
 
 `UploadControl.toJSON()` now returns a version 2 token that another process can resume (see [Resumable uploads across processes](./files-facade#resumable-uploads-across-processes)). This changes a few behaviours for uploads that pass a `control`:
