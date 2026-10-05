@@ -114,7 +114,7 @@ jobs:
                           if [ "$name" = "$SELF_CHECK_NAME" ]; then continue; fi
                           # A matrix job cancelled before its matrix expanded keeps the template as its
                           # name; it never ran, and the run that superseded it reports the expanded jobs.
-                          case "$name" in *'${{'*) continue ;; esac
+                          case "$name" in *'{{'*'}}'*) continue ;; esac
                           if jq -e --arg n "$name" --argjson list "$IGNORE_CHECKS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
                           if jq -e --arg n "$name" --argjson list "$ignored_jobs" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
                           if [ "$status" != "completed" ]; then
