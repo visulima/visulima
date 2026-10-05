@@ -1,3 +1,9 @@
+## @visulima/storage [2.0.33](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.32...@visulima/storage@2.0.33) (2026-10-05)
+
+### Bug Fixes
+
+* **storage:** accept empty files on every protocol and adapter ([#925](https://github.com/visulima/visulima/issues/925)) ([cff34cf](https://github.com/visulima/visulima/commit/cff34cf82bad2afc8d1664b91fc7a166f3f50cab))
+
 ## @visulima/storage [2.0.32](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.31...@visulima/storage@2.0.32) (2026-10-05)
 
 ### Bug Fixes
