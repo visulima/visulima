@@ -585,7 +585,8 @@ describe(GCStorage, async () => {
 describe("range utils", () => {
     it.each([
         ["", 0],
-        ["0-0", 0],
+        // The end is inclusive: "bytes=0-0" reports one persisted byte.
+        ["bytes=0-0", 1],
         ["0-1", 2],
         ["0-10000", 10_001],
     ])("should calculate correct range end for input: %s -> %i", (string_, expected) => {
@@ -612,6 +613,8 @@ describe("range utils", () => {
             "bytes 0-79/80",
         ],
         [{ contentLength: 80, size: 80, start: 0 }, "bytes */80"],
+        // The empty last request of a deferred length: GCS takes no "bytes 80-*/80".
+        [{ body, contentLength: 0, size: 80, start: 80 }, "bytes */80"],
     ])("should build correct content range header for input: %o -> %s", (string_, expected) => {
         expect.assertions(1);
 

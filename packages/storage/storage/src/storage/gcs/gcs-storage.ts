@@ -435,15 +435,23 @@ class GCStorage extends BaseStorage<GCSFile> {
     public async get({ id }: FileQuery, options?: OperationOptions): Promise<FileReturn> {
         return this.instrumentOperation("get", async () => {
             const url = this.objectUrl(await this.readableName(id));
-            const { data } = await this.makeRequest<{ contentType?: string; etag?: string; size?: number | string; timeDeleted?: string; updated?: string }>(
-                { params: { alt: "json" }, url },
-                options,
-            );
+            const { data } = await this.makeRequest<{
+                contentType?: string;
+                etag?: string;
+                generation?: string;
+                size?: number | string;
+                timeDeleted?: string;
+                updated?: string;
+            }>({ params: { alt: "json" }, url }, options);
 
             await this.checkIfExpired({ expiredAt: data.timeDeleted } as GCSFile);
 
             // The object resource carries no download URI of ours; the media is served from the object URL itself.
-            const response = await this.makeRequest<ArrayBuffer>({ params: { alt: "media" }, responseType: "arraybuffer", url }, options);
+            // Pinned to the generation just read, so the content matches the ETag and size returned with it.
+            const response = await this.makeRequest<ArrayBuffer>(
+                { params: { alt: "media", ...(data.generation !== undefined && { generation: data.generation }) }, responseType: "arraybuffer", url },
+                options,
+            );
             const content = Buffer.from(response.data);
 
             return {

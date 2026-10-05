@@ -96,15 +96,24 @@ const createGcs = () => {
             }
 
             const chunk = await readBody(init.body);
-            const range = /bytes (\d+)-\d+\/(\d+|\*)/u.exec(headers.get("content-range") ?? "");
+            // GCS takes "bytes FIRST-LAST/TOTAL" for a chunk and "bytes */TOTAL" without one.
+            const contentRange = headers.get("content-range") ?? "";
+            const range = /^bytes (\d+)-(\d+)\/(\d+|\*)$/u.exec(contentRange);
+            const status = /^bytes \*\/(\d+|\*)$/u.exec(contentRange);
+
+            if (!range && !status) {
+                return json({ error: { code: 400, message: `Invalid Content-Range "${contentRange}"` } }, { status: 400 });
+            }
 
             if (range && Number(range[1]) === session.received.byteLength) {
                 session.received = Buffer.concat([session.received, chunk]);
             }
 
-            // A session started without a length learns it from the last chunk's range.
-            if (range?.[2] !== undefined && range[2] !== "*") {
-                session.size ??= Number(range[2]);
+            // A session started without a length learns it from the last request's range.
+            const total = range?.[3] ?? status?.[1];
+
+            if (total !== undefined && total !== "*") {
+                session.size ??= Number(total);
             }
 
             if (session.size !== undefined && session.received.byteLength >= session.size) {
@@ -223,6 +232,10 @@ const createGcs = () => {
             return new Response(null, { status: 200 });
         }
 
+        if (searchParams.has("generation") && searchParams.get("generation") !== String(stored.generation)) {
+            return missing();
+        }
+
         if (searchParams.get("alt") === "media") {
             return new Response(stored.body, { headers: { "content-type": stored.contentType, "x-goog-generation": String(stored.generation) } });
         }
@@ -310,6 +323,44 @@ describe("gcs against an in-memory GCS", () => {
 
         await expect(storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 })).resolves.toMatchObject({ status: "completed" });
         expect(Buffer.from(gcs.objects.get(file.name)?.body ?? []).toString()).toBe("hello");
+    });
+
+    it("should finish a deferred-length upload with an empty last request", async () => {
+        expect.assertions(3);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt" });
+
+        await expect(storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 })).resolves.toMatchObject({ bytesWritten: 5, status: "part" });
+
+        // TUS: the final PATCH declares the length and carries no bytes; GCS takes "bytes */5" for it.
+        await storage.update({ id: file.id }, { size: 5 });
+
+        await expect(storage.write({ body: chunk(""), contentLength: 0, id: file.id, start: 5 })).resolves.toMatchObject({ status: "completed" });
+        expect(Buffer.from(gcs.objects.get(file.name)?.body ?? []).toString()).toBe("hello");
+    });
+
+    it("should read the media of the generation whose metadata it read", async () => {
+        expect.assertions(2);
+
+        const storage = createStorage();
+        const file = await storage.create({ contentType: "text/plain", metadata: {}, originalName: "a.txt", size: 5 });
+
+        await storage.write({ body: chunk("hello"), contentLength: 5, id: file.id, start: 0 });
+
+        // The object is replaced between the metadata and the media request.
+        gcs.state.override = (method, url) => {
+            if (url.searchParams.get("alt") === "json" && url.pathname.endsWith(`/o/${file.name}`)) {
+                gcs.state.override = undefined;
+
+                return Response.json({ etag: "e-old", generation: "0", size: "5" });
+            }
+
+            return undefined;
+        };
+
+        await expect(storage.get({ id: file.id })).rejects.toBeDefined();
+        expect(gcs.requests.at(-1)?.url).toContain("generation=0");
     });
 
     it("should save the metadata and fire onCreate for a clientDirectUpload", async () => {

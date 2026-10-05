@@ -4,19 +4,23 @@ import type { FilePart } from "../utils/file";
 import { hasContent } from "../utils/file";
 import type GCSFile from "./gcs-file";
 
+/**
+ * The number of bytes a resumable session's `Range` header ("bytes=0-499") reports as persisted:
+ * its end is inclusive, so "bytes=0-0" is one byte.
+ */
 export const getRangeEnd = (range: string): number => {
-    // Match patterns like "bytes 0-499/1234" or "0-499"
     // Input is controlled (HTTP Range header), safe from ReDoS
+    const match = /(\d+)-(\d+)/.exec(range);
 
-    const match = range.match(/(\d+)-(\d+)/);
-
-    const end = match?.[2] ? +match[2] : 0;
-
-    return end > 0 ? end + 1 : 0;
+    return match ? Number(match[2]) + 1 : 0;
 };
 
+/**
+ * The `Content-Range` of a resumable-session request: "bytes FIRST-LAST/TOTAL" for a chunk, and
+ * "bytes *\/TOTAL" without one (a status query, or the empty last request of a deferred length).
+ */
 export const buildContentRange = (part: GCSFile & Partial<FilePart>): string => {
-    if (hasContent(part)) {
+    if (hasContent(part) && part.contentLength !== 0) {
         const end = part.contentLength ? part.start + part.contentLength - 1 : "*";
 
         return `bytes ${part.start}-${end}/${part.size ?? "*"}`;
