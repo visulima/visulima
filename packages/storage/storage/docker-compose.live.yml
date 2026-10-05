@@ -61,6 +61,15 @@
             "ADDRESS": "127.0.0.1"
             "MIN_PORT": "21000"
             "MAX_PORT": "21010"
+        # Run vsftpd in the foreground: the image's default start script backgrounds it and then waits
+        # on the newest vsftpd pid, which on a slow runner is the health probe's connection child, so
+        # the container exited as soon as that probe disconnected. The start script still creates the
+        # users first, then execs this; `background=YES` in the config wins over `-obackground=NO`.
+        "command":
+                - "sh"
+                - "-c"
+                - "sed -i 's/^background=YES/background=NO/' /etc/vsftpd/vsftpd.conf && exec vsftpd -opasv_min_port=21000 -opasv_max_port=21010 -opasv_address=127.0.0.1 /etc/vsftpd/vsftpd.conf"
+
         "ports": ["2121:21", "21000-21010:21000-21010"]
         "healthcheck":
             "test": ["CMD", "nc", "-z", "127.0.0.1", "21"]

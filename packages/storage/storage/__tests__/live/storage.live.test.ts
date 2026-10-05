@@ -14,6 +14,9 @@ const SIGNED_WITH_FAKE_CLOCK = "requests signed with a faked clock are refused a
 /** Contract scenarios a real service can't run, with the reason. */
 const CONTRACT_SKIPS: Record<string, Partial<Record<StorageContractScenario, string>>> = {
     "aws-light (MinIO)": { "expired upload": SIGNED_WITH_FAKE_CLOCK, "failing meta store": SIGNED_WITH_FAKE_CLOCK, purge: SIGNED_WITH_FAKE_CLOCK },
+    // fake-gcs-server answers the resumable-session status query (`Content-Range: bytes */N`) with
+    // 200 and an off-by-one Range, where GCS answers 308; the GCS fake covers resume instead.
+    "gcs (fake-gcs-server)": { "resume across processes": "fake-gcs-server does not emulate the resumable session status query" },
     "s3 (MinIO)": { "expired upload": SIGNED_WITH_FAKE_CLOCK, purge: SIGNED_WITH_FAKE_CLOCK },
 };
 
