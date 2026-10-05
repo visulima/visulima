@@ -384,6 +384,23 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
             // cannot be replayed; only an in-memory buffer is safe to
             // retry. Forces maxRetries=0 for stream bodies.
             const replayable = partBody instanceof Uint8Array;
+            // A body that errors or ends early (the client went away) must fail the part request:
+            // the SDK's HTTP handler doesn't, and a server that waits for the announced length
+            // (SeaweedFS, some S3 gateways) then holds the request, and the upload's lock, forever.
+            const bodyGone = new AbortController();
+
+            if (partBody instanceof Readable) {
+                const abandon = (error?: Error): void => {
+                    if (!partBody.readableEnded) {
+                        bodyGone.abort(error ?? new Error("The upload body ended before its Content-Length"));
+                    }
+                };
+
+                partBody.once("error", abandon);
+                partBody.once("close", () => {
+                    abandon();
+                });
+            }
 
             let ETag: string;
 
@@ -401,13 +418,18 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                                 UploadId: uploadId,
                                 ...(part.checksumAlgorithm === "md5" && part.checksum ? { ContentMD5: part.checksum } : {}),
                             },
-                            { signal },
+                            { signal: signal ? AbortSignal.any([signal, bodyGone.signal]) : bodyGone.signal },
                         ),
                     { replayable },
                 ));
             } catch (error: unknown) {
                 if (isBadDigest(error)) {
                     return throwErrorCode(ERRORS.CHECKSUM_MISMATCH);
+                }
+
+                // Report the body's failure, not the abort it caused.
+                if (bodyGone.signal.aborted) {
+                    throw bodyGone.signal.reason;
                 }
 
                 throw error;
