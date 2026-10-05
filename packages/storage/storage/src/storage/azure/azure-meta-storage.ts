@@ -143,7 +143,7 @@ class AzureMetaStorage<T extends File = File> extends MetaStorage<T> {
     /**
      * One JSON value keeps names and types intact; per-field metadata loses both (see restoreFields).
      */
-    private static toBlobMetadata(file: File): Metadata {
+    public static toBlobMetadata(file: File): Metadata {
         const transformedMetadata = { ...file } as unknown as Omit<File, "metadata"> & { metadata?: string };
 
         if (transformedMetadata.metadata) {

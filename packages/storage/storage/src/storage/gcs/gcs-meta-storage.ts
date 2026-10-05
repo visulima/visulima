@@ -139,6 +139,34 @@ class GCSMetaStorage<T extends File = File> extends MetaStorage<T> {
         return data;
     }
 
+    /**
+     * Every record in the bucket, page by page: the uploads purge checks, including unfinished
+     * ones (no object yet) and those stored under a custom filename.
+     */
+    public override async list(): Promise<T[]> {
+        await this.ensureAccess();
+
+        const files: T[] = [];
+        let pageToken: string | undefined;
+
+        do {
+            const { data } = await this.makeRequest<{ items?: { name: string; timeCreated?: string }[]; nextPageToken?: string }>({
+                params: { ...(this.prefix && { prefix: this.prefix }), ...(pageToken !== undefined && { pageToken }) },
+                url: this.storageBaseURI,
+            });
+
+            for (const { name, timeCreated } of data?.items ?? []) {
+                if (name.endsWith(this.suffix)) {
+                    files.push({ createdAt: timeCreated, id: this.getIdFromMetaName(name) } as T);
+                }
+            }
+
+            pageToken = data?.nextPageToken;
+        } while (pageToken !== undefined);
+
+        return files;
+    }
+
     public override async touch(id: string, file: T): Promise<T> {
         // For GCS, touching means updating the metadata
         return this.save(id, file);

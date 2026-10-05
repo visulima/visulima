@@ -428,11 +428,13 @@ describe(GCStorage, async () => {
             expect(exists).toBe(true);
         });
 
-        it("should return false when metadata does not exist", async () => {
+        it("should return false when neither metadata nor an object exists", async () => {
             expect.assertions(1);
 
             // Mock getMeta to throw error (metadata doesn't exist)
             vi.spyOn(storage, "getMeta").mockRejectedValue(new UploadError(ERRORS.FILE_NOT_FOUND));
+            mockAuthRequest.mockReset();
+            mockAuthRequest.mockRejectedValueOnce({ message: "Not Found", status: 404 });
 
             const exists = await storage.exists({ id: "non-existent-id" });
 
