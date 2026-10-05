@@ -201,6 +201,26 @@ describe(FirebaseStorage, () => {
             expect(result.bytesWritten).toBe(5);
             expect(result.size).toBe(5);
         });
+
+        it("saves an empty file", async () => {
+            expect.assertions(2);
+
+            const storage = makeStorage();
+            const file = new FirebaseFile({ contentType: "text/plain", metadata: {}, originalName: "empty.txt", size: 0 });
+
+            file.name = "empty.txt";
+            file.path = "empty.txt";
+            file.bytesWritten = 0;
+            file.createdAt = new Date().toISOString();
+
+            vi.spyOn(storage as unknown as { getMeta: () => Promise<unknown> }, "getMeta").mockResolvedValue(file);
+            vi.spyOn(storage as unknown as { saveMeta: (f: unknown) => Promise<unknown> }, "saveMeta").mockResolvedValue(undefined);
+
+            const result = await storage.write({ body: Readable.from([]), contentLength: 0, id: file.id, start: 0 });
+
+            expect(gcsFile.save).toHaveBeenCalledWith(Buffer.alloc(0), expect.anything());
+            expect(result).toMatchObject({ bytesWritten: 0, size: 0, status: "completed" });
+        });
     });
 
     describe(".get()", () => {

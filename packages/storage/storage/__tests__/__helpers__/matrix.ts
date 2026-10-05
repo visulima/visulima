@@ -265,6 +265,60 @@ export const describeMatrix = (provider: MatrixProvider): void => {
             await expect(send(path, { headers: TUS, method: handler === "multipart" ? "GET" : "HEAD" })).resolves.toHaveProperty("status", 404);
         });
 
+        it.each(combos)("should store an empty %s upload (%s)", async (handler, runtime) => {
+            expect.assertions(3);
+
+            const send = await mount(storage, handler, runtime, servers);
+            const { id, path } = await create(send, handler, "");
+
+            await expect(has(stored(id))).resolves.toBe(true);
+            await expect(storage.get({ id }).then(({ content }) => content.length)).resolves.toBe(0);
+            // A TUS GET answers the upload's metadata, not its bytes.
+            await expect(handler === "tus" ? Promise.resolve("") : readText(send, path)).resolves.toBe("");
+        });
+
+        it.each(runtimes)("should complete a TUS upload with Upload-Length 0 on creation (%s)", async (runtime) => {
+            expect.assertions(6);
+
+            const onComplete = vi.spyOn(storage, "onComplete");
+            const send = await mount(storage, "tus", runtime, servers);
+            const created = await send(BASE, { headers: { ...TUS, "Upload-Length": "0" }, method: "POST" });
+            const id = pathOf(created).slice(BASE.length + 1);
+
+            expect(created.status).toBe(201);
+            expect(onComplete).toHaveBeenCalledTimes(1);
+            await expect(has(stored(id))).resolves.toBe(true);
+            await expect(storage.get({ id }).then(({ content }) => content.length)).resolves.toBe(0);
+
+            const head = await send(pathOf(created), { headers: TUS, method: "HEAD" });
+
+            expect([head.headers.get("upload-length"), head.headers.get("upload-offset")]).toStrictEqual(["0", "0"]);
+
+            const patch = await send(pathOf(created), { body: "", headers: { ...TUS, "Content-Type": OFFSET_STREAM, "Upload-Offset": "0" }, method: "PATCH" });
+
+            expect([patch.status, patch.headers.get("upload-offset")]).toStrictEqual([204, "0"]);
+        });
+
+        it.each(runtimes)("should complete a chunked REST upload with X-Total-Size 0 on creation (%s)", async (runtime) => {
+            expect.assertions(5);
+
+            const send = await mount(storage, "rest", runtime, servers);
+            const created = await send(BASE, {
+                headers: { "content-type": "text/plain", "x-chunked-upload": "true", "x-total-size": "0" },
+                method: "POST",
+            });
+            const id = String(created.headers.get("x-upload-id"));
+
+            expect(created.status).toBe(201);
+            expect(created.headers.get("x-upload-complete")).toBe("true");
+            await expect(has(stored(id))).resolves.toBe(true);
+            await expect(readText(send, `${BASE}/${id}`)).resolves.toBe("");
+
+            const head = await send(`${BASE}/${id}`, { method: "HEAD" });
+
+            expect([head.headers.get("x-upload-complete"), head.headers.get("x-upload-offset")]).toStrictEqual(["true", "0"]);
+        });
+
         it.runIf(resumable).each(runtimes)("should take a chunked REST upload and serve a byte range (%s)", async (runtime) => {
             expect.assertions(6);
 

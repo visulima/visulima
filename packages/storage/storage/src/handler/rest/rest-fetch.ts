@@ -12,7 +12,7 @@ import {
     parseContentDispositionValue,
     parseIntegerHeader,
     parseMetadataHeader,
-    requirePositiveContentLength,
+    requireContentLength,
 } from "../utils/request-parser";
 import RestBase, { MAX_BATCH_DELETE_BYTES, parseBatchDeleteBody, parseBatchIdsParameter } from "./rest-base";
 
@@ -82,14 +82,15 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
         // Validate content length (chunked upload initialization may have an empty body)
         const contentLengthHeader = request.headers.get("content-length");
-        const contentLength = isChunkedUpload ? (parseIntegerHeader(contentLengthHeader) ?? 0) : requirePositiveContentLength(contentLengthHeader);
+        const contentLength = isChunkedUpload ? (parseIntegerHeader(contentLengthHeader) ?? 0) : requireContentLength(contentLengthHeader);
 
         if (contentLengthHeader && parseIntegerHeader(contentLengthHeader) === undefined) {
             throw createHttpError(400, "Content-Length must be a non-negative integer");
         }
 
-        // Also check if body exists (for cases where Content-Length might be set incorrectly)
-        if (!isChunkedUpload && request.body === null) {
+        // Also check if body exists (for cases where Content-Length might be set incorrectly). A runtime
+        // may hand an empty body over as none.
+        if (!isChunkedUpload && request.body === null && contentLength > 0) {
             throw createHttpError(400, "Request body is required");
         }
 
@@ -101,8 +102,8 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
         const contentType = request.headers.get("content-type") || "application/octet-stream";
         const config = extractFileInitFromRequest(request, contentLength, contentType);
 
-        // Convert Web API ReadableStream to Node.js Readable stream
-        const bodyStream = request.body ? getRequestStream(request) : undefined;
+        // Convert Web API ReadableStream to Node.js Readable stream (an empty one without a body)
+        const bodyStream = getRequestStream(request);
 
         return this.restBase.handlePost(config, isChunkedUpload, { url: request.url }, bodyStream, contentLength);
     }
@@ -120,12 +121,12 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(400, "File ID is required in URL path");
         }
 
-        // Check if request has a body
-        if (request.body === null) {
+        const contentLength = requireContentLength(request.headers.get("content-length"));
+
+        // Check if request has a body (a runtime may hand an empty one over as none)
+        if (request.body === null && contentLength > 0) {
             throw createHttpError(400, "Request body is required");
         }
-
-        const contentLength = requirePositiveContentLength(request.headers.get("content-length"));
 
         // Validate content length against max upload size
         if (contentLength > this.storage.maxUploadSize) {
@@ -216,7 +217,7 @@ class RestFetch<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLength = requirePositiveContentLength(request.headers.get("content-length"));
+        const contentLength = requireContentLength(request.headers.get("content-length"));
 
         // Get chunk offset from headers
         const { chunkOffset } = parseChunkHeaders(webHeaderReader(request));

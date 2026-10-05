@@ -41,7 +41,8 @@ class DiskStorageWithChecksum<TFile extends File = File> extends DiskStorage<TFi
 
         const path = this.getFilePath(file.name);
 
-        if (file.bytesWritten > 0) {
+        // A completed empty file has a hash too: that of no bytes.
+        if (file.bytesWritten > 0 || file.status === "completed") {
             // Rebuilt from disk when no write left it cached (e.g. after an aborted write).
             await hashes.init(path);
 

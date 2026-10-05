@@ -1,4 +1,4 @@
-import type { Readable } from "node:stream";
+import { Readable } from "node:stream";
 
 import createHttpError from "http-errors";
 
@@ -192,10 +192,9 @@ class RestBase<TFile extends UploadFile> {
         bodyStream: Readable | undefined,
         contentLength: number,
     ): Promise<ResponseFile<TFile>> {
-        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400. An empty
-        // file is refused as on a plain POST: REST stores no empty uploads.
+        // A chunked upload without X-Total-Size can't be tracked: every PATCH would answer 400.
         if (isChunkedUpload && config.metadata._totalSize === undefined) {
-            throw createHttpError(400, "X-Total-Size is required for chunked uploads and must be greater than 0");
+            throw createHttpError(400, "X-Total-Size is required for chunked uploads and must be a non-negative integer");
         }
 
         // Validate total size for chunked uploads
@@ -210,8 +209,23 @@ class RestBase<TFile extends UploadFile> {
         // Create file in storage
         const file = await this.storage.create(config);
 
-        // For chunked uploads, don't write data yet - just initialize
+        // For chunked uploads, don't write data yet - just initialize. An empty file gets no PATCH, so
+        // its (empty) object is stored now and the upload is complete at once.
         if (isChunkedUpload) {
+            if (config.metadata._totalSize === 0) {
+                const completedFile = await this.storage.write({ body: Readable.from([]), contentLength: 0, id: file.id, start: 0 });
+
+                return buildResponseFile(
+                    completedFile,
+                    {
+                        ...buildFileHeaders(completedFile, this.config.buildFileUrl(request, completedFile)),
+                        ...buildChunkedUploadHeaders(completedFile, true),
+                        "X-Upload-ID": completedFile.id,
+                    },
+                    201,
+                );
+            }
+
             const locationUrl = this.config.buildFileUrl(request, file);
 
             return buildResponseFile(
@@ -227,7 +241,7 @@ class RestBase<TFile extends UploadFile> {
 
         // Write file data for non-chunked uploads
         const completedFile = await this.storage.write({
-            // The runtime handlers refuse a non-chunked request without a body.
+            // The runtime handlers hand over an empty stream for an empty body.
             body: bodyStream as Readable,
             contentLength,
             id: file.id,
@@ -318,12 +332,12 @@ class RestBase<TFile extends UploadFile> {
         if (isChunkedUploadFile) {
             const totalSize = getTotalSize(file);
 
-            if (totalSize && file.size !== totalSize) {
+            if (totalSize !== undefined && file.size !== totalSize) {
                 file = { ...file, size: totalSize };
             }
         }
 
-        const totalSize = typeof metadata._totalSize === "number" ? metadata._totalSize : file.size || 0;
+        const totalSize = typeof metadata._totalSize === "number" ? metadata._totalSize : (file.size ?? 0);
 
         if (!isChunkedUploadFile) {
             throw createHttpError(400, "File is not a chunked upload. Use POST or PUT for full file uploads.");
@@ -504,7 +518,7 @@ class RestBase<TFile extends UploadFile> {
         if (isChunkedUploadFile) {
             const totalSize = getTotalSize(file);
 
-            if (totalSize && file.size !== totalSize) {
+            if (totalSize !== undefined && file.size !== totalSize) {
                 file = { ...file, size: totalSize };
             }
         }
@@ -516,7 +530,7 @@ class RestBase<TFile extends UploadFile> {
         // Add chunked upload progress headers. The offset to resume from and completion come
         // from the same source, so a client resuming at the offset can finish the upload (#909).
         if (isChunkedUploadFile) {
-            const totalSize = getTotalSize(file) || file.size || 0;
+            const totalSize = getTotalSize(file) ?? file.size ?? 0;
             const { sequentialWrites } = this.storage;
             const chunks = getChunks(file);
             const isComplete = isChunkedUploadComplete(chunks, totalSize, file.bytesWritten, sequentialWrites);

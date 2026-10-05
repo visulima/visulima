@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { parseBatchDeleteBody, parseBatchIdsParameter } from "../../../src/handler/rest/rest-base";
-import {
-    buildFileInit,
-    parseChunkHeaders,
-    parseIntegerHeader,
-    parseMetadataHeader,
-    requirePositiveContentLength,
-} from "../../../src/handler/utils/request-parser";
+import { buildFileInit, parseChunkHeaders, parseIntegerHeader, parseMetadataHeader, requireContentLength } from "../../../src/handler/utils/request-parser";
 
 const headerReader =
     (headers: Record<string, string>) =>
@@ -33,17 +27,18 @@ describe("request-parser", () => {
         });
     });
 
-    describe(requirePositiveContentLength, () => {
-        it("should return a positive content length", () => {
-            expect.assertions(1);
+    describe(requireContentLength, () => {
+        it("should return the content length, 0 for an empty body included", () => {
+            expect.assertions(2);
 
-            expect(requirePositiveContentLength("10")).toBe(10);
+            expect(requireContentLength("10")).toBe(10);
+            expect(requireContentLength("0")).toBe(0);
         });
 
-        it.each([[null], ["0"], ["12abc"], ["-1"]])("should reject %p with 400", (value) => {
+        it.each([[null], [undefined], [""], ["12abc"], ["-1"]])("should reject %p with 400", (value) => {
             expect.assertions(1);
 
-            expect(() => requirePositiveContentLength(value)).toThrow(expect.objectContaining({ statusCode: 400 }));
+            expect(() => requireContentLength(value)).toThrow(expect.objectContaining({ statusCode: 400 }));
         });
     });
 

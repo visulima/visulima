@@ -392,6 +392,9 @@ export class TusBase<TFile extends UploadFile> {
             this.assertResumableWrite(file, 0, contentLength, undefined);
 
             file = await this.storage.write({ ...file, body, ...native, contentLength, start: 0 });
+        } else if (size === 0) {
+            // No PATCH has anything to add to an empty upload: storing its empty object completes it now.
+            file = await this.storage.write({ ...file, body: Readable.from([]), contentLength: 0, start: 0 });
         }
 
         file = TusBase.holdPartialUpload(file);

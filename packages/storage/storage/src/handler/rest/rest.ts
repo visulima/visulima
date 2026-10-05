@@ -14,7 +14,7 @@ import {
     parseChunkHeaders,
     parseContentDisposition,
     parseMetadataHeader,
-    requirePositiveContentLength,
+    requireContentLength,
     validateContentLength,
     validateRequestBody,
 } from "../utils/request-parser";
@@ -99,7 +99,7 @@ class Rest<
         validateRequestBody(request, true);
 
         // Validate content length
-        const contentLength = validateContentLength(request, true, this.storage.maxUploadSize);
+        const contentLength = validateContentLength(request, this.storage.maxUploadSize);
 
         // Extract file initialization config
         const contentType = getHeader(request, "content-type") || "application/octet-stream";
@@ -128,7 +128,7 @@ class Rest<
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLength = requirePositiveContentLength(getHeader(request, "content-length"));
+        const contentLength = requireContentLength(getHeader(request, "content-length"));
 
         // Validate content length against max upload size
         if (contentLength > this.storage.maxUploadSize) {
@@ -218,7 +218,7 @@ class Rest<
             throw createHttpError(400, "Request body is required");
         }
 
-        const contentLength = requirePositiveContentLength(getHeader(request, "content-length"));
+        const contentLength = requireContentLength(getHeader(request, "content-length"));
 
         // Get chunk offset from headers
         const { chunkOffset } = parseChunkHeaders(nodeHeaderReader(request));
