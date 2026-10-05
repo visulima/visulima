@@ -29,6 +29,8 @@ const config = getVitestConfig({
         // process.on handler; this flag is the documented escape hatch.
         dangerouslyIgnoreUnhandledErrors: true,
         environment: "happy-dom",
+        // Run by vitest.live.config.ts against the real storage handlers.
+        exclude: ["__tests__/live/**"],
         server: {
             deps: {
                 inline: ["solid-js", "@tanstack/solid-query", "@tanstack/react-query", "@tanstack/vue-query", "@tanstack/svelte-query", "@tanstack/query-core"],
