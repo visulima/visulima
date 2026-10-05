@@ -4,6 +4,7 @@ import { inspect } from "node:util";
 import { parseBytes } from "@visulima/humanizer";
 import { isAbsolute, normalize } from "@visulima/path";
 import mimeTypes from "mime";
+import { nanoid } from "nanoid";
 import { DEFAULT_LOOKUP, TypeIs } from "type-is";
 
 import NoOpMetrics from "../metrics/no-op-metrics";
@@ -543,6 +544,15 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
         file.name = this.namingFunction(file);
 
         await this.validate(file);
+    }
+
+    /**
+     * The name `create` stores an upload under.
+     * @param config Upload, with its `id`.
+     * @returns The stored name.
+     */
+    protected nameOf(config: FileInit): string {
+        return this.namingFunction(new File(config) as TFile);
     }
 
     /**
@@ -1228,6 +1238,68 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
             successful: deleted.successful,
             successfulCount: deleted.successfulCount,
         };
+    }
+
+    /**
+     * Replaces the upload `id` with the bytes `write` stores, keeping the old file until the new one
+     * is complete. `write` stores the replacement under a staging upload (`create`d from `config`
+     * under a fresh id); only once it completed is it committed over `id` by
+     * {@link BaseStorage.commitReplacement}. A failing `write` (the client breaking off, the
+     * provider failing) deletes the staging upload and leaves `id` untouched. A staging upload a
+     * crashed process leaves behind is an ordinary unfinished upload, which `purge` removes once it expires.
+     * @param id File ID of the upload to replace.
+     * @param config The replacement, validated like a new upload under `id`.
+     * @param write Stores the replacement's bytes under the staging upload's id.
+     * @returns The replaced upload.
+     */
+    public async replaceUpload(id: string, config: FileInit, write: (stagingId: string) => Promise<TFile>): Promise<TFile> {
+        return this.instrumentOperation("replaceUpload", async () => {
+            await this.validateInit({ ...config, id });
+
+            // Dots never appear in generated ids nor in ids a client may choose with PUT, so the
+            // staging id collides with no upload and can't be addressed through the handlers.
+            const staging = await this.create({ ...config, id: `${nanoid()}.replace` });
+            let staged: TFile;
+
+            try {
+                staged = await write(staging.id);
+
+                if (staged.status !== "completed") {
+                    throwErrorCode(ERRORS.FILE_CONFLICT, "The replacement ended before all of its bytes were stored");
+                }
+            } catch (error: unknown) {
+                await this.deleteUpload(staging.id).catch(() => undefined);
+
+                throw error;
+            }
+
+            try {
+                return await this.commitReplacement(id, config, staged);
+            } finally {
+                // Gone already when an override moved it into place.
+                await this.deleteUpload(staging.id).catch(() => undefined);
+            }
+        });
+    }
+
+    /**
+     * Puts a completed staging upload in place of the upload `id`, for {@link BaseStorage.replaceUpload}.
+     * The default copies it through the adapter: it deletes `id`, creates it anew from `config` and
+     * writes the staged bytes. Only a provider failure during that copy can lose the old file; the
+     * client's body is fully stored by then. Adapters that can swap an object in one step override it.
+     * @param id File ID of the upload to replace.
+     * @param config The replacement.
+     * @param staged The completed staging upload; {@link BaseStorage.replaceUpload} deletes it afterwards.
+     * @returns The replaced upload.
+     */
+    protected async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const { size, stream } = await this.getStream({ id: staged.id });
+
+        await this.delete({ id });
+
+        const created = await this.create({ ...config, id });
+
+        return this.write({ body: stream, contentLength: size ?? staged.size, id: created.id, start: 0 });
     }
 
     /**

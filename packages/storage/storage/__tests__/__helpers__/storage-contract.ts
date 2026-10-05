@@ -45,6 +45,13 @@ const bytesWritten = (write: { mock: { calls: unknown[][] } }): number =>
 
 const metaOf = (storage: BaseStorage): MetaStorage => (storage as unknown as { meta: MetaStorage }).meta;
 
+/** Ids of the uploads `purge` would see: a staged upload left behind shows up here. */
+const uploadIds = async (storage: BaseStorage): Promise<string[]> => {
+    const uploads = await (storage as unknown as { listUploads: () => Promise<{ id: string }[]> }).listUploads();
+
+    return uploads.map(({ id }) => id).toSorted();
+};
+
 const precondition = expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED });
 
 const etagOf = async (files: Files, key: string): Promise<string> => {
@@ -402,7 +409,7 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             });
         });
 
-        it.skipIf(skip["REST lifecycle"] !== undefined)("should serve an upload without a content type by the extension in the URL", async () => {
+        it.skipIf(skip["REST lifecycle"] !== undefined)("should serve an upload sent without a content type, whatever the extension in the URL", async () => {
             expect.assertions(3);
 
             const rest = new RestFetch({ storage: backend.createStorage() });
@@ -434,6 +441,36 @@ export const describeStorageContract = (setup: () => StorageContractSetup, skip:
             await expect(rest.fetch(request(location, "PUT", "world"))).resolves.toHaveProperty("status", 200);
             await expect(rest.fetch(request(location, "DELETE"))).resolves.toHaveProperty("status", 204);
             await expect(rest.fetch(request(location, "HEAD"))).resolves.toHaveProperty("status", 404);
+        });
+
+        it.skipIf(skip["REST lifecycle"] !== undefined)("should keep the file a REST PUT fails to replace and leave no staged upload behind", async () => {
+            expect.assertions(6);
+
+            const storage = backend.createStorage();
+            const rest = new RestFetch({ storage });
+            const put = async (url: string, body: ReadableStream<Uint8Array> | string, length: number): Promise<Response> =>
+                rest.fetch(new Request(url, { body, duplex: "half", headers: { "content-length": String(length), "content-type": "text/plain" }, method: "PUT" } as RequestInit));
+            const read = async (url: string): Promise<string> => rest.fetch(new Request(url)).then(async (response) => response.text());
+            const created = await rest.fetch(new Request("https://app.test/files", { body: "hello", headers: { "content-length": "5", "content-type": "text/plain" }, method: "POST" }));
+            const location = created.headers.get("location") as string;
+            const before = await uploadIds(storage);
+            // The client goes away after three of the five bytes it announced.
+            const broken = new ReadableStream<Uint8Array>({
+                pull(controller) {
+                    controller.error(new Error("client went away"));
+                },
+                start(controller) {
+                    controller.enqueue(new TextEncoder().encode("wor"));
+                },
+            });
+
+            await expect(put(location, broken, 5).then(({ status }) => status)).resolves.toBeGreaterThanOrEqual(400);
+            await expect(read(location)).resolves.toBe("hello");
+            await expect(uploadIds(storage)).resolves.toStrictEqual(before);
+
+            await expect(put(location, "world!", 6).then(({ status }) => status)).resolves.toBe(200);
+            await expect(read(location)).resolves.toBe("world!");
+            await expect(uploadIds(storage)).resolves.toStrictEqual(before);
         });
     });
 };

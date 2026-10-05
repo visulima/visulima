@@ -661,6 +661,30 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     }
 
     /**
+     * Renames the staged file over the upload's, which replaces it in one step.
+     */
+    protected override async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const old = await this.findMeta(id);
+        const name = this.nameOf({ ...config, id });
+
+        // An unfinished upload, or one stored under another name, has nothing to rename over.
+        if (old !== undefined && (old.status !== "completed" || old.name !== name)) {
+            await this.delete({ id });
+        }
+
+        const path = this.getFilePath(name);
+
+        await ensureDir(dirname(path));
+        await rename(this.getFilePath(staged.name), path);
+
+        const replaced = await this.saveMeta({ ...staged, id, name });
+
+        await this.deleteMeta(staged.id);
+
+        return replaced;
+    }
+
+    /**
      * Copies an upload file to a new location.
      * @param name Source file name/ID.
      * @param destination Destination file name/ID.

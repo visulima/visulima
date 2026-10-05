@@ -94,6 +94,33 @@ const upload = async (storage: BaseStorage, content: string): Promise<string> =>
     return file.id;
 };
 
+/** Ids of the uploads `purge` would see: a staged upload left behind shows up here. */
+const uploadIds = async (storage: BaseStorage): Promise<string[]> => {
+    const uploads = await (storage as unknown as { listUploads: () => Promise<{ id: string }[]> }).listUploads();
+
+    return uploads.map(({ id }) => id).toSorted();
+};
+
+/** A body whose client goes away after three of the five bytes it announced. */
+const brokenBody = (): ReadableStream<Uint8Array> =>
+    new ReadableStream<Uint8Array>({
+        pull(controller) {
+            controller.error(new Error("client went away"));
+        },
+        start(controller) {
+            controller.enqueue(new TextEncoder().encode("wor"));
+        },
+    });
+
+/** PUTs `body` to `path`; resolves to the status, or 0 when the client itself fails the request (node runtime). */
+const putBody = async (send: Send, path: string, body: ReadableStream<Uint8Array> | string, length: number): Promise<number> =>
+    send(path, { body, duplex: "half", headers: { "content-length": String(length), "content-type": "text/plain" }, method: "PUT" } as RequestInit).then(
+        ({ status }) => status,
+        () => 0,
+    );
+
+const readText = async (send: Send, path: string): Promise<string> => send(path).then(async (response) => response.text());
+
 /**
  * Moves an upload's timestamps `ms` into the past, as if it was created and last written then. The
  * record is rewritten rather than the clock faked: a real service refuses requests signed with a
@@ -308,6 +335,25 @@ export const describeMatrix = (provider: MatrixProvider): void => {
 
             expect(response.status).toBe(status);
             await expect(headerOf(send(path, { headers: TUS, method: "HEAD" }), "upload-offset")).resolves.toBe(offset);
+        });
+
+        it.each(runtimes)("should keep the file a REST PUT fails to replace and leave no staged upload behind (%s)", async (runtime) => {
+            expect.assertions(7);
+
+            const send = await mount(storage, "rest", runtime, servers);
+            const { id, path } = await create(send, "rest", "hello");
+            const before = await uploadIds(storage);
+
+            await putBody(send, path, brokenBody(), 5);
+
+            await expect(readText(send, path)).resolves.toBe("hello");
+            await expect(uploadIds(storage)).resolves.toStrictEqual(before);
+
+            await expect(putBody(send, path, "world!", 6)).resolves.toBe(200);
+            await expect(readText(send, path)).resolves.toBe("world!");
+            await expect(has(stored(id))).resolves.toBe(true);
+            await expect(uploadIds(storage)).resolves.toStrictEqual(before);
+            await expect(storage.getMeta(id)).resolves.toMatchObject({ id, name: stored(id), size: 6, status: "completed" });
         });
 
         it.runIf(!resumable).each(runtimes)("should refuse a partial TUS chunk it can't assemble (%s)", async (runtime) => {

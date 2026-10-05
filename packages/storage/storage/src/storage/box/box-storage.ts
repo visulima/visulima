@@ -4,7 +4,7 @@ import { Readable } from "node:stream";
 import type { BoxClient } from "box-typescript-sdk-gen";
 import { BoxCcgAuth, BoxClient as BoxClientImpl, BoxDeveloperTokenAuth, BoxJwtAuth, BoxOAuth, CcgConfig, JwtConfig, OAuthConfig } from "box-typescript-sdk-gen";
 
-import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import type MetaStorage from "../meta-storage";
 import { isMetaNotFound } from "../meta-storage";
 import { BaseStorage } from "../storage";
@@ -392,7 +392,8 @@ class BoxStorage extends BaseStorage<BoxFile> {
                 await this.runOperation(options, () => this.client.files.deleteFileById(fileId));
                 this.fileIdCache.delete(key);
             } catch (error) {
-                if (!isNotFoundError(error)) {
+                // resolveFileId answers FILE_NOT_FOUND for an upload whose bytes never arrived.
+                if (!isNotFoundError(error) && !(isUploadError(error) && error.UploadErrorCode === ERRORS.FILE_NOT_FOUND)) {
                     throw error;
                 }
             }

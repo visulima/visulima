@@ -483,6 +483,28 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
     }
 
     /**
+     * Copies the staged object over the upload's server-side: CopyObject replaces it in one step,
+     * without the bytes passing through this process. {@link BaseStorage.replaceUpload} then
+     * deletes the staged object and its record.
+     */
+    protected override async commitReplacement(id: string, config: FileInit, staged: TFile): Promise<TFile> {
+        const old = await this.findMeta(id);
+        const name = this.nameOf({ ...config, id });
+
+        // An unfinished upload (a multipart upload to abort), or one stored under another name, has
+        // no object to copy over.
+        if (old !== undefined && (old.status !== "completed" || old.name !== name)) {
+            await this.delete({ id });
+        }
+
+        await this.copyObject(staged, name);
+
+        const { partsUrls: _partsUrls, uri: _uri, ...record } = staged;
+
+        return this.saveMeta({ ...record, ETag: await this.storedETag(name), id, name } as TFile);
+    }
+
+    /**
      * Moves an upload's object to `destination`, a key in the same bucket, and drops the source
      * object and its metadata.
      */

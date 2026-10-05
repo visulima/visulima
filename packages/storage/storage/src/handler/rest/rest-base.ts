@@ -129,15 +129,14 @@ const reconcileChunkedStatus = (
 export type RestStorage<TFile extends UploadFile> = Pick<
     BaseStorage<TFile>,
     | "create"
-    | "delete"
     | "deleteUpload"
     | "deleteUploads"
     | "findStoredObject"
     | "getMeta"
     | "maxUploadSize"
+    | "replaceUpload"
     | "sequentialWrites"
     | "update"
-    | "validateInit"
     | "withLock"
     | "write"
 >;
@@ -247,10 +246,9 @@ class RestBase<TFile extends UploadFile> {
      * @param bodyStream Request body stream
      * @param contentLength Content length
      * @returns Promise resolving to ResponseFile with upload result (200 replaced, 201 created)
-     * @remarks A replacement is validated first, but the old upload is deleted before the new one is
-     * written: a write failing after that (the body breaking off, the provider failing) leaves no
-     * file under the id. Providers have no common way to write aside and swap, and `create` would
-     * hand back the existing upload instead of starting a new one.
+     * @remarks A replacement is validated first and written aside (see `BaseStorage.replaceUpload`);
+     * the old file is only replaced once the new one is complete, so a write failing midway (the
+     * body breaking off, the provider failing) leaves it unchanged.
      */
     public async handlePut(id: string, config: FileInit, request: LocationSource, bodyStream: Readable, contentLength: number): Promise<ResponseFile<TFile>> {
         let exists = true;
@@ -265,13 +263,11 @@ class RestBase<TFile extends UploadFile> {
             exists = false;
         }
 
-        if (exists) {
-            // Validate the replacement first: a rejected PUT must leave the existing file in place.
-            await this.storage.validateInit({ ...config, id });
+        const writeTo = async (target: string): Promise<TFile> => this.storage.write({ body: bodyStream, contentLength, id: target, start: 0 });
+        let file: TFile;
 
-            // Replace the upload: writing at offset 0 over it is a no-op once it completed, and leaves
-            // trailing bytes behind on one still in progress.
-            await this.storage.delete({ id });
+        if (exists) {
+            file = await this.storage.replaceUpload(id, config, writeTo);
         } else {
             if (!CLIENT_FILE_ID_PATTERN.test(id)) {
                 throw createHttpError(400, 'File ID may only contain letters, digits, "_" and "-" (max 255 characters)');
@@ -282,16 +278,12 @@ class RestBase<TFile extends UploadFile> {
             if (await this.storage.findStoredObject(id)) {
                 throw createHttpError(409, "A file with this ID already exists");
             }
-        }
 
-        // Create the file under the ID from the URL (providers that assign their own IDs may still override it)
-        const created = await this.storage.create({ ...config, id });
-        const file = await this.storage.write({
-            body: bodyStream,
-            contentLength,
-            id: created.id,
-            start: 0,
-        });
+            // Create the file under the ID from the URL (providers that assign their own IDs may still override it)
+            const created = await this.storage.create({ ...config, id });
+
+            file = await writeTo(created.id);
+        }
 
         const locationUrl = this.config.buildFileUrl(toCollection(request), file);
 
