@@ -297,9 +297,9 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
      * When `useRelativeLocation` is `false` (the default) the absolute origin is resolved from, in
      * order: an absolute `requestUrl` (the fetch runtimes pass `request.url`, which carries the
      * origin), then the host/proto derived from the headers of `request` (the Node runtimes pass it,
-     * since `request.url` there is only a path), with the connection's protocol when no proxy header
-     * names one. If neither yields a host the Location stays relative rather than emitting a bogus
-     * `http://localhost` origin.
+     * since `request.url` there is only a path). When no proxy header names the protocol, a TLS
+     * connection gives `https:` and any other stays protocol-relative (`//host`). If neither yields
+     * a host the Location stays relative rather than emitting a bogus `http://localhost` origin.
      * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
      * @param file File object containing ID and content type
      * @param request Headers and connection of a Node request, to recover its host/proto.
@@ -342,8 +342,9 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
             return base;
         }
 
-        // No forwarded protocol: the connection's own.
-        return `${request.socket?.encrypted ? "https:" : "http:"}${base}`;
+        // No forwarded protocol. A plain connection may sit behind a TLS-terminating proxy, where
+        // "http:" would be mixed content, so only TLS on this connection names a scheme.
+        return request.socket?.encrypted ? `https:${base}` : base;
     }
 
     /**

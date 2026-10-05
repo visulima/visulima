@@ -105,6 +105,9 @@ describe("baseHandlerNode", () => {
 
             expect(lastModified).toMatch(/GMT$/u);
 
+            // A date is a strong validator only once Last-Modified is a second old (RFC 9110 §13.1.5).
+            vi.spyOn(Date, "now").mockReturnValue(Date.parse(lastModified) + 1000);
+
             const current = await supertest(server).get(`/files/${id}`).set("Range", "bytes=0-9").set("If-Range", lastModified);
 
             expect(current.status).toBe(206);
@@ -186,7 +189,7 @@ describe("baseHandlerNode", () => {
 
     describe("responses", () => {
         it("should build an absolute Location from the Forwarded header, else from Host and the connection", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
 
             await setup();
 
@@ -200,7 +203,16 @@ describe("baseHandlerNode", () => {
 
             const direct = await supertest(server).post("/files").set("Content-Type", "application/octet-stream").set("Host", "uploads.test:8080").send(BODY);
 
-            expect(direct.headers.location).toMatch(/^http:\/\/uploads\.test:8080\/files\/[^/]+\.bin$/u);
+            // A plain connection may be behind a TLS-terminating proxy: no scheme rather than "http:".
+            expect(direct.headers.location).toMatch(/^\/\/uploads\.test:8080\/files\/[^/]+\.bin$/u);
+
+            const tlsServer = createServer((request, response) => {
+                Object.defineProperty(request.socket, "encrypted", { value: true });
+                rest.handle(request, response).catch(() => undefined);
+            });
+            const tls = await supertest(tlsServer).post("/files").set("Content-Type", "application/octet-stream").set("Host", "uploads.test").send(BODY);
+
+            expect(tls.headers.location).toMatch(/^https:\/\/uploads\.test\/files\/[^/]+\.bin$/u);
         });
 
         it("should build a relative Location when configured", async () => {

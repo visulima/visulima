@@ -60,7 +60,8 @@ describe("http Rest", () => {
 
             const absolute = await supertest(absoluteApp).post(basePath).set("Content-Type", testfile.contentType).send(testfile.asBuffer);
 
-            expect(absolute.header.location).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/http-rest\//u);
+            // Without a forwarded protocol, a plain connection names no scheme.
+            expect(absolute.header.location).toMatch(/^\/\/127\.0\.0\.1:\d+\/http-rest\//u);
         });
 
         it("should upload file with raw binary data", async () => {
