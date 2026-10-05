@@ -1,3 +1,10 @@
+## @visulima/email [3.0.27](https://github.com/visulima/visulima/compare/@visulima/email@3.0.26...@visulima/email@3.0.27) (2026-10-05)
+
+
+### Dependencies
+
+* **lru-cache:** 11.5.2 → 11.5.3
+
 ## @visulima/email [3.0.26](https://github.com/visulima/visulima/compare/@visulima/email@3.0.25...@visulima/email@3.0.26) (2026-10-04)
 
 
