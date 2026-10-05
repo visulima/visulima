@@ -10,6 +10,7 @@ import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { trimTrailingSlashes } from "../utils/remote";
 import FirebaseFile from "./firebase-file";
 import FirebaseMetaStorage from "./firebase-meta-storage";
 import type { FirebaseBucket, FirebaseStorageOptions } from "./types";
@@ -90,7 +91,7 @@ class FirebaseStorage extends BaseStorage<FirebaseFile> {
         super(config);
 
         this.defaultUrlExpiresIn = config.defaultUrlExpiresIn ?? DEFAULT_URL_EXPIRES_IN;
-        this.publicBaseUrl = config.publicBaseUrl?.replace(/\/+$/, "");
+        this.publicBaseUrl = (config.publicBaseUrl === undefined ? undefined : trimTrailingSlashes(config.publicBaseUrl));
 
         if (config.app && isBucket(config.app)) {
             this.bucket = config.app;

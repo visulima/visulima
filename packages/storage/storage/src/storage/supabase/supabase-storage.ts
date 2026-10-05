@@ -8,6 +8,7 @@ import { BaseStorage } from "../storage";
 import type { OperationOptions, StoredObject } from "../types";
 import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
+import { trimTrailingSlashes } from "../utils/remote";
 import SupabaseFile from "./supabase-file";
 import SupabaseMetaStorage from "./supabase-meta-storage";
 import type { SupabaseStorageOptions } from "./types";
@@ -122,7 +123,7 @@ class SupabaseStorage extends BaseStorage<SupabaseFile> {
                 throw new Error("Supabase storage: `serviceKey` is required (or set SUPABASE_SERVICE_ROLE_KEY / SUPABASE_KEY).");
             }
 
-            const storageUrl = url.replace(/\/+$/, "") + (url.endsWith("/storage/v1") ? "" : "/storage/v1");
+            const storageUrl = trimTrailingSlashes(url) + (url.endsWith("/storage/v1") ? "" : "/storage/v1");
 
             this.storageClient = new StorageClient(
                 storageUrl,
