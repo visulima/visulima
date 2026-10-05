@@ -3,9 +3,9 @@ import type { ChecksumAlgorithm } from "./checksum";
 import { computeChunkChecksum } from "./checksum";
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
-import { resolveRequestHeaders } from "./query-client";
+import { parseReceivedChunks, resolveRequestHeaders } from "./query-client";
 import { validateFile } from "./restrictions";
-import type { HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult } from "./types";
+import type { HeadersResolver, OnBeforeRequest, ReceivedRange, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
@@ -376,7 +376,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     /**
      * Gets upload status from server.
      */
-    const getUploadStatus = async (fileId: string): Promise<{ chunks: { length: number; offset: number }[]; complete: boolean; offset: number }> => {
+    const getUploadStatus = async (fileId: string): Promise<{ chunks: ReceivedRange[]; complete: boolean; offset: number }> => {
         const url = fileUrl(fileId);
 
         const response = await fetchWithRetry(url, {
@@ -390,20 +390,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         const offset = Number.parseInt(response.headers.get("X-Upload-Offset") ?? "0", 10);
         const chunksHeader = response.headers.get("X-Received-Chunks");
-
-        let chunks: { length: number; offset: number }[] = [];
-
-        if (chunksHeader) {
-            try {
-                const parsed = JSON.parse(chunksHeader);
-
-                if (Array.isArray(parsed)) {
-                    chunks = parsed as { length: number; offset: number }[];
-                }
-            } catch {
-                // Ignore parse errors
-            }
-        }
+        const chunks = (chunksHeader ? parseReceivedChunks(chunksHeader) : undefined) ?? [];
 
         return { chunks, complete: response.headers.get("X-Upload-Complete") === "true", offset };
     };

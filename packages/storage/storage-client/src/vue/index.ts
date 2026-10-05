@@ -1,3 +1,4 @@
+export type { FileHeadMetadata } from "../core";
 // Abort composables
 export type { UseAbortAllOptions, UseAbortAllReturn } from "./use-abort-all";
 export { useAbortAll } from "./use-abort-all";
@@ -43,7 +44,7 @@ export type { FileListResponse, UseGetFileListOptions, UseGetFileListReturn } fr
 export { useGetFileList } from "./use-get-file-list";
 export type { UseGetFileMetaOptions, UseGetFileMetaReturn } from "./use-get-file-meta";
 export { useGetFileMeta } from "./use-get-file-meta";
-export type { FileHeadMetadata, UseHeadFileOptions, UseHeadFileReturn } from "./use-head-file";
+export type { UseHeadFileOptions, UseHeadFileReturn } from "./use-head-file";
 export { useHeadFile } from "./use-head-file";
 export type { UseMultipartUploadOptions, UseMultipartUploadReturn } from "./use-multipart-upload";
 export { useMultipartUpload } from "./use-multipart-upload";
