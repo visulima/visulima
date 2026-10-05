@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { copyFile, open, rename, stat, truncate } from "node:fs/promises";
-import type { Readable, Transform } from "node:stream";
-import { pipeline } from "node:stream";
+import type { Transform } from "node:stream";
+import { pipeline, Readable } from "node:stream";
 
 import { ensureDir, ensureFile, move, readFile, remove, walk } from "@visulima/fs";
 import { dirname, isAbsolute, join } from "@visulima/path";
@@ -215,6 +215,15 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
     public async write(part: FilePart | FileQuery | TFile, options?: ConditionalOptions & OperationOptions): Promise<TFile> {
         // Taken before locking: a lock that can't be acquired must not strand the parked record.
         const conditional = this.takeConditional(part.id, options);
+
+        // The body's listeners are attached only once the metadata is read and the lock held. A
+        // client dropping before then emits 'error' with no listener, which crashes the process (as
+        // in #910). lazyWrite reports that failure from the stream's errored state.
+        if ("body" in part && part.body instanceof Readable) {
+            part.body.on("error", () => {
+                // Reported by lazyWrite through `body.errored`
+            });
+        }
 
         // Lock before reading the metadata, so the offset checked and extended is the one stored
         // after any earlier write finished.
@@ -929,6 +938,19 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                     if (signal?.aborted) {
                         settle(() => {
                             resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
+                        });
+
+                        return;
+                    }
+
+                    // A failing body is reported as itself, however the platform orders the events: the
+                    // body's own 'error' listener and this callback both wait for the file to close, and
+                    // this one's close listener is registered first.
+                    const bodyError = (part.body).errored;
+
+                    if (bodyError) {
+                        settle(() => {
+                            reject(bodyError);
                         });
 
                         return;
