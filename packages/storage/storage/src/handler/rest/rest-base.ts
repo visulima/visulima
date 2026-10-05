@@ -387,7 +387,7 @@ class RestBase<TFile extends UploadFile> {
             try {
                 completedChunks = await this.storage.withLock(`chunks:${id}`, async () => {
                     const current = await this.storage.getMeta(id);
-                    const merged = trackChunk(getChunks(current), { checksum: chunkChecksum, length: contentLength, offset: chunkOffset });
+                    const merged = trackChunk(getChunks(current), { length: contentLength, offset: chunkOffset });
 
                     await this.storage.update({ id }, { metadata: { ...current.metadata, _chunks: merged } });
 
@@ -436,14 +436,7 @@ class RestBase<TFile extends UploadFile> {
                     this.storage.withLock(`chunks:${id}`, async () => {
                         const current = await this.storage.getMeta(id);
                         const merged =
-                            confirmedLength > 0
-                                ? trackChunk(getChunks(current), {
-                                      // The checksum covers the whole chunk, not a confirmed part of it.
-                                      checksum: confirmedLength === contentLength ? chunkChecksum : undefined,
-                                      length: confirmedLength,
-                                      offset: chunkOffset,
-                                  })
-                                : getChunks(current);
+                            confirmedLength > 0 ? trackChunk(getChunks(current), { length: confirmedLength, offset: chunkOffset }) : getChunks(current);
                         const saved = await this.storage.update(
                             { id },
                             {
@@ -580,7 +573,10 @@ class RestBase<TFile extends UploadFile> {
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                     // Header values must be Latin-1: escape the rest, the value stays valid JSON.
-                    "X-Delete-Errors": toLatin1Safe(JSON.stringify(result.failed), (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`),
+                    "X-Delete-Errors": toLatin1Safe(
+                        JSON.stringify(result.failed),
+                        (unit) => String.raw`\u${(unit.codePointAt(0) ?? 0).toString(16).padStart(4, "0")}`,
+                    ),
                     "X-Delete-Failed": String(result.failedCount),
                     "X-Delete-Successful": String(result.successfulCount),
                 },

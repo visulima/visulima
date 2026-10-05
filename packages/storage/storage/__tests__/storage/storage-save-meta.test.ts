@@ -36,30 +36,7 @@ describe("baseStorage saveMeta for chunked uploads (#902)", () => {
         expect(stored.bytesWritten).toBe(30);
         expect(stored.metadata._chunks).toStrictEqual([
             { length: 10, offset: 0 },
-            { checksum: "abc", length: 10, offset: 20 },
-        ]);
-    });
-
-    it("should let the incoming checksum of a chunk win and keep the stored one when it has none", async () => {
-        expect.assertions(1);
-
-        const storage = new MemoryStorage();
-        // Apart, so they stay two ranges: adjacent ones merge and drop their checksums.
-        const chunks = (first: string | undefined, second: string | undefined) => [
-            { checksum: first, length: 10, offset: 0 },
-            { checksum: second, length: 10, offset: 20 },
-        ];
-
-        await storage.saveMeta(chunked());
-        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("old", "kept"), _totalSize: 30 } }));
-        // A stale copy (no version) re-uploading chunk 0 with a new checksum and chunk 1 without one.
-        await storage.saveMeta(chunked({ bytesWritten: 20, metadata: { _chunkedUpload: true, _chunks: chunks("new", undefined), _totalSize: 30 } }));
-
-        const stored = await storage.getMeta("chunked-id");
-
-        expect(stored.metadata._chunks).toStrictEqual([
-            { checksum: "new", length: 10, offset: 0 },
-            { checksum: "kept", length: 10, offset: 20 },
+            { length: 10, offset: 20 },
         ]);
     });
 
