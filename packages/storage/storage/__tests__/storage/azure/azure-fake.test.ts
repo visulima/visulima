@@ -66,11 +66,18 @@ const createAzure = () => {
 
     type Conditions = { ifMatch?: string; ifNoneMatch?: string };
 
-    /** Azure's access conditions: `ConditionNotMet` (412) when one does not hold for `name`. */
+    /**
+     * Azure's access conditions, as the real service answers them: `If-None-Match: *` onto an
+     * existing blob is 409 `BlobAlreadyExists`, any other unmet condition 412 `ConditionNotMet`.
+     */
     const assertConditions = (name: string, conditions: Conditions | undefined, code = "ConditionNotMet"): void => {
         const blob = blobs.get(name);
 
-        if ((conditions?.ifNoneMatch === "*" && blob) || (conditions?.ifMatch !== undefined && conditions.ifMatch !== blob?.etag)) {
+        if (conditions?.ifNoneMatch === "*" && blob) {
+            throw statusError(409, "BlobAlreadyExists");
+        }
+
+        if (conditions?.ifMatch !== undefined && conditions.ifMatch !== blob?.etag) {
             throw statusError(412, code);
         }
     };

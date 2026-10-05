@@ -38,7 +38,11 @@ const MAX_BLOCK_SIZE = 4000 * 1024 * 1024;
 
 /** Rethrows an Azure `412` (`ConditionNotMet`, `SourceConditionNotMet`) as `ERRORS.PRECONDITION_FAILED`. */
 const rethrowConditionNotMet = (error: unknown): never => {
-    if ((error as { statusCode?: number } | undefined)?.statusCode === 412) {
+    const { code, statusCode } = (error ?? {}) as { code?: string; statusCode?: number };
+
+    // A failed `If-Match` answers 412; `If-None-Match: *` onto an existing blob answers 409
+    // BlobAlreadyExists (https://learn.microsoft.com/rest/api/storageservices/specifying-conditional-headers-for-blob-service-operations).
+    if (statusCode === 412 || (statusCode === 409 && code === "BlobAlreadyExists")) {
         throwErrorCode(ERRORS.PRECONDITION_FAILED, (error as Error).message);
     }
 
