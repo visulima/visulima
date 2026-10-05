@@ -14,6 +14,13 @@ description: "Upgrade notes for @visulima/storage, including the security fix th
 - `serialize()` is deprecated in favour of `toJSON()`. Both return the version 2 token. A version 1 token (`{ key, loaded, version: 1 }`) still works with `UploadControl.from()`, but it carries no session, so the upload starts over as before.
 - `files.capabilities` gained `resumable`.
 
+## Chunk lists and method overrides
+
+- **Chunked REST records byte ranges.** `_chunks` and `X-Received-Chunks` hold one `{ offset, length }` range per contiguous run of bytes, sorted by offset, instead of one entry per chunk. The list used to grow with every `PATCH`, and the S3, aws-light and Azure adapters keep it in object metadata (2 KiB on S3, 8 KiB on Azure and R2), so an upload of a few dozen chunks or more failed to save its progress. A client that checks whether a chunk was received has to test whether a range covers it, not look for an entry with the chunk's exact offset and length; the bundled client already does. A range drops a chunk's `checksum` once it is extended.
+- **TUS method overrides are narrower.** `X-HTTP-Method-Override` is honoured only on a `POST`, and only to `PATCH` or `DELETE`. Any other override (to `GET`, `HEAD`, `OPTIONS`, or on another method) is a `400`. A `POST` overridden to `GET` used to be served as a read.
+- **`parseTusMetadata`** is exported from `@visulima/storage`: the `Upload-Metadata` parser the TUS handler uses.
+- **`@visulima/storage-client`:** `receivedChunks` from `useHeadFile` / `createHeadFile` is typed `{ length, offset }[]`, the shape the server sends. It was typed `number[]`.
+
 ## Upgrading past 2.0.30: upload ids, `HEAD` and `PUT` (security fix)
 
 ### Summary
