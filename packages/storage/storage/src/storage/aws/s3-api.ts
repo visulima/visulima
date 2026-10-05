@@ -60,7 +60,16 @@ export interface S3ApiOperations {
     ) => Promise<{ ETag?: string; Location: string }>;
 
     copyObject: (
-        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: {
+            ACL?: string;
+            Bucket: string;
+            CopySource: string;
+            CopySourceIfMatch?: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
+            Key: string;
+            StorageClass?: string;
+        },
         options?: S3CallOptions,
     ) => Promise<void>;
 
@@ -71,6 +80,7 @@ export interface S3ApiOperations {
             ContentType?: string;
             Key: string;
             Metadata?: Record<string, string>;
+            StorageClass?: string;
         },
         options?: S3CallOptions,
     ) => Promise<{ UploadId: string }>;
@@ -134,6 +144,12 @@ export interface S3ApiOperations {
             PartNumber: number;
             UploadId: string;
         },
+        options?: S3CallOptions,
+    ) => Promise<{ ETag: string }>;
+
+    /** Copies a byte range (`bytes=a-b`) of an object into a part of a multipart upload. */
+    uploadPartCopy: (
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; CopySourceRange: string; Key: string; PartNumber: number; UploadId: string },
         options?: S3CallOptions,
     ) => Promise<{ ETag: string }>;
 }

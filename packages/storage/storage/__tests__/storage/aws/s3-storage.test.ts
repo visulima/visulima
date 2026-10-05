@@ -1,12 +1,12 @@
 import { Readable } from "node:stream";
 
-import type { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
     CompleteMultipartUploadCommand,
     CopyObjectCommand,
     CreateMultipartUploadCommand,
     DeleteObjectCommand,
+    GetObjectCommand,
     HeadBucketCommand,
     HeadObjectCommand,
     ListObjectsV2Command,
@@ -64,6 +64,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create(metafile);
@@ -78,6 +79,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
 
             const s3file = await storage.create(metafile);
 
@@ -88,6 +90,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({});
 
             await expect(storage.create(metafile)).rejects.toMatchSnapshot();
@@ -97,6 +100,7 @@ describe(S3Storage, () => {
             expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
 
             const s3file = await storage.create({ ...metafile, ttl: "30d" });
@@ -118,6 +122,7 @@ describe(S3Storage, () => {
             expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
 
             const s3file = await storage.update(metafile, { metadata: { name: "newname.mp4" } });
 
@@ -129,6 +134,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
 
             await expect(storage.update(metafile, { metadata: { name: "newname.mp4" } })).rejects.toHaveProperty("UploadErrorCode", "FileNotFound");
         });
@@ -137,6 +143,7 @@ describe(S3Storage, () => {
             expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
 
             const s3file = await storage.update(metafile, { ttl: "1h" });
 
@@ -157,6 +164,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
@@ -177,6 +185,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
             const part = {
@@ -206,6 +215,7 @@ describe(S3Storage, () => {
             expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
             await expect(storage.write({ body: Readable.from(Buffer.alloc(10)), contentLength: 10, id: metafile.id, start: 0 })).rejects.toMatchObject({
@@ -215,14 +225,13 @@ describe(S3Storage, () => {
         });
 
         const decodeSavedMeta = (): Record<string, unknown>[] =>
-            s3Mock
-                .commandCalls(PutObjectCommand)
-                .map((call) => JSON.parse(decodeURIComponent(call.args[0].input.Metadata?.metadata as string)) as Record<string, unknown>);
+            s3Mock.commandCalls(PutObjectCommand).map((call) => JSON.parse(call.args[0].input.Body as string) as Record<string, unknown>);
 
         it("persists the new bytesWritten without the Parts list after a partial write", async () => {
             expect.assertions(4);
 
             s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(largeMetafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
             s3Mock.on(PutObjectCommand).resolves({});
@@ -242,6 +251,7 @@ describe(S3Storage, () => {
             expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [{ ETag: "1", PartNumber: 1, Size: 5 }] });
             s3Mock.on(PutObjectCommand).resolves({});
 
@@ -257,6 +267,7 @@ describe(S3Storage, () => {
             expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock
                 .on(ListPartsCommand)
                 .resolvesOnce({ IsTruncated: true, NextPartNumberMarker: "1", Parts: [{ ETag: "1", PartNumber: 1, Size: 5 }] })
@@ -275,6 +286,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(largeMetafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
             s3Mock.on(PutObjectCommand).resolves({});
@@ -297,6 +309,7 @@ describe(S3Storage, () => {
             const badDigest = Object.assign(new Error("The Content-MD5 you specified did not match what we received."), { name: "BadDigest" });
 
             s3Mock.on(HeadObjectCommand).resolves(largeMetafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(largeMetafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).rejects(badDigest);
 
@@ -316,6 +329,7 @@ describe(S3Storage, () => {
             expect.assertions(3);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
             s3Mock.on(UploadPartCommand).resolves({ ETag: "1234" });
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ ETag: "done", Location: "/1234" });
@@ -331,7 +345,7 @@ describe(S3Storage, () => {
         it("refuses part 10,001", async () => {
             expect.assertions(2);
 
-            s3Mock.on(HeadObjectCommand).resolves({
+            s3Mock.on(GetObjectCommand).resolves({
                 Metadata: {
                     metadata: encodeURIComponent(JSON.stringify({ ...JSON.parse(decodeURIComponent(metafileResponse.Metadata.metadata)), size: 10_010 })),
                 },
@@ -354,6 +368,7 @@ describe(S3Storage, () => {
             expect(storage.checksumTypes).toStrictEqual(["md5"]);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
             await expect(
@@ -375,6 +390,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(DeleteObjectCommand).resolves({});
 
             const deleted = await storage.delete(metafile);
@@ -386,6 +402,7 @@ describe(S3Storage, () => {
             expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(DeleteObjectCommand).resolves({});
             s3Mock.on(AbortMultipartUploadCommand).resolves({});
 
@@ -399,6 +416,7 @@ describe(S3Storage, () => {
             expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(AbortMultipartUploadCommand).rejects(Object.assign(new Error("Access Denied"), { $metadata: { httpStatusCode: 403 } }));
 
             await expect(storage.delete(metafile)).rejects.toThrow("Access Denied");
@@ -409,6 +427,7 @@ describe(S3Storage, () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(AbortMultipartUploadCommand).rejects(Object.assign(new Error("NoSuchUpload"), { $metadata: { httpStatusCode: 404 } }));
 
             await storage.delete(metafile);
@@ -421,6 +440,7 @@ describe(S3Storage, () => {
 
             // Mock getMeta to throw error (file not found)
             s3Mock.on(HeadObjectCommand).rejects(new Error("File not found"));
+            s3Mock.on(GetObjectCommand).rejects(new Error("File not found"));
 
             await expect(storage.delete(metafile)).rejects.toThrow();
         });
@@ -432,6 +452,7 @@ describe(S3Storage, () => {
 
             s3Mock.resetHistory();
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
             const result = await storage.copy("name", "new name");
@@ -447,7 +468,7 @@ describe(S3Storage, () => {
         it("copies from the source's object key, URL-encoded", async () => {
             expect.assertions(1);
 
-            s3Mock.on(HeadObjectCommand).resolves({
+            s3Mock.on(GetObjectCommand).resolves({
                 Metadata: { metadata: encodeURIComponent(JSON.stringify({ ...metafile, name: "dir/a b+c?.mp4", status: "completed" })) },
             });
             s3Mock.on(CopyObjectCommand).resolves({});
@@ -465,6 +486,7 @@ describe(S3Storage, () => {
 
             s3Mock.resetHistory();
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
             await expect(storage.copy("name", "/otherBucket/new name")).rejects.toThrow(/Invalid file id/);
@@ -475,6 +497,7 @@ describe(S3Storage, () => {
 
             s3Mock.resetHistory();
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(CopyObjectCommand).resolves({});
 
             const result = await storage.copy("name", "new name", { storageClass: "GLACIER" });
@@ -607,6 +630,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(2);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -620,6 +644,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" }));
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -637,6 +662,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
             const s3file = await storage.update(metafile, metafile);
@@ -648,6 +674,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
 
             const preCompleted = {
                 ...metafile,
@@ -668,6 +695,7 @@ describe("s3PresignedStorage", () => {
             expect.assertions(1);
 
             s3Mock.on(HeadObjectCommand).resolves(metafileResponse);
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse);
             s3Mock.on(ListPartsCommand).resolves({ Parts: [{ ETag: "123456789", PartNumber: 1, Size: 64 }] });
             s3Mock.on(CompleteMultipartUploadCommand).resolves({ Location: "/1234" });
 
@@ -683,6 +711,7 @@ describe("s3PresignedStorage", () => {
 
             // Set up mocks for create operation
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -693,14 +722,12 @@ describe("s3PresignedStorage", () => {
             s3Mock.reset();
 
             // Mock headObject calls: first for metadata (.META suffix), then for actual file
-            s3Mock
-                .on(HeadObjectCommand)
-                .resolvesOnce(metafileResponse) // Metadata check (getMeta)
-                .resolvesOnce({
-                    ContentLength: 100,
-                    ContentType: "video/mp4",
-                    ETag: "test-etag",
-                }); // File check (headObject)
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse); // Metadata check (getMeta)
+            s3Mock.on(HeadObjectCommand).resolvesOnce({
+                ContentLength: 100,
+                ContentType: "video/mp4",
+                ETag: "test-etag",
+            }); // File check (headObject)
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -712,6 +739,7 @@ describe("s3PresignedStorage", () => {
 
             // Mock getMeta to throw (metadata doesn't exist)
             s3Mock.on(HeadObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
+            s3Mock.on(GetObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
 
             const exists = await storage.exists({ id: "non-existent-id" });
 
@@ -723,6 +751,7 @@ describe("s3PresignedStorage", () => {
 
             // Set up mocks for create operation
             s3Mock.on(HeadObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
+            s3Mock.on(GetObjectCommand).rejects(Object.assign(new Error("NotFound"), { $metadata: { httpStatusCode: 404 }, name: "NotFound" })); // File doesn't exist initially
             s3Mock.on(CreateMultipartUploadCommand).resolves({ UploadId: "123456789" });
             s3Mock.on(ListPartsCommand).resolves({ Parts: [] });
 
@@ -733,10 +762,8 @@ describe("s3PresignedStorage", () => {
             s3Mock.reset();
 
             // Mock headObject calls: metadata check succeeds, file check fails with 404
-            s3Mock
-                .on(HeadObjectCommand)
-                .resolvesOnce(metafileResponse) // Metadata check (getMeta) - succeeds
-                .rejectsOnce({ $metadata: { httpStatusCode: 404 } }); // File check (headObject) - fails
+            s3Mock.on(GetObjectCommand).resolves(metafileResponse); // Metadata check (getMeta) - succeeds
+            s3Mock.on(HeadObjectCommand).rejectsOnce({ $metadata: { httpStatusCode: 404 } }); // File check (headObject) - fails
 
             const exists = await storage.exists({ id: metafile.id });
 
@@ -748,6 +775,7 @@ describe("s3PresignedStorage", () => {
 
             // Mock getMeta to throw (metadata doesn't exist)
             s3Mock.on(HeadObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
+            s3Mock.on(GetObjectCommand).rejects({ $metadata: { httpStatusCode: 404 } });
 
             const exists = await storage.exists({ id: "orphaned-object-id" });
 

@@ -82,7 +82,9 @@ const createS3 = () => {
                     `<ListBucketResult>${bucket
                         .list({})
                         .contents
-.map((object) => `<Contents><Key>${object.key}</Key><LastModified>${object.lastModified?.toISOString() ?? ""}</LastModified></Contents>`)
+.map(
+                            (object) => `<Contents><Key>${object.key}</Key><LastModified>${object.lastModified?.toISOString() ?? ""}</LastModified></Contents>`,
+                        )
                         .join("")}<IsTruncated>false</IsTruncated></ListBucketResult>`,
                 );
             }
@@ -119,7 +121,9 @@ const createS3 = () => {
 
                 const completed = bucket.complete(uploadId);
 
-                return completed === undefined ? missing("NoSuchUpload") : xml(`<CompleteMultipartUploadResult><ETag>${completed.etag}</ETag></CompleteMultipartUploadResult>`);
+                return completed === undefined
+                    ? missing("NoSuchUpload")
+                    : xml(`<CompleteMultipartUploadResult><ETag>${completed.etag}</ETag></CompleteMultipartUploadResult>`);
             }
 
             return bucket.abort(uploadId) ? new Response(null, { status: 204 }) : missing("NoSuchUpload");
@@ -131,11 +135,18 @@ const createS3 = () => {
             if (source !== null) {
                 const sourceKey = decodeURIComponent(source.slice("uploads/".length));
 
-                if (bucket.objects.has(sourceKey) && (!bucket.holds(sourceKey, { ifMatch: request.headers.get("x-amz-copy-source-if-match") }) || !holds(key))) {
+                if (
+                    bucket.objects.has(sourceKey) &&
+                    (!bucket.holds(sourceKey, { ifMatch: request.headers.get("x-amz-copy-source-if-match") }) || !holds(key))
+                ) {
                     return preconditionFailed();
                 }
 
                 return bucket.copy(decodeURIComponent(source.slice("uploads/".length)), key) ? xml("<CopyObjectResult/>") : missing();
+            }
+
+            if (!holds(key)) {
+                return preconditionFailed();
             }
 
             const metadata = Object.fromEntries([...request.headers].filter(([name]) => name.startsWith("x-amz-meta-")));
@@ -197,25 +208,23 @@ describe("aws-light against an in-memory S3", () => {
         vi.unstubAllGlobals();
     });
 
-    describeStorageContract(
-        () => {
-            const s3 = createS3();
+    describeStorageContract(() => {
+        const s3 = createS3();
 
-            vi.stubGlobal("fetch", s3.fetch);
+        vi.stubGlobal("fetch", s3.fetch);
 
-            return {
-                // The fake honours the conditional headers, which a custom endpoint doesn't advertise by default.
-                createStorage: (options) => createStorage({ conditional: true, ...options }),
-                failBackend: (failing) => {
-                    s3.state.override = failing ? () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) : undefined;
-                },
-                hasObject: (key) => s3.objects.has(key),
-                putObject: (key, content) => {
-                    s3.put(key, Buffer.from(content));
-                },
-            };
-        },
-    );
+        return {
+            // The fake honours the conditional headers, which a custom endpoint doesn't advertise by default.
+            createStorage: (options) => createStorage({ conditional: true, ...options }),
+            failBackend: (failing) => {
+                s3.state.override = failing ? () => new Response("<Error><Code>AccessDenied</Code></Error>", { status: 403 }) : undefined;
+            },
+            hasObject: (key) => s3.objects.has(key),
+            putObject: (key, content) => {
+                s3.put(key, Buffer.from(content));
+            },
+        };
+    });
 
     it("should stream an object once, not once per read", async () => {
         expect.assertions(1);
@@ -397,7 +406,9 @@ describe("aws-light against an in-memory S3", () => {
 
         await files.upload("a.txt", "one", { ifNoneMatch: "*" });
 
-        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        await expect(files.upload("a.txt", "two", { ifNoneMatch: "*" })).rejects.toThrow(
+            expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }),
+        );
         expect([s3.uploads.size, s3.objects.get("a.txt")?.body.toString()]).toStrictEqual([0, "one"]);
     });
 

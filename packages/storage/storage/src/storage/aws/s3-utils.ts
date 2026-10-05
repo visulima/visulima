@@ -1,5 +1,7 @@
 import { ERRORS, throwErrorCode } from "../../utils/errors";
 import { getMetaVersion, setMetaVersion } from "../meta-storage";
+import type { File } from "../utils/file";
+import { parseMetadata } from "../utils/file/metadata";
 
 /** S3 rejects CompleteMultipartUpload when any part but the last is smaller than this. */
 export const MIN_PART_SIZE: number = 5 * 1024 * 1024;
@@ -24,9 +26,8 @@ export const buildRangeHeader = (range: { end?: number; start: number } | undefi
 };
 
 /**
- * Copy of `file` without its `Parts` list, for persisting. S3MetaStorage keeps meta in a
- * ~2KB user-metadata header that a long parts list would overflow; parts are re-fetched
- * lazily via `listParts` instead.
+ * Copy of `file` without its `Parts` list, for persisting: parts are re-fetched lazily via
+ * `listParts` instead of growing the record with every chunk.
  */
 export const withoutParts = <T extends { Parts?: unknown }>(file: T): T => {
     const { Parts: _parts, ...rest } = file;
@@ -88,4 +89,28 @@ export const assertNextPartSize = (part: { contentLength?: number; start?: numbe
     if (contentLength > 0 && contentLength < MIN_PART_SIZE && typeof file.size === "number" && (part.start ?? file.bytesWritten) + contentLength < file.size) {
         throwErrorCode(ERRORS.BAD_REQUEST, "S3 multipart uploads need chunks of at least 5 MiB except for the last one.");
     }
+};
+
+/**
+ * Reads an upload record stored in the bucket: the JSON object body, or for a record written by an
+ * older version (an empty object with the record in its `metadata` header) that header.
+ * @param body The object's body
+ * @param header The object's `x-amz-meta-metadata` header
+ * @returns The record, or `undefined` when the object holds none
+ */
+export const parseMetaRecord = <T extends File>(body: string, header: string | undefined): T | undefined => {
+    const json = body === "" && header !== undefined ? decodeURIComponent(header) : body;
+
+    if (json === "") {
+        return undefined;
+    }
+
+    const file = JSON.parse(json) as T;
+
+    // A header record carries its metadata as an Upload-Metadata string, "" for an empty one.
+    if (typeof file.metadata === "string") {
+        file.metadata = file.metadata === "" ? {} : parseMetadata(file.metadata);
+    }
+
+    return file;
 };

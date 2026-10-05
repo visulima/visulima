@@ -1,14 +1,15 @@
+import { text } from "node:stream/consumers";
+
 import { ERRORS, throwErrorCode } from "../../utils/errors";
+import { parseMetaRecord } from "../aws/s3-utils";
 import MetaStorage, { rethrowNotFound, setMetaVersion } from "../meta-storage";
 import type { File } from "../utils/file";
-import { isExpired } from "../utils/file";
-import { parseMetadata, stringifyMetadata } from "../utils/file/metadata";
 import AwsLightApiAdapter from "./aws-light-api-adapter";
 import type { AwsLightMetaStorageOptions } from "./types";
 
 /**
  * AWS Light meta storage implementation using aws4fetch.
- * Stores metadata in S3 object metadata headers (x-amz-meta-*).
+ * Stores each record as the JSON body of an object next to the upload.
  * Optimized for worker environments (Cloudflare Workers, Web Workers, etc.).
  */
 class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
@@ -20,7 +21,8 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
 
     private readonly adapter: AwsLightApiAdapter;
 
-    private readonly bucket: string;
+    /** The bucket the records are stored in. */
+    public readonly bucket: string;
 
     public constructor(public config: AwsLightMetaStorageOptions) {
         super(config);
@@ -49,26 +51,15 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     public override async get(id: string): Promise<T> {
         await this.ensureAccess();
 
-        const { ETag, Expires, Metadata } = await this.adapter
-            .headObject({
+        const { Body, ETag, Metadata } = await this.adapter
+            .getObject({
                 Bucket: this.bucket,
                 Key: this.getMetaName(id),
             })
             .catch(rethrowNotFound);
+        const file = parseMetaRecord<T>(Body === undefined ? "" : await text(Body), Metadata?.metadata);
 
-        if (Expires && isExpired({ expiredAt: Expires } as T)) {
-            await this.delete(id);
-
-            return throwErrorCode(ERRORS.FILE_NOT_FOUND, `Metafile ${id} expired`);
-        }
-
-        if (Metadata?.metadata !== undefined) {
-            const file = JSON.parse(decodeURIComponent(Metadata.metadata)) as T;
-
-            if (file.metadata && typeof file.metadata === "string") {
-                file.metadata = parseMetadata(file.metadata);
-            }
-
+        if (file !== undefined) {
             setMetaVersion(file, ETag);
 
             return file;
@@ -116,20 +107,14 @@ class AwsLightMetaStorage<T extends File = File> extends MetaStorage<T> {
     private async put(id: string, file: T, ifMatch?: string): Promise<void> {
         await this.ensureAccess();
 
-        const transformedMetadata = { ...file } as unknown as Omit<T, "metadata"> & { metadata?: string };
-
-        if (transformedMetadata.metadata) {
-            transformedMetadata.metadata = stringifyMetadata(file.metadata);
-        }
-
-        const metadata = encodeURIComponent(JSON.stringify(transformedMetadata));
+        // The record is the object's body, so its ETag (the body's MD5) changes with it and If-Match
+        // detects a concurrent save; a header record left the empty body, and its ETag, unchanged.
         const result = await this.adapter.putObject({
+            Body: new TextEncoder().encode(JSON.stringify(file)),
             Bucket: this.bucket,
-            ContentLength: 0,
             ContentType: "application/json",
             IfMatch: ifMatch,
             Key: this.getMetaName(id),
-            Metadata: { metadata },
         });
 
         setMetaVersion(file, result?.ETag);

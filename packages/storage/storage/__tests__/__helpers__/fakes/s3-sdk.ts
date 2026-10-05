@@ -22,7 +22,13 @@ import { createS3State } from "../s3-state";
 export const s3Error = (name: string, status: number): Error =>
     Object.assign(new Error(name), { $fault: "client", $metadata: { httpStatusCode: status }, name });
 
-const toBuffer = async (body: unknown): Promise<Buffer> => (body instanceof Uint8Array ? Buffer.from(body) : buffer(body as AsyncIterable<Uint8Array>));
+const toBuffer = async (body: unknown): Promise<Buffer> => {
+    if (typeof body === "string") {
+        return Buffer.from(body);
+    }
+
+    return body instanceof Uint8Array ? Buffer.from(body) : buffer(body as AsyncIterable<Uint8Array>);
+};
 
 /**
  * In-memory S3 bucket answering the commands S3Storage and S3MetaStorage send. `override` answers a
@@ -137,7 +143,12 @@ export const createS3SdkFake = () => {
                 throw s3Error("PreconditionFailed", 412);
             }
 
-            return { ETag: bucket.put(key, Buffer.alloc(0), { metadata: input.Metadata as Record<string, string> }).etag };
+            return {
+                ETag: bucket.put(key, await toBuffer(input.Body ?? Buffer.alloc(0)), {
+                    contentType: input.ContentType as string,
+                    metadata: input.Metadata as Record<string, string>,
+                }).etag,
+            };
         }
 
         if (command instanceof CopyObjectCommand) {
@@ -163,7 +174,9 @@ export const createS3SdkFake = () => {
 
             return {
                 // Not a Readable: the adapter has to wrap whatever body type the SDK hands it.
-                ...(command instanceof GetObjectCommand && { Body: read.body }),
+                ...(command instanceof GetObjectCommand && {
+                    Body: Object.assign(Buffer.from(read.body), { transformToString: async () => read.body.toString() }),
+                }),
                 ContentLength: read.body.byteLength,
                 ContentType: read.object.contentType,
                 ETag: read.object.etag,

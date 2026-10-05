@@ -172,7 +172,7 @@ class S3Storage extends S3BaseStorage {
             const s3Api = this.getS3Api();
             const key = await this.readableName(id);
             const rangeHeader = buildRangeHeader(options?.range);
-            const { Body, ContentLength, ContentType, ETag, Expires, LastModified } = await this.runOperation(options, (signal) =>
+            const { Body, ContentLength, ContentType, ETag, LastModified } = await this.runOperation(options, (signal) =>
                 s3Api.getObject(
                     {
                         Bucket: this.bucket,
@@ -183,8 +183,6 @@ class S3Storage extends S3BaseStorage {
                 ),
             );
 
-            await this.checkIfExpired({ expiredAt: Expires } as S3File);
-
             // Body from the adapter is already a Readable; returning it directly preserves
             // backpressure. The previous proxy attached `data`/`end`/`error` listeners inside `read()`,
             // which (a) re-attached them on every read pull, leaking handlers, and (b) forced flowing
@@ -194,7 +192,6 @@ class S3Storage extends S3BaseStorage {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
                     ...(ETag && { ETag }),
-                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
                     ...(LastModified && { "Last-Modified": toHttpDate(LastModified) }),
                 },
                 size: Number(ContentLength),
@@ -222,6 +219,8 @@ class S3Storage extends S3BaseStorage {
     }
 
     public override async getUploadUrl(key: string, options?: { contentLength?: number; contentType?: string; expiresIn?: number }): Promise<string> {
+        this.assertNotMetaKey(key);
+
         const command = new PutObjectCommand({
             Bucket: this.bucket,
             Key: key,
@@ -234,6 +233,7 @@ class S3Storage extends S3BaseStorage {
 
     public override async getUploadPost(key: string, options?: UploadPostOptions): Promise<UploadPostPolicy> {
         S3Storage.assertSafeId(key);
+        this.assertNotMetaKey(key);
 
         const { accessKeyId, secretAccessKey, sessionToken } = await this.rawClient.config.credentials();
         // Let the SDK resolve the bucket URL (virtual-hosted or path-style, custom endpoint): presign a

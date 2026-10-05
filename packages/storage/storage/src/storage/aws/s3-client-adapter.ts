@@ -10,6 +10,7 @@ import type {
     ListPartsCommandOutput,
     ObjectCannedACL,
     S3Client,
+    StorageClass,
 } from "@aws-sdk/client-s3";
 import {
     AbortMultipartUploadCommand,
@@ -23,6 +24,7 @@ import {
     ListObjectsV2Command,
     ListPartsCommand,
     UploadPartCommand,
+    UploadPartCopyCommand,
     waitUntilBucketExists,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -54,6 +56,7 @@ class S3ClientAdapter implements S3ApiOperations {
             ContentType?: string;
             Key: string;
             Metadata?: Record<string, string>;
+            StorageClass?: string;
         },
         options?: S3CallOptions,
     ): Promise<{ UploadId: string }> {
@@ -63,6 +66,7 @@ class S3ClientAdapter implements S3ApiOperations {
             ContentType: params.ContentType,
             Key: params.Key,
             Metadata: params.Metadata,
+            ...(params.StorageClass !== undefined && { StorageClass: params.StorageClass as StorageClass }),
         });
 
         const response = await this.client.send(command, sendOptions(options));
@@ -106,6 +110,20 @@ class S3ClientAdapter implements S3ApiOperations {
         }
 
         return { ETag: response.ETag };
+    }
+
+    public async uploadPartCopy(
+        params: { Bucket: string; CopySource: string; CopySourceIfMatch?: string; CopySourceRange: string; Key: string; PartNumber: number; UploadId: string },
+        options?: S3CallOptions,
+    ): Promise<{ ETag: string }> {
+        const response = await this.client.send(new UploadPartCopyCommand(params), sendOptions(options));
+        const etag = response.CopyPartResult?.ETag;
+
+        if (!etag) {
+            throw new Error("Failed to copy part");
+        }
+
+        return { ETag: etag };
     }
 
     public async completeMultipartUpload(
@@ -262,6 +280,7 @@ class S3ClientAdapter implements S3ApiOperations {
         ETag?: string;
         Expires?: Date;
         LastModified?: Date;
+        Metadata?: Record<string, string>;
     }> {
         const command = new HeadObjectCommand({
             Bucket: params.Bucket,
@@ -276,6 +295,7 @@ class S3ClientAdapter implements S3ApiOperations {
             ETag: response.ETag,
             Expires: response.Expires,
             LastModified: response.LastModified,
+            Metadata: response.Metadata,
         };
     }
 
@@ -290,7 +310,16 @@ class S3ClientAdapter implements S3ApiOperations {
     }
 
     public async copyObject(
-        params: { ACL?: string; Bucket: string; CopySource: string; CopySourceIfMatch?: string; IfMatch?: string; IfNoneMatch?: string; Key: string; StorageClass?: string },
+        params: {
+            ACL?: string;
+            Bucket: string;
+            CopySource: string;
+            CopySourceIfMatch?: string;
+            IfMatch?: string;
+            IfNoneMatch?: string;
+            Key: string;
+            StorageClass?: string;
+        },
         options?: S3CallOptions,
     ): Promise<void> {
         const commandInput: CopyObjectCommandInput = {
