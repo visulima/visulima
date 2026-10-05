@@ -70,10 +70,10 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
     // truncated, and everything after it collapses into one zero-width escape segment — which then
     // drops out of width accounting in the wrapping paths. Map each code-point index to its UTF-16
     // offset once, so every jump the loop makes stays translatable.
-    const unitOffsets = new Array<number>(chars.length);
+    const unitOffsets: number[] = [];
 
     for (let cursor = 0, units = 0; cursor < chars.length; cursor += 1) {
-        unitOffsets[cursor] = units;
+        unitOffsets.push(units);
         units += (chars[cursor] as string).length;
     }
 
