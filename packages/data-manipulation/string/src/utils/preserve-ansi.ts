@@ -1,74 +1,103 @@
-import { ANSI_RESET_CODES, END_CODE, ESCAPES, RE_ESCAPE_PATTERN } from "../constants";
-import wrapAnsiCode from "./wrap-ansi-code";
+import { ANSI_ESCAPE_LINK, ESCAPES } from "../constants";
+import AnsiStateTracker from "./ansi-state-tracker";
+import readControlSequence from "./read-control-sequence";
 import wrapAnsiHyperlink from "./wrap-ansi-hyperlink";
 
 /**
- * Preserves ANSI escape codes when joining wrapped lines.
+ * Advances the tracker over every control sequence in one line.
+ * @param line The line to scan.
+ * @param tracker The tracker to update.
+ * @param currentUrl The hyperlink open when the line started.
+ * @returns The hyperlink still open when the line ended.
+ */
+const trackLine = (line: string, tracker: AnsiStateTracker, currentUrl: string | undefined): string | undefined => {
+    let activeUrl = currentUrl;
+    let index = 0;
+
+    while (index < line.length) {
+        if (!ESCAPES.has(line[index] as string)) {
+            index += 1;
+
+            continue;
+        }
+
+        const sequence = readControlSequence(line, index);
+
+        if (sequence === undefined) {
+            // A bare or truncated escape: nothing to track, step over the introducer.
+            index += 1;
+
+            continue;
+        }
+
+        if (line.startsWith(ANSI_ESCAPE_LINK, index + 1)) {
+            const uri = sequence.slice(1 + ANSI_ESCAPE_LINK.length, -1);
+
+            // `ESC ]8;;BEL` with an empty URI closes the hyperlink.
+            activeUrl = uri.length === 0 ? undefined : uri;
+        } else {
+            tracker.processEscape(sequence);
+        }
+
+        index += sequence.length;
+    }
+
+    return activeUrl;
+};
+
+/**
+ * Closes the styling active at the end of each wrapped line and reopens it on the next.
+ *
+ * This is the single place line-boundary styling is handled; the wrap strategies emit plain lines
+ * and leave the bookkeeping here. It shares {@link AnsiStateTracker} with the rest of the package,
+ * so compound sequences (`\u009B 1;31 m`), 256-colour and truecolour survive a wrap — previously the
+ * boundary was matched with a single-parameter pattern that could not see them, and any style it
+ * failed to parse was dropped from every continuation line while bleeding past the end of the block.
  * @param rawLines Array of wrapped lines
  * @returns String with preserved ANSI codes
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const preserveAnsi = (rawLines: string[]): string => {
-    // Handle empty array case
     if (rawLines.length === 0) {
         return "";
     }
 
-    // Optimize for single line case
     if (rawLines.length === 1) {
         return rawLines[0] as string;
     }
 
-    let returnValue = "";
-    let escapeCode: number | string | undefined;
-    let escapeUrl: string | undefined;
+    const tracker = new AnsiStateTracker();
+    const lastIndex = rawLines.length - 1;
 
-    const preString = rawLines.join("\n");
+    let result = "";
+    let activeUrl: string | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: Unicode code point splitting needed for ANSI character processing
-    const pre = [...preString];
-    let preStringIndex = 0;
+    for (const [lineIndex, line] of rawLines.entries()) {
+        if (lineIndex > 0) {
+            // Reopen whatever was still active when the previous line was cut.
+            result += tracker.getStartEscapesForAllActiveAttributes();
 
-    for (const [index, character] of pre.entries()) {
-        returnValue += character;
-
-        if (ESCAPES.has(character)) {
-            const match = RE_ESCAPE_PATTERN.exec(preString.slice(preStringIndex));
-            const groups = match?.groups ?? {};
-
-            if (groups.code !== undefined) {
-                const code = Number.parseFloat(groups.code);
-
-                escapeCode = code === END_CODE ? undefined : code;
-            } else if (groups.uri !== undefined) {
-                escapeUrl = groups.uri.length === 0 ? undefined : groups.uri;
+            if (activeUrl !== undefined) {
+                result += wrapAnsiHyperlink(activeUrl);
             }
         }
 
-        const code = ANSI_RESET_CODES.get(Number(escapeCode));
+        result += line;
 
-        if (pre[index + 1] === "\n") {
-            if (escapeUrl) {
-                returnValue += wrapAnsiHyperlink("");
-            }
+        activeUrl = trackLine(line, tracker, activeUrl);
 
-            if (escapeCode && code) {
-                returnValue += wrapAnsiCode(code);
-            }
-        } else if (character === "\n") {
-            if (escapeCode && code) {
-                returnValue += wrapAnsiCode(escapeCode);
+        if (lineIndex < lastIndex) {
+            // Close before the newline so the styling cannot bleed into whatever a caller draws
+            // between the lines (a box border, a gutter, a diff marker).
+            if (activeUrl !== undefined) {
+                result += wrapAnsiHyperlink("");
             }
 
-            if (escapeUrl) {
-                returnValue += wrapAnsiHyperlink(escapeUrl);
-            }
+            result += tracker.getEndEscapesForAllActiveAttributes();
+            result += "\n";
         }
-
-        preStringIndex += character.length;
     }
 
-    return returnValue;
+    return result;
 };
 
 export default preserveAnsi;
