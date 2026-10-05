@@ -1,3 +1,17 @@
+## @visulima/string [3.1.1](https://github.com/visulima/visulima/compare/@visulima/string@3.1.0...@visulima/string@3.1.1) (2026-10-05)
+
+### Bug Fixes
+
+* **string:** preserve SGR across wraps, break CJK, ignore OSC width ([#833](https://github.com/visulima/visulima/issues/833)) ([fa54f39](https://github.com/visulima/visulima/commit/fa54f39b862223b406e84a3b021929ce907dedc7))
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+### Build System
+
+* **deps:** refresh catalog and package manifests ([#832](https://github.com/visulima/visulima/issues/832)) ([9b7590d](https://github.com/visulima/visulima/commit/9b7590d6496e633ba2c0681484ae4497eeb824c9))
+
 ## @visulima/string [3.1.0](https://github.com/visulima/visulima/compare/%40visulima%2Fstring%403.0.0...%40visulima%2Fstring%403.1.0) (2026-08-02)
 
 
