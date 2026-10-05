@@ -381,11 +381,9 @@ class FtpStorage extends BaseStorage<FtpFile> {
 
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            let file: FtpFile;
+            const file = await this.findMeta(id);
 
-            try {
-                file = await this.getMeta(id);
-            } catch {
+            if (file === undefined) {
                 return false;
             }
 

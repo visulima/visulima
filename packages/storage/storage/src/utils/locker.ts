@@ -4,7 +4,8 @@ import { LRUCache as Cache } from "lru-cache";
 
 /**
  * A simple lock map keyed by strings, backed by LRUCache. Locks
- * automatically expire according to the configured TTL preventing deadlocks.
+ * automatically expire according to the configured TTL preventing deadlocks. It takes no `max`:
+ * a size bound would evict the least recently used lock while it is still held.
  *
  * Each successful `lock()` returns a unique token; the corresponding `unlock(key, token)`
  * call only releases the lock when the token matches the current holder. This prevents a
@@ -20,7 +21,7 @@ class Locker<K extends string = string> extends Cache<K, string, number> {
     /** Renewal timers of the held locks, by lock token. */
     private readonly renewals = new Map<string, ReturnType<typeof setInterval>>();
 
-    public constructor({ maxHoldMs = 0, ...options }: Partial<Cache.Options<K, string, number>> & { maxHoldMs?: number } = {}) {
+    public constructor({ maxHoldMs = 0, ...options }: Omit<Partial<Cache.Options<K, string, number>>, "max" | "maxSize"> & { maxHoldMs?: number } = {}) {
         super({
             ttl: 30_000,
             ttlAutopurge: true,

@@ -120,7 +120,7 @@ const createDropbox = () => {
 
             // Dropbox accepts a limit of 1 to 2000 only.
             if (limit < 1 || limit > 2000) {
-                throw new Error("Error in call to API function \"files/list_folder\": request body: limit: 4000 is not within range [1, 2000]");
+                throw new Error('Error in call to API function "files/list_folder": request body: limit: 4000 is not within range [1, 2000]');
             }
 
             listing = [
@@ -397,7 +397,7 @@ describe("dropbox against an in-memory Dropbox", () => {
         const fresh = await upload(storage, "fresh", { originalName: "fresh.txt" });
         const record = await meta.get(stale.id);
 
-        await meta.save(stale.id, { ...record, createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() });
+        await meta.save(stale.id, { ...record, createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), expiredAt: Date.now() - 60 * 60 * 1000 });
 
         const purged = await storage.purge();
 

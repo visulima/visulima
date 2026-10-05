@@ -316,22 +316,16 @@ class NetlifyBlobStorage extends BaseStorage<NetlifyBlobFile> {
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            try {
-                // First check if metadata exists
-                const file = await this.getMeta(id);
+            const file = await this.findMeta(id);
 
-                if (!file.pathname || file.pathname.length <= 0) {
-                    return false;
-                }
-
-                // Then verify the actual blob exists
-                const blob = await this.runOperation(options, () => this.store.get(file.pathname as string, { type: "blob" }));
-
-                return blob !== null && blob !== undefined;
-            } catch {
-                // Return false if metadata doesn't exist or blob doesn't exist
+            if (!file?.pathname) {
                 return false;
             }
+
+            // Then verify the actual blob exists (Netlify Blobs answers a missing one with null)
+            const blob = await this.runOperation(options, () => this.store.get(file.pathname as string, { type: "blob" }));
+
+            return blob !== null && blob !== undefined;
         });
     }
 

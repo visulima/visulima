@@ -316,14 +316,10 @@ class VercelBlobStorage extends BaseStorage<VercelBlobFile> {
      */
     public override async exists({ id }: FileQuery, options?: OperationOptions): Promise<boolean> {
         return this.instrumentOperation("exists", async () => {
-            try {
-                const file = await this.findMeta(id);
+            const file = await this.findMeta(id);
 
-                // Through the SDK, not a plain HEAD on the URL, which a private blob refuses.
-                return file?.url ? (await this.statObject(file.url, options)) !== undefined : false;
-            } catch {
-                return false;
-            }
+            // Through the SDK, not a plain HEAD on the URL, which a private blob refuses.
+            return file?.url ? (await this.statObject(file.url, options)) !== undefined : false;
         });
     }
 

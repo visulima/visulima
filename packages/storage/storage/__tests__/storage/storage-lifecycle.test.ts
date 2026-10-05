@@ -17,7 +17,7 @@ const HOUR = 60 * 60 * 1000;
 const withFakeClockLocks = (storage: MemoryStorage): MemoryStorage => {
     vi.useFakeTimers();
 
-    return Object.assign(storage, { locker: new Locker({ max: 1000, maxHoldMs: 15 * 60_000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
+    return Object.assign(storage, { locker: new Locker({ maxHoldMs: 15 * 60_000, perf: { now: () => Date.now() }, ttl: 30_000, ttlAutopurge: true }) });
 };
 
 const createUpload = async (storage: MemoryStorage, body = "hello"): Promise<File> => {
@@ -103,6 +103,52 @@ describe("baseStorage lifecycle", () => {
                 await expect(storage.withLock("upload", async () => "free")).resolves.toBe("free");
             });
         });
+
+        it("should never evict a held lock, however many are held", async () => {
+            expect.assertions(1);
+
+            const storage = new MemoryStorage();
+            const lock = (key: string): Promise<string> => (storage as unknown as { lock: (key: string) => Promise<string> }).lock(key);
+
+            for (let index = 0; index <= 1000; index += 1) {
+                await lock(`upload-${index}`);
+            }
+
+            await expect(lock("upload-0")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_LOCKED);
+        });
+    });
+
+    describe("exists and getMeta", () => {
+        it("should answer false only for a missing upload, and throw on any other failure", async () => {
+            expect.assertions(2);
+
+            const storage = new MemoryStorage();
+            // The base implementation, which MemoryStorage overrides.
+            const exists = async (id: string): Promise<boolean> => BaseStorage.prototype.exists.call(storage, { id });
+
+            await expect(exists("missing")).resolves.toBe(false);
+
+            vi.spyOn(storage.meta, "get").mockRejectedValueOnce(new Error("503 Service Unavailable"));
+
+            await expect(exists("missing")).rejects.toThrow("503 Service Unavailable");
+        });
+
+        it("should report a failing meta storage to onError, but not a missing upload", async () => {
+            expect.assertions(3);
+
+            const onError = vi.fn();
+            const storage = new MemoryStorage({ onError });
+
+            await expect(storage.getMeta("missing")).rejects.toHaveProperty("UploadErrorCode", ERRORS.FILE_NOT_FOUND);
+
+            expect(onError).not.toHaveBeenCalled();
+
+            vi.spyOn(storage.meta, "get").mockRejectedValueOnce(new Error("disk unreadable"));
+
+            await storage.getMeta("missing").catch(() => undefined);
+
+            expect(onError).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe("expiration", () => {
@@ -187,6 +233,26 @@ describe("baseStorage lifecycle", () => {
             vi.setSystemTime(13 * HOUR);
 
             await expect(rolling.purge()).resolves.toStrictEqual(expect.objectContaining({ items: [expect.objectContaining({ id: rollingFile.id })] }));
+        });
+
+        it("should not purge a fixed-expiration upload a ttl keeps alive", async () => {
+            expect.assertions(3);
+
+            vi.useFakeTimers({ now: 10 * HOUR, toFake: ["Date"] });
+
+            const storage = new MemoryStorage({ expiration: { maxAge: "1h" } });
+            const file = await createUpload(storage);
+
+            await storage.update({ id: file.id }, { ttl: "3h" });
+
+            vi.setSystemTime(11.5 * HOUR);
+
+            await expect(storage.purge()).resolves.toHaveProperty("items", []);
+            await expect(storage.get({ id: file.id })).resolves.toHaveProperty("id", file.id);
+
+            vi.setSystemTime(13.5 * HOUR);
+
+            await expect(storage.purge()).resolves.toStrictEqual(expect.objectContaining({ items: [expect.objectContaining({ id: file.id })] }));
         });
 
         it("should keep purging when one deletion fails, and log it", async () => {

@@ -322,19 +322,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                             return throwErrorCode(errorCode);
                         }
 
-                        if (Number.isNaN(bytesWritten)) {
-                            // An aborted keepPartial (checksum-less) write resolves with NaN and
-                            // no error code. The pipeline did not complete, so the declared
-                            // contentLength must not be credited (that plus Math.max(x, NaN) would
-                            // persist NaN as the offset). Re-derive the real offset from disk.
-                            const { size } = await stat(path);
-
-                            file.bytesWritten = size;
-                        } else {
-                            // The bytes that actually landed: a body shorter than its Content-Length
-                            // leaves the upload incomplete at its real offset.
-                            file.bytesWritten = bytesWritten;
-                        }
+                        // The bytes that actually landed: a body shorter than its Content-Length, or an
+                        // aborted checksum-less one, leaves the upload incomplete at its real offset.
+                        file.bytesWritten = bytesWritten;
 
                         file.status = getFileStatus(file);
                         file.modifiedAt = new Date().toISOString();
@@ -572,15 +562,12 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 return true;
             } catch (error: unknown) {
-                // Check if it's a file not found error
-                const errorWithCode = error as { code?: string };
-
-                if (errorWithCode.code === "ENOENT") {
+                // Only a missing upload or file is "absent"; any other failure throws.
+                if (isMetaNotFound(error) || (error as { code?: string }).code === "ENOENT") {
                     return false;
                 }
 
-                // For metadata errors, also return false
-                return false;
+                throw error;
             }
         });
     }
@@ -810,7 +797,8 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 const { suffix } = this.meta;
                 const { path } = founding;
 
-                if (!path.includes(suffix)) {
+                // A metafile, or the lock or temporary file of one, but not any name merely containing the suffix.
+                if (!path.replace(/\.lock$|\.[\da-f-]{36}\.tmp$/, "").endsWith(suffix)) {
                     const { birthtime, ctime, mtime } = await stat(path);
                     const normalizedPath = toPosix(path);
                     const id = normalizedPath.startsWith(normalizedDirectory) ? normalizedPath.slice(normalizedDirectory.length) : normalizedPath;
@@ -843,7 +831,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
      * Streams the part body to disk at `part.start`.
      * @param part The part to write
      * @param transforms Extra transforms the body passes through before it lands on disk
-     * @returns The offset after the write, or NaN with an error code when the write failed
+     * @returns The offset after the write, or NaN with an error code when the write failed. An
+     * aborted checksum-less write keeps what it stored: its offset is `start` plus the bytes this
+     * write delivered, never the file's size, which later chunks may already have extended.
      */
     protected lazyWrite(part: File & FilePart, transforms: Transform[] = []): Promise<[number, ERRORS?]> {
         return new Promise((resolve, reject) => {
@@ -870,10 +860,24 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 }
             };
 
-            const failWithCode = (code?: ERRORS): void => {
+            const failWithCode = (code: ERRORS): void => {
                 cleanupStreams();
                 settle(() => {
                     resolve([Number.NaN, code]);
+                });
+            };
+
+            const abort = (): void => {
+                if (!keepPartial) {
+                    failWithCode(ERRORS.REQUEST_ABORTED);
+
+                    return;
+                }
+
+                cleanupStreams();
+                // Read once the file is closed, when `bytesWritten` counts every byte that landed.
+                settle(() => {
+                    resolve([part.start + destination.bytesWritten]);
                 });
             };
 
@@ -890,9 +894,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 }
             });
 
-            part.body.on("aborted", () => {
-                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
-            });
+            part.body.on("aborted", abort);
             part.body.on("error", (error) => {
                 cleanupStreams();
                 settle(() => {
@@ -902,7 +904,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             // Check if signal is already aborted before starting pipeline
             if (signal?.aborted) {
-                failWithCode(keepPartial ? undefined : ERRORS.REQUEST_ABORTED);
+                abort();
 
                 return;
             }
@@ -913,14 +915,9 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
             if (signal) {
                 onAbort = () => {
-                    cleanupStreams();
+                    abort();
                     destination.destroy();
-                    lengthChecker.destroy();
-                    checksumChecker.destroy();
                     part.body.destroy();
-                    settle(() => {
-                        resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
-                    });
                 };
 
                 signal.addEventListener("abort", onAbort, { once: true });
@@ -936,9 +933,7 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                     // Check if error is due to abort signal
                     if (signal?.aborted) {
-                        settle(() => {
-                            resolve([Number.NaN, keepPartial ? undefined : ERRORS.REQUEST_ABORTED]);
-                        });
+                        abort();
 
                         return;
                     }
