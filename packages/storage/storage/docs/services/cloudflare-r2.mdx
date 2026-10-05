@@ -123,6 +123,8 @@ Identical to [Amazon S3](./amazon-s3.mdx#behaviour--limits):
 - **Range reads**, native `list({ delimiter })`, presigned `GET`/`PUT` (`S3Storage` only).
 - **`purge()`** removes expired uploads that have metadata from this storage, and aborts only multipart uploads it started.
 - R2 ignores canned ACLs; leave `acl` unset and use a public bucket or custom domain for public reads.
+- **No presigned POST** — R2 does not support browser-form POST uploads, so `Files.signedUpload(key, { maxSize })` answers `METHOD_NOT_ALLOWED` (`capabilities.signedUploadPost` is `false` for a custom endpoint unless `uploadPost: true`). Sign a `PUT` instead (`signedUpload` without a size limit) and check the size in your app.
+- **Conditional requests** are off for a custom endpoint. R2 documents conditional headers on `GetObject`, `PutObject` and `CopyObject`, not on `CompleteMultipartUpload` or `DeleteObject`, so enable only those operations: `conditional: { copy: true, read: true }`. `conditional: true` would also send `ifNoneMatch` / `ifMatch` uploads and conditional deletes, which R2 may not evaluate.
 
 ## Using it with the handlers
 

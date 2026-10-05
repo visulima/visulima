@@ -20,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Files, UploadControl } from "../../../src/files";
 import RestFetch from "../../../src/handler/rest/rest-fetch";
+import { cloudflare } from "../../../src/storage/aws/clients";
 import S3Storage from "../../../src/storage/aws/s3-storage";
 import { ERRORS } from "../../../src/utils/errors";
 import { createdAgo, HOUR } from "../../__helpers__/clock";
@@ -87,6 +88,11 @@ const createS3 = () => {
         }
 
         const holds = (target: string): boolean => bucket.holds(target, { ifMatch: input.IfMatch as string, ifNoneMatch: input.IfNoneMatch as string });
+
+        // A write's If-Match on a key that stores nothing answers 404, not 412.
+        if (input.IfMatch !== undefined && !bucket.objects.has(key) && [CompleteMultipartUploadCommand, CopyObjectCommand, DeleteObjectCommand].some((type) => command instanceof type)) {
+            throw s3Error("NoSuchKey", 404);
+        }
 
         if (command instanceof CompleteMultipartUploadCommand) {
             // Conditional writes: the predicate is evaluated against the key at completion.
@@ -666,6 +672,62 @@ describe("s3Storage against an in-memory S3", () => {
         await expect(files.signedUpload("up.txt", { expiresIn: 604_801, maxSize: 1 })).rejects.toThrow(
             expect.objectContaining({ UploadErrorCode: ERRORS.BAD_REQUEST }),
         );
+    });
+
+    it("should answer PRECONDITION_FAILED when an If-Match write finds no object", async () => {
+        expect.assertions(3);
+
+        const files = new Files({ adapter: createStorage() });
+
+        await files.upload("source.txt", "source");
+
+        // S3 answers 404 for these, not 412.
+        await expect(files.upload("absent.txt", "one", { ifMatch: "\"etag\"" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        await expect(files.copy("source.txt", "absent.txt", { ifMatch: "\"etag\"" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.PRECONDITION_FAILED }));
+        expect(s3.uploads.size).toBe(0);
+    });
+
+    it("should abort and answer FILE_CONFLICT when a concurrent conditional write wins", async () => {
+        expect.assertions(2);
+
+        const files = new Files({ adapter: createStorage() });
+
+        s3.state.override = (command) => (command instanceof CompleteMultipartUploadCommand ? s3Error("ConditionalRequestConflict", 409) : undefined);
+
+        await expect(files.upload("a.txt", "one", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.FILE_CONFLICT }));
+        expect(s3.uploads.size).toBe(0);
+    });
+
+    it("should sign the configured ACL into a POST policy", async () => {
+        expect.assertions(2);
+
+        const files = new Files({ adapter: createStorage({ acl: "public-read" }) });
+        const { fields } = (await files.signedUpload("up.txt", { maxSize: 10 })) as { fields: Record<string, string> };
+
+        expect(fields.acl).toBe("public-read");
+        // The ACL is a policy condition: a form that changes it is refused.
+        expect(() => acceptS3Post({ ...fields, acl: "private" }, Buffer.from("hello"), { bucket: "bucket", secretAccessKey: "secret" })).toThrow("AccessDenied");
+    });
+
+    it("should sign POST policies for AWS only, unless told to", async () => {
+        expect.assertions(4);
+
+        const r2 = new Files({ adapter: createStorage(cloudflare({ accessKeyId: "id", accountId: "account", secretAccessKey: "secret" })) });
+
+        expect(new Files({ adapter: createStorage() }).capabilities.signedUploadPost).toBe(true);
+        // Cloudflare R2 does not accept browser-form POST uploads.
+        expect(r2.capabilities.signedUploadPost).toBe(false);
+        await expect(r2.signedUpload("up.txt", { maxSize: 10 })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }));
+        expect(new Files({ adapter: createStorage({ endpoint: "https://minio.local", uploadPost: true }) }).capabilities.signedUploadPost).toBe(true);
+    });
+
+    it("should send only the conditional requests enabled per operation", async () => {
+        expect.assertions(2);
+
+        const files = new Files({ adapter: createStorage({ conditional: { copy: true, read: true }, endpoint: "https://r2.local" }) });
+
+        expect(files.capabilities.conditional).toStrictEqual({ copy: true, create: false, delete: false, read: true, replace: false });
+        await expect(files.upload("a.txt", "one", { ifNoneMatch: "*" })).rejects.toThrow(expect.objectContaining({ UploadErrorCode: ERRORS.METHOD_NOT_ALLOWED }));
     });
 
     it("should keep the configured ACL on objects a server-side copy writes", async () => {

@@ -19,7 +19,7 @@ import type { FileInit, FilePart, FileQuery, FileReturn } from "../utils/file";
 import { getFileStatus, hasContent, partMatch, updateSize } from "../utils/file";
 import type { Part, S3ApiOperations, S3CompatibleFile } from "./s3-api";
 import { MAX_SIGV4_EXPIRES_IN } from "./s3-post-policy";
-import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, rethrowPreconditionFailed, withoutParts } from "./s3-utils";
+import { assertNextPartSize, buildRangeHeader, isBadDigest, isNotFound, MIN_PART_SIZE, PART_SIZE, rethrowConditionalFailure, withoutParts } from "./s3-utils";
 
 // Re-exported for existing importers of this module.
 export type { MultipartUpload, Part, S3ApiOperations, S3CallOptions, S3CompatibleFile } from "./s3-api";
@@ -55,6 +55,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
      * S3-compatible services differ in which of these headers they honour.
      */
     public override readonly conditionalSupport: ConditionalSupport;
+
+    /** Set through the `uploadPost` option: not every S3-compatible service accepts browser-form POSTs. */
+    public override readonly supportsUploadPost: boolean;
 
     public override readonly maxSignedUrlExpiresIn: number | undefined = MAX_SIGV4_EXPIRES_IN;
 
@@ -98,21 +101,30 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
         config: Omit<BaseStorageOptions<TFile>, "metaStorage" | "retryConfig"> & {
             bucket: string;
             clientDirectUpload?: boolean;
-            /** Advertise and send conditional (ETag) requests. Direct client uploads never are. */
-            conditional?: boolean;
+
+            /**
+             * Advertise and send conditional (ETag) requests: every kind, or only the ones set. Direct
+             * client uploads never are.
+             */
+            conditional?: boolean | Partial<ConditionalSupport>;
             metaStorage?: MetaStorage<TFile>;
             metaStorageConfig?: unknown;
             partSize?: number | string;
             retryConfig?: RetryConfig;
+            /** Sign browser-form POST policies ({@link BaseStorage.getUploadPost}). */
+            uploadPost?: boolean;
         },
     ) {
         super(config);
 
         this.bucket = config.bucket;
 
-        const conditional = config.conditional === true && !config.clientDirectUpload;
+        const { conditional } = config;
+        const enabled = (kind: keyof ConditionalSupport): boolean =>
+            !config.clientDirectUpload && (conditional === true || (typeof conditional === "object" && conditional[kind] === true));
 
-        this.conditionalSupport = { copy: conditional, create: conditional, delete: conditional, read: conditional, replace: conditional };
+        this.conditionalSupport = { copy: enabled("copy"), create: enabled("create"), delete: enabled("delete"), read: enabled("read"), replace: enabled("replace") };
+        this.supportsUploadPost = config.uploadPost === true;
 
         this.partSize = typeof config.partSize === "string" ? parseBytes(config.partSize) : config.partSize || PART_SIZE;
 
@@ -472,7 +484,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
 
                 await this.runOperation(options, (signal) =>
                     s3Api.deleteObject({ Bucket: this.bucket, Key: file.name, ...(ifMatch !== undefined && { IfMatch: quoteETag(ifMatch) }) }, { signal }),
-                ).catch(rethrowPreconditionFailed);
+                ).catch(rethrowConditionalFailure(ifMatch !== undefined));
             } else if (ifMatch === undefined) {
                 await this.abortMultipartUpload(file, options);
             } else {
@@ -752,7 +764,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     },
                     { signal },
                 ),
-            ).catch(rethrowPreconditionFailed);
+            ).catch(rethrowConditionalFailure(false));
 
             await this.checkIfExpired({ expiredAt: Expires } as TFile);
 
@@ -942,7 +954,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 },
                 { signal },
             ),
-        ).catch(rethrowPreconditionFailed);
+        ).catch(rethrowConditionalFailure(condition?.ifMatch !== undefined));
     }
 
     /**
@@ -1051,7 +1063,7 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                 },
                 { signal },
             ),
-        ).catch(rethrowPreconditionFailed);
+        ).catch(rethrowConditionalFailure(ifMatch !== undefined));
 
         return { ...file, id: destination, name: destination };
     }

@@ -56,9 +56,6 @@ import type { AwsLightError, AwsLightStorageOptions } from "./types";
 class AwsLightStorage extends S3BaseStorage {
     public static override readonly name: string = "aws-light";
 
-    /** Signs SigV4 POST policies, so `Files.signedUpload` can enforce a size range. */
-    public override readonly supportsUploadPost: boolean = true;
-
     private s3Api: AwsLightApiAdapter;
 
     public constructor(config: AwsLightStorageOptions) {
@@ -85,9 +82,11 @@ class AwsLightStorage extends S3BaseStorage {
         super({
             ...config,
             bucket,
-            // A custom endpoint is an S3-compatible service, whose support for conditional headers is unknown.
+            // A custom endpoint is an S3-compatible service, whose support for conditional headers and
+            // browser-form POST uploads is unknown.
             conditional: config.conditional ?? config.endpoint === undefined,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
+            uploadPost: config.uploadPost ?? config.endpoint === undefined,
         });
 
         this.s3Api = new AwsLightApiAdapter({

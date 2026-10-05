@@ -62,9 +62,6 @@ import type { AwsError, S3StorageOptions } from "./types";
 class S3Storage extends S3BaseStorage {
     public static override readonly name: string = "s3";
 
-    /** Signs SigV4 POST policies, so `Files.signedUpload` can enforce a size range. */
-    public override readonly supportsUploadPost: boolean = true;
-
     private s3Api: S3ClientAdapter;
 
     private rawClient: S3Client;
@@ -90,16 +87,18 @@ class S3Storage extends S3BaseStorage {
 
         // Initialize client before calling super
         const client = new S3Client(config);
+        // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
+        // support for conditional headers and browser-form POST uploads is unknown.
+        const aws = config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL;
 
         // Pass the whole config on: the base storage reads allowMIME, maxUploadSize, the hooks,
         // validation, acl, … from it, and they were silently dropped by an explicit allowlist.
         super({
             ...config,
             bucket,
-            // A custom endpoint (in the config or the environment) is an S3-compatible service, whose
-            // support for conditional headers is unknown.
-            conditional: config.conditional ?? (config.endpoint === undefined && !process.env.AWS_ENDPOINT_URL_S3 && !process.env.AWS_ENDPOINT_URL),
+            conditional: config.conditional ?? aws,
             metaStorageConfig: config.metaStorageConfig ? { ...config.metaStorageConfig, ...config } : { ...config },
+            uploadPost: config.uploadPost ?? aws,
         });
 
         this.s3Api = new S3ClientAdapter(client, bucket);
@@ -224,6 +223,7 @@ class S3Storage extends S3BaseStorage {
 
         return createS3PostPolicy({
             accessKeyId,
+            acl: this.getAcl(),
             bucket: this.bucket,
             contentType: options?.contentType,
             expiresIn: options?.expiresIn,

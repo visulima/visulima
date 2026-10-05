@@ -16,6 +16,8 @@ const amzDate = (date: Date): string => date.toISOString().replaceAll(/[:-]|\.\d
 
 export interface S3PostPolicyInput {
     accessKeyId: string;
+    /** Canned ACL the stored object gets, as a PUT through the storage would. */
+    acl?: string;
     bucket: string;
     contentType?: string;
     expiresIn?: number;
@@ -59,6 +61,7 @@ export const createS3PostPolicy = (input: S3PostPolicyInput): UploadPostPolicy =
 
     const fields: Record<string, string> = {
         key: input.key,
+        ...(input.acl !== undefined && { acl: input.acl }),
         ...(input.contentType !== undefined && { "Content-Type": input.contentType }),
         "x-amz-algorithm": "AWS4-HMAC-SHA256",
         "x-amz-credential": credential,

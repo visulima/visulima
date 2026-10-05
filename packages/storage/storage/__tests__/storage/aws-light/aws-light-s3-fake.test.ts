@@ -402,13 +402,16 @@ describe("aws-light against an in-memory S3", () => {
     });
 
     it("should sign a POST policy whose size range the bucket enforces", async () => {
-        expect.assertions(5);
+        expect.assertions(6);
 
         const s3 = createS3();
 
         vi.stubGlobal("fetch", s3.fetch);
 
-        const files = new Files({ adapter: createStorage() });
+        // A custom endpoint signs POST policies only when told the service accepts them.
+        expect(new Files({ adapter: createStorage() }).capabilities.signedUploadPost).toBe(false);
+
+        const files = new Files({ adapter: createStorage({ uploadPost: true }) });
         const signed = await files.signedUpload("in/up.txt", { contentType: "text/plain", maxSize: 8 });
 
         expect(signed).toMatchObject({ method: "POST", url: "https://s3.test/uploads/" });

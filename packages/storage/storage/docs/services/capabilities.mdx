@@ -59,26 +59,27 @@ From the adapter flags `supportsResumableWrites`, `sequentialWrites`, `supportsR
 
 `Files.signedUpload(key, { maxSize, minSize })` signs a browser-form POST policy whose `content-length-range` the provider enforces. Adapters without one reject a size limit with `METHOD_NOT_ALLOWED`; `files.capabilities.signedUploadPost` reports which is which.
 
-| Adapter        | `getUploadPost()`                             | `signedUrlMaxExpiresIn` |
-| -------------- | --------------------------------------------- | ----------------------- |
-| S3 / R2 / etc. | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
-| S3 (light)     | ✅ SigV4 POST policy (`content-length-range`) | 604800 (7 d)            |
-| every other    | ❌ `METHOD_NOT_ALLOWED`                       | —                       |
+| Adapter       | `getUploadPost()`                                             | `signedUrlMaxExpiresIn` |
+| ------------- | ------------------------------------------------------------- | ----------------------- |
+| S3 (AWS)      | ✅ SigV4 POST policy (`content-length-range`)                 | 604800 (7 d)            |
+| S3 (light)    | ✅ SigV4 POST policy (`content-length-range`), AWS            | 604800 (7 d)            |
+| S3-compatible | 🟡 off unless `uploadPost: true` (R2 accepts no POST uploads) | 604800 (7 d)            |
+| every other   | ❌ `METHOD_NOT_ALLOWED`                                       | —                       |
 
 ## Conditional (ETag) operations
 
 Reported per primitive under `files.capabilities.conditional`; a predicate the adapter cannot evaluate natively rejects with `METHOD_NOT_ALLOWED`, and a predicate that does not hold with `PRECONDITION_FAILED` (412). See [Conditional (ETag) operations](../files-facade.mdx#conditional-etag-operations).
 
-| Adapter         | create (`ifNoneMatch: "*"`)       | replace (`ifMatch`) | read (`ifMatch`) | delete (`ifMatch`) | copy (`sourceIfMatch` + dest) |
-| --------------- | --------------------------------- | ------------------- | ---------------- | ------------------ | ----------------------------- |
-| S3 (AWS)        | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
-| S3 (light)      | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
-| S3-compatible   | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
-| Azure Blob      | ❌                                | ❌                  | ✅               | ✅                 | ✅                            |
-| WebDAV          | 🟡 off unless `conditional: true` | 🟡                  | 🟡               | 🟡                 | 🟡                            |
-| Local (disk)    | ✅ (process-local lock)           | ✅                  | ✅               | ✅                 | ✅                            |
-| Memory          | ✅                                | ✅                  | ✅               | ✅                 | ✅                            |
-| everything else | ❌                                | ❌                  | ❌               | ❌                 | ❌                            |
+| Adapter         | create (`ifNoneMatch: "*"`)                            | replace (`ifMatch`) | read (`ifMatch`) | delete (`ifMatch`) | copy (`sourceIfMatch` + dest) |
+| --------------- | ------------------------------------------------------ | ------------------- | ---------------- | ------------------ | ----------------------------- |
+| S3 (AWS)        | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| S3 (light)      | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| S3-compatible   | 🟡 off unless `conditional` (`true`, or per operation) | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Azure Blob      | ❌                                                     | ❌                  | ✅               | ✅                 | ✅                            |
+| WebDAV          | 🟡 off unless `conditional: true`                      | 🟡                  | 🟡               | 🟡                 | 🟡                            |
+| Local (disk)    | ✅ (process-local lock)                                | ✅                  | ✅               | ✅                 | ✅                            |
+| Memory          | ✅                                                     | ✅                  | ✅               | ✅                 | ✅                            |
+| everything else | ❌                                                     | ❌                  | ❌               | ❌                 | ❌                            |
 
 ## URL options
 
