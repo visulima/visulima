@@ -19,6 +19,23 @@ export const toHttpDate = (value: Date | number | string): string => {
 };
 
 /**
+ * Formats an entity tag as the ETag header carries it (RFC 9110 §8.8.3): quoted, keeping a `W/`
+ * prefix. Adapters may hand back a bare value, which If-Match / If-Range would never match.
+ * @param etag ETag as the adapter returned it
+ * @returns The quoted entity tag
+ */
+export const toETagHeader = (etag: string): string => {
+    const weak = etag.startsWith("W/");
+    const tag = weak ? etag.slice(2) : etag;
+
+    if (tag.length > 1 && tag.startsWith("\"") && tag.endsWith("\"")) {
+        return etag;
+    }
+
+    return `${weak ? "W/" : ""}"${tag}"`;
+};
+
+/**
  * Replaces what a header value can't carry as-is: every UTF-16 code unit outside printable ASCII.
  * @param value Header value
  * @param replace Replacement of one code unit

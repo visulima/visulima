@@ -101,17 +101,50 @@ describe("baseHandlerFetch", () => {
             expect(response.status).toBe(200);
         });
 
+        it("should quote the bare ETag of an adapter, so If-Range can match it", async () => {
+            expect.assertions(2);
+
+            const { handler, storage } = setup();
+            const { getMeta, getStream } = storage;
+
+            vi.spyOn(storage, "getMeta").mockImplementation(async (id) => { return { ...(await getMeta.call(storage, id)), ETag: "bare" }; });
+            vi.spyOn(storage, "getStream").mockImplementation(async (query) => {
+                const streamed = await getStream.call(storage, query);
+
+                return { ...streamed, headers: { ...streamed.headers, ETag: "bare" } };
+            });
+
+            const head = await handler.fetch(new Request(`http://localhost/files/${ID}`, { method: "HEAD" }));
+            const response = await handler.fetch(new Request(`http://localhost/files/${ID}`, { headers: { "if-range": "\"bare\"", range: "bytes=0-4" } }));
+
+            vi.restoreAllMocks();
+
+            expect(head.headers.get("etag")).toBe("\"bare\"");
+            expect(response.status).toBe(206);
+        });
+
         it("should honour an If-Range date taken from the Last-Modified of HEAD", async () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const { handler } = setup();
             const head = await handler.fetch(new Request(`http://localhost/files/${ID}`, { method: "HEAD" }));
             const lastModified = head.headers.get("last-modified") as string;
+            const ranged = async (): Promise<Response> =>
+                handler.fetch(new Request(`http://localhost/files/${ID}`, { headers: { "if-range": lastModified, range: "bytes=0-4" } }));
 
             // An HTTP-date (RFC 9110 §5.6.7), not an ISO string
             expect(lastModified).toMatch(/GMT$/u);
 
-            const response = await handler.fetch(new Request(`http://localhost/files/${ID}`, { headers: { "if-range": lastModified, range: "bytes=0-4" } }));
+            // A date is a strong validator only once Last-Modified is a second old (RFC 9110 §13.1.5).
+            vi.spyOn(Date, "now").mockReturnValue(Date.parse(lastModified) + 999);
+
+            await expect(ranged().then(({ status }) => status)).resolves.toBe(200);
+
+            vi.spyOn(Date, "now").mockReturnValue(Date.parse(lastModified) + 1000);
+
+            const response = await ranged();
+
+            vi.restoreAllMocks();
 
             expect(response.status).toBe(206);
             expect(response.headers.get("last-modified")).toBe(lastModified);

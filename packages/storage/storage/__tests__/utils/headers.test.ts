@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { HeaderUtilities } from "../../src/utils/headers";
+import { HeaderUtilities, toETagHeader } from "../../src/utils/headers";
 
 describe("headers", () => {
+    describe(toETagHeader, () => {
+        it("should quote a bare entity tag, keeping a weak prefix and never quoting twice", () => {
+            expect.assertions(4);
+
+            expect(toETagHeader("abc")).toBe("\"abc\"");
+            expect(toETagHeader("\"abc\"")).toBe("\"abc\"");
+            expect(toETagHeader("W/abc")).toBe("W/\"abc\"");
+            expect(toETagHeader("W/\"abc\"")).toBe("W/\"abc\"");
+        });
+    });
+
     describe(HeaderUtilities, () => {
         describe("acceptsMediaType", () => {
             it("should return true when media type is accepted", () => {

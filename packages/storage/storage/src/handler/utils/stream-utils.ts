@@ -4,8 +4,8 @@ import { PassThrough } from "node:stream";
 
 /**
  * Picks the Range header to honour: none when an `If-Range` validator doesn't match the file's
- * strong ETag or its Last-Modified date, so a resumed download never mixes two versions of a file
- * (RFC 9110 §13.1.5).
+ * strong ETag or its (at least one second old) Last-Modified date, so a resumed download never
+ * mixes two versions of a file (RFC 9110 §13.1.5).
  * @param range Range request header
  * @param ifRange If-Range request header
  * @param headers Response headers carrying the file's ETag / Last-Modified
@@ -27,10 +27,17 @@ export const rangeIfCurrent = (
     };
     const validator = ifRange.trim();
 
-    // An entity-tag validator must match strongly; anything else is an HTTP-date.
-    const matches = validator.startsWith("\"") ? !validator.startsWith("W/") && validator === header("etag") : validator === header("last-modified");
+    // An entity-tag validator must match strongly.
+    if (validator.startsWith("\"") || validator.startsWith("W/")) {
+        return !validator.startsWith("W/") && validator === header("etag") ? range : undefined;
+    }
 
-    return matches ? range : undefined;
+    // Anything else is an HTTP-date, a strong validator only when Last-Modified is at least one
+    // second before the response is generated: a file changed within that second may change again
+    // under the same date.
+    const lastModified = header("last-modified");
+
+    return validator === lastModified && Date.parse(lastModified) <= Date.now() - 1000 ? range : undefined;
 };
 
 /**

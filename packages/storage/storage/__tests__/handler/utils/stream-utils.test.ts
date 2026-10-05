@@ -1,7 +1,7 @@
 import { PassThrough, Readable } from "node:stream";
 import { buffer as collect } from "node:stream/consumers";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { applyRange, createRangeLimitedStream, createStreamResponse, pipeWithBackpressure, rangeIfCurrent } from "../../../src/handler/utils/stream-utils";
 
@@ -232,6 +232,22 @@ describe("stream-utils", () => {
             expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", headers)).toBe("bytes=0-1");
             expect(rangeIfCurrent("bytes=0-1", "Fri, 02 Jan 2026 00:00:00 GMT", headers)).toBeUndefined();
             expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", undefined)).toBeUndefined();
+        });
+
+        it("drops the range for a date validator when Last-Modified is less than a second old (RFC 9110 §13.1.5)", () => {
+            expect.assertions(2);
+
+            vi.useFakeTimers({ now: new Date("2026-01-01T00:00:00.999Z") });
+
+            try {
+                expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", headers)).toBeUndefined();
+
+                vi.setSystemTime(new Date("2026-01-01T00:00:01Z"));
+
+                expect(rangeIfCurrent("bytes=0-1", "Thu, 01 Jan 2026 00:00:00 GMT", headers)).toBe("bytes=0-1");
+            } finally {
+                vi.useRealTimers();
+            }
         });
     });
 

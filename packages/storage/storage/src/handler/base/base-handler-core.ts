@@ -13,7 +13,7 @@ import type MediaTransformer from "../../transformer/media-transformer";
 import { getContentTypeFromFormat } from "../../transformer/utils";
 import type { ErrorResponses } from "../../utils/errors";
 import { ErrorMap, ERRORS, isUploadError } from "../../utils/errors";
-import { HeaderUtilities, toHttpDate } from "../../utils/headers";
+import { HeaderUtilities, toETagHeader, toHttpDate } from "../../utils/headers";
 import { assertSafeUrlId, COMMON_PATH_NAMES, getBaseUrl, uuidRegex } from "../../utils/http";
 import type { HttpError, ResponseBody, ResponseBodyType, UploadResponse } from "../../utils/types";
 import { isValidationError } from "../../utils/validator";
@@ -110,7 +110,7 @@ const fileStateHeaders = (file: Pick<UploadFile, "ETag" | "expiredAt" | "modifie
     return {
         ...(file?.expiredAt === undefined ? {} : { "X-Upload-Expires": file.expiredAt.toString() }),
         ...(file?.modifiedAt === undefined ? {} : { "Last-Modified": toHttpDate(file.modifiedAt) }),
-        ...(file?.ETag === undefined ? {} : { ETag: file.ETag }),
+        ...(file?.ETag === undefined ? {} : { ETag: toETagHeader(file.ETag) }),
     };
 };
 
@@ -603,7 +603,13 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
                 return {
                     ...fileMeta,
                     contentType,
-                    headers: { ...streamResult.headers, "Accept-Ranges": "bytes", "Content-Type": contentType },
+                    headers: {
+                        ...Object.fromEntries(
+                            Object.entries(streamResult.headers ?? {}).map(([name, value]) => [name, name.toLowerCase() === "etag" ? toETagHeader(value) : value]),
+                        ),
+                        "Accept-Ranges": "bytes",
+                        "Content-Type": contentType,
+                    },
                     size: streamResult.size ?? fileMeta.size,
                     statusCode: 200,
                     stream: streamResult.stream,

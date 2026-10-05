@@ -4,6 +4,7 @@ import createHttpError from "http-errors";
 
 import type { BaseStorage } from "../../storage/storage";
 import type { FileInit, UploadFile } from "../../storage/utils/file";
+import { toETagHeader } from "../../utils/headers";
 import type { LocationSource } from "../base/base-handler-core";
 import type { ResponseFile } from "../types";
 import { withoutInternalKeys } from "../utils/request-parser";
@@ -100,7 +101,7 @@ class MultipartBase<TFile extends UploadFile> {
             headers: {
                 Location: locationUrl,
                 ...(finalFile.expiredAt === undefined ? {} : { "X-Upload-Expires": finalFile.expiredAt.toString() }),
-                ...(finalFile.ETag === undefined ? {} : { ETag: finalFile.ETag }),
+                ...(finalFile.ETag === undefined ? {} : { ETag: toETagHeader(finalFile.ETag) }),
             },
             statusCode: 200,
         };

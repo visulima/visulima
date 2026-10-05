@@ -59,7 +59,8 @@ describe("response-builder", () => {
 
             expect(headers.Location).toBe("/files/f1");
             expect(headers["X-Upload-Expires"]).toBe("1700000000000");
-            expect(headers.ETag).toBe("etag1");
+            // An adapter's bare value goes out quoted (RFC 9110 §8.8.3).
+            expect(headers.ETag).toBe("\"etag1\"");
         });
 
         it("omits ETag/expires when undefined and merges additional headers", () => {
@@ -141,7 +142,7 @@ describe("response-builder", () => {
 
             // An HTTP-date (RFC 9110 §8.8.2), not the stored string.
             expect(headers["Last-Modified"]).toBe("Mon, 01 Jan 2024 00:00:00 GMT");
-            expect(headers.ETag).toBe("etag");
+            expect(headers.ETag).toBe("\"etag\"");
             expect(headers["X-Upload-Expires"]).toBe("1");
         });
     });
