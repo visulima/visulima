@@ -1,3 +1,10 @@
+## @visulima/vis-mcp [1.0.42](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.41...@visulima/vis-mcp@1.0.42) (2026-10-05)
+
+
+### Dependencies
+
+* **zod:** 4.4.3 → 4.6.5
+
 ## @visulima/vis-mcp [1.0.41](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.40...@visulima/vis-mcp@1.0.41) (2026-10-04)
 
 
