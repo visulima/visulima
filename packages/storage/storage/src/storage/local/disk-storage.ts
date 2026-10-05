@@ -13,7 +13,7 @@ import { detectFileTypeFromStream } from "../../utils/detect-file-type";
 import type { UploadError } from "../../utils/errors";
 import { ERRORS, isUploadError, throwErrorCode } from "../../utils/errors";
 import { toHttpDate } from "../../utils/headers";
-import { streamChecksum } from "../../utils/pipes/stream-checksum";
+import { isStreamChecksumError, streamChecksum } from "../../utils/pipes/stream-checksum";
 import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import toMilliseconds from "../../utils/primitives/to-milliseconds";
 import { retry } from "../../utils/retry";
@@ -868,15 +868,17 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                 });
             };
 
-            // Only its own limit error means the body is too long: pipeline also destroys it with the
-            // body's error, which must surface as that error (Windows reports this one first).
+            // Only their own errors mean too long / mismatch: pipeline also destroys them with the
+            // body's error, which must surface as that error (Windows reports these first).
             lengthChecker.on("error", (error) => {
                 if (isStreamLengthError(error)) {
                     failWithCode(ERRORS.FILE_CONFLICT);
                 }
             });
-            checksumChecker.on("error", () => {
-                failWithCode(ERRORS.CHECKSUM_MISMATCH);
+            checksumChecker.on("error", (error) => {
+                if (isStreamChecksumError(error)) {
+                    failWithCode(ERRORS.CHECKSUM_MISMATCH);
+                }
             });
 
             part.body.on("aborted", () => {
