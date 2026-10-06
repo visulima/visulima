@@ -69,6 +69,13 @@ criterion = { package = "codspeed-criterion-compat", version = "4", default-feat
 name = "transform"
 harness = false
 
+# Max-opt release profile. Fat LTO is a measured decision, not a copied
+# default: on rustc 1.99 (2026-10), `lto = "thin"` regressed the
+# transform_ts transpile hot path +11% (470B source) and +4.5% (9.4KB) at
+# p=0.00, and the cold build was not faster either (52s thin vs 49s fat).
+# Same result on the task-runner graph/hash hot paths — see
+# task-runner/native/Cargo.toml. Re-measure (cargo bench --profile release
+# --bench transform) before changing this.
 [profile.release]
 lto = true
 codegen-units = 1
