@@ -1,7 +1,7 @@
-/// Platform-specific process tree management.
-///
-/// Unix: spawn children in new process groups via `setsid`, kill via `killpg`.
-/// Windows: assign children to Job Objects, terminate via `TerminateJobObject`.
+//! Platform-specific process tree management.
+//!
+//! Unix: spawn children in new process groups via `setsid`, kill via `killpg`.
+//! Windows: assign children to Job Objects, terminate via `TerminateJobObject`.
 
 #[cfg(unix)]
 mod unix {
@@ -12,6 +12,9 @@ mod unix {
     use nix::unistd::Pid;
 
     /// Pre-exec hook: call `setsid()` to create a new session/process group.
+    ///
+    /// # Safety
+    ///
     /// Must be called inside `Command::pre_exec` (unsafe).
     pub unsafe fn pre_exec_setsid() -> io::Result<()> {
         if libc::setsid() == -1 {
@@ -33,7 +36,7 @@ mod unix {
     pub fn kill_process_group(pid: u32, signal_name: &str) -> io::Result<()> {
         let sig = parse_signal(signal_name).unwrap_or(Signal::SIGTERM);
         let pgid = Pid::from_raw(-(pid as i32));
-        signal::kill(pgid, sig).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        signal::kill(pgid, sig).map_err(io::Error::other)
     }
 
     fn parse_signal(name: &str) -> Option<Signal> {
