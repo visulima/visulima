@@ -199,7 +199,7 @@ pub fn ingest<P: AsRef<Path>>(
             }
 
             ingested += 1;
-            if ingested % PROGRESS_EVERY == 0 {
+            if ingested.is_multiple_of(PROGRESS_EVERY) {
                 progress.emit(ingested, total);
             }
         }
