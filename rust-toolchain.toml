@@ -1,3 +1,9 @@
+# Floating `stable` is deliberate: rustc compile-time work lands here without
+# PRs — e.g. the 2026-07-29..09-28 window shipped a −4.57% mean wall-time
+# improvement, the LLVM 23 upgrade, and PGO'd clippy — so a floating channel
+# keeps local builds and `cargo clippy` runs on the fastest compiler. CI
+# caches key off source hashes, not the compiler version, so rolling stable
+# never invalidates them. Don't pin a version without a reason.
 [toolchain]
 channel = "stable"
 profile = "default"
