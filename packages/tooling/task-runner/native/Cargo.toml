@@ -78,6 +78,16 @@ harness = false
 name = "file_hasher"
 harness = false
 
+# Max-opt release profile, governing the shipped addon AND the sidecar
+# binaries built under this workspace (see the fspy_seccomp note above).
+# Fat LTO is a measured decision, not a copied default: on rustc 1.99
+# (2026-10), interleaved criterion A/B/A/B runs showed `lto = "thin"`
+# regressing the hot paths — graph/get_transitive_deps ~+5%,
+# graph/find_all_cycles ~+3%, file_hasher/64K ~+3% — while saving no build
+# time (24s cold-build either way; the relink phase alone is 6s vs 5s).
+# Thin LTO only pays off when a dep tree makes fat-LTO links minutes long;
+# this tree doesn't. Re-measure (cargo bench --profile release) before
+# changing this.
 [profile.release]
 lto = true
 codegen-units = 1

@@ -85,7 +85,7 @@ pub fn spawn_process(
                 #[cfg(unix)]
                 {
                     use std::os::unix::process::ExitStatusExt;
-                    s.code().unwrap_or_else(|| s.signal().map(|sig| -(sig as i32)).unwrap_or(-1))
+                    s.code().unwrap_or_else(|| s.signal().map(|sig| -sig).unwrap_or(-1))
                 }
                 #[cfg(windows)]
                 {

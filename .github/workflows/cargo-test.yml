@@ -189,7 +189,6 @@ jobs:
             - name: "Run cargo clippy"
               working-directory: "${{ matrix.package.dir }}"
               run: "cargo clippy -- -D warnings"
-              continue-on-error: true
 
             # Only write the cache from trusted refs. PRs restore but never save,
             # so a fork can't poison the cache for downstream runs.
