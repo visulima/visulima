@@ -102,6 +102,14 @@ auditConfig:
     # which only expands glob patterns authored in repo config/tooling, never
     # attacker-supplied input. Re-check when braces publishes 3.0.4.
     - GHSA-vfj7-8cjw-p6xm
+    # sprintf-js unbounded precision specifier DoS. The advisory names 1.1.4 as
+    # the fix but no such release exists — 1.1.3 is still the latest published
+    # version — so neither an upgrade nor an override can resolve it. Reached
+    # only through @anolilab/lint-staged-config > jest > ... > js-yaml >
+    # argparse, dev-only tooling that formats strings authored in this repo,
+    # never attacker-supplied format strings. Re-check when sprintf-js
+    # publishes 1.1.4.
+    - GHSA-hp3w-g68c-fv3c
 
 autoInstallPeers: true
 
@@ -297,7 +305,7 @@ catalogs:
     safe-stable-stringify: ^2.5.0
     serve: ^14.2.6
     sharp: ^0.35.5
-    smol-toml: ^1.7.1
+    smol-toml: ^1.8.1
     sort-package-json: 4.0.0
     standard: ^17.1.2
     string-strip-html: ^13.5.3
@@ -373,7 +381,7 @@ catalogs:
     svelte-preprocess: ^6.0.5
     swagger-ui-react: 5.32.12
     three: 0.185.1
-    vue: 3.5.41
+    vue: 3.5.43
   icons:
     '@icons-pack/react-simple-icons': 13.13.0
     '@radix-ui/react-icons': 1.3.2
@@ -470,7 +478,7 @@ catalogs:
     rate-limiter-flexible: '>=11.2.0'
     redoc: '>=2.5.3'
     rotating-file-stream: '>=3.2.9'
-    smol-toml: ^1.7.1
+    smol-toml: ^1.8.1
     swagger-ui-dist: '>=5.32.12'
     yaml: '>=2.9.0'
   prod:
@@ -558,7 +566,7 @@ catalogs:
     commander: ^15.0.0
     comment-parser: 1.4.8
     commitizen: ^4.3.2
-    compression: ^1.8.1
+    compression: ^1.8.2
     # Held at 14.15.x. 14.16.0 retokenises phone numbers, which changes what
     # @visulima/redact masks: it now covers `+1 (555) 123-4567` as one span
     # (an improvement), but leaves the `+` of `+1-234-567-8900` outside the
@@ -631,7 +639,7 @@ catalogs:
     nodemailer: 10.0.13
     normalize-package-data: ^9.0.0
     nuxt: ^4.5.2
-    nx: 23.1.1
+    nx: 23.2.1
     object-inspect: ^1.13.4
     openapi-types: ^12.1.3
     patch-console: ^2.0.0
@@ -664,7 +672,7 @@ catalogs:
     slice-ansi: 9.0.0
     slug: 12.0.1
     slugify: 1.6.9
-    smol-toml: ^1.7.1
+    smol-toml: ^1.8.1
     stack-utils: ^2.0.6
     string-ts: 2.3.1
     string-width: 8.2.2
@@ -1030,7 +1038,7 @@ overrides:
   js-yaml@<3.14.2: '>=3.14.2'
   js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
   jws@=4.0.0: '>=4.0.1'
-  joi@<18.2.1: '>=18.2.1'
+  joi@<18.2.9: '>=18.2.9'
   koa@>=3.0.0 <3.1.2: '>=3.1.2'
   lodash-es@<=4.17.23: '>=4.18.0'
   lodash-es@>=4.0.0 <=4.17.23: '>=4.18.0'
@@ -1186,7 +1194,7 @@ overrides:
   react-router@7: '>=8.3.0 <9'
   react-router@8: '>=8.3.0 <9'
   sharp@0.34: '>=0.35.0 <0.36'
-  shell-quote@1: '>=1.8.5 <2'
+  shell-quote@1: '>=1.11.0 <2'
   svgo@4: '>=4.0.2 <5'
   tar@7: '>=7.5.21 <8'
   undici@7: '>=7.29.0 <8'
@@ -1209,7 +1217,7 @@ overrides:
   '@vitest/mocker@4': '>=4.1.11 <5'
   nodemailer@10: '>=10.0.9 <11'
   sharp@0.35: '>=0.35.4 <0.36'
-  smol-toml@1: '>=1.7.1 <2'
+  smol-toml@1: '>=1.8.1 <2'
   '@grpc/grpc-js@1': '>=1.14.5 <2'
   devalue@5: '>=5.9.3 <6'
   moment@2: '>=2.31.0 <3'
@@ -1222,6 +1230,39 @@ overrides:
   basic-ftp@5: '>=6.2.1 <7'
   basic-ftp@6: '>=6.2.1 <7'
   vitest@4: '>=4.1.11 <5'
+  # Advisories from the 2026-10-07 audit sweep; same major-line floor
+  # convention as the blocks above.
+  '@modelcontextprotocol/client@2': '>=2.2.0 <3'
+  '@modelcontextprotocol/sdk@1': '>=1.31.0 <2'
+  compression@1: '>=1.8.2 <2'
+  # postcss-selector-parser: the flat-selector CPU-exhaustion fix
+  # (GHSA-rj75-hqrm-r3gf, moderate) exists only in 7.1.6 — no patched 6.x — and
+  # @tailwindcss/typography 0.5.20 (still the latest) pins 6.0.10 exactly, so
+  # the floor crosses the major and the nested-path pin re-catches the exact
+  # edge. Only reached through @tailwindcss/typography in dev-only docs CSS
+  # (ono, vite-overlay, vis); the selectors it parses are authored in this
+  # repo, never untrusted input. v7's sole breaking change is safe insertions
+  # during iteration; typography uses only astSync/selector()/remove/prepend/
+  # toString (its src/utils.js), all unchanged since 6.x.
+  postcss-selector-parser@6: '>=7.1.6 <8'
+  '@tailwindcss/typography>postcss-selector-parser': '>=7.1.6 <8'
+  proxy-addr@2: '>=2.0.8 <3'
+  # seroval: solid-js 1.9.14/1.9.15 declare `~1.5.4`, and solid-js 1.9.16 —
+  # the release that moves to the patched `~1.6.8` pair — is younger than the
+  # 1440-minute minimumReleaseAge gate, so floor the seroval line instead.
+  # seroval-plugins accepts it as a peer (`^1.0`), and solid's own latest pairs
+  # the same 1.6.8; the edge is reached only through dev-time solid/ssr builds
+  # (apps/web).
+  seroval@1: '>=1.6.3 <2'
+  # simple-git: the critical unsafe-operation guard advisory
+  # (GHSA-x6jw-m9v5-85vh) has no patched 3.x — the fix starts at 4.0.1, and
+  # the two highs' nominal 3.36.1 fix does not exist — so the floor crosses
+  # the major for @nuxt/devtools's `^3.36.0` edge (dev-only, storage-client
+  # nuxt example). 4.0.1 still pins a vulnerable @simple-git/argv-parser
+  # 2.0.0, so the floor is 4.0.2, which pins 2.0.1 and clears the argv-parser
+  # critical in the same move.
+  simple-git@3: '>=4.0.2 <5'
+  source-map-js@1: '>=1.2.2 <2'
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
   # pnpm applies patches strictly (no fuzz), so the key must name the exact version the
