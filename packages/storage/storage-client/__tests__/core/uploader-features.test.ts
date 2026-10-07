@@ -143,7 +143,7 @@ describe("uploader features", () => {
         expect(tracker.peak).toBeLessThanOrEqual(2);
     });
 
-    it("should auto-retry a failed item when retry is enabled", async () => {
+    it("should auto-retry a failed item when retry is enabled", { timeout: 10_000 }, async () => {
         expect.assertions(2);
 
         // @ts-expect-error - mock
@@ -153,12 +153,16 @@ describe("uploader features", () => {
 
         const itemId = uploader.add(new File(["data"], "data.txt"));
 
-        // First attempt fails (+10ms), backoff is 1s, then a success attempt.
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 1100);
-        });
+        // First attempt fails (+10ms), backoff is 1s, then a success attempt. Poll for the
+        // outcome instead of sleeping a fixed 1.1s, which races the backoff timer on slow CI
+        // runners and observed the item still "uploading" on macOS.
+        const deadline = Date.now() + 8000;
+
+        while (uploader.getItem(itemId)?.status !== "completed" && Date.now() < deadline) {
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 25);
+            });
+        }
 
         const item = uploader.getItem(itemId);
 

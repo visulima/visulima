@@ -5,8 +5,8 @@ import type { FindUpOptions, WriteJsonOptions } from "@visulima/fs";
 import { findUp, findUpSync, readFile, readFileSync, readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
 import { parseJson, toPath } from "@visulima/fs/utils";
-import { readYaml, readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
+import { parse as parseYaml } from "@visulima/yaml";
 // eslint-disable-next-line import/no-extraneous-dependencies,e18e/ban-dependencies -- dot-prop is a required dependency for property access
 import { getProperty, hasProperty } from "dot-prop";
 import JSON5 from "json5";
@@ -143,9 +143,9 @@ const normalizeInput = (input: Input, strict: boolean, ignoreWarnings: (RegExp |
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
-    const yamlData: unknown = await readYaml(filePath);
+    const text: string = await readFile(filePath);
 
-    return yamlData as JsonObject;
+    return parseYaml(text) as JsonObject;
 };
 
 /**
@@ -154,9 +154,9 @@ const parseYamlFile = async (filePath: string): Promise<JsonObject> => {
  * @returns The parsed YAML data as a JSON object
  */
 const parseYamlFileSync = (filePath: string): JsonObject => {
-    const yamlData: unknown = readYamlSync(filePath);
+    const text: string = readFileSync(filePath);
 
-    return yamlData as JsonObject;
+    return parseYaml(text) as JsonObject;
 };
 
 /**
