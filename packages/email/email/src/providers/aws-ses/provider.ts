@@ -289,7 +289,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: Aw
     const generateMimeMessage = (emailOptions: EmailOptions): string => {
         const boundary = `----=${randomUUID().replaceAll("-", "")}`;
         const now = new Date().toUTCString();
-        const { headers, messageId } = applyMessageId(emailOptions);
+        const { headers } = applyMessageId(emailOptions);
         const Buffer = getBuffer();
 
         let message = "";
@@ -317,15 +317,11 @@ const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: Aw
         // Add other headers with sanitized subject
         message += `Subject: ${sanitizeHeaderValue(emailOptions.subject)}\r\n`;
         message += `Date: ${now}\r\n`;
-        message += `Message-ID: ${messageId}\r\n`;
         message += "MIME-Version: 1.0\r\n";
 
-        // Add custom headers if provided
+        // Custom headers, including the resolved Message-ID
         for (const [name, value] of Object.entries(headers)) {
-            // Already written above, with the other fixed headers.
-            if (name !== "Message-ID") {
-                message += `${sanitizeHeaderName(name)}: ${sanitizeHeaderValue(value)}\r\n`;
-            }
+            message += `${sanitizeHeaderName(name)}: ${sanitizeHeaderValue(value)}\r\n`;
         }
 
         // Start multipart message

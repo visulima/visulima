@@ -450,6 +450,34 @@ describe(awsSesProvider, () => {
                 expect(callArgs[2]).not.toContain("%0A");
             });
 
+            it("should write a caller-supplied Message-ID exactly once", async () => {
+                expect.assertions(2);
+
+                makeRequestMock.mockResolvedValueOnce({
+                    data: {
+                        // eslint-disable-next-line @stylistic/quotes
+                        body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
+                        statusCode: 200,
+                    },
+                    success: true,
+                });
+
+                const provider = awsSesProvider({ accessKeyId: "test123", region: "us-east-1", secretAccessKey: "test456" });
+                const result = await provider.sendEmail({
+                    from: { email: "sender@example.com" },
+                    headers: { "message-id": "<mine@example.com>" },
+                    html: "<h1>Test</h1>",
+                    subject: "Test Subject",
+                    to: { email: "user@example.com" },
+                });
+
+                expect(result.success).toBe(true);
+
+                const raw = Buffer.from(new URLSearchParams(makeRequestMock.mock.calls[0][2] as string).get("RawMessage.Data") as string, "base64").toString("utf8");
+
+                expect(raw.match(/^message-id: <mine@example\.com>$/gim)).toHaveLength(1);
+            });
+
             it("should sanitize CRLF in custom header values", async () => {
                 expect.assertions(5);
 

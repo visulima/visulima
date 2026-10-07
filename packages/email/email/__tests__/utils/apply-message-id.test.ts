@@ -31,4 +31,10 @@ describe(applyMessageId, () => {
 
         expect(messageId).not.toContain("\n");
     });
+
+    it("should wrap a bare caller-supplied id in angle brackets", () => {
+        expect.assertions(1);
+
+        expect(applyMessageId({ from, headers: { "Message-ID": "mine@example.com" } }).messageId).toBe("<mine@example.com>");
+    });
 });

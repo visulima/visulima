@@ -17,8 +17,13 @@ const applyMessageId = (emailOptions: Pick<EmailOptions, "from" | "headers">): {
 
     for (const [name, value] of Object.entries(emailOptions.headers ? headersToRecord(emailOptions.headers) : {})) {
         if (name.toLowerCase() === "message-id") {
-            // Sanitized here because some providers write the id into raw MIME unescaped.
-            messageId = sanitizeHeaderValue(value).trim() || undefined;
+            // Sanitized here (not only by the MIME builders) because it is also returned as the result id.
+            const id = sanitizeHeaderValue(value).trim();
+
+            // RFC 5322 msg-id is angle-bracketed; accept a bare id rather than send a malformed header.
+            const bracketed = id.startsWith("<") ? id : `<${id}>`;
+
+            messageId = id === "" ? undefined : bracketed;
         } else {
             headers[name] = value;
         }

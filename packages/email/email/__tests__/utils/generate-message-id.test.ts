@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import generateMessageId from "../../src/utils/generate-message-id";
 
+const PUNYCODE_DOMAIN = /@xn--bcher-kva\.de>$/;
+
 describe(generateMessageId, () => {
     it("should use the sender's domain", () => {
         expect.assertions(1);
@@ -23,5 +25,11 @@ describe(generateMessageId, () => {
         expect.assertions(1);
 
         expect(generateMessageId("a@example.com")).not.toBe(generateMessageId("a@example.com"));
+    });
+
+    it("should punycode an internationalized sender domain", () => {
+        expect.assertions(1);
+
+        expect(generateMessageId("a@bücher.de")).toMatch(PUNYCODE_DOMAIN);
     });
 });
