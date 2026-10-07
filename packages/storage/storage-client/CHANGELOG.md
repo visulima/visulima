@@ -1,3 +1,14 @@
+## @visulima/storage-client [1.0.9](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.8...@visulima/storage-client@1.0.9) (2026-10-07)
+
+### Bug Fixes
+
+* **package:** depend on @visulima/yaml directly ([#932](https://github.com/visulima/visulima/issues/932)) ([852c6d3](https://github.com/visulima/visulima/commit/852c6d3298c59d2895c998c1f4ceb7db0be6bb6f)), closes [#931](https://github.com/visulima/visulima/issues/931)
+
+
+### Dependencies
+
+* **@visulima/storage:** upgraded to 2.0.34
+
 ## @visulima/storage-client [1.0.8](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.7...@visulima/storage-client@1.0.8) (2026-10-05)
 
 ### Bug Fixes
