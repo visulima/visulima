@@ -122,9 +122,9 @@
         "@antfu/install-pkg": "catalog:prod",
         "@visulima/fs": "6.0.28",
         "@visulima/path": "4.0.0",
+        "@visulima/yaml": "1.0.0",
         "json5": "catalog:prod",
-        "normalize-package-data": "catalog:prod",
-        "yaml": "catalog:prod"
+        "normalize-package-data": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",

@@ -108,7 +108,9 @@ describe("aws-light hardening", () => {
         expect(s3.requests.filter((request) => isPartUpload(request))).toHaveLength(1);
     });
 
-    it("should copy an object over 5 GiB part by part", async () => {
+    // 384 sequential part copies run just over vitest's 5s default on the
+    // Windows CI runner.
+    it("should copy an object over 5 GiB part by part", { timeout: 60_000 }, async () => {
         expect.assertions(4);
 
         const { create, s3 } = setup();

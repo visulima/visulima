@@ -26,7 +26,9 @@ describe("sequentialWrites", () => {
     // `sequentialWrites` makes chunked uploads trust `bytesWritten` as the stored prefix. Declared
     // on an adapter that writes at any offset, an upload with holes would be reported complete,
     // so the flag must stay on exactly the adapters that reject out-of-order writes.
-    it("should be declared by exactly the adapters that enforce contiguous writes", async () => {
+    // The recursive scan over the adapter sources runs just over vitest's 5s
+    // default on the Windows CI runner.
+    it("should be declared by exactly the adapters that enforce contiguous writes", { timeout: 30_000 }, async () => {
         expect.assertions(1);
 
         const declaring = await sourcesMatching(/readonly sequentialWrites: boolean = true/u);
