@@ -1,3 +1,14 @@
+## @visulima/package [5.0.42](https://github.com/visulima/visulima/compare/@visulima/package@5.0.41...@visulima/package@5.0.42) (2026-10-07)
+
+### Bug Fixes
+
+* **package:** depend on @visulima/yaml directly ([#932](https://github.com/visulima/visulima/issues/932)) ([852c6d3](https://github.com/visulima/visulima/commit/852c6d3298c59d2895c998c1f4ceb7db0be6bb6f)), closes [#931](https://github.com/visulima/visulima/issues/931)
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.0.29
+
 ## @visulima/package [5.0.41](https://github.com/visulima/visulima/compare/@visulima/package@5.0.40...@visulima/package@5.0.41) (2026-10-04)
 
 
