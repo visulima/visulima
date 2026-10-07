@@ -23,4 +23,12 @@ describe(applyMessageId, () => {
         expect(messageId).toBe("<mine@example.com>");
         expect(headers).toStrictEqual({ "Message-ID": "<mine@example.com>" });
     });
+
+    it("should strip CR/LF from a caller-supplied Message-ID", () => {
+        expect.assertions(1);
+
+        const { messageId } = applyMessageId({ from, headers: { "Message-ID": "<a@example.com>\r\nBcc: victim@example.com" } });
+
+        expect(messageId).not.toContain("\n");
+    });
 });
