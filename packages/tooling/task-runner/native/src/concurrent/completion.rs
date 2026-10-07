@@ -37,8 +37,8 @@ impl SuccessCondition {
 
         match self {
             Self::All => events.iter().all(|e| e.exit_code == 0),
-            Self::First => events.first().map_or(true, |e| e.exit_code == 0),
-            Self::Last => events.last().map_or(true, |e| e.exit_code == 0),
+            Self::First => events.first().is_none_or(|e| e.exit_code == 0),
+            Self::Last => events.last().is_none_or(|e| e.exit_code == 0),
             Self::Command(target) => {
                 let matching: Vec<_> = events.iter().filter(|e| Self::matches_target(e, target)).collect();
 

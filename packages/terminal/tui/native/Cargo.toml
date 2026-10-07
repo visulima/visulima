@@ -17,6 +17,9 @@ unicode-width = "0.2.0"
 [build-dependencies]
 napi-build = "2"
 
+# Fat LTO is a deliberate max-runtime-perf choice, not a copied default —
+# measured rationale in task-runner/native/Cargo.toml (thin LTO regressed
+# those hot paths and saved no build time on rustc 1.99).
 [profile.release]
 lto = true
 codegen-units = 1
