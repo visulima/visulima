@@ -153,6 +153,42 @@ describe("apns provider", () => {
         expect(body).toStrictEqual({ aps: { alert: { body: "b", title: "t" }, badge: 3, sound: "ping" }, custom: "x" });
     });
 
+    it("maps per-message ttl and urgency to apns-expiration and apns-priority", async () => {
+        expect.assertions(5);
+
+        const session = createSession([{ status: 200 }, { status: 200 }, { status: 200 }]);
+
+        connectMock.mockReturnValue(session);
+        vi.spyOn(Date, "now").mockReturnValue(1_700_000_000_000);
+
+        const provider = createApnsProvider(baseConfig);
+
+        await provider.send({ body: "x", to: "tok", ttl: 60, urgency: "low" });
+        await provider.send({ body: "x", to: "tok", ttl: 0, urgency: "high" });
+        await provider.send({ body: "x", to: "tok" });
+
+        const [first, second, third] = session.streams.map((stream) => stream.requestedHeaders);
+
+        expect(first?.["apns-expiration"]).toBe("1700000060");
+        expect(first?.["apns-priority"]).toBe("5");
+        expect(second).toMatchObject({ "apns-expiration": "0", "apns-priority": "10" });
+        expect(third?.["apns-expiration"]).toBeUndefined();
+        expect(third?.["apns-priority"]).toBeUndefined();
+    });
+
+    it("rejects an invalid ttl without opening a stream", async () => {
+        expect.assertions(2);
+
+        const session = createSession([]);
+
+        connectMock.mockReturnValue(session);
+
+        const result = await createApnsProvider(baseConfig).send({ body: "x", to: "tok", ttl: -1 });
+
+        expect(result.success).toBe(false);
+        expect(session.request).not.toHaveBeenCalled();
+    });
+
     it("maps a non-200 response with a reason to a failure", async () => {
         expect.assertions(2);
 

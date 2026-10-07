@@ -5,6 +5,7 @@ import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
 import { requestWithRetry } from "../../utils/http";
 import generateMessageId from "../../utils/id";
+import validatePushTtl from "../../utils/push";
 import type { ExpoConfig } from "./types";
 
 const DEFAULT_ENDPOINT = "https://exp.host";
@@ -40,16 +41,32 @@ const expoProvider: ProviderFactory<ExpoConfig, PushPayload> = defineProvider<Ex
         isAvailable: () => true,
         options,
         send: async (payload: PushPayload): Promise<Result<NotificationResult>> => {
+            const ttlError = validatePushTtl("expo", payload.ttl);
+
+            if (ttlError) {
+                return { error: ttlError, success: false };
+            }
+
             const recipients = toRecipientList(payload.to);
+            // Expo priorities are `default` | `normal` | `high`; `normal` urgency keeps Expo's default.
+            let priority: "high" | "normal" | undefined;
+
+            if (payload.urgency === "high") {
+                priority = "high";
+            } else if (payload.urgency === "low" || payload.urgency === "very-low") {
+                priority = "normal";
+            }
 
             const messages = recipients.map((to) => {
                 return {
                     badge: payload.badge,
                     body: payload.body,
                     data: payload.data,
+                    priority,
                     sound: payload.sound ?? "default",
                     title: payload.title,
                     to,
+                    ttl: payload.ttl,
                 };
             });
 

@@ -99,7 +99,26 @@ export interface PushPayload extends BaseNotificationPayload {
     title?: string;
     /** Device token(s) / subscription target(s). */
     to: string | string[];
+
+    /**
+     * Seconds the push service should keep the message for an offline device (non-negative
+     * integer; `0` = deliver now or drop). Overrides the provider's configured default.
+     * Mapped to web-push `TTL`, FCM `android.ttl`, APNs `apns-expiration` and Expo `ttl`.
+     */
+    ttl?: number;
+
+    /**
+     * Delivery urgency hint. Overrides the provider's configured default. Sent verbatim as
+     * the web-push `Urgency` header; FCM, APNs and Expo map it onto their two-level priority
+     * (`high` → high, `normal` → platform default, `low` / `very-low` → low/normal).
+     */
+    urgency?: PushUrgency;
 }
+
+/**
+ * Push delivery urgency (RFC 8030 §5.3).
+ */
+export type PushUrgency = "high" | "low" | "normal" | "very-low";
 
 /**
  * Chat payload (Slack, Discord, Teams, Telegram, ...).

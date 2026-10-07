@@ -8,6 +8,7 @@ import type { NotificationResult, PushPayload, RecipientResult, Result } from ".
 import type { ProviderFactory } from "../../provider";
 import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
+import validatePushTtl from "../../utils/push";
 import { aggregateRecipientResults } from "../../utils/sms";
 import type { ApnsConfig } from "./types";
 
@@ -116,9 +117,10 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
      * Sends the payload to a single device token over the shared HTTP/2 session.
      * @param token The device token.
      * @param body The serialised APNs payload.
+     * @param extraHeaders Optional `apns-expiration` / `apns-priority` headers.
      * @returns The per-recipient delivery result.
      */
-    const sendOne = async (token: string, body: string): Promise<RecipientResult> =>
+    const sendOne = async (token: string, body: string, extraHeaders: Record<string, string>): Promise<RecipientResult> =>
         new Promise<RecipientResult>((resolve) => {
             const stream = getSession().request({
                 ":method": "POST",
@@ -126,6 +128,7 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
                 "apns-topic": options.bundleId,
                 authorization: `bearer ${getToken()}`,
                 "content-type": "application/json",
+                ...extraHeaders,
             });
 
             let status = 0;
@@ -179,7 +182,27 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
         isAvailable: () => true,
         options,
         send: async (payload: PushPayload): Promise<Result<NotificationResult>> => {
+            const ttlError = validatePushTtl("apns", payload.ttl);
+
+            if (ttlError) {
+                return { error: ttlError, success: false };
+            }
+
             const recipients = toRecipientList(payload.to);
+            const extraHeaders: Record<string, string> = {};
+
+            if (payload.ttl !== undefined) {
+                // `0` tells APNs to attempt delivery once and not store the notification.
+                extraHeaders["apns-expiration"] = payload.ttl === 0 ? "0" : String(Math.floor(Date.now() / 1000) + payload.ttl);
+            }
+
+            // APNs defaults to priority 10 (immediate); `low` / `very-low` opt into 5 (power-considerate).
+            if (payload.urgency === "high") {
+                extraHeaders["apns-priority"] = "10";
+            } else if (payload.urgency === "low" || payload.urgency === "very-low") {
+                extraHeaders["apns-priority"] = "5";
+            }
+
             const aps: Record<string, unknown> = { alert: { body: payload.body, title: payload.title } };
 
             if (payload.sound !== undefined) {
@@ -198,7 +221,7 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
 
             for (const token of recipients) {
                 // eslint-disable-next-line no-await-in-loop
-                results.push(await sendOne(token, body));
+                results.push(await sendOne(token, body, extraHeaders));
             }
 
             return aggregateRecipientResults("push", "apns", results);

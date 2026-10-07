@@ -107,6 +107,66 @@ describe("web-push provider", () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
+    it("uses per-message ttl and urgency headers over the config defaults", async () => {
+        expect.assertions(4);
+
+        fetchMock.mockResolvedValue(new Response("", { status: 201 }));
+
+        const keys = await generateVapidKeys();
+        const subscription = await generateSubscription("https://push.example.com/sub/abc");
+        const provider = createWebPushProvider({
+            ttl: 3600,
+            urgency: "low",
+            vapidPrivateKey: keys.privateKey,
+            vapidPublicKey: keys.publicKey,
+            vapidSubject: "mailto:dev@example.com",
+        });
+
+        await provider.send({ body: "approve?", to: subscription, ttl: 60, urgency: "high" });
+        await provider.send({ body: "fyi", to: subscription });
+
+        const [, overridden] = fetchMock.mock.calls[0];
+        const [, defaults] = fetchMock.mock.calls[1];
+
+        expect(overridden.headers.TTL).toBe("60");
+        expect(overridden.headers.Urgency).toBe("high");
+        expect(defaults.headers.TTL).toBe("3600");
+        expect(defaults.headers.Urgency).toBe("low");
+    });
+
+    it("keeps ttl and urgency out of the encrypted body", async () => {
+        expect.assertions(1);
+
+        fetchMock.mockResolvedValue(new Response("", { status: 201 }));
+
+        const encryptSpy = vi.spyOn(crypto.subtle, "encrypt");
+        const keys = await generateVapidKeys();
+        const subscription = await generateSubscription("https://push.example.com/sub/abc");
+        const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+
+        await provider.send({ body: "hi", title: "T", to: subscription, ttl: 60, urgency: "high" });
+
+        const padded = encryptSpy.mock.calls[0][2] as Uint8Array;
+
+        encryptSpy.mockRestore();
+
+        // Drop the trailing RFC 8188 padding delimiter before decoding the plaintext JSON.
+        expect(JSON.parse(new TextDecoder().decode(padded.slice(0, -1)))).toStrictEqual({ body: "hi", title: "T" });
+    });
+
+    it.each([-1, 1.5, Number.NaN])("rejects an invalid ttl (%s) without calling fetch", async (ttl) => {
+        expect.assertions(3);
+
+        const keys = await generateVapidKeys();
+        const subscription = await generateSubscription("https://push.example.com/sub/abc");
+        const provider = createWebPushProvider({ vapidPrivateKey: keys.privateKey, vapidPublicKey: keys.publicKey, vapidSubject: "mailto:dev@example.com" });
+        const result = await provider.send({ body: "hi", to: subscription, ttl });
+
+        expect(result.success).toBe(false);
+        expect((result.error as Error).message).toContain("Invalid ttl");
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it("throws when VAPID config is missing", () => {
         expect.assertions(1);
 
