@@ -19,7 +19,11 @@ Each concern is a separate sub-export — agents should import from the narrowes
 - `./pnpm` — catalog readers (`readPnpmCatalogs[Sync]`) and resolvers (`resolveCatalogReference`, `resolveCatalogReferences`, `resolveDependenciesCatalogReferences`), `isPackageInWorkspace`.
 - `./error` — `PackageNotFoundError`.
 
-Relies on `@visulima/fs` and `@visulima/path` (implicit Nx deps — both must build before this).
+Relies on `@visulima/fs`, `@visulima/path` and `@visulima/yaml` (implicit Nx deps — all must
+build before this). `@visulima/yaml` is imported directly (`parse` for `package.yaml` and
+`pnpm-workspace.yaml`); never route these reads through `@visulima/fs/yaml`, whose
+`@visulima/yaml` peer is optional in `@visulima/fs` — a static import of that subpath
+reintroduces ERR_MODULE_NOT_FOUND in consumer trees that do not install the parser.
 
 `EnsurePackagesOptions.confirm.theme` is deprecated and ignored — the readline-based prompt
 uses fixed styling. It is typed `object` on purpose: its former `PartialDeep<Theme>` type put

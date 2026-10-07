@@ -1,6 +1,6 @@
-import { findUp, findUpSync } from "@visulima/fs";
-import { readYaml, readYamlSync } from "@visulima/fs/yaml";
+import { findUp, findUpSync, readFile, readFileSync } from "@visulima/fs";
 import { dirname, relative } from "@visulima/path";
+import { parse as parseYaml } from "@visulima/yaml";
 import type { JsonObject } from "type-fest";
 
 export type PnpmCatalog = Record<string, string>;
@@ -65,7 +65,7 @@ export const readPnpmCatalogs = async (packagePath: string): Promise<PnpmCatalog
         return undefined;
     }
 
-    const workspaceData = await readYaml(workspacePath);
+    const workspaceData = parseYaml(await readFile(workspacePath)) as Record<string, unknown>;
 
     // Check if this package is actually part of the workspace
     const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];
@@ -100,7 +100,7 @@ export const readPnpmCatalogsSync = (packagePath: string): PnpmCatalogs | undefi
         return undefined;
     }
 
-    const workspaceData = readYamlSync(workspacePath);
+    const workspaceData = parseYaml(readFileSync(workspacePath)) as Record<string, unknown>;
 
     // Check if this package is actually part of the workspace
     const workspacePackages: string[] = Array.isArray(workspaceData.packages) ? (workspaceData.packages as string[]) : [];

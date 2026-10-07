@@ -9603,15 +9603,15 @@ importers:
       '@visulima/path':
         specifier: 4.0.0
         version: link:../../filesystem/path
+      '@visulima/yaml':
+        specifier: 1.0.0
+        version: link:../../data-manipulation/yaml
       json5:
         specifier: catalog:prod
         version: 2.2.3
       normalize-package-data:
         specifier: catalog:prod
         version: 9.0.0
-      yaml:
-        specifier: catalog:prod
-        version: 2.9.0
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
