@@ -2,22 +2,34 @@ import { describe, expect, it } from "vitest";
 
 import generateMessageId from "../../src/utils/generate-message-id";
 
+const PUNYCODE_DOMAIN = /@xn--bcher-kva\.de>$/;
+
 describe(generateMessageId, () => {
-    it("should generate a message ID", () => {
+    it("should use the sender's domain", () => {
         expect.assertions(1);
 
-        const messageId = generateMessageId();
+        // eslint-disable-next-line e18e/prefer-static-regex
+        expect(generateMessageId("hello@mail.example.com")).toMatch(/^<[\da-f-]{36}@mail\.example\.com>$/);
+    });
+
+    it("should fall back to localhost without a usable sender", () => {
+        expect.assertions(2);
 
         // eslint-disable-next-line e18e/prefer-static-regex
-        expect(messageId).toMatch(/^<.+@visulima\.local>$/);
+        expect(generateMessageId()).toMatch(/^<[\da-f-]{36}@localhost>$/);
+        // eslint-disable-next-line e18e/prefer-static-regex
+        expect(generateMessageId("no-domain@")).toMatch(/@localhost>$/);
     });
 
     it("should generate unique message IDs", () => {
         expect.assertions(1);
 
-        const id1 = generateMessageId();
-        const id2 = generateMessageId();
+        expect(generateMessageId("a@example.com")).not.toBe(generateMessageId("a@example.com"));
+    });
 
-        expect(id1).not.toBe(id2);
+    it("should punycode an internationalized sender domain", () => {
+        expect.assertions(1);
+
+        expect(generateMessageId("a@bücher.de")).toMatch(PUNYCODE_DOMAIN);
     });
 });
