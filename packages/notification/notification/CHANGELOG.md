@@ -1,3 +1,14 @@
+## @visulima/notification [1.2.0](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.23...@visulima/notification@1.2.0) (2026-10-08)
+
+### Features
+
+* **notification:** per-message ttl and urgency for push ([#936](https://github.com/visulima/visulima/issues/936)) ([0452040](https://github.com/visulima/visulima/commit/04520405eab63a5eadf6d7af1931cc3813686a01))
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 3.0.28
+
 ## @visulima/notification [1.1.23](https://github.com/visulima/visulima/compare/@visulima/notification@1.1.22...@visulima/notification@1.1.23) (2026-10-05)
 
 
