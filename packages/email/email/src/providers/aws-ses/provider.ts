@@ -3,9 +3,9 @@ import { createHash, createHmac, randomUUID } from "node:crypto";
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailOptions, EmailResult, Result } from "../../types";
+import applyMessageId from "../../utils/apply-message-id";
 import { createLogger } from "../../utils/create-logger";
 import formatEmailAddressDefault from "../../utils/format-email-address";
-import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-header";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
@@ -289,9 +289,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: Aw
     const generateMimeMessage = (emailOptions: EmailOptions): string => {
         const boundary = `----=${randomUUID().replaceAll("-", "")}`;
         const now = new Date().toUTCString();
-        const domain = emailOptions.from.email.includes("@") ? emailOptions.from.email.split("@")[1] : "localhost";
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        const messageId = `<${randomUUID().replaceAll("-", "")}@${domain}>`;
+        const { headers } = applyMessageId(emailOptions);
         const Buffer = getBuffer();
 
         let message = "";
@@ -319,19 +317,11 @@ const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: Aw
         // Add other headers with sanitized subject
         message += `Subject: ${sanitizeHeaderValue(emailOptions.subject)}\r\n`;
         message += `Date: ${now}\r\n`;
-        message += `Message-ID: ${messageId}\r\n`;
         message += "MIME-Version: 1.0\r\n";
 
-        // Add custom headers if provided
-        if (emailOptions.headers) {
-            const headersRecord = headersToRecord(emailOptions.headers);
-
-            for (const [name, value] of Object.entries(headersRecord)) {
-                const sanitizedName = sanitizeHeaderName(name);
-                const sanitizedValue = sanitizeHeaderValue(value);
-
-                message += `${sanitizedName}: ${sanitizedValue}\r\n`;
-            }
+        // Custom headers, including the resolved Message-ID
+        for (const [name, value] of Object.entries(headers)) {
+            message += `${sanitizeHeaderName(name)}: ${sanitizeHeaderValue(value)}\r\n`;
         }
 
         // Start multipart message

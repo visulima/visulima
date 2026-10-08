@@ -87,6 +87,31 @@ describe("new providers", () => {
             expect(raw).toContain("Subject:");
         });
 
+        it("writes a Message-ID on the sender's domain and returns it", async () => {
+            expect.assertions(2);
+
+            const send = vi.fn(() => Promise.resolve());
+            const result = await cloudflareEmailProvider({ send }).sendEmail(message);
+            const raw = (send.mock.calls[0] as [string, string, string])[2];
+
+            // eslint-disable-next-line e18e/prefer-static-regex
+            expect(result.data?.messageId).toMatch(/@example\.com>$/);
+            expect(raw).toContain(`Message-ID: ${result.data?.messageId as string}\r\n`);
+        });
+
+        it("keeps a caller-supplied Message-ID instead of overriding it", async () => {
+            expect.assertions(3);
+
+            const send = vi.fn(() => Promise.resolve());
+            const result = await cloudflareEmailProvider({ send }).sendEmail({ ...message, headers: { "message-id": "<mine@example.com>" } });
+            const raw = (send.mock.calls[0] as [string, string, string])[2];
+
+            expect(result.data?.messageId).toBe("<mine@example.com>");
+            expect(raw).toContain("Message-ID: <mine@example.com>\r\n");
+
+            expect(raw.match(/^message-id:/gim)).toHaveLength(1);
+        });
+
         it("signs the serialized message with DKIM before handing it to the binding", async () => {
             expect.assertions(3);
 
