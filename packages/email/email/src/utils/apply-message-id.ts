@@ -1,7 +1,7 @@
 import type { EmailOptions } from "../types";
 import generateMessageId from "./generate-message-id";
 import headersToRecord from "./headers-to-record";
-import { sanitizeHeaderValue } from "./sanitize-header";
+import { sanitizeHeaderName, sanitizeHeaderValue } from "./sanitize-header";
 
 /**
  * Resolves the Message-ID for an outgoing message and returns headers carrying exactly one.
@@ -16,14 +16,16 @@ const applyMessageId = (emailOptions: Pick<EmailOptions, "from" | "headers">): {
     let messageId: string | undefined;
 
     for (const [name, value] of Object.entries(emailOptions.headers ? headersToRecord(emailOptions.headers) : {})) {
-        if (name.toLowerCase() === "message-id") {
+        // Normalized so a line-break variant like "Message-\r\nID" still resolves to the one canonical header.
+        if (sanitizeHeaderName(name).toLowerCase() === "message-id") {
             // Sanitized here (not only by the MIME builders) because it is also returned as the result id.
             const id = sanitizeHeaderValue(value).trim();
 
-            // RFC 5322 msg-id is angle-bracketed; accept a bare id rather than send a malformed header.
-            const bracketed = id.startsWith("<") ? id : `<${id}>`;
-
-            messageId = id === "" ? undefined : bracketed;
+            // An empty candidate is ignored so it cannot reset an earlier, valid supplied id.
+            if (id !== "") {
+                // RFC 5322 msg-id is angle-bracketed; accept a bare id rather than send a malformed header.
+                messageId = id.startsWith("<") ? id : `<${id}>`;
+            }
         } else {
             headers[name] = value;
         }

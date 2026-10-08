@@ -37,4 +37,22 @@ describe(applyMessageId, () => {
 
         expect(applyMessageId({ from, headers: { "Message-ID": "mine@example.com" } }).messageId).toBe("<mine@example.com>");
     });
+
+    it("should resolve a Message-ID header whose name contains line breaks", () => {
+        expect.assertions(2);
+
+        const { headers, messageId } = applyMessageId({ from, headers: { "Message-\r\nID": "<folded@example.com>", "X-Custom": "1" } });
+
+        expect(messageId).toBe("<folded@example.com>");
+        expect(headers).toStrictEqual({ "Message-ID": "<folded@example.com>", "X-Custom": "1" });
+    });
+
+    it("should keep an earlier supplied Message-ID when a later variant is empty", () => {
+        expect.assertions(2);
+
+        const { headers, messageId } = applyMessageId({ from, headers: { "Message-ID": "<thread@example.com>", "message-id": "" } });
+
+        expect(messageId).toBe("<thread@example.com>");
+        expect(headers).toStrictEqual({ "Message-ID": "<thread@example.com>" });
+    });
 });
