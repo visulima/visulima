@@ -5,6 +5,7 @@ import type { ProviderFactory } from "../../provider";
 import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
 import { requestWithRetry } from "../../utils/http";
+import validatePushTtl from "../../utils/push";
 import { aggregateRecipientResults } from "../../utils/sms";
 
 interface FcmResponse {
@@ -50,6 +51,13 @@ const fcmProvider: ProviderFactory<import("./types").FcmConfig, PushPayload> = d
                 token,
             };
 
+            if (payload.ttl !== undefined || payload.urgency !== undefined) {
+                message.android = {
+                    priority: payload.urgency && (payload.urgency === "high" ? "high" : "normal"),
+                    ttl: payload.ttl === undefined ? undefined : `${String(payload.ttl)}s`,
+                };
+            }
+
             const result = await requestWithRetry<FcmResponse>(
                 url,
                 {
@@ -81,6 +89,12 @@ const fcmProvider: ProviderFactory<import("./types").FcmConfig, PushPayload> = d
             isAvailable: () => Boolean(options.projectId && (options.accessToken ?? options.getAccessToken)),
             options,
             send: async (payload: PushPayload): Promise<Result<NotificationResult>> => {
+                const ttlError = validatePushTtl("fcm", payload.ttl);
+
+                if (ttlError) {
+                    return { error: ttlError, success: false };
+                }
+
                 let accessToken: string;
 
                 try {

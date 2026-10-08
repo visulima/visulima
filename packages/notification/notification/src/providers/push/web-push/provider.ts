@@ -5,6 +5,7 @@ import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
 import { makeRequest } from "../../utils/http";
 import generateMessageId from "../../utils/id";
+import validatePushTtl from "../../utils/push";
 import { aggregateRecipientResults } from "../../utils/sms";
 import type { Bytes } from "../../utils/webcrypto";
 import { concatBytes, fromBase64Url, hkdfSha256, randomBytes, subtle, toBase64Url, uintToBytes, utf8 } from "../../utils/webcrypto";
@@ -134,8 +135,8 @@ const webPushProvider: ProviderFactory<WebPushConfig, PushPayload> = defineProvi
         throw new RequiredOptionError("web-push", ["vapidPublicKey", "vapidPrivateKey", "vapidSubject"]);
     }
 
-    const ttl = options.ttl ?? DEFAULT_TTL;
-    const urgency = options.urgency ?? "normal";
+    const defaultTtl = options.ttl ?? DEFAULT_TTL;
+    const defaultUrgency = options.urgency ?? "normal";
     const timeout = options.timeout ?? 30_000;
 
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
@@ -149,6 +150,7 @@ const webPushProvider: ProviderFactory<WebPushConfig, PushPayload> = defineProvi
         const { origin } = new URL(subscription.endpoint);
         const jwt = await createVapidJwt(origin, options.vapidSubject, signingKey);
 
+        // Explicit allowlist: `ttl` / `urgency` travel only as headers, never in the encrypted body.
         const message = JSON.stringify({ badge: payload.badge, body: payload.body, data: payload.data, image: payload.imageUrl, title: payload.title });
         const encrypted = await encryptPayload(subscription, utf8(message));
 
@@ -156,8 +158,8 @@ const webPushProvider: ProviderFactory<WebPushConfig, PushPayload> = defineProvi
             Authorization: `vapid t=${jwt},k=${options.vapidPublicKey}`,
             "Content-Encoding": "aes128gcm",
             "Content-Type": "application/octet-stream",
-            TTL: String(ttl),
-            Urgency: urgency,
+            TTL: String(payload.ttl ?? defaultTtl),
+            Urgency: payload.urgency ?? defaultUrgency,
         };
 
         const result = await makeRequest<string>(subscription.endpoint, { body: encrypted, headers, method: "POST", timeout });
@@ -187,6 +189,12 @@ const webPushProvider: ProviderFactory<WebPushConfig, PushPayload> = defineProvi
         isAvailable: () => Boolean(options.vapidPublicKey && options.vapidPrivateKey && options.vapidSubject),
         options,
         send: async (payload: PushPayload): Promise<Result<NotificationResult>> => {
+            const ttlError = validatePushTtl("web-push", payload.ttl ?? defaultTtl);
+
+            if (ttlError) {
+                return { error: ttlError, success: false };
+            }
+
             const recipients = toRecipientList(payload.to);
             const signingKey = await importVapidSigningKey(options.vapidPrivateKey, options.vapidPublicKey);
 
