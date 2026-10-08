@@ -43,6 +43,11 @@ expoProvider({ accessToken: "…" }); // accessToken optional
 // web-push — edge-safe (Web Crypto VAPID + RFC 8291 aes128gcm). `to` is the PushSubscription.
 webPushProvider({ vapidPublicKey: "…", vapidPrivateKey: "…", vapidSubject: "mailto:you@app.com" });
 
+// Per-message delivery hints override the provider defaults (web-push `ttl` / `urgency` config).
+// web-push → TTL / Urgency headers · fcm → android.ttl / android.priority
+// apns → apns-expiration / apns-priority · expo → ttl / priority
+await notify.send({ push: { to: subscription, title: "Approval needed", body: "…", urgency: "high", ttl: 3600 } });
+
 // APNs — NODE-ONLY (needs node:http2). Not Cloudflare-safe.
 apnsProvider({ teamId: "…", keyId: "…", signingKey: "-----BEGIN PRIVATE KEY-----…", bundleId: "com.app", production: true });
 ```

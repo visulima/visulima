@@ -23,6 +23,7 @@ export type {
     NotificationPayload,
     NotificationResult,
     PushPayload,
+    PushUrgency,
     Receipt,
     RecipientResult,
     Result,

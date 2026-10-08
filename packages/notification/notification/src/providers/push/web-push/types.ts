@@ -1,4 +1,4 @@
-import type { BaseConfig } from "../../../types";
+import type { BaseConfig, PushUrgency } from "../../../types";
 
 /**
  * A W3C Push API subscription. The `to` field of a push payload carries one of these
@@ -15,10 +15,10 @@ export interface PushSubscriptionLike {
 }
 
 export interface WebPushConfig extends BaseConfig {
-    /** Time-to-live in seconds the push service should retain the message (default 2419200). */
+    /** Default time-to-live in seconds the push service should retain the message (default 2419200). Overridden by `payload.ttl`. */
     ttl?: number;
-    /** Default delivery urgency hint (`very-low` | `low` | `normal` | `high`). */
-    urgency?: "high" | "low" | "normal" | "very-low";
+    /** Default delivery urgency hint (`very-low` | `low` | `normal` | `high`). Overridden by `payload.urgency`. */
+    urgency?: PushUrgency;
     /** Application server private VAPID key (base64url, raw P-256 scalar `d`). */
     vapidPrivateKey: string;
     /** Application server public VAPID key (base64url, uncompressed P-256 point). */
