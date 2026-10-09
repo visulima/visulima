@@ -1818,7 +1818,7 @@ importers:
         version: 10.1.0(@commitlint/cli@21.2.2(@types/node@26.6.4)(conventional-commits-parser@7.1.2)(typescript@6.0.3))(@types/node@26.6.4)(conventional-commits-parser@7.1.2)(typescript@6.0.3)
       '@anolilab/lint-staged-config':
         specifier: catalog:lint
-        version: 11.1.3(husky@9.1.7)(ini@7.0.0)(jest@30.5.1(@types/node@26.6.4)(ts-node@10.9.2(@swc/core@1.16.2(@swc/helpers@0.5.23))(@types/node@26.6.4)(typescript@6.0.3)))(json5@2.2.3)(jsonc-parser@3.3.1)(lint-staged@17.5.0)(prettier@3.9.9)(secretlint@13.0.4)(smol-toml@1.9.0)(vitest@4.1.11)(yaml@2.9.1)
+        version: 11.1.3(@visulima/yaml@packages+data-manipulation+yaml)(husky@9.1.7)(ini@7.0.0)(jest@30.5.1(@types/node@26.6.4)(ts-node@10.9.2(@swc/core@1.16.2(@swc/helpers@0.5.23))(@types/node@26.6.4)(typescript@6.0.3)))(json5@2.2.3)(jsonc-parser@3.3.1)(lint-staged@17.5.0)(prettier@3.9.9)(secretlint@13.0.4)(smol-toml@1.9.0)(vitest@4.1.11)(yaml@2.9.1)
       '@anolilab/multi-semantic-release':
         specifier: catalog:prod
         version: 4.4.23(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(semantic-release@25.0.9(typescript@6.0.3))(smol-toml@1.9.0)
@@ -9243,7 +9243,7 @@ importers:
         version: 5.18.3(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
       '@napi-rs/cli':
         specifier: catalog:dev
-        version: 3.7.2(@emnapi/runtime@1.9.2)(@types/node@26.6.4)(node-addon-api@7.1.1)
+        version: 3.7.2(@emnapi/runtime@1.11.2)(@types/node@26.6.4)(node-addon-api@7.1.1)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 13.0.4
@@ -10245,7 +10245,7 @@ importers:
         specifier: 4.1.0
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.6
+        specifier: 1.1.0
         version: link:../task-runner
       '@visulima/tui':
         specifier: 4.0.29
@@ -10381,8 +10381,8 @@ importers:
         specifier: 3.0.1
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 6.0.28
-        version: 6.0.28(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.9.0)
+        specifier: 6.0.29
+        version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 4.0.0
         version: link:../../data-manipulation/humanizer
@@ -10390,8 +10390,8 @@ importers:
         specifier: 1.0.1
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.41
-        version: 5.0.41(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(jsonc-parser@3.3.1)(smol-toml@1.9.0)
+        specifier: 5.0.42
+        version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.1.0(db6150bec54777ee437c47f43e8093b3)
@@ -10411,8 +10411,8 @@ importers:
         specifier: 3.1.1
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
-        specifier: 3.2.35
-        version: 3.2.35(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(json5@2.2.3)(smol-toml@1.9.0)
+        specifier: 3.2.36
+        version: link:../tsconfig
       '@visulima/yaml':
         specifier: 1.0.0
         version: link:../../data-manipulation/yaml
@@ -10598,7 +10598,7 @@ importers:
         specifier: 4.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 4.1.20
+        specifier: 4.2.0
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -20549,10 +20549,6 @@ packages:
 
   '@visulima/tsconfig@3.2.12':
     resolution: {integrity: sha512-hHNaj9/dh3/If5O+0V8ebxR9xTy6uy/j80bAxGvGqWyBP8I1OelKSIRgujBFSUmcd4boejHlQMr4Tn8Q3LI+EQ==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-
-  '@visulima/tsconfig@3.2.35':
-    resolution: {integrity: sha512-MwbJMTbsxO/rtaq2Lch1YQvrYveUfu/GYd0SYSN+vmKhgk/Z6pV5861LjCfPeGf8NDFYVT5OG+wv49pSaZZSsA==}
     engines: {node: ^22.14.0 || >=24.10.0}
 
   '@vitejs/plugin-react-swc@4.3.3':
@@ -35122,7 +35118,7 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/lint-staged-config@11.1.3(husky@9.1.7)(ini@7.0.0)(jest@30.5.1(@types/node@26.6.4)(ts-node@10.9.2(@swc/core@1.16.2(@swc/helpers@0.5.23))(@types/node@26.6.4)(typescript@6.0.3)))(json5@2.2.3)(jsonc-parser@3.3.1)(lint-staged@17.5.0)(prettier@3.9.9)(secretlint@13.0.4)(smol-toml@1.9.0)(vitest@4.1.11)(yaml@2.9.1)':
+  '@anolilab/lint-staged-config@11.1.3(@visulima/yaml@packages+data-manipulation+yaml)(husky@9.1.7)(ini@7.0.0)(jest@30.5.1(@types/node@26.6.4)(ts-node@10.9.2(@swc/core@1.16.2(@swc/helpers@0.5.23))(@types/node@26.6.4)(typescript@6.0.3)))(json5@2.2.3)(jsonc-parser@3.3.1)(lint-staged@17.5.0)(prettier@3.9.9)(secretlint@13.0.4)(smol-toml@1.9.0)(vitest@4.1.11)(yaml@2.9.1)':
     dependencies:
       '@visulima/fs': 5.0.5(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.9.0)(yaml@2.9.1)
       '@visulima/package': 5.0.41(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(jsonc-parser@3.3.1)(smol-toml@1.9.0)
@@ -38473,6 +38469,37 @@ snapshots:
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
 
+  '@napi-rs/cli@3.7.2(@emnapi/runtime@1.11.2)(@types/node@26.6.4)(node-addon-api@7.1.1)':
+    dependencies:
+      '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
+      '@napi-rs/cross-toolchain': 1.0.3
+      '@napi-rs/wasm-tools': 1.1.0
+      '@octokit/rest': 22.0.1
+      clipanion: 4.0.0-rc.4(typanion@3.14.0)
+      colorette: 2.0.20
+      emnapi: 1.11.3(node-addon-api@7.1.1)
+      es-toolkit: 1.52.0
+      js-yaml: 4.3.2
+      obug: 2.1.4
+      semver: 7.8.5
+      typanion: 3.14.0
+    optionalDependencies:
+      '@emnapi/runtime': 1.11.2
+    transitivePeerDependencies:
+      - '@napi-rs/cross-toolchain-arm64-target-aarch64'
+      - '@napi-rs/cross-toolchain-arm64-target-armv7'
+      - '@napi-rs/cross-toolchain-arm64-target-ppc64le'
+      - '@napi-rs/cross-toolchain-arm64-target-s390x'
+      - '@napi-rs/cross-toolchain-arm64-target-x86_64'
+      - '@napi-rs/cross-toolchain-x64-target-aarch64'
+      - '@napi-rs/cross-toolchain-x64-target-armv7'
+      - '@napi-rs/cross-toolchain-x64-target-ppc64le'
+      - '@napi-rs/cross-toolchain-x64-target-s390x'
+      - '@napi-rs/cross-toolchain-x64-target-x86_64'
+      - '@types/node'
+      - node-addon-api
+      - supports-color
+
   '@napi-rs/cli@3.7.2(@emnapi/runtime@1.11.3)(@types/node@26.6.4)(node-addon-api@7.1.1)':
     dependencies:
       '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
@@ -38489,37 +38516,6 @@ snapshots:
       typanion: 3.14.0
     optionalDependencies:
       '@emnapi/runtime': 1.11.3
-    transitivePeerDependencies:
-      - '@napi-rs/cross-toolchain-arm64-target-aarch64'
-      - '@napi-rs/cross-toolchain-arm64-target-armv7'
-      - '@napi-rs/cross-toolchain-arm64-target-ppc64le'
-      - '@napi-rs/cross-toolchain-arm64-target-s390x'
-      - '@napi-rs/cross-toolchain-arm64-target-x86_64'
-      - '@napi-rs/cross-toolchain-x64-target-aarch64'
-      - '@napi-rs/cross-toolchain-x64-target-armv7'
-      - '@napi-rs/cross-toolchain-x64-target-ppc64le'
-      - '@napi-rs/cross-toolchain-x64-target-s390x'
-      - '@napi-rs/cross-toolchain-x64-target-x86_64'
-      - '@types/node'
-      - node-addon-api
-      - supports-color
-
-  '@napi-rs/cli@3.7.2(@emnapi/runtime@1.9.2)(@types/node@26.6.4)(node-addon-api@7.1.1)':
-    dependencies:
-      '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
-      '@napi-rs/cross-toolchain': 1.0.3
-      '@napi-rs/wasm-tools': 1.1.0
-      '@octokit/rest': 22.0.1
-      clipanion: 4.0.0-rc.4(typanion@3.14.0)
-      colorette: 2.0.20
-      emnapi: 1.11.3(node-addon-api@7.1.1)
-      es-toolkit: 1.52.0
-      js-yaml: 4.3.2
-      obug: 2.1.4
-      semver: 7.8.5
-      typanion: 3.14.0
-    optionalDependencies:
-      '@emnapi/runtime': 1.9.2
     transitivePeerDependencies:
       - '@napi-rs/cross-toolchain-arm64-target-aarch64'
       - '@napi-rs/cross-toolchain-arm64-target-armv7'
@@ -47597,18 +47593,6 @@ snapshots:
       - json5
       - smol-toml
 
-  '@visulima/tsconfig@3.2.35(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(json5@2.2.3)(smol-toml@1.9.0)':
-    dependencies:
-      '@visulima/fs': 6.0.28(@visulima/yaml@packages+data-manipulation+yaml)(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.9.0)
-      '@visulima/path': 4.0.0
-      jsonc-parser: 3.3.1
-      resolve-pkg-maps: 1.0.0
-    transitivePeerDependencies:
-      - '@visulima/yaml'
-      - ini
-      - json5
-      - smol-toml
-
   '@vitejs/plugin-react-swc@4.3.3(@swc/helpers@0.5.23)(vite@8.2.1(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
@@ -51255,7 +51239,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
@@ -62694,7 +62678,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
