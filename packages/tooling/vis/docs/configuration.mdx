@@ -216,7 +216,6 @@ If you find yourself writing `@inherit` in two or more projects with the same ad
 
 **`scopedTasks` scopes by _project_, not by task name.** `match` narrows which projects a block applies to; the keys inside `tasks` are still matched exactly against target names. There is no glob form for target names, so a rule covering `e2e:setup`, `e2e:run` and `e2e:teardown` has to name all three — or tag the projects and scope the block that way.
 
-
 Apply target defaults conditionally based on project metadata:
 
 ```typescript
@@ -260,11 +259,11 @@ Project Crystal-style inference: vis can synthesize default targets (`build`, `t
 
 Detectors are on by default, but what they are allowed to do depends on whether you set `inferTargets` explicitly:
 
-| `inferTargets`                  | Enrich existing targets | Synthesize new target names                          |
-| ------------------------------- | ----------------------- | ---------------------------------------------------- |
-| unset (default)                 | Yes                     | Only for projects that declare no scripts or targets  |
-| `true` / object form            | Yes                     | Yes, for every project                                |
-| `false`                         | No                      | No                                                    |
+| `inferTargets`       | Enrich existing targets | Synthesize new target names                          |
+| -------------------- | ----------------------- | ---------------------------------------------------- |
+| unset (default)      | Yes                     | Only for projects that declare no scripts or targets |
+| `true` / object form | Yes                     | Yes, for every project                               |
+| `false`              | No                      | No                                                   |
 
 **Enrichment** adopts the detector's `type`, `inputs`, and `outputs` for a target the project already has — a caching aid that never changes what runs. **Synthesis** creates a target that did not exist, which does change what runs, so on the default it is limited to projects that have declared nothing of their own.
 
@@ -310,6 +309,7 @@ To opt **in** to only specific detectors, set the rest to `false` — there is n
 | Lint / format     | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                               |
 | DB tooling        | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                |
 | Release plumbing  | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)              |
+| Rust              | `cargo` — emits `build`, `test`, `lint`, `format`, `format:check` on [Cargo crate](#cargo-crates) projects only                                               |
 
 When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
 
@@ -759,7 +759,7 @@ Use it when:
 - The npm name and the project name should differ — e.g. publish as `@myorg/web` but address it as `web` from the CLI.
 - You're migrating from Nx — Nx workspaces declare project names in `project.json` and vis now reads them natively.
 
-A `package.json` is still required alongside `project.json` — `name`-only projects without a `package.json` aren't supported.
+A directory without a `package.json` can still be a project: a `project.json` alone is enough, as is a Cargo crate (see [Cargo crates](#cargo-crates)). Such a project is named by `project.json#name`, then the crate's `[package].name`, then its directory name.
 
 Cross-project dependency edges still resolve through `package.json#dependencies` by their **npm name**, so an aliased project remains reachable from sibling packages without rewriting their dependency lists.
 
@@ -905,4 +905,31 @@ vis automatically discovers your workspace structure:
 1. **pnpm** — Reads `pnpm-workspace.yaml` for package patterns
 2. **npm/yarn/bun** — Falls back to the `workspaces` field in root `package.json`
 3. **Project metadata** — Reads `project.json` files for targets, tags, layer, stack, language, owners
-4. **Dependency graph** — Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`
+4. **Dependency graph** — Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`, and from path dependencies in each crate's `Cargo.toml`
+
+### Cargo crates
+
+A directory without a `package.json` becomes a project when it has a `Cargo.toml` with a `[package]` table, or a `project.json`. vis looks for them in two places:
+
+- directories matched by the workspace globs (`pnpm-workspace.yaml` / `package.json#workspaces`);
+- the members of a root-level `Cargo.toml` `[workspace]` (`members` globs are expanded, `exclude` is honoured).
+
+Cargo's `exclude` only narrows the second list. A crate matched by a workspace glob is a project even if the root `Cargo.toml` excludes it from the Cargo workspace: the glob says it is a vis project, while `exclude` only says it is not a Cargo workspace member (typically a standalone crate).
+
+A crate inside another project stays part of that project. The napi `native/` crate of a JS package is not a project of its own, so a change there still selects the JS package. When a directory has both a `package.json` and a `Cargo.toml`, the `package.json` wins. `target/`, `vendor/`, `node_modules/` and `.git/` are never searched, so the `Cargo.toml` copies `cargo package` leaves under `target/package/` are ignored. A crate whose name is already taken by another project is an error; set a unique `name` in its `project.json`.
+
+A crate depends on another project when it names it as a path dependency in `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]` or a `[target.*]` variant, including `workspace = true` entries resolved through `[workspace.dependencies]`. For `vis affected`, the root `Cargo.toml` and `Cargo.lock` of a Cargo workspace select the projects owning its members, not the whole repository. A root `rust-toolchain.toml` or `rust-toolchain` selects every project with Cargo code, since all of them build with that toolchain: crates, workspace members or not, and JS packages with a nested crate such as a napi `native/Cargo.toml`. When no project has Cargo code, a toolchain change still selects every project.
+
+With inference on, a crate gets these targets from the `cargo` detector. Each runs in the crate directory with `--manifest-path Cargo.toml`, so a Cargo workspace member builds only itself:
+
+| Target         | Command                                        | Cache                 |
+| -------------- | ---------------------------------------------- | --------------------- |
+| `build`        | `cargo build --manifest-path Cargo.toml`       | off                   |
+| `test`         | `cargo test --manifest-path Cargo.toml`        | pass/fail, no outputs |
+| `lint`         | `cargo clippy --manifest-path Cargo.toml`      | pass/fail, no outputs |
+| `format`       | `cargo fmt --manifest-path Cargo.toml`         | off (rewrites files)  |
+| `format:check` | `cargo fmt --check --manifest-path Cargo.toml` | pass/fail, no outputs |
+
+Their inputs are the crate's `Cargo.toml`, `Cargo.lock`, `build.rs`, `rust-toolchain(.toml)`, `rustfmt.toml`, `clippy.toml`, `src/`, `tests/`, `benches/` and `examples/`, the same root files of the workspace (the root `Cargo.toml` carries `[workspace.dependencies]`), and the `CARGO_TARGET_DIR` and `RUSTFLAGS` environment variables. `build` caches nothing because `target/` is often gigabytes and lives at the Cargo workspace root or `CARGO_TARGET_DIR`; to cache it, declare `build` with `outputs` and `cache: true` in `project.json`. A target the crate declares itself (`project.json`, `vis.task.ts`) wins over the inferred one. JS packages never get cargo targets, including those with a napi `native/` crate or a `Cargo.toml` next to their `package.json`; they keep their `package.json` scripts. Turn the detector off with `inferTargets: { cargo: false }`.
+
+`vis release` is unchanged: crates are released through the [`cargo()` preset](/guides/release), not discovered as npm packages.

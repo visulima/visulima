@@ -1,6 +1,7 @@
 import { isAccessibleSync, walkSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
 
+import { isProjectDirectory } from "../config/cargo-projects";
 import { readPnpmWorkspacePatterns, readWorkspacePatterns } from "../config/workspace";
 
 /**
@@ -159,7 +160,8 @@ export const lintMissingPackageJson = (workspaceRoot: string): MissingPackageJso
 
             seen.add(directory);
 
-            if (!isAccessibleSync(join(workspaceRoot, directory, "package.json"))) {
+            // A Cargo crate or project.json-only directory is a vis project, not a stale package.
+            if (!isProjectDirectory(join(workspaceRoot, directory))) {
                 issues.push({ packageDir: directory });
             }
         }
