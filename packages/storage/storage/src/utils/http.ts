@@ -75,8 +75,9 @@ const drainingBodies = new WeakSet<Readable>();
  * answer with a reset, which on macOS and Windows drops the response before the client reads it; and
  * a consumed body left paused is never dumped by Node, leaving the connection stuck until a timeout.
  * Once drained, the connection stays usable for the next request. A client that sends more than
- * {@link MAX_DRAIN_BYTES} past this call, or for longer than {@link MAX_DRAIN_MS}, is cut off.
- * Calling it again for the same body is a no-op.
+ * {@link MAX_DRAIN_BYTES} past this call, or for longer than {@link MAX_DRAIN_MS}, is cut off; for a
+ * request its reader already destroyed, only the time limit applies. Calling it again for the same
+ * body is a no-op.
  * @internal
  * @param request Request whose body was abandoned mid-stream
  * @param socket The request's connection, needed for a request a reader already destroyed

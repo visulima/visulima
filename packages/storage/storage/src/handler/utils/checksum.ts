@@ -116,6 +116,8 @@ export const readBoundedBody = async (body: unknown, limit: number): Promise<Buf
 
         received += buffer.byteLength;
 
+        // Unreachable for a Node request: callers pass its Content-Length as the limit, and Node's
+        // parser ends the body there. It guards a body whose length nothing enforced.
         if (received > limit) {
             throw createHttpError(413, "Request body is larger than its Content-Length");
         }
