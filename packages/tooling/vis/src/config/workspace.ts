@@ -15,6 +15,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
+import { cargoDetector } from "../inference/detectors/cargo";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
@@ -973,13 +974,17 @@ const discoverWorkspace = (
         //     command (guarded — see `scriptMatchesInferredCommand`).
         //     Compound/customised scripts skip the precise outputs and
         //     fall back to the auto-write capture below.
-        // Detectors read package.json; non-JS projects get no inferred targets.
-        const detectorEnabled = pkg ? resolveInferTargetOption(config.inferTargets) : undefined;
+        // The JS detectors read package.json and run only on JS packages. A
+        // Cargo crate (no package.json, a `[package]` manifest) gets the cargo
+        // detector alone, so a JS package's nested or root Cargo.toml never
+        // infers cargo targets. `project.json`-only projects get none.
+        const projectRoot = join(workspaceRoot, projectDirectory);
+        const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
+        const detectorEnabled = pkg || isCrate ? resolveInferTargetOption(config.inferTargets) : undefined;
 
-        if (pkg && detectorEnabled !== undefined) {
-            const projectRoot = join(workspaceRoot, projectDirectory);
-            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
-            const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
+        if (detectorEnabled !== undefined) {
+            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => (detector === cargoDetector) === isCrate && detectorEnabled(detector.name));
+            const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
 
             // Synthesizing a target the project never had is the one part of
             // inference that changes what runs, so it needs an explicit
@@ -999,7 +1004,7 @@ const discoverWorkspace = (
             // and the part that genuinely never changes what runs), and still
             // synthesize freely for a project that declares nothing, where
             // there is no prior behaviour to change.
-            const declaresOwnTargets = Object.keys(pkg.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
+            const declaresOwnTargets = Object.keys(pkg?.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
             const synthesizeNewTargets = config.inferTargets !== undefined || !declaresOwnTargets;
 
             for (const [name, inferredTarget] of Object.entries(inference.targets)) {

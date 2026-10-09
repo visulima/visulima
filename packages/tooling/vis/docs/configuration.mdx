@@ -309,6 +309,7 @@ To opt **in** to only specific detectors, set the rest to `false` — there is n
 | Lint / format     | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                               |
 | DB tooling        | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                |
 | Release plumbing  | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)              |
+| Rust              | `cargo` — emits `build`, `test`, `lint`, `format`, `format:check` on [Cargo crate](#cargo-crates) projects only                                               |
 
 When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
 
@@ -917,4 +918,16 @@ A crate inside another project stays part of that project. The napi `native/` cr
 
 A crate depends on another project when it names it as a path dependency in `[dependencies]`, `[dev-dependencies]`, `[build-dependencies]` or a `[target.*]` variant, including `workspace = true` entries resolved through `[workspace.dependencies]`. For `vis affected`, the root `Cargo.toml` and `Cargo.lock` of a Cargo workspace select the projects owning its members, not the whole repository. A root `rust-toolchain.toml` or `rust-toolchain` selects every project with Cargo code, since all of them build with that toolchain: crates, workspace members or not, and JS packages with a nested crate such as a napi `native/Cargo.toml`. When no project has Cargo code, a toolchain change still selects every project.
 
-Crates get no inferred targets yet; declare them in `project.json#targets` or `vis.task.ts`. `vis release` is unchanged: crates are released through the [`cargo()` preset](/guides/release), not discovered as npm packages.
+With inference on, a crate gets these targets from the `cargo` detector. Each runs in the crate directory with `--manifest-path Cargo.toml`, so a Cargo workspace member builds only itself:
+
+| Target         | Command                                        | Cache                 |
+| -------------- | ---------------------------------------------- | --------------------- |
+| `build`        | `cargo build --manifest-path Cargo.toml`       | off                   |
+| `test`         | `cargo test --manifest-path Cargo.toml`        | pass/fail, no outputs |
+| `lint`         | `cargo clippy --manifest-path Cargo.toml`      | pass/fail, no outputs |
+| `format`       | `cargo fmt --manifest-path Cargo.toml`         | off (rewrites files)  |
+| `format:check` | `cargo fmt --check --manifest-path Cargo.toml` | pass/fail, no outputs |
+
+Their inputs are the crate's `Cargo.toml`, `Cargo.lock`, `build.rs`, `rust-toolchain(.toml)`, `rustfmt.toml`, `clippy.toml`, `src/`, `tests/`, `benches/` and `examples/`, the same root files of the workspace (the root `Cargo.toml` carries `[workspace.dependencies]`), and the `CARGO_TARGET_DIR` and `RUSTFLAGS` environment variables. `build` caches nothing because `target/` is often gigabytes and lives at the Cargo workspace root or `CARGO_TARGET_DIR`; to cache it, declare `build` with `outputs` and `cache: true` in `project.json`. A target the crate declares itself (`project.json`, `vis.task.ts`) wins over the inferred one. JS packages never get cargo targets, including those with a napi `native/` crate or a `Cargo.toml` next to their `package.json`; they keep their `package.json` scripts. Turn the detector off with `inferTargets: { cargo: false }`.
+
+`vis release` is unchanged: crates are released through the [`cargo()` preset](/guides/release), not discovered as npm packages.

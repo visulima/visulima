@@ -97,6 +97,79 @@ describe("cargo crates as projects", () => {
         expect(packages.map((entry) => entry.manifest.name).toSorted()).toStrictEqual(["docs", "web"]);
     });
 
+    describe("inferred cargo targets", () => {
+        it("should infer build, test, lint and format targets scoped to the crate", () => {
+            expect.assertions(7);
+
+            const targets = discoverWorkspace(root, { inferTargets: true }).workspace.projects["a"]?.targets ?? {};
+
+            expect(Object.fromEntries(Object.entries(targets).map(([name, target]) => [name, target.command]))).toStrictEqual({
+                build: "cargo build --manifest-path Cargo.toml",
+                format: "cargo fmt --manifest-path Cargo.toml",
+                "format:check": "cargo fmt --check --manifest-path Cargo.toml",
+                lint: "cargo clippy --manifest-path Cargo.toml",
+                test: "cargo test --manifest-path Cargo.toml",
+            });
+            // No artifact caching for `target/`, and no auto-captured outputs for the checks.
+            expect(targets["build"]).toMatchObject({ cache: false });
+            expect(targets["build"]?.outputs).toBeUndefined();
+
+            for (const name of ["test", "lint", "format:check"]) {
+                expect(targets[name]).toMatchObject({ cache: true, outputs: [] });
+            }
+
+            expect(targets["test"]?.inputs).toStrictEqual(
+                expect.arrayContaining([
+                    "{projectRoot}/Cargo.toml",
+                    "{projectRoot}/src/**/*",
+                    "{projectRoot}/build.rs",
+                    "{workspaceRoot}/Cargo.toml",
+                    "{workspaceRoot}/Cargo.lock",
+                    "{workspaceRoot}/rust-toolchain.toml",
+                    "env://CARGO_TARGET_DIR",
+                    "env://RUSTFLAGS",
+                ]),
+            );
+        });
+
+        it("should infer them on the unset default for a crate that declares no targets", () => {
+            expect.assertions(1);
+
+            expect(discoverWorkspace(root).workspace.projects["a"]?.targets?.["test"]?.command).toBe("cargo test --manifest-path Cargo.toml");
+        });
+
+        it("should infer no cargo targets on a JS package, even with a root Cargo.toml", () => {
+            expect.assertions(2);
+
+            write(root, "packages/napi/package.json", JSON.stringify({ name: "napi" }));
+            write(root, "packages/napi/Cargo.toml", "[package]\nname = \"napi\"\nversion = \"0.1.0\"\n");
+
+            const { projects } = discoverWorkspace(root, { inferTargets: true }).workspace;
+            const commands = ["web", "napi"].flatMap((name) => Object.values(projects[name]?.targets ?? {}).map((target) => String(target.command)));
+
+            expect(commands).toContain("vitest");
+            expect(commands.filter((command) => command.startsWith("cargo"))).toStrictEqual([]);
+        });
+
+        it("should keep an explicit target of the same name", () => {
+            expect.assertions(2);
+
+            write(root, "crates/b/project.json", JSON.stringify({ targets: { test: { command: "cargo nextest run" } } }));
+
+            const targets = discoverWorkspace(root, { inferTargets: true }).workspace.projects["b"]?.targets ?? {};
+
+            expect(targets["test"]?.command).toBe("cargo nextest run");
+            expect(targets["lint"]?.command).toBe("cargo clippy --manifest-path Cargo.toml");
+        });
+
+        it("should infer nothing when inference is off", () => {
+            expect.assertions(2);
+
+            expect(discoverWorkspace(root, { inferTargets: false }).workspace.projects["a"]?.targets).toStrictEqual({});
+            expect(discoverWorkspace(root, { inferTargets: { cargo: false } }).workspace.projects["a"]?.targets).toStrictEqual({});
+        });
+    });
+
     describe("affected mapping", () => {
         const affected = async (changedFile: string): Promise<string[]> => {
             const { fileOwners, packageJsons, workspace } = discoverWorkspace(root);
