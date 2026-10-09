@@ -25,6 +25,24 @@ const affected = await getAffectedProjects({
 const filteredTaskIds = filterAffectedTasks(taskIds, new Set(affected.affectedProjects));
 ```
 
+## Files Outside Every Project
+
+A changed file that belongs to no project (a root `tsconfig.json`, `package.json`, …) is treated as a global change and marks every project affected. Pass `ignoredFiles` to skip specific unowned paths instead:
+
+```typescript
+const affected = await getAffectedProjects({
+    base: "main",
+    ignoredFiles: ["api-snapshots/**", "plans/**", "*.md"],
+    projectGraph,
+    projects,
+    workspaceRoot,
+});
+
+affected.ignoredFiles; // unowned changed files that matched and were skipped
+```
+
+Patterns are workspace-relative and use `path.matchesGlob` syntax, so `*` does not cross `/`: `*.md` matches `README.md` but not `docs/guide.md`. They are only checked for files that belong to no project. A file inside a project root is never filtered, so a broad pattern like `*.md` cannot hide a real package change. `changedFiles` still reports the full diff.
+
 ## Transitive Expansion
 
 If package A depends on package B, and B changes, then A is also affected. The affected detection expands transitively through the project dependency graph.

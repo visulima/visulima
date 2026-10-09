@@ -2,11 +2,12 @@ import { createInterface } from "node:readline";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
-import { readJsonSync, writeJsonSync } from "@visulima/fs";
+import { isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
 import { findPackageManagerSync } from "@visulima/package";
 import { join } from "@visulima/path";
 
 import { discoverWorkspace } from "../../config/workspace";
+import { VisUserError } from "../../errors/vis-user-error";
 import { pail } from "../../io/logger";
 import { resolveInstaller, runAdd, runInstall } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
@@ -373,6 +374,11 @@ const applyConformedAdd = async ({
     }
 
     const targetPkgPath = join(workspaceRoot, project.root, "package.json");
+
+    if (!isAccessibleSync(targetPkgPath)) {
+        throw new VisUserError(`--to: project "${target}" has no package.json (${project.root}), so there is nothing to add npm dependencies to.`);
+    }
+
     const { packageManager } = findPackageManagerSync(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
 

@@ -255,6 +255,28 @@ export interface ScopedTasksBlock {
 }
 
 export interface VisConfig {
+    /**
+     * Workspace-relative glob patterns for changed files outside every
+     * project that `vis affected`, `vis run --affected`, `vis ci` and
+     * `vis ci ignore` should not count as a change.
+     *
+     * By default a changed file that belongs to no project (a root
+     * `tsconfig.json`, `package.json`, …) is a global change and marks every
+     * project affected. A changed file matching one of these patterns is
+     * skipped instead. The patterns are only checked for files that belong
+     * to NO project: a file inside a project root is never filtered, so a
+     * broad pattern like `*.md` cannot hide a real package change.
+     *
+     * Patterns use `path.matchesGlob` syntax, where `*` does not cross `/`:
+     * `*.md` matches `README.md` but not `docs/guide.md`.
+     *
+     * Do NOT list paths whose changes really do affect projects, such as
+     * bundler-inlined shared source or the root `tsconfig.json`: an edit
+     * there would then run nothing.
+     * @example ["api-snapshots/**", "plans/**", "*.md"]
+     */
+    affectedIgnore?: string[];
+
     /** AI analysis configuration */
     ai?: {
         /** Cache TTL in milliseconds. Overrides default (1h / 30min for security). */

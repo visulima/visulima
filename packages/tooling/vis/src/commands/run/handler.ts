@@ -1276,7 +1276,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // relative to where the user actually ran the command.
     const invocationCwd = process.cwd();
     const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot);
-    const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
+    const { config, fileOwners, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
     const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
     let rawSelector = argument[0];
@@ -1445,8 +1445,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 uncommitted: options.uncommitted,
                 upstream: options.upstream,
             },
-            { projectGraph, projects: workspace.projects, workspaceRoot },
-            { defaultBase: visConfig?.defaultBase },
+            { fileOwners, projectGraph, projects: workspace.projects, workspaceRoot },
+            { affectedIgnore: visConfig?.affectedIgnore, defaultBase: visConfig?.defaultBase },
         );
 
         for (const note of affected.notes) {
@@ -1469,7 +1469,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             return;
         }
 
-        affectedChangedFiles = affected.changedFiles;
+        // Paths skipped by `affectedIgnore` changed nothing, so tasks don't receive them either.
+        const ignoredFiles = new Set(affected.ignoredFiles);
+
+        affectedChangedFiles = affected.changedFiles.filter((file) => !ignoredFiles.has(file));
 
         logger.info(`Affected projects: ${projectNames.join(", ")}`);
     }
