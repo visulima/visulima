@@ -8,7 +8,7 @@ import {
 import createHttpError from "http-errors";
 
 import type { UploadFile } from "../../storage/utils/file";
-import { getIdFromRequestUrl } from "../../utils/http";
+import { drainAbandonedWebBody, getIdFromRequestUrl } from "../../utils/http";
 import ValidationError from "../../utils/validation-error";
 import BaseHandlerFetch from "../base/base-handler-fetch";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
@@ -80,6 +80,10 @@ class Multipart<TFile extends UploadFile> extends BaseHandlerFetch<TFile> {
 
             return this.multipartBase.handlePost(filePart, parts, { url: request.url });
         } catch (error) {
+            // As in the Node handler: the parser stops reading wherever it failed. Drain the rest so the
+            // client reads the error response.
+            drainAbandonedWebBody(request);
+
             if (error instanceof MaxFileSizeExceededError || error instanceof MaxTotalSizeExceededError || error instanceof MaxPartsExceededError) {
                 throw createHttpError(413, "File size limit exceeded");
             }

@@ -6740,6 +6740,9 @@ importers:
       '@googleapis/drive':
         specifier: 26.0.2
         version: 26.0.2
+      '@hono/node-server':
+        specifier: catalog:backend
+        version: 2.1.1(hono@4.13.12)
       '@microsoft/microsoft-graph-client':
         specifier: 3.0.7
         version: 3.0.7

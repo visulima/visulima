@@ -9,6 +9,7 @@ import Rest from "../../../../src/handler/rest/rest";
 import { MAX_BATCH_DELETE_BYTES } from "../../../../src/handler/rest/rest-base";
 import MemoryStorage from "../../../../src/storage/memory/memory-storage";
 import { MAX_DRAIN_BYTES } from "../../../../src/utils/http";
+import { sendThenRead } from "../../../__helpers__/utils";
 
 /**
  * A client that is still sending a body the server already refused must read the 413, not a
@@ -186,5 +187,47 @@ describe("http Rest with a batch-delete body over its limit", () => {
         } finally {
             agent.destroy();
         }
+    });
+});
+
+/**
+ * A request refused before its body is read is left to Node, which discards the whole body however
+ * large it is: cutting the connection at the drain cap would lose the 413 to the reset.
+ */
+describe("http Rest with an upload refused before its body is read", () => {
+    const MAX_UPLOAD_SIZE = 1024;
+    let port: number;
+    let close: () => Promise<void>;
+
+    beforeAll(async () => {
+        const rest = new Rest({ storage: new MemoryStorage({ maxUploadSize: MAX_UPLOAD_SIZE, path: "/files" }) });
+        const server = createServer((request: IncomingMessage, response: ServerResponse) => {
+            void rest.handle(request, response);
+        });
+
+        await new Promise<void>((resolve) => {
+            server.listen(0, "127.0.0.1", resolve);
+        });
+        port = (server.address() as AddressInfo).port;
+        close = async () =>
+            new Promise((resolve) => {
+                server.closeAllConnections();
+                server.close(() => {
+                    resolve();
+                });
+            });
+    });
+
+    afterAll(async () => {
+        await close();
+    });
+
+    it("should keep the 413 readable for a body past the drain cap", async () => {
+        expect.assertions(1);
+
+        const size = MAX_UPLOAD_SIZE + MAX_DRAIN_BYTES + 1024 * 1024;
+        const head = `POST /files HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/octet-stream\r\nContent-Length: ${String(size)}\r\n\r\n`;
+
+        await expect(sendThenRead(port, head, Buffer.alloc(size, 32))).resolves.toMatch(/^HTTP\/1\.1 413 /u);
     });
 });
