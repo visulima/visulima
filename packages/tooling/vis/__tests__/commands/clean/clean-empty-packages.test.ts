@@ -96,6 +96,52 @@ describe("clean --empty-packages", () => {
         expect(existsSync(join(nested, "package.json"))).toBe(true);
     });
 
+    it("keeps the source folders of a real package under a `packages/**` glob", async () => {
+        expect.assertions(5);
+
+        writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/**'\n");
+
+        const foo = join(tmpDir, "packages", "foo");
+        const old = join(tmpDir, "packages", "old");
+
+        mkdirSync(join(foo, "src"), { recursive: true });
+        mkdirSync(join(foo, "__tests__"), { recursive: true });
+        mkdirSync(join(foo, "docs"), { recursive: true });
+        mkdirSync(join(old, "node_modules", "dep"), { recursive: true });
+        writeFileSync(join(foo, "package.json"), JSON.stringify({ name: "foo" }));
+        writeFileSync(join(foo, "src", "index.ts"), "export const foo = 1;\n");
+        writeFileSync(join(foo, "__tests__", "foo.test.ts"), "");
+        writeFileSync(join(foo, "docs", "readme.md"), "# foo\n");
+        writeFileSync(join(old, "node_modules", "dep", "index.js"), "");
+
+        await runClean(tmpDir, { emptyPackages: true });
+
+        expect(existsSync(join(foo, "src", "index.ts"))).toBe(true);
+        expect(existsSync(join(foo, "__tests__", "foo.test.ts"))).toBe(true);
+        expect(existsSync(join(foo, "docs", "readme.md"))).toBe(true);
+        expect(existsSync(old)).toBe(false);
+        expect(process.exitCode).toBeUndefined();
+    });
+
+    it("refuses to delete a flagged directory that still holds files", async () => {
+        expect.assertions(2);
+
+        writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+        const scratch = join(tmpDir, "packages", "scratch");
+        const leftover = join(tmpDir, "packages", "leftover");
+
+        mkdirSync(join(scratch, "src"), { recursive: true });
+        mkdirSync(join(leftover, "dist"), { recursive: true });
+        writeFileSync(join(scratch, "src", "index.ts"), "export {};\n");
+        writeFileSync(join(leftover, "dist", "index.js"), "");
+
+        await runClean(tmpDir, { emptyPackages: true });
+
+        expect(existsSync(join(scratch, "src", "index.ts"))).toBe(true);
+        expect(existsSync(leftover)).toBe(false);
+    });
+
     it("removes nothing under --dry-run", async () => {
         expect.assertions(1);
 

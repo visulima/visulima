@@ -27,6 +27,40 @@ const DOT_GIT_RE = /\.git/;
 const REGEX_SPECIALS_RE = /[$()+.?[\\\]^{|}]/g;
 const NESTED_OR_DOUBLE_SUFFIX_RE = /\/\*\*$|\/\*\/\*$/;
 
+/** True when a `package.json` lives anywhere beneath `directory`. */
+const containsPackageJson = (directory: string): boolean => {
+    for (const entry of walkSync(directory, { includeDirs: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+        if (entry.name === "package.json") {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+/**
+ * Package-root candidates for a recursive pattern (`packages/**` and the like).
+ * Only directories that sit outside every package count: a directory with a
+ * `package.json` is a package and its contents (`src`, `docs`, ...) belong to
+ * it, and a directory with a package further down is a grouping folder.
+ * Everything else is reported at its topmost level.
+ */
+const collectNestedCandidates = (directory: string, relative: string, matches: string[]): void => {
+    for (const entry of walkSync(directory, { includeFiles: false, includeSymlinks: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+        if (entry.path === directory || entry.name.startsWith(".") || isAccessibleSync(join(entry.path, "package.json"))) {
+            continue;
+        }
+
+        const childRelative = `${relative}/${entry.name}`;
+
+        if (containsPackageJson(entry.path)) {
+            collectNestedCandidates(entry.path, childRelative, matches);
+        } else {
+            matches.push(childRelative);
+        }
+    }
+};
+
 /**
  * Resolve a positive workspace pattern to every directory that matches —
  * including those *without* a `package.json`. The `collectWorkspace*`
@@ -43,7 +77,8 @@ const collectPatternMatches = (workspaceRoot: string, pattern: string): string[]
 
     const matches: string[] = [];
 
-    if (cleanPattern.endsWith("/*")) {
+    // `dir/*/*` also ends in `/*`; it is recursive and handled below.
+    if (cleanPattern.endsWith("/*") && !cleanPattern.endsWith("/*/*")) {
         const base = cleanPattern.slice(0, -2);
         const baseDirectory = resolve(workspaceRoot, base);
 
@@ -66,18 +101,8 @@ const collectPatternMatches = (workspaceRoot: string, pattern: string): string[]
         const base = cleanPattern.replace(NESTED_OR_DOUBLE_SUFFIX_RE, "");
         const baseDirectory = resolve(workspaceRoot, base);
 
-        if (!isAccessibleSync(baseDirectory)) {
-            return [];
-        }
-
-        for (const entry of walkSync(baseDirectory, { includeFiles: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
-            if (entry.path === baseDirectory) {
-                continue;
-            }
-
-            const relativePath = entry.path.slice(baseDirectory.length + 1);
-
-            matches.push(`${base}/${relativePath}`);
+        if (isAccessibleSync(baseDirectory)) {
+            collectNestedCandidates(baseDirectory, base, matches);
         }
 
         return matches;

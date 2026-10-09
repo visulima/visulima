@@ -1,7 +1,7 @@
 import { lstatSync, readdirSync, rmSync, unlinkSync } from "node:fs";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import { isAccessibleSync, walkSync } from "@visulima/fs";
+import { isAccessibleSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 import { cleanWorkspace } from "#native";
@@ -10,9 +10,6 @@ import { lintMissingPackageJson } from "../../deps/missing-package-json";
 import { pail } from "../../io/logger";
 import { errorMessage } from "../../util/utils";
 import type { CleanOptions } from "./index";
-
-const NODE_MODULES_RE = /node_modules/;
-const DOT_GIT_RE = /\.git/;
 
 /**
  * Finds all node_modules directories in the workspace using lstatSync
@@ -90,27 +87,40 @@ const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadEr
     return { hadError, removed };
 };
 
+/** Directories whose contents are always regenerable: installs, build output and caches. */
+const DISPOSABLE_DIRECTORIES = new Set([".cache", ".turbo", "dist", "node_modules"]);
+
 /**
- * True when any `package.json` lives somewhere beneath `directory`. Used to
- * spare grouping directories: a `packages/**` pattern flags an intermediate
- * folder (e.g. `packages/group`) as "missing package.json" even though real
- * packages live under it — deleting it would take those with it.
+ * Returns the first file beneath `directory` that is not inside a disposable
+ * directory, or `undefined` when there is none. Symlinks count as files, so a
+ * linked checkout is never treated as empty.
  */
-const containsPackageJson = (directory: string): boolean => {
-    for (const entry of walkSync(directory, { includeDirs: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
-        if (entry.name === "package.json") {
-            return true;
+const findKeptFile = (directory: string): string | undefined => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const fullPath = join(directory, entry.name);
+
+        if (!entry.isDirectory()) {
+            return fullPath;
+        }
+
+        if (!DISPOSABLE_DIRECTORIES.has(entry.name)) {
+            const kept = findKeptFile(fullPath);
+
+            if (kept !== undefined) {
+                return kept;
+            }
         }
     }
 
-    return false;
+    return undefined;
 };
 
 /**
  * Removes stale workspace directories — folders that match a workspace
  * pattern (e.g. `packages/*`) but carry no `package.json`, so installs and
- * task discovery silently skip them. Directories that still contain a
- * package further down are left untouched.
+ * task discovery silently skip them. Only directories holding nothing but
+ * disposable content (`node_modules`, `dist`, caches) are removed; anything
+ * with a real file in it — source, docs, a nested package — is left alone.
  */
 const removeEmptyPackages = (cwd: string, dryRun: boolean, logger: Console): { hadError: boolean; removed: number } => {
     let removed = 0;
@@ -118,8 +128,18 @@ const removeEmptyPackages = (cwd: string, dryRun: boolean, logger: Console): { h
 
     for (const { packageDir } of lintMissingPackageJson(cwd)) {
         const absolute = join(cwd, packageDir);
+        let keptFile: string | undefined;
 
-        if (containsPackageJson(absolute)) {
+        try {
+            keptFile = findKeptFile(absolute);
+        } catch (error: unknown) {
+            pail.error(`${absolute}: ${errorMessage(error)}`);
+            hadError = true;
+            continue;
+        }
+
+        if (keptFile !== undefined) {
+            pail.warn(`Skipping ${absolute}: not empty (contains ${keptFile})`);
             continue;
         }
 
