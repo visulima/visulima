@@ -1,3 +1,27 @@
+## @visulima/vis [4.2.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.20...@visulima/vis@4.2.0) (2026-10-09)
+
+### Features
+
+* **vis:** add affectedIgnore config option ([#937](https://github.com/visulima/visulima/issues/937)) ([3576acb](https://github.com/visulima/visulima/commit/3576acbf523007b0244815f34ca7e309f69396b7))
+
+### Bug Fixes
+
+* **vis:** stop clean --empty-packages from deleting source directories ([#939](https://github.com/visulima/visulima/issues/939)) ([08ef1fd](https://github.com/visulima/visulima/commit/08ef1fded6f3cb0af1464ddc7716a86bedd513a7))
+
+### Build System
+
+* **deps:** bump proxy-addr ([#934](https://github.com/visulima/visulima/issues/934)) ([11ef6ee](https://github.com/visulima/visulima/commit/11ef6eecbf8c3e1089993d5cab010ed7fd0f3951))
+* **deps:** combine open Dependabot dependency updates ([#926](https://github.com/visulima/visulima/issues/926)) ([1f276d6](https://github.com/visulima/visulima/commit/1f276d60e2b0c08059ccccfc9b7c8e5bd61f8c7c))
+
+### Continuous Integration
+
+* **cargo-test:** gate clippy and record fat-lto evidence ([#929](https://github.com/visulima/visulima/issues/929)) ([fb6bef8](https://github.com/visulima/visulima/commit/fb6bef801299981ae74b62f531c0254d5c710112))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.1.0
+
 ## @visulima/vis [4.1.20](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.19...@visulima/vis@4.1.20) (2026-10-05)
 
 
