@@ -258,7 +258,7 @@ catalogs:
     github-slugger: 2.0.0
     globals: ^17.9.0
     google-auth-library: 11.1.0
-    handlebars: 4.7.9
+    handlebars: 4.7.10
     happy-dom: 20.11.2
     hast: 1.0.0
     html-entities: 2.6.0
@@ -468,7 +468,7 @@ catalogs:
     compromise: '>=14.15.1'
     cors: '>=2.8.6'
     github-slugger: '>=2.0.0'
-    handlebars: '>=4.7.9'
+    handlebars: '>=4.7.10'
     ini: ^7.0.0
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
@@ -1021,8 +1021,7 @@ overrides:
   google-auth-library@>=10.0.0 <10.7.0: 10.7.0
   h3-v2: npm:h3@2.0.1-rc.18
   h3@<1.15.9: '>=1.15.9'
-  handlebars@>=4.0.0 <4.7.9: '>=4.7.9'
-  handlebars@>=4.0.0 <=4.7.8: '>=4.7.9'
+  handlebars@>=4.0.0 <4.7.10: '>=4.7.10'
   happy-dom@<20.0.0: '>=20.0.10'
   happy-dom@>=15.10.0 <=20.8.7: '>=20.8.8'
   hono@<4.11.10: '>=4.11.10'
