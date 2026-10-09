@@ -5,6 +5,7 @@ import createHttpError from "http-errors";
 import { WRITE_CLAIM_KEY } from "../../storage/meta-storage";
 import type { Checksum, FileInit, UploadFile } from "../../storage/utils/file";
 import { HeaderUtilities } from "../../utils/headers";
+import { drainAbandonedBody } from "../../utils/http";
 import StreamLength, { isStreamLengthError } from "../../utils/pipes/stream-length";
 import type { Headers } from "../../utils/types";
 import type { LocationSource } from "../base/base-handler-core";
@@ -511,8 +512,10 @@ export class TusBase<TFile extends UploadFile> {
         // Without a Content-Length the body is only known to fit while it streams, and the adapter
         // gets no length: an unknown one must not read as an empty chunk.
         let limiter: StreamLength | undefined;
+        let limited: Readable | undefined;
 
         if (contentLength === undefined && body instanceof Readable) {
+            limited = body;
             const bounded = new StreamLength(limit - uploadOffset);
 
             // It can fail before the adapter attaches its listener, and an unheard 'error' crashes the
@@ -550,7 +553,10 @@ export class TusBase<TFile extends UploadFile> {
             }
 
             // Adapters wrap the limiter's error, so ask the limiter.
-            if (isStreamLengthError(limiter?.errored)) {
+            if (limited && isStreamLengthError(limiter?.errored)) {
+                // The pipe stopped at the limit and left the body paused: drain it so the client reads the 413.
+                drainAbandonedBody(limited);
+
                 throw createHttpError(413, "Chunk exceeds the upload length");
             }
 
