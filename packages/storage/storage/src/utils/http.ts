@@ -1,4 +1,6 @@
-import type { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "node:http";
+import type { OutgoingHttpHeader, ServerResponse } from "node:http";
+import { IncomingMessage } from "node:http";
+import type { Socket } from "node:net";
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
@@ -65,6 +67,8 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
     return { host, proto };
 };
 
+const drainingBodies = new WeakSet<Readable>();
+
 /**
  * Reads and discards the rest of a request body nothing will read any more, so the client gets to
  * read the error response. Closing the connection while the client is still sending makes the kernel
@@ -72,13 +76,41 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
  * a consumed body left paused is never dumped by Node, leaving the connection stuck until a timeout.
  * Once drained, the connection stays usable for the next request. A client that sends more than
  * {@link MAX_DRAIN_BYTES} past this call, or for longer than {@link MAX_DRAIN_MS}, is cut off.
+ * Calling it again for the same body is a no-op.
  * @internal
  * @param request Request whose body was abandoned mid-stream
+ * @param socket The request's connection, needed for a request a reader already destroyed
  */
-export const drainAbandonedBody = (request: Readable): void => {
-    if (request.readableEnded || request.destroyed) {
+export const drainAbandonedBody = (request: Readable, socket?: Socket | null): void => {
+    if (request.readableEnded || drainingBodies.has(request)) {
         return;
     }
+
+    if (request.destroyed) {
+        // pipeline() and for-await destroy a server request with its socket detached, so the response
+        // can still be sent, but the HTTP parser then stops reading the socket. Mark the body dumped,
+        // which makes the parser discard the rest (Node's own handling of an unread body, an internal
+        // API), and resume the socket.
+        if (!(request instanceof IncomingMessage) || request.complete || !socket || socket.destroyed) {
+            return;
+        }
+
+        drainingBodies.add(request);
+        (request as IncomingMessage & { _dump: () => void })._dump();
+        socket.resume();
+
+        // Only the time cap applies here: the parser reads the socket natively, so no byte passes
+        // through this code to be counted.
+        setTimeout(() => {
+            if (!request.complete) {
+                socket.destroy();
+            }
+        }, MAX_DRAIN_MS).unref();
+
+        return;
+    }
+
+    drainingBodies.add(request);
 
     // Detach whatever was reading it (a pipe, a web stream adapter), which would otherwise keep
     // buffering the body or pause it again.
