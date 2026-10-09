@@ -1,3 +1,9 @@
+## @visulima/storage [2.0.35](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.34...@visulima/storage@2.0.35) (2026-10-09)
+
+### Bug Fixes
+
+* **storage:** drain an oversized body before closing so clients read the 413 ([#942](https://github.com/visulima/visulima/issues/942)) ([1f32696](https://github.com/visulima/visulima/commit/1f3269648c7a13311e14af284cd81090d9ca9203))
+
 ## @visulima/storage [2.0.34](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.33...@visulima/storage@2.0.34) (2026-10-07)
 
 ### Bug Fixes
