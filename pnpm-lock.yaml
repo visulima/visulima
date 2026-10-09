@@ -6751,7 +6751,7 @@ importers:
         version: 4.5.2(magic-string@1.2.3)(magicast@0.5.4)(oxc-parser@0.147.0)(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.7)(rollup@4.63.1)(vite@8.2.2(@types/node@26.6.4)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(webpack@5.110.3(@swc/core@1.16.2(@swc/helpers@0.5.23))(cssnano@8.0.10(postcss@8.5.28))(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@26.6.4))))
       '@openai/agents':
         specifier: ^0.18.0
-        version: 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+        version: 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       '@opentelemetry/api':
         specifier: catalog:dev
         version: 1.9.1
@@ -6880,7 +6880,7 @@ importers:
         version: 1.18.1(@types/express@5.0.6)(@types/node@26.6.4)
       openai:
         specifier: catalog:dev
-        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+        version: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       pocketbase:
         specifier: 0.28.1
         version: 0.28.1
@@ -9243,7 +9243,7 @@ importers:
         version: 5.18.3(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)
       '@napi-rs/cli':
         specifier: catalog:dev
-        version: 3.7.2(@emnapi/runtime@1.11.2)(@types/node@26.6.4)(node-addon-api@7.1.1)
+        version: 3.7.2(@emnapi/runtime@1.9.2)(@types/node@26.6.4)(node-addon-api@7.1.1)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 13.0.4
@@ -17908,7 +17908,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.5.7
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
@@ -38473,37 +38473,6 @@ snapshots:
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
 
-  '@napi-rs/cli@3.7.2(@emnapi/runtime@1.11.2)(@types/node@26.6.4)(node-addon-api@7.1.1)':
-    dependencies:
-      '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
-      '@napi-rs/cross-toolchain': 1.0.3
-      '@napi-rs/wasm-tools': 1.1.0
-      '@octokit/rest': 22.0.1
-      clipanion: 4.0.0-rc.4(typanion@3.14.0)
-      colorette: 2.0.20
-      emnapi: 1.11.3(node-addon-api@7.1.1)
-      es-toolkit: 1.52.0
-      js-yaml: 4.3.2
-      obug: 2.1.4
-      semver: 7.8.5
-      typanion: 3.14.0
-    optionalDependencies:
-      '@emnapi/runtime': 1.11.2
-    transitivePeerDependencies:
-      - '@napi-rs/cross-toolchain-arm64-target-aarch64'
-      - '@napi-rs/cross-toolchain-arm64-target-armv7'
-      - '@napi-rs/cross-toolchain-arm64-target-ppc64le'
-      - '@napi-rs/cross-toolchain-arm64-target-s390x'
-      - '@napi-rs/cross-toolchain-arm64-target-x86_64'
-      - '@napi-rs/cross-toolchain-x64-target-aarch64'
-      - '@napi-rs/cross-toolchain-x64-target-armv7'
-      - '@napi-rs/cross-toolchain-x64-target-ppc64le'
-      - '@napi-rs/cross-toolchain-x64-target-s390x'
-      - '@napi-rs/cross-toolchain-x64-target-x86_64'
-      - '@types/node'
-      - node-addon-api
-      - supports-color
-
   '@napi-rs/cli@3.7.2(@emnapi/runtime@1.11.3)(@types/node@26.6.4)(node-addon-api@7.1.1)':
     dependencies:
       '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
@@ -38520,6 +38489,37 @@ snapshots:
       typanion: 3.14.0
     optionalDependencies:
       '@emnapi/runtime': 1.11.3
+    transitivePeerDependencies:
+      - '@napi-rs/cross-toolchain-arm64-target-aarch64'
+      - '@napi-rs/cross-toolchain-arm64-target-armv7'
+      - '@napi-rs/cross-toolchain-arm64-target-ppc64le'
+      - '@napi-rs/cross-toolchain-arm64-target-s390x'
+      - '@napi-rs/cross-toolchain-arm64-target-x86_64'
+      - '@napi-rs/cross-toolchain-x64-target-aarch64'
+      - '@napi-rs/cross-toolchain-x64-target-armv7'
+      - '@napi-rs/cross-toolchain-x64-target-ppc64le'
+      - '@napi-rs/cross-toolchain-x64-target-s390x'
+      - '@napi-rs/cross-toolchain-x64-target-x86_64'
+      - '@types/node'
+      - node-addon-api
+      - supports-color
+
+  '@napi-rs/cli@3.7.2(@emnapi/runtime@1.9.2)(@types/node@26.6.4)(node-addon-api@7.1.1)':
+    dependencies:
+      '@inquirer/prompts': 8.7.1(@types/node@26.6.4)
+      '@napi-rs/cross-toolchain': 1.0.3
+      '@napi-rs/wasm-tools': 1.1.0
+      '@octokit/rest': 22.0.1
+      clipanion: 4.0.0-rc.4(typanion@3.14.0)
+      colorette: 2.0.20
+      emnapi: 1.11.3(node-addon-api@7.1.1)
+      es-toolkit: 1.52.0
+      js-yaml: 4.3.2
+      obug: 2.1.4
+      semver: 7.8.5
+      typanion: 3.14.0
+    optionalDependencies:
+      '@emnapi/runtime': 1.9.2
     transitivePeerDependencies:
       - '@napi-rs/cross-toolchain-arm64-target-aarch64'
       - '@napi-rs/cross-toolchain-arm64-target-armv7'
@@ -39875,11 +39875,11 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@openai/agents-core@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)':
+  '@openai/agents-core@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
     optionalDependencies:
       '@modelcontextprotocol/client': 2.3.1
       zod: 4.6.5
@@ -39891,11 +39891,11 @@ snapshots:
       - undici
       - ws
 
-  '@openai/agents-openai@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)':
+  '@openai/agents-openai@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -39905,9 +39905,9 @@ snapshots:
       - undici
       - ws
 
-  '@openai/agents-realtime@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(zod@4.6.5)':
+  '@openai/agents-realtime@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       '@types/ws': 8.18.1
       debug: 4.4.3(supports-color@8.1.1)
       ws: 8.21.3
@@ -39921,13 +39921,13 @@ snapshots:
       - undici
       - utf-8-validate
 
-  '@openai/agents@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)':
+  '@openai/agents@0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)':
     dependencies:
-      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
-      '@openai/agents-openai': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
-      '@openai/agents-realtime': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(zod@4.6.5)
+      '@openai/agents-core': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-openai': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
+      '@openai/agents-realtime': 0.18.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(zod@4.6.5)
       debug: 4.4.3(supports-color@8.1.1)
-      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5)
+      openai: 7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)
       zod: 4.6.5
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
@@ -51250,12 +51250,12 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
-  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1):
+  eslint-config-standard-jsx@11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
@@ -59310,6 +59310,14 @@ snapshots:
       powershell-utils: 0.2.1
       wsl-utils: 1.0.0
 
+  openai@7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@7.29.1)(ws@8.21.3)(zod@4.6.5):
+    optionalDependencies:
+      '@aws-sdk/credential-provider-node': 3.972.84
+      '@smithy/signature-v4': 5.7.3
+      undici: 7.29.1
+      ws: 8.21.3
+      zod: 4.6.5
+
   openai@7.27.0(@aws-sdk/credential-provider-node@3.972.84)(@smithy/signature-v4@5.7.3)(undici@8.10.2)(ws@8.21.3)(zod@4.6.5):
     optionalDependencies:
       '@aws-sdk/credential-provider-node': 3.972.84
@@ -62686,8 +62694,8 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.8.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1)
-      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.8.1(jiti@2.7.0)))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.69.0(eslint@10.8.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.8.1(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
       eslint-plugin-promise: 6.6.0(eslint@8.57.1)
