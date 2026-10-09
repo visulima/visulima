@@ -141,6 +141,28 @@ describe(selectAffectedProjects, () => {
         expect(result.notes.join("\n")).toMatch(/ignoring 3 uncommitted path\(s\) outside any project/);
     });
 
+    it("should keep an uncommitted root file that has owners, and forward the owners with affectedIgnore", async () => {
+        expect.assertions(1);
+
+        getAffectedProjectsMock.mockResolvedValueOnce(emptyResult);
+
+        const fileOwners = { "Cargo.lock": ["api"] };
+
+        await selectAffectedProjects(
+            { base: "HEAD~1", head: "HEAD" },
+            { ...workspace, fileOwners },
+            {
+                affectedIgnore: ["*.md"],
+                readWorkingTreeChanges: () => ["Cargo.lock", "packages/api/src/index.ts", "notes.md"],
+                runningInCi: false,
+            },
+        );
+
+        expect(getAffectedProjectsMock).toHaveBeenCalledWith(
+            expect.objectContaining({ additionalChangedFiles: ["Cargo.lock", "packages/api/src/index.ts"], fileOwners, ignoredFiles: ["*.md"] }),
+        );
+    });
+
     it("should ignore the working tree in CI, where the checkout is the whole truth", async () => {
         expect.assertions(2);
 

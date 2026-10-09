@@ -73,9 +73,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: 
 
     let workspace;
     let packageJsons;
+    let fileOwners;
 
     try {
-        ({ packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig));
+        ({ fileOwners, packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
@@ -130,6 +131,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: 
         const affectedOptions: AffectedOptions = {
             base: baseRef,
             downstream,
+            fileOwners,
             head: headRef,
             ignoredFiles: visConfig?.affectedIgnore,
             projectGraph,

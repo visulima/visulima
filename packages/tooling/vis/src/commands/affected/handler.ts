@@ -68,7 +68,7 @@ const execute = async ({
     // over rather than maintaining a second copy of the filter pipeline.
     if (options.sparseCheckout) {
         const workspaceRoot = wsRoot;
-        const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const { fileOwners, packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
         const result = await selectAffectedProjects(
@@ -79,7 +79,7 @@ const execute = async ({
                 uncommitted: options.uncommitted,
                 upstream: options.upstream,
             },
-            { projectGraph, projects: workspace.projects, workspaceRoot },
+            { fileOwners, projectGraph, projects: workspace.projects, workspaceRoot },
             { affectedIgnore: visConfig?.affectedIgnore, defaultBase: visConfig?.defaultBase },
         );
 
