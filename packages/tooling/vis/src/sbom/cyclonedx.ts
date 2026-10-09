@@ -211,7 +211,13 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
         }
 
         const pkg = projectPackages.get(name);
-        const version = pkg?.version ?? "0.0.0";
+
+        // No package.json (a Cargo crate, a project.json-only project): not an npm component.
+        if (!pkg) {
+            continue;
+        }
+
+        const version = pkg.version ?? "0.0.0";
         const bomRef = toNpmPurl(name, version);
 
         projectBomRefs.set(name, bomRef);

@@ -1276,7 +1276,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // relative to where the user actually ran the command.
     const invocationCwd = process.cwd();
     const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot);
-    const { config, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
+    const { config, fileOwners, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
     const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
     let rawSelector = argument[0];
@@ -1445,7 +1445,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 uncommitted: options.uncommitted,
                 upstream: options.upstream,
             },
-            { projectGraph, projects: workspace.projects, workspaceRoot },
+            { fileOwners, projectGraph, projects: workspace.projects, workspaceRoot },
             { affectedIgnore: visConfig?.affectedIgnore, defaultBase: visConfig?.defaultBase },
         );
 
