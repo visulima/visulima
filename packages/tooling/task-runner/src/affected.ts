@@ -1,5 +1,10 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
+// `path.matchesGlob` is flagged as experimental below Node 22.17 but is
+// stable in the 22.x runtimes we ship against, and avoids pulling in a
+// glob dependency.
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
+import { matchesGlob } from "node:path";
 
 // path utilities not needed - git returns workspace-relative paths
 import type { AffectedScope, ProjectConfiguration, ProjectGraph } from "./types";
@@ -51,6 +56,24 @@ interface AffectedOptions {
     downstream?: AffectedScope;
     /** The head ref to compare (default: "HEAD") */
     head?: string;
+
+    /**
+     * Workspace-relative glob patterns (`path.matchesGlob` syntax) for
+     * changed files that belong to no project and should not count as a
+     * change at all.
+     *
+     * By default a changed file outside every project root is treated as a
+     * global change and marks every project affected. A file matching one
+     * of these patterns is skipped instead. The patterns are only checked
+     * for files that belong to NO project: a file inside a project root is
+     * never filtered, so a broad pattern like `*.md` cannot hide a real
+     * package change. In a workspace with a root project (`root: "."`)
+     * every file has an owner, so this option has no effect there.
+     *
+     * `*` does not cross `/`: `*.md` matches `README.md` but not
+     * `docs/guide.md`; use `docs/**` for a whole folder.
+     */
+    ignoredFiles?: string[];
     /** Project graph for dependency resolution */
     projectGraph: ProjectGraph;
     /** All project configurations keyed by name */
@@ -77,6 +100,8 @@ interface AffectedResult {
     changedProjects: string[];
     /** Projects affected because they depend on changed projects */
     downstreamProjects: string[];
+    /** Changed files outside every project that were skipped because they matched `ignoredFiles` */
+    ignoredFiles: string[];
     /** Projects that changed projects depend on */
     upstreamProjects: string[];
 }
@@ -332,6 +357,7 @@ const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedRe
         base = "main",
         downstream = "deep",
         head = "HEAD",
+        ignoredFiles: ignoredPatterns,
         projectGraph,
         projects,
         upstream = "none",
@@ -347,23 +373,32 @@ const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedRe
 
     // Map changed files to projects
     const changedProjects = new Set<string>();
+    const ignoredFiles: string[] = [];
+    let globalChange = false;
 
     for (const file of changedFiles) {
         const project = findProjectForFile(file, projects);
 
         if (project) {
             changedProjects.add(project);
+        } else if (ignoredPatterns?.some((pattern) => matchesGlob(file, pattern))) {
+            ignoredFiles.push(file);
         } else {
             // File is outside all projects (e.g., root tsconfig.json, package.json)
             // This is a global change — mark all projects as affected
-            return {
-                affectedProjects: Object.keys(projects),
-                changedFiles,
-                changedProjects: [...changedProjects],
-                downstreamProjects: [],
-                upstreamProjects: [],
-            };
+            globalChange = true;
         }
+    }
+
+    if (globalChange) {
+        return {
+            affectedProjects: Object.keys(projects),
+            changedFiles,
+            changedProjects: [...changedProjects],
+            downstreamProjects: [],
+            ignoredFiles,
+            upstreamProjects: [],
+        };
     }
 
     // Walk the dependency graph with scope control
@@ -374,6 +409,7 @@ const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedRe
         changedFiles,
         changedProjects: [...changedProjects],
         downstreamProjects: [...result.downstream],
+        ignoredFiles,
         upstreamProjects: [...result.upstream],
     };
 };
