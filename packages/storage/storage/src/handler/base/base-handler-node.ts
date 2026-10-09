@@ -7,7 +7,7 @@ import type { UploadFile } from "../../storage/utils/file";
 import type { UploadError } from "../../utils/errors";
 import { ERRORS } from "../../utils/errors";
 import { HeaderUtilities } from "../../utils/headers";
-import { getRealPath, setHeaders } from "../../utils/http";
+import { drainAbandonedBody, getRealPath, setHeaders } from "../../utils/http";
 import pick from "../../utils/primitives/pick";
 import type { ResponseBody, UploadResponse } from "../../utils/types";
 import type { AsyncHandler, Handlers, MethodHandler, ResponseFile, ResponseList, UploadOptions } from "../types";
@@ -156,6 +156,12 @@ abstract class BaseHandlerNode<
                 }
             }
         } catch (error: unknown) {
+            // A handler that failed part-way through the body (a storage write breaking off) stopped
+            // reading it: drain the rest so the client reads the error response.
+            if (request.readableDidRead) {
+                drainAbandonedBody(request, response.socket);
+            }
+
             await handleUploadError(error, request, this.emit.bind(this), this.listenerCount.bind(this), this.logger, this.sendError.bind(this), response);
         }
     };
