@@ -136,6 +136,28 @@ export const drainAbandonedBody = (request: Readable, socket?: Socket | null): v
 };
 
 /**
+ * {@link drainAbandonedBody} for a Web API request whose body nothing holds any more. Cancelling the
+ * body instead leaves the rest to the runtime, and a Node adapter may then close the connection
+ * mid-body (`@hono/node-server`'s body wrapper ignores the cancel, its reader stalls, and the adapter
+ * closes the socket after 500 ms), losing the error response to the reset.
+ * @internal
+ * @param request Web API request whose body was abandoned mid-stream
+ */
+export const drainAbandonedWebBody = (request: Request): void => {
+    if (!request.body || request.body.locked) {
+        return;
+    }
+
+    const body = Readable.fromWeb(request.body as unknown as NodeReadableStream);
+
+    // A client disconnecting mid-drain errors the stream; nothing else listens.
+    body.on("error", () => {
+        // Nothing left to answer
+    });
+    drainAbandonedBody(body);
+};
+
+/**
  * Reads the body of an HTTP request as a string with optional size limit.
  * @param request HTTP request object to read body from
  * @param encoding Text encoding to use (defaults to 'utf8')
@@ -216,7 +238,8 @@ export const readWebRequestText = async (request: Request, limit: number): Promi
         byteLength += value.byteLength;
 
         if (byteLength > limit) {
-            await reader.cancel();
+            reader.releaseLock();
+            drainAbandonedWebBody(request);
 
             throw createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE);
         }
