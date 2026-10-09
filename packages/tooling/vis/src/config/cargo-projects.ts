@@ -29,7 +29,10 @@ interface CargoManifest extends CargoDependencyTables {
 }
 
 /** Root files of a Cargo workspace that change its member crates, not the whole repo. */
-const CARGO_WORKSPACE_FILES = ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "rust-toolchain"] as const;
+const CARGO_WORKSPACE_FILES = ["Cargo.toml", "Cargo.lock"] as const;
+
+/** Root toolchain pins: every crate in the repository builds with them, workspace member or not. */
+const RUST_TOOLCHAIN_FILES = ["rust-toolchain.toml", "rust-toolchain"] as const;
 
 /** `cargo package` leaves `Cargo.toml` copies under `target/package/`; vendored crates are not ours. */
 const SKIPPED_SEGMENTS = new Set([".git", "node_modules", "target", "vendor"]);
@@ -211,13 +214,34 @@ const collectCargoPathDependencies = (workspaceRoot: string, projectRoot: string
 };
 
 /**
- * Maps the root Cargo workspace's own files (`Cargo.lock`, ...) to the
- * projects owning its members, so a lockfile bump selects those projects
- * instead of the whole repository. Returns `undefined` (keep the
- * workspace-wide fallback) when the root manifest is also a package, or
- * when any member lies outside every project.
+ * Projects with Cargo code: a `Cargo.toml` at their root or anywhere below
+ * it, such as a JS package's napi `native/` crate. A root project (`.`)
+ * counts only for a root `Cargo.toml`, so this never walks the whole tree.
  */
-const buildCargoFileOwners = (workspaceRoot: string, projects: Record<string, { root: string }>): Record<string, string[]> | undefined => {
+const findProjectsWithCargoCode = (workspaceRoot: string, projects: Record<string, { root: string }>): string[] => {
+    const found = new Set<string>();
+    const ignore = [...SKIPPED_SEGMENTS].map((segment) => `**/${segment}/**`);
+
+    for (const [name, { root }] of Object.entries(projects)) {
+        if (isAccessibleSync(join(workspaceRoot, root, "Cargo.toml"))) {
+            found.add(name);
+        } else if (root !== "." && root !== "") {
+            // A hit may sit in a project nested below this one; credit its real owner.
+            for (const manifestPath of globSync("**/Cargo.toml", { cwd: join(workspaceRoot, root), ignore })) {
+                const owner = findOwningProject(`${trimSlashes(root)}/${dirname(manifestPath)}`, projects);
+
+                if (owner !== undefined) {
+                    found.add(owner);
+                }
+            }
+        }
+    }
+
+    return [...found].toSorted();
+};
+
+/** Owners of the root Cargo workspace's files: the projects owning its members, or `undefined` for the workspace-wide fallback. */
+const findCargoWorkspaceOwners = (workspaceRoot: string, projects: Record<string, { root: string }>): string[] | undefined => {
     const manifest = readCargoManifest(workspaceRoot);
 
     if (!manifest?.workspace || manifest.package !== undefined) {
@@ -236,13 +260,26 @@ const buildCargoFileOwners = (workspaceRoot: string, projects: Record<string, { 
         owners.add(owner);
     }
 
-    if (owners.size === 0) {
-        return undefined;
-    }
+    return owners.size === 0 ? undefined : [...owners].toSorted();
+};
 
-    const list = [...owners].toSorted();
+/**
+ * Maps root Cargo files to the projects they change instead of the whole
+ * repository. The root workspace's `Cargo.toml` / `Cargo.lock` go to the
+ * projects owning its members, unless the root manifest is also a package
+ * or a member lies outside every project. `rust-toolchain(.toml)` goes to
+ * every project with Cargo code, members or not. A file with no owners is
+ * left out and stays a workspace-wide change.
+ */
+const buildCargoFileOwners = (workspaceRoot: string, projects: Record<string, { root: string }>): Record<string, string[]> | undefined => {
+    const workspaceOwners = findCargoWorkspaceOwners(workspaceRoot, projects);
+    const toolchainOwners = findProjectsWithCargoCode(workspaceRoot, projects);
+    const entries: [string, string[]][] = [
+        ...(workspaceOwners ? CARGO_WORKSPACE_FILES.map((file): [string, string[]] => [file, workspaceOwners]) : []),
+        ...(toolchainOwners.length > 0 ? RUST_TOOLCHAIN_FILES.map((file): [string, string[]] => [file, toolchainOwners]) : []),
+    ];
 
-    return Object.fromEntries(CARGO_WORKSPACE_FILES.map((file) => [file, list]));
+    return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
 export { buildCargoFileOwners, collectCargoPathDependencies, findOwningProject, isProjectCandidate, readCargoPackageName, resolveCargoProjectDirectories };

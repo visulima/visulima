@@ -16,7 +16,7 @@ const write = (root: string, path: string, content: string): void => {
 };
 
 /**
- * A JS package with a nested napi crate, plus a root Cargo workspace whose
+ * A JS package with a nested napi crate, one without Rust, plus a root Cargo workspace whose
  * `b` inherits a path dependency on `a` and whose `c` depends on `a` from a
  * `[target.*]` table. `crates/target/package/` holds the copy `cargo package`
  * leaves behind; were it discovered it would clash with `a`.
@@ -28,6 +28,7 @@ const createFixture = (root: string): void => {
     write(root, "packages/web/src/index.ts", "export const web = 1;\n");
     write(root, "packages/web/native/Cargo.toml", "[package]\nname = \"web-native\"\nversion = \"0.1.0\"\n");
     write(root, "packages/web/native/src/lib.rs", "\n");
+    write(root, "packages/docs/package.json", JSON.stringify({ name: "docs" }));
     write(root, "Cargo.toml", "[workspace]\nmembers = [\"crates/*\"]\n\n[workspace.dependencies]\na = { path = \"crates/a\" }\n");
     write(root, "Cargo.lock", "version = 4\n");
     write(root, "crates/a/Cargo.toml", "[package]\nname = \"a\"\nversion = \"0.1.0\"\n");
@@ -63,10 +64,10 @@ describe("cargo crates as projects", () => {
 
         const { packageJsons, workspace } = discoverWorkspace(root);
 
-        expect(Object.keys(workspace.projects).toSorted()).toStrictEqual(["a", "b", "c", "web"]);
+        expect(Object.keys(workspace.projects).toSorted()).toStrictEqual(["a", "b", "c", "docs", "web"]);
         expect(workspace.projects["a"]?.root).toBe("crates/a");
         expect(workspace.projects["web"]?.root).toBe("packages/web");
-        expect([...packageJsons.keys()]).toStrictEqual(["web"]);
+        expect([...packageJsons.keys()].toSorted()).toStrictEqual(["docs", "web"]);
     });
 
     it("should add path-dependency edges, including workspace = true and target tables", () => {
@@ -93,7 +94,7 @@ describe("cargo crates as projects", () => {
 
         const packages = await createVisWorkspaceReader({ cwd: root }).listPackages();
 
-        expect(packages.map((entry) => entry.manifest.name)).toStrictEqual(["web"]);
+        expect(packages.map((entry) => entry.manifest.name).toSorted()).toStrictEqual(["docs", "web"]);
     });
 
     describe("affected mapping", () => {
@@ -128,7 +129,24 @@ describe("cargo crates as projects", () => {
             expect.assertions(2);
 
             await expect(affected("Cargo.lock")).resolves.toStrictEqual(["a", "b", "c"]);
-            await expect(affected("rust-toolchain.toml")).resolves.toStrictEqual(["a", "b", "c"]);
+            await expect(affected("Cargo.toml")).resolves.toStrictEqual(["a", "b", "c"]);
+        });
+
+        it("should map the root toolchain file to every project with Cargo code", async () => {
+            expect.assertions(2);
+
+            await expect(affected("rust-toolchain.toml")).resolves.toStrictEqual(["a", "b", "c", "web"]);
+            await expect(affected("rust-toolchain")).resolves.toStrictEqual(["a", "b", "c", "web"]);
+        });
+
+        it("should keep the root toolchain file workspace-wide when no project has Cargo code", async () => {
+            expect.assertions(1);
+
+            rmSync(join(root, "crates"), { force: true, recursive: true });
+            rmSync(join(root, "packages/web/native"), { force: true, recursive: true });
+            rmSync(join(root, "Cargo.toml"));
+
+            await expect(affected("rust-toolchain.toml")).resolves.toStrictEqual(["docs", "web"]);
         });
 
         it("should select no crate for a JS-only change", async () => {
@@ -146,7 +164,7 @@ describe("cargo crates as projects", () => {
         it("should still treat other root files as workspace-wide", async () => {
             expect.assertions(1);
 
-            await expect(affected("tsconfig.json")).resolves.toStrictEqual(["a", "b", "c", "web"]);
+            await expect(affected("tsconfig.json")).resolves.toStrictEqual(["a", "b", "c", "docs", "web"]);
         });
     });
 });
