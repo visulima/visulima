@@ -69,6 +69,14 @@ const isWithin = (path: string, root: string): boolean => root !== "." && root !
 const isProjectCandidate = (directory: string): boolean =>
     isAccessibleSync(join(directory, "package.json")) || isAccessibleSync(join(directory, "project.json")) || isAccessibleSync(join(directory, "Cargo.toml"));
 
+/**
+ * Whether discovery accepts a directory as a project: a `package.json`, a
+ * `project.json`, or a `Cargo.toml` with a `[package]` table. A virtual
+ * Cargo workspace manifest (`[workspace]` only) is not a project.
+ */
+const isProjectDirectory = (directory: string): boolean =>
+    isAccessibleSync(join(directory, "package.json")) || isAccessibleSync(join(directory, "project.json")) || readCargoManifest(directory)?.package !== undefined;
+
 /** Workspace-relative directories of the root Cargo workspace's members (`members` globs expanded, `exclude` honoured). */
 const resolveCargoWorkspaceMembers = (workspaceRoot: string, manifest: CargoManifest | undefined): string[] => {
     const members = stringArray(manifest?.workspace?.members).map((path) => trimSlashes(path));
@@ -282,4 +290,4 @@ const buildCargoFileOwners = (workspaceRoot: string, projects: Record<string, { 
     return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 };
 
-export { buildCargoFileOwners, collectCargoPathDependencies, findOwningProject, isProjectCandidate, readCargoPackageName, resolveCargoProjectDirectories };
+export { buildCargoFileOwners, collectCargoPathDependencies, findOwningProject, isProjectCandidate, isProjectDirectory, readCargoPackageName, resolveCargoProjectDirectories };

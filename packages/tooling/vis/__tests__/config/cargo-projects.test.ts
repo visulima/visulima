@@ -7,6 +7,7 @@ import { getAffectedProjects } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildProjectGraph, discoverWorkspace } from "../../src/config/workspace";
+import { lintMissingPackageJson } from "../../src/deps/missing-package-json";
 import { VisUserError } from "../../src/errors/vis-user-error";
 import { createVisWorkspaceReader } from "../../src/release/core/readers/workspace";
 
@@ -87,6 +88,21 @@ describe("cargo crates as projects", () => {
         write(root, "crates/web/Cargo.toml", "[package]\nname = \"web\"\nversion = \"0.1.0\"\n");
 
         expect(() => discoverWorkspace(root)).toThrow(VisUserError);
+    });
+
+    it("should exempt only directories discovery accepts from the missing package.json lint", () => {
+        expect.assertions(1);
+
+        const lintRoot = join(root, "lint-fixture");
+
+        write(lintRoot, "pnpm-workspace.yaml", "packages:\n  - \"crates/*\"\n");
+        write(lintRoot, "package.json", JSON.stringify({ name: "root", private: true }));
+        write(lintRoot, "crates/crate/Cargo.toml", "[package]\nname = \"crate\"\nversion = \"0.1.0\"\n");
+        write(lintRoot, "crates/tool/project.json", JSON.stringify({ name: "tool" }));
+        // A virtual Cargo workspace manifest is not a project, so it must still be reported.
+        write(lintRoot, "crates/virtual/Cargo.toml", "[workspace]\nmembers = []\n");
+
+        expect(lintMissingPackageJson(lintRoot).map((issue) => issue.packageDir)).toStrictEqual(["crates/virtual"]);
     });
 
     it("should keep crates out of release discovery", async () => {

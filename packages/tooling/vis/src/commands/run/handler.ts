@@ -1469,7 +1469,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             return;
         }
 
-        affectedChangedFiles = affected.changedFiles;
+        // Paths skipped by `affectedIgnore` changed nothing, so tasks don't receive them either.
+        const ignoredFiles = new Set(affected.ignoredFiles);
+
+        affectedChangedFiles = affected.changedFiles.filter((file) => !ignoredFiles.has(file));
 
         logger.info(`Affected projects: ${projectNames.join(", ")}`);
     }
