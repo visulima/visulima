@@ -54,6 +54,17 @@ interface AffectedOptions {
      * @default "deep"
      */
     downstream?: AffectedScope;
+
+    /**
+     * Owners for files that lie outside every project root but belong to
+     * specific projects rather than the whole workspace, keyed by
+     * workspace-relative path. A Cargo workspace's root `Cargo.lock` is the
+     * motivating case: it changes the member crates, not the JS packages.
+     * A listed file is attributed to exactly these projects, never treated
+     * as a workspace-wide change.
+     */
+    fileOwners?: Record<string, string[]>;
+
     /** The head ref to compare (default: "HEAD") */
     head?: string;
 
@@ -356,6 +367,7 @@ const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedRe
         additionalChangedFiles,
         base = "main",
         downstream = "deep",
+        fileOwners,
         head = "HEAD",
         ignoredFiles: ignoredPatterns,
         projectGraph,
@@ -377,6 +389,16 @@ const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedRe
     let globalChange = false;
 
     for (const file of changedFiles) {
+        const owners = fileOwners && Object.hasOwn(fileOwners, file) ? fileOwners[file] : undefined;
+
+        if (owners) {
+            for (const owner of owners) {
+                changedProjects.add(owner);
+            }
+
+            continue;
+        }
+
         const project = findProjectForFile(file, projects);
 
         if (project) {
