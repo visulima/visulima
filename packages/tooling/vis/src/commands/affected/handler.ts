@@ -80,7 +80,7 @@ const execute = async ({
                 upstream: options.upstream,
             },
             { projectGraph, projects: workspace.projects, workspaceRoot },
-            { defaultBase: visConfig?.defaultBase },
+            { affectedIgnore: visConfig?.affectedIgnore, defaultBase: visConfig?.defaultBase },
         );
 
         let affectedProjects = filterProjectsByQuery(result.affectedProjects, workspace, options.query);

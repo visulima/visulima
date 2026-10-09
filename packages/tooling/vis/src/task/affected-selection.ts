@@ -34,6 +34,9 @@ export interface AffectedSelectionOptions {
 }
 
 export interface SelectAffectedInput {
+    /** Unowned-path globs from `vis.config.ts#affectedIgnore`. */
+    affectedIgnore?: string[];
+
     /** Default base branch from `vis.config.ts#defaultBase`. */
     defaultBase?: string;
 
@@ -208,11 +211,16 @@ export const selectAffectedProjects = async (
         base,
         downstream: downstreamValue as AffectedScope,
         head,
+        ignoredFiles: input.affectedIgnore,
         projectGraph,
         projects,
         upstream: upstreamValue as AffectedScope,
         workspaceRoot,
     });
+
+    if (result.ignoredFiles.length > 0) {
+        notes.push(`ignoring ${result.ignoredFiles.length} changed path(s) outside any project matching affectedIgnore`);
+    }
 
     return { ...result, notes, uncommittedFileCount: additionalChangedFiles.length };
 };

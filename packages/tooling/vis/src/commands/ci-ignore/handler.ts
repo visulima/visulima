@@ -131,6 +131,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot }: 
             base: baseRef,
             downstream,
             head: headRef,
+            ignoredFiles: visConfig?.affectedIgnore,
             projectGraph,
             projects: workspace.projects,
             upstream,

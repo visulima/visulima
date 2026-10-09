@@ -62,7 +62,7 @@ vis ci ignore my-app --verbose
 1. **Commit-message gating** — reads the latest commit message and short-circuits on skip or force-deploy keywords before touching git diff.
 2. **Workspace discovery** — resolves the workspace root and verifies that the requested project actually exists. Unknown projects exit with `build` (defensive default).
 3. **Base ref resolution** — walks `--base` flag → CI env var chain → `HEAD~1`. If the resolved ref isn't reachable (e.g. Vercel's shallow clone), silently falls back to `HEAD~1`.
-4. **Affected detection** — runs the same `getAffectedProjects` pipeline as [`vis affected`](./affected), respecting `--downstream` and `--upstream` scope.
+4. **Affected detection** — runs the same `getAffectedProjects` pipeline as [`vis affected`](./affected), respecting `--downstream` and `--upstream` scope and [`affectedIgnore`](./affected#ignoring-unowned-files).
 5. **Decision emit** — prints the outcome (human text or JSON) and calls `process.exit` with the inverted exit code.
 
 ## Commit-message keywords

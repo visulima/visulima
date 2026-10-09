@@ -1446,7 +1446,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 upstream: options.upstream,
             },
             { projectGraph, projects: workspace.projects, workspaceRoot },
-            { defaultBase: visConfig?.defaultBase },
+            { affectedIgnore: visConfig?.affectedIgnore, defaultBase: visConfig?.defaultBase },
         );
 
         for (const note of affected.notes) {
