@@ -1,3 +1,9 @@
+## @visulima/storage [2.0.37](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.36...@visulima/storage@2.0.37) (2026-10-09)
+
+### Bug Fixes
+
+* **storage:** drain bodies abandoned by failed writes and web adapters ([#944](https://github.com/visulima/visulima/issues/944)) ([273cda1](https://github.com/visulima/visulima/commit/273cda1b185634534c255bcd5d94d14024737bb7))
+
 ## @visulima/storage [2.0.36](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.35...@visulima/storage@2.0.36) (2026-10-09)
 
 ### Bug Fixes
