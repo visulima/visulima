@@ -5,6 +5,20 @@
     "description": "Workspace configuration for @visulima/vis. Used by defineConfig() in vis.config.ts. This schema is for non-TypeScript editors; TypeScript users get autocomplete from defineConfig() types.",
     "type": "object",
     "properties": {
+        "affectedIgnore": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Workspace-relative glob patterns for changed files outside every project that `vis affected`, `vis run --affected`, `vis ci` and `vis ci ignore` should not count as a change.\n\nBy default a changed file that belongs to no project (a root `tsconfig.json`, `package.json`, …) is a global change and marks every project affected. A changed file matching one of these patterns is skipped instead. The patterns are only checked for files that belong to NO project: a file inside a project root is never filtered, so a broad pattern like `*.md` cannot hide a real package change.\n\nPatterns use `path.matchesGlob` syntax, where `*` does not cross `/`: `*.md` matches `README.md` but not `docs/guide.md`.\n\nDo NOT list paths whose changes really do affect projects, such as bundler-inlined shared source or the root `tsconfig.json`: an edit there would then run nothing.",
+            "examples": [
+                [
+                    "api-snapshots/**",
+                    "plans/**",
+                    "*.md"
+                ]
+            ]
+        },
         "ai": {
             "type": "object",
             "properties": {

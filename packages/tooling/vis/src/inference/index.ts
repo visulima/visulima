@@ -8,6 +8,7 @@ import { apiExtractorDetector } from "./detectors/api-extractor";
 import { astroDetector } from "./detectors/astro";
 import { biomeDetector } from "./detectors/biome";
 import { bunDetector } from "./detectors/bun";
+import { cargoDetector } from "./detectors/cargo";
 import { changesetDetector } from "./detectors/changeset";
 import { cypressDetector } from "./detectors/cypress";
 import { denoDetector } from "./detectors/deno";
@@ -65,6 +66,9 @@ export type { DetectContext, Detector } from "./types";
  * `docs:dev` / `docs:preview` (vitepress), `db:*` (prisma > drizzle),
  * `codegen` (graphql), `api-extract`, `changeset:*`, deno's `fmt` /
  * `check`.
+ *
+ * `cargo` never competes: `discoverWorkspace` runs it alone on Cargo crate
+ * projects and leaves it out for every other project.
  */
 export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     nuxtDetector,
@@ -104,6 +108,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     graphqlCodegenDetector,
     apiExtractorDetector,
     changesetDetector,
+    cargoDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

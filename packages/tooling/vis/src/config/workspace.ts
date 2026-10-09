@@ -1,5 +1,5 @@
 import { isAccessibleSync, readFileSync, readJsonSync, walkSync } from "@visulima/fs";
-import { join, resolve } from "@visulima/path";
+import { basename, join, resolve } from "@visulima/path";
 import type {
     DependencyType,
     InputDefinition,
@@ -15,10 +15,19 @@ import { parse as parseYaml } from "@visulima/yaml";
 
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
+import { cargoDetector } from "../inference/detectors/cargo";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
 import { buildGitignoreMatcher } from "../util/gitignore-matcher";
+import {
+    buildCargoFileOwners,
+    collectCargoPathDependencies,
+    findOwningProject,
+    isProjectCandidate,
+    readCargoPackageName,
+    resolveCargoProjectDirectories,
+} from "./cargo-projects";
 import type {
     PackageJson,
     PackageJsonIndex,
@@ -37,6 +46,9 @@ const QUOTES_RE = /^['"]|['"]$/g;
 const NODE_MODULES_RE = /node_modules/;
 const DOT_GIT_RE = /\.git/;
 
+/** Default project-directory test for workspace globs: the package manager's own rule. */
+const hasPackageJson = (directory: string): boolean => isAccessibleSync(join(directory, "package.json"));
+
 /**
  * Reads and parses a JSON file, returning undefined on failure.
  */
@@ -52,13 +64,13 @@ const readJsonFileSafe = <T>(filePath: string): T | undefined => {
 /**
  * Recursively scans a directory for packages (directories containing package.json).
  */
-const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[]): void => {
+const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     for (const entry of walkSync(baseDirectory, { includeFiles: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
         if (entry.path === baseDirectory) {
             continue;
         }
 
-        if (isAccessibleSync(join(entry.path, "package.json"))) {
+        if (isProjectDirectory(entry.path)) {
             const relativePath = entry.path.slice(baseDirectory.length + 1);
 
             results.push(`${base}/${relativePath}`);
@@ -69,7 +81,7 @@ const scanDirectoryRecursive = (baseDirectory: string, base: string, results: st
 /**
  * Resolves a simple glob pattern like "packages/*" to directories containing package.json.
  */
-const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const base = cleanPattern.slice(0, -2);
     const baseDirectory = resolve(workspaceRoot, base);
 
@@ -82,7 +94,7 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
             continue;
         }
 
-        if (isAccessibleSync(join(entry.path, "package.json"))) {
+        if (isProjectDirectory(entry.path)) {
             results.push(join(base, entry.name));
         }
     }
@@ -91,7 +103,7 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
 /**
  * Resolves a double glob pattern like "packages/**" or "packages/ * / *" to directories containing package.json.
  */
-const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const base = cleanPattern.replace(DOUBLE_GLOB_SUFFIX_RE, "").replace(NESTED_GLOB_SUFFIX_RE, "");
     const baseDirectory = resolve(workspaceRoot, base);
 
@@ -99,16 +111,16 @@ const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results:
         return;
     }
 
-    scanDirectoryRecursive(baseDirectory, base, results);
+    scanDirectoryRecursive(baseDirectory, base, results, isProjectDirectory);
 };
 
 /**
  * Resolves an exact directory pattern.
  */
-const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const fullPath = resolve(workspaceRoot, cleanPattern);
 
-    if (isAccessibleSync(fullPath) && isAccessibleSync(join(fullPath, "package.json"))) {
+    if (isAccessibleSync(fullPath) && isProjectDirectory(fullPath)) {
         results.push(cleanPattern);
     }
 };
@@ -120,7 +132,7 @@ const REGEX_SPECIALS_RE = /[$()+.?[\\\]^{|}]/g;
  * shortcuts for "scope-prefixed children of the workspace root". `*` is
  * the only meta-character supported; everything else is escaped.
  */
-const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: string[], isProjectDirectory: (directory: string) => boolean): void => {
     const escaped = cleanPattern.replaceAll(REGEX_SPECIALS_RE, String.raw`\$&`).replaceAll("*", ".*");
     const regex = new RegExp(`^${escaped}$`);
 
@@ -129,7 +141,7 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
             continue;
         }
 
-        if (regex.test(entry.name) && isAccessibleSync(join(entry.path, "package.json"))) {
+        if (regex.test(entry.name) && isProjectDirectory(entry.path)) {
             results.push(entry.name);
         }
     }
@@ -145,8 +157,11 @@ const resolveBareGlob = (workspaceRoot: string, cleanPattern: string, results: s
  * The workspace root's `.gitignore` is also applied so packages living
  * inside ignored directories (generated apps, scratch checkouts) don't
  * sneak into update / outdated runs.
+ *
+ * `isProjectDirectory` decides which matched directories count; it
+ * defaults to "has a package.json", the package manager's own rule.
  */
-const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): string[] => {
+const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isProjectDirectory: (directory: string) => boolean = hasPackageJson): string[] => {
     const positives: string[] = [];
     const negatives: string[] = [];
 
@@ -178,13 +193,13 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
 
     for (const cleanPattern of positives) {
         if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
-            resolveDoubleGlob(workspaceRoot, cleanPattern, directories);
+            resolveDoubleGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else if (cleanPattern.endsWith("/*")) {
-            resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
+            resolveSimpleGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else if (!cleanPattern.includes("/") && cleanPattern.includes("*")) {
-            resolveBareGlob(workspaceRoot, cleanPattern, directories);
+            resolveBareGlob(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         } else {
-            resolveExactDirectory(workspaceRoot, cleanPattern, directories);
+            resolveExactDirectory(workspaceRoot, cleanPattern, directories, isProjectDirectory);
         }
     }
 
@@ -195,6 +210,25 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
     const matcher = buildGitignoreMatcher({ cwd: workspaceRoot, extraPatterns: negatives });
 
     return matcher.filterDirectories(directories);
+};
+
+/**
+ * Resolves every project directory of the workspace: the package.json
+ * directories the package manager sees, followed by Cargo crates and
+ * `project.json`-only directories (see `./cargo-projects`). The second
+ * group is returned separately so callers know those have no package.json.
+ */
+const resolveProjectDirectories = (workspaceRoot: string, patterns: string[]): { directories: string[]; nonJsDirectories: Set<string> } => {
+    const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
+    const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
+    const packageSet = new Set(packageDirectories);
+    const nonJsDirectories = resolveCargoProjectDirectories(
+        workspaceRoot,
+        candidates.filter((directory) => !packageSet.has(directory)),
+        packageDirectories,
+    );
+
+    return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
 };
 
 /**
@@ -830,6 +864,17 @@ const scriptMatchesInferredCommand = (scriptCommand: string | undefined, inferre
 };
 
 /**
+ * `project.json#name` wins; then `package.json#name`, or for a project
+ * without one, the Cargo `[package].name` and finally the directory name.
+ */
+const resolveProjectName = (
+    workspaceRoot: string,
+    projectDirectory: string,
+    pkg: PackageJson | undefined,
+    projectJson: ProjectJson | undefined,
+): string | undefined => projectJson?.name ?? (pkg ? pkg.name : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
@@ -838,6 +883,13 @@ const discoverWorkspace = (
     taskConfigs?: VisTaskConfigIndex,
 ): {
     config: VisConfig;
+
+    /**
+     * Files outside every project root that belong to specific projects
+     * (a Cargo workspace's root `Cargo.lock` → its member crates). Pass to
+     * `getAffectedProjects` as `fileOwners`.
+     */
+    fileOwners: Record<string, string[]> | undefined;
     packageJsons: PackageJsonIndex;
     projectOptions: ProjectOptionsIndex;
     workspace: WorkspaceConfiguration;
@@ -861,41 +913,49 @@ const discoverWorkspace = (
         throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns);
 
     for (const projectDirectory of projectDirectories) {
-        const packageJsonPath = join(workspaceRoot, projectDirectory, "package.json");
-        const pkg = readJsonFileSafe<PackageJson>(packageJsonPath);
+        const isNonJs = nonJsDirectories.has(projectDirectory);
+        const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
 
-        if (!pkg) {
+        if (!pkg && !isNonJs) {
             continue;
         }
 
-        const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
-        const projectJson = readJsonFileSafe<ProjectJson>(projectJsonPath);
-
-        // project.json#name takes precedence over package.json#name; fall
-        // back to package.json#name so existing workspaces keep working.
-        const projectName = projectJson?.name ?? pkg.name;
+        const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
+        const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson);
 
         if (!projectName) {
             continue;
         }
 
-        packageJsons.set(projectName, pkg);
+        // JS projects keep their historic last-wins behaviour; a crate is
+        // new to the graph, so a clash there is a config error to surface,
+        // not a project to silently replace.
+        if (isNonJs && projects[projectName] !== undefined) {
+            throw new VisUserError(
+                `Project name "${projectName}" of ${projectDirectory} is already used by ${projects[projectName].root}. `
+                + `Set a unique "name" in ${projectDirectory}/project.json.`,
+            );
+        }
+
+        if (pkg) {
+            packageJsons.set(projectName, pkg);
+        }
 
         let projectType: ProjectType = "library";
 
         if (projectJson?.projectType) {
             projectType = projectJson.projectType;
-        } else if (pkg.bin !== undefined) {
+        } else if (pkg?.bin !== undefined) {
             projectType = "application";
         }
 
         const defaults = collectTargetDefaults(config, projectJson, projectType);
 
         const overlayTargets = mergeProjectTargets(projectJson?.targets, taskConfigs?.get(projectDirectory)?.tasks);
-        const visTargets = createTargetsFromScripts(pkg.scripts, overlayTargets, defaults, config.fileGroups);
+        const visTargets = createTargetsFromScripts(pkg?.scripts, overlayTargets, defaults, config.fileGroups);
 
         // Project Crystal-style inference. Runs *after* the explicit
         // pipeline so the command from a package.json script,
@@ -914,12 +974,17 @@ const discoverWorkspace = (
         //     command (guarded — see `scriptMatchesInferredCommand`).
         //     Compound/customised scripts skip the precise outputs and
         //     fall back to the auto-write capture below.
-        const detectorEnabled = resolveInferTargetOption(config.inferTargets);
+        // The JS detectors read package.json and run only on JS packages. A
+        // Cargo crate (no package.json, a `[package]` manifest) gets the cargo
+        // detector alone, so a JS package's nested or root Cargo.toml never
+        // infers cargo targets. `project.json`-only projects get none.
+        const projectRoot = join(workspaceRoot, projectDirectory);
+        const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
+        const detectorEnabled = pkg || isCrate ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
-            const projectRoot = join(workspaceRoot, projectDirectory);
-            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => detectorEnabled(detector.name));
-            const inference = inferProjectTargets({ pkg, projectDirectory, projectRoot }, enabledDetectors);
+            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => (detector === cargoDetector) === isCrate && detectorEnabled(detector.name));
+            const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
 
             // Synthesizing a target the project never had is the one part of
             // inference that changes what runs, so it needs an explicit
@@ -939,7 +1004,7 @@ const discoverWorkspace = (
             // and the part that genuinely never changes what runs), and still
             // synthesize freely for a project that declares nothing, where
             // there is no prior behaviour to change.
-            const declaresOwnTargets = Object.keys(pkg.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
+            const declaresOwnTargets = Object.keys(pkg?.scripts ?? {}).length > 0 || Object.keys(overlayTargets ?? {}).length > 0;
             const synthesizeNewTargets = config.inferTargets !== undefined || !declaresOwnTargets;
 
             for (const [name, inferredTarget] of Object.entries(inference.targets)) {
@@ -1041,7 +1106,7 @@ const discoverWorkspace = (
         };
     }
 
-    return { config, packageJsons, projectOptions, workspace: { projects } };
+    return { config, fileOwners: buildCargoFileOwners(workspaceRoot, projects), packageJsons, projectOptions, workspace: { projects } };
 };
 
 /**
@@ -1090,6 +1155,19 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
         const pkg = pkgByProject.get(name);
 
         if (!pkg) {
+            // A project without package.json may be a crate: its path
+            // dependencies are edges to whichever project owns the path.
+            const seenCrates = new Set<string>([name]);
+
+            for (const { path, type } of collectCargoPathDependencies(workspaceRoot, config.root)) {
+                const targetName = findOwningProject(path, workspace.projects);
+
+                if (targetName && !seenCrates.has(targetName)) {
+                    seenCrates.add(targetName);
+                    dependencies[name]?.push({ source: name, target: targetName, type });
+                }
+            }
+
             continue;
         }
 
@@ -1151,19 +1229,20 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         return new Map();
     }
 
-    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns);
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(
         projectDirectories.map(async (projectDirectory) => {
-            const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
+            const isNonJs = nonJsDirectories.has(projectDirectory);
+            const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
             const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
-            const projectName = projectJson?.name ?? pkg?.name;
+            const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson);
 
             // Match the skip semantics in discoverWorkspace so we never
             // load an overlay for a directory that won't appear in the
             // workspace graph.
-            if (!projectName || !pkg) {
+            if (!projectName || (!pkg && !isNonJs)) {
                 return;
             }
 
