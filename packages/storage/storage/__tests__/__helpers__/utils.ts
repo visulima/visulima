@@ -1,7 +1,7 @@
 import type { BinaryLike, BinaryToTextEncoding } from "node:crypto";
 import { createHash } from "node:crypto";
 import { IncomingMessage } from "node:http";
-import { Socket } from "node:net";
+import { connect, Socket } from "node:net";
 
 export const hash = (buf: BinaryLike, algorithm = "sha1", encoding: BinaryToTextEncoding = "base64"): string =>
     // eslint-disable-next-line sonarjs/hashing
@@ -45,3 +45,41 @@ export const createRequest = (options: { body: string; encoding?: BufferEncoding
 
     return request;
 };
+
+/**
+ * Sends a whole request over a raw socket before reading anything, then returns what the server
+ * answered. A server that stops reading a refused body leaves the client stuck writing ("stalled")
+ * until its keep-alive timeout cuts the connection, and a reset on that connection discards the
+ * unread response on macOS and Windows.
+ * @param port Server port on 127.0.0.1
+ * @param head Request line and headers, ending in the blank line
+ * @param body Request body, already framed
+ * @returns The response bytes, prefixed by the socket error or "stalled" if there was one
+ */
+export const sendThenRead = async (port: number, head: string, body: Buffer): Promise<string> =>
+    new Promise((resolve) => {
+        const socket = connect(port, "127.0.0.1");
+        let data = "";
+        const stalled = setTimeout(() => {
+            socket.destroy();
+            resolve(`stalled: ${data}`);
+        }, 2000);
+
+        socket.pause();
+        socket.on("data", (chunk: Buffer) => {
+            data += chunk.toString();
+        });
+        socket.on("error", (error: NodeJS.ErrnoException) => {
+            clearTimeout(stalled);
+            resolve(`${error.code ?? error.message}: ${data}`);
+        });
+        socket.write(head);
+        socket.write(body, () => {
+            clearTimeout(stalled);
+            socket.resume();
+            setTimeout(() => {
+                socket.destroy();
+                resolve(data);
+            }, 200);
+        });
+    });

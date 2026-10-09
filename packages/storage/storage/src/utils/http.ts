@@ -66,6 +66,44 @@ const extractForwarded = (request: IncomingMessage): { host: string; proto: stri
 };
 
 /**
+ * Reads and discards the rest of a request body nothing will read any more, so the client gets to
+ * read the error response. Closing the connection while the client is still sending makes the kernel
+ * answer with a reset, which on macOS and Windows drops the response before the client reads it; and
+ * a consumed body left paused is never dumped by Node, leaving the connection stuck until a timeout.
+ * Once drained, the connection stays usable for the next request. A client that sends more than
+ * {@link MAX_DRAIN_BYTES} past this call, or for longer than {@link MAX_DRAIN_MS}, is cut off.
+ * @internal
+ * @param request Request whose body was abandoned mid-stream
+ */
+export const drainAbandonedBody = (request: Readable): void => {
+    if (request.readableEnded || request.destroyed) {
+        return;
+    }
+
+    // Detach whatever was reading it (a pipe, a web stream adapter), which would otherwise keep
+    // buffering the body or pause it again.
+    request.unpipe();
+    request.removeAllListeners("data");
+
+    let drained = 0;
+    const timer = setTimeout(() => request.destroy(), MAX_DRAIN_MS).unref();
+    const stopTimer = (): void => {
+        clearTimeout(timer);
+    };
+
+    request.on("data", (chunk: Buffer | string) => {
+        drained += Buffer.byteLength(chunk);
+
+        if (drained > MAX_DRAIN_BYTES) {
+            request.destroy();
+        }
+    });
+    request.once("close", stopTimer);
+    request.once("end", stopTimer);
+    request.resume();
+};
+
+/**
  * Reads the body of an HTTP request as a string with optional size limit.
  * @param request HTTP request object to read body from
  * @param encoding Text encoding to use (defaults to 'utf8')
@@ -92,30 +130,10 @@ export const readBody = (
             byteLength += buf.length;
 
             if (limit !== undefined && byteLength > limit) {
-                // Stop buffering, but read and discard the rest of the body rather than closing the
-                // connection: closing it while the client is still sending makes the kernel answer
-                // with a reset, which on macOS and Windows drops the 413 before the client reads it.
-                // Once drained, the connection stays usable for the next request.
-                request.off("data", onData);
+                // Stop buffering, but drain the rest so the client gets to read the 413.
                 request.off("end", onEnd);
                 chunks.length = 0;
-
-                let drained = byteLength - limit;
-                const timer = setTimeout(() => request.destroy(), MAX_DRAIN_MS).unref();
-
-                request.on("data", (rest: Buffer | string) => {
-                    drained += Buffer.byteLength(rest);
-
-                    if (drained > MAX_DRAIN_BYTES) {
-                        request.destroy();
-                    }
-                });
-                const stopTimer = (): void => {
-                    clearTimeout(timer);
-                };
-
-                request.once("close", stopTimer);
-                request.once("end", stopTimer);
+                drainAbandonedBody(request);
                 reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE));
 
                 return;
