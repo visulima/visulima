@@ -65,12 +65,6 @@ auditConfig:
     # (redact/__bench__ > @qiwi/masker); no patched release of the
     # frozen per-method package exists. Re-check if @qiwi/masker updates.
     - GHSA-p6mc-m468-83gw
-    # image-size ICNS / JXL / HEIF parser DoS. No patched release exists for
-    # either advisory (2.0.2 is latest and still affected), and it reaches us
-    # only through @netlify/dev-utils, a dev-time dependency that never parses
-    # untrusted images in this repo. Re-check when image-size publishes a fix.
-    - GHSA-w3rx-r6r6-pgpr
-    - GHSA-5p2g-fcmc-qvqq
     # extract-zip symlink path traversal. The advisory names 2.0.2 as the fix
     # but no such release exists — 2.0.1 is the latest published version — so
     # neither an upgrade nor an override can resolve it. Every path is
@@ -89,13 +83,6 @@ auditConfig:
     # self-signed dev certificate and never verifies untrusted signatures.
     # Re-check when node-forge publishes 1.4.1.
     - GHSA-86w9-cpqp-85rv
-    # http-cache-semantics max-stale cross-user cache disclosure. The advisory
-    # names 4.2.1 as the fix but 4.2.0 is still the latest published version.
-    # Reached via got/cacheable-request (textlint-rule-alex update-notifier,
-    # dev-only) and make-fetch-happen (vis > sigstore), both single-user
-    # private caches, so no response is shared across users. Re-check when
-    # http-cache-semantics publishes 4.2.1.
-    - GHSA-ch52-4w7c-c8xp
     # braces stack exhaustion on deeply nested brace patterns. The advisory
     # names 3.0.4 as the fix but 3.0.3 is still the latest published version.
     # Reached via micromatch (fast-glob, semantic-release, findup-sync, ...),
@@ -1031,6 +1018,8 @@ overrides:
   hono@<4.12.21: '>=4.12.21'
   hono@<4.9.7: '>=4.10.2'
   hono@>=4.8.0 <4.9.6: '>=4.10.2'
+  http-cache-semantics@<4.3.0: ^4.3.0
+  image-size@>=2.0.0 <2.0.3: ^2.0.3
   immutable@<4.3.8: '>=4.3.8'
   ip-address@<=10.1.0: ^10.1.1
   js-cookie@<=3.0.5: ^3.0.6
@@ -1038,6 +1027,7 @@ overrides:
   js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
   jws@=4.0.0: '>=4.0.1'
   joi@<18.2.9: '>=18.2.9'
+  katex@>=0.11.0 <0.18.2: ^0.18.2
   koa@>=3.0.0 <3.1.2: '>=3.1.2'
   lodash-es@<=4.17.23: '>=4.18.0'
   lodash-es@>=4.0.0 <=4.17.23: '>=4.18.0'
