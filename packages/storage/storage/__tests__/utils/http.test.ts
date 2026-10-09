@@ -1,7 +1,8 @@
 import type { IncomingMessage } from "node:http";
+import { PassThrough } from "node:stream";
 
 import httpMocks, { createRequest } from "node-mocks-http";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
     appendHeader,
@@ -13,6 +14,7 @@ import {
     getIdFromRequestUrl,
     getMetadata,
     getRealPath,
+    MAX_DRAIN_MS,
     readBody,
     readWebRequestText,
     setHeaders,
@@ -84,9 +86,13 @@ describe("utils", () => {
         it("should read quoted, padded and mixed-case Forwarded values", () => {
             expect.assertions(2);
 
-            expect(getBaseUrl({ headers: { forwarded: 'for=1.2.3.4; Host="example.com:8080"; PROTO=HTTPS' } } as IncomingMessage)).toBe("https://example.com:8080");
+            expect(getBaseUrl({ headers: { forwarded: 'for=1.2.3.4; Host="example.com:8080"; PROTO=HTTPS' } } as IncomingMessage)).toBe(
+                "https://example.com:8080",
+            );
             // The first element is the one closest to the client.
-            expect(getBaseUrl({ headers: { forwarded: 'host="a.example";proto=https, host=b.example;proto=http' } } as IncomingMessage)).toBe("https://a.example");
+            expect(getBaseUrl({ headers: { forwarded: 'host="a.example";proto=https, host=b.example;proto=http' } } as IncomingMessage)).toBe(
+                "https://a.example",
+            );
         });
 
         it("should handle multiple forwarded header entries", () => {
@@ -356,11 +362,33 @@ describe("utils", () => {
 
         const request = httpCreateRequest({ body: "Hello world!" });
 
-        await expect(readBody(request, "utf8", 5)).rejects.toThrow(
-            expect.objectContaining({ headers: { Connection: "close" }, message: "Request body length limit exceeded", statusCode: 413 }),
-        );
+        await expect(readBody(request, "utf8", 5)).rejects.toThrow(expect.objectContaining({ message: "Request body length limit exceeded", statusCode: 413 }));
         // The request is drained, not destroyed, so the caller can still send the 413 response
         expect(request.destroyed).toBe(false);
+    });
+
+    it("should cut off a refused body that is still being sent once the drain time is up", async () => {
+        expect.assertions(3);
+
+        vi.useFakeTimers();
+
+        try {
+            const request = new PassThrough();
+
+            request.write("x".repeat(10));
+
+            await expect(readBody(request as unknown as IncomingMessage, "utf8", 5)).rejects.toThrow(expect.objectContaining({ statusCode: 413 }));
+
+            vi.advanceTimersByTime(MAX_DRAIN_MS - 1);
+
+            expect(request.destroyed).toBe(false);
+
+            vi.advanceTimersByTime(1);
+
+            expect(request.destroyed).toBe(true);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it("should use UTF-8 encoding as default when reading body", async () => {
