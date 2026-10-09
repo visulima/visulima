@@ -15,6 +15,20 @@ import type { Header, Headers, IncomingMessageWithBody } from "./types";
  */
 export const BODY_LIMIT_EXCEEDED_MESSAGE = "Request body length limit exceeded";
 
+/**
+ * Bytes past its limit that a refused body is still read and discarded for, so the client gets to
+ * read the 413; a client sending more has its connection cut.
+ * @internal
+ */
+export const MAX_DRAIN_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Milliseconds a refused body is drained for before its connection is cut, so a slow or stalled
+ * client can't hold it open.
+ * @internal
+ */
+export const MAX_DRAIN_MS = 5000;
+
 const jsonType = new TypeIs(["json"]);
 
 const extractForwarded = (request: IncomingMessage): { host: string; proto: string } => {
@@ -78,13 +92,31 @@ export const readBody = (
             byteLength += buf.length;
 
             if (limit !== undefined && byteLength > limit) {
-                // Stop buffering but keep the socket open so the caller can still send the 413;
-                // the remaining body is discarded and `Connection: close` ends the socket after the response.
+                // Stop buffering, but read and discard the rest of the body rather than closing the
+                // connection: closing it while the client is still sending makes the kernel answer
+                // with a reset, which on macOS and Windows drops the 413 before the client reads it.
+                // Once drained, the connection stays usable for the next request.
                 request.off("data", onData);
                 request.off("end", onEnd);
-                request.resume();
                 chunks.length = 0;
-                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE, { headers: { Connection: "close" } }));
+
+                let drained = byteLength - limit;
+                const timer = setTimeout(() => request.destroy(), MAX_DRAIN_MS).unref();
+
+                request.on("data", (rest: Buffer | string) => {
+                    drained += Buffer.byteLength(rest);
+
+                    if (drained > MAX_DRAIN_BYTES) {
+                        request.destroy();
+                    }
+                });
+                const stopTimer = (): void => {
+                    clearTimeout(timer);
+                };
+
+                request.once("close", stopTimer);
+                request.once("end", stopTimer);
+                reject(createHttpError(413, BODY_LIMIT_EXCEEDED_MESSAGE));
 
                 return;
             }
