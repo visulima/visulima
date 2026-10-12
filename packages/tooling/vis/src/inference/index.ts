@@ -29,6 +29,7 @@ import { packemDetector } from "./detectors/packem";
 import { playwrightDetector } from "./detectors/playwright";
 import { prettierDetector } from "./detectors/prettier";
 import { prismaDetector } from "./detectors/prisma";
+import { pythonDetector } from "./detectors/python";
 import { remixDetector } from "./detectors/remix";
 import { rolldownDetector } from "./detectors/rolldown";
 import { rollupDetector } from "./detectors/rollup";
@@ -109,6 +110,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     apiExtractorDetector,
     changesetDetector,
     cargoDetector,
+    pythonDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>
