@@ -465,6 +465,23 @@ postPublishCommand:  "pnpm run notify:internal",
 
 All four hooks are shell commands executed in the workspace root.
 
+### Non-JS version manifests
+
+A package that also ships a version in another ecosystem's manifest lists those files under `versionFiles`, relative to the package directory:
+
+```json
+{
+    "vis-release": {
+        "versionFiles": ["src-tauri/Cargo.toml", "src-tauri/tauri.conf.json"]
+    }
+}
+```
+
+- `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements and inherited versions (`version.workspace = true`) are not touched.
+- `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is left alone.
+
+Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` is not rewritten; run `cargo update -p <crate>` before a `--locked` build.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:

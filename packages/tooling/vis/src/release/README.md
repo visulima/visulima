@@ -102,6 +102,27 @@ Detected from lockfile + `packageManager` field:
 
 Why always `npm publish`? Yarn refuses to publish pre-built tarballs in `yarn npm publish`; bun lacks OIDC and `--provenance`. The npm CLI is the lowest-common-denominator that works with foreign tarballs and supports trusted publishing.
 
+## Non-JS version manifests (`versionFiles`)
+
+A package that also ships a version in another ecosystem's manifest lists those files on its per-package config (`package.json["vis-release"]` or `release.packages.<name>`). Paths are relative to the package directory:
+
+```json
+{
+    "vis-release": {
+        "versionFiles": ["src-tauri/Cargo.toml", "src-tauri/tauri.conf.json"]
+    }
+}
+```
+
+Supported basenames:
+
+- `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements (`serde = { version = "1" }`) and inherited versions (`version.workspace = true`) are never touched.
+- `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is already in sync and is left alone.
+
+Edits are targeted, so comments, formatting and line endings survive. An unsupported basename fails the release with `CONFIG_INVALID`. `vis release doctor` warns when a listed manifest declares a different version from `package.json`.
+
+Out of scope: `Cargo.lock` is not rewritten. Run `cargo update -p <crate>` (or `cargo generate-lockfile`) before a `--locked` build, or the lockfile will record the old version.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).
