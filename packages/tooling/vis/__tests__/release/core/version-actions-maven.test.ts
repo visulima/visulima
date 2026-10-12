@@ -20,8 +20,8 @@ import type { WorkspacePackage } from "../../../src/release/types";
  *   3. readPublishedVersion fetches Maven Central, returns the parsed
  *      latest on 200, undefined on 404 / network errors.
  *   4. Multi-module poms emit a warning to stderr.
- *   5. publish() throws CONFIG_INVALID with a shell-path hint (the
- *      native Central Portal upload flow is deferred).
+ *   5. publish() runs `mvn -B -f &lt;pom> deploy` through the argv runner
+ *      and throws PUBLISH_FAILED on a non-zero exit.
  *   6. dryRun is honoured even though publish isn't implemented yet.
  */
 
@@ -102,7 +102,13 @@ const buildPkg = (dir: string): WorkspacePackage => {
     };
 };
 
-const buildPublishContext = (overrides: { dryRun?: boolean; newVersion?: string; pkg: WorkspacePackage }): PublishContext => {
+const okRunner = (): CommandRunner => {
+    return {
+        run: async () => { return { exitCode: 0, stderr: "", stdout: "" }; },
+    };
+};
+
+const buildPublishContext = (overrides: { dryRun?: boolean; newVersion?: string; pkg: WorkspacePackage; runner?: CommandRunner }): PublishContext => {
     return {
         catalogs: { default: {}, named: {} },
         dryRun: overrides.dryRun,
@@ -110,11 +116,7 @@ const buildPublishContext = (overrides: { dryRun?: boolean; newVersion?: string;
         pm: {
             id: "npm",
             minVersion: "8.0.0",
-            runner: {
-                run: async () => {
-                    return { exitCode: 0, stderr: "", stdout: "" };
-                },
-            } as CommandRunner,
+            runner: overrides.runner ?? okRunner(),
         } as never,
         release: {
             changeFiles: [],
@@ -495,24 +497,51 @@ describe("mavenVersionActions.publish", () => {
         expect(result.output).toContain("[dry-run / maven]");
     });
 
-    it("throws CONFIG_INVALID with the shell-path workaround hint", async () => {
+    it("deploys the module with mvn -B -f <pom> deploy, through the argv runner in the module dir", async () => {
         expect.hasAssertions();
 
+        const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        const actions = new MavenVersionActions();
+        const result = await actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner: { run } }));
+
+        expect(run).toHaveBeenCalledExactlyOnceWith("mvn", ["-B", "-f", join(pkgDir, "pom.xml"), "deploy"], { cwd: pkgDir, silent: false });
+        expect(result).toMatchObject({ published: true });
+    });
+
+    it("does not run mvn in dryRun mode", async () => {
+        expect.hasAssertions();
+
+        const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
         const actions = new MavenVersionActions();
 
-        await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir) }))).rejects.toMatchObject({
-            code: "CONFIG_INVALID",
-            hint: expect.stringContaining("mvn"),
+        await actions.publish(buildPublishContext({ dryRun: true, pkg: buildPkg(pkgDir), runner: { run } }));
+
+        expect(run).not.toHaveBeenCalled();
+    });
+
+    it("throws PUBLISH_FAILED with the coordinates and stderr when mvn deploy exits non-zero", async () => {
+        expect.hasAssertions();
+
+        const runner = { run: async () => { return { exitCode: 1, stderr: "401 Unauthorized", stdout: "" }; } };
+        const actions = new MavenVersionActions();
+
+        await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner }))).rejects.toMatchObject({
+            code: "PUBLISH_FAILED",
+            message: expect.stringContaining("io.visulima:vis-jvm"),
+        });
+        await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner }))).rejects.toMatchObject({
+            message: expect.stringContaining("401 Unauthorized"),
         });
     });
 
-    it("error mentions the docs guide for the full operator setup", async () => {
+    it("points the failure hint at ~/.m2/settings.xml credentials", async () => {
         expect.hasAssertions();
 
+        const runner = { run: async () => { return { exitCode: 1, stderr: "", stdout: "" }; } };
         const actions = new MavenVersionActions();
 
-        await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir) }))).rejects.toMatchObject({
-            hint: expect.stringContaining("docs/guides/release-maven.mdx"),
+        await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner }))).rejects.toMatchObject({
+            hint: expect.stringContaining("~/.m2/settings.xml"),
         });
     });
 
@@ -521,18 +550,17 @@ describe("mavenVersionActions.publish", () => {
         expect(new MavenVersionActions().id).toBe("maven");
     });
 
-    it("includes the resolved groupId:artifactId in the CONFIG_INVALID error (B-1)", async () => {
-        // B-1: the static hint used to leave operators grep-bouncing
-        // across the workspace to find the offending pom. The publish
-        // error now stamps `groupId:artifactId` (and the resolved pom
-        // path) so the log line points straight at the source.
+    it("includes the resolved groupId:artifactId in the PUBLISH_FAILED error (B-1)", async () => {
+        // B-1: the publish error stamps `groupId:artifactId` (and the
+        // resolved pom path) so the log line points straight at the source.
         expect.hasAssertions();
 
         const actions = new MavenVersionActions();
         const pkg = buildPkg(pkgDir);
+        const runner = { run: async () => { return { exitCode: 1, stderr: "", stdout: "" }; } };
 
-        await expect(actions.publish(buildPublishContext({ pkg }))).rejects.toMatchObject({
-            code: "CONFIG_INVALID",
+        await expect(actions.publish(buildPublishContext({ pkg, runner }))).rejects.toMatchObject({
+            code: "PUBLISH_FAILED",
             hint: expect.stringContaining("io.visulima:vis-jvm"),
             message: expect.stringContaining("io.visulima:vis-jvm"),
         });
@@ -549,9 +577,10 @@ describe("mavenVersionActions.publish", () => {
         try {
             const actions = new MavenVersionActions();
             const pkg = buildPkg(emptyDir);
+            const runner = { run: async () => { return { exitCode: 1, stderr: "", stdout: "" }; } };
 
-            await expect(actions.publish(buildPublishContext({ pkg }))).rejects.toMatchObject({
-                code: "CONFIG_INVALID",
+            await expect(actions.publish(buildPublishContext({ pkg, runner }))).rejects.toMatchObject({
+                code: "PUBLISH_FAILED",
                 message: expect.stringContaining("@scope/jvm"),
             });
         } finally {
@@ -564,8 +593,9 @@ describe("mavenVersionActions.publish", () => {
 
         const actions = new MavenVersionActions();
         const pkg = buildPkg(pkgDir);
+        const runner = { run: async () => { return { exitCode: 1, stderr: "", stdout: "" }; } };
 
-        await expect(actions.publish(buildPublishContext({ pkg }))).rejects.toMatchObject({
+        await expect(actions.publish(buildPublishContext({ pkg, runner }))).rejects.toMatchObject({
             hint: expect.stringContaining("pom.xml"),
         });
     });

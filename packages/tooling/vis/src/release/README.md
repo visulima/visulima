@@ -152,7 +152,7 @@ Opt-in. With `release: { maven: { discover: true } }`, the root `pom.xml` and ev
 - A `<dependency>` on a released module whose `<version>` is a literal is rewritten to the new version. Maven literals are exact pins, so this is not a range check the way Cargo's requirements are. `${property}` versions are left alone.
 - Dependencies in `<dependencyManagement>` and `<build>` are not graph edges.
 - A module a JS package already releases (`pomPath`, `pomXml()`, or an `extraFiles` rule on a `pom.xml`) is not discovered again.
-- Maven has no lockfile, so nothing else is written. Publishing is still per-module through `versionActions: "maven"`, which is not implemented yet (see `docs/guides/release-maven.mdx`).
+- Maven has no lockfile, so nothing else is written. Publishing is per-module through `versionActions: "maven"`, which runs `mvn -B -f <pom> deploy` (see `docs/guides/release-maven.mdx`).
 
 ## Workspace + catalog: protocol resolution
 
