@@ -190,6 +190,16 @@
             "$ref": "#/$defs/GitUserConfig",
             "description": "Git committer identity used by CI workflows."
         },
+        "go": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Go modules as release packages. Off by default. When on, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. The version is the highest git tag for the module, and the release creates the next tag. A `/vN` major needs a matching module path."
+        },
         "gradle": {
             "type": "object",
             "properties": {
@@ -384,6 +394,16 @@
             "$ref": "#/$defs/SuccessWalkConfig",
             "description": "Post-release notification walk. Configures the \"🎉 This is included in version X.Y.Z\" comment + `released` label pass that runs after a successful publish wave.\n\n**Default OFF.** Leave undefined and the walk never runs — vis will not touch third-party PRs referenced in changelog bodies. Set to `{}` to opt in with defaults, or pass an object to override the comment template / labels / prerelease behaviour."
         },
+        "swift": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Swift packages as release packages. Off by default. Every directory under the root with a `Package.swift` is a release package named by its `Package(name: \"…\")` literal. The version comes from Git tags, and the release creates the tag."
+        },
         "updateInternalDependencies": {
             "$ref": "#/$defs/UpdateInternalDependenciesMode",
             "description": "Dep-propagation mode. Default: `\"out-of-range\"`."
@@ -412,6 +432,16 @@
                 }
             ],
             "description": "Workspace-level changelog config (RFC §6.1 / nx parity). When set, renders one CHANGELOG.md at the workspace root in addition to per-package files."
+        },
+        "zig": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Zig packages as release packages. Off by default. When on, the workspace root's `build.zig.zon` and each in-workspace `.path` dependency that has one is a release package named by its `.name`. The version must be a `.version` string literal; a package with no `.version` is an aggregate and is skipped. Release is a git tag: Zig has no registry, so nothing is uploaded."
         }
     },
     "additionalProperties": false,

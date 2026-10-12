@@ -288,6 +288,16 @@
             "additionalProperties": false,
             "description": "Configuration for the `vis generate` in-repo scaffolding command. Points at additional template directories beyond the defaults (`.vis/templates/` and `.moon/templates/`)."
         },
+        "go": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Go modules (the `use` entries of `go.work`) as task projects. Off by default. The root module is not a task project."
+        },
         "gradle": {
             "type": "object",
             "properties": {
@@ -1901,6 +1911,16 @@
             "type": "boolean",
             "description": "When `true`, every task command is scanned for `${VAR}` / `$VAR` references before spawn. If a referenced var is unset in the task's effective env (envFile + service env + per-task `env` + `process.env`), the task fails with an actionable error naming the missing variable, instead of letting the shell silently substitute an empty string.\n\nOverride per run with `--strict-env` / `--no-strict-env`. Override per target with `options.strictEnv`.",
             "default": false
+        },
+        "swift": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Swift packages (a `Package.swift` directory under the root) as task projects. Off by default. Commands are `swift build`, `swift test`, and a `swift-format lint --strict` check."
         },
         "taskGroups": {
             "type": "object",
@@ -3657,6 +3677,16 @@
             "examples": [
                 ">=1.0.0"
             ]
+        },
+        "zig": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Zig packages as task projects. Off by default: the workspace root's `build.zig.zon` and its in-workspace `.path` dependencies get build, test and format-check targets only when this is set. The root itself is not a task project."
         }
     },
     "additionalProperties": false,
@@ -4160,6 +4190,16 @@
                     "$ref": "#/$defs/GitUserConfig",
                     "description": "Git committer identity used by CI workflows."
                 },
+                "go": {
+                    "type": "object",
+                    "properties": {
+                        "discover": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Go modules as release packages. Off by default. When on, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. The version is the highest git tag for the module, and the release creates the next tag. A `/vN` major needs a matching module path."
+                },
                 "gradle": {
                     "type": "object",
                     "properties": {
@@ -4354,6 +4394,16 @@
                     "$ref": "#/$defs/SuccessWalkConfig",
                     "description": "Post-release notification walk. Configures the \"🎉 This is included in version X.Y.Z\" comment + `released` label pass that runs after a successful publish wave.\n\n**Default OFF.** Leave undefined and the walk never runs — vis will not touch third-party PRs referenced in changelog bodies. Set to `{}` to opt in with defaults, or pass an object to override the comment template / labels / prerelease behaviour."
                 },
+                "swift": {
+                    "type": "object",
+                    "properties": {
+                        "discover": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Swift packages as release packages. Off by default. Every directory under the root with a `Package.swift` is a release package named by its `Package(name: \"…\")` literal. The version comes from Git tags, and the release creates the tag."
+                },
                 "updateInternalDependencies": {
                     "$ref": "#/$defs/UpdateInternalDependenciesMode",
                     "description": "Dep-propagation mode. Default: `\"out-of-range\"`."
@@ -4382,6 +4432,16 @@
                         }
                     ],
                     "description": "Workspace-level changelog config (RFC §6.1 / nx parity). When set, renders one CHANGELOG.md at the workspace root in addition to per-package files."
+                },
+                "zig": {
+                    "type": "object",
+                    "properties": {
+                        "discover": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Zig packages as release packages. Off by default. When on, the workspace root's `build.zig.zon` and each in-workspace `.path` dependency that has one is a release package named by its `.name`. The version must be a `.version` string literal; a package with no `.version` is an aggregate and is skipped. Release is a git tag: Zig has no registry, so nothing is uploaded."
                 }
             },
             "additionalProperties": false
