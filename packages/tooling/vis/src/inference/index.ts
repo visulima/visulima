@@ -20,6 +20,7 @@ import { gatsbyDetector } from "./detectors/gatsby";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
 import { jestDetector } from "./detectors/jest";
 import { knipDetector } from "./detectors/knip";
+import { mavenDetector } from "./detectors/maven";
 import { nestDetector } from "./detectors/nest";
 import { nextDetector } from "./detectors/next";
 import { nuxtDetector } from "./detectors/nuxt";
@@ -68,8 +69,8 @@ export type { DetectContext, Detector } from "./types";
  * `codegen` (graphql), `api-extract`, `changeset:*`, deno's `fmt` /
  * `check`.
  *
- * `cargo` never competes: `discoverWorkspace` runs it alone on Cargo crate
- * projects and leaves it out for every other project.
+ * `cargo`, `python` and `maven` never compete: `discoverWorkspace` runs each
+ * alone on its own project kind and leaves it out for every other project.
  */
 export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     nuxtDetector,
@@ -111,6 +112,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     changesetDetector,
     cargoDetector,
     pythonDetector,
+    mavenDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

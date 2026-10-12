@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -29,6 +30,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
 import type {
     PackageJson,
@@ -223,7 +225,7 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
 const resolveProjectDirectories = (
     workspaceRoot: string,
     patterns: string[],
-    options: { pythonProjects: boolean },
+    options: { mavenProjects: boolean; pythonProjects: boolean },
 ): { directories: string[]; nonJsDirectories: Set<string> } => {
     const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
     const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
@@ -233,8 +235,8 @@ const resolveProjectDirectories = (
         candidates.filter((directory) => !packageSet.has(directory)),
         packageDirectories,
     );
-    // Python projects are tasks only when `python.discover` is set, so a repo with a
-    // pyproject.toml sees no new targets by default.
+    // Python and Maven projects are tasks only when `python.discover` / `maven.discover`
+    // is set, so a repo with a pyproject.toml or pom.xml sees no new targets by default.
     const pythonDirectories = options.pythonProjects
         ? resolvePythonProjectDirectories(
             workspaceRoot,
@@ -242,7 +244,14 @@ const resolveProjectDirectories = (
             [...packageDirectories, ...cargoDirectories],
         )
         : [];
-    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories];
+    const mavenDirectories = options.mavenProjects
+        ? resolveMavenProjectDirectories(
+            workspaceRoot,
+            candidates.filter((directory) => !packageSet.has(directory)),
+            [...packageDirectories, ...cargoDirectories, ...pythonDirectories],
+        )
+        : [];
+    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories, ...mavenDirectories];
 
     return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
 };
@@ -892,7 +901,7 @@ const resolveProjectName = (
     projectJson?.name
     ?? (pkg
         ? pkg.name
-        : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? readPythonProjectName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
+        : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? readPythonProjectName(join(workspaceRoot, projectDirectory)) ?? readMavenProjectArtifact(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
 
 /**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
@@ -934,6 +943,7 @@ const discoverWorkspace = (
     }
 
     const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
     });
 
@@ -1003,16 +1013,17 @@ const discoverWorkspace = (
         const projectRoot = join(workspaceRoot, projectDirectory);
         const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
         const isPython = isNonJs && !isCrate && readPythonProjectName(projectRoot) !== undefined;
-        const detectorEnabled = pkg || isCrate || isPython ? resolveInferTargetOption(config.inferTargets) : undefined;
+        const isMaven = isNonJs && !isCrate && !isPython && readMavenProjectArtifact(projectRoot) !== undefined;
+        const detectorEnabled = pkg || isCrate || isPython || isMaven ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
             // A Cargo or Python project gets only its own detector, and a JS
             // package never gets either, so a stray pyproject.toml or Cargo.toml
             // in a JS package cannot infer targets for it.
-            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : undefined;
+            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : isMaven ? mavenDetector : undefined;
             const enabledDetectors = BUILT_IN_DETECTORS.filter(
                 (detector) =>
-                    (ownDetector === undefined ? detector !== cargoDetector && detector !== pythonDetector : detector === ownDetector)
+                    (ownDetector === undefined ? detector !== cargoDetector && detector !== pythonDetector && detector !== mavenDetector : detector === ownDetector)
                     && detectorEnabled(detector.name),
             );
             const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
@@ -1262,7 +1273,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
 
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, { pythonProjects: true });
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, { mavenProjects: true, pythonProjects: true });
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(

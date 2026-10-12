@@ -380,6 +380,16 @@
             "additionalProperties": false,
             "description": "Configuration for `vis lint` — the linter orchestrator.\n\nTunes adapter detection precedence and per-adapter overrides. Flags on the CLI always win over config.\n\nThe default lint precedence is `oxlint → biome → eslint → stylelint → deno-lint`. Override with `order` to e.g. let biome fire before oxlint when the workspace standardises on biome."
         },
+        "maven": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Maven modules as task projects. Off by default: a directory with a `pom.xml` (and a project-root `artifactId`) gets build and test targets only when this is set."
+        },
         "mcpPromote": {
             "type": "object",
             "properties": {

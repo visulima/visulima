@@ -691,6 +691,12 @@ export interface VisConfig {
     };
 
     /**
+     * Maven modules as task projects. Off by default: a directory with a
+     * `pom.xml` (and a project-root `artifactId`) gets build and test targets only when this is set.
+     */
+    maven?: { discover?: boolean };
+
+    /**
      * `vis-mcp` promotion notice shown after successful commands when an
      * AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is
      * installed but `@visulima/vis-mcp` is not wired into its config.

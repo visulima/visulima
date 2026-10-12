@@ -70,7 +70,8 @@ const isProjectCandidate = (directory: string): boolean =>
     isAccessibleSync(join(directory, "package.json"))
     || isAccessibleSync(join(directory, "project.json"))
     || isAccessibleSync(join(directory, "Cargo.toml"))
-    || isAccessibleSync(join(directory, "pyproject.toml"));
+    || isAccessibleSync(join(directory, "pyproject.toml"))
+    || isAccessibleSync(join(directory, "pom.xml"));
 
 /**
  * Whether discovery accepts a directory as a project: a `package.json`, a
