@@ -702,6 +702,7 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
     {
         const { applyExtraFilesForRelease } = await import("./extra-files");
         const { applyVersionFilesForRelease } = await import("./version-files");
+        const { cargoManifestPaths, syncCargoLockForRelease } = await import("./cargo-lock");
 
         const extraResults = await Promise.all(
             context.plan.releases.map(async (release) => {
@@ -728,13 +729,27 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
                         ? await applyVersionFilesForRelease(pkg.dir, versionFiles, release.newVersion, release.name, new Map(extra.writes.map((write) => [write.path, write.content])))
                         : { warnings: [], writes: [] };
 
+                // Cargo.lock follows the crate. It runs last so it reads the
+                // manifest content the earlier steps produced.
+                const manifestWrites = [...extra.writes, ...versioned.writes];
+                const pendingContent = new Map(manifestWrites.map((write) => [write.path, write.content]));
+                const perPkg = context.perPackageConfig.get(release.name) ?? {};
+                const manifestPaths = cargoManifestPaths(pkg.dir, perPkg);
+                const lock
+                    = manifestPaths.length > 0
+                        ? await syncCargoLockForRelease({ manifestPaths, newVersion: release.newVersion, pending: pendingContent, workspaceRoot: context.cwd })
+                        : { warnings: [], writes: [] };
+
                 const writesByPath = new Map<string, { content: string; path: string }>();
 
-                for (const write of [...extra.writes, ...versioned.writes]) {
+                for (const write of [...manifestWrites, ...lock.writes]) {
                     writesByPath.set(write.path, { content: write.content, path: write.path });
                 }
 
-                return { warnings: [...extra.warnings, ...versioned.warnings], writes: [...writesByPath.values()] };
+                return {
+                    warnings: [...extra.warnings, ...versioned.warnings, ...lock.warnings],
+                    writes: [...writesByPath.values()],
+                };
             }),
         );
 

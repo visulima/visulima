@@ -480,7 +480,7 @@ A package that also ships a version in another ecosystem's manifest lists those 
 - `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements and inherited versions (`version.workspace = true`) are not touched.
 - `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is left alone.
 
-Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` is not rewritten; run `cargo update -p <crate>` before a `--locked` build.
+Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` follows the bump: the crate's workspace-member entry is rewritten, and registry or git dependencies are never touched. A crate missing from the lockfile produces a warning.
 
 ### Custom per-package commands
 
