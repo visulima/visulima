@@ -297,6 +297,18 @@ const executeAudit = async (
     const auditConfig = visConfig?.security?.audit;
     const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
     const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
+
+    // Zig has no OSV ecosystem and no lockfile vis can read versions from. Refuse it here, in both
+    // modes, rather than let the offline path warn and skip it or the online path blame --offline.
+    if (ecosystems.all.some((eco) => eco.toLowerCase() === "zig")) {
+        pail.error(
+            "--ecosystem zig is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove zig from --ecosystem.",
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
     const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
 
     if (onlineNonNpm.length > 0) {

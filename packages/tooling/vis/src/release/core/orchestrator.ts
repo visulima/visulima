@@ -37,6 +37,7 @@ import { createShellRunner } from "./shell-runner";
 import type { VersionActions } from "./version-actions/interface";
 import { createVersionActions } from "./version-actions/registry";
 import { discoverPackages, resolveVersionActionsId } from "./workspace";
+import type { ZigProject } from "./zig-projects";
 
 export interface OrchestratorContext {
     branch?: string;
@@ -75,6 +76,9 @@ export interface OrchestratorContext {
      * exists.
      */
     preMode?: import("./pre-mode").PreModeFile;
+
+    /** Zig packages discovered under `release.zig.discover` (empty otherwise); the Zig plan reads their owners from here. */
+    zigProjects?: ZigProject[];
 }
 
 export interface BuildContextOptions {
@@ -216,8 +220,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     let gradleProjects: GradleProject[] = [];
 
     let goProjects: GoProject[] = [];
+    let zigProjects: ZigProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover) {
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -376,6 +381,34 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...swiftProjects.map((project) => project.package)];
+        }
+
+        if (config.zig?.discover) {
+            const { discoverZigProjects } = await import("./zig-projects");
+            // A JS package that releases a Zig package (versionActions "zig") or writes its build.zig.zon (an extraFiles rule) claims its directory.
+            const zigClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "zig") {
+                    zigClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                for (const rule of perPkg.extraFiles ?? []) {
+                    if (/(?:^|\/)build\.zig\.zon$/.test(rule.path)) {
+                        zigClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
+                    }
+                }
+            }
+
+            zigProjects = await discoverZigProjects({ claimedDirs: zigClaimedDirs, cwd });
+
+            for (const project of zigProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "zig", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...zigProjects.map((project) => project.package)];
         }
 
         // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
@@ -605,6 +638,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         // M9: snapshot pre-mode here so applyContext doesn't race with a
         // concurrent `pre exit` between context-build and apply.
         preMode,
+        zigProjects,
     };
 };
 
@@ -1072,6 +1106,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const gradleTouched = await planGradleWorkspace({ pending, projects: context.gradleProjects ?? [], releases: gradleReleases });
 
             for (const path of gradleTouched) {
+                touched.add(path);
+            }
+        }
+
+        const zigReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "zig" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (zigReleases.length > 0) {
+            const { planZigWorkspace } = await import("./zig-plan");
+            const zigTouched = await planZigWorkspace({ pending, projects: context.zigProjects ?? [], releases: zigReleases });
+
+            for (const path of zigTouched) {
                 touched.add(path);
             }
         }

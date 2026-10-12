@@ -21,11 +21,13 @@ import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
 import { swiftDetector } from "../inference/detectors/swift";
+import { zigDetector } from "../inference/detectors/zig";
 import type { Detector } from "../inference/types";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
 import { buildGitignoreMatcher } from "../util/gitignore-matcher";
+import { readZigManifestName } from "../util/zig-manifest";
 import {
     buildCargoFileOwners,
     collectCargoPathDependencies,
@@ -49,6 +51,7 @@ import type {
     VisProjectConfiguration,
     VisTaskConfigIndex,
 } from "./types";
+import { resolveZigProjectDirectories } from "./zig-projects";
 
 const TRAILING_SLASH_RE = /\/+$/;
 const DOUBLE_GLOB_SUFFIX_RE = /\/\*\*$/;
@@ -235,6 +238,7 @@ interface NonJsOptions {
     mavenProjects: boolean;
     pythonProjects: boolean;
     swiftProjects: boolean;
+    zigProjects: boolean;
 }
 
 /**
@@ -246,7 +250,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "go" | "gradle" | "maven" | "python" | "swift";
+    id: "cargo" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -298,6 +302,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "swift",
         readName: readSwiftProjectName,
         resolve: (workspaceRoot, _candidates, claimed) => resolveSwiftProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Zig packages come from the root manifest's path dependencies, not the workspace patterns.
+        detector: zigDetector,
+        enabled: (options) => options.zigProjects,
+        id: "zig",
+        readName: (projectRoot) => readZigManifestName(projectRoot),
+        resolve: (workspaceRoot, _candidates, claimed) => resolveZigProjectDirectories(workspaceRoot, claimed),
     },
 ];
 
@@ -1022,6 +1034,7 @@ const discoverWorkspace = (
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
         swiftProjects: config.swift?.discover === true,
+        zigProjects: config.zig?.discover === true,
     });
 
     for (const projectDirectory of projectDirectories) {
@@ -1350,6 +1363,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         mavenProjects: true,
         pythonProjects: true,
         swiftProjects: true,
+        zigProjects: true,
     });
     const result: VisTaskConfigIndex = new Map();
 

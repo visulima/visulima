@@ -546,6 +546,18 @@ Tasks: with `swift.discover: true`, each package directory gets `swift build` an
 
 Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains, and `Package.resolved` has no dependency edges, so the SBOM has no Swift graph.
 
+### Zig packages as release packages
+
+Set `release.zig.discover: true` in `vis.config.ts` to release Zig packages. It is off by default. The workspace root's `build.zig.zon` is a package, and so is every `.path` dependency that holds its own `build.zig.zon` and sits inside the workspace (followed transitively). The name is the manifest's `.name`, which must be lowercase (`[a-z0-9._-]`), so a Zig name with uppercase letters is refused. A manifest with no `.version` is an aggregate and is skipped; the root is released only with its own version.
+
+The version must be a plain string literal, `.version = "1.0.0"`. A bump rewrites that literal and nothing else. A `.path` dependency orders the release and is recorded as `*`; a `.url` dependency is not rewritten. A `.version` or `.name` that is an expression, a repeated field, or a `.path` that is not a string fails the release with `CONFIG_INVALID`.
+
+Zig has no registry, so publishing is the git tag. The release creates the tag `<name>@<version>` (or the `releaseTagPattern` you set) after the publish step. Nothing is uploaded and no command runs. A tag that already exists marks the package as already published and skips it. Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` after the dry run.
+
+The task side is `zig.discover: true` in `vis.config.ts` (off by default). It adds `build` (`zig build`), `test` (`zig build test`) and `format:check` (`zig fmt --check .`) to each Zig package, run in the package directory. The workspace root is not a task project, so a single-package repo gets no Zig tasks from this option. These commands are POSIX only; the Windows path is not verified.
+
+`vis audit --ecosystem zig` is refused: OSV has no Zig ecosystem and there is no Zig lockfile with versions.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:

@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python" | "swift";
+    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1656,6 +1656,15 @@ export interface VisReleaseConfig {
      * to per-package files.
      */
     workspaceChangelog?: false | { file?: string; waveHeading?: string };
+
+    /**
+     * Zig packages as release packages. Off by default. When on, the workspace root's
+     * `build.zig.zon` and each in-workspace `.path` dependency that has one is a release
+     * package named by its `.name`. The version must be a `.version` string literal; a
+     * package with no `.version` is an aggregate and is skipped. Release is a git tag:
+     * Zig has no registry, so nothing is uploaded.
+     */
+    zig?: { discover?: boolean };
 }
 
 // ── Process-level concurrency lock (`<changesDir>/.lock`) ──────────

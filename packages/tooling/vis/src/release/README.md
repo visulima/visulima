@@ -186,6 +186,15 @@ Opt-in. With `release: { swift: { discover: true } }`, every directory under the
 - A `.package(path:)` dependency on another discovered package orders the publish (`"*"`). Nothing is written to the manifest, and remote dependencies are not rewritten.
 - Publish uploads nothing: the tag step creates the tag. The published check is `git rev-parse` on the tag, so an existing tag is skipped. Publish refuses on Windows with `CONFIG_INVALID`, after the dry run.
 
+## Zig packages as release packages (`release.zig.discover`)
+
+Opt-in. With `release: { zig: { discover: true } }`, the root `build.zig.zon` and each in-workspace `.path` dependency that has one is a release package named by its `.name`.
+
+- The version is a `.version = "…"` string literal, rewritten in place. Any other value, or a repeated field, fails the release with `CONFIG_INVALID`. A manifest with no `.version` is an aggregate and is skipped.
+- `.path` dependencies order the release and are recorded as `*`. `.url` dependencies are not rewritten.
+- Publishing is the git tag: the existing tag (`releaseTagPattern` or `<name>@<version>`) marks the package as already published. No command runs and nothing is uploaded. POSIX only; Windows refuses after the dry run.
+- Zig has no lockfile vis maintains, so nothing else is written.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

@@ -2188,6 +2188,13 @@ export interface VisConfig {
      * @example ">=1.0.0"
      */
     versionConstraint?: string;
+
+    /**
+     * Zig packages as task projects. Off by default: the workspace root's
+     * `build.zig.zon` and its in-workspace `.path` dependencies get build, test and
+     * format-check targets only when this is set. The root itself is not a task project.
+     */
+    zig?: { discover?: boolean };
 }
 
 /**

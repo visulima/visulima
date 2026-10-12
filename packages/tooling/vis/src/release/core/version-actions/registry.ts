@@ -26,6 +26,7 @@ import { PrivateVersionActions } from "./private";
 import { PythonVersionActions } from "./python";
 import { ShellPublishActions } from "./shell";
 import { SwiftVersionActions } from "./swift";
+import { ZigVersionActions } from "./zig";
 
 /**
  * Construct the {@link VersionActions} implementation for a resolved id.
@@ -70,6 +71,9 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "swift": {
             return new SwiftVersionActions();
+        }
+        case "zig": {
+            return new ZigVersionActions();
         }
         default: {
             return new NpmVersionActions();
