@@ -65,11 +65,10 @@
  *   3. Whatever's in `~/.cargo/credentials.toml` (cargo's fallback —
  *      vis doesn't manage this; the operator does)
  *
- * Lockfile handling: after `cargo publish` succeeds, `Cargo.lock` may
- * shift. We deliberately do NOT manage this from vis — `cargo publish`
- * runs `cargo build` internally and refreshes the lock as needed. The
- * orchestrator's release-commit step picks up any lock changes via the
- * standard git-staging flow.
+ * Lockfile handling: the version bump rewrites the crate's own
+ * workspace-member entry in `Cargo.lock` before publish (see `cargo-lock.ts`).
+ * `cargo publish` may still refresh the lock; the orchestrator's release-commit
+ * step stages any change via the standard git flow.
  */
 
 import { readFile } from "node:fs/promises";

@@ -121,7 +121,7 @@ Supported basenames:
 
 Edits are targeted, so comments, formatting and line endings survive. An unsupported basename fails the release with `CONFIG_INVALID`. `vis release doctor` warns when a listed manifest declares a different version from `package.json`.
 
-Out of scope: `Cargo.lock` is not rewritten. Run `cargo update -p <crate>` (or `cargo generate-lockfile`) before a `--locked` build, or the lockfile will record the old version.
+`Cargo.lock` follows the bump: the `[[package]]` block for the crate (the one with no `source` line) gets the new version. Registry and git dependencies are never touched. The lockfile is looked up from the crate directory up to the workspace root. A crate missing from the lockfile produces a warning, not a failure.
 
 ## Workspace + catalog: protocol resolution
 
