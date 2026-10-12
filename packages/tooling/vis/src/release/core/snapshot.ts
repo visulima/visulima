@@ -178,10 +178,10 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
 
     try {
         for (const pkg of targets) {
-            // Snapshots rewrite a package.json and pack it with npm. A Cargo crate
-            // has neither, so it is skipped rather than having JSON written into Cargo.toml.
-            if (pkg.ecosystem === "cargo") {
-                skipped.push({ name: pkg.name, reason: "cargo-crates-have-no-snapshot" });
+            // Snapshots rewrite a package.json and pack it with npm. A non-npm project
+            // has neither, so it is skipped rather than having JSON written into its manifest.
+            if (pkg.ecosystem !== undefined && pkg.ecosystem !== "npm") {
+                skipped.push({ name: pkg.name, reason: "non-npm-packages-have-no-snapshot" });
 
                 continue;
             }

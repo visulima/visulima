@@ -8,13 +8,14 @@
  * other discovered crates. It is never serialized into `Cargo.toml`.
  */
 
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 
 import zeptomatch from "zeptomatch";
 
 import { VisReleaseError } from "../errors";
 import type { PackageManifest, WorkspacePackage } from "../types";
+import { expandMember } from "./member-glob";
 
 interface CargoSpec {
     package?: unknown;
@@ -55,47 +56,6 @@ export const parseCargoDoc = async (raw: string, manifestPath: string): Promise<
             message: `Failed to parse ${manifestPath}: ${(error as Error).message}`,
         });
     }
-};
-
-/**
- * Expand one `[workspace].members` entry. Each path segment is either literal
- * or a `zeptomatch` pattern over the directory's entries. `**` is refused
- * instead of guessed, because it would walk the whole tree.
- */
-const expandMember = async (cwd: string, pattern: string): Promise<string[]> => {
-    let current = [cwd];
-
-    for (const segment of pattern.split("/").filter((part) => part !== "" && part !== ".")) {
-        if (segment === "**") {
-            throw new VisReleaseError({
-                code: "CONFIG_INVALID",
-                message: `Unsupported [workspace].members pattern "${pattern}": "**" is not supported. List the crate directories explicitly or use "dir/*".`,
-            });
-        }
-
-        const isPattern = /[*?[{]/.test(segment);
-        const next: string[] = [];
-
-        for (const base of current) {
-            if (!isPattern) {
-                next.push(join(base, segment));
-
-                continue;
-            }
-
-            const entries = await readdir(base, { withFileTypes: true }).catch(() => []);
-
-            for (const entry of entries) {
-                if (entry.isDirectory() && zeptomatch(segment, entry.name)) {
-                    next.push(join(base, entry.name));
-                }
-            }
-        }
-
-        current = next;
-    }
-
-    return current;
 };
 
 const stringList = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : []);

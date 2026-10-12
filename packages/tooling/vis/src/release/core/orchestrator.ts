@@ -202,7 +202,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     // Rust code see no change by default. A crate that a JS package already
     // releases (versionFiles / cargo() / cargoTomlPath) is claimed by that
     // package and not discovered a second time.
-    if (config.cargo?.discover) {
+    if (config.cargo?.discover || config.python?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -212,22 +212,41 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
         }
 
-        const { discoverCargoCrates } = await import("./cargo-crates");
-        const crates = await discoverCargoCrates({ claimedDirs, cwd });
+        if (config.cargo?.discover) {
+            const { discoverCargoCrates } = await import("./cargo-crates");
+            const crates = await discoverCargoCrates({ claimedDirs, cwd });
 
-        for (const crate of crates) {
-            const explicit = config.packages?.[crate.name] ?? {};
+            for (const crate of crates) {
+                const explicit = config.packages?.[crate.name] ?? {};
 
-            // `publish = false` keeps the private actions. Forcing `cargo` there
-            // would run `cargo publish` for a crate that must never be published.
-            perPackageConfig.set(crate.name, {
-                managed: true,
-                ...(crate.private ? {} : { versionActions: "cargo" }),
-                ...explicit,
-            });
+                // `publish = false` keeps the private actions. Forcing `cargo` there
+                // would run `cargo publish` for a crate that must never be published.
+                perPackageConfig.set(crate.name, {
+                    managed: true,
+                    ...(crate.private ? {} : { versionActions: "cargo" }),
+                    ...explicit,
+                });
+            }
+
+            packages = [...packages, ...crates];
         }
 
-        packages = [...packages, ...crates];
+        if (config.python?.discover) {
+            const { discoverPythonProjects } = await import("./python-projects");
+            const projects = await discoverPythonProjects({ claimedDirs, cwd });
+
+            for (const project of projects) {
+                const explicit = config.packages?.[project.name] ?? {};
+
+                perPackageConfig.set(project.name, {
+                    managed: true,
+                    ...(project.private ? {} : { versionActions: "python" }),
+                    ...explicit,
+                });
+            }
+
+            packages = [...packages, ...projects];
+        }
     }
 
     // Reject unsupported versionFiles before planning, so a config error never
@@ -789,7 +808,9 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
         const planReleases = context.plan.releases.flatMap((release) => {
             const pkg = context.depGraph.getPackage(release.name);
 
-            if (!pkg) {
+            // Python projects have their own plan (planPythonWorkspace); a uv.lock
+            // is not a Cargo.lock, so they must not reach the Cargo pass.
+            if (!pkg || pkg.ecosystem === "python") {
                 return [];
             }
 
@@ -828,6 +849,30 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             }
 
             extraFileWarnings.push(...cargo.warnings);
+        }
+
+        const pythonReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "python" ? [{ manifestPath: pkg.manifestPath, name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (pythonReleases.length > 0) {
+            const { planPythonWorkspace } = await import("./python-plan");
+            const python = await planPythonWorkspace({
+                cwd: context.cwd,
+                dependents: context.packages
+                    .filter((pkg) => pkg.ecosystem === "python")
+                    .map((pkg) => { return { dependencies: pkg.manifest.dependencies ?? {}, name: pkg.name }; }),
+                pending,
+                releases: pythonReleases,
+            });
+
+            for (const path of python.touched) {
+                touched.add(path);
+            }
+
+            extraFileWarnings.push(...python.warnings);
         }
 
         for (const path of touched) {
