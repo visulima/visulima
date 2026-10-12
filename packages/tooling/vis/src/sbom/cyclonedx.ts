@@ -14,6 +14,7 @@ import { extractLicenseChoice } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
 import { toNpmPurl } from "./purl";
+import { buildPythonSbomParts } from "./python";
 import type { VersionIndex } from "./resolve-specifier";
 import { resolveSpecifier } from "./resolve-specifier";
 import type { Component, ComponentScope, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
@@ -497,12 +498,13 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
 
     // Cargo.lock components and edges, appended to the same BOM. Empty without a lockfile.
     const cargo = buildCargoSbomParts(workspaceRoot);
+    const python = buildPythonSbomParts(workspaceRoot);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components],
-        dependencies: [...dependencies, ...cargo.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
