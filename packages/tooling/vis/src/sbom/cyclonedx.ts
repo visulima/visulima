@@ -7,6 +7,7 @@ import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../util/docker";
+import { buildCargoSbomParts } from "./cargo";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
@@ -494,11 +495,14 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const metadataRef = metadataComponent["bom-ref"];
     const filteredProjectComponents = metadataRef ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef) : projectComponents;
 
+    // Cargo.lock components and edges, appended to the same BOM. Empty without a lockfile.
+    const cargo = buildCargoSbomParts(workspaceRoot);
+
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents],
-        dependencies,
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components],
+        dependencies: [...dependencies, ...cargo.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
