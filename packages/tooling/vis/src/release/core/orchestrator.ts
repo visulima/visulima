@@ -321,23 +321,30 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
             gradleProjects = await discoverGradleProjects({ claimedDirs: gradleClaimedDirs, cwd });
 
-            // A Gradle coordinate must not shadow a JS or other-ecosystem package of the same name.
-            const takenNames = new Set(packages.map((pkg) => pkg.name));
-            const collision = gradleProjects.find((project) => takenNames.has(project.name));
-
-            if (collision !== undefined) {
-                throw new VisReleaseError({
-                    code: "CONFIG_INVALID",
-                    message: `${collision.name} is a Gradle module, but another package already has that name. Rename one of them in config.packages.`,
-                    packageName: collision.name,
-                });
-            }
-
             for (const project of gradleProjects) {
                 perPackageConfig.set(project.name, { managed: true, versionActions: "gradle", ...config.packages?.[project.name] });
             }
 
             packages = [...packages, ...gradleProjects.map((project) => project.package)];
+        }
+
+        // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
+        // clash with an earlier package is an error for every ecosystem, not only Gradle. JS packages keep
+        // their historic last-wins behaviour between themselves.
+        const owners = new Map<string, WorkspacePackage>();
+
+        for (const pkg of packages) {
+            const prior = owners.get(pkg.name);
+
+            if (prior !== undefined && pkg.ecosystem !== undefined) {
+                throw new VisReleaseError({
+                    code: "CONFIG_INVALID",
+                    message: `${pkg.name} is discovered as a ${pkg.ecosystem} project, but ${prior.dir} already has that name. Rename one of them in config.packages.`,
+                    packageName: pkg.name,
+                });
+            }
+
+            owners.set(pkg.name, pkg);
         }
     }
 
@@ -904,7 +911,7 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
 
             // Python projects, Maven and Gradle modules have their own plans (planPythonWorkspace,
             // planMavenWorkspace, planGradleWorkspace); a uv.lock is not a Cargo.lock, and a pom or a build script is not one either.
-            if (!pkg || pkg.ecosystem === "python" || pkg.ecosystem === "maven" || pkg.ecosystem === "gradle") {
+            if (!pkg || (pkg.ecosystem !== undefined && pkg.ecosystem !== "cargo")) {
                 return [];
             }
 

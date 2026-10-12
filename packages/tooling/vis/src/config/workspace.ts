@@ -19,6 +19,7 @@ import { cargoDetector } from "../inference/detectors/cargo";
 import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
+import type { Detector } from "../inference/types";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
@@ -224,43 +225,89 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
  * `project.json`-only directories (see `./cargo-projects`). The second
  * group is returned separately so callers know those have no package.json.
  */
+interface NonJsOptions {
+    gradleProjects: boolean;
+    mavenProjects: boolean;
+    pythonProjects: boolean;
+}
+
+/**
+ * The non-JS ecosystems vis discovers as task projects. Discovery runs in this
+ * order, and each one claims the directories it returns, so a later ecosystem
+ * never sees a directory an earlier one kept. A directory's ecosystem is the one
+ * whose resolver returned it.
+ */
+interface NonJsEcosystem {
+    detector: Detector;
+    enabled: (options: NonJsOptions) => boolean;
+    id: "cargo" | "gradle" | "maven" | "python";
+    /** The project name the manifest declares, or undefined to fall back to the directory name. */
+    readName: (projectRoot: string) => string | undefined;
+    resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
+}
+
+const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
+    {
+        detector: cargoDetector,
+        enabled: () => true,
+        id: "cargo",
+        readName: readCargoPackageName,
+        resolve: (workspaceRoot, candidates, claimed) => resolveCargoProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        detector: pythonDetector,
+        enabled: (options) => options.pythonProjects,
+        id: "python",
+        readName: readPythonProjectName,
+        resolve: (workspaceRoot, candidates, claimed) => resolvePythonProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        detector: mavenDetector,
+        enabled: (options) => options.mavenProjects,
+        id: "maven",
+        readName: readMavenProjectArtifact,
+        resolve: (workspaceRoot, candidates, claimed) => resolveMavenProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        // Gradle modules come from settings.gradle(.kts), not the workspace patterns, so
+        // the candidates are not used; the name falls back to the directory.
+        detector: gradleDetector,
+        enabled: (options) => options.gradleProjects,
+        id: "gradle",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveGradleProjectDirectories(workspaceRoot, claimed),
+    },
+];
+
+const NON_JS_DETECTORS: ReadonlySet<Detector> = new Set(NON_JS_ECOSYSTEMS.map((ecosystem) => ecosystem.detector));
+
 const resolveProjectDirectories = (
     workspaceRoot: string,
     patterns: string[],
-    options: { gradleProjects: boolean; mavenProjects: boolean; pythonProjects: boolean },
-): { directories: string[]; nonJsDirectories: Set<string> } => {
+    options: NonJsOptions,
+): { directories: string[]; nonJsEcosystems: Map<string, NonJsEcosystem> } => {
     const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
     const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
     const packageSet = new Set(packageDirectories);
-    const cargoDirectories = resolveCargoProjectDirectories(
-        workspaceRoot,
-        candidates.filter((directory) => !packageSet.has(directory)),
-        packageDirectories,
-    );
-    // Python and Maven projects are tasks only when `python.discover` / `maven.discover`
-    // is set, so a repo with a pyproject.toml or pom.xml sees no new targets by default.
-    const pythonDirectories = options.pythonProjects
-        ? resolvePythonProjectDirectories(
-            workspaceRoot,
-            candidates.filter((directory) => !packageSet.has(directory)),
-            [...packageDirectories, ...cargoDirectories],
-        )
-        : [];
-    const mavenDirectories = options.mavenProjects
-        ? resolveMavenProjectDirectories(
-            workspaceRoot,
-            candidates.filter((directory) => !packageSet.has(directory)),
-            [...packageDirectories, ...cargoDirectories, ...pythonDirectories],
-        )
-        : [];
-    // Gradle modules come from settings.gradle(.kts), not the workspace patterns, so they
-    // are read even when their directory is not a pattern match.
-    const gradleDirectories = options.gradleProjects
-        ? resolveGradleProjectDirectories(workspaceRoot, [...packageDirectories, ...cargoDirectories, ...pythonDirectories, ...mavenDirectories])
-        : [];
-    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories, ...mavenDirectories, ...gradleDirectories];
+    const nonPackageCandidates = candidates.filter((directory) => !packageSet.has(directory));
+    const nonJsEcosystems = new Map<string, NonJsEcosystem>();
+    let claimed = packageDirectories;
 
-    return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
+    for (const ecosystem of NON_JS_ECOSYSTEMS) {
+        if (!ecosystem.enabled(options)) {
+            continue;
+        }
+
+        const directories = ecosystem.resolve(workspaceRoot, nonPackageCandidates, claimed);
+
+        for (const directory of directories) {
+            nonJsEcosystems.set(directory, ecosystem);
+        }
+
+        claimed = [...claimed, ...directories];
+    }
+
+    return { directories: [...packageDirectories, ...nonJsEcosystems.keys()], nonJsEcosystems };
 };
 
 /**
@@ -904,11 +951,9 @@ const resolveProjectName = (
     projectDirectory: string,
     pkg: PackageJson | undefined,
     projectJson: ProjectJson | undefined,
+    ecosystem: NonJsEcosystem | undefined,
 ): string | undefined =>
-    projectJson?.name
-    ?? (pkg
-        ? pkg.name
-        : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? readPythonProjectName(join(workspaceRoot, projectDirectory)) ?? readMavenProjectArtifact(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
+    projectJson?.name ?? (pkg ? pkg.name : (ecosystem?.readName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
 
 /**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
@@ -949,14 +994,15 @@ const discoverWorkspace = (
         throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
         gradleProjects: config.gradle?.discover === true,
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
     });
 
     for (const projectDirectory of projectDirectories) {
-        const isNonJs = nonJsDirectories.has(projectDirectory);
+        const nonJs = nonJsEcosystems.get(projectDirectory);
+        const isNonJs = nonJs !== undefined;
         const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
 
         if (!pkg && !isNonJs) {
@@ -964,7 +1010,7 @@ const discoverWorkspace = (
         }
 
         const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
-        const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson);
+        const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson, nonJs);
 
         if (!projectName) {
             continue;
@@ -1019,24 +1065,13 @@ const discoverWorkspace = (
         // detector alone, so a JS package's nested or root Cargo.toml never
         // infers cargo targets. `project.json`-only projects get none.
         const projectRoot = join(workspaceRoot, projectDirectory);
-        const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
-        const isPython = isNonJs && !isCrate && readPythonProjectName(projectRoot) !== undefined;
-        const isMaven = isNonJs && !isCrate && !isPython && readMavenProjectArtifact(projectRoot) !== undefined;
-        // Whatever non-JS directory is left after the Cargo, Python and Maven checks is a Gradle module.
-        const isGradle = isNonJs && !isCrate && !isPython && !isMaven;
-        const detectorEnabled = pkg || isCrate || isPython || isMaven || isGradle ? resolveInferTargetOption(config.inferTargets) : undefined;
+        const detectorEnabled = pkg || nonJs ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
-            // A Cargo or Python project gets only its own detector, and a JS
-            // package never gets either, so a stray pyproject.toml or Cargo.toml
-            // in a JS package cannot infer targets for it.
-            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : isMaven ? mavenDetector : isGradle ? gradleDetector : undefined;
+            // A non-JS project gets only its own detector, and a JS package never gets
+            // one, so a stray Cargo.toml or pom.xml in a JS package cannot infer targets for it.
             const enabledDetectors = BUILT_IN_DETECTORS.filter(
-                (detector) =>
-                    (ownDetector === undefined
-                        ? detector !== cargoDetector && detector !== pythonDetector && detector !== mavenDetector && detector !== gradleDetector
-                        : detector === ownDetector)
-                    && detectorEnabled(detector.name),
+                (detector) => (nonJs === undefined ? !NON_JS_DETECTORS.has(detector) : detector === nonJs.detector) && detectorEnabled(detector.name),
             );
             const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
 
@@ -1285,7 +1320,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
 
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
         gradleProjects: true,
         mavenProjects: true,
         pythonProjects: true,
@@ -1294,10 +1329,11 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
 
     await Promise.all(
         projectDirectories.map(async (projectDirectory) => {
-            const isNonJs = nonJsDirectories.has(projectDirectory);
+            const nonJs = nonJsEcosystems.get(projectDirectory);
+            const isNonJs = nonJs !== undefined;
             const pkg = isNonJs ? undefined : readJsonFileSafe<PackageJson>(join(workspaceRoot, projectDirectory, "package.json"));
             const projectJson = readJsonFileSafe<ProjectJson>(join(workspaceRoot, projectDirectory, "project.json"));
-            const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson);
+            const projectName = resolveProjectName(workspaceRoot, projectDirectory, pkg, projectJson, nonJs);
 
             // Match the skip semantics in discoverWorkspace so we never
             // load an overlay for a directory that won't appear in the
