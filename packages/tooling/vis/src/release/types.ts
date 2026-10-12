@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "npm";
+    ecosystem?: "cargo" | "npm" | "python";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1229,6 +1229,7 @@ export interface VisReleaseConfig {
      * package, unless a JS package already claims its manifest.
      */
     cargo?: { discover?: boolean };
+
     /** Globs that count toward "package changed" detection. */
     changedFilePatterns?: string[];
 
@@ -1247,6 +1248,7 @@ export interface VisReleaseConfig {
      * opt-in on `"github"`, and `heading` on `"default"`.
      */
     changelog?: false | string | [string, Record<string, unknown>];
+
     /** Directory holding change files. Default: `".vis/release"`. */
     changesDir?: string;
     /** Per-channel routing config (semantic-release-style). */
@@ -1282,6 +1284,7 @@ export interface VisReleaseConfig {
      * greenfield monorepo can't trip over missing tags or registry 404s.
      */
     currentVersionResolver?: "disk" | "git-tag" | "registry";
+
     /** Default `release.managed` for unconfigured packages. Default: `false`. */
     defaultManaged?: boolean;
     /** Default dep-bump rules (overridable per-package). */
@@ -1401,6 +1404,7 @@ export interface VisReleaseConfig {
      * Default `false`.
      */
     gitSignCommits?: boolean;
+
     /** Git committer identity used by CI workflows. */
     gitUser?: GitUserConfig;
 
@@ -1470,6 +1474,7 @@ export interface VisReleaseConfig {
      * becomes the only filter.
      */
     ignoreReleaseCommits?: boolean;
+
     /** Globs that override `ignore` and `private` exclusion. */
     include?: string[];
 
@@ -1500,6 +1505,7 @@ export interface VisReleaseConfig {
      * Default: `false` (one aggregate commit per wave).
      */
     oneCommitPerPackage?: boolean;
+
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
     /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
@@ -1518,6 +1524,14 @@ export interface VisReleaseConfig {
     provider?: "github" | "gitlab" | "auto";
     /** Publish-related config. */
     publish?: PublishConfig;
+
+    /**
+     * Python projects as release packages. Off by default. When on, the root
+     * `pyproject.toml` (with `[project]`) and every `[tool.uv.workspace].members`
+     * entry (minus `exclude`) is a release package. A dynamic or missing version
+     * fails the release instead of being skipped.
+     */
+    python?: { discover?: boolean };
 
     /**
      * Wrap each per-package GitHub / GitLab release body with operator-

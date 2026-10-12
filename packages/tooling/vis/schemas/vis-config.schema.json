@@ -4248,6 +4248,16 @@
                     "$ref": "#/$defs/PublishConfig",
                     "description": "Publish-related config."
                 },
+                "python": {
+                    "type": "object",
+                    "properties": {
+                        "discover": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Python projects as release packages. Off by default. When on, the root `pyproject.toml` (with `[project]`) and every `[tool.uv.workspace].members` entry (minus `exclude`) is a release package. A dynamic or missing version fails the release instead of being skipped."
+                },
                 "releaseNoteTemplate": {
                     "type": "object",
                     "properties": {

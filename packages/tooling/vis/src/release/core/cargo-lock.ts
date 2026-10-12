@@ -98,7 +98,13 @@ export const canonicalPath = (p: string): string => {
  * first `Cargo.lock`. Undefined when none exists, which is normal for
  * library-only repos that do not commit a lockfile.
  */
-export const findCargoLock = async (manifestDir: string, workspaceRoot: string): Promise<string | undefined> => {
+export const findCargoLock = async (manifestDir: string, workspaceRoot: string): Promise<string | undefined> => findLockfile(manifestDir, workspaceRoot, "Cargo.lock");
+
+/**
+ * Walk up from `manifestDir` to `workspaceRoot` for a lockfile named `fileName`.
+ * Shared by Cargo.lock and uv.lock.
+ */
+export const findLockfile = async (manifestDir: string, workspaceRoot: string, fileName: string): Promise<string | undefined> => {
     // Canonicalize both sides. Discovered manifests are realpaths (on macOS
     // `/private/var/…`) while the workspace root may still be `/var/…`, and a
     // mismatch makes the lockfile look like it sits outside the workspace.
@@ -106,7 +112,7 @@ export const findCargoLock = async (manifestDir: string, workspaceRoot: string):
     let current = canonicalPath(manifestDir);
 
     for (;;) {
-        const candidate = join(current, "Cargo.lock");
+        const candidate = join(current, fileName);
 
         try {
             await readFile(candidate, "utf8");

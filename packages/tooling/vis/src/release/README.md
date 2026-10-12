@@ -133,6 +133,16 @@ Opt-in. With `release: { cargo: { discover: true } }` in `vis.config.ts`, every 
 - A crate that inherits `version.workspace = true` moves with its whole group. The group must release together at one version, or the release fails with `CONFIG_INVALID`.
 - Snapshot releases skip Cargo crates.
 
+## Python projects as release packages (`release.python.discover`)
+
+Opt-in. With `release: { python: { discover: true } }`, the root `pyproject.toml` (when it has `[project]`) and every `[tool.uv.workspace].members` entry (minus `exclude`) is a release package, even without a `package.json`.
+
+- A project with a dynamic or missing version fails the release with `CONFIG_INVALID`. vis only bumps a literal `[project].version`.
+- `Private :: Do Not Upload` makes a project private: it gets the `private` actions, never `python` publish.
+- A bump updates the project's version and its `uv.lock` workspace-member entry, plus the dependents' patch bumps.
+- A workspace dependency (`[tool.uv.sources] name = { workspace = true }`) whose specifier the new version falls outside is reported, not rewritten. PEP 440 rewrites need more than a line edit.
+- Snapshot releases skip non-npm packages.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).
