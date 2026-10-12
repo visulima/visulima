@@ -933,3 +933,15 @@ With inference on, a crate gets these targets from the `cargo` detector. Each ru
 Their inputs are the crate's `Cargo.toml`, `Cargo.lock`, `build.rs`, `rust-toolchain(.toml)`, `rustfmt.toml`, `clippy.toml`, `src/`, `tests/`, `benches/` and `examples/`, the same root files of the workspace (the root `Cargo.toml` carries `[workspace.dependencies]`), and the `CARGO_TARGET_DIR` and `RUSTFLAGS` environment variables. `build` caches nothing because `target/` is often gigabytes and lives at the Cargo workspace root or `CARGO_TARGET_DIR`; to cache it, declare `build` with `outputs` and `cache: true` in `project.json`. A target the crate declares itself (`project.json`, `vis.task.ts`) wins over the inferred one. JS packages never get cargo targets, including those with a napi `native/` crate or a `Cargo.toml` next to their `package.json`; they keep their `package.json` scripts. Turn the detector off with `inferTargets: { cargo: false }`.
 
 `vis release` is unchanged: crates are released through the [`cargo()` preset](/guides/release), not discovered as npm packages.
+
+#### Python projects
+
+A directory with a `pyproject.toml` that has `[project]` and no `package.json` is a task project only when you turn it on:
+
+```typescript
+export default defineConfig({
+    python: { discover: true },
+});
+```
+
+With it on, the project is named by `[project].name`, and the Python detector infers `build` (`uv build`). It does not infer `test`: vis cannot tell whether a test runner is installed or declared, so declare the test command in `project.json` or `vis.task.ts`. Python files under the project are the cache inputs, so flat and `src` layouts both invalidate correctly. Turn the detector off with `inferTargets: { python: false }`.

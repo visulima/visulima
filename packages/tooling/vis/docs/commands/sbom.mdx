@@ -72,6 +72,18 @@ Every emitted BOM passes the vendored CycloneDX 1.7 JSON Schema (`bom-1.7.schema
 
 Binary `bun.lockb` is not supported.
 
+## Rust and Python lockfiles
+
+The BOM also includes `Cargo.lock` (Rust) and `uv.lock` (Python) when they exist at the workspace root. Each locked package becomes a component with a `pkg:cargo/…` or `pkg:pypi/…` purl, and dependency edges come from the lockfile graph.
+
+What is kept follows the same rules as the npm closure:
+
+- Only packages reachable from the workspace members are included. With `--focus`, the walk starts from the focused projects that are Cargo or uv projects.
+- Dev dependencies are left out unless `--include-dev` is set. For Cargo, dev-dependencies are read from each member's `Cargo.toml`, because the lockfile merges them with normal dependencies. For uv, dependency groups are read from their own section. uv extras are always kept, like optional npm dependencies.
+- When two packages share a name and version but come from different sources, the second gets a `?source=` qualifier on its `bom-ref`, so the two stay distinct.
+
+Without a lockfile, these ecosystems add nothing to the BOM.
+
 ## Focus mode
 
 `--focus=<project>` scopes the BOM to one or more workspace projects plus their transitive closure. The focused project becomes `metadata.component`; other workspace projects outside the closure are excluded.
