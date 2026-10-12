@@ -26,6 +26,7 @@ import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
 import { DependencyGraph } from "./dep-graph";
+import type { MavenProject } from "./maven-projects";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
 import { collectContributors, expandReleaseNoteTemplate } from "./release-note-template";
@@ -52,6 +53,8 @@ export interface OrchestratorContext {
      * `bootstrap-sha` knob.
      */
     firstRelease: boolean;
+    /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
+    mavenProjects?: MavenProject[];
     packages: WorkspacePackage[];
     perPackageConfig: Map<string, PerPackageReleaseConfig>;
     plan: ReleasePlan;
@@ -202,7 +205,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     // Rust code see no change by default. A crate that a JS package already
     // releases (versionFiles / cargo() / cargoTomlPath) is claimed by that
     // package and not discovered a second time.
-    if (config.cargo?.discover || config.python?.discover) {
+    let mavenProjects: MavenProject[] = [];
+
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -259,6 +264,34 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...projects];
+        }
+
+        if (config.maven?.discover) {
+            const { discoverMavenProjects } = await import("./maven-projects");
+            // A module a JS package releases through its pom (`versionActions: "maven"`,
+            // `pomPath`, or an `extraFiles` rule on a pom.xml) is that package's, not ours.
+            // Its own children are still discovered.
+            const claimedPomDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+                const pomPaths = [
+                    ...(perPkg.versionActions === "maven" || perPkg.pomPath !== undefined ? [perPkg.pomPath ?? "pom.xml"] : []),
+                    ...(perPkg.extraFiles ?? []).map((rule) => rule.path).filter((path) => path.endsWith("pom.xml")),
+                ];
+
+                for (const pomPath of pomPaths) {
+                    claimedPomDirs.add(dirname(resolve(pkg.dir, pomPath)));
+                }
+            }
+
+            mavenProjects = await discoverMavenProjects({ claimedDirs: claimedPomDirs, cwd });
+
+            for (const project of mavenProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "maven", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...mavenProjects.map((project) => project.package)];
         }
     }
 
@@ -459,6 +492,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         cwd,
         depGraph,
         firstRelease,
+        mavenProjects,
         packages,
         perPackageConfig,
         plan,
@@ -821,9 +855,9 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
         const planReleases = context.plan.releases.flatMap((release) => {
             const pkg = context.depGraph.getPackage(release.name);
 
-            // Python projects have their own plan (planPythonWorkspace); a uv.lock
-            // is not a Cargo.lock, so they must not reach the Cargo pass.
-            if (!pkg || pkg.ecosystem === "python") {
+            // Python projects and Maven modules have their own plans (planPythonWorkspace,
+            // planMavenWorkspace); a uv.lock is not a Cargo.lock and a pom is not one either.
+            if (!pkg || pkg.ecosystem === "python" || pkg.ecosystem === "maven") {
                 return [];
             }
 
@@ -892,6 +926,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             }
 
             extraFileWarnings.push(...python.warnings);
+        }
+
+        const mavenReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "maven" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (mavenReleases.length > 0) {
+            const { planMavenWorkspace } = await import("./maven-plan");
+            const mavenTouched = await planMavenWorkspace({ pending, projects: context.mavenProjects ?? [], releases: mavenReleases });
+
+            for (const path of mavenTouched) {
+                touched.add(path);
+            }
         }
 
         for (const path of touched) {
