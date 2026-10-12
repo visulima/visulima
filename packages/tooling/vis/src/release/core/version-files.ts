@@ -55,11 +55,16 @@ const CARGO_TABLE_HEADER = /^\s*\[\[?\s*([^\]]+?)\s*\]\]?\s*(?:#.*)?$/;
 const CARGO_VERSION_LINE = /^(\s*version\s*=\s*)(["'])[^"']*\2/;
 
 /**
- * Rewrite every literal `version` under `[package]` / `[workspace.package]`.
- * Dependency tables are never touched: `serde = { version = "1" }` is a
- * requirement on another crate, not this crate's version.
+ * Rewrite every literal `version` under `[package]` / `[workspace.package]`
+ * (or only the tables passed in). Dependency tables are never touched:
+ * `serde = { version = "1" }` is a requirement on another crate, not this
+ * crate's version.
  */
-export const rewriteCargoVersion = (raw: string, newVersion: string): { content?: string; found: boolean } => {
+export const rewriteCargoVersion = (
+    raw: string,
+    newVersion: string,
+    tables: ReadonlySet<string> = CARGO_VERSION_TABLES,
+): { content?: string; found: boolean } => {
     const lines = raw.split("\n");
     let table = "";
     let found = false;
@@ -74,7 +79,7 @@ export const rewriteCargoVersion = (raw: string, newVersion: string): { content?
             continue;
         }
 
-        if (!CARGO_VERSION_TABLES.has(table)) {
+        if (!tables.has(table)) {
             continue;
         }
 

@@ -14,6 +14,7 @@
  */
 
 import { unlink, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 
 import semver from "semver";
 
@@ -193,7 +194,41 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         },
     };
 
-    const { packages, perPackageConfig } = await discoverPackages(reader, config, { cwd });
+    const discovered = await discoverPackages(reader, config, { cwd });
+    const { perPackageConfig } = discovered;
+    let { packages } = discovered;
+
+    // Cargo crates are release packages only when opted in, so repos with
+    // Rust code see no change by default. A crate that a JS package already
+    // releases (versionFiles / cargo() / cargoTomlPath) is claimed by that
+    // package and not discovered a second time.
+    if (config.cargo?.discover) {
+        const { cargoManifestPaths } = await import("./cargo-lock");
+        const claimedDirs = new Set<string>();
+
+        for (const pkg of packages) {
+            for (const manifestPath of cargoManifestPaths(pkg.dir, perPackageConfig.get(pkg.name) ?? {})) {
+                claimedDirs.add(dirname(manifestPath));
+            }
+        }
+
+        const { discoverCargoCrates } = await import("./cargo-crates");
+        const crates = await discoverCargoCrates({ claimedDirs, cwd });
+
+        for (const crate of crates) {
+            const explicit = config.packages?.[crate.name] ?? {};
+
+            // `publish = false` keeps the private actions. Forcing `cargo` there
+            // would run `cargo publish` for a crate that must never be published.
+            perPackageConfig.set(crate.name, {
+                managed: true,
+                ...(crate.private ? {} : { versionActions: "cargo" }),
+                ...explicit,
+            });
+        }
+
+        packages = [...packages, ...crates];
+    }
 
     // Reject unsupported versionFiles before planning, so a config error never
     // reaches the point where writes are produced.
@@ -702,7 +737,7 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
     {
         const { applyExtraFilesForRelease } = await import("./extra-files");
         const { applyVersionFilesForRelease } = await import("./version-files");
-        const { cargoManifestPaths, syncCargoLocks } = await import("./cargo-lock");
+        const { cargoManifestPaths } = await import("./cargo-lock");
 
         const perReleaseResults = await Promise.all(
             context.plan.releases.map(async (release) => {
@@ -733,11 +768,11 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             }),
         );
 
-        // Cargo.lock is planned once for the whole wave. Per-release lock
-        // writes each started from the original lockfile, so when two crates
-        // shared one lockfile the last write silently dropped the other bump.
-        // Every manifest edit is seeded into one map, then each lock edit
-        // reads from and writes to that map.
+        // Cargo edits are planned once for the whole wave: crate versions,
+        // dependents' requirements and Cargo.lock. Per-release steps started
+        // from the original files, so two releases in one file (or one lock)
+        // silently dropped each other's edit. Everything below reads and
+        // writes one pending map.
         const pending = new Map<string, string>();
         const touched = new Set<string>();
 
@@ -750,29 +785,49 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             extraFileWarnings.push(...result.warnings);
         }
 
-        const lockEntries = context.plan.releases.flatMap((release) => {
+        const cargoCrates = context.packages.filter((pkg) => pkg.ecosystem === "cargo");
+        const planReleases = context.plan.releases.flatMap((release) => {
             const pkg = context.depGraph.getPackage(release.name);
 
             if (!pkg) {
                 return [];
             }
 
-            return cargoManifestPaths(pkg.dir, context.perPackageConfig.get(release.name) ?? {}).map((manifestPath) => {
-                return {
-                    manifestPath,
-                    newVersion: release.newVersion,
-                };
-            });
+            const manifestPaths
+                = pkg.ecosystem === "cargo" ? [pkg.manifestPath] : cargoManifestPaths(pkg.dir, context.perPackageConfig.get(release.name) ?? {});
+
+            return manifestPaths.length > 0 || pkg.ecosystem === "cargo"
+                ? [{ ecosystem: pkg.ecosystem, manifestPaths, name: release.name, newVersion: release.newVersion }]
+                : [];
         });
 
-        if (lockEntries.length > 0) {
-            const lock = await syncCargoLocks({ entries: lockEntries, pending, workspaceRoot: context.cwd });
+        if (planReleases.length > 0) {
+            // Every Cargo manifest a JS package claims is rescanned too, so a
+            // dependent in a JS-owned crate still gets its requirement moved.
+            const scanManifests = new Set(cargoCrates.map((pkg) => pkg.manifestPath));
 
-            for (const write of lock.writes) {
-                touched.add(write.path);
+            for (const pkg of context.packages) {
+                if (pkg.ecosystem === undefined) {
+                    for (const manifestPath of cargoManifestPaths(pkg.dir, context.perPackageConfig.get(pkg.name) ?? {})) {
+                        scanManifests.add(manifestPath);
+                    }
+                }
             }
 
-            extraFileWarnings.push(...lock.warnings);
+            const { planCargoWorkspace } = await import("./cargo-plan");
+            const cargo = await planCargoWorkspace({
+                crateManifests: cargoCrates.map((pkg) => pkg.manifestPath),
+                cwd: context.cwd,
+                pending,
+                releases: planReleases,
+                scanManifests: [...scanManifests],
+            });
+
+            for (const path of cargo.touched) {
+                touched.add(path);
+            }
+
+            extraFileWarnings.push(...cargo.warnings);
         }
 
         for (const path of touched) {
