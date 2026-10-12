@@ -194,6 +194,16 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     };
 
     const { packages, perPackageConfig } = await discoverPackages(reader, config, { cwd });
+
+    // Reject unsupported versionFiles before planning, so a config error never
+    // reaches the point where writes are produced.
+    {
+        const { assertSupportedVersionFiles } = await import("./version-files");
+
+        for (const [name, perPkg] of perPackageConfig) {
+            assertSupportedVersionFiles(name, perPkg.versionFiles ?? []);
+        }
+    }
     const depGraph = new DependencyGraph(packages);
 
     // Read change files
@@ -684,14 +694,14 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             }),
     });
 
-    // Apply extra-files rules per release. Workspace + per-package
-    // configurations both flow through `applyExtraFilesForRelease`; the
-    // resulting writes are appended to the applied set so the existing
+    // Apply extra-files rules and built-in versionFiles per release. Both
+    // produce writes that are appended to the applied set so the existing
     // commit + dry-run code paths pick them up automatically.
     const extraFileWarnings: string[] = [];
 
     {
         const { applyExtraFilesForRelease } = await import("./extra-files");
+        const { applyVersionFilesForRelease } = await import("./version-files");
 
         const extraResults = await Promise.all(
             context.plan.releases.map(async (release) => {
@@ -703,12 +713,28 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
 
                 const perPkgRules = context.perPackageConfig.get(release.name)?.extraFiles ?? [];
                 const workspaceRules = context.config.publish?.extraFiles ?? [];
+                const versionFiles = context.perPackageConfig.get(release.name)?.versionFiles ?? [];
 
-                if (perPkgRules.length === 0 && workspaceRules.length === 0) {
-                    return { warnings: [], writes: [] };
+                const hasExtraRules = perPkgRules.length > 0 || workspaceRules.length > 0;
+                const extra = hasExtraRules
+                    ? await applyExtraFilesForRelease(context.cwd, pkg.dir, release.newVersion, release.name, workspaceRules, perPkgRules)
+                    : { warnings: [], writes: [] };
+
+                // Runs after extraFiles and reads its output, so a file named by
+                // both is rewritten once with both edits instead of the later write
+                // silently discarding the earlier one.
+                const versioned
+                    = versionFiles.length > 0
+                        ? await applyVersionFilesForRelease(pkg.dir, versionFiles, release.newVersion, release.name, new Map(extra.writes.map((write) => [write.path, write.content])))
+                        : { warnings: [], writes: [] };
+
+                const writesByPath = new Map<string, { content: string; path: string }>();
+
+                for (const write of [...extra.writes, ...versioned.writes]) {
+                    writesByPath.set(write.path, { content: write.content, path: write.path });
                 }
 
-                return applyExtraFilesForRelease(context.cwd, pkg.dir, release.newVersion, release.name, workspaceRules, perPkgRules);
+                return { warnings: [...extra.warnings, ...versioned.warnings], writes: [...writesByPath.values()] };
             }),
         );
 

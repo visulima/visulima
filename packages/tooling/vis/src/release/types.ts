@@ -682,6 +682,15 @@ export interface PerPackageReleaseConfig {
      * path to a custom implementation module.
      */
     versionActions?: string;
+
+    /**
+     * Non-JS version manifests to bump alongside `package.json`, relative to the
+     * package directory. Supported basenames: `Cargo.toml` (`[package]` and
+     * `[workspace.package]`) and `tauri.conf.json` (Tauri v1 `package.version`
+     * and v2 top-level `version`). Unlike `extraFiles` no regex is needed, and
+     * an unsupported basename fails the release instead of being skipped.
+     */
+    versionFiles?: string[];
 }
 
 // ── Workspace-wide config (the `release: {…}` block in vis.config.ts) ─

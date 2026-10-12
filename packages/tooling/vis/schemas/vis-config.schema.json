@@ -4797,6 +4797,13 @@
                     },
                     "description": "Per-package `extra-files` rules with paths relative to the package directory. Merged with workspace-level `release.publish.extraFiles` (per-package wins on path collision)."
                 },
+                "versionFiles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Non-JS version manifests to bump alongside `package.json`, relative to the package directory. Supported basenames: `Cargo.toml` (`[package]` and `[workspace.package]`) and `tauri.conf.json` (Tauri v1 `package.version` and v2 top-level `version`). Unlike `extraFiles` no regex is needed, and an unsupported basename fails the release instead of being skipped."
+                },
                 "jsrConfigPath": {
                     "type": "string",
                     "description": "Relative path from the package directory to the JSR manifest (`jsr.json` or `deno.json`) for the `jsr` versionActions. Set automatically by the `jsr()` preset from its `manifestPath` option. Defaults to `\"jsr.json\"`."
