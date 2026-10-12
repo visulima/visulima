@@ -102,7 +102,7 @@ autoInstallPeers: true
 
 blockExoticSubdeps: true
 
-managePackageManagerVersions: true
+pmOnFail: download
 
 catalogs:
   backend:
