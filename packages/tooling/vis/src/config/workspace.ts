@@ -220,7 +220,11 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
  * `project.json`-only directories (see `./cargo-projects`). The second
  * group is returned separately so callers know those have no package.json.
  */
-const resolveProjectDirectories = (workspaceRoot: string, patterns: string[]): { directories: string[]; nonJsDirectories: Set<string> } => {
+const resolveProjectDirectories = (
+    workspaceRoot: string,
+    patterns: string[],
+    options: { pythonProjects: boolean },
+): { directories: string[]; nonJsDirectories: Set<string> } => {
     const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
     const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
     const packageSet = new Set(packageDirectories);
@@ -229,11 +233,15 @@ const resolveProjectDirectories = (workspaceRoot: string, patterns: string[]): {
         candidates.filter((directory) => !packageSet.has(directory)),
         packageDirectories,
     );
-    const pythonDirectories = resolvePythonProjectDirectories(
-        workspaceRoot,
-        candidates.filter((directory) => !packageSet.has(directory)),
-        [...packageDirectories, ...cargoDirectories],
-    );
+    // Python projects are tasks only when `python.discover` is set, so a repo with a
+    // pyproject.toml sees no new targets by default.
+    const pythonDirectories = options.pythonProjects
+        ? resolvePythonProjectDirectories(
+            workspaceRoot,
+            candidates.filter((directory) => !packageSet.has(directory)),
+            [...packageDirectories, ...cargoDirectories],
+        )
+        : [];
     const nonJsDirectories = [...cargoDirectories, ...pythonDirectories];
 
     return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
@@ -925,7 +933,9 @@ const discoverWorkspace = (
         throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns);
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        pythonProjects: config.python?.discover === true,
+    });
 
     for (const projectDirectory of projectDirectories) {
         const isNonJs = nonJsDirectories.has(projectDirectory);
@@ -1250,7 +1260,9 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         return new Map();
     }
 
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns);
+    // Overlay files are read for every candidate. They only apply to projects that
+    // discoverWorkspace keeps, so reading them for Python directories is harmless.
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, { pythonProjects: true });
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(

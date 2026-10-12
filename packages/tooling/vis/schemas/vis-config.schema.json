@@ -846,6 +846,16 @@
             "additionalProperties": false,
             "description": "Pre-flight checks fired before `vis run` starts the orchestrator. Each check is opt-out (`false`) — defaults are sensible for the common monorepo case."
         },
+        "python": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Python projects as task projects. Off by default: a directory with a `pyproject.toml` (and `[project]`) gets build and test targets only when this is set."
+        },
         "release": {
             "$ref": "#/$defs/VisReleaseConfig",
             "description": "Configuration for the `vis release` subsystem. Controls change-file authoring, version computation, channel routing, publish behavior, and CI integration. See `packages/tooling/vis/rfc/design-release-manager.md`."

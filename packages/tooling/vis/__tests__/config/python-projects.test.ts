@@ -33,10 +33,18 @@ describe("python projects as tasks", () => {
         rmSync(root, { force: true, recursive: true });
     });
 
-    it("names a pyproject-only directory by [project].name", () => {
+    it("is not a task project unless python.discover is set", () => {
         expect.hasAssertions();
 
         const { workspace } = discoverWorkspace(root, {});
+
+        expect(workspace.projects["py-lib"]).toBeUndefined();
+    });
+
+    it("names a pyproject-only directory by [project].name", () => {
+        expect.hasAssertions();
+
+        const { workspace } = discoverWorkspace(root, { python: { discover: true } });
 
         expect(workspace.projects["py-lib"]).toBeDefined();
     });
@@ -44,7 +52,7 @@ describe("python projects as tasks", () => {
     it("infers build for the Python project and no test target", () => {
         expect.hasAssertions();
 
-        const { workspace } = discoverWorkspace(root, {});
+        const { workspace } = discoverWorkspace(root, { python: { discover: true } });
         const targets = workspace.projects["py-lib"]?.targets ?? {};
 
         expect(targets["build"]?.command).toBe("uv build");
@@ -55,7 +63,7 @@ describe("python projects as tasks", () => {
     it("never gives a JS package the Python targets", () => {
         expect.hasAssertions();
 
-        const { workspace } = discoverWorkspace(root, {});
+        const { workspace } = discoverWorkspace(root, { python: { discover: true } });
         const commands = Object.values(workspace.projects["web"]?.targets ?? {}).map((target) => target.command);
 
         expect(commands.some((command) => typeof command === "string" && command.includes("pytest"))).toBe(false);

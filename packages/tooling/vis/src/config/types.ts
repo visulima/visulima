@@ -1045,6 +1045,12 @@ export interface VisConfig {
     };
 
     /**
+     * Python projects as task projects. Off by default: a directory with a
+     * `pyproject.toml` (and `[project]`) gets build and test targets only when this is set.
+     */
+    python?: { discover?: boolean };
+
+    /**
      * Configuration for the `vis release` subsystem. Controls change-file
      * authoring, version computation, channel routing, publish behavior,
      * and CI integration. See `packages/tooling/vis/rfc/design-release-manager.md`.
