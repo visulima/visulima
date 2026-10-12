@@ -11,9 +11,12 @@
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+import zeptomatch from "zeptomatch";
+
 import { VisReleaseError } from "../errors";
 import type { PackageManifest, WorkspacePackage } from "../types";
-import { expandMember } from "./member-glob";
+import { canonicalPath } from "./cargo-lock";
+import { expandMember, isWithinAny } from "./member-glob";
 
 interface PyDoc {
     project?: { classifiers?: unknown; dependencies?: unknown; dynamic?: unknown; name?: unknown; version?: unknown };
@@ -102,7 +105,7 @@ export const discoverPythonProjects = async (options: { claimedDirs: ReadonlySet
         for (const dir of await expandMember(cwd, pattern)) {
             const rel = dir.slice(cwd.length + 1).split("\\").join("/");
 
-            if (excludes.includes(rel)) {
+            if (excludes.some((exclude) => zeptomatch(exclude, rel))) {
                 continue;
             }
 
@@ -112,8 +115,11 @@ export const discoverPythonProjects = async (options: { claimedDirs: ReadonlySet
 
     const projects: ParsedProject[] = [];
 
+    // Canonical on both sides, and a project nested in a claimed one is claimed too.
+    const claimed = new Set([...claimedDirs].map((dir) => canonicalPath(dir)));
+
     for (const dir of [...dirs].sort()) {
-        if (claimedDirs.has(dir)) {
+        if (isWithinAny(canonicalPath(dir), claimed)) {
             continue;
         }
 

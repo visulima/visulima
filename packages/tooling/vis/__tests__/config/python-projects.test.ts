@@ -41,15 +41,15 @@ describe("python projects as tasks", () => {
         expect(workspace.projects["py-lib"]).toBeDefined();
     });
 
-    it("infers build and test for the Python project", () => {
+    it("infers build for the Python project and no test target", () => {
         expect.hasAssertions();
 
         const { workspace } = discoverWorkspace(root, {});
         const targets = workspace.projects["py-lib"]?.targets ?? {};
 
         expect(targets["build"]?.command).toBe("uv build");
-        expect(targets["test"]?.command).toBe("uv run pytest");
-        expect(targets["test"]?.cache).toBe(true);
+        // Without a way to tell whether a test runner is available, no test target is inferred.
+        expect(targets["test"]).toBeUndefined();
     });
 
     it("never gives a JS package the Python targets", () => {

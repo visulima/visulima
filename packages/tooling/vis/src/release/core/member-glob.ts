@@ -3,7 +3,7 @@
  * `[tool.uv.workspace].members`) into directories under `cwd`.
  */
 import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 
 import zeptomatch from "zeptomatch";
 
@@ -48,4 +48,19 @@ const expandMember = async (cwd: string, pattern: string): Promise<string[]> => 
     }
 
     return current;
+};
+
+/**
+ * Whether `dir` is one of `roots` or lies inside one of them. A fixture or
+ * nested project below a claimed package belongs to that package, so it is
+ * never a second release or task project.
+ */
+export const isWithinAny = (dir: string, roots: ReadonlySet<string>): boolean => {
+    for (const root of roots) {
+        if (dir === root || dir.startsWith(`${root}${sep}`)) {
+            return true;
+        }
+    }
+
+    return false;
 };

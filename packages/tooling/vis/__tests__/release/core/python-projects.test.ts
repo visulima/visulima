@@ -63,6 +63,17 @@ describe("python-projects: discoverPythonProjects", () => {
         expect(projects.find((project) => project.name === "app")?.manifest.dependencies).toStrictEqual({ "core-lib": ">=1.0" });
     });
 
+    it("honours exclude patterns as globs", async () => {
+        expect.hasAssertions();
+
+        write("pyproject.toml", "[tool.uv.workspace]\nmembers = [\"packages/*\"]\nexclude = [\"packages/co*\"]\n");
+        write("packages/core/pyproject.toml", "[project]\nname = \"core-lib\"\ndynamic = [\"version\"]\n");
+
+        const projects = await discoverPythonProjects({ claimedDirs: new Set(), cwd });
+
+        expect(projects.map((project) => project.name)).toStrictEqual(["app"]);
+    });
+
     it("refuses a dynamic version", async () => {
         expect.hasAssertions();
 

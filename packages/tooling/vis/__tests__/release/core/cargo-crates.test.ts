@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverCargoCrates } from "../../../src/release/core/cargo-crates";
+import { discoverCargoCrates, findInheritedWorkspaceVersion } from "../../../src/release/core/cargo-crates";
 
 /**
  * Crate discovery from a root `[workspace].members`. The rules under test:
@@ -61,6 +61,12 @@ describe("cargo-crates: discoverCargoCrates", () => {
         const b = crates.find((crate) => crate.name === "b");
 
         expect(b?.manifest.dependencies).toStrictEqual({ a: "1.0.0" });
+    });
+
+    it("resolves an inherited version from the nearest ancestor workspace root", async () => {
+        expect.hasAssertions();
+
+        await expect(findInheritedWorkspaceVersion(join(cwd, "crates", "a", "Cargo.toml"))).resolves.toBe("1.0.0");
     });
 
     it("returns nothing without a root Cargo.toml", async () => {

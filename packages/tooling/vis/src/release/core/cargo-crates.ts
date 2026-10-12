@@ -9,13 +9,14 @@
  */
 
 import { readFile } from "node:fs/promises";
-import { join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 
 import zeptomatch from "zeptomatch";
 
 import { VisReleaseError } from "../errors";
 import type { PackageManifest, WorkspacePackage } from "../types";
-import { expandMember } from "./member-glob";
+import { canonicalPath } from "./cargo-lock";
+import { expandMember, isWithinAny } from "./member-glob";
 
 interface CargoSpec {
     package?: unknown;
@@ -34,6 +35,36 @@ interface CargoDoc {
         package?: { publish?: unknown; version?: unknown };
     };
 }
+
+/**
+ * The `[workspace.package].version` a `version.workspace = true` crate inherits:
+ * the nearest ancestor `Cargo.toml` that declares it, the way cargo resolves it.
+ */
+export const findInheritedWorkspaceVersion = async (manifestPath: string): Promise<string | undefined> => {
+    let current = dirname(canonicalPath(manifestPath));
+
+    for (;;) {
+        const candidate = join(current, "Cargo.toml");
+        const raw = await readOptional(candidate);
+
+        if (raw !== undefined) {
+            const doc = await parseCargoDoc(raw, candidate);
+            const version = doc.workspace?.package?.version;
+
+            if (typeof version === "string") {
+                return version;
+            }
+        }
+
+        const parent = dirname(current);
+
+        if (parent === current) {
+            return undefined;
+        }
+
+        current = parent;
+    }
+};
 
 const readOptional = async (path: string): Promise<string | undefined> => {
     try {
@@ -153,10 +184,13 @@ export const discoverCargoCrates = async (options: { claimedDirs: ReadonlySet<st
         }
     }
 
+    // Canonicalize both sides: a claimed directory can be a realpath
+    // (`/private/var/…` on macOS) while discovery joins from the raw cwd.
+    const claimed = new Set([...claimedDirs].map((dir) => canonicalPath(dir)));
     const crates: ParsedCrate[] = [];
 
     for (const dir of [...dirs].sort()) {
-        if (claimedDirs.has(dir)) {
+        if (isWithinAny(canonicalPath(dir), claimed)) {
             continue;
         }
 

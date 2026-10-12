@@ -76,6 +76,7 @@ import { dirname, join } from "node:path";
 
 import { VisReleaseError } from "../../errors";
 import type { VisReleaseConfig, WorkspacePackage } from "../../types";
+import { findInheritedWorkspaceVersion } from "../cargo-crates";
 import type { PackageManagerAdapter, PublishResult } from "../package-managers/interface";
 import { resolveAuthMode } from "./auth";
 import { safeFetchVersionMetadata } from "./fetch";
@@ -164,13 +165,10 @@ const readCargoToml = async (cargoTomlPath: string): Promise<{ name: string; ver
     if (typeof versionField === "string") {
         version = versionField;
     } else if (versionField && typeof versionField === "object" && versionField.workspace === true) {
-        // `version.workspace = true` → look up the inherited value in
-        // [workspace.package].version of the SAME file (workspace root)
-        // or — when we're a member crate — the operator points us at
-        // the right Cargo.toml. We don't traverse the directory tree
-        // looking for a workspace root; that's the operator's job
-        // (`crateDir` should point at the leaf with [package]).
-        version = parsed.workspace?.package?.version;
+        // `version.workspace = true` inherits [workspace.package].version from the
+        // nearest ancestor Cargo.toml, as cargo itself resolves it. A workspace root
+        // that is this same file is found by the same walk.
+        version = (await findInheritedWorkspaceVersion(cargoTomlPath)) ?? parsed.workspace?.package?.version;
     }
 
     if (typeof version !== "string" || version.length === 0) {

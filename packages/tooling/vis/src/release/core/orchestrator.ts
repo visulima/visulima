@@ -14,7 +14,7 @@
  */
 
 import { unlink, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 
 import semver from "semver";
 
@@ -233,7 +233,20 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
         if (config.python?.discover) {
             const { discoverPythonProjects } = await import("./python-projects");
-            const projects = await discoverPythonProjects({ claimedDirs, cwd });
+
+            // A JS package that releases a Python project (the pyproject() preset or
+            // versionActions "python") claims that project's directory.
+            const pythonClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "python" || perPkg.pythonProjectDir !== undefined) {
+                    pythonClaimedDirs.add(resolve(pkg.dir, perPkg.pythonProjectDir ?? "."));
+                }
+            }
+
+            const projects = await discoverPythonProjects({ claimedDirs: pythonClaimedDirs, cwd });
 
             for (const project of projects) {
                 const explicit = config.packages?.[project.name] ?? {};
@@ -826,6 +839,12 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             // Every Cargo manifest a JS package claims is rescanned too, so a
             // dependent in a JS-owned crate still gets its requirement moved.
             const scanManifests = new Set(cargoCrates.map((pkg) => pkg.manifestPath));
+
+            // A virtual root has no [package], so discovery never returns it, but its
+            // [workspace.dependencies] requirements must still follow a bumped crate.
+            if (cargoCrates.length > 0) {
+                scanManifests.add(resolve(context.cwd, "Cargo.toml"));
+            }
 
             for (const pkg of context.packages) {
                 if (pkg.ecosystem === undefined) {

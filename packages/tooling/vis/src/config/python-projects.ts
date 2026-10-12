@@ -33,6 +33,8 @@ export const readPythonProjectName = (directory: string): string | undefined => 
     return typeof name === "string" && name !== "" ? name : undefined;
 };
 
+const isWithinDirectory = (directory: string, root: string): boolean => directory === root || directory.startsWith(`${root}/`);
+
 /**
  * Workspace-relative Python project directories among `candidates`, skipping
  * anything already claimed (a JS package or a Cargo project).
@@ -41,7 +43,9 @@ export const resolvePythonProjectDirectories = (workspaceRoot: string, candidate
     const accepted: string[] = [];
 
     for (const directory of [...new Set(candidates)].toSorted()) {
-        if (claimed.includes(directory) || accepted.includes(directory)) {
+        // A project nested inside a claimed one (a fixture under a JS package) is
+        // part of that package, not a second project.
+        if (claimed.some((root) => isWithinDirectory(directory, root)) || accepted.includes(directory)) {
             continue;
         }
 
