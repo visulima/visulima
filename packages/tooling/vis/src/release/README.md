@@ -143,6 +143,17 @@ Opt-in. With `release: { python: { discover: true } }`, the root `pyproject.toml
 - A workspace dependency (`[tool.uv.sources] name = { workspace = true }`) whose specifier the new version falls outside is reported, not rewritten. PEP 440 rewrites need more than a line edit.
 - Snapshot releases skip non-npm packages.
 
+## Maven modules as release packages (`release.maven.discover`)
+
+Opt-in. With `release: { maven: { discover: true } }`, the root `pom.xml` and every module reachable through `<modules>` (recursively) is a release package named `groupId:artifactId`, even without a `package.json`.
+
+- A module's version comes from its own literal `<version>`, its parent's literal (inherited), or a `${property}` resolved from `<properties>` in it or an ancestor. Anything else fails the release with `CONFIG_INVALID`.
+- Modules that share an owner (a parent's literal, or one property) must release together at one version. A partial release fails with `CONFIG_INVALID` naming the modules left out.
+- A `<dependency>` on a released module whose `<version>` is a literal is rewritten to the new version. Maven literals are exact pins, so this is not a range check the way Cargo's requirements are. `${property}` versions are left alone.
+- Dependencies in `<dependencyManagement>` and `<build>` are not graph edges.
+- A module a JS package already releases (`pomPath`, `pomXml()`, or an `extraFiles` rule on a `pom.xml`) is not discovered again.
+- Maven has no lockfile, so nothing else is written. Publishing is still per-module through `versionActions: "maven"`, which is not implemented yet (see `docs/guides/release-maven.mdx`).
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

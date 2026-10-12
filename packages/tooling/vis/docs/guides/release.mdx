@@ -494,6 +494,14 @@ Set `release.python.discover: true` in `vis.config.ts` to release the root `pypr
 
 A bump updates each project's `[project].version`, its `uv.lock` entry, and the dependents' patch bumps. A project with a dynamic version fails the release. A workspace dependency whose specifier the new version falls outside is reported, so you can widen it.
 
+### Maven modules as release packages
+
+Set `release.maven.discover: true` in `vis.config.ts` to release the root `pom.xml` and every module in its `<modules>` tree, named `groupId:artifactId`, without a `package.json`. It is off by default.
+
+A bump updates the module's version (or its parent's or property's, see below), and rewrites the literal `<version>` of every dependency on a released module. The dependents get their patch bumps as usual. Modules that inherit from one parent, or share one `${property}`, must release together at one version. A module with no resolvable version fails the release.
+
+Git tags replace the `:` in the name with `/` (`io.visulima/core@1.2.0`), because git does not allow `:` in tag names.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:
