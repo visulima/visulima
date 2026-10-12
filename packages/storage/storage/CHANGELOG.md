@@ -1,3 +1,9 @@
+## @visulima/storage [2.0.38](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.37...@visulima/storage@2.0.38) (2026-10-12)
+
+### Bug Fixes
+
+* **storage:** retry metafile delete while windows holds it open ([#946](https://github.com/visulima/visulima/issues/946)) ([04ed038](https://github.com/visulima/visulima/commit/04ed0380265ac9b32e0cf5fb385cbc89567f11bc))
+
 ## @visulima/storage [2.0.37](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.36...@visulima/storage@2.0.37) (2026-10-09)
 
 ### Bug Fixes
