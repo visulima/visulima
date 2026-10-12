@@ -520,6 +520,12 @@ export interface VisConfig {
     };
 
     /**
+     * Go modules (the `use` entries of `go.work`) as task projects. Off by default.
+     * The root module is not a task project.
+     */
+    go?: { discover?: boolean };
+
+    /**
      * Gradle projects as task projects. Off by default: a `settings.gradle(.kts)`
      * with a build script for each module gets build and test targets only when this is set.
      */

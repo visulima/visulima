@@ -165,6 +165,18 @@ Opt-in. With `release: { gradle: { discover: true } }`, every module listed in `
 - Publishing runs `<root>/gradlew :<path>:publish` through the argv runner, with no shell, POSIX only. A version the Maven metadata already lists is skipped first (`mavenMetadataUrl` overrides the URL, `""` disables the check).
 - Gradle has no lockfile vis maintains, so nothing else is written.
 
+## Go modules as release packages (`release.go.discover`)
+
+Opt-in. With `release: { go: { discover: true } }`, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. Version source: the highest git tag for the module. Full notes in `docs/guides/release.mdx`.
+
+- Tags are `<dir>/vX.Y.Z` (the root uses `vX.Y.Z`), without a trailing `/vN` segment, relative to the git toplevel. Each package sets its own `releaseTagPattern` and `currentVersionResolver: "disk"`.
+- No baseline tag means `0.0.0`. A `/vN` module with no tag for its major fails the release with `CONFIG_INVALID`.
+- The plan refuses a major that the module path cannot carry: a major 2+ needs `/vN`, and a `/vN` module releases only at major N (`planGoWorkspace`, before any tag).
+- The publish step refuses an existing local tag by skipping the module (`alreadyPublished`). It never creates a tag itself; the orchestrator creates and pushes it after every publish succeeds. The proxy is not queried.
+- Rejects `gopkg.in/` paths, uppercase module paths, `use` entries outside the workspace or without a `go.mod`, and duplicate module paths.
+- POSIX only: publish refuses on win32 with `CONFIG_INVALID` after the dry run.
+- Go has no lockfile vis writes and `go.mod` is never rewritten. The `require` lines between modules are not moved.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

@@ -26,6 +26,7 @@ import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
 import { DependencyGraph } from "./dep-graph";
+import type { GoProject } from "./go-projects";
 import type { GradleProject } from "./gradle-projects";
 import type { MavenProject } from "./maven-projects";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
@@ -54,6 +55,8 @@ export interface OrchestratorContext {
      * `bootstrap-sha` knob.
      */
     firstRelease: boolean;
+    /** Go modules discovered under `release.go.discover` (empty otherwise); the Go plan checks their module paths against the releases. */
+    goProjects?: GoProject[];
     /** Gradle modules discovered under `release.gradle.discover` (empty otherwise); the Gradle plan reads their owners from here. */
     gradleProjects?: GradleProject[];
     /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
@@ -212,7 +215,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
     let gradleProjects: GradleProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover) {
+    let goProjects: GoProject[] = [];
+
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -326,6 +331,26 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...gradleProjects.map((project) => project.package)];
+        }
+
+        if (config.go?.discover) {
+            const { discoverGoProjects } = await import("./go-projects");
+            // A JS package that releases a Go module (versionActions "go") claims its directory.
+            const goClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                if (perPackageConfig.get(pkg.name)?.versionActions === "go") {
+                    goClaimedDirs.add(resolve(pkg.dir));
+                }
+            }
+
+            goProjects = await discoverGoProjects({ claimedDirs: goClaimedDirs, cwd });
+
+            for (const project of goProjects) {
+                perPackageConfig.set(project.name, { ...project.perPackage, ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...goProjects.map((project) => project.package)];
         }
 
         // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
@@ -545,6 +570,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         cwd,
         depGraph,
         firstRelease,
+        goProjects,
         gradleProjects,
         mavenProjects,
         packages,
@@ -995,6 +1021,19 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             for (const path of mavenTouched) {
                 touched.add(path);
             }
+        }
+
+        const goReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "go" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (goReleases.length > 0) {
+            // Go has no version file to write. The plan only refuses a major that its module path cannot carry.
+            const { planGoWorkspace } = await import("./go-plan");
+
+            planGoWorkspace({ projects: context.goProjects ?? [], releases: goReleases });
         }
 
         const gradleReleases = context.plan.releases.flatMap((release) => {

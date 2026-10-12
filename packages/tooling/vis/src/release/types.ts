@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "gradle" | "maven" | "npm" | "python";
+    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1407,6 +1407,14 @@ export interface VisReleaseConfig {
 
     /** Git committer identity used by CI workflows. */
     gitUser?: GitUserConfig;
+
+    /**
+     * Go modules as release packages. Off by default. When on, every `use` entry of
+     * `go.work` (or the root `go.mod` without one) is a release package named by its
+     * module path. The version is the highest git tag for the module, and the
+     * release creates the next tag. A `/vN` major needs a matching module path.
+     */
+    go?: { discover?: boolean };
 
     /**
      * Gradle modules as release packages. Off by default. When on, the root build

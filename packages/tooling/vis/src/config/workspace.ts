@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
@@ -32,6 +33,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
@@ -226,6 +228,7 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
  * group is returned separately so callers know those have no package.json.
  */
 interface NonJsOptions {
+    goProjects: boolean;
     gradleProjects: boolean;
     mavenProjects: boolean;
     pythonProjects: boolean;
@@ -240,7 +243,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "gradle" | "maven" | "python";
+    id: "cargo" | "go" | "gradle" | "maven" | "python";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -267,6 +270,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "maven",
         readName: readMavenProjectArtifact,
         resolve: (workspaceRoot, candidates, claimed) => resolveMavenProjectDirectories(workspaceRoot, candidates, claimed),
+    },
+    {
+        // Go modules come from the `use` entries of go.work, not the workspace patterns.
+        detector: goDetector,
+        enabled: (options) => options.goProjects,
+        id: "go",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveGoProjectDirectories(workspaceRoot, claimed),
     },
     {
         // Gradle modules come from settings.gradle(.kts), not the workspace patterns, so
@@ -995,6 +1006,7 @@ const discoverWorkspace = (
     }
 
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        goProjects: config.go?.discover === true,
         gradleProjects: config.gradle?.discover === true,
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
@@ -1321,6 +1333,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        goProjects: true,
         gradleProjects: true,
         mavenProjects: true,
         pythonProjects: true,

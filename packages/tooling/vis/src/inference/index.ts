@@ -17,6 +17,7 @@ import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
 import { eslintDetector } from "./detectors/eslint";
 import { gatsbyDetector } from "./detectors/gatsby";
+import { goDetector } from "./detectors/go";
 import { gradleDetector } from "./detectors/gradle";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
 import { jestDetector } from "./detectors/jest";
@@ -114,6 +115,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     cargoDetector,
     pythonDetector,
     mavenDetector,
+    goDetector,
     gradleDetector,
 ];
 

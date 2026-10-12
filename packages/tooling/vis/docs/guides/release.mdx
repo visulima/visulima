@@ -514,6 +514,24 @@ Publishing runs `./gradlew :<path>:publish`, so the module needs a publishing pl
 
 vis refuses what it cannot read to a version: a version set from a property or a function, a version in `gradle.properties`, a `projectDir` remap, an `archivesName` rename, two modules with the same coordinates, or a group that is not declared.
 
+### Go modules as release packages
+
+Set `release.go.discover: true` in `vis.config.ts` to release the Go modules in `go.work` (each `use` entry), or the root `go.mod` when there is no `go.work`. It is off by default. Each module is named by its module path, such as `github.com/acme/tool`, and needs no `package.json`.
+
+Go has no version field, so the version is the highest git tag for the module. A module with no tag yet starts at `0.0.0`. A module in a subdirectory is tagged `<dir>/vX.Y.Z`, and the root module `vX.Y.Z`, as go.dev describes in its module reference. The release writes no file: it creates and pushes that tag. Each module gets its own `releaseTagPattern`, so no `name@version` tag is also created.
+
+A release at major 2 or higher needs a `/vN` module path (for example `github.com/acme/tool/v2`). A `/vN` module releases only at major N. vis refuses a mismatch with `CONFIG_INVALID` before anything is tagged. A `/vN` module with no tag for its major is also refused, so create that first tag by hand.
+
+The publish step checks that the tag is free locally. If it exists, the module is skipped. Go module proxies are not queried, and no registry is contacted. `gopkg.in/` paths and module paths with uppercase letters are refused.
+
+Two settings apply to the whole workspace, not to Go alone. `floatingMajorTag` creates a floating tag for each Go module as well, and a `syncGitTag` group that includes a Go module makes one shared tag. Leave both off for Go modules. The module's own `require` lines are not rewritten, so dependents keep the old version until someone updates them.
+
+Tags are created on POSIX only. On Windows, publish fails with `CONFIG_INVALID` after the dry run, because that path is not tested there.
+
+With `--no-tag`, a Go release creates no tag, so nothing is released for that module.
+
+Tasks for these modules are a separate opt-in, `go.discover: true` in `vis.config.ts`. They run `go build ./...`, `go test ./...`, `go vet ./...`, and `gofmt -d .` as `format:check`, which exits 1 when a file needs formatting. `gofmt -d .` also walks `vendor/` if the module has one. The root module is not a task project, so a single-module repository gets no Go tasks.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:
