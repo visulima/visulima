@@ -1,6 +1,12 @@
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { nextRequirement, rewriteCargoRequirements } from "../../../src/release/core/cargo-plan";
+
+// Built with resolve() so the keys match what the code computes on every platform.
+const WS_A = resolve("ws", "a");
+const WS_B = resolve("ws", "b");
 
 /**
  * Cargo requirement semantics. A bare `"0.1.0"` means `^0.1.0`, so it is not
@@ -31,13 +37,13 @@ describe("cargo-plan: nextRequirement", () => {
 });
 
 describe("cargo-plan: rewriteCargoRequirements", () => {
-    const dirs = new Map([["/ws/a", "0.2.0"]]);
+    const dirs = new Map([[WS_A, "0.2.0"]]);
 
     it("rewrites an inline path dependency and leaves the rest of the line alone", () => {
         expect.hasAssertions();
 
         const raw = "[dependencies]\na = { path = \"../a\", version = \"0.1.0\", features = [\"x\"] }\nserde = \"1\"\n";
-        const result = rewriteCargoRequirements(raw, "/ws/b", dirs);
+        const result = rewriteCargoRequirements(raw, WS_B, dirs);
 
         expect(result.content).toBe("[dependencies]\na = { path = \"../a\", version = \"0.2.0\", features = [\"x\"] }\nserde = \"1\"\n");
         expect(result.warnings).toStrictEqual([]);
@@ -48,14 +54,14 @@ describe("cargo-plan: rewriteCargoRequirements", () => {
 
         const raw = "[dependencies.a]\npath = \"../a\"\nversion = \"0.1.0\"\n";
 
-        expect(rewriteCargoRequirements(raw, "/ws/b", dirs).content).toBe("[dependencies.a]\npath = \"../a\"\nversion = \"0.2.0\"\n");
+        expect(rewriteCargoRequirements(raw, WS_B, dirs).content).toBe("[dependencies.a]\npath = \"../a\"\nversion = \"0.2.0\"\n");
     });
 
     it("rewrites [workspace.dependencies] and target-specific tables", () => {
         expect.hasAssertions();
 
         const raw = "[workspace.dependencies]\na = { path = \"../a\", version = \"0.1.0\" }\n\n[target.'cfg(unix)'.dependencies]\na = { path = \"../a\", version = \"0.1.0\" }\n";
-        const result = rewriteCargoRequirements(raw, "/ws/b", new Map([["/ws/a", "0.2.0"]]));
+        const result = rewriteCargoRequirements(raw, WS_B, new Map([[WS_A, "0.2.0"]]));
 
         expect(result.content).toBe(
             "[workspace.dependencies]\na = { path = \"../a\", version = \"0.2.0\" }\n\n[target.'cfg(unix)'.dependencies]\na = { path = \"../a\", version = \"0.2.0\" }\n",
@@ -66,7 +72,7 @@ describe("cargo-plan: rewriteCargoRequirements", () => {
         expect.hasAssertions();
 
         const raw = "[dependencies]\na = { path = \"../a\", version = \">=0.1, <0.2\" }\n";
-        const result = rewriteCargoRequirements(raw, "/ws/b", dirs);
+        const result = rewriteCargoRequirements(raw, WS_B, dirs);
 
         expect(result.content).toBeUndefined();
         expect(result.warnings).toHaveLength(1);
@@ -77,6 +83,6 @@ describe("cargo-plan: rewriteCargoRequirements", () => {
 
         const raw = "[dependencies]\nother = { path = \"../other\", version = \"0.1.0\" }\n";
 
-        expect(rewriteCargoRequirements(raw, "/ws/b", dirs).content).toBeUndefined();
+        expect(rewriteCargoRequirements(raw, WS_B, dirs).content).toBeUndefined();
     });
 });

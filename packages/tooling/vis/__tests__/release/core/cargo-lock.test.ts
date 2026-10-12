@@ -78,7 +78,7 @@ describe("cargo-lock: findCargoLock and sync", () => {
     let root: string;
 
     beforeEach(async () => {
-        root = realpathSync(await mkdtemp(join(tmpdir(), "vis-cargo-lock-")));
+        root = realpathSync.native(await mkdtemp(join(tmpdir(), "vis-cargo-lock-")));
         await mkdir(join(root, "crates", "app"), { recursive: true });
         await writeFile(join(root, "Cargo.lock"), LOCK);
         await writeFile(join(root, "crates", "app", "Cargo.toml"), "[package]\nname = \"app\"\nversion = \"0.1.0\"\n");
@@ -159,10 +159,10 @@ describe("cargo-lock: findCargoLock and sync", () => {
     it("lists the cargo manifests a package bumps", () => {
         expect.hasAssertions();
 
-        expect(cargoManifestPaths("/pkg", { cargoTomlPath: "crate/Cargo.toml", versionActions: "cargo" })).toStrictEqual(["/pkg/crate/Cargo.toml"]);
-        expect(cargoManifestPaths("/pkg", { versionFiles: ["src-tauri/Cargo.toml", "tauri.conf.json"] })).toStrictEqual([
-            "/pkg/src-tauri/Cargo.toml",
+        expect(cargoManifestPaths("pkg", { cargoTomlPath: "crate/Cargo.toml", versionActions: "cargo" })).toStrictEqual([join("pkg", "crate", "Cargo.toml")]);
+        expect(cargoManifestPaths("pkg", { versionFiles: ["src-tauri/Cargo.toml", "tauri.conf.json"] })).toStrictEqual([
+            join("pkg", "src-tauri", "Cargo.toml"),
         ]);
-        expect(cargoManifestPaths("/pkg", {})).toStrictEqual([]);
+        expect(cargoManifestPaths("pkg", {})).toStrictEqual([]);
     });
 });
