@@ -2038,6 +2038,12 @@ export interface VisConfig {
     strictEnv?: boolean;
 
     /**
+     * Swift packages (a `Package.swift` directory under the root) as task projects.
+     * Off by default. Commands are `swift build`, `swift test`, and a `swift-format lint --strict` check.
+     */
+    swift?: { discover?: boolean };
+
+    /**
      * Named bundles of target dependencies, referenceable from any task's
      * `dependsOn`. `dependsOn: [{ group: "lint" }]` expands to every entry
      * in the named group; nested groups are resolved recursively and a

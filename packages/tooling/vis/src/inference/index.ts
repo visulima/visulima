@@ -38,6 +38,7 @@ import { rolldownDetector } from "./detectors/rolldown";
 import { rollupDetector } from "./detectors/rollup";
 import { storybookDetector } from "./detectors/storybook";
 import { stylelintDetector } from "./detectors/stylelint";
+import { swiftDetector } from "./detectors/swift";
 import { tsdownDetector } from "./detectors/tsdown";
 import { tsupDetector } from "./detectors/tsup";
 import { typedocDetector } from "./detectors/typedoc";
@@ -117,6 +118,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     mavenDetector,
     goDetector,
     gradleDetector,
+    swiftDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

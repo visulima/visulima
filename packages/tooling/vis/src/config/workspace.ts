@@ -20,6 +20,7 @@ import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
+import { swiftDetector } from "../inference/detectors/swift";
 import type { Detector } from "../inference/types";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -37,6 +38,7 @@ import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
+import { readSwiftProjectName, resolveSwiftProjectDirectories } from "./swift-projects";
 import type {
     PackageJson,
     PackageJsonIndex,
@@ -232,6 +234,7 @@ interface NonJsOptions {
     gradleProjects: boolean;
     mavenProjects: boolean;
     pythonProjects: boolean;
+    swiftProjects: boolean;
 }
 
 /**
@@ -243,7 +246,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "go" | "gradle" | "maven" | "python";
+    id: "cargo" | "go" | "gradle" | "maven" | "python" | "swift";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -287,6 +290,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "gradle",
         readName: () => undefined,
         resolve: (workspaceRoot, _candidates, claimed) => resolveGradleProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Swift packages are found by their Package.swift under the root, not the workspace patterns.
+        detector: swiftDetector,
+        enabled: (options) => options.swiftProjects,
+        id: "swift",
+        readName: readSwiftProjectName,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveSwiftProjectDirectories(workspaceRoot, claimed),
     },
 ];
 
@@ -1010,6 +1021,7 @@ const discoverWorkspace = (
         gradleProjects: config.gradle?.discover === true,
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
+        swiftProjects: config.swift?.discover === true,
     });
 
     for (const projectDirectory of projectDirectories) {
@@ -1337,6 +1349,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         gradleProjects: true,
         mavenProjects: true,
         pythonProjects: true,
+        swiftProjects: true,
     });
     const result: VisTaskConfigIndex = new Map();
 

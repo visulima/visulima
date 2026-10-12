@@ -177,6 +177,15 @@ Opt-in. With `release: { go: { discover: true } }`, every `use` entry of `go.wor
 - POSIX only: publish refuses on win32 with `CONFIG_INVALID` after the dry run.
 - Go has no lockfile vis writes and `go.mod` is never rewritten. The `require` lines between modules are not moved.
 
+## Swift packages as release packages (`release.swift.discover`)
+
+Opt-in. With `release: { swift: { discover: true } }`, every directory under the root with a `Package.swift` is a release package named by its `Package(name: "…")` literal.
+
+- The name must be a plain string literal and a valid release name (lowercase, `[a-z0-9._-]`). Anything else fails the release with `CONFIG_INVALID`, and so does a duplicate name.
+- The version comes from Git tags (`currentVersionResolver: "git-tag"`). The root package uses the bare tag (`releaseTagPattern: "{version}"`), the form SwiftPM reads. A nested package keeps the workspace tag pattern, so two packages never share a bare tag. Until a tag exists the package starts from `0.0.0`.
+- A `.package(path:)` dependency on another discovered package orders the publish (`"*"`). Nothing is written to the manifest, and remote dependencies are not rewritten.
+- Publish uploads nothing: the tag step creates the tag. The published check is `git rev-parse` on the tag, so an existing tag is skipped. Publish refuses on Windows with `CONFIG_INVALID`, after the dry run.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

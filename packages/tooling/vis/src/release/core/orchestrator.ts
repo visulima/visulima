@@ -217,7 +217,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
     let goProjects: GoProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover) {
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -351,6 +351,31 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...goProjects.map((project) => project.package)];
+        }
+
+        if (config.swift?.discover) {
+            const { discoverSwiftPackages } = await import("./swift-projects");
+            // A JS package that releases a Swift package (versionActions "swift") claims its directory.
+            const swiftClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                // A JS package (and everything under it) belongs to that package, except the workspace root.
+                if (pkg.ecosystem === undefined && resolve(pkg.dir) !== resolve(cwd)) {
+                    swiftClaimedDirs.add(resolve(pkg.dir));
+                }
+            }
+
+            const swiftProjects = await discoverSwiftPackages({ claimedDirs: swiftClaimedDirs, cwd });
+
+            for (const { package: pkg } of swiftProjects) {
+                // SwiftPM resolves a package from the manifest at the root of its repository, and reads its version from a bare
+                // semantic-version tag. Only the root package can use that tag; a nested one keeps the workspace tag pattern.
+                const bareTag = resolve(pkg.dir) === resolve(cwd) ? { releaseTagPattern: "{version}" } : {};
+
+                perPackageConfig.set(pkg.name, { currentVersionResolver: "git-tag", managed: true, versionActions: "swift", ...bareTag, ...config.packages?.[pkg.name] });
+            }
+
+            packages = [...packages, ...swiftProjects.map((project) => project.package)];
         }
 
         // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a

@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python";
+    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python" | "swift";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1530,6 +1530,7 @@ export interface VisReleaseConfig {
      * Default: `false` (one aggregate commit per wave).
      */
     oneCommitPerPackage?: boolean;
+
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
     /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
@@ -1546,7 +1547,6 @@ export interface VisReleaseConfig {
     privatePackages?: { tag: boolean; version: boolean };
     /** Forge provider for remote operations (PR comments, releases, version PRs). */
     provider?: "github" | "gitlab" | "auto";
-
     /** Publish-related config. */
     publish?: PublishConfig;
 
@@ -1623,6 +1623,7 @@ export interface VisReleaseConfig {
      * Release-please parity: #1738, #1314.
      */
     signing?: { key?: string; mode: "gpg" | "sigstore" | "ssh" };
+
     /** Snapshot config. */
     snapshot?: SnapshotConfig;
 
@@ -1637,6 +1638,13 @@ export interface VisReleaseConfig {
      * the comment template / labels / prerelease behaviour.
      */
     successWalk?: SuccessWalkConfig;
+
+    /**
+     * Swift packages as release packages. Off by default. Every directory under the root with a
+     * `Package.swift` is a release package named by its `Package(name: "…")` literal. The version
+     * comes from Git tags, and the release creates the tag.
+     */
+    swift?: { discover?: boolean };
     /** Dep-propagation mode. Default: `"out-of-range"`. */
     updateInternalDependencies?: UpdateInternalDependenciesMode;
     /** Version-PR config. */

@@ -25,6 +25,7 @@ import { NpmVersionActions } from "./npm";
 import { PrivateVersionActions } from "./private";
 import { PythonVersionActions } from "./python";
 import { ShellPublishActions } from "./shell";
+import { SwiftVersionActions } from "./swift";
 
 /**
  * Construct the {@link VersionActions} implementation for a resolved id.
@@ -66,6 +67,9 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "shell": {
             return new ShellPublishActions();
+        }
+        case "swift": {
+            return new SwiftVersionActions();
         }
         default: {
             return new NpmVersionActions();

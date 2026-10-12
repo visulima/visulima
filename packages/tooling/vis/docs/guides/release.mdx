@@ -532,6 +532,20 @@ With `--no-tag`, a Go release creates no tag, so nothing is released for that mo
 
 Tasks for these modules are a separate opt-in, `go.discover: true` in `vis.config.ts`. They run `go build ./...`, `go test ./...`, `go vet ./...`, and `gofmt -d .` as `format:check`, which exits 1 when a file needs formatting. `gofmt -d .` also walks `vendor/` if the module has one. The root module is not a task project, so a single-module repository gets no Go tasks.
 
+### Swift packages as release packages
+
+Set `release.swift.discover: true` in `vis.config.ts` to release every directory under the root that has a `Package.swift`. It is off by default. The release name is the string literal in `Package(name: "…")`. It must be a valid release name: lowercase letters, digits, `.`, `_` and `-`. A capitalised Swift name such as `MyLib` is refused with `CONFIG_INVALID`.
+
+SwiftPM has no version field. It reads versions from Git tags, so the version comes from the tags, and the release creates the tag. The root package's tags are the bare semantic version (`1.2.0`, no name prefix), the form SwiftPM reads. SwiftPM reads a package only from the `Package.swift` at the root of its repository, so only the root package can be consumed by tag. A nested package keeps the workspace tag pattern (`{name}@{version}` by default), which is a deliberate departure from the bare form for those packages. Until a tag exists, the package starts from `0.0.0`. To set the baseline, tag the current version by hand (for example `git tag 1.0.0`) before the first release.
+
+A `.package(path: "…")` dependency on another released package orders the release. Remote `.package(url:)` dependencies are not rewritten. Nothing is written to the manifest.
+
+Publishing uploads nothing. The release's tag step creates the tag and pushes it, and SwiftPM resolves the package from that tag. A package whose tag already exists is skipped. The check is local, so a tag that exists only on the remote is not seen before the push.
+
+Tasks: with `swift.discover: true`, each package directory gets `swift build` and `swift test`, plus a `swift-format lint --strict --recursive` check over the `Sources` and `Tests` directories that exist. The check exits non-zero on lint warnings. The workspace root is not a task project.
+
+Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains, and `Package.resolved` has no dependency edges, so the SBOM has no Swift graph.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:
