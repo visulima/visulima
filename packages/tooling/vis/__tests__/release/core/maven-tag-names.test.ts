@@ -9,6 +9,8 @@ describe("release tags for Maven coordinates", () => {
         expect.hasAssertions();
 
         expect(defaultTagFor("io.visulima:vis-jvm", "1.1.0")).toBe("io.visulima/vis-jvm@1.1.0");
+        // git refuses ":" in ref names, so the tag must not carry the colon of the coordinate.
+        expect(defaultTagFor("io.visulima:a", "1.0.0")).not.toContain(":");
         expect(renderTagPattern("{name}@{version}", { name: "io.visulima:vis-jvm", version: "1.1.0" })).toBe("io.visulima/vis-jvm@1.1.0");
         expect(renderTagPattern("{unscopedName}-{version}", { name: "io.visulima:vis-jvm", version: "1.1.0" })).toBe("io.visulima/vis-jvm-1.1.0");
         expect(floatingMajorTagFor("io.visulima:vis-jvm", "1.1.0")).toBe("io.visulima-vis-jvm-v1");

@@ -73,6 +73,19 @@ describe("maven-plan", () => {
         expect(pending.size).toBe(0);
     });
 
+    it("refuses to release the aggregator alone when a child inherits its version", async () => {
+        expect.hasAssertions();
+
+        write("pom.xml", pom("<groupId>io.visulima</groupId><artifactId>agg</artifactId><version>3.0.0</version><modules><module>a</module></modules>"));
+        write("a/pom.xml", pom("<parent><groupId>io.visulima</groupId><artifactId>agg</artifactId><version>3.0.0</version></parent><artifactId>a</artifactId>"));
+
+        const error = await plan([{ name: "io.visulima:agg", newVersion: "3.1.0" }]).catch((error_: unknown) => error_);
+
+        expect(error).toMatchObject({ code: "CONFIG_INVALID" });
+        expect((error as Error).message).toContain("io.visulima:a");
+        expect(pending.size).toBe(0);
+    });
+
     it("releases a full group once, writing the shared parent version", async () => {
         expect.hasAssertions();
 

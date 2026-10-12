@@ -49,6 +49,30 @@ describe("maven-projects: discovery", () => {
         await expect(discover()).resolves.toStrictEqual([]);
     });
 
+    it("skips a claimed module as a package but still walks its child modules", async () => {
+        expect.hasAssertions();
+
+        write("pom.xml", pom("<groupId>io.visulima</groupId><artifactId>root</artifactId><version>1.0.0</version><modules><module>js-owned</module></modules>"));
+        write("js-owned/pom.xml", pom("<groupId>io.visulima</groupId><artifactId>js-owned</artifactId><version>1.0.0</version><modules><module>inner</module></modules>"));
+        write("js-owned/inner/pom.xml", pom("<groupId>io.visulima</groupId><artifactId>inner</artifactId><version>1.0.0</version>"));
+
+        const projects = await discoverMavenProjects({ claimedDirs: new Set([join(cwd, "js-owned")]), cwd });
+
+        expect(projects.map((project) => project.name)).toStrictEqual(["io.visulima:root", "io.visulima:inner"]);
+    });
+
+    it("aggregator owning a shared version: a child that inherits it is a member of the same group", async () => {
+        expect.hasAssertions();
+
+        write("pom.xml", pom("<groupId>io.visulima</groupId><artifactId>agg</artifactId><version>3.0.0</version><modules><module>a</module></modules>"));
+        write("a/pom.xml", pom("<parent><groupId>io.visulima</groupId><artifactId>agg</artifactId><version>3.0.0</version></parent><artifactId>a</artifactId>"));
+
+        const projects = await discover();
+
+        expect(projects.find((project) => project.name === "io.visulima:a")).toMatchObject({ kind: "inherited", owner: join(cwd, "pom.xml") });
+        expect(projects.find((project) => project.name === "io.visulima:agg")).toMatchObject({ kind: "literal", owner: join(cwd, "pom.xml") });
+    });
+
     it("reads a literal project version and marks the module as its own owner", async () => {
         expect.hasAssertions();
 
