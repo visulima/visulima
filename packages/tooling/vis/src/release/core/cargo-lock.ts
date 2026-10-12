@@ -11,6 +11,7 @@
  * lookup walks up from the manifest and stops at the workspace root (`cwd`).
  */
 
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
@@ -82,14 +83,27 @@ export const rewriteCargoLockVersion = (raw: string, crateName: string, newVersi
     return found ? { content: lines.join("\n"), found } : { found };
 };
 
+const canonicalPath = (p: string): string => {
+    const resolved = resolve(p);
+
+    try {
+        return realpathSync.native(resolved);
+    } catch {
+        return resolved;
+    }
+};
+
 /**
  * Walk up from `manifestDir` to `workspaceRoot` (inclusive) and return the
  * first `Cargo.lock`. Undefined when none exists, which is normal for
  * library-only repos that do not commit a lockfile.
  */
 export const findCargoLock = async (manifestDir: string, workspaceRoot: string): Promise<string | undefined> => {
-    const root = resolve(workspaceRoot);
-    let current = resolve(manifestDir);
+    // Canonicalize both sides. Discovered manifests are realpaths (on macOS
+    // `/private/var/…`) while the workspace root may still be `/var/…`, and a
+    // mismatch makes the lockfile look like it sits outside the workspace.
+    const root = canonicalPath(workspaceRoot);
+    let current = canonicalPath(manifestDir);
 
     for (;;) {
         const candidate = join(current, "Cargo.lock");
@@ -166,22 +180,30 @@ export interface CargoLockSyncResult {
     writes: { content: string; path: string }[];
 }
 
-/**
- * Bring `Cargo.lock` to `newVersion` for every crate `manifestPaths` names.
- * Reads go through `pending` first, so a lockfile already queued by an earlier
- * step (or a second crate in the same workspace) is extended, not overwritten.
- */
-export const syncCargoLockForRelease = async (options: {
-    manifestPaths: ReadonlyArray<string>;
+/** One crate manifest a release bumps, paired with the version it moves to. */
+export interface CargoLockEntry {
+    manifestPath: string;
     newVersion: string;
+}
+
+/**
+ * Bring `Cargo.lock` in line with every bumped crate in one pass.
+ *
+ * Runs once per release wave, not once per release: two crates in the same
+ * lockfile must both land, so every edit reads from and writes to the same
+ * `pending` map. `pending` is seeded with the manifest writes already queued,
+ * and the lock content is written back into it for the caller to pick up.
+ */
+export const syncCargoLocks = async (options: {
+    entries: ReadonlyArray<CargoLockEntry>;
     pending: Map<string, string>;
     workspaceRoot: string;
 }): Promise<CargoLockSyncResult> => {
-    const { manifestPaths, newVersion, pending, workspaceRoot } = options;
+    const { entries, pending, workspaceRoot } = options;
     const warnings: string[] = [];
     const writes: { content: string; path: string }[] = [];
 
-    for (const manifestPath of manifestPaths) {
+    for (const { manifestPath, newVersion } of entries) {
         let manifest = pending.get(manifestPath);
 
         if (manifest === undefined) {
