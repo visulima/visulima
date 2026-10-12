@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { pythonDetector } from "../inference/detectors/python";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
 import { applyPreset, defaultCacheForType } from "../task/target-options";
@@ -28,6 +29,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
 import type {
     PackageJson,
     PackageJsonIndex,
@@ -222,11 +224,17 @@ const resolveProjectDirectories = (workspaceRoot: string, patterns: string[]): {
     const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
     const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
     const packageSet = new Set(packageDirectories);
-    const nonJsDirectories = resolveCargoProjectDirectories(
+    const cargoDirectories = resolveCargoProjectDirectories(
         workspaceRoot,
         candidates.filter((directory) => !packageSet.has(directory)),
         packageDirectories,
     );
+    const pythonDirectories = resolvePythonProjectDirectories(
+        workspaceRoot,
+        candidates.filter((directory) => !packageSet.has(directory)),
+        [...packageDirectories, ...cargoDirectories],
+    );
+    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories];
 
     return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
 };
@@ -872,7 +880,11 @@ const resolveProjectName = (
     projectDirectory: string,
     pkg: PackageJson | undefined,
     projectJson: ProjectJson | undefined,
-): string | undefined => projectJson?.name ?? (pkg ? pkg.name : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
+): string | undefined =>
+    projectJson?.name
+    ?? (pkg
+        ? pkg.name
+        : (readCargoPackageName(join(workspaceRoot, projectDirectory)) ?? readPythonProjectName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
 
 /**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
@@ -980,10 +992,19 @@ const discoverWorkspace = (
         // infers cargo targets. `project.json`-only projects get none.
         const projectRoot = join(workspaceRoot, projectDirectory);
         const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
-        const detectorEnabled = pkg || isCrate ? resolveInferTargetOption(config.inferTargets) : undefined;
+        const isPython = isNonJs && !isCrate && readPythonProjectName(projectRoot) !== undefined;
+        const detectorEnabled = pkg || isCrate || isPython ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
-            const enabledDetectors = BUILT_IN_DETECTORS.filter((detector) => (detector === cargoDetector) === isCrate && detectorEnabled(detector.name));
+            // A Cargo or Python project gets only its own detector, and a JS
+            // package never gets either, so a stray pyproject.toml or Cargo.toml
+            // in a JS package cannot infer targets for it.
+            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : undefined;
+            const enabledDetectors = BUILT_IN_DETECTORS.filter(
+                (detector) =>
+                    (ownDetector === undefined ? detector !== cargoDetector && detector !== pythonDetector : detector === ownDetector)
+                    && detectorEnabled(detector.name),
+            );
             const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
 
             // Synthesizing a target the project never had is the one part of
