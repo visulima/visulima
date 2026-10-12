@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "npm" | "python";
+    ecosystem?: "cargo" | "maven" | "npm" | "python";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1486,6 +1486,14 @@ export interface VisReleaseConfig {
     linked?: ReleaseGroupConfig[];
 
     /**
+     * Maven modules as release packages. Off by default. When on, the root
+     * `pom.xml` and every module reachable through `&lt;modules>` is a release
+     * package named `groupId:artifactId`. A version the release cannot rewrite
+     * (no literal, no resolvable parent or property) fails the release.
+     */
+    maven?: { discover?: boolean };
+
+    /**
      * Notifications — post-release fan-out to chat / webhook
      * destinations. See {@link NotificationsConfig}. Each channel
      * runs in parallel; per-channel failures log a warning but do NOT
@@ -1505,7 +1513,6 @@ export interface VisReleaseConfig {
      * Default: `false` (one aggregate commit per wave).
      */
     oneCommitPerPackage?: boolean;
-
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
     /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
@@ -1522,6 +1529,7 @@ export interface VisReleaseConfig {
     privatePackages?: { tag: boolean; version: boolean };
     /** Forge provider for remote operations (PR comments, releases, version PRs). */
     provider?: "github" | "gitlab" | "auto";
+
     /** Publish-related config. */
     publish?: PublishConfig;
 

@@ -240,6 +240,16 @@
             },
             "description": "Linked groups: members share bump levels but only changed members publish. Accepts the same dual-shape format as `fixed` — see the `ReleaseGroupConfig` doc comment for details."
         },
+        "maven": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Maven modules as release packages. Off by default. When on, the root `pom.xml` and every module reachable through `&lt;modules>` is a release package named `groupId:artifactId`. A version the release cannot rewrite (no literal, no resolvable parent or property) fails the release."
+        },
         "notifications": {
             "$ref": "#/$defs/NotificationsConfig",
             "description": "Notifications — post-release fan-out to chat / webhook destinations. See  {@link  NotificationsConfig } . Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish."
