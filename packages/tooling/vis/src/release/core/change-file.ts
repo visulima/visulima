@@ -69,8 +69,8 @@ const splitFrontmatter = (content: string): SplitResult | null => {
 
 // ── Package-name validation (RFC §19.4) ─────────────────────────────
 
-/** npm-compliant package name regex. */
-const PACKAGE_NAME_RE = /^(?:@[a-z0-9-]+\/)?[\w.-]+$/i;
+/** npm-compliant package name regex, plus a Maven `groupId:artifactId` coordinate (the only name with a colon). */
+const PACKAGE_NAME_RE = /^(?:@[a-z0-9-]+\/)?[\w.-]+(?::[\w.-]+)?$/i;
 const MAX_PACKAGE_NAME_LENGTH = 214;
 
 const isValidPackageName = (name: string): boolean => {
