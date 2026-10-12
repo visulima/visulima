@@ -292,7 +292,23 @@ const executeAudit = async (
     visConfig: VisConfig | undefined,
     _logger: Console,
 ): Promise<void> => {
-    const backend = resolveAuditBackend(options.backend as string | undefined, visConfig?.security?.audit?.backend, visConfig);
+    // Validate before choosing a backend: the aube path does not forward
+    // `--ecosystem`, so a non-npm online request would otherwise be dropped there.
+    const auditConfig = visConfig?.security?.audit;
+    const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
+    const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
+    const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
+
+    if (onlineNonNpm.length > 0) {
+        pail.error(
+            `--ecosystem ${onlineNonNpm.join(",")} needs --offline: the online advisory catalog only covers npm, so these would be skipped. Pass --offline, or drop them from --ecosystem.`,
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const backend = resolveAuditBackend(options.backend as string | undefined, auditConfig?.backend, visConfig);
 
     if (backend === "aube") {
         process.exitCode = runAubeAudit(workspaceRoot, options, visConfig);
@@ -309,11 +325,8 @@ const executeAudit = async (
     const isJunit = format === "junit";
     const isJson = format === "json" || Boolean(options.json);
     const reportPath = options.report as string | undefined;
-    const auditConfig = visConfig?.security?.audit;
     const policies = visConfig?.security?.policies;
-    const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
     const dbPath = options.db as string | undefined;
-    const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
     const prodOnly = Boolean(options.prodOnly);
     const failOn = (options.failOn as SeverityFilter | undefined) ?? policies?.vulnerability?.failOn;
     const showFixes = Boolean(options.showFixes);
@@ -333,17 +346,6 @@ const executeAudit = async (
     // Explanations only surface in the human / JSON / HTML paths — the
     // machine formats (SARIF/CSAF/CycloneDX-VEX) have no field for them.
     const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex && !isGitlab && !isJunit;
-
-    const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
-
-    if (onlineNonNpm.length > 0) {
-        pail.error(
-            `--ecosystem ${onlineNonNpm.join(",")} needs --offline: the online advisory catalog only covers npm, so these would be skipped. Pass --offline, or drop them from --ecosystem.`,
-        );
-        process.exitCode = 1;
-
-        return;
-    }
 
     if (wantsExplain && isOffline) {
         pail.error("`--explain` needs network access and cannot run in offline mode (--offline or security.audit.offlineByDefault).");
