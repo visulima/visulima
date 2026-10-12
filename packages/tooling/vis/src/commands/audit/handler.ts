@@ -68,6 +68,17 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // CI invocations stay stable as more ecosystems land.
 const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
 
+// The online advisory catalog only covers npm. A non-npm `--ecosystem` run
+// online would skip that ecosystem silently, so it is rejected up front.
+// Returns the offending names, or an empty list when the run is fine.
+export const nonNpmEcosystemsWithoutOffline = (ecosystems: string[], isOffline: boolean): string[] => {
+    if (isOffline) {
+        return [];
+    }
+
+    return ecosystems.filter((eco) => canonicalEcosystem(eco) !== "npm");
+};
+
 // Parses `--ecosystem` (comma-separated) into the canonical list plus any
 // entries that don't match SUPPORTED_ECOSYSTEMS — the handler emits a
 // non-fatal warning for unsupported names instead of failing.
@@ -322,6 +333,17 @@ const executeAudit = async (
     // Explanations only surface in the human / JSON / HTML paths — the
     // machine formats (SARIF/CSAF/CycloneDX-VEX) have no field for them.
     const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex && !isGitlab && !isJunit;
+
+    const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
+
+    if (onlineNonNpm.length > 0) {
+        pail.error(
+            `--ecosystem ${onlineNonNpm.join(",")} needs --offline: the online advisory catalog only covers npm, so these would be skipped. Pass --offline, or drop them from --ecosystem.`,
+        );
+        process.exitCode = 1;
+
+        return;
+    }
 
     if (wantsExplain && isOffline) {
         pail.error("`--explain` needs network access and cannot run in offline mode (--offline or security.audit.offlineByDefault).");
