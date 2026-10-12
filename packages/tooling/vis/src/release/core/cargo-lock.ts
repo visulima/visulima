@@ -83,7 +83,7 @@ export const rewriteCargoLockVersion = (raw: string, crateName: string, newVersi
     return found ? { content: lines.join("\n"), found } : { found };
 };
 
-const canonicalPath = (p: string): string => {
+export const canonicalPath = (p: string): string => {
     const resolved = resolve(p);
 
     try {

@@ -178,6 +178,14 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
 
     try {
         for (const pkg of targets) {
+            // Snapshots rewrite a package.json and pack it with npm. A Cargo crate
+            // has neither, so it is skipped rather than having JSON written into Cargo.toml.
+            if (pkg.ecosystem === "cargo") {
+                skipped.push({ name: pkg.name, reason: "cargo-crates-have-no-snapshot" });
+
+                continue;
+            }
+
             const composed = composeSnapshotManifest(pkg, versionedByName);
             const catalogResolved = rewriteCatalogRefs(composed, catalogs);
             const cleaned = cleanPackageJsonForPublish(catalogResolved, ctx.config.publish?.cleanPackageJson);

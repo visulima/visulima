@@ -110,6 +110,13 @@ export interface ChangeFile {
 export interface WorkspacePackage {
     /** Absolute directory containing the package. */
     dir: string;
+
+    /**
+     * Which ecosystem owns the manifest. Absent means npm (`package.json`).
+     * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
+     * `manifest` is synthetic and must never be serialized into `manifestPath`.
+     */
+    ecosystem?: "cargo" | "npm";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1158,6 +1165,7 @@ export interface VisReleaseConfig {
     access?: "public" | "restricted";
     /** Suppress the unstable warning printed on first invocation (RFC §21.2). */
     acknowledgeUnstable?: boolean;
+
     /** Single GH release per wave vs per-package. */
     aggregateRelease?: boolean | { enabled: boolean; title?: string };
 
@@ -1167,6 +1175,7 @@ export interface VisReleaseConfig {
      * bumped pkg's version). Default: `"release-{date}"`.
      */
     aggregateReleaseTagPattern?: string;
+
     /** Trust gate for per-package custom commands. */
     allowCustomCommands?: boolean | string[];
     /** Branch used for `--from` baseline in `status`/`generate`. Default: `"main"`. */
@@ -1212,6 +1221,14 @@ export interface VisReleaseConfig {
      * `bumpMinorPreMajor`. Default `false`.
      */
     bumpPatchForMinorPreMajor?: boolean;
+
+    /**
+     * Cargo crates as release packages. Off by default: a repo with Rust crates
+     * sees no change until `discover` is set. When on, every crate in the root
+     * `Cargo.toml`'s `[workspace].members` (minus `exclude`) is a release
+     * package, unless a JS package already claims its manifest.
+     */
+    cargo?: { discover?: boolean };
     /** Globs that count toward "package changed" detection. */
     changedFilePatterns?: string[];
 

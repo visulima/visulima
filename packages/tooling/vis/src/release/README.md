@@ -123,6 +123,16 @@ Edits are targeted, so comments, formatting and line endings survive. An unsuppo
 
 `Cargo.lock` follows the bump: the `[[package]]` block for the crate (the one with no `source` line) gets the new version. Registry and git dependencies are never touched. The lockfile is looked up from the crate directory up to the workspace root. A crate missing from the lockfile produces a warning, not a failure.
 
+## Cargo crates as release packages (`release.cargo.discover`)
+
+Opt-in. With `release: { cargo: { discover: true } }` in `vis.config.ts`, every crate in the root `Cargo.toml`'s `[workspace].members` (minus `exclude`) becomes a release package, even without a `package.json`. Off by default, so a repo with Rust code sees no change.
+
+- Crates a JS package already claims through `versionFiles`, `cargo()` or `cargoTomlPath` are not discovered again.
+- `publish = false` makes a crate private: it gets the `private` actions, never `cargo publish`.
+- A bump updates the crate's version, every path dependency's requirement on it (Cargo rules: a bare `0.1.0` is `^0.1.0`, the operator is kept, compound requirements are left with a warning), the dependent's patch bump, and `Cargo.lock`, all in one pass.
+- A crate that inherits `version.workspace = true` moves with its whole group. The group must release together at one version, or the release fails with `CONFIG_INVALID`.
+- Snapshot releases skip Cargo crates.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).
