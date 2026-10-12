@@ -1,10 +1,11 @@
+import { realpathSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { cargoManifestPaths, findCargoLock, rewriteCargoLockVersion, syncCargoLockForRelease } from "../../../src/release/core/cargo-lock";
+import { cargoManifestPaths, findCargoLock, rewriteCargoLockVersion, syncCargoLocks } from "../../../src/release/core/cargo-lock";
 
 /**
  * Coverage for Cargo.lock sync. Only the workspace-member block (no `source`)
@@ -77,7 +78,7 @@ describe("cargo-lock: findCargoLock and sync", () => {
     let root: string;
 
     beforeEach(async () => {
-        root = await mkdtemp(join(tmpdir(), "vis-cargo-lock-"));
+        root = realpathSync(await mkdtemp(join(tmpdir(), "vis-cargo-lock-")));
         await mkdir(join(root, "crates", "app"), { recursive: true });
         await writeFile(join(root, "Cargo.lock"), LOCK);
         await writeFile(join(root, "crates", "app", "Cargo.toml"), "[package]\nname = \"app\"\nversion = \"0.1.0\"\n");
@@ -104,9 +105,10 @@ describe("cargo-lock: findCargoLock and sync", () => {
     it("syncs the lockfile for a crate manifest", async () => {
         expect.hasAssertions();
 
-        const result = await syncCargoLockForRelease({
-            manifestPaths: [join(root, "crates", "app", "Cargo.toml")],
-            newVersion: "0.2.0",
+        const result = await syncCargoLocks({
+            entries: [
+                { manifestPath: join(root, "crates", "app", "Cargo.toml"), newVersion: "0.2.0" },
+            ],
             pending: new Map(),
             workspaceRoot: root,
         });
@@ -120,9 +122,10 @@ describe("cargo-lock: findCargoLock and sync", () => {
 
         await writeFile(join(root, "crates", "app", "Cargo.toml"), "[package]\nname = \"unlisted\"\nversion = \"0.1.0\"\n");
 
-        const result = await syncCargoLockForRelease({
-            manifestPaths: [join(root, "crates", "app", "Cargo.toml")],
-            newVersion: "0.2.0",
+        const result = await syncCargoLocks({
+            entries: [
+                { manifestPath: join(root, "crates", "app", "Cargo.toml"), newVersion: "0.2.0" },
+            ],
             pending: new Map(),
             workspaceRoot: root,
         });
@@ -138,9 +141,11 @@ describe("cargo-lock: findCargoLock and sync", () => {
         await writeFile(join(root, "crates", "helper", "Cargo.toml"), "[package]\nname = \"helper\"\nversion = \"0.1.0\"\n");
 
         const pending = new Map<string, string>();
-        const result = await syncCargoLockForRelease({
-            manifestPaths: [join(root, "crates", "app", "Cargo.toml"), join(root, "crates", "helper", "Cargo.toml")],
-            newVersion: "0.2.0",
+        const result = await syncCargoLocks({
+            entries: [
+                { manifestPath: join(root, "crates", "app", "Cargo.toml"), newVersion: "0.2.0" },
+                { manifestPath: join(root, "crates", "helper", "Cargo.toml"), newVersion: "0.2.0" },
+            ],
             pending,
             workspaceRoot: root,
         });

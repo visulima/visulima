@@ -702,9 +702,9 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
     {
         const { applyExtraFilesForRelease } = await import("./extra-files");
         const { applyVersionFilesForRelease } = await import("./version-files");
-        const { cargoManifestPaths, syncCargoLockForRelease } = await import("./cargo-lock");
+        const { cargoManifestPaths, syncCargoLocks } = await import("./cargo-lock");
 
-        const extraResults = await Promise.all(
+        const perReleaseResults = await Promise.all(
             context.plan.releases.map(async (release) => {
                 const pkg = context.depGraph.getPackage(release.name);
 
@@ -729,36 +729,54 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
                         ? await applyVersionFilesForRelease(pkg.dir, versionFiles, release.newVersion, release.name, new Map(extra.writes.map((write) => [write.path, write.content])))
                         : { warnings: [], writes: [] };
 
-                // Cargo.lock follows the crate. It runs last so it reads the
-                // manifest content the earlier steps produced.
-                const manifestWrites = [...extra.writes, ...versioned.writes];
-                const pendingContent = new Map(manifestWrites.map((write) => [write.path, write.content]));
-                const perPkg = context.perPackageConfig.get(release.name) ?? {};
-                const manifestPaths = cargoManifestPaths(pkg.dir, perPkg);
-                const lock
-                    = manifestPaths.length > 0
-                        ? await syncCargoLockForRelease({ manifestPaths, newVersion: release.newVersion, pending: pendingContent, workspaceRoot: context.cwd })
-                        : { warnings: [], writes: [] };
-
-                const writesByPath = new Map<string, { content: string; path: string }>();
-
-                for (const write of [...manifestWrites, ...lock.writes]) {
-                    writesByPath.set(write.path, { content: write.content, path: write.path });
-                }
-
-                return {
-                    warnings: [...extra.warnings, ...versioned.warnings, ...lock.warnings],
-                    writes: [...writesByPath.values()],
-                };
+                return { warnings: [...extra.warnings, ...versioned.warnings], writes: [...extra.writes, ...versioned.writes] };
             }),
         );
 
-        for (const result of extraResults) {
+        // Cargo.lock is planned once for the whole wave. Per-release lock
+        // writes each started from the original lockfile, so when two crates
+        // shared one lockfile the last write silently dropped the other bump.
+        // Every manifest edit is seeded into one map, then each lock edit
+        // reads from and writes to that map.
+        const pending = new Map<string, string>();
+        const touched = new Set<string>();
+
+        for (const result of perReleaseResults) {
             for (const write of result.writes) {
-                applied.writes.push({ content: write.content, path: write.path });
+                pending.set(write.path, write.content);
+                touched.add(write.path);
             }
 
             extraFileWarnings.push(...result.warnings);
+        }
+
+        const lockEntries = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            if (!pkg) {
+                return [];
+            }
+
+            return cargoManifestPaths(pkg.dir, context.perPackageConfig.get(release.name) ?? {}).map((manifestPath) => {
+                return {
+                    manifestPath,
+                    newVersion: release.newVersion,
+                };
+            });
+        });
+
+        if (lockEntries.length > 0) {
+            const lock = await syncCargoLocks({ entries: lockEntries, pending, workspaceRoot: context.cwd });
+
+            for (const write of lock.writes) {
+                touched.add(write.path);
+            }
+
+            extraFileWarnings.push(...lock.warnings);
+        }
+
+        for (const path of touched) {
+            applied.writes.push({ content: pending.get(path)!, path });
         }
 
         // Surface warnings through plan.warnings so they bubble up to
