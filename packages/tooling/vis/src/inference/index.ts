@@ -17,6 +17,7 @@ import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
 import { eslintDetector } from "./detectors/eslint";
 import { gatsbyDetector } from "./detectors/gatsby";
+import { gradleDetector } from "./detectors/gradle";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
 import { jestDetector } from "./detectors/jest";
 import { knipDetector } from "./detectors/knip";
@@ -113,6 +114,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     cargoDetector,
     pythonDetector,
     mavenDetector,
+    gradleDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

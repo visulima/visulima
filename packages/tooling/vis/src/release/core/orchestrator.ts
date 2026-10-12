@@ -26,6 +26,7 @@ import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
 import { DependencyGraph } from "./dep-graph";
+import type { GradleProject } from "./gradle-projects";
 import type { MavenProject } from "./maven-projects";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
@@ -53,6 +54,8 @@ export interface OrchestratorContext {
      * `bootstrap-sha` knob.
      */
     firstRelease: boolean;
+    /** Gradle modules discovered under `release.gradle.discover` (empty otherwise); the Gradle plan reads their owners from here. */
+    gradleProjects?: GradleProject[];
     /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
     mavenProjects?: MavenProject[];
     packages: WorkspacePackage[];
@@ -207,7 +210,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     // package and not discovered a second time.
     let mavenProjects: MavenProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover) {
+    let gradleProjects: GradleProject[] = [];
+
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -292,6 +297,47 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...mavenProjects.map((project) => project.package)];
+        }
+
+        if (config.gradle?.discover) {
+            const { discoverGradleProjects } = await import("./gradle-projects");
+            // A JS package that releases a Gradle module (versionActions "gradle") claims its directory.
+            const gradleClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "gradle") {
+                    gradleClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                // A JS package that writes a Gradle file (gradleProperties(), or an extraFiles rule) owns that module.
+                for (const rule of perPkg.extraFiles ?? []) {
+                    if (/(?:^|\/)(?:build\.gradle(?:\.kts)?|gradle\.properties)$/.test(rule.path)) {
+                        gradleClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
+                    }
+                }
+            }
+
+            gradleProjects = await discoverGradleProjects({ claimedDirs: gradleClaimedDirs, cwd });
+
+            // A Gradle coordinate must not shadow a JS or other-ecosystem package of the same name.
+            const takenNames = new Set(packages.map((pkg) => pkg.name));
+            const collision = gradleProjects.find((project) => takenNames.has(project.name));
+
+            if (collision !== undefined) {
+                throw new VisReleaseError({
+                    code: "CONFIG_INVALID",
+                    message: `${collision.name} is a Gradle module, but another package already has that name. Rename one of them in config.packages.`,
+                    packageName: collision.name,
+                });
+            }
+
+            for (const project of gradleProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "gradle", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...gradleProjects.map((project) => project.package)];
         }
     }
 
@@ -492,6 +538,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         cwd,
         depGraph,
         firstRelease,
+        gradleProjects,
         mavenProjects,
         packages,
         perPackageConfig,
@@ -855,9 +902,9 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
         const planReleases = context.plan.releases.flatMap((release) => {
             const pkg = context.depGraph.getPackage(release.name);
 
-            // Python projects and Maven modules have their own plans (planPythonWorkspace,
-            // planMavenWorkspace); a uv.lock is not a Cargo.lock and a pom is not one either.
-            if (!pkg || pkg.ecosystem === "python" || pkg.ecosystem === "maven") {
+            // Python projects, Maven and Gradle modules have their own plans (planPythonWorkspace,
+            // planMavenWorkspace, planGradleWorkspace); a uv.lock is not a Cargo.lock, and a pom or a build script is not one either.
+            if (!pkg || pkg.ecosystem === "python" || pkg.ecosystem === "maven" || pkg.ecosystem === "gradle") {
                 return [];
             }
 
@@ -939,6 +986,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const mavenTouched = await planMavenWorkspace({ pending, projects: context.mavenProjects ?? [], releases: mavenReleases });
 
             for (const path of mavenTouched) {
+                touched.add(path);
+            }
+        }
+
+        const gradleReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "gradle" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (gradleReleases.length > 0) {
+            const { planGradleWorkspace } = await import("./gradle-plan");
+            const gradleTouched = await planGradleWorkspace({ pending, projects: context.gradleProjects ?? [], releases: gradleReleases });
+
+            for (const path of gradleTouched) {
                 touched.add(path);
             }
         }

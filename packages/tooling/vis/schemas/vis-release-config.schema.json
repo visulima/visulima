@@ -190,6 +190,16 @@
             "$ref": "#/$defs/GitUserConfig",
             "description": "Git committer identity used by CI workflows."
         },
+        "gradle": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Gradle modules as release packages. Off by default. When on, the root build and every module in `settings.gradle(.kts)` is a release package named `group:artifact`. The version must be a string literal in the module's script or the root script's allprojects / subprojects block; a group or version the release cannot read fails it."
+        },
         "groupPreVersionCommands": {
             "type": "object",
             "additionalProperties": {

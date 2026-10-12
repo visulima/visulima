@@ -176,6 +176,13 @@ export const parseMavenMetadataLatest = (xml: string): string | undefined => {
     return versions.at(-1);
 };
 
+/** Every version listed in `maven-metadata.xml`, in the order the repository gives them. */
+export const parseMavenMetadataVersions = (xml: string): string[] => {
+    const versionsBlock = /<versions>([\s\S]*?)<\/versions>/i.exec(xml);
+
+    return versionsBlock ? [...versionsBlock[1]!.matchAll(/<version>\s*([^<]+?)\s*<\/version>/gi)].map((match) => match[1]!) : [];
+};
+
 /**
  * Compose the Maven Central metadata URL for a given (groupId, artifactId).
  * Maven Central serves coordinates as path segments with `.` → `/`.

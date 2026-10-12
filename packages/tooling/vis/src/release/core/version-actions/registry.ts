@@ -15,6 +15,7 @@
  */
 import { CargoVersionActions } from "./cargo";
 import { ContainerActions } from "./container";
+import { GradleVersionActions } from "./gradle";
 import type { VersionActions } from "./interface";
 import { JsrVersionActions } from "./jsr";
 import { MavenVersionActions } from "./maven";
@@ -39,6 +40,9 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "container": {
             return new ContainerActions();
+        }
+        case "gradle": {
+            return new GradleVersionActions();
         }
         case "jsr": {
             return new JsrVersionActions();

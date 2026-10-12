@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "maven" | "npm" | "python";
+    ecosystem?: "cargo" | "gradle" | "maven" | "npm" | "python";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1407,6 +1407,15 @@ export interface VisReleaseConfig {
 
     /** Git committer identity used by CI workflows. */
     gitUser?: GitUserConfig;
+
+    /**
+     * Gradle modules as release packages. Off by default. When on, the root build
+     * and every module in `settings.gradle(.kts)` is a release package named
+     * `group:artifact`. The version must be a string literal in the module's
+     * script or the root script's allprojects / subprojects block; a group or
+     * version the release cannot read fails it.
+     */
+    gradle?: { discover?: boolean };
 
     /**
      * Group-scoped preVersion command. Runs once before any package in the

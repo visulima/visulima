@@ -520,6 +520,12 @@ export interface VisConfig {
     };
 
     /**
+     * Gradle projects as task projects. Off by default: a `settings.gradle(.kts)`
+     * with a build script for each module gets build and test targets only when this is set.
+     */
+    gradle?: { discover?: boolean };
+
+    /**
      * Auto-create targets from detected config files (Project Crystal-style).
      * Detectors run by default; set `false` to disable them entirely, or use
      * the object form to disable individual ones. See the note at the bottom

@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
 import { mergeTargetWithInherit } from "../task/target-merge";
@@ -30,6 +31,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { resolveGradleProjectDirectories } from "./gradle-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
 import type {
@@ -225,7 +227,7 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
 const resolveProjectDirectories = (
     workspaceRoot: string,
     patterns: string[],
-    options: { mavenProjects: boolean; pythonProjects: boolean },
+    options: { gradleProjects: boolean; mavenProjects: boolean; pythonProjects: boolean },
 ): { directories: string[]; nonJsDirectories: Set<string> } => {
     const candidates = resolveWorkspacePatterns(workspaceRoot, patterns, isProjectCandidate);
     const packageDirectories = candidates.filter((directory) => hasPackageJson(join(workspaceRoot, directory)));
@@ -251,7 +253,12 @@ const resolveProjectDirectories = (
             [...packageDirectories, ...cargoDirectories, ...pythonDirectories],
         )
         : [];
-    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories, ...mavenDirectories];
+    // Gradle modules come from settings.gradle(.kts), not the workspace patterns, so they
+    // are read even when their directory is not a pattern match.
+    const gradleDirectories = options.gradleProjects
+        ? resolveGradleProjectDirectories(workspaceRoot, [...packageDirectories, ...cargoDirectories, ...pythonDirectories, ...mavenDirectories])
+        : [];
+    const nonJsDirectories = [...cargoDirectories, ...pythonDirectories, ...mavenDirectories, ...gradleDirectories];
 
     return { directories: [...packageDirectories, ...nonJsDirectories], nonJsDirectories: new Set(nonJsDirectories) };
 };
@@ -943,6 +950,7 @@ const discoverWorkspace = (
     }
 
     const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        gradleProjects: config.gradle?.discover === true,
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
     });
@@ -1014,16 +1022,20 @@ const discoverWorkspace = (
         const isCrate = isNonJs && readCargoPackageName(projectRoot) !== undefined;
         const isPython = isNonJs && !isCrate && readPythonProjectName(projectRoot) !== undefined;
         const isMaven = isNonJs && !isCrate && !isPython && readMavenProjectArtifact(projectRoot) !== undefined;
-        const detectorEnabled = pkg || isCrate || isPython || isMaven ? resolveInferTargetOption(config.inferTargets) : undefined;
+        // Whatever non-JS directory is left after the Cargo, Python and Maven checks is a Gradle module.
+        const isGradle = isNonJs && !isCrate && !isPython && !isMaven;
+        const detectorEnabled = pkg || isCrate || isPython || isMaven || isGradle ? resolveInferTargetOption(config.inferTargets) : undefined;
 
         if (detectorEnabled !== undefined) {
             // A Cargo or Python project gets only its own detector, and a JS
             // package never gets either, so a stray pyproject.toml or Cargo.toml
             // in a JS package cannot infer targets for it.
-            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : isMaven ? mavenDetector : undefined;
+            const ownDetector = isCrate ? cargoDetector : isPython ? pythonDetector : isMaven ? mavenDetector : isGradle ? gradleDetector : undefined;
             const enabledDetectors = BUILT_IN_DETECTORS.filter(
                 (detector) =>
-                    (ownDetector === undefined ? detector !== cargoDetector && detector !== pythonDetector && detector !== mavenDetector : detector === ownDetector)
+                    (ownDetector === undefined
+                        ? detector !== cargoDetector && detector !== pythonDetector && detector !== mavenDetector && detector !== gradleDetector
+                        : detector === ownDetector)
                     && detectorEnabled(detector.name),
             );
             const inference = inferProjectTargets({ pkg: pkg ?? {}, projectDirectory, projectRoot }, enabledDetectors);
@@ -1273,7 +1285,11 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
 
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
-    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, { mavenProjects: true, pythonProjects: true });
+    const { directories: projectDirectories, nonJsDirectories } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        gradleProjects: true,
+        mavenProjects: true,
+        pythonProjects: true,
+    });
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(

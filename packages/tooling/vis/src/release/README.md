@@ -154,6 +154,17 @@ Opt-in. With `release: { maven: { discover: true } }`, the root `pom.xml` and ev
 - A module a JS package already releases (`pomPath`, `pomXml()`, or an `extraFiles` rule on a `pom.xml`) is not discovered again.
 - Maven has no lockfile, so nothing else is written. Publishing is per-module through `versionActions: "maven"`, which runs `mvn -B -f <pom> deploy` (see `docs/guides/release-maven.mdx`).
 
+## Gradle modules as release packages (`release.gradle.discover`)
+
+Opt-in. With `release: { gradle: { discover: true } }`, every module listed in `settings.gradle(.kts)` is a release package named `group:artifact`, even without a `package.json`. The root build is released only with its own `version`.
+
+- A module's version is a string literal in its own script, or in the root script's `allprojects` / `subprojects` block (`version = "…"` or `version '…'`). Anything else fails the release with `CONFIG_INVALID`, and so does a version declared twice on one path.
+- Modules that share one declaration must release together at one version. A partial release fails with `CONFIG_INVALID` naming the modules left out.
+- A `project(":x")` dependency on a released module orders the publish. It carries no version, so nothing is rewritten.
+- A `version=` in `gradle.properties` fails the release: vis reads only build-script literals. `projectDir` remaps, `archivesName` renames, and a group that is not declared fail it too. A module with no version is an aggregate and is skipped.
+- Publishing runs `<root>/gradlew :<path>:publish` through the argv runner, with no shell, POSIX only. A version the Maven metadata already lists is skipped first (`mavenMetadataUrl` overrides the URL, `""` disables the check).
+- Gradle has no lockfile vis maintains, so nothing else is written.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

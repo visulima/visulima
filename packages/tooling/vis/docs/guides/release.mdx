@@ -502,6 +502,18 @@ A bump updates the module's version (or its parent's or property's, see below), 
 
 Git tags replace the `:` in the name with `/` (`io.visulima/core@1.2.0`), because git does not allow `:` in tag names.
 
+### Gradle modules as release packages
+
+Set `release.gradle.discover: true` in `vis.config.ts` to release every module listed in `settings.gradle(.kts)`, named `group:artifact`, without a `package.json`. It is off by default. The root build is released only when its own script declares a version. Under `allprojects` it is an aggregator, and it is left out.
+
+The group comes from the module's `group` or the root script's `allprojects` block. The artifact is the directory name (the root uses `rootProject.name`). A module's version must be a plain string literal, `version = "1.0.0"` or `version '1.0.0'`, either in its own script or in the root script's `allprojects` / `subprojects` block. Modules that share that block must release together at one version.
+
+A bump rewrites that literal. A `project(":x")` dependency carries no version, so it orders the publish but does not move. Before publishing, vis looks up the module in Maven Central's `maven-metadata.xml` (or the `mavenMetadataUrl` you set, the same override the Maven actions take) and skips a version the repository already lists. A network error does not skip; the publish then reports the real failure.
+
+Publishing runs `./gradlew :<path>:publish`, so the module needs a publishing plugin such as `maven-publish` with a repository. Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` before running anything. The build root needs the Gradle wrapper.
+
+vis refuses what it cannot read to a version: a version set from a property or a function, a version in `gradle.properties`, a `projectDir` remap, an `archivesName` rename, two modules with the same coordinates, or a group that is not declared.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:
