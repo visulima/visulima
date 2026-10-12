@@ -1,36 +1,54 @@
 /**
- * Cargo.lock → CycloneDX components. The JS path builds its graph from npm
- * lockfiles; a Rust workspace records its graph in `Cargo.lock`, so it is
- * read separately and appended to the same BOM.
+ * Cargo.lock → CycloneDX components. A Rust workspace records its graph in its own
+ * lockfile, so it is read separately and appended to the BOM.
  *
- * Packages with a `source` (crates.io, git, other registries) are components
- * with a `pkg:cargo` purl. Workspace members have no `source` and become
- * components too, so their edges resolve.
+ * Workspace members are the entries with no `source`. Their `dev-dependencies` are
+ * read from each member's manifest, because the lockfile merges them with the normal
+ * dependencies. Registry packages carry only normal dependencies, so their edges are
+ * used as they are.
  */
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import type { Component, Dependency } from "./types";
+import { parse as parseToml } from "smol-toml";
+import zeptomatch from "zeptomatch";
 
-interface CargoLockEntry {
-    dependencies: string[];
-    name: string;
-    source?: string;
-    version: string;
-}
+import type { LockDep, LockEntry } from "./lockgraph";
+import { buildLockGraph } from "./lockgraph";
+import type { Component, Dependency } from "./types";
 
 /** `pkg:cargo/&lt;name>@&lt;version>`. Crate names are already URL-safe. */
 export const toCargoPurl = (name: string, version: string): string => `pkg:cargo/${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
 
-const parseLock = (content: string): CargoLockEntry[] => {
-    const entries: CargoLockEntry[] = [];
-    let current: Partial<CargoLockEntry> & { dependencies: string[] } | undefined;
+const normalizeCrate = (name: string): string => name;
+
+/**
+ * A `Cargo.lock` dependency is `"name"`, `"name version"`, or
+ * `"name version (source)"`. The version appears only when several versions of the
+ * crate are locked, and the source only when those versions share a name.
+ */
+const parseDependency = (spec: string): LockDep | undefined => {
+    const name = spec.split(" ")[0];
+
+    if (name === undefined || name === "") {
+        return undefined;
+    }
+
+    const version = /^\S+\s+(\d[^\s(]*)/.exec(spec)?.[1];
+    const source = /\(([^)]+)\)/.exec(spec)?.[1];
+
+    return { kind: "main", name, source, version };
+};
+
+const parseLock = (content: string): LockEntry[] => {
+    const entries: LockEntry[] = [];
+    let current: { deps: LockDep[]; name?: string; source?: string; version?: string } | undefined;
     let inDependencies = false;
 
     const flush = (): void => {
         if (current?.name !== undefined && current.version !== undefined) {
-            entries.push({ dependencies: current.dependencies, name: current.name, source: current.source, version: current.version });
+            entries.push({ deps: current.deps, member: current.source === undefined, name: current.name, source: current.source, version: current.version });
         }
     };
 
@@ -39,7 +57,7 @@ const parseLock = (content: string): CargoLockEntry[] => {
 
         if (line === "[[package]]") {
             flush();
-            current = { dependencies: [] };
+            current = { deps: [] };
             inDependencies = false;
 
             continue;
@@ -53,10 +71,20 @@ const parseLock = (content: string): CargoLockEntry[] => {
             const quoted = /^"([^"]+)",?$/.exec(line);
 
             if (quoted) {
-                current.dependencies.push(quoted[1]!);
+                const dep = parseDependency(quoted[1]!);
+
+                if (dep !== undefined) {
+                    current.deps.push(dep);
+                }
             } else if (line === "]") {
                 inDependencies = false;
             }
+
+            continue;
+        }
+
+        if (line === "dependencies = [") {
+            inDependencies = true;
 
             continue;
         }
@@ -66,11 +94,13 @@ const parseLock = (content: string): CargoLockEntry[] => {
         if (field) {
             const [, key = "", value = ""] = field;
 
-            if (key === "name" || key === "version" || key === "source") {
-                current[key] = value;
+            if (key === "name") {
+                current.name = value;
+            } else if (key === "version") {
+                current.version = value;
+            } else {
+                current.source = value;
             }
-        } else if (line === "dependencies = [") {
-            inDependencies = true;
         }
     }
 
@@ -79,12 +109,139 @@ const parseLock = (content: string): CargoLockEntry[] => {
     return entries;
 };
 
+interface CargoManifestShape {
+    "build-dependencies"?: Record<string, unknown>;
+    dependencies?: Record<string, unknown>;
+    "dev-dependencies"?: Record<string, unknown>;
+    package?: { name?: unknown };
+    target?: Record<string, { "build-dependencies"?: Record<string, unknown>; dependencies?: Record<string, unknown> }>;
+    workspace?: { exclude?: unknown; members?: unknown };
+}
+
+/** The real crate a dependency entry names: `package = "x"` renames the key. */
+const realName = (key: string, spec: unknown): string => {
+    const renamed = typeof spec === "object" && spec !== null ? (spec as { package?: unknown }).package : undefined;
+
+    return typeof renamed === "string" ? renamed : key;
+};
+
+/** Directories listed in `[workspace].members`, read synchronously. `**` is not expanded. */
+const memberDirectories = (workspaceRoot: string, root: CargoManifestShape): string[] => {
+    const members = Array.isArray(root.workspace?.members) ? root.workspace.members.filter((m): m is string => typeof m === "string") : [];
+    const excludes = Array.isArray(root.workspace?.exclude) ? root.workspace.exclude.filter((e): e is string => typeof e === "string") : [];
+    const found = new Set<string>();
+
+    for (const pattern of members) {
+        let current = [workspaceRoot];
+
+        for (const segment of pattern.split("/").filter((part) => part !== "" && part !== ".")) {
+            const next: string[] = [];
+
+            for (const base of current) {
+                if (!/[*?[{]/.test(segment)) {
+                    next.push(join(base, segment));
+
+                    continue;
+                }
+
+                let entries: string[];
+
+                try {
+                    entries = readdirSync(base);
+                } catch {
+                    entries = [];
+                }
+
+                for (const entry of entries) {
+                    const path = join(base, entry);
+
+                    if (zeptomatch(segment, entry) && statSync(path).isDirectory()) {
+                        next.push(path);
+                    }
+                }
+            }
+
+            current = next;
+        }
+
+        for (const dir of current) {
+            const rel = dir.slice(workspaceRoot.length + 1).split("\\").join("/");
+
+            if (!excludes.some((exclude) => zeptomatch(exclude, rel))) {
+                found.add(dir);
+            }
+        }
+    }
+
+    return [...found];
+};
+
+/**
+ * Normal dependency names (including build and target-specific ones) of each member,
+ * keyed by the member's crate name. A member whose manifest cannot be read is absent,
+ * and its lockfile edges are kept as they are.
+ */
+const memberNormalDependencies = (workspaceRoot: string): Map<string, Set<string>> => {
+    const result = new Map<string, Set<string>>();
+    let root: CargoManifestShape;
+
+    try {
+        root = parseManifest(readFileSync(join(workspaceRoot, "Cargo.toml"), "utf8"));
+    } catch {
+        return result;
+    }
+
+    const dirs = memberDirectories(workspaceRoot, root);
+
+    if (root.package?.name !== undefined) {
+        dirs.push(workspaceRoot);
+    }
+
+    for (const dir of dirs) {
+        let manifest: CargoManifestShape;
+
+        try {
+            manifest = parseManifest(readFileSync(join(dir, "Cargo.toml"), "utf8"));
+        } catch {
+            continue;
+        }
+
+        if (typeof manifest.package?.name !== "string") {
+            continue;
+        }
+
+        const normal = new Set<string>();
+        const collect = (table: Record<string, unknown> | undefined): void => {
+            for (const [key, spec] of Object.entries(table ?? {})) {
+                normal.add(normalizeCrate(realName(key, spec)));
+            }
+        };
+
+        collect(manifest.dependencies);
+        collect(manifest["build-dependencies"]);
+
+        for (const target of Object.values(manifest.target ?? {})) {
+            collect(target.dependencies);
+            collect(target["build-dependencies"]);
+        }
+
+        result.set(normalizeCrate(manifest.package.name), normal);
+    }
+
+    return result;
+};
+
+const parseManifest = (raw: string): CargoManifestShape => parseToml(raw);
+
 /**
  * Read `Cargo.lock` at `workspaceRoot` and return its components and dependency
- * edges. Both are empty when there is no lockfile, so a repo without Rust code
- * gets the same BOM as before.
+ * edges, restricted to what the workspace reaches. Both are empty without a
+ * lockfile, so a repo without Rust code gets the same BOM as before.
  */
-export const buildCargoSbomParts = (workspaceRoot: string): { components: Component[]; dependencies: Dependency[] } => {
+export const buildCargoSbomParts = (
+    workspaceRoot: string,
+    options: { focusNames?: ReadonlyArray<string>; includeDev?: boolean } = {},
+): { components: Component[]; dependencies: Dependency[] } => {
     let content: string;
 
     try {
@@ -93,45 +250,25 @@ export const buildCargoSbomParts = (workspaceRoot: string): { components: Compon
         return { components: [], dependencies: [] };
     }
 
-    const entries = parseLock(content);
-    const versionsByName = new Map<string, string[]>();
+    const normalDeps = memberNormalDependencies(workspaceRoot);
+    const entries = parseLock(content).map((entry): LockEntry => {
+        const normal = entry.member ? normalDeps.get(normalizeCrate(entry.name)) : undefined;
 
-    for (const entry of entries) {
-        versionsByName.set(entry.name, [...(versionsByName.get(entry.name) ?? []), entry.version]);
-    }
-
-    // A dependency is "name" when only one version is locked, and "name version"
-    // (optionally followed by a source) when several are.
-    const resolve = (spec: string): string | undefined => {
-        const [name, version] = spec.split(" ");
-
-        if (name === undefined) {
-            return undefined;
+        if (normal === undefined) {
+            return entry;
         }
 
-        const versions = versionsByName.get(name) ?? [];
-
-        if (version !== undefined && versions.includes(version)) {
-            return toCargoPurl(name, version);
-        }
-
-        return versions.length === 1 ? toCargoPurl(name, versions[0]!) : undefined;
-    };
-
-    const components: Component[] = entries.map((entry) => {
-        const purl = toCargoPurl(entry.name, entry.version);
-
-        return { "bom-ref": purl, name: entry.name, purl, type: "library", version: entry.version };
+        // Dependencies the manifest declares only under [dev-dependencies] are dev edges.
+        return {
+            ...entry,
+            deps: entry.deps.map((dep) => (normal.has(normalizeCrate(dep.name)) ? dep : { ...dep, kind: "dev" as const })),
+        };
     });
 
-    const dependencies: Dependency[] = entries
-        .map((entry) => {
-            const purl = toCargoPurl(entry.name, entry.version);
-            const dependsOn = [...new Set(entry.dependencies.map((spec) => resolve(spec)).filter((ref): ref is string => ref !== undefined))].sort();
-
-            return dependsOn.length > 0 ? { dependsOn, ref: purl } : { ref: purl };
-        })
-        .sort((a, b) => a.ref.localeCompare(b.ref));
-
-    return { components, dependencies };
+    return buildLockGraph(entries, {
+        focusNames: options.focusNames,
+        includeDev: options.includeDev,
+        normalize: normalizeCrate,
+        purl: toCargoPurl,
+    });
 };

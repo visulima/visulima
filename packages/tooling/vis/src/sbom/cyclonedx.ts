@@ -496,9 +496,11 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const metadataRef = metadataComponent["bom-ref"];
     const filteredProjectComponents = metadataRef ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef) : projectComponents;
 
-    // Cargo.lock components and edges, appended to the same BOM. Empty without a lockfile.
-    const cargo = buildCargoSbomParts(workspaceRoot);
-    const python = buildPythonSbomParts(workspaceRoot);
+    // Cargo.lock and uv.lock components and edges, appended to the same BOM, limited to
+    // what the selected projects reach. Empty without a lockfile.
+    const lockOptions = { focusNames: focus && focus.length > 0 ? projectNames : undefined, includeDev };
+    const cargo = buildCargoSbomParts(workspaceRoot, lockOptions);
+    const python = buildPythonSbomParts(workspaceRoot, lockOptions);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
