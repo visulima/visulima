@@ -238,10 +238,7 @@ class GoogleDriveStorage extends BaseStorage<GoogleDriveFile> {
             }
 
             this.authForTokens = built;
-            // `@googleapis/drive` bundles its own google-auth-library copy, so `built`
-            // (typed against this package's google-auth-library) is structurally identical
-            // but a distinct type identity — bridge it to the drive-side auth option type.
-            this.driveClient = drive({ auth: built as unknown as drive_v3.Options["auth"], version: "v3" });
+            this.driveClient = drive({ auth: built, version: "v3" });
         }
 
         const driveId = config.driveId ?? process.env.GOOGLE_DRIVE_ID;
