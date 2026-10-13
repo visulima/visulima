@@ -1839,6 +1839,12 @@ export default class Ink {
 
         if (this.alternateScreen) {
             this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
+
+            // The alternate screen comes back blank, so <Static> output that was written before the
+            // suspend has to be drawn again.
+            if (this.fullStaticOutput !== "") {
+                this.writeBestEffort(this.options.stdout, this.fullStaticOutput);
+            }
         }
 
         if (this.kittyProtocolEnabled && this.kittyFlags) {

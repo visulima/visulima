@@ -1,10 +1,14 @@
 /* eslint-disable no-param-reassign, no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group, regexp/no-obscure-range -- the VT model mutates its screen and parses control bytes by design */
+import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { describe, expect, it } from "vitest";
 
 import { Box, Cursor, Static, Text } from "../../src/components/index";
+import { useApp } from "../../src/ink/hooks/use-app";
 import { render } from "../../src/ink/index";
 import logUpdate from "../../src/ink/log-update";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 /**
  * A minimal VT screen model. It replays the bytes the renderer wrote, so the
@@ -516,6 +520,43 @@ describe("inline renderer: static output", () => {
         await waitUntilRenderFlush();
 
         expect(countOccurrences(stdout.getWrites().join(""), "static-one")).toBe(1);
+
+        unmount();
+    });
+
+    it("replays static output when resuming re-enters the alternate screen", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+        const state: { handle?: { resume: () => Promise<void> } } = {};
+
+        const App = (): ReactNode => {
+            const { suspendTerminal } = useApp();
+
+            useEffect(() => {
+                void (async () => {
+                    state.handle = await suspendTerminal();
+                })();
+            }, [suspendTerminal]);
+
+            return (
+                <>
+                    <Static items={["static-one"]}>{staticItem}</Static>
+                    <Text>live</Text>
+                </>
+            );
+        };
+
+        const { unmount, waitUntilRenderFlush } = render(<App />, { alternateScreen: true, interactive: true, stdout });
+
+        await waitFor(() => state.handle !== undefined);
+        await state.handle!.resume();
+        await waitUntilRenderFlush();
+
+        const writes = stdout.getWrites().join("");
+        const resumed = writes.slice(writes.lastIndexOf(ALT_SCREEN_ON));
+
+        expect(resumed).toContain("static-one");
 
         unmount();
     });
