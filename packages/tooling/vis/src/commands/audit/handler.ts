@@ -66,7 +66,7 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // has its own Rust range matcher and lockfile reader; unknown values
 // (or ones whose matcher hasn't landed yet) get a non-fatal warning so
 // CI invocations stay stable as more ecosystems land.
-const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "composer", "crates.io", "go", "maven", "npm", "packagist", "pypi", "rubygems"]);
+const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "composer", "crates.io", "dart", "go", "maven", "npm", "packagist", "pub", "pypi", "rubygems"]);
 
 // The online advisory catalog only covers npm. A non-npm `--ecosystem` run
 // online would skip that ecosystem silently, so it is rejected up front.
@@ -92,6 +92,29 @@ const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported:
     const unsupported = all.filter((eco) => !SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()));
 
     return { all, unsupported };
+};
+
+// Ecosystems the audit refuses, keyed by lowercase name, with the message shown for each. A Map, not an
+// object, so names like "constructor" cannot match inherited properties.
+const REFUSED_ECOSYSTEMS = new Map<string, (name: string) => string>([
+    ["hex", (name) => `--ecosystem ${name} is not supported: vis does not read mix.lock for audit, so the audit cannot check Hex packages. Remove ${name} from --ecosystem.`],
+    ["nuget", (name) => `--ecosystem ${name} is not supported: OSV's NuGet records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
+    ["swift", (name) => `--ecosystem ${name} is not supported: OSV's SwiftURL records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
+    ["swifturl", (name) => `--ecosystem ${name} is not supported: OSV's SwiftURL records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
+    ["zig", (name) => `--ecosystem ${name} is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove ${name} from --ecosystem.`],
+]);
+
+// Returns the reason the audit must refuse one of the requested ecosystems, or undefined when none is refused.
+export const refusedEcosystemMessage = (ecosystems: string[]): string | undefined => {
+    for (const eco of ecosystems) {
+        const message = REFUSED_ECOSYSTEMS.get(eco.toLowerCase());
+
+        if (message) {
+            return message(eco);
+        }
+    }
+
+    return undefined;
 };
 
 const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
@@ -298,43 +321,12 @@ const executeAudit = async (
     const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
     const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
 
-    // Zig has no OSV ecosystem and no lockfile vis can read versions from. Refuse it here, in both
-    // modes, rather than let the offline path warn and skip it or the online path blame --offline.
-    if (ecosystems.all.some((eco) => eco.toLowerCase() === "zig")) {
-        pail.error(
-            "--ecosystem zig is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove zig from --ecosystem.",
-        );
-        process.exitCode = 1;
+    // Ecosystems the audit cannot check are refused in both modes, rather than let the offline path
+    // warn and skip them, the online path blame --offline, or the run print a clean result.
+    const refusal = refusedEcosystemMessage(ecosystems.all);
 
-        return;
-    }
-
-    // Dart and Swift: OSV has a Pub and a SwiftURL ecosystem, and vis reads pubspec.lock and Package.resolved for SBOM,
-    // but vis has no range matcher for either (native/src/advisories/range/mod.rs), so an audit would report nothing.
-    // Refuse both the same way rather than print a clean result.
-    if (ecosystems.all.some((eco) => ["dart", "pub"].includes(eco.toLowerCase()))) {
-        pail.error(
-            "--ecosystem pub (Dart) is not supported: OSV has a Pub ecosystem, but vis has no range matcher for it, so the audit would report nothing. Remove pub from --ecosystem.",
-        );
-        process.exitCode = 1;
-
-        return;
-    }
-
-    if (ecosystems.all.some((eco) => ["swift", "swifturl"].includes(eco.toLowerCase()))) {
-        pail.error(
-            "--ecosystem swift is not supported: OSV has a SwiftURL ecosystem, but vis has no range matcher for it, so the audit would report nothing. Remove swift from --ecosystem.",
-        );
-        process.exitCode = 1;
-
-        return;
-    }
-
-    // Hex has no lockfile reader for audit (mix.lock is read for the SBOM only), so an audit would scan nothing. Refuse it the same way.
-    if (ecosystems.all.some((eco) => eco.toLowerCase() === "hex")) {
-        pail.error(
-            "--ecosystem hex is not supported: vis does not read mix.lock for audit, so the audit cannot check Hex packages. Remove hex from --ecosystem.",
-        );
+    if (refusal) {
+        pail.error(refusal);
         process.exitCode = 1;
 
         return;

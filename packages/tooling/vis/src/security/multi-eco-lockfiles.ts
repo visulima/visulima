@@ -29,11 +29,13 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
     cargo: "crates.io",
     composer: "Packagist",
     "crates.io": "crates.io",
+    dart: "Pub",
     go: "Go",
     maven: "Maven",
     npm: "npm",
     nuget: "NuGet",
     packagist: "Packagist",
+    pub: "Pub",
     pypi: "PyPI",
     rubygems: "RubyGems",
 };

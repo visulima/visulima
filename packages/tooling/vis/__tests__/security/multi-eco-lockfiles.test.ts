@@ -19,6 +19,14 @@ describe(canonicalEcosystem, () => {
         expect(canonicalEcosystem("rubygems")).toBe("RubyGems");
     });
 
+    it("maps the Pub and dart names to the OSV Pub ecosystem", () => {
+        expect.assertions(3);
+
+        expect(canonicalEcosystem("pub")).toBe("Pub");
+        expect(canonicalEcosystem("dart")).toBe("Pub");
+        expect(canonicalEcosystem("Pub")).toBe("Pub");
+    });
+
     it("returns the raw input for unknown ecosystems", () => {
         expect.assertions(1);
 
@@ -35,6 +43,42 @@ describe("findEcosystemLockfile + lockedPackagesForEcosystem", () => {
 
     afterEach(() => {
         rmSync(workspaceRoot, { force: true, recursive: true });
+    });
+
+    it("parses a pubspec.lock read through the pub alias", () => {
+        expect.assertions(2);
+
+        writeFileSync(
+            join(workspaceRoot, "pubspec.lock"),
+            [
+                "packages:",
+                "  http:",
+                "    dependency: \"direct main\"",
+                "    description:",
+                "      name: http",
+                "      url: \"https://pub.dev\"",
+                "    source: hosted",
+                "    version: \"0.13.2\"",
+                "  path:",
+                "    dependency: transitive",
+                "    description:",
+                "      name: path",
+                "      url: \"https://pub.dev\"",
+                "    source: hosted",
+                "    version: \"1.9.0\"",
+                "sdks:",
+                "  dart: \">=3.0.0 <4.0.0\"",
+                "",
+            ].join("\n"),
+        );
+
+        const found = lockedPackagesForEcosystem(workspaceRoot, "pub");
+
+        expect(found).toStrictEqual([
+            { isDev: false, name: "http", version: "0.13.2" },
+            { isDev: false, name: "path", version: "1.9.0" },
+        ]);
+        expect(findEcosystemLockfile(workspaceRoot, "dart")).toContain("pubspec.lock");
     });
 
     it("parses a poetry.lock (TOML) file", () => {
