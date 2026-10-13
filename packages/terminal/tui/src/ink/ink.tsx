@@ -679,6 +679,11 @@ export default class Ink {
     };
 
     calculateLayout = (): void => {
+        // The root Yoga node is freed on unmount; a commit that lands afterwards has nothing to lay out.
+        if (!this.rootNode.yogaNode) {
+            return;
+        }
+
         const flushLayoutObservers = (node: dom.DOMElement): void => {
             const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
 
@@ -697,9 +702,9 @@ export default class Ink {
 
         const terminalWidth = getWindowSize(this.options.stdout).columns;
 
-        this.rootNode.yogaNode!.setWidth(terminalWidth);
+        this.rootNode.yogaNode.setWidth(terminalWidth);
 
-        this.rootNode.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
+        this.rootNode.yogaNode.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
 
         flushLayoutObservers(this.rootNode);
     };
@@ -1262,6 +1267,10 @@ export default class Ink {
 
             instances.delete(this.options.stdout);
 
+            // Children are freed by the reconciler; the root node is WASM memory the GC never reclaims.
+            this.rootNode.yogaNode?.free();
+            this.rootNode.yogaNode = undefined;
+
             // Ensure all queued writes have been processed before resolving the
             // exit promise. For real writable streams, queue an empty write as a
             // barrier — its callback fires only after all prior writes complete.
@@ -1316,7 +1325,8 @@ export default class Ink {
         // won't fire. When no raw mode is active (e.g. a static render in a
         // PTY), the event loop drains naturally and beforeExit triggers a
         // clean unmount.
-        if (!this.beforeExitHandler) {
+        // After (or during) unmount nothing would ever remove the listener again.
+        if (!this.beforeExitHandler && !this.isUnmounted && !this.isUnmounting) {
             this.beforeExitHandler = () => {
                 this.unmount();
             };

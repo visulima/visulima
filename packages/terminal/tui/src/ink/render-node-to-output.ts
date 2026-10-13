@@ -22,6 +22,15 @@ import wrapText from "./wrap-text";
 // and use it as offset for the rest of the nodes
 // Only first node is taken into account, because other text nodes can't have margin or padding,
 // so their coordinates will be relative to the first node anyway
+// Offsets are terminal cell coordinates: truncate toward zero, treat non-finite values as 0.
+const toCellOffset = (value: number | undefined): number => {
+    if (value === undefined || !Number.isFinite(value)) {
+        return 0;
+    }
+
+    return Math.trunc(value);
+};
+
 const applyPaddingToText = (node: DOMElement, text: string): string => {
     const yogaNode = node.childNodes[0]?.yogaNode;
 
@@ -380,10 +389,20 @@ const renderNodeToOutput = (
                 const nodeW = Math.round(yogaNode.getComputedWidth());
                 const nodeH = Math.round(yogaNode.getComputedHeight());
 
-                const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : x;
-                const regionW = clipHorizontally ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT) : nodeW;
-                const regionY = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : y;
-                const regionH = clipVertically ? nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM) : nodeH;
+                // An axis that is not clipped keeps the bounds of the enclosing clip instead of this node's box,
+                // so `overflow="hidden"` with `overflowX="visible"` still lets content spill horizontally.
+                const enclosingClip = output.getCurrentClip();
+                const unclippedX = enclosingClip?.x1 ?? -1_000_000;
+                const unclippedY = enclosingClip?.y1 ?? -1_000_000;
+
+                const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : unclippedX;
+                const regionW = clipHorizontally
+                    ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT)
+                    : (enclosingClip?.x2 ?? 1_000_000) - unclippedX;
+                const regionY = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : unclippedY;
+                const regionH = clipVertically
+                    ? nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM)
+                    : (enclosingClip?.y2 ?? 1_000_000) - unclippedY;
 
                 output.startChildRegion(regionX, regionY, Math.max(0, regionW), Math.max(0, regionH));
                 clipped = true;
@@ -397,6 +416,11 @@ const renderNodeToOutput = (
                     scrollOffsetX = -node.internal_scrollState.scrollLeft;
                 }
             }
+        }
+
+        if (node.nodeName === "ink-box") {
+            scrollOffsetX -= toCellOffset(node.style.contentOffsetX);
+            scrollOffsetY -= toCellOffset(node.style.contentOffsetY);
         }
 
         if (node.nodeName === "ink-root" || node.nodeName === "ink-box" || node.nodeName === "ink-static-render") {

@@ -1,6 +1,6 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, unicorn/prevent-abbreviations */
 import type { Context } from "react";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 
 // ─── Focus context shape ──────────────────────────────────────────────────────
 
@@ -39,11 +39,18 @@ type FocusEntry = { autoFocus: boolean; id: string; isActive: boolean };
 export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Ordered list of registered focusable components
     const itemsRef = useRef<FocusEntry[]>([]);
+    // Components registered under the same ID share one Tab stop; it goes away with the last of them.
+    const holdersRef = useRef(new Map<string, number>());
     const [activeId, setActiveId] = useState<string | undefined>(undefined);
     const [isEnabled, setIsEnabled] = useState(true);
+    const isEnabledRef = useRef(true);
+
+    isEnabledRef.current = isEnabled;
 
     const add = useCallback((id: string, options: { autoFocus: boolean }) => {
-        // Avoid duplicates
+        holdersRef.current.set(id, (holdersRef.current.get(id) ?? 0) + 1);
+
+        // Shared ID: already a Tab stop
         if (itemsRef.current.some((e) => e.id === id)) {
             return;
         }
@@ -53,6 +60,10 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         itemsRef.current = [...itemsRef.current, entry];
 
         // Auto-focus: if no component is focused yet and autoFocus is set
+        if (!isEnabledRef.current) {
+            return;
+        }
+
         setActiveId((previous) => {
             if (options.autoFocus && previous === undefined) {
                 return id;
@@ -68,6 +79,15 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const remove = useCallback((id: string) => {
+        const holders = (holdersRef.current.get(id) ?? 1) - 1;
+
+        if (holders > 0) {
+            holdersRef.current.set(id, holders);
+
+            return;
+        }
+
+        holdersRef.current.delete(id);
         itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
         setActiveId((previous) => (previous === id ? undefined : previous));
     }, []);
@@ -178,7 +198,8 @@ export type UseFocusResult = {
 export const useFocus = ({ autoFocus = false, id: customId, isActive = true }: UseFocusOptions = {}): UseFocusResult => {
     const { activate, activeId, add, deactivate, focus, remove } = useContext(FocusContext);
 
-    const id = useMemo(() => customId ?? Math.random().toString(36).slice(2, 7), [customId]);
+    const generatedId = useId();
+    const id = customId ?? generatedId;
 
     useEffect(() => {
         add(id, { autoFocus });
@@ -198,7 +219,7 @@ export const useFocus = ({ autoFocus = false, id: customId, isActive = true }: U
 
     return {
         focus,
-        isFocused: Boolean(id) && activeId === id,
+        isFocused: activeId === id,
     };
 };
 

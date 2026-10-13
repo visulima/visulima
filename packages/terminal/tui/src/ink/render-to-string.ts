@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
 import type { ReactNode } from "react";
 import { LegacyRoot } from "react-reconciler/constants";
 import Yoga from "yoga-layout";
@@ -99,7 +99,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     // React's reconciler catches component errors internally and reports them
     // via onUncaughtError rather than letting them propagate. For a synchronous
     // utility like renderToString, callers expect errors to throw.
-    let uncaughtError: unknown;
+    const uncaught: { error?: unknown; has: boolean } = { has: false };
 
     // Create a reconciler container in legacy (synchronous) mode.
     // The four trailing callbacks are: onUncaughtError, onCaughtError,
@@ -113,7 +113,10 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
         null,
         "render-to-string",
         (error: unknown) => {
-            uncaughtError ??= error;
+            if (!uncaught.has) {
+                uncaught.has = true;
+                uncaught.error = error;
+            }
         },
         () => {},
         () => {},
@@ -142,8 +145,8 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
         rootNode.yogaNode!.free();
 
         // Re-throw after full cleanup so callers see the original error.
-        if (uncaughtError !== undefined) {
-            throw uncaughtError instanceof Error ? uncaughtError : new Error(String(uncaughtError));
+        if (uncaught.has) {
+            throw uncaught.error instanceof Error ? uncaught.error : new Error(String(uncaught.error));
         }
 
         // The renderer appends a trailing newline to static output for terminal

@@ -58,8 +58,18 @@ type Props = {
 };
 
 type Focusable = {
+    /** Number of mounted components registered under this ID. They share one Tab stop. */
+    readonly count: number;
     readonly id: string;
     readonly isActive: boolean;
+};
+
+const withCount = (focusable: Focusable, id: string, delta: number): Focusable => {
+    if (focusable.id !== id) {
+        return focusable;
+    }
+
+    return { ...focusable, count: focusable.count + delta };
 };
 
 // Root component for all Ink apps
@@ -82,6 +92,8 @@ const App = ({
     writeToStdout,
 }: Props): React.ReactNode => {
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
+    // Mirrors `isFocusEnabled` for callbacks that must not close over stale state.
+    const isFocusEnabledRef = useRef(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
     // The state value is intentionally discarded: `focusablesRef` below is the
     // source of truth, and this setter exists only to schedule a re-render.
@@ -230,7 +242,8 @@ const App = ({
     );
 
     // Determines if TTY is supported on the provided stdin
-    const isRawModeSupported = stdin.isTTY;
+    // Raw mode needs a TTY that actually exposes `setRawMode()`; other streams (e.g. a `PassThrough`) are not raw-capable.
+    const isRawModeSupported = stdin.isTTY && typeof stdin.setRawMode === "function";
 
     const detachReadableListener = useCallback((): void => {
         if (!readableListenerRef.current) {
@@ -249,11 +262,15 @@ const App = ({
 
     const disableRawMode = useCallback((): void => {
         pendingDisableRawModeRef.current = false;
-        stdin.setRawMode(false);
-        stdin.unref();
+
+        if (isRawModeSupported) {
+            stdin.setRawMode(false);
+        }
+
+        stdin.unref?.();
         rawModeEnabledCount.current = 0;
         clearInputState();
-    }, [stdin, clearInputState]);
+    }, [stdin, isRawModeSupported, clearInputState]);
 
     const handleExit = useCallback(
         (errorOrResult?: unknown): void => {
@@ -276,13 +293,7 @@ const App = ({
             }
 
             if (input === escape && isFocusEnabled) {
-                setActiveFocusId((currentActiveFocusId) => {
-                    if (currentActiveFocusId) {
-                        return undefined;
-                    }
-
-                    return currentActiveFocusId;
-                });
+                setActiveFocusId(undefined);
             }
         },
         [exitOnCtrlC, handleExit, isFocusEnabled],
@@ -380,8 +391,11 @@ const App = ({
                     pendingDisableRawModeRef.current = false;
 
                     if (!isRawModeAlreadyEnabled) {
-                        stdin.ref();
-                        stdin.setRawMode(true);
+                        stdin.ref?.();
+
+                        if (isRawModeSupported) {
+                            stdin.setRawMode(true);
+                        }
                     }
 
                     attachReadableListener();
@@ -464,7 +478,7 @@ const App = ({
             pendingDisableRawModeRef.current = false;
             clearInputState();
             stdin.setRawMode(false);
-            stdin.unref();
+            stdin.unref?.();
         }
     }, [isRawModeSupported, stdout, stdin, clearInputState]);
 
@@ -472,7 +486,7 @@ const App = ({
         const { bracketedPaste, rawMode } = suspendedInputStateRef.current;
 
         if (rawMode) {
-            stdin.ref();
+            stdin.ref?.();
             stdin.setRawMode(true);
             stdin.setEncoding("utf8");
             attachReadableListener();
@@ -564,11 +578,14 @@ const App = ({
     }, [isFocusEnabled, focusNext, focusPrevious, internal_eventEmitter]);
 
     const enableFocus = useCallback((): void => {
+        isFocusEnabledRef.current = true;
         setIsFocusEnabled(true);
     }, []);
 
     const disableFocus = useCallback((): void => {
+        isFocusEnabledRef.current = false;
         setIsFocusEnabled(false);
+        setActiveFocusId(undefined);
     }, []);
 
     const focus = useCallback((id: string): void => {
@@ -580,22 +597,26 @@ const App = ({
     }, []);
 
     const addFocusable = useCallback((id: string, { autoFocus }: { autoFocus: boolean }): void => {
-        const next = [
-            ...focusablesRef.current,
-            {
-                id,
-                isActive: true,
-            },
-        ];
+        const existing = focusablesRef.current.find((focusable) => focusable.id === id);
+        const next = existing
+            ? focusablesRef.current.map((focusable) => withCount(focusable, id, 1))
+            : [
+                ...focusablesRef.current,
+                {
+                    count: 1,
+                    id,
+                    isActive: true,
+                },
+            ];
 
         focusablesCountRef.current = next.length;
         focusablesRef.current = next;
 
         setFocusables(next);
 
-        if (autoFocus) {
+        if (autoFocus && isFocusEnabledRef.current) {
             setActiveFocusId((currentActiveFocusId) => {
-                if (!currentActiveFocusId) {
+                if (currentActiveFocusId === undefined) {
                     return id;
                 }
 
@@ -605,6 +626,19 @@ const App = ({
     }, []);
 
     const removeFocusable = useCallback((id: string): void => {
+        const remaining = focusablesRef.current.find((focusable) => focusable.id === id);
+
+        // Another mounted component still holds this ID: keep the shared Tab stop.
+        if (remaining && remaining.count > 1) {
+            const decremented = focusablesRef.current.map((focusable) => withCount(focusable, id, -1));
+
+            focusablesRef.current = decremented;
+
+            setFocusables(decremented);
+
+            return;
+        }
+
         setActiveFocusId((currentActiveFocusId) => {
             if (currentActiveFocusId === id) {
                 return undefined;
@@ -628,7 +662,7 @@ const App = ({
             }
 
             return {
-                id,
+                ...focusable,
                 isActive: true,
             };
         });
@@ -653,7 +687,7 @@ const App = ({
             }
 
             return {
-                id,
+                ...focusable,
                 isActive: false,
             };
         });

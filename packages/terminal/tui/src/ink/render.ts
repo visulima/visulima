@@ -123,22 +123,23 @@ export type RenderOptions = {
     standardReactLayoutTiming?: boolean;
 
     /**
-     * Error stream.
+     * Error stream. Any Node.js writable stream (for example a `PassThrough`) is accepted.
      * @default process.stderr
      */
-    stderr?: NodeJS.WriteStream;
+    stderr?: NodeJS.WritableStream;
 
     /**
-     * Input stream where app will listen for input.
+     * Input stream where app will listen for input. Any Node.js readable stream is accepted;
+     * raw mode is only used when it is a TTY with `setRawMode()`.
      * @default process.stdin
      */
-    stdin?: NodeJS.ReadStream;
+    stdin?: NodeJS.ReadableStream;
 
     /**
-     * Output stream where the app will be rendered.
+     * Output stream where the app will be rendered. Any Node.js writable stream (for example a `PassThrough`) is accepted.
      * @default process.stdout
      */
-    stdout?: NodeJS.WriteStream;
+    stdout?: NodeJS.WritableStream;
 
     /**
      * Use the native Rust cell-diff renderer for terminal output.
@@ -217,7 +218,7 @@ export type Instance = {
 /**
  * Mount a component and render the output.
  */
-const render = (node: ReactNode, options?: NodeJS.WriteStream | RenderOptions): Instance => {
+const render = (node: ReactNode, options?: NodeJS.WritableStream | RenderOptions): Instance => {
     const inkOptions: InkOptions = {
         alternateScreen: false,
         concurrent: false,
@@ -229,8 +230,8 @@ const render = (node: ReactNode, options?: NodeJS.WriteStream | RenderOptions): 
         stderr: process.stderr,
         stdin: process.stdin,
         stdout: process.stdout,
-        ...getOptions(options),
-    };
+        ...definedOptions(getOptions(options)),
+    } as InkOptions;
 
     const instance: Ink = getInstance(inkOptions.stdout, () => new Ink(inkOptions));
 
@@ -261,18 +262,21 @@ const render = (node: ReactNode, options?: NodeJS.WriteStream | RenderOptions): 
 
 export default render;
 
-const getOptions = (stdout: NodeJS.WriteStream | RenderOptions | undefined = {}): RenderOptions => {
+// An option explicitly set to `undefined` must fall back to its default instead of overriding it.
+const definedOptions = (options: RenderOptions): RenderOptions => Object.fromEntries(Object.entries(options as Record<string, unknown>).filter(([, value]) => value !== undefined));
+
+const getOptions = (stdout: NodeJS.WritableStream | RenderOptions | undefined = {}): RenderOptions => {
     if (stdout instanceof Stream) {
         return {
             stdin: process.stdin,
-            stdout,
+            stdout: stdout as NodeJS.WritableStream,
         };
     }
 
-    return stdout;
+    return stdout as RenderOptions;
 };
 
-const getInstance = (stdout: NodeJS.WriteStream, createInstance: () => Ink): Ink => {
+const getInstance = (stdout: NodeJS.WritableStream, createInstance: () => Ink): Ink => {
     const instance = instances.get(stdout);
 
     if (instance === undefined) {

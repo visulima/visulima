@@ -117,40 +117,44 @@ export type Styles = {
     bottom?: number | string;
     color?: number | string;
     columnGap?: number;
+    /** Shifts the node's children left by this many columns (truncated toward zero; non-finite counts as 0). */
+    contentOffsetX?: number;
+    /** Shifts the node's children up by this many rows (truncated toward zero; non-finite counts as 0). */
+    contentOffsetY?: number;
+
     dim?: boolean;
     display?: "flex" | "none";
-
     // Terminal-specific numeric props (native renderer)
     fg?: number | string;
     flexBasis?: number | string;
     flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
+
     flexGrow?: number;
     flexShrink?: number;
-
     flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
     gap?: number;
+
     height?: number | string;
     /** Internal flag for sticky header alternate nodes */
     internalStickyAlternate?: boolean;
-
     inverse?: boolean;
     italic?: boolean;
     justifyContent?: "flex-start" | "flex-end" | "space-between" | "space-around" | "space-evenly" | "center";
     left?: number | string;
     margin?: number;
+
     marginBottom?: number;
     marginLeft?: number;
 
     marginRight?: number;
     marginTop?: number;
-
     marginX?: number;
     marginY?: number;
     maxHeight?: number | string;
-    maxWidth?: number | string;
-    minHeight?: number | string;
 
-    minWidth?: number | string;
+    maxWidth?: number;
+    minHeight?: number | string;
+    minWidth?: number;
     overflow?: "hidden" | "scroll" | "visible";
     overflowX?: "hidden" | "scroll" | "visible";
     overflowY?: "hidden" | "scroll" | "visible";
@@ -304,7 +308,7 @@ const applyFlexStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.flexBasis === "number") {
             node.setFlexBasis(style.flexBasis);
         } else if (typeof style.flexBasis === "string") {
-            node.setFlexBasisPercent(Number.parseInt(style.flexBasis, 10));
+            node.setFlexBasisPercent(Number.parseFloat(style.flexBasis));
         } else {
             node.setFlexBasis(Number.NaN);
         }
@@ -367,7 +371,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.width === "number") {
             node.setWidth(style.width);
         } else if (typeof style.width === "string") {
-            node.setWidthPercent(Number.parseInt(style.width, 10));
+            node.setWidthPercent(Number.parseFloat(style.width));
         } else {
             node.setWidthAuto();
         }
@@ -377,39 +381,31 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.height === "number") {
             node.setHeight(style.height);
         } else if (typeof style.height === "string") {
-            node.setHeightPercent(Number.parseInt(style.height, 10));
+            node.setHeightPercent(Number.parseFloat(style.height));
         } else {
             node.setHeightAuto();
         }
     }
 
     if ("minWidth" in style) {
-        if (typeof style.minWidth === "string") {
-            node.setMinWidthPercent(Number.parseInt(style.minWidth, 10));
-        } else {
-            node.setMinWidth(style.minWidth ?? 0);
-        }
+        node.setMinWidth(style.minWidth ?? 0);
     }
 
     if ("minHeight" in style) {
         if (typeof style.minHeight === "string") {
-            node.setMinHeightPercent(Number.parseInt(style.minHeight, 10));
+            node.setMinHeightPercent(Number.parseFloat(style.minHeight));
         } else {
             node.setMinHeight(style.minHeight ?? 0);
         }
     }
 
     if ("maxWidth" in style) {
-        if (typeof style.maxWidth === "string") {
-            node.setMaxWidthPercent(Number.parseInt(style.maxWidth, 10));
-        } else {
-            node.setMaxWidth(style.maxWidth);
-        }
+        node.setMaxWidth(style.maxWidth);
     }
 
     if ("maxHeight" in style) {
         if (typeof style.maxHeight === "string") {
-            node.setMaxHeightPercent(Number.parseInt(style.maxHeight, 10));
+            node.setMaxHeightPercent(Number.parseFloat(style.maxHeight));
         } else {
             node.setMaxHeight(style.maxHeight);
         }

@@ -1,5 +1,5 @@
-/* eslint-disable consistent-return, sonarjs/pseudo-random */
-import { useContext, useEffect, useMemo } from "react";
+/* eslint-disable consistent-return */
+import { useContext, useEffect, useId } from "react";
 
 import FocusContext from "../../components/focus-context";
 import useStdin from "./use-stdin";
@@ -41,7 +41,8 @@ const useFocus = ({ autoFocus = false, id: customId, isActive = true }: Input = 
     const { isRawModeSupported, setRawMode } = useStdin();
     const { activate, activeId, add, deactivate, focus, remove } = useContext(FocusContext);
 
-    const id = useMemo(() => customId ?? Math.random().toString().slice(2, 7), [customId]);
+    const generatedId = useId();
+    const id = customId ?? generatedId;
 
     useEffect(() => {
         add(id, { autoFocus });
@@ -73,7 +74,7 @@ const useFocus = ({ autoFocus = false, id: customId, isActive = true }: Input = 
 
     return {
         focus,
-        isFocused: Boolean(id) && activeId === id,
+        isFocused: activeId === id,
     };
 };
 

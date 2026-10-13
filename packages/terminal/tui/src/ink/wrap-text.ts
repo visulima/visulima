@@ -1,9 +1,11 @@
 /* eslint-disable e18e/prefer-static-regex */
 import { truncate, wordWrap } from "@visulima/string";
 
+import DataLimitedLruMap from "./data-limited-lru-map";
 import type { Styles } from "./styles";
 
-const cache: Record<string, string> = {};
+// Bounded so a long-running app streaming ever-changing text cannot grow it forever.
+const cache = new DataLimitedLruMap<string>(10_000, 1_000_000);
 
 const wrapWordMode: Record<string, string> = {
     hard: "STRICT_WIDTH",
@@ -14,10 +16,11 @@ const wrapWordMode: Record<string, string> = {
 };
 
 const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]): string => {
-    const cacheKey = text + String(maxWidth) + String(wrapType);
-    const cachedText = cache[cacheKey];
+    // The separators keep (text, width) pairs such as ("a1", 2) and ("a", 12) from sharing a key.
+    const cacheKey = `${String(maxWidth)}\u0000${String(wrapType)}\u0000${text}`;
+    const cachedText = cache.get(cacheKey);
 
-    if (cachedText) {
+    if (cachedText !== undefined) {
         return cachedText;
     }
 
@@ -41,10 +44,14 @@ const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]):
             position = "start";
         }
 
-        wrappedText = truncate(text, maxWidth, { position });
+        // Each line is truncated on its own; truncating the whole string would keep only the first line.
+        wrappedText = text
+            .split("\n")
+            .map((line) => truncate(line, maxWidth, { position }))
+            .join("\n");
     }
 
-    cache[cacheKey] = wrappedText;
+    cache.set(cacheKey, wrappedText);
 
     return wrappedText;
 };

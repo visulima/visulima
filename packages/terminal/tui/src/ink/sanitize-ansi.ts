@@ -2,6 +2,14 @@ import { hasAnsiControlCharacters, tokenizeAnsi } from "./ansi-tokenizer";
 
 const sgrParametersRegex = /^[\d:;]*$/;
 
+// C0 controls other than tab, newline and ESC (which starts every escape sequence), plus DEL.
+// A stray BEL, backspace or carriage return in text moves or rings the terminal and overwrites
+// neighbouring cells (a CRLF would punch through a box border), so none of them are kept.
+// eslint-disable-next-line no-control-regex
+const strayControlCharacters = /[\u0000-\u0008\u000B-\u001A\u001C-\u001F\u007F]/g;
+
+const stripStrayControlCharacters = (text: string): string => text.replaceAll(strayControlCharacters, "");
+
 // OSC 8 (hyperlinks) is the only OSC sequence the renderer needs. Every
 // other OSC introducer is stripped so attacker-controlled text cannot
 // hijack the terminal title (OSC 0/1/2), write the user's clipboard
@@ -22,14 +30,14 @@ const isAllowedOsc = (value: string): boolean => value.startsWith(escOsc8Prefix)
 // control sequences.
 const sanitizeAnsi = (text: string): string => {
     if (!hasAnsiControlCharacters(text)) {
-        return text;
+        return stripStrayControlCharacters(text);
     }
 
     let output = "";
 
     for (const token of tokenizeAnsi(text)) {
         if (token.type === "text") {
-            output += token.value;
+            output += stripStrayControlCharacters(token.value);
             continue;
         }
 

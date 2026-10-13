@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, jsdoc/match-description, no-control-regex, sonarjs/slow-regex, unicorn/no-null */
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import Yoga from "yoga-layout";
 
 import type { InputParser, MouseEvent, TuiApp } from "../core/index";
 import type { LayoutNode } from "./layout";
@@ -340,18 +341,27 @@ export const useStdin = (): { isRawModeSupported: boolean; setRawMode: (value: b
  * Returns { width: 0, height: 0 } when called during render (before layout).
  * Ink-compatible: measureElement(ref.current)
  */
-export const measureElement = (node: LayoutNode | null): { height: number; width: number } => {
+export const measureElement = (node: LayoutNode | null): { clientHeight: number; clientWidth: number; height: number; width: number } => {
     if (!node || !node.yogaNode) {
-        return { height: 0, width: 0 };
+        return { clientHeight: 0, clientWidth: 0, height: 0, width: 0 };
     }
 
+    const { yogaNode } = node;
+    const height = yogaNode.getComputedHeight() ?? 0;
+    const width = yogaNode.getComputedWidth() ?? 0;
+
     return {
-        height: node.yogaNode.getComputedHeight() ?? 0,
-        width: node.yogaNode.getComputedWidth() ?? 0,
+        // Size without borders: the space the content can occupy.
+        clientHeight: Math.max(0, height - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM)),
+        clientWidth: Math.max(0, width - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT)),
+        height,
+        width,
     };
 };
 
 export interface BoxMetrics {
+    readonly clientHeight: number;
+    readonly clientWidth: number;
     readonly height: number;
     readonly left: number;
     readonly top: number;
@@ -362,7 +372,7 @@ export interface UseBoxMetricsResult extends BoxMetrics {
     readonly hasMeasured: boolean;
 }
 
-const emptyMetrics: BoxMetrics = { height: 0, left: 0, top: 0, width: 0 };
+const emptyMetrics: BoxMetrics = { clientHeight: 0, clientWidth: 0, height: 0, left: 0, top: 0, width: 0 };
 
 /**
  * Returns the current layout metrics for a Box ref, updating on every render
@@ -382,13 +392,21 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
         }
 
         const layout = ref.current.getLayout();
+        const { clientHeight, clientWidth } = measureElement(ref.current);
 
         setMetrics((previous) => {
-            if (previous.width === layout.width && previous.height === layout.height && previous.left === layout.left && previous.top === layout.top) {
+            if (
+                previous.width === layout.width
+                && previous.height === layout.height
+                && previous.left === layout.left
+                && previous.top === layout.top
+                && previous.clientWidth === clientWidth
+                && previous.clientHeight === clientHeight
+            ) {
                 return previous;
             }
 
-            return { height: layout.height, left: layout.left, top: layout.top, width: layout.width };
+            return { clientHeight, clientWidth, height: layout.height, left: layout.left, top: layout.top, width: layout.width };
         });
         setHasMeasured(true);
     }, [ref]);

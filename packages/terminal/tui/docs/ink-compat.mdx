@@ -9,46 +9,59 @@ description: "Ink API parity matrix, render option differences, and native-only 
 
 ## Core API Parity
 
-| Export                       | Status | Notes                                                         |
-| ---------------------------- | ------ | ------------------------------------------------------------- |
-| `render()`                   | ✅     | Returns `{ rerender, unmount, waitUntilExit, app, input }`    |
-| `Box`                        | ✅     | Yoga-backed layout                                            |
-| `Text`                       | ✅     | Core style props supported                                    |
-| `Newline`                    | ✅     | `count` supported                                             |
-| `Spacer`                     | ✅     | Flex grow spacer                                              |
-| `Static`                     | ✅     | Append-only semantics                                         |
-| `Transform`                  | ✅     | Transform callback support                                    |
-| `renderToString()`           | ✅     | Synchronous snapshot                                          |
-| `measureElement()`           | ✅     | Returns `{ x, y, width, height }`                             |
-| `useApp()`                   | ✅     | `exit` + `quit`                                               |
-| `useInput()`                 | ✅     | Arrows, Enter, Escape, Ctrl, Meta, paging keys                |
-| `usePaste()`                 | ✅     | Bracketed paste routing                                       |
-| `useFocus()`                 | ✅     | Focus state and `focus(id)`                                   |
-| `useFocusManager()`          | ✅     | Focus navigation methods                                      |
-| `useStdin()`                 | ✅     | Raw mode helpers                                              |
-| `useStdout()`                | ✅     | Buffered while app is running                                 |
-| `useStderr()`                | ✅     | Buffered while app is running                                 |
-| `useBoxMetrics()`            | ✅     | Layout metrics + `hasMeasured` (intended for `render()` mode) |
-| `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)            |
-| `Cursor`                     | ✅     | Declarative cursor; inline mode + anchor mode                 |
-| `useCursor()`                | ✅     | Imperative cursor positioning with IME support                |
-| `useAnimation()`             | ✅     | Shared-timer animation driver: frame, time, delta, reset      |
-| `Link`                       | ✅     | Ported from `ink-link`, OSC 8 clickable hyperlinks            |
-| `ProgressBar`                | ✅     | Ported from `ink-progress-bar`, percent-based fill            |
-| `SelectInput`                | ✅     | Ported from `ink-select-input`, interactive list selection    |
-| `TextInput`                  | ✅     | Inspired by `ink-ui`, single-line text entry with cursor      |
-| `ConfirmInput`               | ✅     | Inspired by `ink-ui`, Y/N confirmation prompt                 |
-| `MultiSelect`                | ✅     | Inspired by `ink-ui`, multi-choice selection with checkboxes  |
-| `Badge`                      | ✅     | Inspired by `ink-ui`, uppercase colored label                 |
-| `StatusMessage`              | ✅     | Inspired by `ink-ui`, status icon + message                   |
-| `Alert`                      | ✅     | Inspired by `ink-ui`, bordered variant alert box              |
-| `UnorderedList`              | ✅     | Inspired by `ink-ui`, bullet list with nesting                |
-| `OrderedList`                | ✅     | Inspired by `ink-ui`, numbered list with nesting              |
-| `useIsScreenReaderEnabled()` | ✅     | Enabled via `render()` option or `INK_SCREEN_READER` env var  |
+| Export                       | Status | Notes                                                        |
+| ---------------------------- | ------ | ------------------------------------------------------------ |
+| `render()`                   | ✅     | Returns `{ rerender, unmount, waitUntilExit, app, input }`   |
+| `Box`                        | ✅     | Yoga-backed layout                                           |
+| `Text`                       | ✅     | Core style props supported                                   |
+| `Newline`                    | ✅     | `count` supported                                            |
+| `Spacer`                     | ✅     | Flex grow spacer                                             |
+| `Static`                     | ✅     | Append-only semantics                                        |
+| `Transform`                  | ✅     | Transform callback support                                   |
+| `renderToString()`           | ✅     | Synchronous snapshot                                         |
+| `measureElement()`           | ✅     | Returns `{ x, y, width, height, clientWidth, clientHeight }` |
+| `useApp()`                   | ✅     | `exit` + `quit`                                              |
+| `useInput()`                 | ✅     | Arrows, Enter, Escape, Ctrl, Meta, paging keys               |
+| `usePaste()`                 | ✅     | Bracketed paste routing                                      |
+| `useFocus()`                 | ✅     | Focus state and `focus(id)`                                  |
+| `useFocusManager()`          | ✅     | Focus navigation methods                                     |
+| `useStdin()`                 | ✅     | Raw mode helpers                                             |
+| `useStdout()`                | ✅     | Buffered while app is running                                |
+| `useStderr()`                | ✅     | Buffered while app is running                                |
+| `useBoxMetrics()`            | ✅     | Layout + client metrics, `hasMeasured` (for `render()` mode) |
+| `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)           |
+| `Cursor`                     | ✅     | Declarative cursor; inline mode + anchor mode                |
+| `useCursor()`                | ✅     | Imperative cursor positioning with IME support               |
+| `useAnimation()`             | ✅     | Shared-timer animation driver: frame, time, delta, reset     |
+| `Link`                       | ✅     | Ported from `ink-link`, OSC 8 clickable hyperlinks           |
+| `ProgressBar`                | ✅     | Ported from `ink-progress-bar`, percent-based fill           |
+| `SelectInput`                | ✅     | Ported from `ink-select-input`, interactive list selection   |
+| `TextInput`                  | ✅     | Inspired by `ink-ui`, single-line text entry with cursor     |
+| `ConfirmInput`               | ✅     | Inspired by `ink-ui`, Y/N confirmation prompt                |
+| `MultiSelect`                | ✅     | Inspired by `ink-ui`, multi-choice selection with checkboxes |
+| `Badge`                      | ✅     | Inspired by `ink-ui`, uppercase colored label                |
+| `StatusMessage`              | ✅     | Inspired by `ink-ui`, status icon + message                  |
+| `Alert`                      | ✅     | Inspired by `ink-ui`, bordered variant alert box             |
+| `UnorderedList`              | ✅     | Inspired by `ink-ui`, bullet list with nesting               |
+| `OrderedList`                | ✅     | Inspired by `ink-ui`, numbered list with nesting             |
+| `useIsScreenReaderEnabled()` | ✅     | Enabled via `render()` option or `INK_SCREEN_READER` env var |
+
+## Ink 8 Behavior
+
+The Ink layer follows Ink 8 for these points:
+
+- `stdin`, `stdout` and `stderr` accept any Node.js stream; `useStdout()` / `useStderr()` / `useStdin()` expose them as generic streams, so use `useWindowSize()` instead of `stdout.columns`. Raw mode is only used when `stdin` is a TTY that has `setRawMode()`; `useInput()` and `useFocus()` still need such a stdin and throw otherwise.
+- `<Box>` `minWidth` / `maxWidth` take a number of columns. Percentages are not supported.
+- `<Box>` `contentOffsetX` / `contentOffsetY` shift children for scrollable views.
+- `useInput` ignores terminal replies and reports (focus in/out, cursor position, mouse) instead of passing them as typed input; the application keypad Enter arrives as `key.return`.
+- Components that share a focus ID are one Tab stop, `""` is a valid ID, and `disableFocus()` blurs the focused component.
+- Text drops stray control characters (anything below U+0020 except tab and newline, and DEL) and each line of `wrap="truncate*"` text is truncated on its own.
+
+`@visulima/tui` keeps `react ^19.2.6` as its peer range.
 
 ## Render Option Differences
 
-`render()` accepts Ink-style options, but these are currently ignored:
+The native `render()` from `@visulima/tui/react` accepts Ink-style options, but these are currently ignored:
 
 - `concurrent`
 - `patchConsole`

@@ -88,7 +88,7 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
 
     // Enable mouse tracking on mount, disable on unmount
     useEffect(() => {
-        const out = stdout.isTTY ? stdout : process.stdout;
+        const out = (stdout as NodeJS.WriteStream).isTTY ? stdout : process.stdout;
 
         out.write(ANSI_CODES.mouseButton.on + ANSI_CODES.mouseMotion.on + ANSI_CODES.mouseMotionOthers.on + ANSI_CODES.mouseSGR.on);
 

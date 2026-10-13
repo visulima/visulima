@@ -6,6 +6,11 @@ import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress";
 import reconciler from "../reconciler";
 import { useStdinContext } from "./use-stdin";
 
+// A CSI (`ESC [`) or SS3 (`ESC O`) introducer followed by at least one more
+// character. A bare `ESC [` / `ESC O` is Alt+[ / Alt+Shift+O and stays input.
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+const controlSequenceRe = /^\u001B{1,2}[O[][\s\S]/;
+
 /**
  * Handy information about a key that was pressed.
  */
@@ -296,7 +301,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 numLock: keypress.numLock ?? false,
                 pageDown: keypress.name === "pagedown",
                 pageUp: keypress.name === "pageup",
-                return: keypress.name === "return",
+                return: keypress.name === "return" || keypress.name === "kpenter",
                 rightArrow: keypress.name === "right",
                 shift: keypress.shift,
                 // Kitty keyboard protocol modifiers
@@ -342,6 +347,13 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
             // If app is supposed to exit on Ctrl+C, skip input listeners.
             if (input === "c" && key.ctrl && internal_exitOnCtrlC) {
+                return;
+            }
+
+            // Terminal replies and reports (focus in/out, cursor position, mouse)
+            // are CSI/SS3 sequences without a key name. They are not typed
+            // input, so do not leak them into handlers as stray characters.
+            if (!keypress.name && !keypress.isKittyProtocol && controlSequenceRe.test(keypress.sequence)) {
                 return;
             }
 

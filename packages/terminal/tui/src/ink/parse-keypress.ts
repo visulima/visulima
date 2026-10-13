@@ -502,6 +502,14 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
 
             break;
         }
+        case "\u001BOM": {
+            // application keypad Enter (DECKPAM): same key as Return, so report the same sequence
+            key.raw = undefined;
+            key.name = "return";
+            key.sequence = "\r";
+
+            break;
+        }
         case "\u001B\u007F":
         case "\u007F": {
             // Modern terminals send 0x7F for Backspace (⌫ on Mac).

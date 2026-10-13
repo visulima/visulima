@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DOMElement } from "../dom";
 import { addLayoutListener } from "../dom";
+import { getInnerHeight, getInnerWidth } from "../measure-element";
 
 // Yoga's `right`/`bottom` are omitted: always `0` for flow layout and unintuitive for absolute positioning.
 
@@ -13,6 +14,16 @@ import { addLayoutListener } from "../dom";
  * All positions are relative to the element's parent.
  */
 export type BoxMetrics = {
+    /**
+     * Element height excluding borders: the space its content can occupy.
+     */
+    readonly clientHeight: number;
+
+    /**
+     * Element width excluding borders: the space its content can occupy.
+     */
+    readonly clientWidth: number;
+
     /**
      * Element height.
      */
@@ -42,6 +53,8 @@ export type UseBoxMetricsResult = BoxMetrics & {
 };
 
 const emptyMetrics: BoxMetrics = {
+    clientHeight: 0,
+    clientWidth: 0,
     height: 0,
     left: 0,
     top: 0,
@@ -76,7 +89,7 @@ import {useBoxMetrics} from '@visulima/tui/hooks/use-box-metrics';
  
 const Example = () => {
 	const ref = useRef(null);
-	const {width, height, left, top, hasMeasured} = useBoxMetrics(ref);
+	const {width, height, clientWidth, left, top, hasMeasured} = useBoxMetrics(ref);
 	return (
 		<Box ref={ref}>
 			<Text>
@@ -93,11 +106,24 @@ const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult =
     const [hasMeasured, setHasMeasured] = useState(false);
 
     const updateMetrics = useCallback(() => {
-        const layout = ref.current?.yogaNode?.getComputedLayout() ?? emptyMetrics;
+        const element = ref.current;
+        const computed = element?.yogaNode?.getComputedLayout();
+        const layout: BoxMetrics = element && computed
+            ? {
+                clientHeight: getInnerHeight(element),
+                clientWidth: getInnerWidth(element),
+                height: computed.height,
+                left: computed.left,
+                top: computed.top,
+                width: computed.width,
+            }
+            : emptyMetrics;
 
         setMetrics((previousMetrics) => {
             const hasChanged
-                = previousMetrics.width !== layout.width
+                = previousMetrics.clientHeight !== layout.clientHeight
+                    || previousMetrics.clientWidth !== layout.clientWidth
+                    || previousMetrics.width !== layout.width
                     || previousMetrics.height !== layout.height
                     || previousMetrics.left !== layout.left
                     || previousMetrics.top !== layout.top;

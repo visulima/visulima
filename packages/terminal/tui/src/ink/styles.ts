@@ -188,6 +188,20 @@ export type Styles = {
     readonly columnGap?: number;
 
     /**
+     * Horizontal offset applied to the element's children, in columns. Children are shifted left by this amount.
+     * Combine with `overflow="hidden"` to build scrollable views. Fractional values are truncated toward zero and
+     * non-finite values are treated as `0`. Layout coordinates (`measureElement()`, `useBoxMetrics()`) do not include it.
+     */
+    readonly contentOffsetX?: number;
+
+    /**
+     * Vertical offset applied to the element's children, in rows. Children are shifted up by this amount.
+     * Combine with `overflow="hidden"` to build scrollable views. Fractional values are truncated toward zero and
+     * non-finite values are treated as `0`. Layout coordinates (`measureElement()`, `useBoxMetrics()`) do not include it.
+     */
+    readonly contentOffsetY?: number;
+
+    /**
      * Set this property to `none` to hide the element.
      */
     readonly display?: "flex" | "none";
@@ -305,10 +319,10 @@ export type Styles = {
     readonly maxScrollbackLength?: number;
 
     /**
-     * Sets a maximum width of the element.
-     * Percentages aren't supported yet; see https://github.com/facebook/yoga/issues/872.
+     * Sets a maximum width of the element in columns.
+     * Percentages aren't supported: Yoga resolves them against the wrong ancestor. Compute a column count from `useWindowSize()` or `useBoxMetrics()` of the parent instead.
      */
-    readonly maxWidth?: number | string;
+    readonly maxWidth?: number;
 
     /**
      * Sets a minimum height of the element in lines (rows). You can also set it as a percentage, which will calculate the minimum height based on the height of the parent element.
@@ -316,10 +330,10 @@ export type Styles = {
     readonly minHeight?: number | string;
 
     /**
-     * Sets a minimum width of the element.
-     * Percentages aren't supported yet; see https://github.com/facebook/yoga/issues/872.
+     * Sets a minimum width of the element in columns.
+     * Percentages aren't supported: Yoga resolves them against the wrong ancestor. Compute a column count from `useWindowSize()` or `useBoxMetrics()` of the parent instead.
      */
-    readonly minWidth?: number | string;
+    readonly minWidth?: number;
 
     /**
      * Behavior for an element's overflow in both directions.
@@ -624,7 +638,7 @@ const applyFlexStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.flexBasis === "number") {
             node.setFlexBasis(style.flexBasis);
         } else if (typeof style.flexBasis === "string") {
-            node.setFlexBasisPercent(Number.parseInt(style.flexBasis, 10));
+            node.setFlexBasisPercent(Number.parseFloat(style.flexBasis));
         } else {
             // This should be replaced with node.setFlexBasisAuto() when new Yoga release is out
             node.setFlexBasis(Number.NaN);
@@ -742,7 +756,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.width === "number") {
             node.setWidth(style.width);
         } else if (typeof style.width === "string") {
-            node.setWidthPercent(Number.parseInt(style.width, 10));
+            node.setWidthPercent(Number.parseFloat(style.width));
         } else {
             node.setWidthAuto();
         }
@@ -752,39 +766,31 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
         if (typeof style.height === "number") {
             node.setHeight(style.height);
         } else if (typeof style.height === "string") {
-            node.setHeightPercent(Number.parseInt(style.height, 10));
+            node.setHeightPercent(Number.parseFloat(style.height));
         } else {
             node.setHeightAuto();
         }
     }
 
     if ("minWidth" in style) {
-        if (typeof style.minWidth === "string") {
-            node.setMinWidthPercent(Number.parseInt(style.minWidth, 10));
-        } else {
-            node.setMinWidth(style.minWidth ?? 0);
-        }
+        node.setMinWidth(style.minWidth ?? 0);
     }
 
     if ("minHeight" in style) {
         if (typeof style.minHeight === "string") {
-            node.setMinHeightPercent(Number.parseInt(style.minHeight, 10));
+            node.setMinHeightPercent(Number.parseFloat(style.minHeight));
         } else {
             node.setMinHeight(style.minHeight ?? 0);
         }
     }
 
     if ("maxWidth" in style) {
-        if (typeof style.maxWidth === "string") {
-            node.setMaxWidthPercent(Number.parseInt(style.maxWidth, 10));
-        } else {
-            node.setMaxWidth(style.maxWidth);
-        }
+        node.setMaxWidth(style.maxWidth);
     }
 
     if ("maxHeight" in style) {
         if (typeof style.maxHeight === "string") {
-            node.setMaxHeightPercent(Number.parseInt(style.maxHeight, 10));
+            node.setMaxHeightPercent(Number.parseFloat(style.maxHeight));
         } else {
             node.setMaxHeight(style.maxHeight);
         }

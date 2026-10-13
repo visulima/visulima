@@ -30,6 +30,10 @@ function getEffectiveBorderWidths(nodeStyle: Record<string, unknown> | undefined
     };
 }
 
+function toCellOffset(value: unknown): number {
+    return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : 0;
+}
+
 function getScrollContentHeight(node: LayoutNode): number {
     let maxBottom = 0;
 
@@ -528,6 +532,10 @@ function paintNode(
             scrollOffsetX = -nodeStyle.scrollLeft;
         }
     }
+
+    // contentOffsetX/Y shift the children regardless of overflow; offsets are whole terminal cells.
+    scrollOffsetX -= toCellOffset(nodeStyle?.contentOffsetX);
+    scrollOffsetY -= toCellOffset(nodeStyle?.contentOffsetY);
 
     // Recurse into children with scroll offset applied
     for (const child of node.children) {

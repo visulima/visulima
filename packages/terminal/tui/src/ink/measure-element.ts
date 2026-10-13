@@ -15,6 +15,16 @@ import squashTextNodes from "./squash-text-nodes";
 
 type Output = {
     /**
+     * Element height excluding borders: the space its content can occupy.
+     */
+    clientHeight: number;
+
+    /**
+     * Element width excluding borders: the space its content can occupy.
+     */
+    clientWidth: number;
+
+    /**
      * Element height.
      */
     height: number;
@@ -34,23 +44,6 @@ type Output = {
      */
     y: number;
 };
-
-/**
- * Measure the dimensions of a particular `&lt;Box>` element.
- * Returns an object with `x`, `y`, `width` and `height` properties.
- */
-const measureElement = (node: DOMElement): Output => {
-    const position = getAbsolutePosition(node);
-
-    return {
-        height: Math.round(node.yogaNode?.getComputedHeight() ?? 0),
-        width: Math.round(node.yogaNode?.getComputedWidth() ?? 0),
-        x: Math.round(position?.x ?? 0),
-        y: Math.round(position?.y ?? 0),
-    };
-};
-
-export default measureElement;
 
 /**
  * Get an element's inner width (excluding borders).
@@ -85,6 +78,25 @@ export const getInnerHeight = (node: DOMElement): number => {
 
     return Math.round(height - borderTop - borderBottom);
 };
+
+/**
+ * Measure the dimensions of a particular `&lt;Box>` element.
+ * Returns an object with `x`, `y`, `width`, `height`, `clientWidth` and `clientHeight` properties.
+ */
+const measureElement = (node: DOMElement): Output => {
+    const position = getAbsolutePosition(node);
+
+    return {
+        clientHeight: getInnerHeight(node),
+        clientWidth: getInnerWidth(node),
+        height: Math.round(node.yogaNode?.getComputedHeight() ?? 0),
+        width: Math.round(node.yogaNode?.getComputedWidth() ?? 0),
+        x: Math.round(position?.x ?? 0),
+        y: Math.round(position?.y ?? 0),
+    };
+};
+
+export default measureElement;
 
 /**
  * Get an element's position and dimensions relative to the root,

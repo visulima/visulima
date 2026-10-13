@@ -3,6 +3,8 @@
 /**
  * React hook for terminal palette auto-detection.
  */
+import type { Writable } from "node:stream";
+
 import { useEffect, useMemo, useState } from "react";
 
 import type { TerminalPalette } from "../terminal-palette";
@@ -48,7 +50,7 @@ const useTerminalPalette = (): UseTerminalPaletteResult => {
 
         void (async () => {
             try {
-                const result = await queryTerminalPalette(stdin, stdout, 200, controller.signal);
+                const result = await queryTerminalPalette(stdin, stdout as Writable, 200, controller.signal);
 
                 if (!controller.signal.aborted) {
                     setPalette(result);

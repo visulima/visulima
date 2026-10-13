@@ -36,6 +36,89 @@ type OutputCachesOptions = {
     pruneToFactor?: number;
 };
 
+// eslint-disable-next-line no-control-regex
+const sgrSequenceRe = /\u001B\[([\d:;]*)m/g;
+
+// SGR codes that switch a single attribute off, keyed to the attribute entries they clear.
+const sgrAttributeOff: Record<number, string[]> = { 22: ["1", "2"], 23: ["3"], 24: ["4"], 25: ["5", "6"], 27: ["7"], 28: ["8"], 29: ["9"], 55: ["53"] };
+
+// Extended-colour introducers (38/48/58) and their "default" counterparts (39/49/59) share a target.
+const sgrColorTarget: Record<number, string> = { 38: "fg", 39: "fg", 48: "bg", 49: "bg", 58: "ul", 59: "ul" };
+
+/**
+ * Fold one SGR parameter string into the attributes that are currently open. Each attribute holds at
+ * most one entry, so the state stays small however many sequences a text contains.
+ */
+const applySgrToOpenAttributes = (open: Map<string, string>, parameterString: string): void => {
+    const params = parameterString.replaceAll(":", ";").split(";").filter((parameter) => parameter.length > 0).map(Number);
+
+    if (params.length === 0) {
+        open.clear();
+
+        return;
+    }
+
+    for (let index = 0; index < params.length; index++) {
+        const code = params[index]!;
+        let key: string | undefined;
+        let value = String(code);
+
+        if (code === 0) {
+            open.clear();
+        } else if (code in sgrAttributeOff) {
+            for (const attribute of sgrAttributeOff[code]!) {
+                open.delete(attribute);
+            }
+        } else if (code in sgrColorTarget && code >= 39 && code % 10 === 9) {
+            open.delete(sgrColorTarget[code]!);
+        } else if (code === 38 || code === 48 || code === 58) {
+            key = sgrColorTarget[code];
+
+            const length = params[index + 1] === 2 ? 5 : 3;
+
+            value = params.slice(index, index + length).join(";");
+            index += length - 1;
+        } else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
+            key = "fg";
+        } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
+            key = "bg";
+        } else if (code >= 1 && code <= 9) {
+            key = String(code);
+        } else if (code === 53) {
+            key = "53";
+        }
+
+        if (key !== undefined) {
+            open.set(key, value);
+        }
+    }
+};
+
+/**
+ * Split text on newlines while keeping SGR styling that is still open at a line break active on the
+ * next line. Lines are styled independently, so without this a colour opened before an explicit
+ * newline would only apply to the first line. Lines that close what they open get no prefix.
+ */
+const splitLinesKeepingSgr = (text: string): string[] => {
+    const lines = text.split("\n");
+
+    if (lines.length === 1) {
+        return lines;
+    }
+
+    const open = new Map<string, string>();
+
+    return lines.map((line) => {
+        const styled = open.size === 0 ? line : `\u001B[${[...open.values()].join(";")}m${line}`;
+
+        for (const match of line.matchAll(sgrSequenceRe)) {
+            applySgrToOpenAttributes(open, match[1] ?? "");
+        }
+
+        return styled;
+    });
+};
+
 export class OutputCaches {
     widths: Map<string, number> = new Map<string, number>();
 
@@ -100,7 +183,7 @@ export class OutputCaches {
         let cached = this.lines.get(text);
 
         if (cached === undefined) {
-            cached = text.split("\n");
+            cached = this.hasAnsiControlMarker(text) ? splitLinesKeepingSgr(text) : text.split("\n");
             this.setCacheEntry(this.lines, text, cached);
         }
 

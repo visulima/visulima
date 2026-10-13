@@ -18,7 +18,7 @@ export type PublicProps = {
     /**
      * The stdin stream passed to `render()` in `options.stdin`, or `process.stdin` by default. Useful if your app needs to handle user input.
      */
-    readonly stdin: NodeJS.ReadStream;
+    readonly stdin: NodeJS.ReadableStream;
 };
 
 export type Props = PublicProps & {
