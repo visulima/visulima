@@ -604,7 +604,7 @@ Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet n
 
 Publishing is POSIX only. On Windows it fails with `CONFIG_INVALID` after the dry run. The `dotnet` CLI (the .NET SDK) must be on `PATH`.
 
-The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` (the last only for C# projects). `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
+The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` (the last only for C# projects: F# is refused, because the [`dotnet format` reference](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support, so an F# project gets build and test only). `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
 
 The SBOM reads `packages.lock.json` at the workspace root when it exists (opt-in with `RestorePackagesWithLockFile`) and adds its `pkg:nuget` components and edges to the CycloneDX output. Focus mode cannot narrow it, so the whole lock is kept. Audit does not check NuGet packages: vis has no offline NuGet version-range matcher, so a NuGet audit would match nothing.
 

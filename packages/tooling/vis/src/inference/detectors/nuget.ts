@@ -9,7 +9,9 @@ import type { DetectContext, DetectedTargets, Detector } from "../types";
  * build. `test` and `format:check` are `type: "test"` checks with no outputs.
  * `dotnet format --verify-no-changes` exits non-zero when a file would be reformatted,
  * so the check fails rather than passing silently. The format check is only added for a
- * C# project: `dotnet format` is not verified for F#, so an F# directory gets build and test.
+ * C# project. Refused for F#: the `dotnet format` page on learn.microsoft.com
+ * (https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support,
+ * so an F# directory gets build and test only, and a check that silently formats nothing is avoided.
  * `dotnet test` needs a test project, so enable `nuget.discover` only where the test target
  * is wanted. POSIX only: the Windows path is not verified.
  */
