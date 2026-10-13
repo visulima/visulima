@@ -180,7 +180,7 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
         for (const pkg of targets) {
             // Snapshots rewrite a package.json and pack it with npm. A non-npm project
             // has neither, so it is skipped rather than having JSON written into its manifest.
-            if (pkg.ecosystem !== undefined && pkg.ecosystem !== "npm") {
+            if (pkg.ecosystem !== undefined) {
                 skipped.push({ name: pkg.name, reason: "non-npm-packages-have-no-snapshot" });
 
                 continue;

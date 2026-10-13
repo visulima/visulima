@@ -112,11 +112,12 @@ export interface WorkspacePackage {
     dir: string;
 
     /**
-     * Which ecosystem owns the manifest. Absent means npm (`package.json`).
-     * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
-     * `manifest` is synthetic and must never be serialized into `manifestPath`.
+     * Which ecosystem owns the manifest. JS packages (`package.json`) leave it
+     * `undefined`; a non-JS package sets it to its ecosystem id. Cargo crates
+     * discovered from `Cargo.toml` (opt-in) set `"cargo"`; their `manifest` is
+     * synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */

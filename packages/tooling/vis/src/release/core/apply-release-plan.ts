@@ -137,12 +137,12 @@ export const applyReleasePlan = async (
                 // A non-npm manifest (Cargo.toml, pyproject.toml) is TOML: its version and
                 // requirements are written by the ecosystem plan, never serialized from the synthetic manifest.
                 manifestWrite:
-                    pkg.ecosystem !== undefined && pkg.ecosystem !== "npm"
-                        ? undefined
-                        : ({
+                    pkg.ecosystem === undefined
+                        ? ({
                             content: serializeManifest(updatedManifest, originalManifest),
                             path: pkg.manifestPath,
-                        } satisfies AppliedFileChange),
+                        } satisfies AppliedFileChange)
+                        : undefined,
             };
         }),
     );
