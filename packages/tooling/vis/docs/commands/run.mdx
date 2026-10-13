@@ -166,6 +166,7 @@ Targets in `project.json` support vis-specific options:
 | `timeout`              | `number`                                | `0`             | Wall-clock budget in ms. `0` disables the watchdog. Exceeding it sends `SIGTERM` and marks the task as timed out (exit code 124) — see [Timeouts & Signals](#timeouts--signals)                                                                                                  |
 | `killGracePeriodMs`    | `number`                                | `5000`          | Milliseconds between `SIGTERM` and the escalating `SIGKILL` when `timeout` fires. `0` disables escalation                                                                                                                                                                        |
 | `affectedFiles`        | `false \| "args" \| "env" \| "both"`    | `false`         | Forward changed files to task                                                                                                                                                                                                                                                    |
+| `env`                  | `{ mode, allow? }`                      | `inherit`       | Child environment for this target. `clean` passes only `allow` and the basics. See [Clean child environment](#clean-child-environment)                                                                                                                                           |
 | `envFile`              | `boolean \| string \| string[]`         |                 | Dotenv file(s) — see [env file layering](#env-file-layering)                                                                                                                                                                                                                     |
 | `mutex`                | `string`                                |                 | Named lock for serializing tasks                                                                                                                                                                                                                                                 |
 | `osType`               | `string \| string[]`                    |                 | Restrict to Linux (`linux`), macOS (`macos`), or Windows (`windows`)                                                                                                                                                                                                             |
@@ -299,6 +300,43 @@ export default defineConfig({
     test: { maxWorkers, minWorkers: 1 },
 });
 ```
+
+### Clean child environment
+
+By default each task inherits the whole environment of `vis`. The opt-in `clean` mode gives a task's child process only what it needs:
+
+- the variables named in `allow` (exact names or `*` patterns),
+- `PATH`, `HOME`, `TERM` and `CI`, plus the platform essentials: `SystemRoot`, `TEMP`, `TMP`, `USERPROFILE`, `PATHEXT` and `COMSPEC` on Windows; `TMPDIR`, `SHELL`, `LANG`, `LC_*` and `USER` elsewhere,
+- the variables vis injects (see the table below).
+
+Set it for the workspace in `vis.config.ts`:
+
+```ts
+export default defineConfig({
+    taskRunner: { env: { allow: ["NODE_ENV", "DATABASE_URL_*"], mode: "clean" } },
+});
+```
+
+Or override one target in `project.json`. A target's `allow` adds to the workspace list when the workspace is `clean`. Under a workspace `inherit`, it applies to that target alone:
+
+```json
+{ "targets": { "dev": { "command": "node server.js", "options": { "env": { "mode": "inherit" } } } } }
+```
+
+Clean mode is never a default, and a `clean` target that would run with syscall tracking fails before anything runs (see [Caching](/guides/caching#clean-child-environment)).
+
+| Group                      | Variables                                                                                                                                                           | Notes                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Set on `vis`'s own process | `VIS_VERSION`, `VIS_MONOREPO_ROOT`, `NODE_EXTRA_CA_CERTS`, `NO_COLOR`, `FORCE_COLOR`, and the variables the toolchain step exports when it activates a Node version | Every child inherits these under `inherit`. Clean mode keeps them. |
+| Injected per task          | `INIT_CWD`, `VIS_TASK_SLOTS`, `VIS_AFFECTED_FILES` (when `affectedFiles` is `env` or `both`), `VIS_ARG_<NAME>` (declared task arguments)                            | Never filtered, so clean mode always keeps them.                   |
+| User overlays              | `envFile` values, and the env of a registered service                                                                                                               | Never filtered. Their names come from your config.                 |
+| Spawner additions          | `PATH` with the `node_modules/.bin` chain prepended; `Path` and `PATHEXT` on Windows; `FORCE_COLOR=1` unless set; `TERM=xterm-256color` for PTY tasks               | Added by the spawner, after the policy has been applied.           |
+
+The table lists what a task receives. Two paths do not get every injected variable, under `inherit` as well as `clean`: persistent targets (`persistent: true`) do not receive `VIS_TASK_SLOTS`, and the TUI retry of an interactive task injects nothing. Both predate clean mode.
+
+Under `clean`, a variable that is not allow-listed is dropped, including the ones you usually expect to inherit such as `NODE_OPTIONS` and `npm_config_*`. Add them to `allow` if the task needs them.
+
+A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string.
 
 ### Task conditions
 

@@ -204,6 +204,44 @@ export default defineConfig({
 });
 ```
 
+## Clean child environment
+
+A task's cache key should change when the task's output can change. A
+variable the task never receives cannot change its output, so vis does not let
+it bust the key. This applies when a task runs with `taskRunner.env` (or its
+own `options.env`) in `clean` mode, which is described in
+[`vis run`](/commands/run#clean-child-environment):
+
+- A name the clean child cannot see hashes as unset, in every source that
+  names it: `envVars`, `fingerprintEnv`, `autoEnvVars` and `env://` inputs.
+  Changing its value does not bust the key.
+- `globalEnv` is shared by every task in a run, so a name is hidden from its
+  key only when no task in the run can see it. One target that inherits the
+  parent environment keeps the name in the shared key.
+- A name the clean child can see is keyed as usual.
+- Allow-listing a name does not add it to the key. Add it to `fingerprintEnv`
+  (or `envVars`) when its value should bust the key.
+
+For example, in `project.json`, only the allow-listed `DATABASE_URL` reaches the
+child, and it is in the key:
+
+```json
+{
+    "targets": {
+        "migrate": {
+            "command": "node migrate.js",
+            "fingerprintEnv": ["DATABASE_URL"],
+            "options": { "env": { "mode": "clean", "allow": ["DATABASE_URL"] } }
+        }
+    }
+}
+```
+
+A target that runs with syscall tracking (`hashMode: "trace"`, or a workspace
+`autoFingerprint`) cannot be `clean` yet. Those tasks bypass the executor that
+builds the clean environment, so `vis run` refuses them before anything runs.
+Set such a target to `{ "mode": "inherit" }`, or use declared hashing.
+
 ## Making the cache work in CI
 
 The task cache only pays off if the CI job can both **read and write** it.

@@ -99,6 +99,41 @@ Options:
 itself injects (`VIS_TASK_SLOTS`, service env, run-argument env). Those are the
 main correctness risk.
 
+**Status: B implemented, C not done.** `taskRunner.env` sets the workspace
+policy and `options.env` overrides it per target. `vis run` applies the policy
+on every spawn path: the executor, persistent targets and the TUI retry. The
+names vis sets on its own process and the names it injects per task are listed
+in `vis/src/commands/run/task-env.ts` (`VIS_PARENT_ENV_NAMES`,
+`VIS_TASK_INJECTED_NAMES`). A source scan fails on a `process.env` write that
+is neither allow-listed nor exempt with a reason. Docs: `commands/run.mdx`
+("Clean child environment") and `guides/caching.mdx`.
+
+Decisions taken while implementing B:
+
+- Clean mode forces the JS spawner. The native addon always copies the parent
+  environment, so `ConcurrentCommandConfig.inheritEnv: false` is honoured only
+  there.
+- A name the clean child cannot see hashes as unset. The hasher applies this
+  only when the executor is given the `childEnvPolicy` hook, because that hook
+  says the executor enforces the policy. Without it every name is keyed as the
+  parent sees it. Keying an omitted name gives a stale hit, while an extra name
+  only costs a miss.
+- A clean target that would run with syscall tracking (`hashMode: "trace"`, or a
+  workspace `autoFingerprint`) fails before the run starts. Tracked runs bypass
+  the executor that builds the clean environment.
+- `NODE_OPTIONS` and `npm_config_*` are dropped under clean mode unless
+  allow-listed.
+
+Finding outside this change (already true under `inherit`): tasks on the
+tracked path run without the vis executor, so they never receive
+`VIS_TASK_SLOTS`, `VIS_ARG_*`, `envFile` values or service env. Reproduced with
+a `hashMode: "trace"` target that printed `VIS_TASK_SLOTS` as absent, next to a
+declared target that printed `1`. Fixing it means passing the vis environment
+into `TrackedTaskExecutor.execute`, which belongs to the trace work in G1 and G4.
+
+C (the `vis doctor` check) is not done. It needs a per-target analysis of env
+references against the key sources, which is a separate change.
+
 ### G3. Compound commands cache as one unit
 
 `cmd1 && cmd2 && cmd3` is a single task with one key. Changing `cmd3` reruns
@@ -175,7 +210,7 @@ in `task-hasher` and avoids accidental cross-platform hits.
 | 1     | G4 tracker kind in the trace key           | no          | new trace keys after upgrade; old entries still hit | done   |
 | 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | done   |
 | 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | done   |
-| 3     | G2-B opt-in clean env                      | no          | opt-in                                              | open   |
+| 3     | G2-B opt-in clean env                      | no          | opt-in                                              | done   |
 | 3     | G3.3 trace-mode segments                   | no          | no                                                  | open   |
 
 ## References
