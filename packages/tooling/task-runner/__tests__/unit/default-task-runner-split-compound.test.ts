@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { defaultTaskRunner } from "../../src/default-task-runner";
 import { EmptyLifeCycle } from "../../src/life-cycle";
 import { generateRunSummary } from "../../src/run-summary";
-import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskRunnerContext, TaskRunnerOptions, TaskStatus } from "../../src/types";
+import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskResults, TaskRunnerContext, TaskRunnerOptions, TaskStatus } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -235,5 +235,50 @@ describe("defaultTaskRunner with splitCompound", () => {
             { count: 2, index: 1 },
             { count: 2, index: 2 },
         ]);
+    });
+
+    it("restores the last segment's declared outputs on a full cache hit", async () => {
+        expect.assertions(3);
+
+        const artifact = join(workspaceRoot, "packages/app/dist/bundle.txt");
+        const executor: TaskExecutor = async (task) => {
+            const command = String(task.overrides["command"]);
+
+            if (command === "emit") {
+                await mkdir(join(workspaceRoot, "packages/app/dist"), { recursive: true });
+                await writeFile(artifact, "built");
+            }
+
+            return { code: 0, terminalOutput: `ran ${command}` };
+        };
+        const run = (): Promise<TaskResults> => {
+            const task = makeBuildTask("prepare && emit", { outputs: ["packages/app/dist/**"] });
+
+            return defaultTaskRunner([task], {}, createContext(workspaceRoot, [task], executor));
+        };
+
+        await run();
+
+        await expect(readFile(artifact, "utf8")).resolves.toBe("built");
+
+        await rm(join(workspaceRoot, "packages/app/dist"), { force: true, recursive: true });
+
+        const results = await run();
+
+        expect([...results.values()].map((result) => result.status)).toStrictEqual(["local-cache", "local-cache"]);
+        await expect(readFile(artifact, "utf8")).resolves.toBe("built");
+    });
+
+    it("warns and does not split when auto-fingerprinting is on for the run", async () => {
+        expect.assertions(2);
+
+        const diagnostics: string[] = [];
+        const task = makeBuildTask("step-one && step-two");
+        const context = createContext(workspaceRoot, [task], createCountingExecutor().executor);
+
+        const results = await defaultTaskRunner([task], { autoFingerprint: true, dryRun: true, onDiagnostic: (_id, message) => diagnostics.push(message) }, context);
+
+        expect([...results.keys()]).toStrictEqual(["app:build"]);
+        expect(diagnostics.filter((message) => message.startsWith("splitCompound"))).toHaveLength(1);
     });
 });

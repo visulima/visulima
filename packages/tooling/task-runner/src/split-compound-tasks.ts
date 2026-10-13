@@ -38,8 +38,10 @@ const expandTask = (task: Task, options: SplitCompoundOptions): Task[] => {
         return refuse("a when condition would skip segments independently");
     }
 
-    if (task.outputs.length > 0) {
-        return refuse("declared outputs cannot be attributed to a segment, and an earlier segment's outputs would not be restored from cache");
+    // `{ auto: true }` outputs come from write tracking for the whole target, so
+    // they cannot be attributed to one segment. Declared paths attach to the last.
+    if (task.outputs.some((output) => typeof output !== "string")) {
+        return refuse("`{ auto: true }` outputs are tracked per target, not per segment");
     }
 
     const command = options.commandOf(task);
@@ -62,6 +64,9 @@ const expandTask = (task: Task, options: SplitCompoundOptions): Task[] => {
         return {
             ...whole,
             id: `${task.id}#${String(offset + 1)}`,
+            // A cache hit restores outputs from the entry of the segment that
+            // owns them, so the declared paths live on the last segment.
+            outputs: offset === segments.length - 1 ? task.outputs : [],
             overrides: { ...task.overrides, command: segment },
             segment: { count: segments.length, index: offset + 1 },
         };

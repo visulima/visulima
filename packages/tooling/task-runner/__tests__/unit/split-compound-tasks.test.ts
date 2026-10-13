@@ -58,14 +58,29 @@ describe(splitCompoundTasks, () => {
         expect(splitCompoundTasks(split, { commandOf })).toBe(split);
     });
 
-    it("refuses declared outputs and clears the flag with one diagnostic", () => {
+    it("attaches declared outputs to the last segment only", () => {
+        expect.assertions(2);
+
+        const graph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b", { outputs: ["dist/**"] }) },
+        };
+
+        const split = splitCompoundTasks(graph, { commandOf });
+
+        expect(split.tasks["app:build#1"]?.outputs).toStrictEqual([]);
+        expect(split.tasks["app:build#2"]?.outputs).toStrictEqual(["dist/**"]);
+    });
+
+    it("refuses {auto: true} outputs and clears the flag with one diagnostic", () => {
         expect.assertions(3);
 
         const diagnostics: [string, string][] = [];
         const graph: TaskGraph = {
             dependencies: { "app:build": [] },
             roots: ["app:build"],
-            tasks: { "app:build": task("app:build", "a && b", { outputs: ["dist/**"] }) },
+            tasks: { "app:build": task("app:build", "a && b", { outputs: [{ auto: true }] }) },
         };
 
         const split = splitCompoundTasks(graph, { commandOf, onDiagnostic: (id, message) => diagnostics.push([id, message]) });

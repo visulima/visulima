@@ -583,12 +583,16 @@ export interface TargetConfiguration {
      * segment _n−1_, so changing a later segment re-runs only that segment and
      * later ones, and a failing segment stops the chain.
      *
-     * Opt-in and declared-mode only. The split is refused, with a diagnostic
-     * and the target run whole, when the command contains a construct the
-     * splitter does not model (`;`, `||`, subshells, `cd`, `export`, `VAR=…`
-     * prefixes, command substitution, …), when `hashMode` is `"trace"`, when
-     * the target declares `outputs`, when it has a `when` condition, or when
-     * it is `always`.
+     * Declared `outputs` attach to the last segment, so a cache hit on the
+     * whole chain restores them. A partial hit does not restore an earlier
+     * segment's files, so a later segment that reads a file written by an
+     * earlier segment needs that file to be a declared output of its own
+     * target. Opt-in and declared-mode only. The split is refused, with a
+     * diagnostic and the target run whole, when the command contains a
+     * construct the splitter does not model (`;`, `||`, subshells, `cd`,
+     * `export`, `VAR=…` prefixes, command substitution, …), when `hashMode`
+     * is `"trace"`, when auto-fingerprinting is on, when an output is
+     * `{ auto: true }`, when it has a `when` condition, or when it is `always`.
      */
     splitCompound?: boolean;
 
