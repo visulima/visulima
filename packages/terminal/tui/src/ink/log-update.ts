@@ -152,23 +152,29 @@ const writeIncrementalFrame: WriteFrame = (frame, stream) => {
     // Shape delta is prepended so DECSCUSR lands before any cursor motion/erase from this frame.
     const buffer: string[] = [shapeDelta, returnPrefix];
 
+    // Row the cursor sits on after the previous frame: the row below the last line when that frame
+    // ended in a newline, otherwise the last line itself.
+    const previousCursorRow = previous.endsWith("\n") ? previousVisible : previousVisible - 1;
+    // `CSI 0 A` moves one row in terminals, so a zero-row move must not be emitted.
+    const moveUp = (rows: number): string => (rows > 0 ? cursorUp(rows) : "");
+
     // Clear extra lines if the current content's line count is lower than the previous.
     const viewportRows = getViewportRows(stream);
 
     if (visibleCount < previousVisible) {
-        const isPreviousHadTrailingNewline = previous.endsWith("\n");
-        const extraSlot = isPreviousHadTrailingNewline ? 1 : 0;
-
-        buffer.push(eraseLines(Math.min(previousVisible - visibleCount + extraSlot, viewportRows)), cursorUp(Math.min(visibleCount, viewportRows - 1)));
+        // Erases from the cursor row up to the first row that is no longer part of the frame.
+        buffer.push(eraseLines(Math.min(previousCursorRow - visibleCount + 1, viewportRows)), moveUp(Math.min(visibleCount, viewportRows - 1)));
     } else {
-        buffer.push(cursorUp(Math.min(previousVisible - 1, viewportRows - 1)));
+        buffer.push(moveUp(Math.min(previousCursorRow, viewportRows - 1)));
     }
 
     for (let index = 0; index < visibleCount; index += 1) {
         const isLastLine = index === visibleCount - 1;
 
         // We do not write lines if the contents are the same. This prevents flickering during renders.
-        if (contentLines[index] === previousLines[index]) {
+        // Rows past the previous frame have no previous content to match, so they are always written;
+        // skipping them would leave the cursor short of the row a new blank line should move it to.
+        if (index < previousVisible && contentLines[index] === previousLines[index]) {
             // Don't move past the last line when there's no trailing newline,
             // otherwise the cursor overshoots the rendered block.
             if (!isLastLine || hasTrailingNewline) {
