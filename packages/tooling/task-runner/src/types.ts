@@ -1210,6 +1210,8 @@ export type ConcurrentCommandInput
             command: string;
             cwd?: string;
             env?: Record<string, string>;
+            /** `false` spawns with only `env`; see {@link ConcurrentCommandConfig.inheritEnv}. */
+            inheritEnv?: boolean;
             name?: string;
             /** Initial PTY dimensions (only used when stdin is "pty"). */
             ptySize?: { cols: number; rows: number };
