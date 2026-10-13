@@ -283,3 +283,22 @@ describe("inline renderer blank rows at the bottom of the viewport", () => {
         expect(screen.cursorY).toBe(3);
     });
 });
+
+const CLEAR_RESIZE_ROWS = 12;
+
+describe("inline renderer: cursor placement", () => {
+    it("places the cursor on the last line when the frame has no trailing newline", () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+        const render = logUpdate.create(stdout, { showCursor: true });
+
+        render.setCursorPosition({ x: 1, y: 1 });
+        render("A\nBC");
+
+        const screen = replay(stdout.getWrites(), CLEAR_RESIZE_ROWS);
+
+        expect(screen.cursorY).toBe(1);
+        expect(screen.cursorX).toBe(1);
+    });
+});

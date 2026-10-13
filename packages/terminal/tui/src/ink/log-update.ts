@@ -73,6 +73,10 @@ const createCursorShapeTracker = (): CursorShapeTracker => {
 // that `split('\n')` produces when the string ends with '\n'.
 const visibleLineCount = (lines: string[], string_: string): number => (string_.endsWith("\n") ? lines.length - 1 : lines.length);
 
+// The row the terminal cursor sits on once `lines` is written: the row below the last line when the
+// text ends in a newline, otherwise the last line itself. Both cases are `split` length minus one.
+const cursorRowAfterWrite = (lines: string[]): number => lines.length - 1;
+
 // Get the viewport height from a stream. TTY streams expose `.rows`;
 // non-TTY streams don't, so we fall back to Infinity (no clamping).
 const getViewportRows = (stream: Writable): number => (stream as NodeJS.WriteStream).rows || Infinity;
@@ -121,7 +125,7 @@ type WriteFrame = (frame: Frame, stream: Writable) => void;
  */
 const writeFullFrame: WriteFrame = (frame, stream) => {
     const { activeCursor, content, contentLines, previousLines, returnPrefix, shapeDelta } = frame;
-    const cursorSuffix = buildCursorSuffix(visibleLineCount(contentLines, content), activeCursor);
+    const cursorSuffix = buildCursorSuffix(cursorRowAfterWrite(contentLines), activeCursor);
 
     stream.write(shapeDelta + returnPrefix + eraseLines(clampToViewport(previousLines.length, stream)) + content + cursorSuffix);
 };
@@ -194,7 +198,7 @@ const writeIncrementalFrame: WriteFrame = (frame, stream) => {
         );
     }
 
-    buffer.push(buildCursorSuffix(visibleCount, activeCursor));
+    buffer.push(buildCursorSuffix(cursorRowAfterWrite(contentLines), activeCursor));
 
     stream.write(buffer.join(""));
 };
@@ -260,7 +264,6 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
         const shapeDelta = shapeTracker.consumeDelta();
 
         const nextLines = string_.split("\n");
-        const visibleCount = visibleLineCount(nextLines, string_);
 
         if (string_ === previousOutput && isCursorChanged) {
             stream.write(
@@ -270,7 +273,7 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
                     cursorWasShown: isCursorWasShown,
                     previousCursorPosition,
                     previousLineCount: previousLines.length,
-                    visibleLineCount: visibleCount,
+                    visibleLineCount: cursorRowAfterWrite(nextLines),
                 }),
             );
             commitCursor(activeCursor);
@@ -356,7 +359,7 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
         }
 
         if (activeCursor) {
-            stream.write(buildCursorSuffix(visibleLineCount(lines, string_), activeCursor));
+            stream.write(buildCursorSuffix(cursorRowAfterWrite(lines), activeCursor));
         }
 
         commitCursor(activeCursor);
