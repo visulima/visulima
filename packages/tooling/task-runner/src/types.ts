@@ -103,8 +103,15 @@ export interface Task {
      * `resolveWeight` in `task-scheduler.ts`).
      */
     concurrencyWeight?: number;
+
+    /**
+     * Extra env-var names or `*` patterns folded into this task's cache
+     * key. Carried over from {@link TargetConfiguration.fingerprintEnv}.
+     */
+    fingerprintEnv?: string[];
     /** Hash of the task inputs for caching */
     hash?: string;
+
     /** Detailed hash information */
     hashDetails?: TaskHashDetails;
 
@@ -135,6 +142,7 @@ export interface Task {
      * files the task wrote during execution.
      */
     outputs: OutputSpec[];
+
     /** Overrides/extra options passed to the task */
     overrides: Record<string, unknown>;
     /** Whether this task supports parallel execution */
@@ -145,6 +153,7 @@ export interface Task {
      * graph-derived heuristics. Defaults to `"normal"` when absent.
      */
     priority?: TaskPriority;
+
     /** The project root directory */
     projectRoot?: string;
 
@@ -157,8 +166,17 @@ export interface Task {
      * the flag and leaves the spawn decision to the executor.
      */
     pty?: boolean;
+
     /** The target this task executes */
     target: TaskTarget;
+
+    /**
+     * Env-var names or `*` patterns excluded from this task's cache key
+     * even when another source would include them. The task still
+     * receives the variables. Carried over from
+     * {@link TargetConfiguration.untrackedEnv}.
+     */
+    untrackedEnv?: string[];
 
     /**
      * Regex strings (JavaScript flavor, anchored as the user writes them)
@@ -425,6 +443,14 @@ export interface TargetConfiguration {
     executor?: string;
 
     /**
+     * Env vars folded into this target's cache key, as names or `*`
+     * patterns (`"VITE_*"`). In `"declared"` mode each match becomes an
+     * env input, the same as `env://NAME`; in `"trace"` mode it extends
+     * {@link TaskRunnerOptions.fingerprintEnvPatterns} for this target.
+     */
+    fingerprintEnv?: string[];
+
+    /**
      * How this target's cache key is derived.
      *
      * - `"declared"` (default): the Nx-style path — the hash is built
@@ -472,6 +498,7 @@ export interface TargetConfiguration {
      * separate finalisation phase outside the scheduler.
      */
     maxConcurrent?: number;
+
     /** Options passed to the executor */
     options?: Record<string, unknown>;
 
@@ -487,6 +514,7 @@ export interface TargetConfiguration {
      * a missing artifact.
      */
     outputs?: OutputSpec[];
+
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
 
@@ -503,6 +531,16 @@ export interface TargetConfiguration {
      * decides based on its own toggles.
      */
     pty?: boolean;
+
+    /**
+     * Env vars this target receives but keeps out of its cache key, as
+     * names or `*` patterns (`"CI_*"`). Applies on top of
+     * {@link TaskRunnerOptions.untrackedEnvVars} and wins over
+     * `fingerprintEnv`, `autoEnvVars`, framework inference and
+     * trace-mode fingerprint patterns. Explicit `env://` inputs and the
+     * workspace `envVars` / `globalEnv` lists are not affected.
+     */
+    untrackedEnv?: string[];
 
     /**
      * Regex source string(s) that mark a successful task as having
@@ -861,9 +899,10 @@ export interface TaskRunnerOptions {
     envVars?: string[];
 
     /**
-     * Environment variable patterns to include in auto-fingerprint.
-     * Supports wildcard patterns like "VITE_*".
-     * Only used when autoFingerprint is enabled.
+     * Environment variable patterns to include in the trace-mode
+     * fingerprint (`autoFingerprint` or a `hashMode: "trace"` target).
+     * Supports `*` wildcards anywhere in a pattern, e.g. "VITE_*" or "*_TOKEN".
+     * Per-target additions go in {@link TargetConfiguration.fingerprintEnv}.
      */
     fingerprintEnvPatterns?: string[];
 
@@ -995,9 +1034,12 @@ export interface TaskRunnerOptions {
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
 
     /**
-     * Environment variables that should be passed to tasks but NOT
-     * included in the cache fingerprint. Useful for CI-specific vars.
-     * Only used when autoFingerprint is enabled.
+     * Environment variables that are passed to tasks but kept out of
+     * their cache key. Accepts names and `*` wildcard patterns (e.g. "CI_*").
+     * Applies to the trace-mode fingerprint and to the implicit env sources
+     * of declared-mode hashing (`autoEnvVars`, framework inference). Explicit
+     * `env://` inputs and `envVars` / `globalEnv` are not affected.
+     * Per-target overrides go in {@link TargetConfiguration.untrackedEnv}.
      */
     untrackedEnvVars?: string[];
 }

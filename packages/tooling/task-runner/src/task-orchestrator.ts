@@ -866,8 +866,8 @@ class TaskOrchestrator {
                     taskCommand,
                     task.overrides,
                     process.env,
-                    mergeEnvPatterns(this.#fingerprintEnvPatterns, trackedResult.hints),
-                    this.#untrackedEnvVars,
+                    mergeEnvPatterns([...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])], trackedResult.hints),
+                    [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
                 );
             } else {
                 const executionResult = await this.#taskExecutor(task, {
@@ -892,8 +892,8 @@ class TaskOrchestrator {
                     taskCommand,
                     task.overrides,
                     process.env,
-                    this.#fingerprintEnvPatterns,
-                    this.#untrackedEnvVars,
+                    [...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])],
+                    [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
                 );
             }
 

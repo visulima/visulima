@@ -6,6 +6,53 @@ import type { FileAccess } from "./file-access-tracker";
 import { hashFile, hashStrings, sortObjectKeys } from "./utils";
 
 /**
+ * Compiles one env-var pattern. A pattern is an exact name, or a name in
+ * which each `*` matches any run of characters (`VITE_*`, `*_TOKEN`).
+ */
+const envPatternToRegExp = (pattern: string): RegExp =>
+    new RegExp(
+        `^${pattern
+            .split("*")
+            .map((part) => part.replaceAll(/[$()+.?[\\\]^{|}]/gu, String.raw`\$&`))
+            .join(".*")}$`,
+        "u",
+    );
+
+/**
+ * Returns a predicate that is true when an env-var name matches any of
+ * `patterns`. An empty list matches nothing.
+ */
+export const createEnvMatcher = (patterns: ReadonlyArray<string>): ((name: string) => boolean) => {
+    const matchers = patterns.map(envPatternToRegExp);
+
+    return (name: string): boolean => matchers.some((matcher) => matcher.test(name));
+};
+
+/**
+ * Expands env-var patterns against `envVariables`. Exact names are kept
+ * even when unset (so an absent variable still hashes as absent).
+ */
+export const resolveEnvPatterns = (patterns: ReadonlyArray<string>, envVariables: Record<string, string | undefined>): Record<string, string | undefined> => {
+    const result: Record<string, string | undefined> = {};
+
+    for (const pattern of patterns) {
+        if (pattern.includes("*")) {
+            const matcher = envPatternToRegExp(pattern);
+
+            for (const [key, value] of Object.entries(envVariables)) {
+                if (matcher.test(key)) {
+                    result[key] = value;
+                }
+            }
+        } else {
+            result[pattern] = envVariables[pattern];
+        }
+    }
+
+    return result;
+};
+
+/**
  * Represents a stored fingerprint for a task execution.
  */
 export interface TaskFingerprint {
@@ -133,11 +180,11 @@ export class FingerprintManager {
         const commandHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
         const envHashes: Record<string, string> = {};
-        const matchedEnvVariables = FingerprintManager.#resolveEnvPatterns(envPatterns, envVariables);
-        const untrackedSet = new Set(untrackedEnvVariables);
+        const matchedEnvVariables = resolveEnvPatterns(envPatterns, envVariables);
+        const isUntracked = createEnvMatcher(untrackedEnvVariables);
 
         for (const [key, value] of Object.entries(matchedEnvVariables)) {
-            if (untrackedSet.has(key)) {
+            if (isUntracked(key)) {
                 continue;
             }
 
@@ -308,26 +355,6 @@ export class FingerprintManager {
         }
 
         return lines.join("\n");
-    }
-
-    static #resolveEnvPatterns(patterns: string[], envVariables: Record<string, string | undefined>): Record<string, string | undefined> {
-        const result: Record<string, string | undefined> = {};
-
-        for (const pattern of patterns) {
-            if (pattern.includes("*")) {
-                const prefix = pattern.replace("*", "");
-
-                for (const [key, value] of Object.entries(envVariables)) {
-                    if (key.startsWith(prefix)) {
-                        result[key] = value;
-                    }
-                }
-            } else {
-                result[pattern] = envVariables[pattern];
-            }
-        }
-
-        return result;
     }
 
     async #hashFileWithCache(filePath: string): Promise<string | undefined> {

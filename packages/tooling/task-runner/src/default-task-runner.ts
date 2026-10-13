@@ -246,6 +246,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         projects,
         smartLockfileHashing: options.smartLockfileHashing,
         targetDefaults: options.targetDefaults,
+        untrackedEnvVars: options.untrackedEnvVars,
         workspaceRoot,
     });
 

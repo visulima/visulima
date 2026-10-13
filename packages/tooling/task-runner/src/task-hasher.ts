@@ -7,6 +7,7 @@ import { matchesGlob } from "node:path";
 import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
 import { join, resolve } from "@visulima/path";
 
+import { createEnvMatcher, resolveEnvPatterns } from "./fingerprint";
 import { getFrameworkEnvVariables } from "./framework-inference";
 import type { IncrementalFileHasher } from "./incremental-hasher";
 import { LockfileHasher } from "./lockfile-hasher";
@@ -121,6 +122,13 @@ interface TaskHasherOptions {
     smartLockfileHashing?: boolean;
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+
+    /**
+     * Env-var names or `*` patterns kept out of the key when they come from
+     * an implicit source (`autoEnvVars`, framework inference). Workspace-wide;
+     * per-target `untrackedEnv` is merged in per task.
+     */
+    untrackedEnvVars?: string[];
     /** The workspace root directory */
     workspaceRoot: string;
 }
@@ -325,6 +333,8 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #autoEnvVars: boolean;
 
+    readonly #untrackedEnvVars: string[];
+
     readonly #incrementalHasher: IncrementalFileHasher | undefined;
 
     readonly #onFingerprint: FingerprintHook | undefined;
@@ -346,6 +356,7 @@ class InProcessTaskHasher implements TaskHasher {
         this.#lockfileHasher = this.#smartLockfileHashing ? new LockfileHasher(options.workspaceRoot) : undefined;
         this.#frameworkInference = options.frameworkInference ?? false;
         this.#autoEnvVars = options.autoEnvVars ?? false;
+        this.#untrackedEnvVars = options.untrackedEnvVars ?? [];
         this.#incrementalHasher = options.incrementalHasher;
         this.#onFingerprint = options.onFingerprint;
         this.#onDiagnostic = options.onDiagnostic;
@@ -409,8 +420,20 @@ class InProcessTaskHasher implements TaskHasher {
             );
         }
 
+        // Untracked names apply to every implicit env source below; explicit
+        // `envVars` / `globalEnv` / `env://` entries are never filtered.
+        const isUntracked = createEnvMatcher([...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])]);
+
         for (const envVariable of this.#envVars) {
             runtime[`env:${envVariable}`] = hashStrings(envVariable, envSignature(envVariable));
+        }
+
+        // Per-target `fingerprintEnv` names/patterns are explicit, so they
+        // are hashed like `envVars`, minus anything the task marks untracked.
+        for (const name of Object.keys(resolveEnvPatterns(task.fingerprintEnv ?? [], process.env))) {
+            if (!isUntracked(name)) {
+                runtime[`env:${name}`] = hashStrings(name, envSignature(name));
+            }
         }
 
         // Auto-fingerprint env vars referenced in the task's command
@@ -425,7 +448,7 @@ class InProcessTaskHasher implements TaskHasher {
                     const key = `env:${name}`;
 
                     // Don't overwrite if the user already declared it.
-                    if (runtime[key] === undefined) {
+                    if (runtime[key] === undefined && !isUntracked(name)) {
                         runtime[key] = hashStrings(name, envSignature(name));
                     }
                 }
@@ -449,7 +472,9 @@ class InProcessTaskHasher implements TaskHasher {
                 const frameworkEnvVariables = await getFrameworkEnvVariables(packageJsonPath);
 
                 for (const envName of Object.keys(frameworkEnvVariables)) {
-                    runtime[`framework-env:${envName}`] = hashStrings(envName, envSignature(envName));
+                    if (!isUntracked(envName)) {
+                        runtime[`framework-env:${envName}`] = hashStrings(envName, envSignature(envName));
+                    }
                 }
             }
         }
