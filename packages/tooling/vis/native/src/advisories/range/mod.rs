@@ -9,6 +9,7 @@ pub mod go;
 pub mod maven;
 pub mod npm;
 pub mod pep440;
+pub mod pub_semver;
 pub mod rubygems;
 
 #[cfg(test)]
@@ -28,6 +29,13 @@ pub trait RangeMatcher: Send + Sync {
 ///
 /// OSV ecosystem names are case-sensitive in the schema (e.g. `PyPI`,
 /// `RubyGems`, `Maven`), so we normalize to lowercase before matching.
+///
+/// `NuGet` and `SwiftURL` are deliberately absent. Their OSV records carry
+/// `last_affected` events (118 NuGet and 4 SwiftURL events in the published
+/// dumps). `Range::to_pairs` stores those as an exclusive `fixed`,
+/// so the version equal to `last_affected` would be reported clean. Until
+/// the affected table can carry an inclusive upper bound, those ecosystems
+/// stay refused.
 pub fn matcher_for(ecosystem: &str) -> Option<&'static dyn RangeMatcher> {
     match ecosystem.to_lowercase().as_str() {
         "npm" => Some(&npm::NpmSemverMatcher),
@@ -36,6 +44,34 @@ pub fn matcher_for(ecosystem: &str) -> Option<&'static dyn RangeMatcher> {
         "go" => Some(&go::GoMatcher),
         "maven" => Some(&maven::MavenMatcher),
         "rubygems" => Some(&rubygems::RubyGemsMatcher),
+        "pub" => Some(&pub_semver::PubMatcher),
         _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::matcher_for;
+
+    #[test]
+    fn pub_dispatches_to_strict_semver() {
+        let m = matcher_for("Pub").expect("Pub has a matcher");
+        assert!(m.matches("0.13.2", "0", Some("0.13.3")));
+        assert!(!m.matches("0.13.3", "0", Some("0.13.3")));
+        assert!(!m.matches("0.13", "0", Some("0.13.3")), "two-part Pub versions are not SemVer");
+        assert!(matcher_for("pub").is_some(), "dispatch is case-insensitive");
+    }
+
+    #[test]
+    fn pub_prerelease_precedes_release() {
+        let m = matcher_for("pub").expect("pub has a matcher");
+        assert!(m.matches("1.0.0-dev.1", "0", Some("1.0.0")));
+        assert!(!m.matches("1.0.0", "0", Some("1.0.0")));
+    }
+
+    #[test]
+    fn nuget_and_swifturl_stay_refused() {
+        assert!(matcher_for("NuGet").is_none());
+        assert!(matcher_for("SwiftURL").is_none());
     }
 }

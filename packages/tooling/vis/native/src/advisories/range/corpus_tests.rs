@@ -243,3 +243,60 @@ fn corpus_npm_open_high_range_all_versions_above_introduced_match() {
     assert_dispatch(&adv, 0, "9.0.0", true);
     assert_dispatch(&adv, 0, "1.2.9", false);
 }
+
+//
+// Real shape from GHSA-4rgh-jx4f-qfcq (http header injection, fixed in
+// 0.13.3). Pub records use `ECOSYSTEM` ranges with introduced/fixed events,
+// and the versions are plain SemVer.
+#[test]
+fn corpus_pub_http_header_injection() {
+    let json = r#"{
+        "id": "GHSA-4rgh-jx4f-qfcq",
+        "summary": "http before 0.13.3 vulnerable to header injection",
+        "aliases": ["CVE-2020-35669"],
+        "affected": [{
+            "package": { "ecosystem": "Pub", "name": "http" },
+            "ranges": [{
+                "type": "ECOSYSTEM",
+                "events": [
+                    { "introduced": "0" },
+                    { "fixed": "0.13.3" }
+                ]
+            }]
+        }]
+    }"#;
+    let adv = parse(json);
+
+    assert_dispatch(&adv, 0, "0.10.0", true);
+    assert_dispatch(&adv, 0, "0.13.2", true);
+    assert_dispatch(&adv, 0, "0.13.3", false);
+    assert_dispatch(&adv, 0, "0.13.4", false);
+}
+
+//
+// Real shape from GHSA-vm9r-h74p-hg97 (jose untrusted JWK header key
+// acceptance, fixed in 0.3.5+1). The fix carries a build suffix, so a bare
+// 0.3.5 is still affected.
+#[test]
+fn corpus_pub_jose_build_suffix_fix() {
+    let json = r#"{
+        "id": "GHSA-vm9r-h74p-hg97",
+        "summary": "jose vulnerable to untrusted JWK header key acceptance during signature verification",
+        "affected": [{
+            "package": { "ecosystem": "Pub", "name": "jose" },
+            "ranges": [{
+                "type": "ECOSYSTEM",
+                "events": [
+                    { "introduced": "0" },
+                    { "fixed": "0.3.5+1" }
+                ]
+            }]
+        }]
+    }"#;
+    let adv = parse(json);
+
+    assert_dispatch(&adv, 0, "0.3.4", true);
+    assert_dispatch(&adv, 0, "0.3.5", true);
+    assert_dispatch(&adv, 0, "0.3.5+1", false);
+    assert_dispatch(&adv, 0, "0.3.6", false);
+}
