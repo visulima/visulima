@@ -1,4 +1,5 @@
 import type { RemoteCacheOptions } from "./backends/types";
+import type { CacheMissReason } from "./fingerprint";
 import type { WhenCondition } from "./when-condition";
 
 /**
@@ -261,6 +262,14 @@ export interface TaskResult {
         /** Env glob patterns registered as cache dependencies via `getEnvs`. */
         trackedEnvPatterns: string[];
     };
+
+    /**
+     * Why the trace-mode cache lookup missed, when it did. Populated only
+     * for `hashMode: "trace"` tasks (and `autoFingerprint`) that executed
+     * because the stored fingerprint no longer matched. Persisted to the
+     * run summary so `cache why` can explain the miss after the fact.
+     */
+    cacheMissReasons?: CacheMissReason[];
 
     /** The exit code, if applicable */
     code?: number;

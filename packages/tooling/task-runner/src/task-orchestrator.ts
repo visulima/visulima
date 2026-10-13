@@ -6,7 +6,7 @@ import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
 import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
 import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
-import type { TaskFingerprint } from "./fingerprint";
+import type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 import { FingerprintManager } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 import { findCycle } from "./task-graph-utils";
@@ -86,6 +86,9 @@ interface TaskOrchestratorOptions {
     whenContext?: WhenContext;
     workspaceRoot: string;
 }
+
+/** Upper bound on miss reasons written to the run summary (a changed generated file can list thousands). */
+const MAX_PERSISTED_MISS_REASONS = 50;
 
 const hashFingerprint = (fingerprint: TaskFingerprint): string => {
     const hash = createXxh3Hasher();
@@ -671,6 +674,10 @@ class TaskOrchestrator {
             return this.#dryRunResult(task, startTime);
         }
 
+        // Reasons are recorded for the run summary whether or not the
+        // console diagnostics are on, so `cache why` can explain a miss later.
+        let cacheMissReasons: CacheMissReason[] | undefined;
+
         if (!this.#skipCache && task.cache !== false) {
             const cachedResult = await this.#cache.getByTaskId(task.id);
 
@@ -682,6 +689,8 @@ class TaskOrchestrator {
                 );
 
                 if (commandMiss) {
+                    cacheMissReasons = [commandMiss];
+
                     if (this.#cacheDiagnostics) {
                         this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([commandMiss]));
                     }
@@ -692,16 +701,22 @@ class TaskOrchestrator {
                         return this.#applyCachedResult(task, cachedResult, startTime);
                     }
 
+                    cacheMissReasons = missReasons;
+
                     if (this.#cacheDiagnostics) {
                         this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(missReasons));
                     }
                 }
-            } else if (this.#cacheDiagnostics && !cachedResult) {
-                this.#lifeCycle.printCacheMiss?.(task, "Cache miss reasons:\n  - No previous fingerprint found (first run)");
+            } else if (!cachedResult) {
+                cacheMissReasons = [{ detail: "no previous fingerprint", type: "no-fingerprint" }];
+
+                if (this.#cacheDiagnostics) {
+                    this.#lifeCycle.printCacheMiss?.(task, "Cache miss reasons:\n  - No previous fingerprint found (first run)");
+                }
             }
         }
 
-        return this.#executeTaskWithTracking(task, startTime);
+        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons);
     }
 
     async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number): Promise<TaskResult> {
@@ -806,7 +821,7 @@ class TaskOrchestrator {
         return checks.filter((path): path is string => path !== undefined);
     }
 
-    async #executeTaskWithTracking(task: Task, startTime: number): Promise<TaskResult> {
+    async #executeTaskWithTracking(task: Task, startTime: number, cacheMissReasons?: CacheMissReason[]): Promise<TaskResult> {
         if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
         }
@@ -901,6 +916,7 @@ class TaskOrchestrator {
 
             const result: TaskResult = {
                 cacheHints,
+                cacheMissReasons: cacheMissReasons?.slice(0, MAX_PERSISTED_MISS_REASONS),
                 code,
                 endTime: Date.now(),
                 hadWarnings: hadWarnings || undefined,

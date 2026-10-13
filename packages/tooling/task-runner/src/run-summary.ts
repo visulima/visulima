@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
+import type { CacheMissReason } from "./fingerprint";
 import type { OutputSpec, TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
 import { uniqueId } from "./utils";
 
@@ -18,6 +19,12 @@ interface TaskSummary {
      * Omitted when the task used no client hints.
      */
     cacheHints?: TaskResult["cacheHints"];
+
+    /**
+     * Trace-mode miss reasons (capped at 50 entries). Omitted for hits and
+     * for tasks that did not run the trace-mode lookup.
+     */
+    cacheMissReasons?: CacheMissReason[];
 
     /**
      * Why a cacheable task that ran (exit 0) seeded no cache entry.
@@ -167,6 +174,7 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
         const summary: TaskSummary = {
             cacheable: result.task.cache !== false,
             cacheHints: result.cacheHints,
+            cacheMissReasons: result.cacheMissReasons,
             cacheSkipReason: getCacheSkipReason(result),
             cacheStatus: getCacheStatus(result),
             dependencies: taskDeps,
