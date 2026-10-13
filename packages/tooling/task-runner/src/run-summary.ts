@@ -34,6 +34,7 @@ interface TaskSummary {
      * `empty-fingerprint` — tracking observed no workspace accesses.
      */
     cacheSkipReason?: "disabled-by-task" | "empty-fingerprint" | "self-modified";
+
     /** Cache status */
     cacheStatus: "HIT" | "MISS" | "REMOTE_HIT" | "SKIPPED";
     /** Dependencies on other tasks */
@@ -48,6 +49,13 @@ interface TaskSummary {
     hash: string | undefined;
     /** Detailed hash information */
     hashDetails: TaskHashDetails | undefined;
+
+    /**
+     * Key a traced run was stored or looked up under: `declared-fallback` when
+     * the tracker observed no workspace access and the target declares
+     * `inputs`. Omitted for trace keys and declared-mode runs.
+     */
+    hashSource?: TaskResult["hashSource"];
     /** The task's declared outputs (glob patterns, literals, or `{ auto: true }`). */
     outputs: OutputSpec[];
 
@@ -183,6 +191,7 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
             exitCode: result.code,
             hash: result.task.hash,
             hashDetails: result.task.hashDetails,
+            hashSource: result.hashSource,
             outputs: result.task.outputs,
             retryAttempts: result.retryAttempts,
             startTime: result.startTime ? new Date(result.startTime).toISOString() : undefined,

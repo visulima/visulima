@@ -106,10 +106,20 @@ export interface Task {
     concurrencyWeight?: number;
 
     /**
+     * True when the target declares `inputs` (directly or through target
+     * defaults). Carried over at task graph creation. A traced run whose
+     * tracker observed no workspace access is keyed on the declared hash only
+     * when this is set; otherwise it is not cached. See
+     * {@link TaskResult.hashSource}.
+     */
+    declaresInputs?: boolean;
+
+    /**
      * Extra env-var names or `*` patterns folded into this task's cache
      * key. Carried over from {@link TargetConfiguration.fingerprintEnv}.
      */
     fingerprintEnv?: string[];
+
     /** Hash of the task inputs for caching */
     hash?: string;
 
@@ -282,6 +292,7 @@ export interface TaskResult {
      * produce false cache hits on every subsequent run.
      */
     emptyFingerprint?: boolean;
+
     /** The end time of the task */
     endTime?: number;
 
@@ -293,6 +304,14 @@ export interface TaskResult {
      * `cacheOnWarning: false` cache-suppression path.
      */
     hadWarnings?: boolean;
+
+    /**
+     * Set when the run's cache key is the task's declared hash, not a trace
+     * key. That happens for a `hashMode: "trace"` task whose tracker observed
+     * no workspace access while the target declares `inputs`, so the declared
+     * hash is the only valid key. Absent for trace keys and declared-mode runs.
+     */
+    hashSource?: "declared-fallback";
 
     /**
      * Number of times the task was restarted by the retry controller
@@ -835,9 +854,10 @@ export interface TaskRunnerOptions {
      * a task accesses during execution and uses that for cache invalidation
      * instead of requiring manual input configuration.
      *
-     * When the tracker observes no workspace access for a run, that run is
-     * not cached (see {@link TaskResult.emptyFingerprint}). It does not fall
-     * back to declared inputs.
+     * When the tracker observes no workspace access for a run, the run is keyed
+     * on the declared hash if the target declares `inputs` (see
+     * {@link TaskResult.hashSource}). Otherwise it is not cached (see
+     * {@link TaskResult.emptyFingerprint}).
      *
      * This is the workspace-wide switch. To opt a single target into
      * traced hashing without flipping it for the whole graph, set

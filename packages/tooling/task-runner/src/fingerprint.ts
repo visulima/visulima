@@ -94,7 +94,7 @@ export interface CacheMissReason {
     currentHash?: string;
     detail: string;
     previousHash?: string;
-    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
+    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint" | "declared-changed";
 }
 
 /**
@@ -139,6 +139,10 @@ export const describeCacheMissReason = (reason: CacheMissReason): string => {
     switch (reason.type) {
         case "args-changed": {
             return "Command arguments changed";
+        }
+
+        case "declared-changed": {
+            return "Declared inputs changed (the run was keyed on its declared hash)";
         }
 
         case "directory-changed": {

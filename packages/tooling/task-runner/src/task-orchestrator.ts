@@ -583,9 +583,12 @@ class TaskOrchestrator {
         }
     }
 
-    async #processTask(task: Task): Promise<TaskResult> {
-        const startTime = Date.now();
-
+    /**
+     * Computes the declared (content) hash of a task and records `hash` and
+     * `hashDetails` on it. Shared by the declared path and the trace-mode
+     * declared fallback so both key a task identically.
+     */
+    async #computeDeclaredHash(task: Task): Promise<string> {
         const hashDetails = await this.#taskHasher.hashTask(task);
 
         // Make `dependsOn` cache-correct, not just execution-ordering: fold the
@@ -596,6 +599,14 @@ class TaskOrchestrator {
         const hash = computeTaskHash(hashDetails);
 
         Object.assign(task, { hash, hashDetails });
+
+        return hash;
+    }
+
+    async #processTask(task: Task): Promise<TaskResult> {
+        const startTime = Date.now();
+
+        const hash = await this.#computeDeclaredHash(task);
 
         if (this.#dryRun) {
             return this.#dryRunResult(task, startTime);
@@ -648,6 +659,8 @@ class TaskOrchestrator {
         // Reasons are recorded for the run summary whether or not the
         // console diagnostics are on, so `cache why` can explain a miss later.
         let cacheMissReasons: CacheMissReason[] | undefined;
+        // The declared hash, when the lookup computed it (see the declared-fallback branch below).
+        let declaredKey: string | undefined;
 
         if (!this.#skipCache && task.cache !== false) {
             const cachedResult = await this.#cache.getByTaskId(task.id);
@@ -678,6 +691,21 @@ class TaskOrchestrator {
                         this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(missReasons));
                     }
                 }
+            } else if (cachedResult && task.declaresInputs && this.#fingerprintManager) {
+                // An indexed entry without a fingerprint was stored by the
+                // declared fallback (see #executeTaskWithTracking), so its key is
+                // the declared hash. It stays valid only while that hash holds.
+                declaredKey = await this.#computeDeclaredHash(task);
+
+                if (declaredKey === cachedResult.hash) {
+                    return this.#applyCachedResult(task, cachedResult, startTime, "declared-fallback");
+                }
+
+                cacheMissReasons = [{ detail: "declared inputs", type: "declared-changed" }];
+
+                if (this.#cacheDiagnostics) {
+                    this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(cacheMissReasons));
+                }
             } else if (!cachedResult) {
                 cacheMissReasons = [{ detail: "no previous fingerprint", type: "no-fingerprint" }];
 
@@ -687,10 +715,10 @@ class TaskOrchestrator {
             }
         }
 
-        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons);
+        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons, declaredKey);
     }
 
-    async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number): Promise<TaskResult> {
+    async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number, hashSource?: TaskResult["hashSource"]): Promise<TaskResult> {
         const restored = await this.#cache.restoreOutputs(cachedResult.hash, task.outputs, task.cacheRestore);
         const status: TaskStatus = restored ? "local-cache" : "local-cache-kept-existing";
 
@@ -701,6 +729,7 @@ class TaskOrchestrator {
             status,
             task,
             terminalOutput: cachedResult.terminalOutput,
+            ...(hashSource === undefined ? {} : { hashSource }),
         };
 
         this.#results.set(task.id, result);
@@ -792,7 +821,7 @@ class TaskOrchestrator {
         return checks.filter((path): path is string => path !== undefined);
     }
 
-    async #executeTaskWithTracking(task: Task, startTime: number, cacheMissReasons?: CacheMissReason[]): Promise<TaskResult> {
+    async #executeTaskWithTracking(task: Task, startTime: number, cacheMissReasons?: CacheMissReason[], declaredKey?: string): Promise<TaskResult> {
         if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
         }
@@ -916,7 +945,7 @@ class TaskOrchestrator {
                     result.selfModified = true;
 
                     this.#lifeCycle.printSelfModifyingSkip?.(task, modified);
-                } else if (emptyFingerprintReason) {
+                } else if (emptyFingerprintReason && !task.declaresInputs) {
                     result.emptyFingerprint = true;
 
                     this.#lifeCycle.printEmptyFingerprintWarning?.(task, emptyFingerprintReason);
@@ -927,6 +956,17 @@ class TaskOrchestrator {
                     // build that genuinely wrote nothing). Seeding the
                     // cache would let a later hit restore nothing.
                     this.#lifeCycle.printEmptyFingerprintWarning?.(task, AUTO_OUTPUTS_UNAVAILABLE_REASON);
+                } else if (emptyFingerprintReason) {
+                    // The tracker saw no workspace access, so the only valid key is the
+                    // declared hash. Hashing after the run gives the same inputs the run
+                    // used, because nothing it touched was tracked. The lookup's hash is
+                    // reused when it already exists, so the declared hash is computed once.
+                    const hash = declaredKey ?? (await this.#computeDeclaredHash(task));
+
+                    result.hashSource = "declared-fallback";
+
+                    await this.#cache.put(hash, terminalOutput, task.outputs, code, undefined, autoWrites);
+                    await this.#cache.setTaskIndex(task.id, hash);
                 } else {
                     const hash = hashFingerprint(fingerprint);
 
