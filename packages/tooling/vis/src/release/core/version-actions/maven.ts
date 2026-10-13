@@ -363,6 +363,14 @@ export class MavenVersionActions extends VersionActions {
             };
         }
 
+        if (process.platform === "win32") {
+            throw new VisReleaseError({
+                code: "CONFIG_INVALID",
+                message: `${context.pkg.name} cannot be published from Windows yet: Maven publish is POSIX-only for now. Publish from a POSIX runner.`,
+                packageName: context.pkg.name,
+            });
+        }
+
         // argv form, no shell. Credentials come from ~/.m2/settings.xml, which
         // Maven reads itself; the module's pom supplies the deploy target.
         // `-N` (non-recursive) keeps the deploy to this pom: a parent pom with

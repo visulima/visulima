@@ -497,7 +497,7 @@ describe("mavenVersionActions.publish", () => {
         expect(result.output).toContain("[dry-run / maven]");
     });
 
-    it("deploys the module with mvn -B -f <pom> deploy, through the argv runner in the module dir", async () => {
+    it.skipIf(process.platform === "win32")("deploys the module with mvn -B -f <pom> deploy, through the argv runner in the module dir", async () => {
         expect.hasAssertions();
 
         const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
@@ -508,7 +508,7 @@ describe("mavenVersionActions.publish", () => {
         expect(result).toMatchObject({ published: true });
     });
 
-    it("passes -N so a parent pom with <modules> deploys only its own pom", async () => {
+    it.skipIf(process.platform === "win32")("passes -N so a parent pom with <modules> deploys only its own pom", async () => {
         expect.hasAssertions();
 
         const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
@@ -522,6 +522,48 @@ describe("mavenVersionActions.publish", () => {
         expect(argv.indexOf("-N")).toBeLessThan(argv.indexOf("deploy"));
     });
 
+    it("refuses to publish on win32 with CONFIG_INVALID and never runs mvn", async () => {
+        expect.hasAssertions();
+
+        const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform");
+        const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        const actions = new MavenVersionActions();
+
+        Object.defineProperty(process, "platform", { value: "win32" });
+
+        try {
+            await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner: { run } }))).rejects.toMatchObject({
+                code: "CONFIG_INVALID",
+                message: expect.stringContaining("POSIX-only"),
+            });
+        } finally {
+            if (originalPlatform) {
+                Object.defineProperty(process, "platform", originalPlatform);
+            }
+        }
+
+        expect(run).not.toHaveBeenCalled();
+    });
+
+    it("still returns the dry-run result on win32", async () => {
+        expect.hasAssertions();
+
+        const originalPlatform = Object.getOwnPropertyDescriptor(process, "platform");
+        const actions = new MavenVersionActions();
+
+        Object.defineProperty(process, "platform", { value: "win32" });
+
+        try {
+            const result = await actions.publish(buildPublishContext({ dryRun: true, pkg: buildPkg(pkgDir) }));
+
+            expect(result).toMatchObject({ published: true });
+        } finally {
+            if (originalPlatform) {
+                Object.defineProperty(process, "platform", originalPlatform);
+            }
+        }
+    });
+
     it("does not run mvn in dryRun mode", async () => {
         expect.hasAssertions();
 
@@ -533,7 +575,7 @@ describe("mavenVersionActions.publish", () => {
         expect(run).not.toHaveBeenCalled();
     });
 
-    it("throws PUBLISH_FAILED with the coordinates and stderr when mvn deploy exits non-zero", async () => {
+    it.skipIf(process.platform === "win32")("throws PUBLISH_FAILED with the coordinates and stderr when mvn deploy exits non-zero", async () => {
         expect.hasAssertions();
 
         const runner = { run: async () => { return { exitCode: 1, stderr: "401 Unauthorized", stdout: "" }; } };
@@ -548,7 +590,7 @@ describe("mavenVersionActions.publish", () => {
         });
     });
 
-    it("points the failure hint at ~/.m2/settings.xml credentials", async () => {
+    it.skipIf(process.platform === "win32")("points the failure hint at ~/.m2/settings.xml credentials", async () => {
         expect.hasAssertions();
 
         const runner = { run: async () => { return { exitCode: 1, stderr: "", stdout: "" }; } };
@@ -564,7 +606,7 @@ describe("mavenVersionActions.publish", () => {
         expect(new MavenVersionActions().id).toBe("maven");
     });
 
-    it("includes the resolved groupId:artifactId in the PUBLISH_FAILED error (B-1)", async () => {
+    it.skipIf(process.platform === "win32")("includes the resolved groupId:artifactId in the PUBLISH_FAILED error (B-1)", async () => {
         // B-1: the publish error stamps `groupId:artifactId` (and the
         // resolved pom path) so the log line points straight at the source.
         expect.hasAssertions();
@@ -580,7 +622,7 @@ describe("mavenVersionActions.publish", () => {
         });
     });
 
-    it("falls back to the package name when the pom can't be parsed (B-1)", async () => {
+    it.skipIf(process.platform === "win32")("falls back to the package name when the pom can't be parsed (B-1)", async () => {
         // Best-effort pom read: a missing/malformed pom doesn't change
         // the error class, but the coordinate label degrades to the
         // package name so the operator still has SOMETHING to grep.
@@ -602,7 +644,7 @@ describe("mavenVersionActions.publish", () => {
         }
     });
 
-    it("includes the resolved pom path in the hint (B-1)", async () => {
+    it.skipIf(process.platform === "win32")("includes the resolved pom path in the hint (B-1)", async () => {
         expect.hasAssertions();
 
         const actions = new MavenVersionActions();
