@@ -16,6 +16,7 @@ import type { WorkspacePackage } from "../../../src/release/types";
  */
 describe.skipIf(process.platform === "win32")(GradleVersionActions, () => {
     let root: string;
+    const realFetch = globalThis.fetch;
 
     const buildPkg = (dir: string): WorkspacePackage => {
         return {
@@ -55,6 +56,8 @@ describe.skipIf(process.platform === "win32")(GradleVersionActions, () => {
 
     beforeEach(() => {
         root = realpathSync(mkdtempSync(join(tmpdir(), "vis-gradle-publish-")));
+        // publish probes Maven Central for the published version; a 404 keeps these tests offline.
+        globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404, text: async () => "" }) as never;
         writeFileSync(join(root, "settings.gradle.kts"), "include(\":core\")\n");
         writeFileSync(join(root, "gradlew"), "#!/bin/sh\n");
         mkdirSync(join(root, "core"), { recursive: true });
@@ -62,6 +65,7 @@ describe.skipIf(process.platform === "win32")(GradleVersionActions, () => {
 
     afterEach(() => {
         rmSync(root, { force: true, recursive: true });
+        globalThis.fetch = realFetch;
     });
 
     it("publishes a module through the root wrapper with its task path, from the root", async () => {
