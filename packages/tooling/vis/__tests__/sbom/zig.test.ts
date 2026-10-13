@@ -129,12 +129,12 @@ describe(buildZigSbomParts, () => {
         expect(validateBom({ bomFormat: "CycloneDX", components, dependencies, specVersion: "1.7", version: 1 })).toStrictEqual({ errors: [], valid: true });
     });
 
-    it("returns nothing, rather than failing the BOM, when the manifest does not parse", () => {
+    it("fails the SBOM with the reason when the manifest does not parse, rather than leaving packages out", () => {
         expect.hasAssertions();
 
         writeFileSync(join(root, "build.zig.zon"), ".{ .version = some_expression }");
 
-        expect(buildZigSbomParts(root)).toStrictEqual({ components: [], dependencies: [] });
+        expect(() => buildZigSbomParts(root)).toThrow(/build\.zig\.zon/);
     });
 
     it("returns nothing when the workspace has no build.zig.zon", () => {

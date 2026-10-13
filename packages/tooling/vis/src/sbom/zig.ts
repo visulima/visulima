@@ -11,15 +11,16 @@
  * form (`name-version-hashplus`) holds a truncated digest and a package id, so it is kept as a
  * property, not as a hash.
  *
- * A manifest that does not parse, or a dependency with neither `.url` nor `.path`, makes this part
- * empty rather than failing `vis sbom`, as the other readers do with a file they cannot use. The
- * release side refuses the same manifest with `CONFIG_INVALID` when `release.zig.discover` is on.
+ * A manifest that does not parse, or a dependency with neither `.url` nor `.path`, fails `vis sbom`
+ * with the reason. A BOM that quietly leaves out a package it could not read would look complete.
+ * The release side refuses the same manifest with `CONFIG_INVALID` when `release.zig.discover` is on.
  * Refs and the `vis:zig:path` property are relative to the workspace, so the BOM holds no
  * absolute path.
  */
 
 import { basename, relative, resolve } from "node:path";
 
+import { VisUserError } from "../errors/vis-user-error";
 import type { ZigDependency } from "../util/zig-manifest";
 import { readIfExists, walkZigManifests, ZigManifestError } from "../util/zig-manifest";
 import type { Component, Dependency, ExternalReference, Hash, Property } from "./types";
@@ -47,7 +48,7 @@ export const buildZigSbomParts = (workspaceRoot: string): { components: Componen
         }
     } catch (error) {
         if (error instanceof ZigManifestError) {
-            return { components: [], dependencies: [] };
+            throw new VisUserError(error.message);
         }
 
         throw error;
