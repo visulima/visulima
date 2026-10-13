@@ -1,3 +1,21 @@
+## @visulima/vis [4.3.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.2.0...@visulima/vis@4.3.0) (2026-10-13)
+
+### Features
+
+* **vis:** release, task, audit and SBOM support for all languages ([#954](https://github.com/visulima/visulima/issues/954)) ([3bbd816](https://github.com/visulima/visulima/commit/3bbd816777b409d841bb6a2501ebc96db9bf0233)), closes [#947](https://github.com/visulima/visulima/issues/947)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 4.0.30
+* **@visulima/tui-kit:** upgraded to 1.0.33
+* **@visulima/cerebro:** upgraded to 3.1.3
+* **@visulima/colorize:** upgraded to 2.2.0
+* **@visulima/fs:** upgraded to 6.1.0
+* **@visulima/package:** upgraded to 5.0.43
+* **@visulima/pail:** upgraded to 5.0.1
+* **@visulima/tsconfig:** upgraded to 3.2.37
+
 ## @visulima/vis [4.2.0](https://github.com/visulima/visulima/compare/@visulima/vis@4.1.20...@visulima/vis@4.2.0) (2026-10-09)
 
 ### Features
