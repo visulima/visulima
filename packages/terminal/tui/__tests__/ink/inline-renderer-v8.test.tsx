@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign, no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group, regexp/no-obscure-range -- the VT model mutates its screen and parses control bytes by design */
+import delay from "delay";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { startTransition, Suspense, useEffect } from "react";
 import { describe, expect, it } from "vitest";
 
 import { Box, Cursor, Static, Text } from "../../src/components/index";
@@ -577,6 +578,129 @@ describe("inline renderer: static output", () => {
         await waitUntilRenderFlush();
 
         expect(visibleRows(inkScreen(stdout)).slice(0, 2)).toEqual(["", "live"]);
+
+        unmount();
+    });
+
+    it("forgets the static output of a removed subtree before a resume replays it", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+        const state: { suspend?: () => Promise<{ resume: () => Promise<void> }> } = {};
+
+        const Parent = ({ show }: { readonly show: boolean }) => (
+            <Box flexDirection="column">
+                {show
+                    ? (
+                    <Box>
+                        <Static items={["gone-static"]}>{staticItem}</Static>
+                    </Box>
+                    )
+                    : null}
+                <Text>live</Text>
+            </Box>
+        );
+
+        const App = ({ show }: { readonly show: boolean }) => {
+            const { suspendTerminal } = useApp();
+
+            state.suspend = suspendTerminal;
+
+            return <Parent show={show} />;
+        };
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(<App show />, { alternateScreen: true, interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        rerender(<App show={false} />);
+
+        await waitUntilRenderFlush();
+
+        const handle = await state.suspend!();
+
+        await handle.resume();
+        await waitUntilRenderFlush();
+
+        const writes = stdout.getWrites().join("");
+
+        expect(writes.slice(writes.lastIndexOf(ALT_SCREEN_ON))).not.toContain("gone-static");
+
+        unmount();
+    });
+});
+
+describe("inline renderer: static output across concurrent renders", () => {
+    it("keeps static output already written when a concurrent render with a new <Static> is abandoned", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+        const state: { suspend?: () => Promise<{ resume: () => Promise<void> }> } = {};
+
+        // Never resolves, so a transition rendering it is abandoned before it commits.
+        const Never = (): null => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw new Promise(() => {});
+        };
+
+        const Capture = (): null => {
+            const { suspendTerminal } = useApp();
+
+            state.suspend = suspendTerminal;
+
+            return null;
+        };
+
+        const Tree = ({ live, mode }: { readonly live: string; readonly mode: "a" | "b" }) => (
+            <Box flexDirection="column">
+                {mode === "a"
+                    ? (
+                    <Static items={["static-one"]} key="a">{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                    )
+                    : (
+                    <Static items={["static-two"]} key="b">{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                    )}
+                <Text>{live}</Text>
+                {mode === "b" ? <Never /> : null}
+                <Capture />
+            </Box>
+        );
+
+        const tree = (live: string, mode: "a" | "b") => (
+            <Suspense fallback={<Text>wait</Text>}>
+                <Tree live={live} mode={mode} />
+            </Suspense>
+        );
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(tree("v1", "a"), {
+            alternateScreen: true,
+            concurrent: true,
+            interactive: true,
+            stdout,
+        });
+
+        await delay(50);
+        await waitUntilRenderFlush();
+
+        startTransition(() => {
+            rerender(tree("v2", "b"));
+        });
+
+        await delay(50);
+
+        rerender(tree("v3", "a"));
+
+        await delay(100);
+        await waitUntilRenderFlush();
+
+        const handle = await state.suspend!();
+
+        await handle.resume();
+        await waitUntilRenderFlush();
+
+        const writes = stdout.getWrites().join("");
+
+        expect(writes.slice(writes.lastIndexOf(ALT_SCREEN_ON))).toContain("static-one");
 
         unmount();
     });
