@@ -32,6 +32,9 @@ const VERSION_PROPERTY = "vis:zig:version";
 const HASH_PROPERTY = "vis:zig:hash";
 const PATH_PROPERTY = "vis:zig:path";
 
+/** Workspace-relative paths use `/` on every platform, so the BOM does not change with the host OS. */
+const toPosix = (path: string): string => path.replaceAll("\\", "/");
+
 /** Components and flat dependency entries for the Zig packages of the workspace. */
 export const buildZigSbomParts = (workspaceRoot: string): { components: Component[]; dependencies: Dependency[] } => {
     const components = new Map<string, Component>();
@@ -69,7 +72,7 @@ const dependencyKey = (dependency: ZigDependency, dir: string, manifestPath: str
     }
 
     if (dependency.path !== undefined) {
-        return `path:${relative(workspaceRoot, resolve(dir, dependency.path))}`;
+        return `path:${toPosix(relative(workspaceRoot, resolve(dir, dependency.path)))}`;
     }
 
     throw new ZigManifestError(manifestPath, `${manifestPath} line ${String(dependency.line)}: dependency .${dependency.name} has neither .url nor .path.`);
@@ -87,7 +90,7 @@ const toComponent = (dependency: ZigDependency, dir: string, manifestPath: strin
             name,
             properties: [
                 { name: VERSION_PROPERTY, value: "unversioned: local path dependency" },
-                { name: PATH_PROPERTY, value: relative(workspaceRoot, target) },
+                { name: PATH_PROPERTY, value: toPosix(relative(workspaceRoot, target)) },
             ],
             purl: `pkg:generic/${encodeURIComponent(name)}`,
             type: "library",
