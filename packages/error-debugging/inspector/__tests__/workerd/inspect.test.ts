@@ -296,8 +296,9 @@ describe("other built-ins in workerd", () => {
 
         expect(inspect(new Date("2020-01-01T00:00:00.000Z"))).toBe("2020-01-01T00:00:00.000Z");
         expect(inspect(/ab+c/gi)).toBe("/ab+c/gi");
-        // With the default (infinite) `truncate` the whole source is rendered.
-        expect(inspect(function named() {})).toBe("[Function: function named() {}]");
+        // With the default (infinite) `truncate` the whole source is rendered. Workerd
+        // reflows the source whitespace, so compare with whitespace removed.
+        expect(inspect(function named() {}).replaceAll(/\s+/g, "")).toBe("[Function:functionnamed(){}]");
         expect(inspect(Promise.resolve(1))).toBe("Promise{…}");
     });
 
