@@ -3,7 +3,8 @@ import { createInterface } from "node:readline";
 
 import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
-import { resolve as resolvePath } from "@visulima/path";
+import { isAccessibleSync } from "@visulima/fs";
+import { join, resolve as resolvePath } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 import { whichBin } from "#native";
@@ -28,10 +29,10 @@ import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import type { DependencyPath } from "../../security/dependency-paths";
 import { buildDependencyPaths } from "../../security/dependency-paths";
-import { findDuplicateDependencies, loadLockfileGraph, lockedPackages } from "../../security/dependency-scan";
+import { findDuplicateDependencies, loadLockfileGraph, lockedPackages, resolveLockfile } from "../../security/dependency-scan";
 import { readNodeModulesManifests } from "../../security/manifests";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
-import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
+import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem, lockfileNamesForEcosystem } from "../../security/multi-eco-lockfiles";
 import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "../../security/osv-bloom";
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
@@ -63,9 +64,10 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 
 //
 // `--ecosystem npm,pypi,maven,...` accepts a comma list. Each ecosystem
-// has its own Rust range matcher and lockfile reader; unknown values
-// (or ones whose matcher hasn't landed yet) get a non-fatal warning so
-// CI invocations stay stable as more ecosystems land.
+// has its own Rust range matcher and lockfile reader. Online, an unknown
+// value gets a non-fatal warning. Offline, a value with no lock file to
+// read fails the run instead (see offlineLockfileGaps), because it would
+// scan nothing.
 const SUPPORTED_ECOSYSTEMS = new Set([
     "cargo",
     "composer",
@@ -122,6 +124,33 @@ export const offlineNonNpmEcosystems = (ecosystems: string[]): string[] => [
             .map((eco) => canonicalEcosystem(eco)),
     ),
 ];
+
+// An offline run scans only what its lock files hold, so each requested ecosystem needs its lock file.
+// Returns one gap per requested ecosystem whose lock file is missing (or that vis cannot read at all).
+// An existing lock file with no entries is not a gap: the run then reports that nothing was installed.
+export const offlineLockfileGaps = (workspaceRoot: string, ecosystems: string[], pmName: string): string[] => {
+    const gaps: string[] = [];
+
+    for (const eco of new Set(ecosystems.map((raw) => canonicalEcosystem(raw)))) {
+        if (eco === "npm") {
+            const lockInfo = resolveLockfile(workspaceRoot, pmName);
+
+            if (!lockInfo || !isAccessibleSync(join(workspaceRoot, lockInfo.file))) {
+                gaps.push(`npm: no ${lockInfo?.file ?? `${pmName} lock file`} in ${workspaceRoot}`);
+            }
+
+            continue;
+        }
+
+        if (findEcosystemLockfile(workspaceRoot, eco) === undefined) {
+            const names = lockfileNamesForEcosystem(eco);
+
+            gaps.push(names.length > 0 ? `${eco}: no ${names.join(" or ")} in ${workspaceRoot}` : `${eco}: vis has no lock file reader for this ecosystem`);
+        }
+    }
+
+    return gaps;
+};
 
 // Ecosystems the audit refuses, keyed by lowercase name, with the message shown for each. A Map, not an
 // object, so names like "constructor" cannot match inherited properties.
@@ -461,6 +490,26 @@ const executeAudit = async (
         );
     }
 
+    // Offline, a requested ecosystem with no lock file has nothing to scan. Exit 1 before scanning, so a
+    // partial run never reads as a clean one.
+    if (isOffline) {
+        const gaps = offlineLockfileGaps(workspaceRoot, ecosystems.all, pm.name);
+
+        if (gaps.length > 0) {
+            const message = `--offline has nothing to scan: ${gaps.join("; ")}. Run the install that writes the lock file, or drop the ecosystem from --ecosystem.`;
+
+            if (quietHeader) {
+                process.stderr.write(`${message}\n`);
+            } else {
+                pail.error(message);
+            }
+
+            process.exitCode = 1;
+
+            return;
+        }
+    }
+
     // 1. Discover installed packages from the lockfile (single parse,
     // no recursive node_modules walk). `--prod-only` will filter dev
     // packages via the lockedPackages includeDev flag in Phase 1.7.
@@ -474,7 +523,11 @@ const executeAudit = async (
         : [];
 
     if (installed.length === 0 && offlineNonNpm.length === 0) {
-        pail.info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
+        pail.info(
+            isOffline && !npmRequested(ecosystems.all)
+                ? `No dependencies found in the lock files for ${ecosystems.all.join(", ")}. Nothing to scan.`
+                : `No ${pm.name} lockfile entries found. Run ${pm.name} install first.`,
+        );
 
         return;
     }

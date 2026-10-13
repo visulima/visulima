@@ -54,14 +54,19 @@ vi.mock(import("../../../src/security/multi-eco-lockfiles"), async (importOrigin
     };
 });
 
-const { default: execute } = await import("../../../src/commands/audit/handler");
+const { default: execute, offlineLockfileGaps } = await import("../../../src/commands/audit/handler");
 
 /**
  * Runs the audit handler offline against an in-memory lockfile set and records which
- * ecosystem each package batch was queried under.
+ * ecosystem each package batch was queried under. `lockFiles` are created empty in the
+ * workspace: the readers are mocked, but the lock file itself is checked on disk.
  */
-const runOffline = async (ecosystem: string): Promise<void> => {
+const runOffline = async (ecosystem: string, lockFiles: string[] = ["package-lock.json"]): Promise<void> => {
     const workspaceRoot = mkdtempSync(join(tmpdir(), "vis-audit-routing-"));
+
+    for (const lockFile of lockFiles) {
+        writeFileSync(join(workspaceRoot, lockFile), "");
+    }
 
     await execute({
         fs: fsPromises,
@@ -95,7 +100,7 @@ describe("vis audit offline routing", () => {
         state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
         state.ecosystemPackages = { Pub: [{ name: "http", version: "1.2.0" }] };
 
-        await runOffline("pub,npm");
+        await runOffline("pub,npm", ["package-lock.json", "pubspec.lock"]);
 
         expect(queriedAs("npm")).toStrictEqual([[{ name: "left-pad", version: "1.3.0" }]]);
         expect(queriedAs("Pub")).toStrictEqual([[{ name: "http", version: "1.2.0" }]]);
@@ -108,7 +113,7 @@ describe("vis audit offline routing", () => {
         state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
         state.ecosystemPackages = { Pub: [{ name: "http", version: "1.2.0" }] };
 
-        await runOffline("pub");
+        await runOffline("pub", ["pubspec.lock"]);
 
         expect(queriedAs("npm").flat()).toStrictEqual([]);
         expect(queriedAs("Pub")).toStrictEqual([[{ name: "http", version: "1.2.0" }]]);
@@ -119,7 +124,7 @@ describe("vis audit offline routing", () => {
 
         state.ecosystemPackages = { Hex: [{ name: "plug", version: "1.15.0" }] };
 
-        await runOffline("hex");
+        await runOffline("hex", ["mix.lock"]);
 
         expect(queriedAs("Hex")).toStrictEqual([[{ name: "plug", version: "1.15.0" }]]);
         expect(process.exitCode).not.toBe(1);
@@ -130,7 +135,7 @@ describe("vis audit offline routing", () => {
 
         state.ecosystemPackages = { Pub: [{ name: "http", version: "1.2.0" }] };
 
-        await runOffline("pub,npm");
+        await runOffline("pub,npm", ["package-lock.json", "pubspec.lock"]);
 
         expect(queriedAs("Pub")).toStrictEqual([[{ name: "http", version: "1.2.0" }]]);
         expect(process.exitCode).not.toBe(1);
@@ -146,5 +151,83 @@ describe("vis audit offline routing", () => {
 
         expect(queryAdvisories).not.toHaveBeenCalled();
         expect(process.exitCode).toBe(1);
+    });
+});
+
+describe("vis audit offline lock file gaps", () => {
+    beforeEach(() => {
+        state.dbPath = join(mkdtempSync(join(tmpdir(), "vis-audit-db-")), "advisories.sqlite");
+        writeFileSync(state.dbPath, "");
+        state.schemaVersion = 2;
+        process.exitCode = undefined;
+        state.npmPackages = [];
+        state.ecosystemPackages = {};
+        queryAdvisories.mockClear();
+        vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+        vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    });
+
+    it("names the lock file a requested ecosystem is missing", () => {
+        expect.assertions(2);
+
+        const workspaceRoot = mkdtempSync(join(tmpdir(), "vis-audit-gaps-"));
+
+        expect(offlineLockfileGaps(workspaceRoot, ["pub"], "npm")).toStrictEqual([`Pub: no pubspec.lock in ${workspaceRoot}`]);
+
+        writeFileSync(join(workspaceRoot, "pubspec.lock"), "");
+
+        expect(offlineLockfileGaps(workspaceRoot, ["pub"], "npm")).toStrictEqual([]);
+    });
+
+    it("fails when the only requested ecosystem has no lock file, and scans nothing", async () => {
+        expect.assertions(2);
+
+        state.ecosystemPackages = { Pub: [{ name: "http", version: "1.2.0" }] };
+
+        await runOffline("pub", []);
+
+        expect(process.exitCode).toBe(1);
+        expect(queryAdvisories).not.toHaveBeenCalled();
+    });
+
+    it("fails a multi-ecosystem request when one lock file is missing, even if the other has packages", async () => {
+        expect.assertions(2);
+
+        state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
+        state.ecosystemPackages = { Pub: [{ name: "http", version: "1.2.0" }] };
+
+        await runOffline("npm,pub", ["package-lock.json"]);
+
+        expect(process.exitCode).toBe(1);
+        expect(queryAdvisories).not.toHaveBeenCalled();
+    });
+
+    it("fails an npm request with no JavaScript lock file", async () => {
+        expect.assertions(2);
+
+        state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
+
+        await runOffline("npm", []);
+
+        expect(process.exitCode).toBe(1);
+        expect(queryAdvisories).not.toHaveBeenCalled();
+    });
+
+    it("passes an npm-only request whose lock file exists but has no entries (same rule as any ecosystem)", async () => {
+        expect.assertions(2);
+
+        await runOffline("npm", ["package-lock.json"]);
+
+        expect(process.exitCode).not.toBe(1);
+        expect(queryAdvisories).not.toHaveBeenCalled();
+    });
+
+    it("passes a request whose lock files exist but are empty of dependencies", async () => {
+        expect.assertions(2);
+
+        await runOffline("pub,npm", ["package-lock.json", "pubspec.lock"]);
+
+        expect(process.exitCode).not.toBe(1);
+        expect(queryAdvisories).not.toHaveBeenCalled();
     });
 });

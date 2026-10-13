@@ -47,6 +47,9 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
 
 export const canonicalEcosystem = (raw: string): string => ECOSYSTEM_ALIASES[raw.toLowerCase()] ?? raw;
 
+/** Lock file names vis reads for an ecosystem, in preference order. Empty when vis has no reader for it. */
+export const lockfileNamesForEcosystem = (ecosystem: string): string[] => ECOSYSTEM_LOCKFILES[canonicalEcosystem(ecosystem)] ?? [];
+
 export const findEcosystemLockfile = (workspaceRoot: string, ecosystem: string): string | undefined => {
     const canonical = canonicalEcosystem(ecosystem);
     const candidates = ECOSYSTEM_LOCKFILES[canonical] ?? [];
