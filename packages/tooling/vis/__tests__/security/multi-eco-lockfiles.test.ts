@@ -1,20 +1,21 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem } from "../../src/security/multi-eco-lockfiles";
+import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem, mavenUnresolvedDependencies } from "../../src/security/multi-eco-lockfiles";
 
 describe(canonicalEcosystem, () => {
     it("maps cli-style aliases to OSV canonical names", () => {
-        expect.assertions(7);
+        expect.assertions(8);
 
         expect(canonicalEcosystem("pypi")).toBe("PyPI");
         expect(canonicalEcosystem("PyPI")).toBe("PyPI");
         expect(canonicalEcosystem("cargo")).toBe("crates.io");
         expect(canonicalEcosystem("crates.io")).toBe("crates.io");
         expect(canonicalEcosystem("maven")).toBe("Maven");
+        expect(canonicalEcosystem("gradle")).toBe("Maven");
         expect(canonicalEcosystem("go")).toBe("Go");
         expect(canonicalEcosystem("rubygems")).toBe("RubyGems");
     });
@@ -350,5 +351,62 @@ describe("findEcosystemLockfile + lockedPackagesForEcosystem", () => {
         const found = lockedPackagesForEcosystem(workspaceRoot, "pypi");
 
         expect(found).toStrictEqual([{ isDev: false, name: "uv-only", version: "2.0.0" }]);
+    });
+});
+
+describe("maven audit reader", () => {
+    let workspaceRoot: string;
+
+    beforeEach(() => {
+        workspaceRoot = mkdtempSync(join(tmpdir(), "vis-maven-audit-"));
+    });
+
+    afterEach(() => {
+        rmSync(workspaceRoot, { force: true, recursive: true });
+    });
+
+    it("checks pinned pom versions, including ${property} ones, and skips and reports the rest", () => {
+        expect.hasAssertions();
+
+        writeFileSync(
+            join(workspaceRoot, "pom.xml"),
+            [
+                "<project>",
+                "  <groupId>com.example</groupId>",
+                "  <artifactId>app</artifactId>",
+                "  <version>1.0.0</version>",
+                "  <properties>",
+                "    <log.version>2.17.0</log.version>",
+                "  </properties>",
+                "  <dependencies>",
+                "    <dependency><groupId>org.apache.logging.log4j</groupId><artifactId>log4j-core</artifactId><version>${log.version}</version></dependency>",
+                "    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.2</version><scope>test</scope></dependency>",
+                "    <dependency><groupId>org.example</groupId><artifactId>templated</artifactId><version>${missing.version}</version></dependency>",
+                "    <dependency><groupId>org.example</groupId><artifactId>ranged</artifactId><version>[1.0,2.0)</version></dependency>",
+                "  </dependencies>",
+                "</project>",
+            ].join("\n"),
+        );
+
+        expect(lockedPackagesForEcosystem(workspaceRoot, "maven")).toStrictEqual([
+            { isDev: false, name: "org.apache.logging.log4j:log4j-core", version: "2.17.0" },
+            { isDev: false, name: "junit:junit", version: "4.13.2" },
+        ]);
+        expect(mavenUnresolvedDependencies(workspaceRoot)).toStrictEqual(["org.example:templated", "org.example:ranged"]);
+    });
+
+    it("unions the gradle.lockfile of each project with the pom, once per coordinate", () => {
+        expect.hasAssertions();
+
+        writeFileSync(join(workspaceRoot, "settings.gradle.kts"), "include(\":app\")\n");
+        mkdirSync(join(workspaceRoot, "app"));
+        writeFileSync(join(workspaceRoot, "app", "build.gradle.kts"), "plugins { }\n");
+        writeFileSync(join(workspaceRoot, "app", "gradle.lockfile"), "com.google.guava:guava:32.1.3-jre=runtimeClasspath\n");
+        writeFileSync(join(workspaceRoot, "gradle.lockfile"), "com.google.guava:guava:32.1.3-jre=compileClasspath\norg.example:util:1.0.0=runtimeClasspath\n");
+
+        expect(lockedPackagesForEcosystem(workspaceRoot, "maven")).toStrictEqual([
+            { isDev: false, name: "com.google.guava:guava", version: "32.1.3-jre" },
+            { isDev: false, name: "org.example:util", version: "1.0.0" },
+        ]);
     });
 });

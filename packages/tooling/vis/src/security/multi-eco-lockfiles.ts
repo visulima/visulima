@@ -9,7 +9,9 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
+import { readGradleLockEntries } from "../sbom/gradle";
 import { parseMixLockEntries } from "../sbom/hex";
+import { readMavenModules } from "../sbom/maven";
 import { parseNuGetLockEntries } from "../sbom/nuget";
 import { composerVersionFromLock } from "../util/composer";
 import type { InstalledPackage } from "./dependency-scan";
@@ -33,6 +35,7 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
     "crates.io": "crates.io",
     dart: "Pub",
     go: "Go",
+    gradle: "Maven",
     hex: "Hex",
     maven: "Maven",
     npm: "npm",
@@ -142,60 +145,6 @@ const parsePipfileLock = (content: string): InstalledPackage[] => {
                 entries.push({ isDev: false, name, version });
             }
         }
-    }
-
-    return entries;
-};
-
-const POM_DEP_BLOCK_RE = /<dependency>([\s\S]*?)<\/dependency>/g;
-const POM_GROUP_ID_RE = /<groupId>\s*([^<\s]+)\s*<\/groupId>/;
-const POM_ARTIFACT_ID_RE = /<artifactId>\s*([^<\s]+)\s*<\/artifactId>/;
-const POM_VERSION_RE = /<version>\s*([^<\s]+)\s*<\/version>/;
-
-const parsePomXml = (content: string): InstalledPackage[] => {
-    const entries: InstalledPackage[] = [];
-
-    for (const match of content.matchAll(POM_DEP_BLOCK_RE)) {
-        const block = match[1] ?? "";
-        const groupId = POM_GROUP_ID_RE.exec(block)?.[1];
-        const artifactId = POM_ARTIFACT_ID_RE.exec(block)?.[1];
-        const version = POM_VERSION_RE.exec(block)?.[1];
-
-        if (!groupId || !artifactId || !version || version.startsWith("${")) {
-            continue;
-        }
-
-        entries.push({ isDev: false, name: `${groupId}:${artifactId}`, version });
-    }
-
-    return entries;
-};
-
-const parseGradleLockfile = (content: string): InstalledPackage[] => {
-    const entries: InstalledPackage[] = [];
-
-    for (const line of content.split(/\r?\n/)) {
-        const trimmed = line.trim();
-
-        if (trimmed.length === 0 || trimmed.startsWith("#")) {
-            continue;
-        }
-
-        const eqIndex = trimmed.indexOf("=");
-        const coords = eqIndex === -1 ? trimmed : trimmed.slice(0, eqIndex);
-        const parts = coords.split(":");
-
-        if (parts.length < 3) {
-            continue;
-        }
-
-        const [groupId, artifactId, version] = parts;
-
-        if (!groupId || !artifactId || !version) {
-            continue;
-        }
-
-        entries.push({ isDev: false, name: `${groupId}:${artifactId}`, version });
     }
 
     return entries;
@@ -401,7 +350,42 @@ const parsePackageResolved = (content: string): InstalledPackage[] => {
     return entries;
 };
 
+/**
+ * The Maven packages the audit checks: each resolved dependency declared in the workspace's pom tree (every
+ * scope, inherited ones included), and every `gradle.lockfile` entry, transitive ones included. A declared
+ * dependency whose version the pom does not pin is not checked; it is reported in `unresolved` instead.
+ */
+const mavenAudit = (workspaceRoot: string): { packages: InstalledPackage[]; unresolved: string[] } => {
+    const packages: InstalledPackage[] = [];
+    const unresolved: string[] = [];
+
+    for (const module of readMavenModules(workspaceRoot)) {
+        for (const dependency of module.dependencies) {
+            if (dependency.group === undefined || dependency.artifact === undefined || dependency.version === undefined) {
+                unresolved.push(dependency.group !== undefined && dependency.artifact !== undefined ? `${dependency.group}:${dependency.artifact}` : (dependency.unresolved ?? ""));
+
+                continue;
+            }
+
+            packages.push({ isDev: false, name: `${dependency.group}:${dependency.artifact}`, version: dependency.version });
+        }
+    }
+
+    for (const entry of readGradleLockEntries(workspaceRoot)) {
+        packages.push({ isDev: false, name: `${entry.group}:${entry.artifact}`, version: entry.version });
+    }
+
+    return { packages: dedupe(packages), unresolved: [...new Set(unresolved)] };
+};
+
+/** Maven dependencies the audit could not check because the pom does not pin their version. */
+export const mavenUnresolvedDependencies = (workspaceRoot: string): string[] => mavenAudit(workspaceRoot).unresolved;
+
 export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: string): InstalledPackage[] => {
+    if (canonicalEcosystem(ecosystem) === "Maven") {
+        return mavenAudit(workspaceRoot).packages;
+    }
+
     const lockfile = findEcosystemLockfile(workspaceRoot, ecosystem);
 
     if (!lockfile) {
@@ -439,10 +423,6 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
             parsed = parseGoSum(content);
             break;
         }
-        case "gradle.lockfile": {
-            parsed = parseGradleLockfile(content);
-            break;
-        }
         case "mix.lock": {
             parsed = parseMixLockEntries(content).map((entry) => {
                 return { isDev: false, name: entry.name, version: entry.version };
@@ -461,10 +441,6 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
         }
         case "Pipfile.lock": {
             parsed = parsePipfileLock(content);
-            break;
-        }
-        case "pom.xml": {
-            parsed = parsePomXml(content);
             break;
         }
         case "pubspec.lock": {

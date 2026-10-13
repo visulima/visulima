@@ -32,7 +32,7 @@ import { buildDependencyPaths } from "../../security/dependency-paths";
 import { findDuplicateDependencies, loadLockfileGraph, lockedPackages, resolveLockfile } from "../../security/dependency-scan";
 import { readNodeModulesManifests } from "../../security/manifests";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
-import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem, lockfileNamesForEcosystem } from "../../security/multi-eco-lockfiles";
+import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem, lockfileNamesForEcosystem, mavenUnresolvedDependencies } from "../../security/multi-eco-lockfiles";
 import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "../../security/osv-bloom";
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
@@ -74,6 +74,7 @@ const SUPPORTED_ECOSYSTEMS = new Set([
     "crates.io",
     "dart",
     "go",
+    "gradle",
     "hex",
     "maven",
     "npm",
@@ -486,7 +487,7 @@ const executeAudit = async (
     if (!quietHeader && ecosystems.unsupported.length > 0) {
         pail.warn(
             `Ecosystems ${ecosystems.unsupported.map((e) => `'${e}'`).join(", ")} are not yet supported by the audit matcher. `
-            + "Supported: npm, pypi, crates.io, cargo, maven, go, hex, rubygems.",
+            + "Supported: npm, pypi, crates.io, cargo, maven, gradle, go, rubygems.",
         );
     }
 
@@ -521,6 +522,18 @@ const executeAudit = async (
             .map((ecosystem) => { return { ecosystem, packages: lockedPackagesForEcosystem(workspaceRoot, ecosystem) }; })
             .filter((entry) => entry.packages.length > 0)
         : [];
+
+    // A Maven dependency whose version the pom does not pin cannot be matched, so the run says it was skipped rather than report it clean.
+    const mavenUnchecked = isOffline && offlineNonNpmEcosystems(ecosystems.all).includes("Maven") ? mavenUnresolvedDependencies(workspaceRoot) : [];
+
+    if (!quietHeader && mavenUnchecked.length > 0) {
+        const sample = mavenUnchecked.slice(0, 5).join(", ");
+        const more = mavenUnchecked.length > 5 ? `, and ${String(mavenUnchecked.length - 5)} more` : "";
+
+        pail.warn(
+            `${String(mavenUnchecked.length)} Maven ${mavenUnchecked.length === 1 ? "dependency has" : "dependencies have"} no pinned version in the pom and ${mavenUnchecked.length === 1 ? "was" : "were"} not checked: ${sample}${more}. Pin the version to audit ${mavenUnchecked.length === 1 ? "it" : "them"}.`,
+        );
+    }
 
     if (installed.length === 0 && offlineNonNpm.length === 0) {
         pail.info(
