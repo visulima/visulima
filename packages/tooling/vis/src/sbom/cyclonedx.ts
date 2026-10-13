@@ -11,6 +11,7 @@ import { buildCargoSbomParts } from "./cargo";
 import { buildComposerSbomParts } from "./composer";
 import { buildFlatSbomParts } from "./flat";
 import { buildGemSbomParts } from "./gem";
+import { buildGradleSbomParts } from "./gradle";
 import { buildHexSbomParts } from "./hex";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
@@ -514,6 +515,9 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const hex = buildHexSbomParts(workspaceRoot, { includeDev });
     // pom.xml modules and their declared dependencies, with edges (see maven.ts). No focus option: module names are not Nx project names.
     const maven = buildMavenSbomParts(workspaceRoot, { includeDev });
+    // gradle.lockfile per project: a flat list (see gradle.ts). A coordinate the pom graph already lists is not repeated.
+    const mavenRefs = new Set(maven.components.map((component) => component["bom-ref"]));
+    const gradle = buildGradleSbomParts(workspaceRoot, { includeDev });
     // go.sum, pubspec.lock and Package.resolved list versions with no edges (see flat.ts), so each is a flat list.
     const flat = (["Go", "Pub", "SwiftURL"] as const).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
     // packages.lock.json cannot be narrowed to focused projects (see nuget.ts), so no focus option is passed.
@@ -524,8 +528,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...maven.components, ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...maven.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...maven.components, ...gradle.components.filter((component) => !mavenRefs.has(component["bom-ref"])), ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...maven.dependencies, ...gradle.dependencies.filter((dependency) => !mavenRefs.has(dependency.ref)), ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
