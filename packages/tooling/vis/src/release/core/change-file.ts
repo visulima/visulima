@@ -102,7 +102,7 @@ const FENCE_RE = /^ {0,3}(?:```|~~~)/;
 
 /**
  * Infer a bump level from the deepest markdown heading in a change-file body
- * (tegami-style implicit changelogs). `#` → major, `##` → minor, `###` →
+ * (implicit changelogs). `#` → major, `##` → minor, `###` →
  * patch; the highest level found wins. Headings inside fenced code blocks are
  * ignored so a shell `# comment` can't silently inflate a release to major.
  * Returns `undefined` when the body has no qualifying heading.

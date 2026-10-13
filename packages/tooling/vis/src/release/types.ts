@@ -46,7 +46,7 @@ export interface ChangeFileSimple {
 }
 
 /**
- * A replay trigger (tegami parity). A change file carrying `replay` conditions
+ * A replay trigger. A change file carrying `replay` conditions
  * is NOT consumed on `version`; instead its body is re-emitted into a package's
  * changelog when a milestone is reached:
  *   - `{ kind: "version" }` — the package reaches an exact version (`name@1.2.0`)
@@ -210,7 +210,7 @@ export interface ReleasePlan {
     warnings: string[];
 }
 
-// ── Lifecycle plugins (tegami-style hooks) ──────────────────────────
+// ── Lifecycle plugins ──────────────────────────
 
 /** A package as seen by a lifecycle hook. */
 export interface PluginPackageInfo {
@@ -238,7 +238,7 @@ export interface ReleasePluginContext {
 }
 
 /**
- * A release lifecycle plugin (tegami parity). Unlike the single-purpose
+ * A release lifecycle plugin. Unlike the single-purpose
  * `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel`
  * extension points, a plugin can hook arbitrary points of the version/publish
  * lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.
@@ -332,7 +332,7 @@ export type ReleaseGroupConfig
             /**
              * Emit a single shared git tag (and one aggregate GitHub/GitLab
              * release) for the whole group instead of one tag + release per
-             * member (tegami parity). Default `false`.
+             * member. Default `false`.
              */
             syncGitTag?: boolean;
 
@@ -973,7 +973,7 @@ export interface PublishConfig {
      * partially-failed publish can be resumed from a *fresh checkout on a
      * different runner* — the ephemeral-CI case where `.state.json` (untracked)
      * never survives the clone. On full success the lock is removed and the
-     * removal committed. Mirrors tegami's `publish-lock.yaml`-in-git model.
+     * removal committed.
      */
     lockInGit?: boolean;
 
@@ -1574,7 +1574,7 @@ export interface VisReleaseConfig {
     oneCommitPerPackage?: boolean;
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
-    /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
+    /** Lifecycle plugins (hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
     plugins?: ReleasePlugin[];
     /** Shell command run after all publishes complete. */
     postPublishCommand?: string;

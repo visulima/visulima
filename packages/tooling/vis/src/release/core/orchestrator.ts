@@ -1931,7 +1931,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
         const { clearState, filterPlanByState, newState, readState, writeState } = await import("./state");
         const { readStagedRegistry, removePendingStages, upsertPendingStages, writeStagedRegistry } = await import("./staged-registry");
         const changesDir = context.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        // Git-tracked publish lock (RFC §19.1 / tegami parity): persists state to
+        // Git-tracked publish lock (RFC §19.1): persists state to
         // a committed `publish-lock.json` so an ephemeral runner can resume.
         // When enabled, a committed lock means "resume" even without --resume —
         // its mere presence signals an in-progress publish from another runner.
@@ -2206,7 +2206,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             });
         }
 
-        // syncGitTag groups (tegami parity): members collapse to one shared tag +
+        // syncGitTag groups: members collapse to one shared tag +
         // aggregate release. Resolved once for the wave — both the tag-creation
         // phase below and createRemoteReleases consume it (no double resolution).
         const { resolveSyncTagGroups } = await import("./group-tags");

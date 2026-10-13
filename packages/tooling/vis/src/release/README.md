@@ -285,7 +285,7 @@ The placeholder ships only a `README.md` (stating it must not be used) under a d
 
 ## Replay changelogs
 
-A change file can carry `replay` conditions instead of a one-shot bump (tegami parity). Such a file is **retained** on `version` — not deleted — and its body is re-emitted into a package's changelog when a milestone fires:
+A change file can carry `replay` conditions instead of a one-shot bump. Such a file is **retained** on `version` — not deleted — and its body is re-emitted into a package's changelog when a milestone fires:
 
 ```markdown
 ---
@@ -359,7 +359,7 @@ await client.releaseVersion();
 
 ## Lifecycle plugins
 
-Beyond the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a **lifecycle plugin** (tegami parity) can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
+Beyond the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a **lifecycle plugin** can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
 
 ```ts
 import { defineReleasePlugin } from "@visulima/vis/release";
@@ -385,7 +385,7 @@ Hooks (all optional): `applyDraft({ plan })` after versions+changelogs are writt
 
 ## Shared group tags (`syncGitTag`)
 
-`release.fixed` / `release.linked` groups can collapse to a **single git tag + one aggregate GitHub/GitLab release** for the whole group instead of one tag + release per member (tegami parity):
+`release.fixed` / `release.linked` groups can collapse to a **single git tag + one aggregate GitHub/GitLab release** for the whole group instead of one tag + release per member:
 
 ```ts
 release: {
@@ -399,7 +399,7 @@ This tags the wave once as `acme@<version>` (the highest member version; overrid
 
 - **Idempotent re-runs**: every command uses three-layer "already published" detection (git tag → npm registry → custom `checkPublished`). Re-running `vis release publish` after a partial failure skips already-published packages.
 - **State file**: `<changesDir>/.state.json` (gitignored) persists in-progress release state. Use `vis release publish --resume` after a failure to retry only the failed subset.
-- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`. Mirrors tegami's `publish-lock.yaml`-in-git model.
+- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`.
 - **Concurrency**: process-level lock + GH Actions concurrency group. `vis release publish` refuses to start if an open release-PR exists (catches local-vs-CI races).
 - **Dry run**: every command supports `--dry-run` with `[dry-run]` log prefixes. No file writes, no network calls.
 - **Diagnostics**: `vis release doctor` runs preflight checks (workspace integrity, PM version, OIDC env, NAPI sidecars, etc.) and emits machine-readable `--json`.

@@ -1,5 +1,5 @@
 /**
- * Replay changelogs (tegami parity).
+ * Replay changelogs.
  *
  * A change file may carry `replay` conditions instead of (or alongside being)
  * a normal one-shot bump. A replay file is *retained* on `version` — not
