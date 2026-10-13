@@ -138,6 +138,16 @@
             },
             "description": "Per-channel routing config (semantic-release-style)."
         },
+        "composer": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Composer packages as release packages. Off by default. When on, the root `composer.json` with a `name` is a release package. The version is the highest `vX.Y.Z` git tag, and the release creates the next tag. Nested packages and a `\"version\"` key are refused."
+        },
         "currentVersionResolver": {
             "type": "string",
             "enum": [
@@ -146,6 +156,16 @@
                 "registry"
             ],
             "description": "Source of truth for \"what is the current version of this package?\", controlling how `oldVersion` is resolved when building the release plan.\n\n  `\"disk\"` (default) — read `package.json#version` (or the equivalent       manifest field for non-npm versionActions). Preserves vis's       historical behaviour and is the right choice when the manifest       on disk is the canonical source.   `\"registry\"` — query the package registry via the package's       `versionActions.readPublishedVersion()`. Useful when the manifest       drifts between repo and registry (e.g. teams that publish       out-of-band) and you want the registry to win.   `\"git-tag\"` — find the highest `releaseTagPattern`-matching tag in       the current commit's ancestry and parse the version out of it.       Matches nx's `git-tag` resolver and release-please's tag-based       lookup.\n\n`\"registry\"` and `\"git-tag\"` fall back to the manifest version when their primary source cannot produce a valid semver (e.g. registry 404 on a freshly-added package, no matching tag yet, etc.) and surface a plan warning so the operator sees what happened.\n\nOverridable per-package via `packages.&lt;name>.currentVersionResolver`.\n\nThe `--first-release` CLI flag is the bootstrap shortcut for this setting — it forces `\"disk\"` regardless of config and additionally skips remote-tag collision checks, so the very first run on a greenfield monorepo can't trip over missing tags or registry 404s."
+        },
+        "dart": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Dart packages as release packages. Off by default. When on, the root `pubspec.yaml` (when it sets a version) and each member of its `workspace:` list is a release package named by its `name:`. The version must be a `version:` literal in that pubspec. Publishes to pub.dev with `dart pub publish`."
         },
         "defaultManaged": {
             "type": "boolean",
@@ -173,6 +193,16 @@
         "formatChangedFiles": {
             "type": "boolean",
             "description": "Run the project's Prettier over the files the version step writes (package.json bumps + CHANGELOG.md entries) before committing them (RFC §14 step 7). Scoped to the changed files only — never the whole tree. Resolves the project's own Prettier from the workspace root; soft-fails if Prettier isn't installed.\n\nDefault: `false` (opt-in — a project that doesn't use Prettier, or whose Prettier config conflicts with how vis writes JSON, leaves this off)."
+        },
+        "gem": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Gems as release packages. Off by default. Every `*.gemspec` under the root (skipping `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name` literal. The version is `spec.version = \"…\"`, or `Name::VERSION` with `VERSION = \"…\"` in `lib/&lt;name>/version.rb`. Publish runs `gem build` and `gem push` (POSIX only)."
         },
         "githubHost": {
             "type": "string",

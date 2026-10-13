@@ -1396,14 +1396,6 @@ export interface VisReleaseConfig {
     formatChangedFiles?: boolean;
 
     /**
-     * Gradle modules as release packages. Off by default. When on, the root build
-     * and every module in `settings.gradle(.kts)` is a release package named
-     * `group:artifact`. The version must be a string literal in the module's
-     * script or the root script's allprojects / subprojects block; a group or
-     * version the release cannot read fails it.
-     */
-
-    /**
      * Gems as release packages. Off by default. Every `*.gemspec` under the root (skipping
      * `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name`
      * literal. The version is `spec.version = "…"`, or `Name::VERSION` with `VERSION = "…"`
@@ -1447,6 +1439,14 @@ export interface VisReleaseConfig {
      * release creates the next tag. A `/vN` major needs a matching module path.
      */
     go?: { discover?: boolean };
+
+    /**
+     * Gradle modules as release packages. Off by default. When on, the root build
+     * and every module in `settings.gradle(.kts)` is a release package named
+     * `group:artifact`. The version must be a string literal in the module's
+     * script or the root script's allprojects / subprojects block; a group or
+     * version the release cannot read fails it.
+     */
     gradle?: { discover?: boolean };
 
     /**

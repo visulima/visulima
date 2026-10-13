@@ -499,11 +499,6 @@ export interface VisConfig {
     };
 
     /**
-     * Gradle projects as task projects. Off by default: a `settings.gradle(.kts)`
-     * with a build script for each module gets build and test targets only when this is set.
-     */
-
-    /**
      * Gems as task projects. Off by default: each `*.gemspec` directory (except `vendor`,
      * `node_modules` and `.bundle`) gets build, test and lint targets when this is set. The
      * root directory is not a task project. POSIX only: the inferred commands are not verified
@@ -550,6 +545,11 @@ export interface VisConfig {
      * The root module is not a task project.
      */
     go?: { discover?: boolean };
+
+    /**
+     * Gradle projects as task projects. Off by default: a `settings.gradle(.kts)`
+     * with a build script for each module gets build and test targets only when this is set.
+     */
     gradle?: { discover?: boolean };
 
     /**
