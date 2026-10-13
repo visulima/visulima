@@ -174,6 +174,20 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
 
 `--fix` sends SIGTERM by default so the orphan can flush buffered output and tear down its child tree gracefully. Add `--fix-force` to escalate to SIGKILL (or `taskkill /F` on Windows) for processes that ignore SIGTERM — most commonly Windows child trees that hold open console handles, or processes with a blocked event loop. The doctor re-enumerates the process table on each `--fix` run rather than reusing the cached PIDs from the diagnostic, since the orphan set can change between the scan and the recovery step (a `vis run` in another terminal could exit, or a fresh crash could leave a new orphan).
 
+### Environment declarations
+
+The runtime block also cross-checks what the workspace declares about its toolchain. These are warnings only: vis reports the disagreement and never picks a winner.
+
+| Diagnostic id      | Status        | What it reports                                                                                                                                                                                                                                               |
+| ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `env-conflict`     | `warn`        | Two Node.js or package-manager declarations allow no common version. Node.js sources: `.nvmrc`, `.node-version`, `engines.node`, `devEngines.runtime`, `volta.node`. Package-manager sources: `packageManager`, `devEngines.packageManager`.                  |
+| `env-integrity`    | `warn`        | The `packageManager` field carries an integrity suffix that is malformed. Expected `+<algo>.<hex>` with `sha1`, `sha224`, `sha256`, `sha384` or `sha512`, lowercase hex, and the length for that algorithm (sha512 is 128 characters). Nothing is downloaded. |
+| `env-declarations` | `ok` / `skip` | `ok` when every declaration agrees; `skip` when nothing is declared.                                                                                                                                                                                          |
+
+Comparison uses semver ranges. `.nvmrc` `20` against `engines.node` `>=18` agrees; `.nvmrc` `20` against `devEngines.runtime` `^22` conflicts. Values that are not semver (`lts/*`, `latest`) are ignored rather than guessed at. A `devEngines` array is read as alternatives, so one matching entry is enough. A `devEngines` entry without a `version` is compared by name only.
+
+`.nvmrc` and `.node-version` are read separately, so a disagreement between them is reported even though the toolchain resolver prefers `.nvmrc`. `vis toolchain status` prints the same conflicts (and lists them under `declarationWarnings` in its JSON output).
+
 ## JSON Output
 
 `--format json` (or `--json`) emits a stable schema suitable for CI:

@@ -97,6 +97,8 @@ The first installed + capable manager wins. If nothing is installed, vis names t
 
 That matches what each manager reads at runtime — so `vis toolchain status` ends up reporting the same version the manager itself resolves.
 
+The priority order only picks one value. When declarations conflict (for example `.nvmrc` `20` against `devEngines.runtime` `^22`, or `packageManager` `pnpm@9` against `devEngines.packageManager` `pnpm@^10`), `vis toolchain status` prints a warning for each conflict and does not change the exit code. See [environment declarations in `vis doctor`](./doctor#environment-declarations).
+
 ## Configuration
 
 ```typescript

@@ -13,6 +13,7 @@ import { pail } from "../../io/logger";
 import { SYMBOLS } from "../../io/symbols";
 import { applyOverrides, readLockfileText } from "../../pm/overrides";
 import { detectPm, runInstall } from "../../pm/pm-runner";
+import { checkProjectEnvironment } from "../../runtime/env-consistency";
 import type { RuntimeFinding } from "../../runtime/runtime-check";
 import { checkRuntimeVersions } from "../../runtime/runtime-check";
 import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } from "../../runtime/runtime-diagnostics";
@@ -195,7 +196,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     const e18eNames = new Set(e18eEntries.map((e) => e.packageName));
     const dedupedSocket = socketOverrideEntries.filter((e) => !e18eNames.has(e.packageName));
     const allOptimizations = [...e18eEntries, ...dedupedSocket];
-    const runtime = wantsRuntime ? runRuntimeDiagnostics(workspaceRoot) : [];
+    const runtime = wantsRuntime ? [...runRuntimeDiagnostics(workspaceRoot), ...checkProjectEnvironment(workspaceRoot)] : [];
 
     // Mark sections running so the TUI tabs show spinners straight away.
     // The messages are rendered as a single dim activity line beneath
