@@ -1,5 +1,5 @@
 /**
- * Lifecycle-plugin hook runners (tegami parity).
+ * Lifecycle-plugin hook runners.
  *
  * Iterates `release.plugins[]` and invokes each hook in array order. Error
  * policy mirrors the `ReleasePlugin` contract:

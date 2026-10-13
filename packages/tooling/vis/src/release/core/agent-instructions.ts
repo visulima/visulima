@@ -1,6 +1,5 @@
 /**
- * `vis release init --agent` — scaffold AI-agent guidance for the release flow
- * (tegami's `init-agent` parity).
+ * `vis release init --agent` — scaffold AI-agent guidance for the release flow.
  *
  * Pure functions only; the init handler does the fs read/write. The section is
  * delimited by HTML-comment markers so re-running replaces (rather than

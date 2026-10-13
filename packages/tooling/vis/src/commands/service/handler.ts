@@ -99,7 +99,7 @@ const resolveTarget = async (workspaceRoot: string, visConfig: VisConfig | undef
         return undefined;
     }
 
-    const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot);
+    const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot, visConfig);
     const { projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
 
     const project = workspace.projects[split.project];

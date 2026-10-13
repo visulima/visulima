@@ -735,7 +735,7 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
     });
 });
 
-// ── Replay changelogs (tegami parity) ───────────────────────────────
+// ── Replay changelogs ───────────────────────────────
 
 describe("release-plan: replay files", () => {
     it("injects a replay body when the version milestone fires and consumes the file", () => {

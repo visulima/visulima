@@ -31,6 +31,9 @@ describe("replay: parseReplayCondition", () => {
         expect.hasAssertions();
 
         expect(parseReplayCondition("pkg@2.0.0-rc.1", "f.md")).toStrictEqual({ kind: "version", package: "pkg", version: "2.0.0-rc.1" });
+        // Maven coordinates are not replay targets: the name check rejects the colon loudly.
+        expect(() => parseReplayCondition("io.visulima:vis-jvm@1.2.0", "f.md")).toThrow(VisReleaseError);
+        expect(() => parseReplayCondition("exit-prerelease:io.visulima:vis-jvm", "f.md")).toThrow(VisReleaseError);
     });
 
     it("parses exit-prerelease (hyphen and space forms)", () => {

@@ -67,7 +67,11 @@ const isWithin = (path: string, root: string): boolean => root !== "." && root !
 
 /** A workspace-glob directory worth inspecting: any manifest vis can build a project from. */
 const isProjectCandidate = (directory: string): boolean =>
-    isAccessibleSync(join(directory, "package.json")) || isAccessibleSync(join(directory, "project.json")) || isAccessibleSync(join(directory, "Cargo.toml"));
+    isAccessibleSync(join(directory, "package.json"))
+    || isAccessibleSync(join(directory, "project.json"))
+    || isAccessibleSync(join(directory, "Cargo.toml"))
+    || isAccessibleSync(join(directory, "pyproject.toml"))
+    || isAccessibleSync(join(directory, "pom.xml"));
 
 /**
  * Whether discovery accepts a directory as a project: a `package.json`, a

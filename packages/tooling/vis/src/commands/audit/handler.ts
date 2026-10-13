@@ -3,7 +3,8 @@ import { createInterface } from "node:readline";
 
 import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
-import { resolve as resolvePath } from "@visulima/path";
+import { isAccessibleSync } from "@visulima/fs";
+import { join, resolve as resolvePath } from "@visulima/path";
 import isInCi from "is-in-ci";
 
 import { whichBin } from "#native";
@@ -22,16 +23,17 @@ import { emitGitlabDepScan } from "../../report/gitlab-dep-scan";
 import { emitJUnitAudit } from "../../report/junit-audit";
 import { emitSarif } from "../../report/sarif";
 import { buildCycloneDxBom } from "../../sbom/cyclonedx";
+import { GATED_ECOSYSTEMS } from "../../sbom/ecosystem-gate";
 import { startScanProgress } from "../../scan/scan-progress";
-import { AdvisoryDbNotFoundError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
+import { AdvisoryDbNotFoundError, advisoryDbSchemaError, advisoryKey, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
 import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import type { DependencyPath } from "../../security/dependency-paths";
 import { buildDependencyPaths } from "../../security/dependency-paths";
-import { findDuplicateDependencies, loadLockfileGraph, lockedPackages } from "../../security/dependency-scan";
+import { findDuplicateDependencies, loadLockfileGraph, lockedPackages, resolveLockfile } from "../../security/dependency-scan";
 import { readNodeModulesManifests } from "../../security/manifests";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
-import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
+import { canonicalEcosystem, findEcosystemLockfile, lockedPackagesForEcosystem, lockfileNamesForEcosystem, mavenUnresolvedDependencies } from "../../security/multi-eco-lockfiles";
 import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "../../security/osv-bloom";
 import type { PolicyDecision } from "../../security/policies";
 import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
@@ -63,10 +65,39 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 
 //
 // `--ecosystem npm,pypi,maven,...` accepts a comma list. Each ecosystem
-// has its own Rust range matcher and lockfile reader; unknown values
-// (or ones whose matcher hasn't landed yet) get a non-fatal warning so
-// CI invocations stay stable as more ecosystems land.
-const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
+// has its own Rust range matcher and lockfile reader. Online, an unknown
+// value gets a non-fatal warning. Offline, a value with no lock file to
+// read fails the run instead (see offlineLockfileGaps), because it would
+// scan nothing.
+const SUPPORTED_ECOSYSTEMS = new Set([
+    "cargo",
+    "composer",
+    "crates.io",
+    "dart",
+    "go",
+    "gradle",
+    "hex",
+    "maven",
+    "npm",
+    "nuget",
+    "packagist",
+    "pub",
+    "pypi",
+    "rubygems",
+    "swift",
+    "swifturl",
+]);
+
+// The online advisory catalog only covers npm. A non-npm `--ecosystem` run
+// online would skip that ecosystem silently, so it is rejected up front.
+// Returns the offending names, or an empty list when the run is fine.
+export const nonNpmEcosystemsWithoutOffline = (ecosystems: string[], isOffline: boolean): string[] => {
+    if (isOffline) {
+        return [];
+    }
+
+    return ecosystems.filter((eco) => canonicalEcosystem(eco) !== "npm");
+};
 
 // Parses `--ecosystem` (comma-separated) into the canonical list plus any
 // entries that don't match SUPPORTED_ECOSYSTEMS — the handler emits a
@@ -81,6 +112,65 @@ const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported:
     const unsupported = all.filter((eco) => !SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()));
 
     return { all, unsupported };
+};
+
+// Offline routing. Packages read from the JavaScript lockfile are npm packages, so they are matched
+// only when npm was requested, and always under "npm" (never under whichever ecosystem came first).
+export const npmRequested = (ecosystems: string[]): boolean => ecosystems.some((eco) => canonicalEcosystem(eco) === "npm");
+
+// Canonical names of the non-npm lockfile ecosystems an offline run scans, each listed once.
+export const offlineNonNpmEcosystems = (ecosystems: string[]): string[] => [
+    ...new Set(
+        ecosystems
+            .filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && canonicalEcosystem(eco) !== "npm")
+            .map((eco) => canonicalEcosystem(eco)),
+    ),
+];
+
+// An offline run scans only what its lock files hold, so each requested ecosystem needs its lock file.
+// Returns one gap per requested ecosystem whose lock file is missing (or that vis cannot read at all).
+// An existing lock file with no entries is not a gap: the run then reports that nothing was installed.
+export const offlineLockfileGaps = (workspaceRoot: string, ecosystems: string[], pmName: string): string[] => {
+    const gaps: string[] = [];
+
+    for (const eco of new Set(ecosystems.map((raw) => canonicalEcosystem(raw)))) {
+        if (eco === "npm") {
+            const lockInfo = resolveLockfile(workspaceRoot, pmName);
+
+            if (!lockInfo || !isAccessibleSync(join(workspaceRoot, lockInfo.file))) {
+                gaps.push(`npm: no ${lockInfo?.file ?? `${pmName} lock file`} in ${workspaceRoot}`);
+            }
+
+            continue;
+        }
+
+        if (findEcosystemLockfile(workspaceRoot, eco) === undefined) {
+            const names = lockfileNamesForEcosystem(eco);
+
+            gaps.push(names.length > 0 ? `${eco}: no ${names.join(" or ")} in ${workspaceRoot}` : `${eco}: vis has no lock file reader for this ecosystem`);
+        }
+    }
+
+    return gaps;
+};
+
+// Ecosystems the audit refuses, keyed by lowercase name, with the message shown for each. A Map, not an
+// object, so names like "constructor" cannot match inherited properties.
+const REFUSED_ECOSYSTEMS = new Map<string, (name: string) => string>([
+    ["zig", (name) => `--ecosystem ${name} is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove ${name} from --ecosystem.`],
+]);
+
+// Returns the reason the audit must refuse one of the requested ecosystems, or undefined when none is refused.
+export const refusedEcosystemMessage = (ecosystems: string[]): string | undefined => {
+    for (const eco of ecosystems) {
+        const message = REFUSED_ECOSYSTEMS.get(eco.toLowerCase());
+
+        if (message) {
+            return message(eco);
+        }
+    }
+
+    return undefined;
 };
 
 const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
@@ -281,7 +371,35 @@ const executeAudit = async (
     visConfig: VisConfig | undefined,
     _logger: Console,
 ): Promise<void> => {
-    const backend = resolveAuditBackend(options.backend as string | undefined, visConfig?.security?.audit?.backend, visConfig);
+    // Validate before choosing a backend: the aube path does not forward
+    // `--ecosystem`, so a non-npm online request would otherwise be dropped there.
+    const auditConfig = visConfig?.security?.audit;
+    const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
+    const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
+
+    // Ecosystems the audit cannot check are refused in both modes, rather than let the offline path
+    // warn and skip them, the online path blame --offline, or the run print a clean result.
+    const refusal = refusedEcosystemMessage(ecosystems.all);
+
+    if (refusal) {
+        pail.error(refusal);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
+
+    if (onlineNonNpm.length > 0) {
+        pail.error(
+            `--ecosystem ${onlineNonNpm.join(",")} needs --offline: the online advisory catalog only covers npm, so these would be skipped. Pass --offline, or drop them from --ecosystem.`,
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const backend = resolveAuditBackend(options.backend as string | undefined, auditConfig?.backend, visConfig);
 
     if (backend === "aube") {
         process.exitCode = runAubeAudit(workspaceRoot, options, visConfig);
@@ -298,11 +416,8 @@ const executeAudit = async (
     const isJunit = format === "junit";
     const isJson = format === "json" || Boolean(options.json);
     const reportPath = options.report as string | undefined;
-    const auditConfig = visConfig?.security?.audit;
     const policies = visConfig?.security?.policies;
-    const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
     const dbPath = options.db as string | undefined;
-    const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
     const prodOnly = Boolean(options.prodOnly);
     const failOn = (options.failOn as SeverityFilter | undefined) ?? policies?.vulnerability?.failOn;
     const showFixes = Boolean(options.showFixes);
@@ -348,9 +463,10 @@ const executeAudit = async (
             .then(() => true)
             .catch(() => false);
 
-        if (!dbExists) {
-            const error = new AdvisoryDbNotFoundError(resolvedDb);
+        // An older database is refused like a missing one: a stale schema would otherwise read as "no findings".
+        const error = dbExists ? advisoryDbSchemaError(resolvedDb) : new AdvisoryDbNotFoundError(resolvedDb);
 
+        if (error) {
             if (quietHeader) {
                 process.stderr.write(`${error.message}\n`);
             } else {
@@ -372,22 +488,65 @@ const executeAudit = async (
     if (!quietHeader && ecosystems.unsupported.length > 0) {
         pail.warn(
             `Ecosystems ${ecosystems.unsupported.map((e) => `'${e}'`).join(", ")} are not yet supported by the audit matcher. `
-            + "Supported: npm, pypi, crates.io, cargo, maven, go, rubygems.",
+            + "Supported: npm, pypi, crates.io, cargo, maven, gradle, go, rubygems.",
         );
+    }
+
+    // Offline, a requested ecosystem with no lock file has nothing to scan. Exit 1 before scanning, so a
+    // partial run never reads as a clean one.
+    if (isOffline) {
+        const gaps = offlineLockfileGaps(workspaceRoot, ecosystems.all, pm.name);
+
+        if (gaps.length > 0) {
+            const message = `--offline has nothing to scan: ${gaps.join("; ")}. Run the install that writes the lock file, or drop the ecosystem from --ecosystem.`;
+
+            if (quietHeader) {
+                process.stderr.write(`${message}\n`);
+            } else {
+                pail.error(message);
+            }
+
+            process.exitCode = 1;
+
+            return;
+        }
     }
 
     // 1. Discover installed packages from the lockfile (single parse,
     // no recursive node_modules walk). `--prod-only` will filter dev
     // packages via the lockedPackages includeDev flag in Phase 1.7.
-    const installed = lockedPackages(workspaceRoot, pm.name, { includeDev: !prodOnly });
+    // Offline runs read the JavaScript lockfile only when npm was requested. Other lockfiles are read
+    // here too, so a run with no npm entries (a Dart or NuGet repository) still scans them.
+    const installed = !isOffline || npmRequested(ecosystems.all) ? lockedPackages(workspaceRoot, pm.name, { includeDev: !prodOnly }) : [];
+    const offlineNonNpm = isOffline
+        ? offlineNonNpmEcosystems(ecosystems.all)
+            .map((ecosystem) => { return { ecosystem, packages: lockedPackagesForEcosystem(workspaceRoot, ecosystem) }; })
+            .filter((entry) => entry.packages.length > 0)
+        : [];
 
-    if (installed.length === 0) {
-        pail.info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
+    // A Maven dependency whose version the pom does not pin cannot be matched, so the run says it was skipped rather than report it clean.
+    const mavenUnchecked = isOffline && offlineNonNpmEcosystems(ecosystems.all).includes("Maven") ? mavenUnresolvedDependencies(workspaceRoot) : [];
+
+    if (!quietHeader && mavenUnchecked.length > 0) {
+        const sample = mavenUnchecked.slice(0, 5).join(", ");
+        const more = mavenUnchecked.length > 5 ? `, and ${String(mavenUnchecked.length - 5)} more` : "";
+
+        pail.warn(
+            `${String(mavenUnchecked.length)} Maven ${mavenUnchecked.length === 1 ? "dependency has" : "dependencies have"} no pinned version in the pom and ${mavenUnchecked.length === 1 ? "was" : "were"} not checked: ${sample}${more}. Pin the version to audit ${mavenUnchecked.length === 1 ? "it" : "them"}.`,
+        );
+    }
+
+    if (installed.length === 0 && offlineNonNpm.length === 0) {
+        pail.info(
+            isOffline && !npmRequested(ecosystems.all)
+                ? `No dependencies found in the lock files for ${ecosystems.all.join(", ")}. Nothing to scan.`
+                : `No ${pm.name} lockfile entries found. Run ${pm.name} install first.`,
+        );
 
         return;
     }
 
-    if (!quietHeader) {
+    if (!quietHeader && installed.length > 0) {
         const scope = prodOnly ? "production-only packages" : "installed packages";
 
         pail.info(`Scanning ${String(installed.length)} ${scope}${isOffline ? " (offline)" : ""}…`);
@@ -533,7 +692,7 @@ const executeAudit = async (
                 .then(() =>
                     queryAdvisories(packagesToScan, {
                         dbPath,
-                        ecosystem: ecosystems.all.find((e) => SUPPORTED_ECOSYSTEMS.has(e.toLowerCase())) ?? "npm",
+                        ecosystem: "npm",
                         workspaceRoot,
                     }),
                 )
@@ -642,7 +801,8 @@ const executeAudit = async (
             continue;
         }
 
-        const vulns = vulnMap.get(pkg.name) ?? [];
+        // Offline results are keyed per version; the online catalog is still keyed by name.
+        const vulns = (isOffline ? vulnMap.get(advisoryKey(pkg.name, pkg.version)) : vulnMap.get(pkg.name)) ?? [];
         const report = socketReports.get(`${pkg.name}@${pkg.version}`);
         const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
 
@@ -665,16 +825,7 @@ const executeAudit = async (
     // npm-only today). Each ecosystem owns its own lockfile reader and
     // queries the same shared advisory DB with the right ecosystem tag.
     if (isOffline) {
-        const nonNpmEcosystems = ecosystems.all.filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && eco.toLowerCase() !== "npm");
-
-        for (const eco of nonNpmEcosystems) {
-            const canonical = canonicalEcosystem(eco);
-            const ecoPackages = lockedPackagesForEcosystem(workspaceRoot, canonical);
-
-            if (ecoPackages.length === 0) {
-                continue;
-            }
-
+        for (const { ecosystem: canonical, packages: ecoPackages } of offlineNonNpm) {
             if (!quietHeader) {
                 pail.info(dim(`Scanning ${String(ecoPackages.length)} ${canonical} packages…`));
             }
@@ -688,7 +839,7 @@ const executeAudit = async (
                 );
 
                 for (const pkg of ecoPackages) {
-                    const vulns = ecoVulnMap.get(pkg.name) ?? [];
+                    const vulns = ecoVulnMap.get(advisoryKey(pkg.name, pkg.version)) ?? [];
 
                     if (vulns.length === 0) {
                         continue;
@@ -955,7 +1106,9 @@ const executeAudit = async (
         const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
+        // Every gated ecosystem stays in: audit scans all of them, and the VEX affects[] refs must resolve.
         const bom = buildCycloneDxBom({
+            ecosystems: new Set(GATED_ECOSYSTEMS),
             includeDev: !prodOnly,
             projectGraph,
             workspace,

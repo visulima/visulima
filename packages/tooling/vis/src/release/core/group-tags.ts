@@ -1,5 +1,5 @@
 /**
- * Shared git-tag resolution for `syncGitTag` groups (tegami parity).
+ * Shared git-tag resolution for `syncGitTag` groups.
  *
  * A `fixed` / `linked` group configured with `syncGitTag: true` collapses to a
  * single git tag (and a single aggregate GitHub/GitLab release) for the whole

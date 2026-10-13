@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 
 import type { SecurityVulnerability } from "../../../../security/advisories";
-import { queryAdvisories, resolveAdvisoryDbPath } from "../../../../security/advisories";
+import { advisoryKey, queryAdvisories, resolveAdvisoryDbPath } from "../../../../security/advisories";
 import type { EcosystemAdvisory, EcosystemUpdate } from "../types";
 
 /**
@@ -10,15 +10,6 @@ import type { EcosystemAdvisory, EcosystemUpdate } from "../types";
  * advisory DB query hits the right index.
  */
 const OSV_ECOSYSTEM = "GitHub Actions";
-
-/**
- * Composite cache key. `queryAdvisories` returns a `Map&lt;name,
- * vulnerabilities[]>` — keying by name alone collapses two updates of
- * the same action pinned to different versions onto the second query's
- * result. We side-step it by querying once per unique (name, version)
- * pair so each native call returns at most one bucket.
- */
-const keyOf = (name: string, version: string): string => `${name}@${version}`;
 
 const toAdvisory = (hit: SecurityVulnerability): EcosystemAdvisory => {
     return {
@@ -63,21 +54,21 @@ export const decorateActionsAdvisories = (workspaceRoot: string, updates: Ecosys
             continue;
         }
 
-        uniqueQueries.set(keyOf(update.name, version), { name: update.name, version });
+        uniqueQueries.set(advisoryKey(update.name, version), { name: update.name, version });
     }
 
     if (uniqueQueries.size === 0) {
         return updates;
     }
 
-    // One native call per unique (name, version) so the name-keyed
-    // result map can't overwrite itself.
+    // One native call per unique (name, version) keeps each query's result
+    // isolated from the others.
     const hitsByKey = new Map<string, SecurityVulnerability[]>();
 
     try {
         for (const [key, query] of uniqueQueries) {
             const result = queryAdvisories([query], { ecosystem: OSV_ECOSYSTEM, workspaceRoot });
-            const hits = result.get(query.name);
+            const hits = result.get(advisoryKey(query.name, query.version));
 
             if (hits && hits.length > 0) {
                 hitsByKey.set(key, hits);
@@ -100,7 +91,7 @@ export const decorateActionsAdvisories = (workspaceRoot: string, updates: Ecosys
             return update;
         }
 
-        const hits = hitsByKey.get(keyOf(update.name, version));
+        const hits = hitsByKey.get(advisoryKey(update.name, version));
 
         if (!hits) {
             return update;

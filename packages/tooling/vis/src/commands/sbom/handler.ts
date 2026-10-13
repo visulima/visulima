@@ -5,6 +5,7 @@ import { dirname, resolve } from "@visulima/path";
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { buildCycloneDxBom, serializeBomToXml } from "../../sbom/cyclonedx";
+import { findGatedEcosystems, optedInEcosystems, skippedEcosystemsNotice } from "../../sbom/ecosystem-gate";
 import type { SbomOptions } from "./index";
 
 type SbomFormat = "json" | "xml";
@@ -13,7 +14,7 @@ const SBOM_FORMATS: ReadonlyArray<SbomFormat> = ["json", "xml"];
 
 const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as ReadonlyArray<string>).includes(value);
 
-const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SbomOptions>): Promise<void> => {
+const execute = async ({ console, fs, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SbomOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run inside a monorepo.");
     }
@@ -35,7 +36,15 @@ const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbo
         throw new Error(`Unknown --format: "${format}". Expected one of: ${SBOM_FORMATS.join(", ")}.`);
     }
 
+    const ecosystems = optedInEcosystems(visConfig);
+    const notice = skippedEcosystemsNotice(findGatedEcosystems(wsRoot).filter(({ id }) => !ecosystems.has(id)));
+
+    if (notice !== undefined) {
+        console.error(notice);
+    }
+
     const bom = buildCycloneDxBom({
+        ecosystems,
         focus,
         includeDev: Boolean(options.includeDev),
         projectGraph,

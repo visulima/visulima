@@ -7,15 +7,26 @@ import type { XmlElement } from "jstoxml";
 import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../util/docker";
+import { buildCargoSbomParts } from "./cargo";
+import { buildComposerSbomParts } from "./composer";
+import type { GatedEcosystem } from "./ecosystem-gate";
+import { buildFlatSbomParts } from "./flat";
+import { buildGemSbomParts } from "./gem";
+import { buildGradleSbomParts } from "./gradle";
+import { buildHexSbomParts } from "./hex";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
+import { buildMavenSbomParts } from "./maven";
+import { buildNuGetSbomParts } from "./nuget";
 import { toNpmPurl } from "./purl";
+import { buildPythonSbomParts } from "./python";
 import type { VersionIndex } from "./resolve-specifier";
 import { resolveSpecifier } from "./resolve-specifier";
 import type { Component, ComponentScope, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
+import { buildZigSbomParts } from "./zig";
 
 /**
  * CycloneDX 1.7 BOM builder — bridges vis' workspace graph and the
@@ -39,10 +50,16 @@ interface BuilderPackageJson extends RawLicenseInput {
 }
 
 export interface BuildSbomOptions {
+    /**
+     * Gated ecosystems (Maven, Gradle, Hex, Go, Dart, Swift, NuGet, Zig) to include. Each is left out
+     * unless listed here, whatever its lock file says (see ./ecosystem-gate.ts). Default: none.
+     */
+    ecosystems?: ReadonlySet<GatedEcosystem>;
     /** If set, limit the emitted BOM to these projects + their transitive closure. */
     focus?: string[];
     /** Optional package.json version of vis itself — stamped into `metadata.tools`. */
     generatorVersion?: string;
+
     /** Include devDependencies in the emitted BOM (default: false — production only). */
     includeDev?: boolean;
 
@@ -60,6 +77,9 @@ export interface BuildSbomOptions {
     /** Workspace root on disk. */
     workspaceRoot: string;
 }
+
+/** The gate id of each flat-list ecosystem in `flat.ts`. */
+const FLAT_GATE: Record<"Go" | "Pub" | "SwiftURL", GatedEcosystem> = { Go: "go", Pub: "dart", SwiftURL: "swift" };
 
 const CYCLONEDX_SPEC_VERSION = "1.7" as const;
 const CYCLONEDX_BOM_FORMAT = "CycloneDX" as const;
@@ -183,7 +203,7 @@ const decoratePackageComponent = (component: Component, pkg: BuilderPackageJson 
  * I/O is relative to `workspaceRoot` so tests point it at a temp dir.
  */
 export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
-    const { focus, generatorVersion, includeDev = false, now = new Date(), projectGraph, serialNumber, workspace, workspaceRoot } = options;
+    const { ecosystems = new Set<GatedEcosystem>(), focus, generatorVersion, includeDev = false, now = new Date(), projectGraph, serialNumber, workspace, workspaceRoot } = options;
 
     const projectNames = focus && focus.length > 0 ? [...resolveFocusProjects(focus, projectGraph)].sort() : Object.keys(workspace.projects).sort();
 
@@ -494,11 +514,34 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const metadataRef = metadataComponent["bom-ref"];
     const filteredProjectComponents = metadataRef ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef) : projectComponents;
 
+    // Cargo.lock, uv.lock and composer.lock components and edges, appended to the same BOM, limited to
+    // what the selected projects reach. Empty without a lockfile.
+    const lockOptions = { focusNames: focus && focus.length > 0 ? projectNames : undefined, includeDev };
+    const cargo = buildCargoSbomParts(workspaceRoot, lockOptions);
+    const python = buildPythonSbomParts(workspaceRoot, lockOptions);
+    const composer = buildComposerSbomParts(workspaceRoot, lockOptions);
+    const gem = buildGemSbomParts(workspaceRoot, lockOptions);
+    // Gated ecosystems: each is read only when opted in (see ./ecosystem-gate.ts). An empty part is the same as no lock file.
+    const none = { components: [], dependencies: [] };
+    // mix.lock has no focus-able member names (see hex.ts), so only includeDev is passed.
+    const hex = ecosystems.has("hex") ? buildHexSbomParts(workspaceRoot, { includeDev }) : none;
+    // pom.xml modules and their declared dependencies, with edges (see maven.ts). Focus keeps the modules named by artifactId.
+    const maven = ecosystems.has("maven") ? buildMavenSbomParts(workspaceRoot, { focusNames: lockOptions.focusNames, includeDev }) : none;
+    // gradle.lockfile per project: a flat list (see gradle.ts). A coordinate the pom graph already lists is not repeated.
+    const mavenRefs = new Set(maven.components.map((component) => component["bom-ref"]));
+    const gradle = ecosystems.has("gradle") ? buildGradleSbomParts(workspaceRoot, { includeDev }) : none;
+    // go.sum, pubspec.lock and Package.resolved list versions with no edges (see flat.ts), so each is a flat list.
+    const flat = (["Go", "Pub", "SwiftURL"] as const).filter((ecosystem) => ecosystems.has(FLAT_GATE[ecosystem])).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
+    // packages.lock.json cannot be narrowed to focused projects (see nuget.ts), so no focus option is passed.
+    const nuget = ecosystems.has("nuget") ? buildNuGetSbomParts(workspaceRoot) : none;
+    // build.zig.zon `.dependencies` of the root and its in-workspace path packages: a flat list with no edges (see zig.ts).
+    const zig = ecosystems.has("zig") ? buildZigSbomParts(workspaceRoot) : none;
+
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents],
-        dependencies,
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...maven.components, ...gradle.components.filter((component) => !mavenRefs.has(component["bom-ref"])), ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...maven.dependencies, ...gradle.dependencies.filter((dependency) => !mavenRefs.has(dependency.ref)), ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
@@ -689,6 +732,15 @@ const componentToXmlElement = (component: Component): XmlElement => {
                 };
             }),
             _name: "externalReferences",
+        });
+    }
+
+    if (component.properties && component.properties.length > 0) {
+        children.push({
+            _content: component.properties.map((property) => {
+                return { _attrs: { name: property.name }, _content: property.value ?? "", _name: "property" };
+            }),
+            _name: "properties",
         });
     }
 

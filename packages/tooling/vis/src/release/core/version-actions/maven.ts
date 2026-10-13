@@ -30,13 +30,10 @@
  *       5. Trigger publish (auto-publish in `AUTOMATIC` mode, manual in
  *          `USER_MANAGED` mode)
  *
- *     For v1 this method throws `CONFIG_INVALID` with a copy-paste hint
- *     pointing at the shell workaround:
- *
- *         versionActions: "shell",
- *         publishCommand: "mvn -B -ntp deploy",
- *
- *     plus a configured Central Portal publishing plugin in the operator's
+ *     Publish does not call this API. `publish()` runs `mvn -B -N -f &lt;pom> deploy`
+ *     through the package manager's argv runner, and the operator's pom
+ *     supplies the deploy target, for example a configured Central Portal
+ *     publishing plugin in the operator's
  *     pom.xml (`central-publishing-maven-plugin` or
  *     `nexus-staging-maven-plugin`). See `docs/guides/release-maven.mdx`.
  *
@@ -179,6 +176,13 @@ export const parseMavenMetadataLatest = (xml: string): string | undefined => {
     return versions.at(-1);
 };
 
+/** Every version listed in `maven-metadata.xml`, in the order the repository gives them. */
+export const parseMavenMetadataVersions = (xml: string): string[] => {
+    const versionsBlock = /<versions>([\s\S]*?)<\/versions>/i.exec(xml);
+
+    return versionsBlock ? [...versionsBlock[1]!.matchAll(/<version>\s*([^<]+?)\s*<\/version>/gi)].map((match) => match[1]!) : [];
+};
+
 /**
  * Compose the Maven Central metadata URL for a given (groupId, artifactId).
  * Maven Central serves coordinates as path segments with `.` → `/`.
@@ -194,25 +198,6 @@ export const mavenCentralMetadataUrl = (groupId: string, artifactId: string): st
 
     return `https://repo1.maven.org/maven2/${groupPath}/${safeArtifact}/maven-metadata.xml`;
 };
-
-const MAVEN_PUBLISH_HINT = [
-    "Native Maven publishing isn't implemented yet. Drop to the generic shell path:",
-    "",
-    "  release.packages[\"<your-pkg>\"] = {",
-    "      ...pomXml({ pomDir: \"jvm/sdk\" }),",
-    "      versionActions: \"shell\",",
-    "      publishCommand: \"mvn -B -ntp deploy\",",
-    "      checkPublished: \"\",",
-    "  }",
-    "",
-    "Configure either `central-publishing-maven-plugin` (recommended for",
-    "Sonatype Central Portal) or `nexus-staging-maven-plugin` (legacy OSSRH)",
-    "in your pom.xml, plus credentials in ~/.m2/settings.xml.",
-    "",
-    "Maven Central does not (yet) support OIDC trusted publishing —",
-    "static credentials are required. See docs/guides/release-maven.mdx",
-    "for the full setup walkthrough.",
-].join("\n");
 
 /** Per-package fields consumed by Maven actions (subset of {@link PerPackageReleaseConfig}). */
 interface MavenPerPackageConfig {
@@ -347,14 +332,10 @@ export class MavenVersionActions extends VersionActions {
     }
 
     /**
-     * NOT IMPLEMENTED — throws `CONFIG_INVALID` with the deferred-to-shell
-     * workaround. See file header for the rationale.
-     *
-     * B-1: the error includes the resolved `groupId:artifactId` so a
-     * log reader can locate the offending pom without grep-bouncing
-     * across the workspace. If the pom can't be read or parsed
-     * (deleted on disk, malformed XML), we fall back to the package
-     * name — the operator still has enough to find the source.
+     * Deploys one module with `mvn -B -N -f &lt;pom> deploy`. A failure throws
+     * `PUBLISH_FAILED` naming the resolved `groupId:artifactId` and pom.
+     * If the pom can't be read or parsed, the label falls back to the
+     * package name.
      */
     public async publish(context: PublishContext): Promise<PublishResult> {
         const perPkg = context.perPackageConfig ?? {};
@@ -376,26 +357,39 @@ export class MavenVersionActions extends VersionActions {
         const coordinateLabel = coordinates?.groupId && coordinates?.artifactId ? `${coordinates.groupId}:${coordinates.artifactId}` : context.pkg.name;
 
         if (context.dryRun) {
-            // Honour dryRun so vis-release dry-runs don't blow up on
-            // Maven packages. The native publish hasn't been written
-            // yet; the dry-run is intrinsically a no-op anyway.
             return {
-                output: `[dry-run / maven] would publish ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel}) (native publish not yet implemented — would use shell path)`,
+                output: `[dry-run / maven] would run mvn -B -N -f ${pomPath} deploy for ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel})`,
                 published: true,
             };
         }
 
-        // B-1: enrich the static MAVEN_PUBLISH_HINT with the resolved
-        // coordinates so log readers can locate the offending pom
-        // (`io.visulima:vis-jvm`) rather than grep-bouncing through
-        // the workspace looking for the right package directory.
-        const enrichedHint = `Failing artifact: ${coordinateLabel}\nPom: ${pomPath}\n\n${MAVEN_PUBLISH_HINT}`;
+        if (process.platform === "win32") {
+            throw new VisReleaseError({
+                code: "CONFIG_INVALID",
+                message: `${context.pkg.name} cannot be published from Windows yet: Maven publish is POSIX-only for now. Publish from a POSIX runner.`,
+                packageName: context.pkg.name,
+            });
+        }
 
-        throw new VisReleaseError({
-            code: "CONFIG_INVALID",
-            hint: enrichedHint,
-            message: `Native Maven publishing is not implemented for ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel}). Use \`versionActions: "shell"\` with \`mvn deploy\` until the Sonatype Central Portal client lands.`,
-            packageName: context.pkg.name,
-        });
+        // argv form, no shell. Credentials come from ~/.m2/settings.xml, which
+        // Maven reads itself; the module's pom supplies the deploy target.
+        // `-N` (non-recursive) keeps the deploy to this pom: a parent pom with
+        // `<modules>` would otherwise deploy every child, colliding with each
+        // child's own publish.
+        const result = await context.pm.runner.run("mvn", ["-B", "-N", "-f", pomPath, "deploy"], { cwd: context.pkg.dir, silent: false });
+
+        if (result.exitCode !== 0) {
+            throw new VisReleaseError({
+                code: "PUBLISH_FAILED",
+                hint: `Failing artifact: ${coordinateLabel}\nPom: ${pomPath}\nCheck the mvn output above. Credentials come from ~/.m2/settings.xml, and the pom needs a deploy target (distributionManagement or central-publishing-maven-plugin). See docs/guides/release-maven.mdx.`,
+                message: `mvn deploy failed for ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel}): exit ${result.exitCode}. stderr: ${result.stderr.trim().slice(0, 500)}`,
+                packageName: context.pkg.name,
+            });
+        }
+
+        return {
+            output: `[maven] deployed ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel})`,
+            published: true,
+        };
     }
 }

@@ -110,10 +110,10 @@ describe(fetchVulnerabilities, () => {
         ]);
 
         expect(result.size).toBe(1);
-        expect(result.has("lodash")).toBe(true);
-        expect(result.has("react")).toBe(false);
+        expect(result.has("lodash@4.17.20")).toBe(true);
+        expect(result.has("react@18.2.0")).toBe(false);
 
-        const vulns = result.get("lodash");
+        const vulns = result.get("lodash@4.17.20");
 
         expect(vulns).toHaveLength(1);
         expect(vulns?.[0]?.id).toBe("GHSA-1234-5678");
@@ -192,7 +192,7 @@ describe(fetchVulnerabilities, () => {
 
         const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
 
-        expect(result.get("pkg")?.[0]?.severity).toBe("CRITICAL");
+        expect(result.get("pkg@1.0.0")?.[0]?.severity).toBe("CRITICAL");
 
         vi.restoreAllMocks();
     });
@@ -225,7 +225,7 @@ describe(fetchVulnerabilities, () => {
 
         const criticalResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
 
-        expect(criticalResult.get("a")?.[0]?.severity).toBe("CRITICAL");
+        expect(criticalResult.get("a@1.0.0")?.[0]?.severity).toBe("CRITICAL");
 
         vi.restoreAllMocks();
 
@@ -234,7 +234,7 @@ describe(fetchVulnerabilities, () => {
 
         const highResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
 
-        expect(highResult.get("a")?.[0]?.severity).toBe("HIGH");
+        expect(highResult.get("a@1.0.0")?.[0]?.severity).toBe("HIGH");
 
         vi.restoreAllMocks();
 
@@ -243,7 +243,7 @@ describe(fetchVulnerabilities, () => {
 
         const moderateResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
 
-        expect(moderateResult.get("a")?.[0]?.severity).toBe("MODERATE");
+        expect(moderateResult.get("a@1.0.0")?.[0]?.severity).toBe("MODERATE");
 
         vi.restoreAllMocks();
 
@@ -252,7 +252,7 @@ describe(fetchVulnerabilities, () => {
 
         const lowResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
 
-        expect(lowResult.get("a")?.[0]?.severity).toBe("LOW");
+        expect(lowResult.get("a@1.0.0")?.[0]?.severity).toBe("LOW");
 
         vi.restoreAllMocks();
     });
@@ -287,7 +287,7 @@ describe(fetchVulnerabilities, () => {
 
         const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
 
-        expect(result.get("pkg")?.[0]?.fixedVersions).toStrictEqual(["1.2.0", "2.1.0"]);
+        expect(result.get("pkg@1.0.0")?.[0]?.fixedVersions).toStrictEqual(["1.2.0", "2.1.0"]);
 
         vi.restoreAllMocks();
     });
@@ -805,5 +805,46 @@ describe(formatOutdatedMinimal, () => {
         expect.assertions(1);
 
         expect(formatOutdatedMinimal([])).toBe("");
+    });
+});
+
+describe("fetchVulnerabilities: several versions of one package", () => {
+    it("reports the affected version only, keyed by name and version", async () => {
+        expect.assertions(3);
+
+        // The batch answers in query order: the old lodash is affected, the new one is not.
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    json: async () => {
+                        return {
+                            results: [
+                                {
+                                    vulns: [
+                                        {
+                                            affected: [{ ranges: [{ events: [{ introduced: "0" }, { fixed: "4.17.21" }] }] }],
+                                            id: "GHSA-old",
+                                            summary: "old lodash",
+                                        },
+                                    ],
+                                },
+                                { vulns: [] },
+                            ],
+                        };
+                    },
+                    ok: true,
+                }) as Response,
+        );
+
+        const result = await fetchVulnerabilities([
+            { name: "lodash", version: "4.17.20" },
+            { name: "lodash", version: "4.17.21" },
+        ]);
+
+        expect(result.size).toBe(1);
+        expect(result.get("lodash@4.17.20")?.[0]?.id).toBe("GHSA-old");
+        expect(result.has("lodash@4.17.21")).toBe(false);
+
+        vi.restoreAllMocks();
     });
 });

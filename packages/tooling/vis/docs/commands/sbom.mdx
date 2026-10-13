@@ -72,6 +72,36 @@ Every emitted BOM passes the vendored CycloneDX 1.7 JSON Schema (`bom-1.7.schema
 
 Binary `bun.lockb` is not supported.
 
+## Zig packages
+
+`vis sbom` lists the `.dependencies` of a Zig workspace's `build.zig.zon` and of its in-workspace `.path` packages, as a flat list with no edges. Zig's manifest records no dependency versions, so a version is set only for a dependency whose `.url` is a git tag archive (`refs/tags/<tag>`). Other dependencies are listed without a version and say so in a `vis:zig:version` property. Nothing is invented. The audit cannot check Zig packages at all; see `vis audit`.
+
+## Rust and Python lockfiles
+
+The BOM also includes `Cargo.lock` (Rust) and `uv.lock` (Python) when they exist at the workspace root. Each locked package becomes a component with a `pkg:cargo/…` or `pkg:pypi/…` purl, and dependency edges come from the lockfile graph.
+
+What is kept follows the same rules as the npm closure:
+
+- Only packages reachable from the workspace members are included. With `--focus`, the walk starts from the focused projects that are Cargo or uv projects.
+- Dev dependencies are left out unless `--include-dev` is set. For Cargo, dev-dependencies are read from each member's `Cargo.toml`, because the lockfile merges them with normal dependencies. For uv, dependency groups are read from their own section. uv extras are always kept, like optional npm dependencies.
+- When two packages share a name and version but come from different sources, every one of them that has a source gets a `?source=` qualifier on its `bom-ref` and `purl`, so they stay distinct. An entry without a source, such as the Cargo workspace entry, keeps the plain purl.
+
+Without a lockfile, these ecosystems add nothing to the BOM.
+
+## Opt-in ecosystems
+
+Eight ecosystems are left out of the BOM unless you opt in: Maven, Gradle, Hex, Go, Dart, Swift, NuGet and Zig. Each one is included when its discover key is on (`maven.discover`, `gradle.discover`, `hex.discover`, `go.discover`, `dart.discover`, `swift.discover`, `nuget.discover`, `zig.discover` in `vis.config.ts`), or when it is listed in `sbom.ecosystems`:
+
+```ts
+sbom: {
+    ecosystems: ["go", "zig"];
+}
+```
+
+A lock file or manifest on its own does not include an ecosystem. When one is found but not opted in, `vis sbom` prints a single line on stderr naming the file and the key that would include it, for example `go.sum found; not included. Set go.discover or add 'go' to sbom.ecosystems.` The BOM itself is unchanged by that notice.
+
+`--focus` narrows Maven to the focused modules. The other opted-in ecosystems are flat lists: Gradle, Go, Dart, Swift and Zig have no dependency edges in their lock files, and Hex and NuGet name no workspace projects, so focus does not apply to them.
+
 ## Focus mode
 
 `--focus=<project>` scopes the BOM to one or more workspace projects plus their transitive closure. The focused project becomes `metadata.component`; other workspace projects outside the closure are excluded.

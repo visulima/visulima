@@ -69,8 +69,11 @@ const splitFrontmatter = (content: string): SplitResult | null => {
 
 // ── Package-name validation (RFC §19.4) ─────────────────────────────
 
-/** npm-compliant package name regex. */
-const PACKAGE_NAME_RE = /^(?:@[a-z0-9-]+\/)?[\w.-]+$/i;
+/**
+ * npm-compliant package name regex, plus a Maven `groupId:artifactId` coordinate (the only name with a colon),
+ * and path-like names (Go module paths, Composer `vendor/package`) with `/`-separated segments.
+ */
+const PACKAGE_NAME_RE = /^(?:@[a-z0-9-]+\/)?[\w.-]+(?:\/[\w.-]+)*(?::[\w.-]+)?$/i;
 const MAX_PACKAGE_NAME_LENGTH = 214;
 
 const isValidPackageName = (name: string): boolean => {
@@ -99,7 +102,7 @@ const FENCE_RE = /^ {0,3}(?:```|~~~)/;
 
 /**
  * Infer a bump level from the deepest markdown heading in a change-file body
- * (tegami-style implicit changelogs). `#` → major, `##` → minor, `###` →
+ * (implicit changelogs). `#` → major, `##` → minor, `###` →
  * patch; the highest level found wins. Headings inside fenced code blocks are
  * ignored so a shell `# comment` can't silently inflate a release to major.
  * Returns `undefined` when the body has no qualifying heading.

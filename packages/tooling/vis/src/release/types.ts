@@ -16,7 +16,7 @@ export const BUMP_LEVELS: ReadonlyArray<BumpLevel> = ["major", "minor", "patch",
 
 /**
  * Numeric ranking used to compare two bump levels.
- * `major` &gt; `minor` &gt; `patch` &gt; `none`.
+ * `major` > `minor` > `patch` > `none`.
  */
 export const bumpRank = (level: BumpLevel): number => {
     switch (level) {
@@ -46,7 +46,7 @@ export interface ChangeFileSimple {
 }
 
 /**
- * A replay trigger (tegami parity). A change file carrying `replay` conditions
+ * A replay trigger. A change file carrying `replay` conditions
  * is NOT consumed on `version`; instead its body is re-emitted into a package's
  * changelog when a milestone is reached:
  *   - `{ kind: "version" }` — the package reaches an exact version (`name@1.2.0`)
@@ -110,6 +110,14 @@ export interface ChangeFile {
 export interface WorkspacePackage {
     /** Absolute directory containing the package. */
     dir: string;
+
+    /**
+     * Which ecosystem owns the manifest. JS packages (`package.json`) leave it
+     * `undefined`; a non-JS package sets it to its ecosystem id. Cargo crates
+     * discovered from `Cargo.toml` (opt-in) set `"cargo"`; their `manifest` is
+     * synthetic and must never be serialized into `manifestPath`.
+     */
+    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -203,7 +211,7 @@ export interface ReleasePlan {
     warnings: string[];
 }
 
-// ── Lifecycle plugins (tegami-style hooks) ──────────────────────────
+// ── Lifecycle plugins ──────────────────────────
 
 /** A package as seen by a lifecycle hook. */
 export interface PluginPackageInfo {
@@ -231,7 +239,7 @@ export interface ReleasePluginContext {
 }
 
 /**
- * A release lifecycle plugin (tegami parity). Unlike the single-purpose
+ * A release lifecycle plugin. Unlike the single-purpose
  * `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel`
  * extension points, a plugin can hook arbitrary points of the version/publish
  * lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.
@@ -325,7 +333,7 @@ export type ReleaseGroupConfig
             /**
              * Emit a single shared git tag (and one aggregate GitHub/GitLab
              * release) for the whole group instead of one tag + release per
-             * member (tegami parity). Default `false`.
+             * member. Default `false`.
              */
             syncGitTag?: boolean;
 
@@ -682,6 +690,15 @@ export interface PerPackageReleaseConfig {
      * path to a custom implementation module.
      */
     versionActions?: string;
+
+    /**
+     * Non-JS version manifests to bump alongside `package.json`, relative to the
+     * package directory. Supported basenames: `Cargo.toml` (`[package]` and
+     * `[workspace.package]`) and `tauri.conf.json` (Tauri v1 `package.version`
+     * and v2 top-level `version`). Unlike `extraFiles` no regex is needed, and
+     * an unsupported basename fails the release instead of being skipped.
+     */
+    versionFiles?: string[];
 }
 
 // ── Workspace-wide config (the `release: {…}` block in vis.config.ts) ─
@@ -957,7 +974,7 @@ export interface PublishConfig {
      * partially-failed publish can be resumed from a *fresh checkout on a
      * different runner* — the ephemeral-CI case where `.state.json` (untracked)
      * never survives the clone. On full success the lock is removed and the
-     * removal committed. Mirrors tegami's `publish-lock.yaml`-in-git model.
+     * removal committed.
      */
     lockInGit?: boolean;
 
@@ -1149,6 +1166,7 @@ export interface VisReleaseConfig {
     access?: "public" | "restricted";
     /** Suppress the unstable warning printed on first invocation (RFC §21.2). */
     acknowledgeUnstable?: boolean;
+
     /** Single GH release per wave vs per-package. */
     aggregateRelease?: boolean | { enabled: boolean; title?: string };
 
@@ -1158,6 +1176,7 @@ export interface VisReleaseConfig {
      * bumped pkg's version). Default: `"release-{date}"`.
      */
     aggregateReleaseTagPattern?: string;
+
     /** Trust gate for per-package custom commands. */
     allowCustomCommands?: boolean | string[];
     /** Branch used for `--from` baseline in `status`/`generate`. Default: `"main"`. */
@@ -1203,6 +1222,15 @@ export interface VisReleaseConfig {
      * `bumpMinorPreMajor`. Default `false`.
      */
     bumpPatchForMinorPreMajor?: boolean;
+
+    /**
+     * Cargo crates as release packages. Off by default: a repo with Rust crates
+     * sees no change until `discover` is set. When on, every crate in the root
+     * `Cargo.toml`'s `[workspace].members` (minus `exclude`) is a release
+     * package, unless a JS package already claims its manifest.
+     */
+    cargo?: { discover?: boolean };
+
     /** Globs that count toward "package changed" detection. */
     changedFilePatterns?: string[];
 
@@ -1221,10 +1249,19 @@ export interface VisReleaseConfig {
      * opt-in on `"github"`, and `heading` on `"default"`.
      */
     changelog?: false | string | [string, Record<string, unknown>];
+
     /** Directory holding change files. Default: `".vis/release"`. */
     changesDir?: string;
     /** Per-channel routing config (semantic-release-style). */
     channels?: Record<string, ChannelConfig>;
+
+    /**
+     * Composer packages as release packages. Off by default. When on, the root
+     * `composer.json` with a `name` is a release package. The version is the
+     * highest `vX.Y.Z` git tag, and the release creates the next tag. Nested
+     * packages and a `"version"` key are refused.
+     */
+    composer?: { discover?: boolean };
 
     /**
      * Source of truth for "what is the current version of this package?",
@@ -1256,8 +1293,17 @@ export interface VisReleaseConfig {
      * greenfield monorepo can't trip over missing tags or registry 404s.
      */
     currentVersionResolver?: "disk" | "git-tag" | "registry";
+
+    /**
+     * Dart packages as release packages. Off by default. When on, the root
+     * `pubspec.yaml` (when it sets a version) and each member of its `workspace:`
+     * list is a release package named by its `name:`. The version must be a
+     * `version:` literal in that pubspec. Publishes to pub.dev with `dart pub publish`.
+     */
+    dart?: { discover?: boolean };
     /** Default `release.managed` for unconfigured packages. Default: `false`. */
     defaultManaged?: boolean;
+
     /** Default dep-bump rules (overridable per-package). */
     dependencyBumpRules?: DependencyBumpRules;
 
@@ -1351,6 +1397,14 @@ export interface VisReleaseConfig {
     formatChangedFiles?: boolean;
 
     /**
+     * Gems as release packages. Off by default. Every `*.gemspec` under the root (skipping
+     * `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name`
+     * literal. The version is `spec.version = "…"`, or `Name::VERSION` with `VERSION = "…"`
+     * in `lib/&lt;name>/version.rb`. Publish runs `gem build` and `gem push` (POSIX only).
+     */
+    gem?: { discover?: boolean };
+
+    /**
      * Self-hosted GitHub Enterprise host (e.g. `"github.acme.com"` — no
      * scheme). Translates to the `GH_HOST` env var that the `gh` CLI
      * consumes natively, so all adapter calls land on the right
@@ -1375,8 +1429,26 @@ export interface VisReleaseConfig {
      * Default `false`.
      */
     gitSignCommits?: boolean;
+
     /** Git committer identity used by CI workflows. */
     gitUser?: GitUserConfig;
+
+    /**
+     * Go modules as release packages. Off by default. When on, every `use` entry of
+     * `go.work` (or the root `go.mod` without one) is a release package named by its
+     * module path. The version is the highest git tag for the module, and the
+     * release creates the next tag. A `/vN` major needs a matching module path.
+     */
+    go?: { discover?: boolean };
+
+    /**
+     * Gradle modules as release packages. Off by default. When on, the root build
+     * and every module in `settings.gradle(.kts)` is a release package named
+     * `group:artifact`. The version must be a string literal in the module's
+     * script or the root script's allprojects / subprojects block; a group or
+     * version the release cannot read fails it.
+     */
+    gradle?: { discover?: boolean };
 
     /**
      * Group-scoped preVersion command. Runs once before any package in the
@@ -1384,6 +1456,15 @@ export interface VisReleaseConfig {
      * (group-0, group-1, …) or a named entry (future).
      */
     groupPreVersionCommands?: Record<string, string>;
+
+    /**
+     * Hex packages as release packages. Off by default. The root `mix.exs` is a package, and so is
+     * each `&lt;apps_path>/*` app of an umbrella. The name is the `package: [name: "…"]` string, or the
+     * `app:` atom. The version is a `version: "…"` literal, or `version: \@version` with a literal
+     * `\@version "…"` attribute; a `mix.exs` with no `version:` key is an aggregate and is skipped.
+     * Publish runs `mix hex.publish --yes` (POSIX only), with the key in `HEX_API_KEY`.
+     */
+    hex?: { discover?: boolean };
 
     /**
      * HTTPS proxy URL (e.g. `"http://proxy.acme.com:8080"`) for
@@ -1444,6 +1525,7 @@ export interface VisReleaseConfig {
      * becomes the only filter.
      */
     ignoreReleaseCommits?: boolean;
+
     /** Globs that override `ignore` and `private` exclusion. */
     include?: string[];
 
@@ -1455,6 +1537,14 @@ export interface VisReleaseConfig {
     linked?: ReleaseGroupConfig[];
 
     /**
+     * Maven modules as release packages. Off by default. When on, the root
+     * `pom.xml` and every module reachable through `&lt;modules>` is a release
+     * package named `groupId:artifactId`. A version the release cannot rewrite
+     * (no literal, no resolvable parent or property) fails the release.
+     */
+    maven?: { discover?: boolean };
+
+    /**
      * Notifications — post-release fan-out to chat / webhook
      * destinations. See {@link NotificationsConfig}. Each channel
      * runs in parallel; per-channel failures log a warning but do NOT
@@ -1463,7 +1553,16 @@ export interface VisReleaseConfig {
     notifications?: NotificationsConfig;
 
     /**
-     * Emit one release commit per package (a `release(channel): pkg@version
+     * NuGet projects as release packages. Off by default. Every `*.csproj` / `*.fsproj` under the
+     * root (skipping `bin`, `obj`, `node_modules` and claimed JS directories) is a release package
+     * named by its lowercased package id. The version is a plain `&lt;Version>` literal in the project
+     * file, or in the nearest `Directory.Build.props`, which releases its inheriting projects in
+     * lockstep. Publish runs `dotnet pack` and `dotnet nuget push` (POSIX only).
+     */
+    nuget?: { discover?: boolean };
+
+    /**
+     * Emit one release commit per package (a `release(channel): pkg\@version
      * [skip ci]` message) instead of a single aggregate commit for the whole
      * wave (RFC §19.5). Mirrors the per-package commit history that
      * multi-semantic-release produced — useful for projects migrating off it
@@ -1476,7 +1575,7 @@ export interface VisReleaseConfig {
     oneCommitPerPackage?: boolean;
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
-    /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
+    /** Lifecycle plugins (hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
     plugins?: ReleasePlugin[];
     /** Shell command run after all publishes complete. */
     postPublishCommand?: string;
@@ -1490,8 +1589,17 @@ export interface VisReleaseConfig {
     privatePackages?: { tag: boolean; version: boolean };
     /** Forge provider for remote operations (PR comments, releases, version PRs). */
     provider?: "github" | "gitlab" | "auto";
+
     /** Publish-related config. */
     publish?: PublishConfig;
+
+    /**
+     * Python projects as release packages. Off by default. When on, the root
+     * `pyproject.toml` (with `[project]`) and every `[tool.uv.workspace].members`
+     * entry (minus `exclude`) is a release package. A dynamic or missing version
+     * fails the release instead of being skipped.
+     */
+    python?: { discover?: boolean };
 
     /**
      * Wrap each per-package GitHub / GitLab release body with operator-
@@ -1558,6 +1666,7 @@ export interface VisReleaseConfig {
      * Release-please parity: #1738, #1314.
      */
     signing?: { key?: string; mode: "gpg" | "sigstore" | "ssh" };
+
     /** Snapshot config. */
     snapshot?: SnapshotConfig;
 
@@ -1572,8 +1681,16 @@ export interface VisReleaseConfig {
      * the comment template / labels / prerelease behaviour.
      */
     successWalk?: SuccessWalkConfig;
+
+    /**
+     * Swift packages as release packages. Off by default. Every directory under the root with a
+     * `Package.swift` is a release package named by its `Package(name: "…")` literal. The version
+     * comes from Git tags, and the release creates the tag.
+     */
+    swift?: { discover?: boolean };
     /** Dep-propagation mode. Default: `"out-of-range"`. */
     updateInternalDependencies?: UpdateInternalDependenciesMode;
+
     /** Version-PR config. */
     versionPr?: VersionPrConfig;
 
@@ -1583,6 +1700,15 @@ export interface VisReleaseConfig {
      * to per-package files.
      */
     workspaceChangelog?: false | { file?: string; waveHeading?: string };
+
+    /**
+     * Zig packages as release packages. Off by default. When on, the workspace root's
+     * `build.zig.zon` and each in-workspace `.path` dependency that has one is a release
+     * package named by its `.name`. The version must be a `.version` string literal; a
+     * package with no `.version` is an aggregate and is skipped. Release is a git tag:
+     * Zig has no registry, so nothing is uploaded.
+     */
+    zig?: { discover?: boolean };
 }
 
 // ── Process-level concurrency lock (`<changesDir>/.lock`) ──────────

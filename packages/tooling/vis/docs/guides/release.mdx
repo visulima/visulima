@@ -465,6 +465,179 @@ postPublishCommand:  "pnpm run notify:internal",
 
 All four hooks are shell commands executed in the workspace root.
 
+### Non-JS version manifests
+
+A package that also ships a version in another ecosystem's manifest lists those files under `versionFiles`, relative to the package directory:
+
+```json
+{
+    "vis-release": {
+        "versionFiles": ["src-tauri/Cargo.toml", "src-tauri/tauri.conf.json"]
+    }
+}
+```
+
+- `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements and inherited versions (`version.workspace = true`) are not touched.
+- `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is left alone.
+
+Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. A listed file that is missing, unreadable, or has no version field also fails the release with `CONFIG_INVALID` naming the file, rather than warning and leaving the manifest at its old version. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` follows the bump: the crate's workspace-member entry is rewritten, and registry or git dependencies are never touched. A crate missing from the lockfile produces a warning.
+
+### Cargo crates as release packages
+
+Set `release.cargo.discover: true` in `vis.config.ts` to release the crates in the root `Cargo.toml`'s `[workspace].members` without a `package.json`. It is off by default.
+
+A bump updates each crate's version and `Cargo.lock`. With `cargo.discover` on, the path-dependency requirements that point at it and the dependents' patch bumps move too. Without it, a `cargo()` package releases its own crate and lock only, and other crates in the workspace are left alone. Crates that inherit `[workspace.package].version` must release together at one version. `publish = false` crates are private and never published with `cargo publish`.
+
+### Python projects as release packages
+
+Set `release.python.discover: true` in `vis.config.ts` to release the root `pyproject.toml` (when it has `[project]`) and every `[tool.uv.workspace].members` entry, without a `package.json`. It is off by default.
+
+A bump updates each project's `[project].version`, its `uv.lock` entry, and the dependents' patch bumps. A project with a dynamic version fails the release. A workspace dependency whose specifier the new version falls outside is reported, so you can widen it.
+
+### Maven modules as release packages
+
+Set `release.maven.discover: true` in `vis.config.ts` to release the root `pom.xml` and every module in its `<modules>` tree, named `groupId:artifactId`, without a `package.json`. It is off by default.
+
+A bump updates the module's version (or its parent's or property's, see below), and rewrites the literal `<version>` of every dependency on a released module. The dependents get their patch bumps as usual. Modules that inherit from one parent, or share one `${property}`, must release together at one version. A module with no resolvable version fails the release.
+
+Git tags replace the `:` in the name with `/` (`io.visulima/core@1.2.0`), because git does not allow `:` in tag names.
+
+### Gradle modules as release packages
+
+Set `release.gradle.discover: true` in `vis.config.ts` to release every module listed in `settings.gradle(.kts)`, named `group:artifact`, without a `package.json`. It is off by default. The root build is released only when its own script declares a version. Under `allprojects` it is an aggregator, and it is left out.
+
+The group comes from the module's `group` or the root script's `allprojects` block. The artifact is the directory name (the root uses `rootProject.name`). A module's version must be a plain string literal, `version = "1.0.0"` or `version '1.0.0'`, either in its own script or in the root script's `allprojects` / `subprojects` block. Modules that share that block must release together at one version.
+
+A bump rewrites that literal. A `project(":x")` dependency carries no version, so it orders the publish but does not move. Before publishing, vis looks up the module in Maven Central's `maven-metadata.xml` (or the `mavenMetadataUrl` you set, the same override the Maven actions take) and skips a version the repository already lists. A network error does not skip; the publish then reports the real failure.
+
+Publishing runs `./gradlew :<path>:publish`, so the module needs a publishing plugin such as `maven-publish` with a repository. Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` before running anything. The build root needs the Gradle wrapper.
+
+vis refuses what it cannot read to a version: a version set from a property or a function, a version in `gradle.properties`, a `projectDir` remap, an `archivesName` rename, two modules with the same coordinates, or a group that is not declared.
+
+### Composer packages as release packages
+
+Set `release.composer.discover: true` in `vis.config.ts` to release the root `composer.json` when it has a `name` such as `acme/tool`. It is off by default and needs no `package.json`.
+
+Composer has no version field, and Packagist reads versions from the git tags of the repository. So the version is the highest `vX.Y.Z` tag, and a package with no tag yet starts at `0.0.0`. The tag form is `v{version}`, which Composer reads as the version with the `v` removed. The release writes no file: it creates and pushes that tag. A `"version"` key in `composer.json` is refused with `CONFIG_INVALID`, because Packagist ignores it and it would drift from the tag. If the tags cannot be read (a shallow clone, for example), the release fails with `CONFIG_INVALID` and suggests `git fetch --tags --unshallow`, rather than planning from `0.0.0`. A repository with no tags at all still starts at `0.0.0`.
+
+Packagist reads a package from its repository root. Only the root `composer.json` can be released. A named `composer.json` in a subdirectory is refused with `CONFIG_INVALID`, because its tag would sit in a repository Packagist never looks at. Move such a package to its own repository. A `composer.json` without `name` is not a package and is not released. Duplicate names are refused.
+
+A `require` entry that names another discovered package orders the publish. Nothing is rewritten.
+
+The publish step checks that the tag is free locally. If it exists, the package is skipped. If the tag cannot be created, the release fails and the package is not reported as published. The Packagist API is not queried. Packagist picks up new tags from the repository after the repository is registered there, a one-time step outside vis.
+
+Publishing is POSIX only for now. On Windows, publish fails with `CONFIG_INVALID` after the dry run.
+
+Tasks for these packages are a separate opt-in, `composer.discover: true` in `vis.config.ts`. They run `composer validate --strict`, which exits non-zero on warnings too, as the `validate` target. `test` (`composer run-script test`) and `lint` (`composer run-script lint`) exist only when `scripts.test` or `scripts.lint` is set in `composer.json`. A `scripts.format` entry is not turned into a target, because a format script usually rewrites files and would pass a check it did not make. `format:check` is a check-only target that runs the project's own `vendor/bin` binary, and is inferred only from a dev dependency: `laravel/pint` gives `vendor/bin/pint --test`, which exits non-zero when files would change. Otherwise `squizlabs/php_codesniffer` gives `vendor/bin/phpcs`, but only when `phpcs.xml` or `phpcs.xml.dist` exists, because without a config file phpcs checks its built-in default standard, which depends on the phpcs version (PSR-12 from 4.0, PEAR before) and is not vis's to pick. With neither, there is no format target. If `vendor/bin` is missing, the command still runs and fails; run `composer install`. Composer has no build step. The root `composer.json` is not a task project, so a single-package repository gets no Composer tasks. The Composer tasks are not verified on Windows: they are POSIX only.
+
+Composer's `composer.lock` is read for the audit and the SBOM. Its `packages` and `packages-dev` arrays give the locked versions, and the `require` maps give the SBOM dependency edges.
+
+### Go modules as release packages
+
+Set `release.go.discover: true` in `vis.config.ts` to release the Go modules in `go.work` (each `use` entry), or the root `go.mod` when there is no `go.work`. It is off by default. Each module is named by its module path, such as `github.com/acme/tool`, and needs no `package.json`.
+
+Go has no version field, so the version is the highest git tag for the module. A module with no tag yet starts at `0.0.0`. A module in a subdirectory is tagged `<dir>/vX.Y.Z`, and the root module `vX.Y.Z`, as go.dev describes in its module reference. The release writes no file: it creates and pushes that tag. Each module gets its own `releaseTagPattern`, so no `name@version` tag is also created.
+
+A release at major 2 or higher needs a `/vN` module path (for example `github.com/acme/tool/v2`). A `/vN` module releases only at major N. vis refuses a mismatch with `CONFIG_INVALID` before anything is tagged. A `/vN` module with no tag for its major is also refused, so create that first tag by hand.
+
+The publish step checks that the tag is free locally. If it exists, the module is skipped. Go module proxies are not queried, and no registry is contacted. `gopkg.in/` paths and module paths with uppercase letters are refused.
+
+Two settings apply to the whole workspace, not to Go alone. `floatingMajorTag` creates a floating tag for each Go module as well, and a `syncGitTag` group that includes a Go module makes one shared tag. Leave both off for Go modules. The module's own `require` lines are not rewritten, so dependents keep the old version until someone updates them.
+
+Tags are created on POSIX only. On Windows, publish fails with `CONFIG_INVALID` after the dry run, because that path is not tested there. If the tags cannot be read (a shallow clone, for example), the release fails with `CONFIG_INVALID` and suggests `git fetch --tags --unshallow`, rather than planning from `0.0.0`. A module with no tags at all still starts at `0.0.0`. If the tag cannot be created, the release fails and the module is not reported as published.
+
+With `--no-tag`, a Go release creates no tag, so nothing is released for that module.
+
+`vis sbom` lists the module versions in `go.sum` as `pkg:golang/` components. The list is flat, with no dependency edges, and `go.sum` can hold modules the build does not compile.
+
+Tasks for these modules are a separate opt-in, `go.discover: true` in `vis.config.ts`. They run `go build ./...`, `go test ./...`, `go vet ./...`, and `gofmt -d .` as `format:check`, which exits 1 when a file needs formatting. `gofmt -d .` also walks `vendor/` if the module has one. The root module is not a task project, so a single-module repository gets no Go tasks.
+
+### Swift packages as release packages
+
+Set `release.swift.discover: true` in `vis.config.ts` to release every directory under the root that has a `Package.swift`. It is off by default. The release name is the string literal in `Package(name: "…")`. It must be a valid release name: lowercase letters, digits, `.`, `_` and `-`. A capitalised Swift name such as `MyLib` is refused with `CONFIG_INVALID`.
+
+SwiftPM has no version field. It reads versions from Git tags, so the version comes from the tags, and the release creates the tag. The root package's tags are the bare semantic version (`1.2.0`, no name prefix), the form SwiftPM reads. SwiftPM reads a package only from the `Package.swift` at the root of its repository, so only the root package can be consumed by tag. A nested package keeps the workspace tag pattern (`{name}@{version}` by default), which is a deliberate departure from the bare form for those packages. Until a tag exists, the package starts from `0.0.0`. To set the baseline, tag the current version by hand (for example `git tag 1.0.0`) before the first release.
+
+A `.package(path: "…")` dependency on another released package orders the release. Remote `.package(url:)` dependencies are not rewritten. Nothing is written to the manifest.
+
+Publishing uploads nothing. The release's tag step creates the tag and pushes it, and SwiftPM resolves the package from that tag. A package whose tag already exists is skipped. The check is local, so a tag that exists only on the remote is not seen before the push.
+
+Tasks: with `swift.discover: true`, each package directory gets `swift build` and `swift test`, plus a `swift-format lint --strict --recursive` check over the `Sources` and `Tests` directories that exist. The check exits non-zero on lint warnings. The workspace root is not a task project.
+
+Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains. `vis sbom` lists the pins in `Package.resolved` (format v2 and v3) as `pkg:swift/` components, one per pin with a version. The list is flat: it has no dependency edges, so it says nothing about what depends on what. `vis audit --ecosystem swift` is refused: OSV has a SwiftURL ecosystem, but vis has no range matcher for it, so an audit would report nothing.
+
+### Gem packages as release packages
+
+Set `release.gem.discover: true` in `vis.config.ts` to release every gem in the repository. Each `*.gemspec` (outside `vendor`, `node_modules` and `.bundle`) is one package, named by its `spec.name` literal. It is off by default.
+
+The version is a string literal in the gemspec (`spec.version = "1.2.0"`), or `spec.version = Name::VERSION` with a `VERSION = "1.2.0"` literal in `lib/<name>/version.rb`. vis rewrites whichever file holds the literal. A gemspec with no version is skipped.
+
+Publishing runs `gem build` and then `gem push`. Set `GEM_HOST_API_KEY` in the environment. A version RubyGems already lists is skipped. Versions must be dot-separated (`1.2.0.beta.1`), since a semver prerelease with `-` is not a valid gem version.
+
+Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` before running anything. The gem command must be on `PATH` (it ships with Ruby).
+
+### Hex packages as release packages
+
+Set `release.hex.discover: true` in `vis.config.ts` to release Hex packages. It is off by default. The root `mix.exs` is a package, and so is each `<apps_path>/*` app of an umbrella that holds a `mix.exs`. The name is the `package: [name: "…"]` string, or else the `app:` atom, and must be a valid Hex name (lowercase letters, digits, `_`, `.` and `-`). A `mix.exs` with no `version:` key is an aggregate and is skipped, and so is an umbrella root with no `app:`. The root is otherwise released only with its own version.
+
+The version must be a `version: "…"` string literal in `project/0`, or `version: @version` with a literal `@version "…"` attribute. A bump rewrites that literal and nothing else. A `version:` that is not one plain string or `@version` (so `"1.0" <> suffix`, interpolation and expressions are refused), a repeated key, or a `package:` that is not a literal keyword list (`package: package()` is refused) with a string `name:` fails the release with `CONFIG_INVALID`. The new version must be semver (`1.2.3`, `1.2.3-rc.1`).
+
+An `{:app, in_umbrella: true}` or `{:app, path: "…"}` dependency on another discovered app orders the publish and is recorded as `*`. Hosted dependency requirements are not rewritten.
+
+Publishing runs `mix hex.publish --yes` in the package directory. The API key is read from the `HEX_API_KEY` environment variable, never from argv. Before publishing, vis asks `https://hex.pm/api/packages/<name>`; a `releases` entry with the new `version` marks the package as already published and skips it. A failed lookup, including a 404 for a new package, does not skip, so the publish reports the real error. The run needs `mix` on `PATH`; vis checks it with `mix help`. Publishing is POSIX only: on Windows it fails with `CONFIG_INVALID` after the dry run.
+
+The task side is `hex.discover: true` in `vis.config.ts` (off by default). It finds the apps of an umbrella `mix.exs`; the root project is not a task project, so a single-package repo gets no Hex tasks from this option. Each app gets `build` (`mix compile`, uncached), `test` (`mix test`, only when the app has a `test/` directory) and `format:check` (`mix format --check-formatted`, only when it has a `.formatter.exs`). `format:check` fails on unformatted files. These commands are POSIX only; the Windows path is not verified.
+
+`vis sbom` reads the workspace's `mix.lock`: each locked Hex package is a `pkg:hex/` component, with the edges between locked packages. Mix does not record which packages are direct or dev-only, so the whole lock is kept, and a focused SBOM does not narrow it. `vis audit` does not read `mix.lock`: `--ecosystem hex` warns that Hex is not yet supported and reports nothing for it.
+
+### NuGet packages as release packages
+
+Set `release.nuget.discover: true` in `vis.config.ts` to release NuGet packages. It is off by default. Every `*.csproj` and `*.fsproj` under the root is one package (skipping `bin`, `obj`, `node_modules`, dot-directories and anything under a JS package directory). A project is not released when it sets `IsPackable` to `false`, sets `IsTestProject` to `true`, or references `Microsoft.NET.Test.Sdk` (the usual test-project marker). Test projects that inherit a shared `Directory.Build.props` version therefore stay out of its lockstep group. vis reads these markers literally; it does not evaluate the SDK's own defaults.
+
+The package is named by its `PackageId` literal, else `AssemblyName`, else the file name. NuGet ids compare case-insensitively, so the release name is the lowercased id, and two projects with the same id are refused. An MSBuild expression in the id is refused.
+
+The version is a plain `<Version>1.2.0</Version>` literal on one line inside an unconditional `PropertyGroup`, either in the project file or in the nearest `Directory.Build.props`. A project's own literal overrides the props value, as MSBuild does. Projects that inherit one props declaration release together at one version, and the props file is written once. vis refuses anything that could set the version elsewhere, with `CONFIG_INVALID`: `PackageVersion`, `VersionPrefix`, `VersionSuffix`, `Import`, a `Version` in `Directory.Build.targets`, a conditional or repeated `Version`, and an expression such as `$(MyVersion)`. A project with no version is not released.
+
+`ProjectReference` to another released project orders the publish. `PackageReference` is not rewritten.
+
+Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet nuget push <that one package> --source https://api.nuget.org/v3/index.json`. The key is read from `NUGET_API_KEY` and passed to the push as that environment variable, never on the argument list. NuGet reads `NUGET_API_KEY` for push from NuGet 7.6, which ships with .NET SDK 10.0.300; vis checks `dotnet --version` first and refuses a dotnet older than 10.0.300, or a pre-release of 10.0.300, with `CONFIG_INVALID`. vis redacts the key from every error. A version nuget.org already lists (checked at `https://api.nuget.org/v3-flatcontainer/<id>/index.json`) is skipped. A failed lookup does not skip; the push then reports the real error.
+
+Publishing is POSIX only. On Windows it fails with `CONFIG_INVALID` after the dry run. The `dotnet` CLI (the .NET SDK) must be on `PATH`.
+
+The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and a format check: `dotnet format --verify-no-changes` for a C# project, and `dotnet fantomas --check .` for an F# project. [`dotnet format`](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support, so F# uses [Fantomas](https://fsprojects.github.io/fantomas/docs/end-users/FormattingCheck.html), which exits 0 when the code is formatted and 99 when a file needs formatting. Fantomas must be installed as a dotnet tool (`dotnet tool install fantomas`); without it the check fails with the tool's "not found" error rather than passing. `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
+
+The SBOM reads `packages.lock.json` at the workspace root when it exists (opt-in with `RestorePackagesWithLockFile`) and adds its `pkg:nuget` components and edges to the CycloneDX output. Focus mode cannot narrow it, so the whole lock is kept. Audit does not check NuGet packages: vis has no offline NuGet version-range matcher, so a NuGet audit would match nothing.
+
+### Zig packages as release packages
+
+Set `release.zig.discover: true` in `vis.config.ts` to release Zig packages. It is off by default. The workspace root's `build.zig.zon` is a package, and so is every `.path` dependency that holds its own `build.zig.zon` and sits inside the workspace (followed transitively). The name is the manifest's `.name`, which must be lowercase (`[a-z0-9._-]`), so a Zig name with uppercase letters is refused. A manifest with no `.version` is an aggregate and is skipped; the root is released only with its own version.
+
+The version must be a plain string literal, `.version = "1.0.0"`. A bump rewrites that literal and nothing else. A `.path` dependency orders the release and is recorded as `*`; a `.url` dependency is not rewritten. A `.version` or `.name` that is an expression, a repeated field, or a `.path` that is not a string fails the release with `CONFIG_INVALID`.
+
+Zig has no registry, so publishing is the git tag. The release creates the tag `<name>@<version>` (or the `releaseTagPattern` you set) after the publish step. Nothing is uploaded and no command runs. A tag that already exists marks the package as already published and skips it. Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` after the dry run.
+
+The task side is `zig.discover: true` in `vis.config.ts` (off by default). It adds `build` (`zig build`), `test` (`zig build test`) and `format:check` (`zig fmt --check .`) to each Zig package, run in the package directory. The workspace root is not a task project, so a single-package repo gets no Zig tasks from this option. These commands are POSIX only; the Windows path is not verified.
+
+`vis sbom` lists the `.dependencies` of the root `build.zig.zon` and of its in-workspace `.path` packages as a flat list with no edges. A `.url` dependency is named by its host and path, as `pkg:github/` for github.com and `pkg:generic/` elsewhere. Only a tag archive (`…/archive/refs/tags/<tag>.tar.gz`, `.tgz` or `.zip`) gets a version, which is the tag with a leading `v` removed. Any other URL, such as a commit archive or a `git+` URL, has no version, and the component's `vis:zig:version` property says so. A `.path` dependency is named by its directory and has no version. A legacy `1220…` hash is recorded as a SHA-256. The current `name-version-hash` form is kept in the `vis:zig:hash` property, because its digest is truncated and is not a full SHA-256. The hash is over the package's files as Zig filters them, not over the archive.
+
+`vis audit --ecosystem zig` is refused: OSV has no Zig ecosystem and there is no Zig lockfile with versions.
+
+### Dart packages as release packages
+
+Set `release.dart.discover: true` in `vis.config.ts` to release Dart packages published to pub.dev. It is off by default. The root `pubspec.yaml` is a package when it sets its own `version:`. Under a pub workspace, each member listed in the root's `workspace:` list that holds a `pubspec.yaml` is one too. Only literal entries and `dir/*` wildcards are expanded; `**` or a partial wildcard fails the release with `CONFIG_INVALID` instead of being guessed.
+
+The name is the pubspec's `name:`, which must pass the package-name check. A pubspec with no `version:`, or with `publish_to: none`, is not released. A `publish_to` that names any other server fails the release, because vis checks and publishes only against pub.dev.
+
+The version must be a `version:` literal, plain or quoted, on its own top-level line, for example `version: 1.2.3` or `version: "1.2.3"`. A number such as `version: 1.0` fails the release, and so does an expression or a value that is not a semantic version. A bump rewrites that literal and keeps the quotes and any trailing comment. A dependency that names another released package (a workspace member, which pub resolves by name) orders the publish and is recorded as `*`. Hosted dependencies are not rewritten.
+
+Publishing runs `dart pub publish --force` in the package directory, through the argv runner, with no shell. `--force` skips pub's confirmation prompt. Authenticate on the runner with `dart pub token add https://pub.dev`, or use automated publishing (OIDC) for the package; vis never passes a token in argv. Before publishing, vis checks `https://pub.dev/api/packages/<name>` and skips a version that is already listed. A failed lookup counts as not published, and the publish then reports the real error. A failed publish throws `PUBLISH_FAILED`.
+
+The task side is `dart.discover: true` in `vis.config.ts` (off by default). It adds `build` (`dart analyze`), `test` (`dart test`) and `format:check` (`dart format --output=none --set-exit-if-changed .`) to each workspace member, run in the member directory. The format check exits 1 on unformatted code. The root pubspec is not a task project, so a single-package repo gets no Dart tasks from this option.
+
+Dart support is POSIX only. The Windows path is not verified, so publish refuses on Windows with `CONFIG_INVALID` after the dry run.
+
+Audit and SBOM: `vis audit --ecosystem pub` (or `dart`) is refused: OSV has a Pub ecosystem, but vis has no range matcher for it, so an audit would report nothing. `vis sbom` lists each hosted package in `pubspec.lock` as a `pkg:pub/` component. Only `source: hosted` entries are pub.dev packages; `sdk`, `git` and `path` entries are skipped. The list is flat, with no dependency edges, because the lockfile lists versions but not edges and the edges live in each package's pubspec.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:
