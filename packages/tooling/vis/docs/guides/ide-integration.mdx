@@ -1,0 +1,138 @@
+---
+title: IDE Integration
+description: "Wire vis into VS Code, Zed and JetBrains IDEs: JSON schemas, running tasks, and format and lint on save"
+---
+
+# IDE Integration
+
+vis does not ship an editor extension. Everything here uses features the editors already have: JSON schema association, task runners, and the linters and formatters vis wraps. For AI assistants (MCP server and Claude Skill), see [AI Integration](./ai-integration).
+
+Examples assume vis is installed as a workspace dev dependency, so `pnpm exec vis` resolves in the repo. Substitute `npx vis` or `yarn vis` for other package managers.
+
+## JSON schema association
+
+vis ships two JSON schemas in the package's `schemas/` directory:
+
+| File                             | Applies to                                 | How to attach it                                                 |
+| -------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `schemas/project.schema.json`    | `project.json` (per-package config)        | Add a `$schema` property to the file                             |
+| `schemas/vis-config.schema.json` | `vis.config.ts` for non-TypeScript editors | Not used for `.ts` files; the TypeScript types apply (see below) |
+
+`vis.config.ts` is a TypeScript file, so editors get its autocomplete from the types behind `defineConfig()` (imported from `@visulima/vis/config`) rather than from a JSON schema. A `$schema` property cannot be added to a `.ts` file.
+
+For `project.json`, the `$schema` value is a path from the file to the schema inside `node_modules`. The path depends on how deep the file sits, so do not hand-count `..` segments. Run this from the workspace root and paste the printed line:
+
+```bash
+vis init --schema
+```
+
+The workspace-root `project.json` gets something like:
+
+```json
+{
+    "$schema": "./node_modules/@visulima/vis/schemas/project.schema.json"
+}
+```
+
+Nested packages need more `..` segments. `vis migrate nx` rewrites `$schema` references across all `project.json` files when you move a workspace over from Nx.
+
+## VS Code
+
+### Schema
+
+Add the `$schema` property shown above to `project.json`. VS Code's built-in JSON language service then validates and completes it.
+
+### Tasks
+
+Create `.vscode/tasks.json` in the workspace root. Each entry runs a vis command through the workspace's package manager:
+
+```json
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "vis: build",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["exec", "vis", "run", "build"],
+            "group": "build"
+        },
+        {
+            "label": "vis: lint",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["exec", "vis", "lint"],
+            "group": "test"
+        },
+        {
+            "label": "vis: fmt --watch",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["exec", "vis", "fmt", "--watch"],
+            "isBackground": true
+        }
+    ]
+}
+```
+
+Run them from **Terminal → Run Task**. Use `--watch` only for long-running tasks such as `vis fmt --watch` and `vis lint --watch`; they keep running until stopped. Without a problem matcher, VS Code cannot tell when a background task finishes a cycle, so it keeps showing the task as running.
+
+## Zed
+
+### Schema
+
+Add the `$schema` property shown in the VS Code section. This guide does not cover Zed's JSON language settings beyond that.
+
+### Tasks
+
+Create `.zed/tasks.json` in the project. It is a JSON array; each entry has a `label` and a `command`, with optional `args`:
+
+```json
+[
+    {
+        "label": "vis: build",
+        "command": "pnpm",
+        "args": ["exec", "vis", "run", "build"],
+        "use_new_terminal": false
+    },
+    {
+        "label": "vis: lint",
+        "command": "pnpm",
+        "args": ["exec", "vis", "lint"]
+    }
+]
+```
+
+Run them from Zed's task picker. An entry also accepts `cwd` and `env` if a task has to run from a subdirectory.
+
+## JetBrains (IntelliJ IDEA, WebStorm, and others)
+
+### Schema
+
+Map the schema file to the JSON files that should use it: **Settings → Languages & Frameworks → Schemas and DTDs → JSON Schema Mappings**. Add a mapping with the schema file (`node_modules/@visulima/vis/schemas/project.schema.json`) and point it at the `project.json` files. Choose the relative path or the absolute path to the schema, as the IDE allows.
+
+### Run configurations
+
+Add a run configuration that executes the vis command: **Run → Edit Configurations → + → Shell Script**, set the script text to `pnpm exec vis run build` (or `vis lint`, `vis fmt --check`) and the working directory to the workspace root. Use the **npm** configuration type instead if the script is defined in `package.json`.
+
+## Format and lint on save
+
+vis wraps the formatters and linters that already exist in the workspace. It has no stdin mode, so editor on-save formatting must come from the underlying tool's own editor integration. Install the extension for the formatter vis detects in your repo (Prettier, Biome, oxfmt, dprint) and enable format-on-save there. The same applies to lint: the ESLint, oxlint or Biome extension shows the same findings vis reports.
+
+vis's own commands are for the command line, CI, and git hooks:
+
+| Command                                       | Use it for                                         |
+| --------------------------------------------- | -------------------------------------------------- |
+| `vis fmt --check`                             | Read-only check; lists the files that would change |
+| `vis fmt --staged`                            | Format only staged files (pre-commit)              |
+| `vis lint --format json`                      | Machine-readable findings for scripts              |
+| `vis lint --format sarif --output lint.sarif` | SARIF for code-scanning viewers                    |
+| `vis lint --staged --fix`                     | Lint staged files and apply fixes                  |
+
+`vis fmt` writes files by default (`--fix` is the default mode); pass `--check` for a dry run. See [`vis fmt`](../commands/fmt) and [`vis lint`](../commands/lint) for the full option lists and adapter detection rules.
+
+## Related
+
+- [AI Integration](./ai-integration): MCP server and Claude Skill for Claude Code, Cursor, Zed and other AI clients.
+- [Git Hooks](./git-hooks): wire `vis fmt --staged` and `vis lint --staged --fix` into pre-commit.
+- [Configuration](../configuration): `vis.config.ts` reference.
