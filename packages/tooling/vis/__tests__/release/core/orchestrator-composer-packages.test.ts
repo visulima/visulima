@@ -76,4 +76,22 @@ describe.skipIf(process.platform === "win32")("orchestrator: opt-in Composer pac
         expect(git("ls-remote", "--tags", "origin")).toContain("refs/tags/v1.0.1");
         expect(git("tag", "--list")).not.toContain("@");
     });
+
+    it("records a failed tag creation in failed, so the publish is not reported as a success", async () => {
+        expect.hasAssertions();
+
+        const ctx = await buildContext({ cwd });
+
+        await applyContext(ctx, { dryRun: false });
+
+        // The tag exists only on the remote, so createTag's remote pre-check throws TAG_COLLISION.
+        git("tag", "v1.0.1");
+        git("push", "-q", "origin", "v1.0.1");
+        git("tag", "-d", "v1.0.1");
+
+        const published = await publishContext(ctx, {});
+
+        expect(published.tags).toStrictEqual([]);
+        expect(published.failed).toContainEqual(expect.objectContaining({ name: "v1.0.1", reason: expect.stringContaining("tag-creation") }));
+    });
 });

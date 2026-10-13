@@ -2248,17 +2248,16 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     );
                     result.tags.push(tag);
                 } catch (error) {
-                    // Don't fail the whole batch on a single tag collision —
-                    // it usually means an idempotent re-run is hitting an
-                    // already-tagged version. Surface as a skip with reason.
-                    // Under `--first-release` we additionally suppress the
-                    // TAG_COLLISION surface: a freshly-cloned greenfield repo
-                    // can't legitimately produce colliding tags, so this is
-                    // always the "re-run with dangling state" recovery path.
+                    // Under `--first-release` a TAG_COLLISION is the "re-run with
+                    // dangling state" recovery path: a freshly-cloned greenfield repo
+                    // can't legitimately produce colliding tags, so it is skipped.
+                    // Any other tag-creation failure leaves the package published but
+                    // untagged, so it is a failure: the command exits non-zero and the
+                    // state file stays so the tag can be retried.
                     if (context.firstRelease && error instanceof VisReleaseError && error.code === "TAG_COLLISION") {
                         result.skipped.push({ name: tag, reason: "tag-creation: tag already exists (first-release — skipped)" });
                     } else {
-                        result.skipped.push({ name: tag, reason: `tag-creation: ${(error as Error).message}` });
+                        result.failed.push({ name: tag, reason: `tag-creation: ${(error as Error).message}` });
                     }
                 }
 
@@ -2322,7 +2321,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     if (context.firstRelease && error instanceof VisReleaseError && error.code === "TAG_COLLISION") {
                         result.skipped.push({ name: group.tag, reason: "tag-creation: tag already exists (first-release — skipped)" });
                     } else {
-                        result.skipped.push({ name: group.tag, reason: `tag-creation: ${(error as Error).message}` });
+                        result.failed.push({ name: group.tag, reason: `tag-creation: ${(error as Error).message}` });
                     }
                 }
             }
