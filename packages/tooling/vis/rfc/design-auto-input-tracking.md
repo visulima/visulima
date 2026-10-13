@@ -121,11 +121,8 @@ Design sketch:
   these or refuse to split when they appear. Refusing is the first stage.
 - **Failure.** A failing segment stops the chain, as `&&` already does. Later
   segments are neither run nor cached.
-- **Outputs.** Stage 2 refuses the split when the target declares outputs. A cache
-  hit restores outputs from the cache entry, so an earlier segment's files would
-  be missing when a later segment that reads them executes, and nothing records
-  which segment wrote them. Attaching outputs to the last segment is sound once
-  outputs can be attributed per segment, which is part of stage 3.
+- **Outputs.** Declared outputs attach to the last segment. An earlier segment
+  that writes an output must declare it, or the chain is refused.
 
 Staged:
 
@@ -136,11 +133,16 @@ Staged:
 2. **Done.** Opt-in `splitCompound: true` on a target, declared mode only. The
    engine rewrites the task into chained segment tasks (`target#1`, `target#2`),
    each folding in the previous segment's key. A failing segment stops the chain.
-   Declared outputs, `when`, `always`, trace hashing and custom shells are
-   refused with a warning. Integration tests cover the last-segment and
+   Declared outputs attach to the last segment. `{ auto: true }` outputs,
+   `when`, `always`, trace hashing, auto-fingerprinting and custom shells are
+   refused with a warning. Limitation: a partial cache hit does not restore an
+   earlier segment's files, so a later segment that reads one can fail on a
+   clean checkout. The caching guide tells users to split such chains into
+   separate targets. Integration tests cover the last-segment and
    first-segment key behaviour, the failing middle segment, the unsupported
-   construct, trace refusal and output replay order. A vis-level test covers the
-   option forwarding and the last-segment-only forwarded arguments.
+   construct, trace and auto-fingerprint refusal, output restore on a full hit,
+   and output replay order. A vis-level test covers the option forwarding, the
+   last-segment-only forwarded arguments, and the dry-run plan.
 3. Trace mode per segment, after the tracker can attribute accesses to a
    segment. Depends on G1. **Not started.**
 

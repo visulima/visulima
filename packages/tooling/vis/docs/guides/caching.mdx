@@ -163,12 +163,17 @@ The split is refused, and the target runs as one unit with a warning, when:
   `VAR=value`). Quoted `&&` such as `echo "a && b"` is not a boundary and does not
   stop the split;
 - the target uses `hashMode: "trace"`, or the workspace enables auto-fingerprinting;
-- the target declares `outputs`. Outputs are cached with the whole chain, so an
-  earlier segment's files would not be restored on a cache hit and a later segment
-  that reads them could fail on a clean checkout. Split the chain into separate
-  targets when a step produces files for the next one;
+- the workspace enables auto-fingerprinting, or the target declares an
+  `{ auto: true }` output. Auto outputs come from write tracking for the whole
+  target and cannot be attributed to one segment;
 - the target has a `when` condition or `always`, or a custom `shell`, which runs the
   command in another language.
+
+Declared `outputs` attach to the **last** segment, so a cache hit on the whole chain
+restores them. A partial hit does not restore an earlier segment's files. If a later
+segment reads a file that an earlier segment writes, it can fail on a clean checkout
+after the earlier segment was cached. Put that file's producer and consumer in
+separate targets, and declare the file as an output of the producer's target.
 
 ## Environment variables in the cache key
 
