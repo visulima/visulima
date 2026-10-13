@@ -195,6 +195,16 @@ Opt-in. With `release: { zig: { discover: true } }`, the root `build.zig.zon` an
 - Publishing is the git tag: the existing tag (`releaseTagPattern` or `<name>@<version>`) marks the package as already published. No command runs and nothing is uploaded. POSIX only; Windows refuses after the dry run.
 - Zig has no lockfile vis maintains, so nothing else is written.
 
+## Dart packages as release packages (`release.dart.discover`)
+
+Opt-in. With `release: { dart: { discover: true } }`, the root `pubspec.yaml` (when it sets a `version:`) and each member of its `workspace:` list is a release package named by its `name:`.
+
+- The version is a `version:` literal, plain or quoted, on a top-level line, rewritten in place with its quotes kept. A number, an expression, or a non-semver value fails the release with `CONFIG_INVALID`. A pubspec with no `version:` or with `publish_to: none` is skipped.
+- A `publish_to` that is not pub.dev fails the release. Workspace entries are literal paths or `dir/*`; anything else fails it.
+- A dependency key that names another released package orders the publish (`"*"`). Hosted dependencies are not rewritten.
+- Publishing runs `dart pub publish --force` with the argv runner, no shell, POSIX only. `https://pub.dev/api/packages/<name>` is checked first; a listed version is skipped. Credentials come from the Dart SDK's token store or OIDC, never argv.
+- Dart has no lockfile edits: `pubspec.lock` is not rewritten.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

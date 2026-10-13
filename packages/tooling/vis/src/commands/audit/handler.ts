@@ -309,6 +309,16 @@ const executeAudit = async (
         return;
     }
 
+    // Dart has no lockfile reader here: pubspec.lock is not read for versions, so an audit would scan nothing. Refuse it the same way.
+    if (ecosystems.all.some((eco) => ["dart", "pub"].includes(eco.toLowerCase()))) {
+        pail.error(
+            "--ecosystem pub (Dart) is not supported: vis does not read pubspec.lock for audit, so the audit cannot check Dart packages. Remove pub from --ecosystem.",
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
     const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
 
     if (onlineNonNpm.length > 0) {

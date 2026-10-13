@@ -15,6 +15,7 @@
  */
 import { CargoVersionActions } from "./cargo";
 import { ContainerActions } from "./container";
+import { DartVersionActions } from "./dart";
 import { GoVersionActions } from "./go";
 import { GradleVersionActions } from "./gradle";
 import type { VersionActions } from "./interface";
@@ -44,6 +45,10 @@ export const createVersionActions = (id: string): VersionActions => {
         case "container": {
             return new ContainerActions();
         }
+        case "dart": {
+            return new DartVersionActions();
+        }
+
         case "go": {
             return new GoVersionActions();
         }

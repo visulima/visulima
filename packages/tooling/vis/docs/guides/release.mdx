@@ -558,6 +558,22 @@ The task side is `zig.discover: true` in `vis.config.ts` (off by default). It ad
 
 `vis audit --ecosystem zig` is refused: OSV has no Zig ecosystem and there is no Zig lockfile with versions.
 
+### Dart packages as release packages
+
+Set `release.dart.discover: true` in `vis.config.ts` to release Dart packages published to pub.dev. It is off by default. The root `pubspec.yaml` is a package when it sets its own `version:`. Under a pub workspace, each member listed in the root's `workspace:` list that holds a `pubspec.yaml` is one too. Only literal entries and `dir/*` wildcards are expanded; `**` or a partial wildcard fails the release with `CONFIG_INVALID` instead of being guessed.
+
+The name is the pubspec's `name:`, which must pass the package-name check. A pubspec with no `version:`, or with `publish_to: none`, is not released. A `publish_to` that names any other server fails the release, because vis checks and publishes only against pub.dev.
+
+The version must be a `version:` literal, plain or quoted, on its own top-level line, for example `version: 1.2.3` or `version: "1.2.3"`. A number such as `version: 1.0` fails the release, and so does an expression or a value that is not a semantic version. A bump rewrites that literal and keeps the quotes and any trailing comment. A dependency that names another released package (a workspace member, which pub resolves by name) orders the publish and is recorded as `*`. Hosted dependencies are not rewritten.
+
+Publishing runs `dart pub publish --force` in the package directory, through the argv runner, with no shell. `--force` skips pub's confirmation prompt. Authenticate on the runner with `dart pub token add https://pub.dev`, or use automated publishing (OIDC) for the package; vis never passes a token in argv. Before publishing, vis checks `https://pub.dev/api/packages/<name>` and skips a version that is already listed. A failed lookup counts as not published, and the publish then reports the real error. A failed publish throws `PUBLISH_FAILED`.
+
+The task side is `dart.discover: true` in `vis.config.ts` (off by default). It adds `build` (`dart analyze`), `test` (`dart test`) and `format:check` (`dart format --output=none --set-exit-if-changed .`) to each workspace member, run in the member directory. The format check exits 1 on unformatted code. The root pubspec is not a task project, so a single-package repo gets no Dart tasks from this option.
+
+Dart support is POSIX only. The Windows path is not verified, so publish refuses on Windows with `CONFIG_INVALID` after the dry run.
+
+Audit and SBOM: `vis audit --ecosystem pub` (or `dart`) is refused: vis does not read `pubspec.lock` for audit. `pubspec.lock` is not read for an SBOM either. The lockfile lists versions but not dependency edges, and the edges live in each package's pubspec.
+
 ### Custom per-package commands
 
 Per-package `publishCommand` / `buildCommand` / `checkPublished` overrides are off by default — vis requires explicit opt-in:

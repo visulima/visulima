@@ -388,6 +388,13 @@ export interface VisConfig {
     };
 
     /**
+     * Dart pub workspace members as task projects. Off by default: each member listed
+     * under the root `pubspec.yaml`'s `workspace:` gets analyze, test and format-check
+     * targets only when this is set.
+     */
+    dart?: { discover?: boolean };
+
+    /**
      * Default base branch used by `vis affected`, `vis ci`, and `vis run --affected`
      * when no explicit `--base` is passed and no CI smart-resolver fires.
      *
@@ -2082,6 +2089,7 @@ export interface VisConfig {
     toolchain?: Omit<InternalToolchainConfig, "preferredManager"> & {
         readonly preferredManager?: Exclude<VersionManagerName, "self-activate">;
     };
+
     /** Terminal UI configuration */
     tui?: {
         /**

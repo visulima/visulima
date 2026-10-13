@@ -11,6 +11,7 @@ import { bunDetector } from "./detectors/bun";
 import { cargoDetector } from "./detectors/cargo";
 import { changesetDetector } from "./detectors/changeset";
 import { cypressDetector } from "./detectors/cypress";
+import { dartDetector } from "./detectors/dart";
 import { denoDetector } from "./detectors/deno";
 import { docusaurusDetector } from "./detectors/docusaurus";
 import { dprintDetector } from "./detectors/dprint";
@@ -119,6 +120,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     goDetector,
     gradleDetector,
     swiftDetector,
+    dartDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { dartDetector } from "../inference/detectors/dart";
 import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
 import { mavenDetector } from "../inference/detectors/maven";
@@ -36,6 +37,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { resolveDartProjectDirectories } from "./dart-projects";
 import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
@@ -233,6 +235,7 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
  * group is returned separately so callers know those have no package.json.
  */
 interface NonJsOptions {
+    dartProjects: boolean;
     goProjects: boolean;
     gradleProjects: boolean;
     mavenProjects: boolean;
@@ -250,7 +253,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
+    id: "cargo" | "dart" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -310,6 +313,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "zig",
         readName: (projectRoot) => readZigManifestName(projectRoot),
         resolve: (workspaceRoot, _candidates, claimed) => resolveZigProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Dart members come from the root pubspec's workspace list, not the workspace patterns.
+        detector: dartDetector,
+        enabled: (options) => options.dartProjects,
+        id: "dart",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveDartProjectDirectories(workspaceRoot, claimed),
     },
 ];
 
@@ -1029,6 +1040,7 @@ const discoverWorkspace = (
     }
 
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        dartProjects: config.dart?.discover === true,
         goProjects: config.go?.discover === true,
         gradleProjects: config.gradle?.discover === true,
         mavenProjects: config.maven?.discover === true,
@@ -1358,6 +1370,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        dartProjects: true,
         goProjects: true,
         gradleProjects: true,
         mavenProjects: true,

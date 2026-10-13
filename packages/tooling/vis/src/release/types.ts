@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "dart" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1285,8 +1285,16 @@ export interface VisReleaseConfig {
      */
     currentVersionResolver?: "disk" | "git-tag" | "registry";
 
+    /**
+     * Dart packages as release packages. Off by default. When on, the root
+     * `pubspec.yaml` (when it sets a version) and each member of its `workspace:`
+     * list is a release package named by its `name:`. The version must be a
+     * `version:` literal in that pubspec. Publishes to pub.dev with `dart pub publish`.
+     */
+    dart?: { discover?: boolean };
     /** Default `release.managed` for unconfigured packages. Default: `false`. */
     defaultManaged?: boolean;
+
     /** Default dep-bump rules (overridable per-package). */
     dependencyBumpRules?: DependencyBumpRules;
 
@@ -1530,7 +1538,6 @@ export interface VisReleaseConfig {
      * Default: `false` (one aggregate commit per wave).
      */
     oneCommitPerPackage?: boolean;
-
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
     /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
@@ -1547,6 +1554,7 @@ export interface VisReleaseConfig {
     privatePackages?: { tag: boolean; version: boolean };
     /** Forge provider for remote operations (PR comments, releases, version PRs). */
     provider?: "github" | "gitlab" | "auto";
+
     /** Publish-related config. */
     publish?: PublishConfig;
 
@@ -1647,6 +1655,7 @@ export interface VisReleaseConfig {
     swift?: { discover?: boolean };
     /** Dep-propagation mode. Default: `"out-of-range"`. */
     updateInternalDependencies?: UpdateInternalDependenciesMode;
+
     /** Version-PR config. */
     versionPr?: VersionPrConfig;
 

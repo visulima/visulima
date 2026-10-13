@@ -25,6 +25,7 @@ import { applyReleasePlan } from "./apply-release-plan";
 import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
+import type { DartProject } from "./dart-projects";
 import { DependencyGraph } from "./dep-graph";
 import type { GoProject } from "./go-projects";
 import type { GradleProject } from "./gradle-projects";
@@ -44,6 +45,9 @@ export interface OrchestratorContext {
     channel?: { mode: "auto-publish" | "version-pr"; prerelease?: string; tag: string };
     config: VisReleaseConfig;
     cwd: string;
+    /** Dart packages discovered under `release.dart.discover` (empty otherwise); the Dart plan reads their owners from here. */
+    dartProjects?: DartProject[];
+
     depGraph: DependencyGraph;
 
     /**
@@ -65,6 +69,7 @@ export interface OrchestratorContext {
     packages: WorkspacePackage[];
     perPackageConfig: Map<string, PerPackageReleaseConfig>;
     plan: ReleasePlan;
+
     pm: PackageManagerAdapter;
 
     /**
@@ -221,8 +226,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
     let goProjects: GoProject[] = [];
     let zigProjects: ZigProject[] = [];
+    let dartProjects: DartProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover) {
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -409,6 +415,34 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...zigProjects.map((project) => project.package)];
+        }
+
+        if (config.dart?.discover) {
+            const { discoverDartProjects } = await import("./dart-projects");
+            // A JS package that releases a Dart package (versionActions "dart") or writes its pubspec.yaml (an extraFiles rule) claims its directory.
+            const dartClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "dart") {
+                    dartClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                for (const rule of perPkg.extraFiles ?? []) {
+                    if (/(?:^|\/)pubspec\.yaml$/.test(rule.path)) {
+                        dartClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
+                    }
+                }
+            }
+
+            dartProjects = discoverDartProjects({ claimedDirs: dartClaimedDirs, cwd });
+
+            for (const project of dartProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "dart", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...dartProjects.map((project) => project.package)];
         }
 
         // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
@@ -626,6 +660,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         channel: resolved ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag } : undefined,
         config,
         cwd,
+        dartProjects,
         depGraph,
         firstRelease,
         goProjects,
@@ -1121,6 +1156,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const zigTouched = await planZigWorkspace({ pending, projects: context.zigProjects ?? [], releases: zigReleases });
 
             for (const path of zigTouched) {
+                touched.add(path);
+            }
+        }
+
+        const dartReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "dart" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (dartReleases.length > 0) {
+            const { planDartWorkspace } = await import("./dart-plan");
+            const dartTouched = await planDartWorkspace({ pending, projects: context.dartProjects ?? [], releases: dartReleases });
+
+            for (const path of dartTouched) {
                 touched.add(path);
             }
         }
