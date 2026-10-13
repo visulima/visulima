@@ -1,3 +1,14 @@
+## @visulima/tui [4.0.30](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.29...@visulima/tui@4.0.30) (2026-10-13)
+
+### Continuous Integration
+
+* **cargo-test:** gate clippy and record fat-lto evidence ([#929](https://github.com/visulima/visulima/issues/929)) ([fb6bef8](https://github.com/visulima/visulima/commit/fb6bef801299981ae74b62f531c0254d5c710112))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.2.0
+
 ## @visulima/tui [4.0.29](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.28...@visulima/tui@4.0.29) (2026-10-05)
 
 
