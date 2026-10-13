@@ -43,6 +43,41 @@ import { createVersionActions } from "./version-actions/registry";
 import { discoverPackages, resolveVersionActionsId } from "./workspace";
 import type { ZigProject } from "./zig-projects";
 
+/**
+ * True when `path` is a `version.rb` under a `lib/` tree: `lib/` starts the path or
+ * follows a `/`, and at least one character sits between it and `/version.rb`.
+ * Linear in the path length. The regex it replaces, `(?:^|\/)lib\/.+\/version\.rb$`,
+ * backtracks polynomially on long runs of `/lib/`.
+ */
+export const isGemVersionRbPath = (path: string): boolean => {
+    const suffix = "/version.rb";
+
+    if (!path.endsWith(suffix)) {
+        return false;
+    }
+
+    const end = path.length - suffix.length;
+    let libStart: number;
+
+    if (path.startsWith("lib/")) {
+        libStart = 0;
+    } else {
+        const found = path.indexOf("/lib/");
+
+        if (found === -1) {
+            return false;
+        }
+
+        libStart = found + 1;
+    }
+
+    // The earliest `lib/` leaves the longest middle part, so checking it is enough.
+    // `.` in the original regex does not match line terminators, so exclude those too.
+    const middle = path.slice(libStart + "lib/".length, end);
+
+    return middle.length > 0 && !/[\n\r\u2028\u2029]/.test(middle);
+};
+
 export interface OrchestratorContext {
     branch?: string;
     channel?: { mode: "auto-publish" | "version-pr"; prerelease?: string; tag: string };
@@ -440,7 +475,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
                     if (/\.gemspec$/.test(rule.path)) {
                         gemClaimedDirs.add(dirname(target));
-                    } else if (/(?:^|\/)lib\/.+\/version\.rb$/.test(rule.path)) {
+                    } else if (isGemVersionRbPath(rule.path)) {
                         // The gem's directory is the one above its lib/ tree.
                         const libIndex = target.lastIndexOf(`${sep}lib${sep}`);
 
