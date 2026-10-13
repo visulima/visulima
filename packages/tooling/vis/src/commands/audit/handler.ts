@@ -23,6 +23,7 @@ import { emitGitlabDepScan } from "../../report/gitlab-dep-scan";
 import { emitJUnitAudit } from "../../report/junit-audit";
 import { emitSarif } from "../../report/sarif";
 import { buildCycloneDxBom } from "../../sbom/cyclonedx";
+import { GATED_ECOSYSTEMS } from "../../sbom/ecosystem-gate";
 import { startScanProgress } from "../../scan/scan-progress";
 import { AdvisoryDbNotFoundError, advisoryDbSchemaError, advisoryKey, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
 import type { DirectApplyPlan } from "../../security/apply-direct";
@@ -1105,7 +1106,9 @@ const executeAudit = async (
         const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
+        // Every gated ecosystem stays in: audit scans all of them, and the VEX affects[] refs must resolve.
         const bom = buildCycloneDxBom({
+            ecosystems: new Set(GATED_ECOSYSTEMS),
             includeDev: !prodOnly,
             projectGraph,
             workspace,

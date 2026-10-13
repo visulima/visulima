@@ -273,8 +273,45 @@ export const readMavenModules = (workspaceRoot: string): MavenModule[] => {
 const isDevScope = (scope: string): boolean => scope === "test" || scope === "provided";
 
 export interface MavenSbomOptions {
+    /**
+     * Restrict the graph to modules whose artifactId is one of these (focus), plus the workspace
+     * modules they reach through their declared dependencies. A Maven project is named by its
+     * artifactId (see config/maven-projects.ts), so these are the focused Nx project names.
+     * Undefined keeps every module.
+     */
+    focusNames?: ReadonlyArray<string>;
     includeDev?: boolean;
 }
+
+/** The modules kept under focus: those named by `focusNames`, and the workspace modules they declare, transitively. */
+const focusedModules = (modules: MavenModule[], focusNames: ReadonlyArray<string>): MavenModule[] => {
+    const wanted = new Set(focusNames);
+    const byCoordinate = new Map<string, MavenModule>();
+
+    for (const module of modules) {
+        if (module.group !== undefined && module.artifact !== undefined) {
+            byCoordinate.set(`${module.group}:${module.artifact}`, module);
+        }
+    }
+
+    const kept = new Set<MavenModule>(modules.filter((module) => module.artifact !== undefined && wanted.has(module.artifact)));
+    const queue = [...kept];
+
+    while (queue.length > 0) {
+        const module = queue.shift()!;
+
+        for (const dependency of module.dependencies) {
+            const sibling = byCoordinate.get(`${dependency.group}:${dependency.artifact}`);
+
+            if (sibling !== undefined && !kept.has(sibling)) {
+                kept.add(sibling);
+                queue.push(sibling);
+            }
+        }
+    }
+
+    return modules.filter((module) => kept.has(module));
+};
 
 /**
  * The module and dependency graph as CycloneDX parts. A dependency is one component across modules,
@@ -309,7 +346,9 @@ export const buildMavenSbomParts = (workspaceRoot: string, options: MavenSbomOpt
         return ref;
     };
 
-    for (const module of readMavenModules(workspaceRoot)) {
+    const modules = readMavenModules(workspaceRoot);
+
+    for (const module of options.focusNames === undefined ? modules : focusedModules(modules, options.focusNames)) {
         const moduleRef = module.group !== undefined && module.artifact !== undefined ? addComponent(module.group, module.artifact, module.version, module.unresolved) : undefined;
 
         for (const dependency of module.dependencies) {

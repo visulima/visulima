@@ -977,6 +977,29 @@
             "$ref": "#/$defs/RuntimeId",
             "description": "Target JS runtime for this workspace/project — `\"node\"` (default) or `\"bun\"`. Overridden by the `--runtime` flag and the `VIS_RUNTIME` env var; falls back to lockfile detection when unset. Part of the cross-runtime multi-tool (see `rfc/design-runtime-multitool.md`)."
         },
+        "sbom": {
+            "type": "object",
+            "properties": {
+                "ecosystems": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "dart",
+                            "go",
+                            "gradle",
+                            "hex",
+                            "maven",
+                            "nuget",
+                            "swift",
+                            "zig"
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "description": "Options for `vis sbom`. `ecosystems` opts in ecosystems that the BOM otherwise leaves out: Maven, Gradle, Hex, Go, Dart, Swift, NuGet and Zig. An ecosystem is also included when its discover key (`maven.discover`, `go.discover`, ...) is on. Presence of a lock file or manifest alone does not include it; `vis sbom` reports such ecosystems on stderr instead."
+        },
         "scopedTasks": {
             "type": "array",
             "items": {

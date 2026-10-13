@@ -54,18 +54,18 @@ export const parseGradleLockEntries = (content: string): GradleLockEntry[] => {
     return entries;
 };
 
+/** Absolute paths of the `gradle.lockfile` files of the root and of each Gradle subproject, in workspace order. */
+export const gradleLockfilePaths = (workspaceRoot: string): string[] => {
+    const directories = ["", ...resolveGradleProjectDirectories(workspaceRoot, [])];
+
+    return directories.map((directory) => join(workspaceRoot, directory, "gradle.lockfile")).filter((path) => existsSync(path));
+};
+
 /** The lockfile of the root and of each Gradle subproject that has one, in workspace order. */
 export const readGradleLockEntries = (workspaceRoot: string): GradleLockEntry[] => {
-    const directories = ["", ...resolveGradleProjectDirectories(workspaceRoot, [])];
     const entries: GradleLockEntry[] = [];
 
-    for (const directory of directories) {
-        const path = join(workspaceRoot, directory, "gradle.lockfile");
-
-        if (!existsSync(path)) {
-            continue;
-        }
-
+    for (const path of gradleLockfilePaths(workspaceRoot)) {
         try {
             entries.push(...parseGradleLockEntries(readFileSync(path, "utf8")));
         } catch {

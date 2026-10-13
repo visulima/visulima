@@ -1179,6 +1179,20 @@ export interface VisConfig {
     runtime?: RuntimeId;
 
     /**
+     * Options for `vis sbom`. `ecosystems` opts in ecosystems that the BOM otherwise leaves out:
+     * Maven, Gradle, Hex, Go, Dart, Swift, NuGet and Zig. An ecosystem is also included when its
+     * discover key (`maven.discover`, `go.discover`, ...) is on. Presence of a lock file or manifest
+     * alone does not include it; `vis sbom` reports such ecosystems on stderr instead.
+     * @example
+     * ```
+     * sbom: { ecosystems: ["go", "zig"] }
+     * ```
+     */
+    sbom?: {
+        ecosystems?: ("dart" | "go" | "gradle" | "hex" | "maven" | "nuget" | "swift" | "zig")[];
+    };
+
+    /**
      * Cascading scoped-task blocks. Each block may narrow its tasks to a
      * subset of projects via `match`. Blocks are evaluated in order; later
      * blocks override earlier ones when the same field is set.
