@@ -195,7 +195,7 @@ const maven = defineEcosystem<MavenProject>({
     claimedDirs: (pkg, perPkg) => {
         const pomPaths = [
             ...(perPkg.versionActions === "maven" || perPkg.pomPath !== undefined ? [perPkg.pomPath ?? "pom.xml"] : []),
-            ...(perPkg.extraFiles ?? []).map((rule) => rule.path).filter((path) => path.endsWith("pom.xml")),
+            ...(perPkg.extraFiles ?? []).map((rule) => rule.path).filter((path) => /(?:^|\/)pom\.xml$/.test(path)),
         ];
 
         return pomPaths.map((pomPath) => dirname(resolve(pkg.dir, pomPath)));
@@ -233,7 +233,7 @@ const gradle = defineEcosystem<GradleProject>({
 });
 
 const composer = defineEcosystem<ComposerProject>({
-    claimedDirs: claimVersionAction("composer"),
+    claimedDirs: claimVersionAction("composer", /(?:^|\/)composer\.json$/),
     configKey: "composer",
     discover: async (options) => {
         const { discoverComposerProjects } = await import("./composer-projects");
@@ -246,7 +246,7 @@ const composer = defineEcosystem<ComposerProject>({
 });
 
 const go = defineEcosystem<GoProject>({
-    claimedDirs: claimVersionAction("go"),
+    claimedDirs: claimVersionAction("go", /(?:^|\/)go\.mod$/),
     configKey: "go",
     discover: async (options) => {
         const { discoverGoProjects } = await import("./go-projects");
@@ -258,9 +258,15 @@ const go = defineEcosystem<GoProject>({
     toPackage: (project) => project.package,
 });
 
+const swiftManifestClaim = claimVersionAction("swift", /(?:^|\/)Package\.swift$/);
+
 const swift = defineEcosystem<SwiftProject>({
     // A JS package (and everything under it) belongs to that package, except the workspace root.
-    claimedDirs: (pkg, _perPkg, cwd) => (pkg.ecosystem === undefined && resolve(pkg.dir) !== resolve(cwd) ? [resolve(pkg.dir)] : []),
+    // `Package.swift` claims come on top, so `versionActions: "swift"` and `extraFiles` are honoured.
+    claimedDirs: (pkg, perPkg, cwd) => [
+        ...(pkg.ecosystem === undefined && resolve(pkg.dir) !== resolve(cwd) ? [resolve(pkg.dir)] : []),
+        ...swiftManifestClaim(pkg, perPkg),
+    ],
     configKey: "swift",
     discover: async (options) => {
         const { discoverSwiftProjects } = await import("./swift-projects");
