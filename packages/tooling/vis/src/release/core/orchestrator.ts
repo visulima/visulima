@@ -1168,9 +1168,9 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
                 const versioned
                     = versionFiles.length > 0
                         ? await applyVersionFilesForRelease(pkg.dir, versionFiles, release.newVersion, release.name, new Map(extra.writes.map((write) => [write.path, write.content])))
-                        : { warnings: [], writes: [] };
+                        : { writes: [] };
 
-                return { warnings: [...extra.warnings, ...versioned.warnings], writes: [...extra.writes, ...versioned.writes] };
+                return { warnings: extra.warnings, writes: [...extra.writes, ...versioned.writes] };
             }),
         );
 

@@ -157,18 +157,44 @@ describe("version-files: applyVersionFilesForRelease", () => {
 
         const result = await applyVersionFilesForRelease(packageDir, ["src-tauri/Cargo.toml", "src-tauri/tauri.conf.json"], "0.2.0", "app");
 
-        expect(result.warnings).toStrictEqual([]);
         expect(result.writes.map((write) => write.content)).toStrictEqual(["[package]\nname = \"app\"\nversion = \"0.2.0\"\n", "{ \"version\": \"0.2.0\" }\n"]);
     });
 
-    it("warns instead of throwing when a configured file is missing", async () => {
+    it("throws CONFIG_INVALID naming the file when a configured file is missing", async () => {
         expect.hasAssertions();
 
-        const result = await applyVersionFilesForRelease(packageDir, ["src-tauri/Cargo.toml"], "0.2.0", "app");
+        const missing = join(packageDir, "src-tauri", "Cargo.toml");
 
-        expect(result.writes).toStrictEqual([]);
-        expect(result.warnings).toHaveLength(1);
-        expect(result.warnings[0]).toContain("does not exist");
+        await expect(applyVersionFilesForRelease(packageDir, ["src-tauri/Cargo.toml"], "0.2.0", "app")).rejects.toMatchObject({
+            code: "CONFIG_INVALID",
+            file: missing,
+            message: expect.stringContaining("does not exist"),
+        });
+    });
+
+    it("throws CONFIG_INVALID naming the file when a configured file cannot be read", async () => {
+        expect.hasAssertions();
+
+        // A directory where a manifest is expected fails the read with EISDIR, not ENOENT.
+        await mkdir(join(packageDir, "Cargo.toml"));
+
+        await expect(applyVersionFilesForRelease(packageDir, ["Cargo.toml"], "0.2.0", "app")).rejects.toMatchObject({
+            code: "CONFIG_INVALID",
+            file: join(packageDir, "Cargo.toml"),
+            message: expect.stringContaining("could not be read"),
+        });
+    });
+
+    it("throws CONFIG_INVALID naming the file when the manifest has no version field", async () => {
+        expect.hasAssertions();
+
+        await writeFile(join(packageDir, "Cargo.toml"), "[package]\nname = \"app\"\n");
+
+        await expect(applyVersionFilesForRelease(packageDir, ["Cargo.toml"], "0.2.0", "app")).rejects.toMatchObject({
+            code: "CONFIG_INVALID",
+            file: join(packageDir, "Cargo.toml"),
+            message: expect.stringContaining("no version field"),
+        });
     });
 
     it("rejects an unsupported basename with CONFIG_INVALID", async () => {
@@ -190,7 +216,6 @@ describe("version-files: applyVersionFilesForRelease", () => {
         const result = await applyVersionFilesForRelease(packageDir, ["Cargo.toml"], "0.2.0", "app");
 
         expect(result.writes).toStrictEqual([]);
-        expect(result.warnings).toStrictEqual([]);
         await expect(readFile(join(packageDir, "Cargo.toml"), "utf8")).resolves.toBe(raw);
     });
 });

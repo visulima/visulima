@@ -24,7 +24,6 @@ export interface VersionFileWrite {
 }
 
 export interface VersionFileResult {
-    warnings: string[];
     writes: VersionFileWrite[];
 }
 
@@ -314,9 +313,10 @@ export const assertSupportedVersionFiles = (packageName: string, versionFiles: R
 };
 
 /**
- * Apply `versionFiles` for one package. Missing files and manifests whose
- * version field cannot be found become warnings (the release itself still
- * proceeds); an unsupported basename throws because it is a config error.
+ * Apply `versionFiles` for one package. A missing or unreadable file, a manifest
+ * with no version field, and an unsupported basename all throw `CONFIG_INVALID`
+ * naming the file. Continuing would leave the manifest at its old version while
+ * the lockfile moved on, so the release stops before anything is written.
  * @param packageDir package directory — entries resolve relative to it
  * @param versionFiles the `versionFiles` entries from the per-package config
  * @param newVersion the package's new version
@@ -333,7 +333,6 @@ export const applyVersionFilesForRelease = async (
 ): Promise<VersionFileResult> => {
     assertSupportedVersionFiles(packageName, versionFiles);
 
-    const warnings: string[] = [];
     const writes: VersionFileWrite[] = [];
 
     for (const entry of versionFiles) {
@@ -345,26 +344,32 @@ export const applyVersionFilesForRelease = async (
             try {
                 raw = await readFile(absolutePath, "utf8");
             } catch (error) {
-                if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                    warnings.push(`versionFiles: ${packageName} → ${absolutePath} does not exist; skipping.`);
-                } else {
-                    warnings.push(`versionFiles: ${packageName} → could not read ${absolutePath}: ${(error as Error).message}`);
-                }
+                const reason = (error as NodeJS.ErrnoException).code === "ENOENT" ? "does not exist" : `could not be read (${(error as Error).message})`;
 
-                continue;
+                throw new VisReleaseError({
+                    code: "CONFIG_INVALID",
+                    file: absolutePath,
+                    message: `versionFiles: ${packageName} → ${absolutePath} ${reason}.`,
+                });
             }
         }
 
         const result = kind === "cargo" ? rewriteCargoVersion(raw, newVersion) : rewriteTauriVersion(raw, newVersion);
 
         if (!result.found) {
-            warnings.push(`versionFiles: ${packageName} → no version field found in ${absolutePath}.`);
-        } else if (result.content !== undefined && result.content !== raw) {
+            throw new VisReleaseError({
+                code: "CONFIG_INVALID",
+                file: absolutePath,
+                message: `versionFiles: ${packageName} → no version field found in ${absolutePath}.`,
+            });
+        }
+
+        if (result.content !== undefined && result.content !== raw) {
             writes.push({ content: result.content, path: absolutePath });
         }
     }
 
-    return { warnings, writes };
+    return { writes };
 };
 
 // ── Doctor ───────────────────────────────────────────────────────────
