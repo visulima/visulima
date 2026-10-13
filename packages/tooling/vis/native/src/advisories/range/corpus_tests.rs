@@ -16,7 +16,7 @@
 //! stale snapshot — the test name documents the upstream advisory id so a
 //! refresh is a one-line grep away.
 
-use super::matcher_for;
+use super::{matcher_for, row_matches};
 use crate::advisories::osv::Advisory;
 
 fn parse(json: &str) -> Advisory {
@@ -31,7 +31,7 @@ fn assert_dispatch(advisory: &Advisory, affected_idx: usize, version: &str, expe
     let mut any_match = false;
     for range in &affected.ranges {
         for pair in range.to_pairs() {
-            if matcher.matches(version, &pair.introduced, pair.fixed.as_deref()) {
+            if row_matches(matcher, version, &pair.introduced, pair.fixed.as_deref(), pair.last_affected.as_deref()) {
                 any_match = true;
                 break;
             }
@@ -299,4 +299,50 @@ fn corpus_pub_jose_build_suffix_fix() {
     assert_dispatch(&adv, 0, "0.3.5", true);
     assert_dispatch(&adv, 0, "0.3.5+1", false);
     assert_dispatch(&adv, 0, "0.3.6", false);
+}
+
+// Real shape from GHSA-35jh-r3h4-6jhm (lodash.template command injection).
+// The package's range is `last_affected: 4.5.0`, an inclusive bound, so
+// 4.5.0 itself is affected and 4.5.1 is clean. Recorded in the OSV dump as
+// `last_affected` (not `fixed`).
+#[test]
+fn corpus_npm_lodash_template_last_affected_is_inclusive() {
+    let json = r#"{
+  "id": "GHSA-35jh-r3h4-6jhm",
+  "summary": "Command Injection in lodash",
+  "aliases": [
+    "CVE-2021-23337",
+    "CVE-2026-4800",
+    "GHSA-r5fr-rjxr-66jc"
+  ],
+  "affected": [
+    {
+      "package": {
+        "name": "lodash.template",
+        "ecosystem": "npm",
+        "purl": "pkg:npm/lodash.template"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "0"
+            },
+            {
+              "last_affected": "4.5.0"
+            }
+          ]
+        }
+      ],
+      "database_specific": {
+        "source": "https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2021/05/GHSA-35jh-r3h4-6jhm/GHSA-35jh-r3h4-6jhm.json"
+      }
+    }
+  ]
+}"#;
+    let advisory = parse(json);
+    assert_dispatch(&advisory, 0, "4.5.0", true);
+    assert_dispatch(&advisory, 0, "4.4.9", true);
+    assert_dispatch(&advisory, 0, "4.5.1", false);
 }

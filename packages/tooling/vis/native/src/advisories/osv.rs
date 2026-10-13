@@ -77,7 +77,10 @@ pub struct Event {
 #[derive(Debug, Clone)]
 pub struct RangePair {
     pub introduced: String,
+    /// Exclusive upper bound (`fixed` event).
     pub fixed: Option<String>,
+    /// Inclusive upper bound (`last_affected` event). Set instead of `fixed`.
+    pub last_affected: Option<String>,
 }
 
 impl Range {
@@ -91,25 +94,25 @@ impl Range {
         for event in &self.events {
             if let Some(intro) = &event.introduced {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair { introduced: prev, fixed: None });
+                    out.push(RangePair { introduced: prev, fixed: None, last_affected: None });
                 }
                 current_introduced = Some(intro.clone());
             } else if let Some(fixed) = &event.fixed {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair { introduced: prev, fixed: Some(fixed.clone()) });
+                    out.push(RangePair { introduced: prev, fixed: Some(fixed.clone()), last_affected: None });
                 }
             } else if let Some(last) = &event.last_affected {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair { introduced: prev, fixed: Some(last.clone()) });
+                    out.push(RangePair { introduced: prev, fixed: None, last_affected: Some(last.clone()) });
                 }
             } else if event.limit.is_some() {
                 if let Some(prev) = current_introduced.take() {
-                    out.push(RangePair { introduced: prev, fixed: None });
+                    out.push(RangePair { introduced: prev, fixed: None, last_affected: None });
                 }
             }
         }
         if let Some(intro) = current_introduced.take() {
-            out.push(RangePair { introduced: intro, fixed: None });
+            out.push(RangePair { introduced: intro, fixed: None, last_affected: None });
         }
         out
     }
@@ -195,12 +198,13 @@ mod tests {
         assert_eq!(pairs.len(), 1);
         assert_eq!(pairs[0].introduced, "0");
         assert_eq!(pairs[0].fixed.as_deref(), Some("1.2.3"));
+        assert_eq!(pairs[0].last_affected, None);
     }
 
     #[test]
-    fn range_with_last_affected_emits_pair_with_inclusive_upper() {
-        // OSV `last_affected` is inclusive; `to_pairs` collapses it onto the
-        // `fixed` slot so the matcher can use one comparison path.
+    fn range_with_last_affected_emits_inclusive_upper_not_fixed() {
+        // OSV `last_affected` is inclusive. It must not share the exclusive
+        // `fixed` slot, or the boundary version would be reported clean.
         let r = Range {
             kind: "SEMVER".into(),
             events: vec![
@@ -211,7 +215,8 @@ mod tests {
         let pairs = r.to_pairs();
         assert_eq!(pairs.len(), 1);
         assert_eq!(pairs[0].introduced, "1.0.0");
-        assert_eq!(pairs[0].fixed.as_deref(), Some("1.5.9"));
+        assert_eq!(pairs[0].fixed, None);
+        assert_eq!(pairs[0].last_affected.as_deref(), Some("1.5.9"));
     }
 
     #[test]

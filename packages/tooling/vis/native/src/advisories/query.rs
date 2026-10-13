@@ -3,7 +3,7 @@ use std::path::Path;
 
 use rusqlite::{params, Connection, OpenFlags};
 
-use super::range::matcher_for;
+use super::range::{matcher_for, row_matches};
 use super::schema::check_schema;
 
 #[derive(Debug, Clone)]
@@ -89,7 +89,7 @@ pub fn query<P: AsRef<Path>>(db_path: P, queries: &[QueryInput]) -> Result<Vec<A
     check_schema(&conn)?;
 
     let mut stmt = conn.prepare(
-        "SELECT a.id, a.summary, a.severity, a.cvss_score, f.introduced, f.fixed \
+        "SELECT a.id, a.summary, a.severity, a.cvss_score, f.introduced, f.fixed, f.last_affected \
          FROM affected f \
          JOIN advisory a ON a.id = f.advisory_id \
          WHERE f.ecosystem = ?1 AND f.package = ?2",
@@ -120,6 +120,7 @@ pub fn query<P: AsRef<Path>>(db_path: P, queries: &[QueryInput]) -> Result<Vec<A
                 row.get::<_, Option<f64>>(3)?,    // cvss_score
                 row.get::<_, String>(4)?,         // introduced
                 row.get::<_, Option<String>>(5)?, // fixed
+                row.get::<_, Option<String>>(6)?, // last_affected
             ))
         })?;
 
@@ -128,8 +129,8 @@ pub fn query<P: AsRef<Path>>(db_path: P, queries: &[QueryInput]) -> Result<Vec<A
         let mut by_id: BTreeMap<String, NativeVulnerability> = BTreeMap::new();
 
         for row in rows {
-            let (id, summary, severity, cvss_score, introduced, fixed) = row?;
-            if !matcher.matches(&q.version, &introduced, fixed.as_deref()) {
+            let (id, summary, severity, cvss_score, introduced, fixed, last_affected) = row?;
+            if !row_matches(matcher, &q.version, &introduced, fixed.as_deref(), last_affected.as_deref()) {
                 continue;
             }
             let entry = by_id.entry(id.clone()).or_insert_with(|| NativeVulnerability {
@@ -230,6 +231,48 @@ mod tests {
         let hits = query(&tmp, &inputs).unwrap();
         assert_eq!(hits.len(), 1);
         assert!(hits[0].vulnerabilities.is_empty());
+    }
+
+    #[test]
+    fn query_matches_last_affected_boundary_and_clears_next_version() {
+        let tmp = tempfile_path();
+        let conn = Connection::open(&tmp).unwrap();
+        ensure_schema(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO advisory (id, summary, severity, cvss_score, published, modified) \
+             VALUES ('GHSA-35jh-r3h4-6jhm', 'lodash.template', 'HIGH', NULL, '', '')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO affected (advisory_id, ecosystem, package, introduced, fixed, last_affected, range_index) \
+             VALUES ('GHSA-35jh-r3h4-6jhm', 'npm', 'lodash.template', '0', NULL, '4.5.0', 0)",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+
+        let at = |v: &str| QueryInput { ecosystem: "npm".into(), name: "lodash.template".into(), version: v.into() };
+        let hits = query(&tmp, &[at("4.5.0"), at("4.5.1")]).unwrap();
+        assert_eq!(hits[0].vulnerabilities.len(), 1, "last_affected version is affected");
+        assert!(hits[0].vulnerabilities[0].fixed_versions.is_empty(), "last_affected is not a fix");
+        assert!(hits[1].vulnerabilities.is_empty(), "version after last_affected is clean");
+    }
+
+    #[test]
+    fn query_rejects_v1_database_with_refresh_hint() {
+        let tmp = tempfile_path();
+        let conn = Connection::open(&tmp).unwrap();
+        ensure_schema(&conn).unwrap();
+        conn.execute("UPDATE meta SET value = '1' WHERE ecosystem = '' AND key = 'schema_version'", []).unwrap();
+        drop(conn);
+
+        let inputs = vec![QueryInput { ecosystem: "npm".into(), name: "x".into(), version: "1.0.0".into() }];
+        let err = query(&tmp, &inputs).unwrap_err();
+        let message = err.to_string();
+        assert!(message.contains("v1"), "{message}");
+        assert!(message.contains("prune --force"), "{message}");
+        assert!(message.contains("vis advisories sync"), "{message}");
     }
 
     fn tempfile_path() -> std::path::PathBuf {
