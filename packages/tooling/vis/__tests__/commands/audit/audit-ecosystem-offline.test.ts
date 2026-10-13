@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { nonNpmEcosystemsWithoutOffline } from "../../../src/commands/audit/handler";
+import { nonNpmEcosystemsWithoutOffline, npmRequested, offlineNonNpmEcosystems } from "../../../src/commands/audit/handler";
 
 /**
  * `--ecosystem cargo` run online used to skip cargo without a word. The helper
@@ -19,5 +19,24 @@ describe("vis audit --ecosystem without --offline", () => {
 
         expect(nonNpmEcosystemsWithoutOffline(["npm"], false)).toStrictEqual([]);
         expect(nonNpmEcosystemsWithoutOffline(["npm", "cargo"], true)).toStrictEqual([]);
+    });
+});
+
+describe("vis audit offline routing", () => {
+    it("matches JavaScript lockfile packages only when npm is requested", () => {
+        expect.assertions(4);
+
+        expect(npmRequested(["npm"])).toBe(true);
+        // Routing npm packages under the first --ecosystem reported them as Pub or crates.io hits.
+        expect(npmRequested(["pub", "npm"])).toBe(true);
+        expect(npmRequested(["cargo", "npm"])).toBe(true);
+        expect(npmRequested(["pub"])).toBe(false);
+    });
+
+    it("lists each non-npm lockfile ecosystem once, under its canonical name", () => {
+        expect.assertions(2);
+
+        expect(offlineNonNpmEcosystems(["npm", "dart", "pub", "cargo", "crates.io"])).toStrictEqual(["Pub", "crates.io"]);
+        expect(offlineNonNpmEcosystems(["npm"])).toStrictEqual([]);
     });
 });

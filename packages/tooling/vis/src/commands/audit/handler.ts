@@ -94,6 +94,19 @@ const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported:
     return { all, unsupported };
 };
 
+// Offline routing. Packages read from the JavaScript lockfile are npm packages, so they are matched
+// only when npm was requested, and always under "npm" (never under whichever ecosystem came first).
+export const npmRequested = (ecosystems: string[]): boolean => ecosystems.some((eco) => canonicalEcosystem(eco) === "npm");
+
+// Canonical names of the non-npm lockfile ecosystems an offline run scans, each listed once.
+export const offlineNonNpmEcosystems = (ecosystems: string[]): string[] => [
+    ...new Set(
+        ecosystems
+            .filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && canonicalEcosystem(eco) !== "npm")
+            .map((eco) => canonicalEcosystem(eco)),
+    ),
+];
+
 // Ecosystems the audit refuses, keyed by lowercase name, with the message shown for each. A Map, not an
 // object, so names like "constructor" cannot match inherited properties.
 const REFUSED_ECOSYSTEMS = new Map<string, (name: string) => string>([
@@ -438,15 +451,22 @@ const executeAudit = async (
     // 1. Discover installed packages from the lockfile (single parse,
     // no recursive node_modules walk). `--prod-only` will filter dev
     // packages via the lockedPackages includeDev flag in Phase 1.7.
-    const installed = lockedPackages(workspaceRoot, pm.name, { includeDev: !prodOnly });
+    // Offline runs read the JavaScript lockfile only when npm was requested. Other lockfiles are read
+    // here too, so a run with no npm entries (a Dart or NuGet repository) still scans them.
+    const installed = !isOffline || npmRequested(ecosystems.all) ? lockedPackages(workspaceRoot, pm.name, { includeDev: !prodOnly }) : [];
+    const offlineNonNpm = isOffline
+        ? offlineNonNpmEcosystems(ecosystems.all)
+            .map((ecosystem) => { return { ecosystem, packages: lockedPackagesForEcosystem(workspaceRoot, ecosystem) }; })
+            .filter((entry) => entry.packages.length > 0)
+        : [];
 
-    if (installed.length === 0) {
+    if (installed.length === 0 && offlineNonNpm.length === 0) {
         pail.info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
 
         return;
     }
 
-    if (!quietHeader) {
+    if (!quietHeader && installed.length > 0) {
         const scope = prodOnly ? "production-only packages" : "installed packages";
 
         pail.info(`Scanning ${String(installed.length)} ${scope}${isOffline ? " (offline)" : ""}…`);
@@ -592,7 +612,7 @@ const executeAudit = async (
                 .then(() =>
                     queryAdvisories(packagesToScan, {
                         dbPath,
-                        ecosystem: ecosystems.all.find((e) => SUPPORTED_ECOSYSTEMS.has(e.toLowerCase())) ?? "npm",
+                        ecosystem: "npm",
                         workspaceRoot,
                     }),
                 )
@@ -724,16 +744,7 @@ const executeAudit = async (
     // npm-only today). Each ecosystem owns its own lockfile reader and
     // queries the same shared advisory DB with the right ecosystem tag.
     if (isOffline) {
-        const nonNpmEcosystems = ecosystems.all.filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && eco.toLowerCase() !== "npm");
-
-        for (const eco of nonNpmEcosystems) {
-            const canonical = canonicalEcosystem(eco);
-            const ecoPackages = lockedPackagesForEcosystem(workspaceRoot, canonical);
-
-            if (ecoPackages.length === 0) {
-                continue;
-            }
-
+        for (const { ecosystem: canonical, packages: ecoPackages } of offlineNonNpm) {
             if (!quietHeader) {
                 pail.info(dim(`Scanning ${String(ecoPackages.length)} ${canonical} packages…`));
             }
