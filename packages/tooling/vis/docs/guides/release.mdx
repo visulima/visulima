@@ -486,7 +486,7 @@ Edits are targeted, so comments and formatting survive. An unsupported basename 
 
 Set `release.cargo.discover: true` in `vis.config.ts` to release the crates in the root `Cargo.toml`'s `[workspace].members` without a `package.json`. It is off by default.
 
-A bump updates each crate's version, the path-dependency requirements that point at it, the dependents' patch bumps, and `Cargo.lock`, in one pass. Crates that inherit `[workspace.package].version` must release together at one version. `publish = false` crates are private and never published with `cargo publish`.
+A bump updates each crate's version and `Cargo.lock`. With `cargo.discover` on, the path-dependency requirements that point at it and the dependents' patch bumps move too. Without it, a `cargo()` package releases its own crate and lock only, and other crates in the workspace are left alone. Crates that inherit `[workspace.package].version` must release together at one version. `publish = false` crates are private and never published with `cargo publish`.
 
 ### Python projects as release packages
 

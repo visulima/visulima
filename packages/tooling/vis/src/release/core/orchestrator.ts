@@ -868,6 +868,8 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
                 cwd: context.cwd,
                 pending,
                 releases: planReleases,
+                // Other crates' requirements move only for discovered crates; a `cargo()` package keeps its lock in step.
+                rewriteDependents: context.config.cargo?.discover === true,
                 scanManifests: [...scanManifests],
             });
 

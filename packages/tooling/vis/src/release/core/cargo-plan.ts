@@ -43,6 +43,13 @@ export interface CargoPlanOptions {
     /** Content already queued by earlier steps; updated in place. */
     pending: Map<string, string>;
     releases: ReadonlyArray<CargoPlanRelease>;
+
+    /**
+     * Move the requirement of other crates on a released crate. Default true. The orchestrator
+     * turns this off unless `cargo.discover` is set, so a `cargo()` package releases its own
+     * crate and `Cargo.lock` without rewriting other crates in the workspace.
+     */
+    rewriteDependents?: boolean;
     /** Every Cargo manifest to rescan for dependency requirements. */
     scanManifests: ReadonlyArray<string>;
 }
@@ -260,7 +267,7 @@ export const rewriteCargoRequirements = (
  * Throws `CONFIG_INVALID` when an inherit group would move only part of itself.
  */
 export const planCargoWorkspace = async (options: CargoPlanOptions): Promise<CargoPlanResult> => {
-    const { crateManifests, cwd, pending, releases, scanManifests } = options;
+    const { crateManifests, cwd, pending, releases, rewriteDependents = true, scanManifests } = options;
     const touched = new Set<string>();
     const warnings: string[] = [];
     const newVersionByDir = new Map<string, string>();
@@ -360,7 +367,7 @@ export const planCargoWorkspace = async (options: CargoPlanOptions): Promise<Car
     }
 
     // 2. Dependency requirements in every Cargo manifest in the workspace.
-    for (const manifest of scanManifests) {
+    for (const manifest of rewriteDependents ? scanManifests : []) {
         const raw = await readPending(pending, manifest).catch(() => undefined);
 
         if (raw === undefined) {

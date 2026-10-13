@@ -129,7 +129,7 @@ Opt-in. With `release: { cargo: { discover: true } }` in `vis.config.ts`, every 
 
 - Crates a JS package already claims through `versionFiles`, `cargo()` or `cargoTomlPath` are not discovered again.
 - `publish = false` makes a crate private: it gets the `private` actions, never `cargo publish`.
-- A bump updates the crate's version, every path dependency's requirement on it (Cargo rules: a bare `0.1.0` is `^0.1.0`, the operator is kept, compound requirements are left with a warning), the dependent's patch bump, and `Cargo.lock`, all in one pass.
+- A bump updates the crate's version and `Cargo.lock`. With `cargo.discover` on, every path dependency's requirement on it also moves (Cargo rules: a bare `0.1.0` is `^0.1.0`, the operator is kept, compound requirements are left with a warning), and so does the dependent's patch bump. Without it, a `cargo()` package releases its own crate and lock only, and other crates' requirements are not rewritten.
 - A crate that inherits `version.workspace = true` moves with its whole group. The group must release together at one version, or the release fails with `CONFIG_INVALID`.
 - Snapshot releases skip Cargo crates.
 
