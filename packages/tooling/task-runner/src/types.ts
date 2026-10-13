@@ -468,7 +468,9 @@ export interface TargetConfiguration {
      *   machines: two runners with the same workspace state produce the
      *   same key regardless of OS or syscall surface.
      * - `"trace"`: the task is run under the file-access tracker
-     *   (strace on Linux, an fs preload shim elsewhere) and the cache
+     *   (strace or seccomp on Linux; DYLD/IAT interposition on macOS and
+     *   Windows for directly-executed commands; a Node preload otherwise)
+     *   and the cache
      *   key is derived from the files it actually *read* during
      *   execution — no `inputs` declaration required. Mirrors the
      *   shipped `{ auto: true }` output capture, but for the input
@@ -828,13 +830,14 @@ export interface TaskRunnerOptions {
     autoEnvVars?: boolean;
 
     /**
-     * Enable auto-fingerprinting mode (Vite Task-style).
+     * Enable auto-fingerprinting mode.
      * When enabled, the task runner automatically tracks which files
      * a task accesses during execution and uses that for cache invalidation
      * instead of requiring manual input configuration.
      *
-     * Falls back to explicit inputs (Nx-style) when file tracking
-     * is not supported on the current platform.
+     * When the tracker observes no workspace access for a run, that run is
+     * not cached (see {@link TaskResult.emptyFingerprint}). It does not fall
+     * back to declared inputs.
      *
      * This is the workspace-wide switch. To opt a single target into
      * traced hashing without flipping it for the whole graph, set
