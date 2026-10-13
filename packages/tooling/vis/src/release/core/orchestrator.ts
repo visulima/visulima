@@ -14,7 +14,7 @@
  */
 
 import { unlink, writeFile } from "node:fs/promises";
-import { dirname, resolve, sep } from "node:path";
+import { resolve } from "node:path";
 
 import semver from "semver";
 
@@ -25,14 +25,8 @@ import { applyReleasePlan } from "./apply-release-plan";
 import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
-import type { DartProject } from "./dart-projects";
 import { DependencyGraph } from "./dep-graph";
-import type { GemProject } from "./gem-projects";
-import type { GoProject } from "./go-projects";
-import type { GradleProject } from "./gradle-projects";
-import type { HexProject } from "./hex-projects";
-import type { MavenProject } from "./maven-projects";
-import type { NuGetProject } from "./nuget-projects";
+import { ecosystemPerPackage, isDiscoveryEnabled, RELEASE_ECOSYSTEMS, RELEASE_PLAN_ORDER } from "./ecosystems";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
 import { collectContributors, expandReleaseNoteTemplate } from "./release-note-template";
@@ -41,51 +35,14 @@ import { createShellRunner } from "./shell-runner";
 import type { VersionActions } from "./version-actions/interface";
 import { createVersionActions } from "./version-actions/registry";
 import { discoverPackages, resolveVersionActionsId } from "./workspace";
-import type { ZigProject } from "./zig-projects";
 
-/**
- * True when `path` is a `version.rb` under a `lib/` tree: `lib/` starts the path or
- * follows a `/`, and at least one character sits between it and `/version.rb`.
- * Linear in the path length. The regex it replaces, `(?:^|\/)lib\/.+\/version\.rb$`,
- * backtracks polynomially on long runs of `/lib/`.
- */
-export const isGemVersionRbPath = (path: string): boolean => {
-    const suffix = "/version.rb";
-
-    if (!path.endsWith(suffix)) {
-        return false;
-    }
-
-    const end = path.length - suffix.length;
-    let libStart: number;
-
-    if (path.startsWith("lib/")) {
-        libStart = 0;
-    } else {
-        const found = path.indexOf("/lib/");
-
-        if (found === -1) {
-            return false;
-        }
-
-        libStart = found + 1;
-    }
-
-    // The earliest `lib/` leaves the longest middle part, so checking it is enough.
-    // `.` in the original regex does not match line terminators, so exclude those too.
-    const middle = path.slice(libStart + "lib/".length, end);
-
-    return middle.length > 0 && !/[\n\r\u2028\u2029]/.test(middle);
-};
+export { isGemVersionRbPath } from "./ecosystems";
 
 export interface OrchestratorContext {
     branch?: string;
     channel?: { mode: "auto-publish" | "version-pr"; prerelease?: string; tag: string };
     config: VisReleaseConfig;
     cwd: string;
-    /** Dart packages discovered under `release.dart.discover` (empty otherwise); the Dart plan reads their owners from here. */
-    dartProjects?: DartProject[];
-
     depGraph: DependencyGraph;
 
     /**
@@ -98,22 +55,9 @@ export interface OrchestratorContext {
      * `bootstrap-sha` knob.
      */
     firstRelease: boolean;
-    /** Gems discovered under `release.gem.discover` (empty otherwise); the gem plan reads their owners from here. */
-    gemProjects?: GemProject[];
-    /** Go modules discovered under `release.go.discover` (empty otherwise); the Go plan checks their module paths against the releases. */
-    goProjects?: GoProject[];
-    /** Gradle modules discovered under `release.gradle.discover` (empty otherwise); the Gradle plan reads their owners from here. */
-    gradleProjects?: GradleProject[];
-    /** Hex packages discovered under `release.hex.discover` (empty otherwise); the Hex plan reads their owners from here. */
-    hexProjects?: HexProject[];
-    /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
-    mavenProjects?: MavenProject[];
-    /** NuGet projects discovered under `release.nuget.discover` (empty otherwise); the NuGet plan reads their owners from here. */
-    nugetProjects?: NuGetProject[];
     packages: WorkspacePackage[];
     perPackageConfig: Map<string, PerPackageReleaseConfig>;
     plan: ReleasePlan;
-
     pm: PackageManagerAdapter;
 
     /**
@@ -126,8 +70,8 @@ export interface OrchestratorContext {
      */
     preMode?: import("./pre-mode").PreModeFile;
 
-    /** Zig packages discovered under `release.zig.discover` (empty otherwise); the Zig plan reads their owners from here. */
-    zigProjects?: ZigProject[];
+    /** Projects each discovered ecosystem produced, keyed by its id (`maven`, `gradle`, ...). An id is absent when its discover flag is off. */
+    projectsByEcosystem?: ReadonlyMap<string, ReadonlyArray<unknown>>;
 }
 
 export interface BuildContextOptions {
@@ -260,352 +204,34 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     const { perPackageConfig } = discovered;
     let { packages } = discovered;
 
-    // Cargo crates are release packages only when opted in, so repos with
-    // Rust code see no change by default. A crate that a JS package already
-    // releases (versionFiles / cargo() / cargoTomlPath) is claimed by that
-    // package and not discovered a second time.
-    let mavenProjects: MavenProject[] = [];
+    // Discovered ecosystems are added in table order. Each one claims directories from the packages and per-package config that
+    // earlier ones have already added, so the loop runs one entry at a time.
+    const projectsByEcosystem = new Map<string, ReadonlyArray<unknown>>();
 
-    let gradleProjects: GradleProject[] = [];
-
-    let goProjects: GoProject[] = [];
-    let zigProjects: ZigProject[] = [];
-    let dartProjects: DartProject[] = [];
-
-    let gemProjects: GemProject[] = [];
-    let nugetProjects: NuGetProject[] = [];
-
-    let hexProjects: HexProject[] = [];
-
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover || config.hex?.discover || config.nuget?.discover) {
-        const { cargoManifestPaths } = await import("./cargo-lock");
-        const claimedDirs = new Set<string>();
-
-        for (const pkg of packages) {
-            for (const manifestPath of cargoManifestPaths(pkg.dir, perPackageConfig.get(pkg.name) ?? {})) {
-                claimedDirs.add(dirname(manifestPath));
-            }
-        }
-
-        if (config.cargo?.discover) {
-            const { discoverCargoCrates } = await import("./cargo-crates");
-            const crates = await discoverCargoCrates({ claimedDirs, cwd });
-
-            for (const crate of crates) {
-                const explicit = config.packages?.[crate.name] ?? {};
-
-                // `publish = false` keeps the private actions. Forcing `cargo` there
-                // would run `cargo publish` for a crate that must never be published.
-                perPackageConfig.set(crate.name, {
-                    managed: true,
-                    ...(crate.private ? {} : { versionActions: "cargo" }),
-                    ...explicit,
-                });
+    if (RELEASE_ECOSYSTEMS.some((eco) => isDiscoveryEnabled(config, eco))) {
+        for (const eco of RELEASE_ECOSYSTEMS) {
+            if (!isDiscoveryEnabled(config, eco)) {
+                continue;
             }
 
-            packages = [...packages, ...crates];
-        }
-
-        if (config.python?.discover) {
-            const { discoverPythonProjects } = await import("./python-projects");
-
-            // A JS package that releases a Python project (the pyproject() preset or
-            // versionActions "python") claims that project's directory.
-            const pythonClaimedDirs = new Set<string>();
+            const claimedDirs = new Set<string>();
 
             for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "python" || perPkg.pythonProjectDir !== undefined) {
-                    pythonClaimedDirs.add(resolve(pkg.dir, perPkg.pythonProjectDir ?? "."));
+                for (const dir of eco.claimedDirs(pkg, perPackageConfig.get(pkg.name) ?? {}, cwd)) {
+                    claimedDirs.add(dir);
                 }
             }
 
-            const projects = await discoverPythonProjects({ claimedDirs: pythonClaimedDirs, cwd });
+            const projects = await eco.discover({ claimedDirs, cwd });
 
             for (const project of projects) {
-                const explicit = config.packages?.[project.name] ?? {};
+                const { name } = eco.toPackage(project);
 
-                perPackageConfig.set(project.name, {
-                    managed: true,
-                    ...(project.private ? {} : { versionActions: "python" }),
-                    ...explicit,
-                });
+                perPackageConfig.set(name, { ...ecosystemPerPackage(eco, project, cwd), ...config.packages?.[name] });
             }
 
-            packages = [...packages, ...projects];
-        }
-
-        if (config.maven?.discover) {
-            const { discoverMavenProjects } = await import("./maven-projects");
-            // A module a JS package releases through its pom (`versionActions: "maven"`,
-            // `pomPath`, or an `extraFiles` rule on a pom.xml) is that package's, not ours.
-            // Its own children are still discovered.
-            const claimedPomDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-                const pomPaths = [
-                    ...(perPkg.versionActions === "maven" || perPkg.pomPath !== undefined ? [perPkg.pomPath ?? "pom.xml"] : []),
-                    ...(perPkg.extraFiles ?? []).map((rule) => rule.path).filter((path) => path.endsWith("pom.xml")),
-                ];
-
-                for (const pomPath of pomPaths) {
-                    claimedPomDirs.add(dirname(resolve(pkg.dir, pomPath)));
-                }
-            }
-
-            mavenProjects = await discoverMavenProjects({ claimedDirs: claimedPomDirs, cwd });
-
-            for (const project of mavenProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "maven", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...mavenProjects.map((project) => project.package)];
-        }
-
-        if (config.gradle?.discover) {
-            const { discoverGradleProjects } = await import("./gradle-projects");
-            // A JS package that releases a Gradle module (versionActions "gradle") claims its directory.
-            const gradleClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "gradle") {
-                    gradleClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                // A JS package that writes a Gradle file (gradleProperties(), or an extraFiles rule) owns that module.
-                for (const rule of perPkg.extraFiles ?? []) {
-                    if (/(?:^|\/)(?:build\.gradle(?:\.kts)?|gradle\.properties)$/.test(rule.path)) {
-                        gradleClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
-                    }
-                }
-            }
-
-            gradleProjects = await discoverGradleProjects({ claimedDirs: gradleClaimedDirs, cwd });
-
-            for (const project of gradleProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "gradle", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...gradleProjects.map((project) => project.package)];
-        }
-
-        if (config.composer?.discover) {
-            const { discoverComposerProjects } = await import("./composer-projects");
-            // A JS package that releases a Composer package (versionActions "composer") claims its directory.
-            const composerClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                if (perPackageConfig.get(pkg.name)?.versionActions === "composer") {
-                    composerClaimedDirs.add(resolve(pkg.dir));
-                }
-            }
-
-            const composerProjects = await discoverComposerProjects({ claimedDirs: composerClaimedDirs, cwd });
-
-            for (const project of composerProjects) {
-                perPackageConfig.set(project.name, { ...project.perPackage, ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...composerProjects.map((project) => project.package)];
-        }
-
-        if (config.go?.discover) {
-            const { discoverGoProjects } = await import("./go-projects");
-            // A JS package that releases a Go module (versionActions "go") claims its directory.
-            const goClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                if (perPackageConfig.get(pkg.name)?.versionActions === "go") {
-                    goClaimedDirs.add(resolve(pkg.dir));
-                }
-            }
-
-            goProjects = await discoverGoProjects({ claimedDirs: goClaimedDirs, cwd });
-
-            for (const project of goProjects) {
-                perPackageConfig.set(project.name, { ...project.perPackage, ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...goProjects.map((project) => project.package)];
-        }
-
-        if (config.swift?.discover) {
-            const { discoverSwiftPackages } = await import("./swift-projects");
-            // A JS package that releases a Swift package (versionActions "swift") claims its directory.
-            const swiftClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                // A JS package (and everything under it) belongs to that package, except the workspace root.
-                if (pkg.ecosystem === undefined && resolve(pkg.dir) !== resolve(cwd)) {
-                    swiftClaimedDirs.add(resolve(pkg.dir));
-                }
-            }
-
-            const swiftProjects = await discoverSwiftPackages({ claimedDirs: swiftClaimedDirs, cwd });
-
-            for (const { package: pkg } of swiftProjects) {
-                // SwiftPM resolves a package from the manifest at the root of its repository, and reads its version from a bare
-                // semantic-version tag. Only the root package can use that tag; a nested one keeps the workspace tag pattern.
-                const bareTag = resolve(pkg.dir) === resolve(cwd) ? { releaseTagPattern: "{version}" } : {};
-
-                perPackageConfig.set(pkg.name, { currentVersionResolver: "git-tag", managed: true, versionActions: "swift", ...bareTag, ...config.packages?.[pkg.name] });
-            }
-
-            packages = [...packages, ...swiftProjects.map((project) => project.package)];
-        }
-
-        if (config.gem?.discover) {
-            const { discoverGemProjects } = await import("./gem-projects");
-            // A JS package that releases a gem (versionActions "gem") or writes its gemspec (an extraFiles rule) claims its directory.
-            const gemClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "gem") {
-                    gemClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                for (const rule of perPkg.extraFiles ?? []) {
-                    const target = resolve(pkg.dir, rule.path);
-
-                    if (/\.gemspec$/.test(rule.path)) {
-                        gemClaimedDirs.add(dirname(target));
-                    } else if (isGemVersionRbPath(rule.path)) {
-                        // The gem's directory is the one above its lib/ tree.
-                        const libIndex = target.lastIndexOf(`${sep}lib${sep}`);
-
-                        if (libIndex !== -1) {
-                            gemClaimedDirs.add(target.slice(0, libIndex));
-                        }
-                    }
-                }
-            }
-
-            gemProjects = await discoverGemProjects({ claimedDirs: gemClaimedDirs, cwd });
-
-            for (const project of gemProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "gem", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...gemProjects.map((project) => project.package)];
-        }
-
-        if (config.hex?.discover) {
-            const { discoverHexProjects } = await import("./hex-projects");
-            // A JS package that releases a Hex package (versionActions "hex") or writes its mix.exs (an extraFiles rule) claims its directory.
-            const hexClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "hex") {
-                    hexClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                for (const rule of perPkg.extraFiles ?? []) {
-                    if (/(?:^|\/)mix\.exs$/.test(rule.path)) {
-                        hexClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
-                    }
-                }
-            }
-
-            hexProjects = await discoverHexProjects({ claimedDirs: hexClaimedDirs, cwd });
-
-            for (const project of hexProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "hex", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...hexProjects.map((project) => project.package)];
-        }
-
-        if (config.nuget?.discover) {
-            const { discoverNuGetProjects } = await import("./nuget-projects");
-            // A JS package that releases a NuGet project (versionActions "nuget") or writes its project file or
-            // Directory.Build.props (an extraFiles rule) claims that directory.
-            const nugetClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "nuget") {
-                    nugetClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                for (const rule of perPkg.extraFiles ?? []) {
-                    if (/\.(?:cs|fs)proj$|(?:^|\/)Directory\.Build\.props$/.test(rule.path)) {
-                        nugetClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
-                    }
-                }
-            }
-
-            nugetProjects = await discoverNuGetProjects({ claimedDirs: nugetClaimedDirs, cwd });
-
-            for (const project of nugetProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "nuget", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...nugetProjects.map((project) => project.package)];
-        }
-
-        if (config.zig?.discover) {
-            const { discoverZigProjects } = await import("./zig-projects");
-            // A JS package that releases a Zig package (versionActions "zig") or writes its build.zig.zon (an extraFiles rule) claims its directory.
-            const zigClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "zig") {
-                    zigClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                for (const rule of perPkg.extraFiles ?? []) {
-                    if (/(?:^|\/)build\.zig\.zon$/.test(rule.path)) {
-                        zigClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
-                    }
-                }
-            }
-
-            zigProjects = await discoverZigProjects({ claimedDirs: zigClaimedDirs, cwd });
-
-            for (const project of zigProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "zig", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...zigProjects.map((project) => project.package)];
-        }
-
-        if (config.dart?.discover) {
-            const { discoverDartProjects } = await import("./dart-projects");
-            // A JS package that releases a Dart package (versionActions "dart") or writes its pubspec.yaml (an extraFiles rule) claims its directory.
-            const dartClaimedDirs = new Set<string>();
-
-            for (const pkg of packages) {
-                const perPkg = perPackageConfig.get(pkg.name) ?? {};
-
-                if (perPkg.versionActions === "dart") {
-                    dartClaimedDirs.add(resolve(pkg.dir));
-                }
-
-                for (const rule of perPkg.extraFiles ?? []) {
-                    if (/(?:^|\/)pubspec\.yaml$/.test(rule.path)) {
-                        dartClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
-                    }
-                }
-            }
-
-            dartProjects = discoverDartProjects({ claimedDirs: dartClaimedDirs, cwd });
-
-            for (const project of dartProjects) {
-                perPackageConfig.set(project.name, { managed: true, versionActions: "dart", ...config.packages?.[project.name] });
-            }
-
-            packages = [...packages, ...dartProjects.map((project) => project.package)];
+            packages = [...packages, ...projects.map((project) => eco.toPackage(project))];
+            projectsByEcosystem.set(eco.id, projects);
         }
 
         // Discovered modules are named by their own coordinates (bare `core`, `group:artifact`, …), so a
@@ -823,15 +449,8 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         channel: resolved ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag } : undefined,
         config,
         cwd,
-        dartProjects,
         depGraph,
         firstRelease,
-        gemProjects,
-        goProjects,
-        gradleProjects,
-        hexProjects,
-        mavenProjects,
-        nugetProjects,
         packages,
         perPackageConfig,
         plan,
@@ -839,7 +458,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         // M9: snapshot pre-mode here so applyContext doesn't race with a
         // concurrent `pre exit` between context-build and apply.
         preMode,
-        zigProjects,
+        projectsByEcosystem,
     };
 };
 
@@ -1244,146 +863,25 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             extraFileWarnings.push(...cargo.warnings);
         }
 
-        const pythonReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
+        // Cargo planned above: its release filter also covers JS packages that claim a Cargo manifest. The rest run in plan order.
+        for (const eco of RELEASE_PLAN_ORDER) {
+            const releases = context.plan.releases.flatMap((release) => {
+                const pkg = context.depGraph.getPackage(release.name);
 
-            return pkg?.ecosystem === "python" ? [{ manifestPath: pkg.manifestPath, name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (pythonReleases.length > 0) {
-            const { planPythonWorkspace } = await import("./python-plan");
-            const python = await planPythonWorkspace({
-                cwd: context.cwd,
-                dependents: context.packages
-                    .filter((pkg) => pkg.ecosystem === "python")
-                    .map((pkg) => { return { dependencies: pkg.manifest.dependencies ?? {}, name: pkg.name }; }),
-                pending,
-                releases: pythonReleases,
+                return pkg?.ecosystem === eco.id ? [{ name: release.name, newVersion: release.newVersion }] : [];
             });
 
-            for (const path of python.touched) {
+            if (releases.length === 0 || eco.plan === undefined) {
+                continue;
+            }
+
+            const outcome = await eco.plan({ context, pending, projects: context.projectsByEcosystem?.get(eco.id) ?? [], releases });
+
+            for (const path of outcome.touched) {
                 touched.add(path);
             }
 
-            extraFileWarnings.push(...python.warnings);
-        }
-
-        const mavenReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "maven" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (mavenReleases.length > 0) {
-            const { planMavenWorkspace } = await import("./maven-plan");
-            const mavenTouched = await planMavenWorkspace({ pending, projects: context.mavenProjects ?? [], releases: mavenReleases });
-
-            for (const path of mavenTouched) {
-                touched.add(path);
-            }
-        }
-
-        const goReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "go" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (goReleases.length > 0) {
-            // Go has no version file to write. The plan only refuses a major that its module path cannot carry.
-            const { planGoWorkspace } = await import("./go-plan");
-
-            planGoWorkspace({ projects: context.goProjects ?? [], releases: goReleases });
-        }
-
-        const gradleReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "gradle" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (gradleReleases.length > 0) {
-            const { planGradleWorkspace } = await import("./gradle-plan");
-            const gradleTouched = await planGradleWorkspace({ pending, projects: context.gradleProjects ?? [], releases: gradleReleases });
-
-            for (const path of gradleTouched) {
-                touched.add(path);
-            }
-        }
-
-        const gemReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "gem" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (gemReleases.length > 0) {
-            const { planGemWorkspace } = await import("./gem-plan");
-            const gemTouched = await planGemWorkspace({ pending, projects: context.gemProjects ?? [], releases: gemReleases });
-
-            for (const path of gemTouched) {
-                touched.add(path);
-            }
-        }
-
-        const hexReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "hex" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (hexReleases.length > 0) {
-            const { planHexWorkspace } = await import("./hex-plan");
-            const hexTouched = await planHexWorkspace({ pending, projects: context.hexProjects ?? [], releases: hexReleases });
-
-            for (const path of hexTouched) {
-                touched.add(path);
-            }
-        }
-
-        const nugetReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "nuget" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (nugetReleases.length > 0) {
-            const { planNuGetWorkspace } = await import("./nuget-plan");
-            const nugetTouched = await planNuGetWorkspace({ pending, projects: context.nugetProjects ?? [], releases: nugetReleases });
-
-            for (const path of nugetTouched) {
-                touched.add(path);
-            }
-        }
-
-        const zigReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "zig" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (zigReleases.length > 0) {
-            const { planZigWorkspace } = await import("./zig-plan");
-            const zigTouched = await planZigWorkspace({ pending, projects: context.zigProjects ?? [], releases: zigReleases });
-
-            for (const path of zigTouched) {
-                touched.add(path);
-            }
-        }
-
-        const dartReleases = context.plan.releases.flatMap((release) => {
-            const pkg = context.depGraph.getPackage(release.name);
-
-            return pkg?.ecosystem === "dart" ? [{ name: release.name, newVersion: release.newVersion }] : [];
-        });
-
-        if (dartReleases.length > 0) {
-            const { planDartWorkspace } = await import("./dart-plan");
-            const dartTouched = await planDartWorkspace({ pending, projects: context.dartProjects ?? [], releases: dartReleases });
-
-            for (const path of dartTouched) {
-                touched.add(path);
-            }
+            extraFileWarnings.push(...outcome.warnings);
         }
 
         for (const path of touched) {
