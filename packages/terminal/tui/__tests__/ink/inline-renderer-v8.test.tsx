@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign, no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group, regexp/no-obscure-range -- the VT model mutates its screen and parses control bytes by design */
 import { describe, expect, it } from "vitest";
 
+import { Box, Cursor, Text } from "../../src/components/index";
+import { render } from "../../src/ink/index";
 import logUpdate from "../../src/ink/log-update";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -286,6 +288,8 @@ describe("inline renderer blank rows at the bottom of the viewport", () => {
 
 const CLEAR_RESIZE_ROWS = 12;
 
+const inkScreen = (stdout: ReturnType<typeof createStdout>, rows = CLEAR_RESIZE_ROWS): Screen => replay(stdout.getWrites(), rows);
+
 describe("inline renderer: cursor placement", () => {
     it("places the cursor on the last line when the frame has no trailing newline", () => {
         expect.assertions(2);
@@ -300,5 +304,49 @@ describe("inline renderer: cursor placement", () => {
 
         expect(screen.cursorY).toBe(1);
         expect(screen.cursorX).toBe(1);
+    });
+});
+
+describe("inline renderer: cursor left inside the frame on exit", () => {
+    it("moves the cursor below the frame when done() runs with the cursor inside it", () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+        const render = logUpdate.create(stdout, { showCursor: true });
+
+        render.setCursorPosition({ x: 0, y: 0 });
+        render("A\nB\nC\n");
+        render.done();
+        stdout.write("$ ");
+
+        const screen = replay(stdout.getWrites(), CLEAR_RESIZE_ROWS);
+
+        expect(visibleRows(screen).slice(0, 5)).toEqual(["A", "B", "C", "$", ""]);
+    });
+
+    it("leaves the shell prompt below the frame after unmount", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const { unmount, waitUntilRenderFlush } = render(
+            <Box flexDirection="column">
+                <Text>{"> ab"}</Text>
+                <Cursor />
+            </Box>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        unmount();
+
+        await waitUntilRenderFlush();
+
+        stdout.write("$ ");
+
+        const screen = inkScreen(stdout);
+
+        expect(visibleRows(screen).slice(0, 2)).toEqual(["> ab", "$"]);
     });
 });

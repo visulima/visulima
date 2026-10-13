@@ -4,7 +4,7 @@ import type { Writable } from "node:stream";
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
 import type { CursorPosition, CursorShape } from "./cursor-helpers";
-import { buildCursorOnlySequence, buildCursorShapeSequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
+import { buildCursorOnlySequence, buildCursorShapeSequence, buildCursorSuffix, buildReturnToBottom, buildReturnToBottomPrefix, cursorPositionChanged } from "./cursor-helpers";
 
 export type { CursorPosition, CursorShape } from "./cursor-helpers";
 
@@ -318,6 +318,14 @@ const createLogUpdate = (stream: Writable, { showCursor = false }: { showCursor?
     };
 
     render.done = () => {
+        // A <Cursor> can leave the terminal cursor inside the frame. Move it back below the output
+        // first, so whatever is printed next does not overwrite the frame.
+        const returnToBottom = buildReturnToBottom(previousLines.length, previousCursorPosition);
+
+        if (returnToBottom !== "") {
+            stream.write(returnToBottom);
+        }
+
         forgetFrame();
 
         // Restore the terminal's user-configured shape before handing the
