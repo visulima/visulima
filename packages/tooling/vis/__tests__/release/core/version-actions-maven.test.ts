@@ -504,8 +504,22 @@ describe("mavenVersionActions.publish", () => {
         const actions = new MavenVersionActions();
         const result = await actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner: { run } }));
 
-        expect(run).toHaveBeenCalledExactlyOnceWith("mvn", ["-B", "-f", join(pkgDir, "pom.xml"), "deploy"], { cwd: pkgDir, silent: false });
+        expect(run).toHaveBeenCalledExactlyOnceWith("mvn", ["-B", "-N", "-f", join(pkgDir, "pom.xml"), "deploy"], { cwd: pkgDir, silent: false });
         expect(result).toMatchObject({ published: true });
+    });
+
+    it("passes -N so a parent pom with <modules> deploys only its own pom", async () => {
+        expect.hasAssertions();
+
+        const run = vi.fn(async () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        const actions = new MavenVersionActions();
+
+        await actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir), runner: { run } }));
+
+        const argv = run.mock.calls[0]?.[1] as string[];
+
+        expect(argv).toContain("-N");
+        expect(argv.indexOf("-N")).toBeLessThan(argv.indexOf("deploy"));
     });
 
     it("does not run mvn in dryRun mode", async () => {

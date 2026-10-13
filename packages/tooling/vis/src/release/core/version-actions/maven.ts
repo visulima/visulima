@@ -30,7 +30,7 @@
  *       5. Trigger publish (auto-publish in `AUTOMATIC` mode, manual in
  *          `USER_MANAGED` mode)
  *
- *     Publish does not call this API. `publish()` runs `mvn -B -f &lt;pom> deploy`
+ *     Publish does not call this API. `publish()` runs `mvn -B -N -f &lt;pom> deploy`
  *     through the package manager's argv runner, and the operator's pom
  *     supplies the deploy target, for example a configured Central Portal
  *     publishing plugin in the operator's
@@ -332,7 +332,7 @@ export class MavenVersionActions extends VersionActions {
     }
 
     /**
-     * Deploys one module with `mvn -B -f &lt;pom> deploy`. A failure throws
+     * Deploys one module with `mvn -B -N -f &lt;pom> deploy`. A failure throws
      * `PUBLISH_FAILED` naming the resolved `groupId:artifactId` and pom.
      * If the pom can't be read or parsed, the label falls back to the
      * package name.
@@ -358,14 +358,17 @@ export class MavenVersionActions extends VersionActions {
 
         if (context.dryRun) {
             return {
-                output: `[dry-run / maven] would run mvn -B -f ${pomPath} deploy for ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel})`,
+                output: `[dry-run / maven] would run mvn -B -N -f ${pomPath} deploy for ${context.pkg.name}@${context.release.newVersion} (${coordinateLabel})`,
                 published: true,
             };
         }
 
         // argv form, no shell. Credentials come from ~/.m2/settings.xml, which
         // Maven reads itself; the module's pom supplies the deploy target.
-        const result = await context.pm.runner.run("mvn", ["-B", "-f", pomPath, "deploy"], { cwd: context.pkg.dir, silent: false });
+        // `-N` (non-recursive) keeps the deploy to this pom: a parent pom with
+        // `<modules>` would otherwise deploy every child, colliding with each
+        // child's own publish.
+        const result = await context.pm.runner.run("mvn", ["-B", "-N", "-f", pomPath, "deploy"], { cwd: context.pkg.dir, silent: false });
 
         if (result.exitCode !== 0) {
             throw new VisReleaseError({
