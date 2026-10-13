@@ -1,3 +1,9 @@
+## @visulima/fs [6.1.0](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.29...@visulima/fs@6.1.0) (2026-10-13)
+
+### Features
+
+* **vis:** release, task, audit and SBOM support for all languages ([#954](https://github.com/visulima/visulima/issues/954)) ([3bbd816](https://github.com/visulima/visulima/commit/3bbd816777b409d841bb6a2501ebc96db9bf0233)), closes [#947](https://github.com/visulima/visulima/issues/947)
+
 ## @visulima/fs [6.0.29](https://github.com/visulima/visulima/compare/@visulima/fs@6.0.28...@visulima/fs@6.0.29) (2026-10-07)
 
 ### Bug Fixes
