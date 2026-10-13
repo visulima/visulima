@@ -11,6 +11,7 @@ import React from "react";
 import { coerce, compare, parse, rcompare } from "semver";
 
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
+import { advisoryKey } from "../security/advisories";
 import type { SecurityProvider } from "../security/provider";
 import { fetchAllReports } from "../security/registry";
 import type { AcceptedRisk, PackageReportData } from "../security/socket-security";
@@ -1291,7 +1292,7 @@ const fetchVulnerabilities = async (
 
             if (vulns && vulns.length > 0) {
                 result.set(
-                    packageInfo.name,
+                    advisoryKey(packageInfo.name, packageInfo.version),
                     vulns.map((vuln) => mapOsvVuln(vuln)),
                 );
             }
@@ -1654,12 +1655,13 @@ const enrichWithSecurity = async (
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
+    // One query per name and version: a package locked at two versions gets both checked.
     const packagesToScan = [
         ...new Map(
             entries.map((entry) => {
-                const parsed = parseVersion(entry.range);
+                const version = formatVersionString(parseVersion(entry.range));
 
-                return [entry.packageName, { name: entry.packageName, version: formatVersionString(parsed) }];
+                return [advisoryKey(entry.packageName, version), { name: entry.packageName, version }];
             }),
         ).values(),
     ].filter((p) => p.version);
@@ -1673,7 +1675,8 @@ const enrichWithSecurity = async (
     const [vulnMap, socketReports] = await Promise.all([fetchVulnerabilities(packagesToScan), socketPromise]);
 
     for (const entry of outdated) {
-        const vulns = vulnMap.get(entry.packageName);
+        // Same version derivation as the query above, so the key matches what was looked up.
+        const vulns = vulnMap.get(advisoryKey(entry.packageName, formatVersionString(parseVersion(entry.currentRange))));
 
         if (vulns && vulns.length > 0) {
             entry.vulnerabilities = vulns;
