@@ -148,4 +148,46 @@ describe("trace-mode cache explanations", () => {
 
         expect(logger.lines.join("\n")).not.toContain("tracked files");
     });
+
+    it("cache why says which key a declared-fallback run was stored under", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, [traceTask({ hashSource: "declared-fallback" })], "run-5");
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(logger.lines.join("\n")).toContain("key:     declared-fallback");
+    });
+
+    it("cache why JSON carries hashSource", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, [traceTask({ hashSource: "declared-fallback" })], "run-6");
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "json", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        const payload = JSON.parse(stdoutSpy.mock.calls.map((call) => String(call[0])).join("")) as { task: { hashSource: unknown } };
+
+        expect(payload.task.hashSource).toBe("declared-fallback");
+    });
+
+    it("cache hash says the entry is keyed on the declared inputs for a declared-fallback run", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(
+            workspaceRoot,
+            [traceTask({ hashDetails: { command: "build", implicitDeps: {}, nodes: { "packages/app/src/a.ts": "h" }, runtime: {} }, hashSource: "declared-fallback" })],
+            "run-7",
+        );
+
+        const logger = createMockLogger();
+
+        await runHash("app:build", { cacheDirectories: [cacheDirectory], format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(logger.lines.join("\n")).toContain("key:     declared-fallback");
+    });
 });

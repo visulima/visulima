@@ -625,6 +625,7 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
                         cacheStatus: task.cacheStatus,
                         hash: task.hash ?? null,
                         hashDetails: task.hashDetails ?? null,
+                        hashSource: task.hashSource ?? null,
                         taskId: task.taskId,
                     },
                 },
@@ -640,6 +641,10 @@ export const runWhy = async (taskId: string, options: RunWhyOptions, logger: Con
     logger.info("");
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
+
+    if (task.hashSource === "declared-fallback") {
+        logger.info("  key:     declared-fallback (tracker observed no workspace access; keyed on declared inputs)");
+    }
 
     if (previousTask) {
         logger.info(`  prev:    ${previousTask.hash ?? "(none)"}  [run ${previousSummary?.id ?? "?"}]`);
@@ -813,6 +818,7 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
                     cacheStatus: task.cacheStatus,
                     hash: task.hash ?? null,
                     hashDetails: task.hashDetails ?? null,
+                    hashSource: task.hashSource ?? null,
                     runId: summary.id,
                     taskId: task.taskId,
                     trackedFingerprint: trackedFingerprint ?? null,
@@ -829,6 +835,10 @@ export const runHash = async (taskId: string, options: RunHashOptions, logger: C
     logger.info("");
     logger.info(`  status:  ${task.cacheStatus}`);
     logger.info(`  hash:    ${task.hash ?? "(none)"}`);
+
+    if (task.hashSource === "declared-fallback") {
+        logger.info("  key:     declared-fallback (no files were tracked; the entry is keyed on the declared inputs below)");
+    }
 
     if (task.hashDetails) {
         logger.info("");

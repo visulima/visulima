@@ -2069,7 +2069,7 @@
                 },
                 "autoFingerprint": {
                     "type": "boolean",
-                    "description": "Enable auto-fingerprinting mode. When enabled, the task runner automatically tracks which files a task accesses during execution and uses that for cache invalidation instead of requiring manual input configuration.\n\nWhen the tracker observes no workspace access for a run, that run is not cached (see  {@link  TaskResult.emptyFingerprint } ). It does not fall back to declared inputs.\n\nThis is the workspace-wide switch. To opt a single target into traced hashing without flipping it for the whole graph, set  {@link  TargetConfiguration.hashMode }  to `\"trace\"` on that target instead.",
+                    "description": "Enable auto-fingerprinting mode. When enabled, the task runner automatically tracks which files a task accesses during execution and uses that for cache invalidation instead of requiring manual input configuration.\n\nWhen the tracker observes no workspace access for a run, the run is keyed on the declared hash if the target declares `inputs` (see  {@link  TaskResult.hashSource } ). Otherwise it is not cached (see  {@link  TaskResult.emptyFingerprint } ).\n\nThis is the workspace-wide switch. To opt a single target into traced hashing without flipping it for the whole graph, set  {@link  TargetConfiguration.hashMode }  to `\"trace\"` on that target instead.",
                     "default": false
                 },
                 "bail": {
