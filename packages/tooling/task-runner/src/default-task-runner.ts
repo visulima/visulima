@@ -5,6 +5,7 @@ import { createRemoteCacheBackend } from "./backends/factory";
 import { Cache } from "./cache";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
 import { IncrementalFileHasher } from "./incremental-hasher";
+import { splitCompoundTasks } from "./split-compound-tasks";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
@@ -250,9 +251,28 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         workspaceRoot,
     });
 
+    // Targets that opted into `splitCompound` become chained segment tasks
+    // here, before the scheduler and orchestrator read the graph. Idempotent:
+    // a graph the caller already split passes through unchanged.
+    const compoundGraph = splitCompoundTasks(taskGraph, {
+        autoFingerprint: options.autoFingerprint,
+        commandOf: (task) => {
+            const overridden = task.overrides["command"];
+
+            if (typeof overridden === "string") {
+                return overridden;
+            }
+
+            const project = projectGraph.nodes[task.target.project];
+
+            return project?.data.targets?.[task.target.target]?.command ?? options.targetDefaults?.[task.target.target]?.command;
+        },
+        onDiagnostic: options.onDiagnostic,
+    });
+
     // Pull `always: true` tasks out of the main graph — they run
     // sequentially in a finalisation phase, never block other tasks.
-    const { alwaysTasks, graph: scheduledGraph } = partitionAlwaysTasks(taskGraph);
+    const { alwaysTasks, graph: scheduledGraph } = partitionAlwaysTasks(compoundGraph);
 
     // Calculate max parallel
     const maxParallel = resolveParallel(options.parallel);

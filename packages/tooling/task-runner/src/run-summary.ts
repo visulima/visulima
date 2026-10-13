@@ -66,6 +66,8 @@ interface TaskSummary {
      * pass should still register as a flake observation).
      */
     retryAttempts: number | undefined;
+    /** Position in a `splitCompound` chain; absent for ordinary tasks. */
+    segment: { count: number; index: number } | undefined;
     /** Start time (ISO 8601) */
     startTime: string | undefined;
     /** The task target */
@@ -194,6 +196,7 @@ const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTim
             hashSource: result.hashSource,
             outputs: result.task.outputs,
             retryAttempts: result.retryAttempts,
+            segment: result.task.segment,
             startTime: result.startTime ? new Date(result.startTime).toISOString() : undefined,
             target: {
                 configuration: result.task.target.configuration,

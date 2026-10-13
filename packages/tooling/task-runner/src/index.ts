@@ -86,10 +86,11 @@ export { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputU
 export { buildEnhancedPath, collectNodeModulesBinDirs, withEnhancedPath } from "./path-utils";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
-
 // Run summary (--summarize and --last-details)
 export type { RunSummary, RunSummaryPathOptions, TaskSummary } from "./run-summary";
 export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
+export type { SplitCompoundOptions } from "./split-compound-tasks";
+export { splitCompoundTasks } from "./split-compound-tasks";
 
 // Task graph
 export { createTaskGraph, getTaskId, parseTaskId } from "./task-graph";

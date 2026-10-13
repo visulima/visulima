@@ -1,0 +1,104 @@
+import { describe, expect, it } from "vitest";
+
+import { splitCompoundTasks } from "../../src/split-compound-tasks";
+import type { Task, TaskGraph } from "../../src/types";
+
+const task = (id: string, command: string, overrides: Partial<Task> = {}): Task => {
+    return {
+        id,
+        outputs: [],
+        overrides: { command },
+        splitCompound: true,
+        target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
+        ...overrides,
+    };
+};
+
+const commandOf = (candidate: Task): string | undefined => candidate.overrides["command"] as string | undefined;
+
+describe(splitCompoundTasks, () => {
+    it("chains segments, moves dependencies to the first segment and dependents to the last", () => {
+        expect.assertions(4);
+
+        const graph: TaskGraph = {
+            dependencies: {
+                "app:build": ["lib:build"],
+                "app:test": ["app:build"],
+                "lib:build": [],
+            },
+            roots: ["app:test"],
+            tasks: {
+                "app:build": task("app:build", "a && b && c"),
+                "app:test": { ...task("app:test", "t"), splitCompound: undefined },
+                "lib:build": { ...task("lib:build", "l"), splitCompound: undefined },
+            },
+        };
+
+        const split = splitCompoundTasks(graph, { commandOf });
+
+        expect(split.dependencies["app:build#1"]).toStrictEqual(["lib:build"]);
+        expect(split.dependencies["app:build#2"]).toStrictEqual(["app:build#1"]);
+        expect(split.dependencies["app:build#3"]).toStrictEqual(["app:build#2"]);
+        expect(split.dependencies["app:test"]).toStrictEqual(["app:build#3"]);
+    });
+
+    it("does not mutate the input graph and is a no-op the second time", () => {
+        expect.assertions(3);
+
+        const graph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b") },
+        };
+
+        const split = splitCompoundTasks(graph, { commandOf });
+
+        expect(graph.tasks["app:build"]?.splitCompound).toBe(true);
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build#1", "app:build#2"]);
+        expect(splitCompoundTasks(split, { commandOf })).toBe(split);
+    });
+
+    it("refuses declared outputs and clears the flag with one diagnostic", () => {
+        expect.assertions(3);
+
+        const diagnostics: [string, string][] = [];
+        const graph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b", { outputs: ["dist/**"] }) },
+        };
+
+        const split = splitCompoundTasks(graph, { commandOf, onDiagnostic: (id, message) => diagnostics.push([id, message]) });
+
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build"]);
+        expect(split.tasks["app:build"]?.splitCompound).toBeUndefined();
+        expect(diagnostics).toHaveLength(1);
+    });
+
+    it("refuses a when condition and an always target", () => {
+        expect.assertions(2);
+
+        const whenGraph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b", { when: { branch: "main" } }) },
+        };
+        const alwaysGraph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b", { always: true }) },
+        };
+
+        expect(Object.keys(splitCompoundTasks(whenGraph, { commandOf }).tasks)).toStrictEqual(["app:build"]);
+        expect(Object.keys(splitCompoundTasks(alwaysGraph, { commandOf }).tasks)).toStrictEqual(["app:build"]);
+    });
+
+    it("leaves tasks without the flag untouched", () => {
+        expect.assertions(1);
+
+        const plain: Task = { ...task("app:build", "a && b"), splitCompound: undefined };
+        const graph: TaskGraph = { dependencies: { "app:build": [] }, roots: ["app:build"], tasks: { "app:build": plain } };
+
+        expect(splitCompoundTasks(graph, { commandOf })).toBe(graph);
+    });
+});

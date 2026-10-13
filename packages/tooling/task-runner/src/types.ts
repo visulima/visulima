@@ -156,6 +156,7 @@ export interface Task {
 
     /** Overrides/extra options passed to the task */
     overrides: Record<string, unknown>;
+
     /** Whether this task supports parallel execution */
     parallelism?: boolean;
 
@@ -164,7 +165,6 @@ export interface Task {
      * graph-derived heuristics. Defaults to `"normal"` when absent.
      */
     priority?: TaskPriority;
-
     /** The project root directory */
     projectRoot?: string;
 
@@ -177,6 +177,21 @@ export interface Task {
      * the flag and leaves the spawn decision to the executor.
      */
     pty?: boolean;
+
+    /**
+     * Position of a synthetic segment task produced by `splitCompound`:
+     * `index` is 1-based and `count` is the number of segments in the chain.
+     * Absent on ordinary tasks.
+     */
+    segment?: { count: number; index: number };
+
+    /**
+     * Set on a task that should be split into one chained task per
+     * top-level `&amp;&amp;` segment. Carried over from
+     * {@link TargetConfiguration.splitCompound}. `splitCompoundTasks` consumes
+     * it, so it is `undefined` on every task a runner executes.
+     */
+    splitCompound?: boolean;
 
     /** The target this task executes */
     target: TaskTarget;
@@ -561,6 +576,21 @@ export interface TargetConfiguration {
      * decides based on its own toggles.
      */
     pty?: boolean;
+
+    /**
+     * Split the target's command on top-level `&amp;&amp;` into one chained task per
+     * segment, each with its own cache key. Segment _n_ folds in the key of
+     * segment _n−1_, so changing a later segment re-runs only that segment and
+     * later ones, and a failing segment stops the chain.
+     *
+     * Opt-in and declared-mode only. The split is refused, with a diagnostic
+     * and the target run whole, when the command contains a construct the
+     * splitter does not model (`;`, `||`, subshells, `cd`, `export`, `VAR=…`
+     * prefixes, command substitution, …), when `hashMode` is `"trace"`, when
+     * the target declares `outputs`, when it has a `when` condition, or when
+     * it is `always`.
+     */
+    splitCompound?: boolean;
 
     /**
      * Env vars this target receives but keeps out of its cache key, as
