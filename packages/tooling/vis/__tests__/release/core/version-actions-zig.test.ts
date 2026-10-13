@@ -62,7 +62,7 @@ describe("zig version actions", () => {
         expect(spy.run).not.toHaveBeenCalled();
     });
 
-    it("skips when the release tag already exists", async () => {
+    it.skipIf(process.platform === "win32")("skips when the release tag already exists", async () => {
         expect.hasAssertions();
 
         const result = await new ZigVersionActions().publish(context({ runner: runner(true) }));
@@ -70,7 +70,7 @@ describe("zig version actions", () => {
         expect(result).toMatchObject({ alreadyPublished: true, published: false });
     });
 
-    it("publishes by leaving the tag to the release when none exists, without running a command", async () => {
+    it.skipIf(process.platform === "win32")("publishes by leaving the tag to the release when none exists, without running a command", async () => {
         expect.hasAssertions();
 
         const spy = runner(false);
@@ -81,7 +81,7 @@ describe("zig version actions", () => {
         expect(spy.run).toHaveBeenCalledWith("git", ["rev-parse", "--verify", "--quiet", "refs/tags/app@1.1.0"], expect.anything());
     });
 
-    it("renders the tag from releaseTagPattern when the package sets one", async () => {
+    it.skipIf(process.platform === "win32")("renders the tag from releaseTagPattern when the package sets one", async () => {
         expect.hasAssertions();
 
         const spy = runner(false);

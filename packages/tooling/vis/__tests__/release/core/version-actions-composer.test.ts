@@ -57,7 +57,8 @@ describe("composer version actions", () => {
         expect(result.output).toContain("would tag v1.1.0");
     });
 
-    it("skips a release whose tag already exists", async () => {
+    // The tag path is POSIX-only: publish refuses on win32 (see the refusal test below).
+    it.skipIf(process.platform === "win32")("skips a release whose tag already exists", async () => {
         expect.hasAssertions();
 
         const result = await new ComposerVersionActions().publish(context({ release: { name: "acme/tool", newVersion: "1.0.0", oldVersion: "0.9.0" } }));
@@ -65,13 +66,28 @@ describe("composer version actions", () => {
         expect(result).toMatchObject({ alreadyPublished: true, published: false });
     });
 
-    it("reports a free tag for the orchestrator to create", async () => {
+    it.skipIf(process.platform === "win32")("reports a free tag for the orchestrator to create", async () => {
         expect.hasAssertions();
 
         const result = await new ComposerVersionActions().publish(context());
 
         expect(result).toMatchObject({ published: true });
         expect(result.alreadyPublished).toBeUndefined();
+    });
+
+    it.skipIf(process.platform === "win32")("refuses on Windows after the dry run", async () => {
+        expect.hasAssertions();
+
+        const pub = context();
+        const original = Object.getOwnPropertyDescriptor(process, "platform")!;
+
+        Object.defineProperty(process, "platform", { value: "win32" });
+
+        try {
+            await expect(new ComposerVersionActions().publish(pub)).rejects.toMatchObject({ code: "CONFIG_INVALID" });
+        } finally {
+            Object.defineProperty(process, "platform", original);
+        }
     });
 
     it("reads no published version from the registry", async () => {

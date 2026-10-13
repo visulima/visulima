@@ -71,7 +71,11 @@ describe("zig projects", () => {
 
         try {
             writeFileSync(join(outside, "build.zig.zon"), zon("elsewhere", "3.0.0"));
-            write("build.zig.zon", zon("app", "1.0.0", `    .dependencies = .{ .outside = .{ .path = "${relative(cwd, outside)}" } },\n`));
+            // Zig string literals take no backslash escapes beyond the plain ones, so a Windows
+            // separator would break the manifest parse; forward slashes resolve on every platform.
+            const outsidePath = relative(cwd, outside).replaceAll("\\", "/");
+
+            write("build.zig.zon", zon("app", "1.0.0", `    .dependencies = .{ .outside = .{ .path = "${outsidePath}" } },\n`));
 
             await expect(namesOf()).resolves.toStrictEqual(["app"]);
         } finally {

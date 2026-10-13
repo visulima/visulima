@@ -61,7 +61,8 @@ describe("go version actions", () => {
         expect(result.output).toContain("would tag v1.1.0");
     });
 
-    it("skips a release whose tag already exists", async () => {
+    // The tag path is POSIX-only: publish refuses on win32 (see the refusal test below).
+    it.skipIf(process.platform === "win32")("skips a release whose tag already exists", async () => {
         expect.hasAssertions();
 
         const result = await new GoVersionActions().publish(context({ release: { name: "github.com/acme/tool", newVersion: "1.0.0", oldVersion: "1.0.0" } as never }));
@@ -70,7 +71,7 @@ describe("go version actions", () => {
         expect(result.published).toBe(false);
     });
 
-    it("reports a free tag as published without creating it", async () => {
+    it.skipIf(process.platform === "win32")("reports a free tag as published without creating it", async () => {
         expect.hasAssertions();
 
         const result = await new GoVersionActions().publish(context());
@@ -80,7 +81,7 @@ describe("go version actions", () => {
         expect(tags.trim()).toBe("v1.0.0");
     });
 
-    it("tags a subdirectory module with its prefixed pattern", async () => {
+    it.skipIf(process.platform === "win32")("tags a subdirectory module with its prefixed pattern", async () => {
         expect.hasAssertions();
 
         const result = await new GoVersionActions().publish(
@@ -89,5 +90,20 @@ describe("go version actions", () => {
 
         expect(result.published).toBe(true);
         expect(result.output).toContain("lib/core/v1.1.0");
+    });
+
+    it.skipIf(process.platform === "win32")("refuses on Windows after the dry run", async () => {
+        expect.hasAssertions();
+
+        const pub = context();
+        const original = Object.getOwnPropertyDescriptor(process, "platform")!;
+
+        Object.defineProperty(process, "platform", { value: "win32" });
+
+        try {
+            await expect(new GoVersionActions().publish(pub)).rejects.toMatchObject({ code: "CONFIG_INVALID" });
+        } finally {
+            Object.defineProperty(process, "platform", original);
+        }
     });
 });
