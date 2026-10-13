@@ -16,6 +16,7 @@ import { parse as parseYaml } from "@visulima/yaml";
 import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { cargoDetector } from "../inference/detectors/cargo";
+import { composerDetector } from "../inference/detectors/composer";
 import { dartDetector } from "../inference/detectors/dart";
 import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
@@ -37,6 +38,7 @@ import {
     readCargoPackageName,
     resolveCargoProjectDirectories,
 } from "./cargo-projects";
+import { resolveComposerProjectDirectories } from "./composer-projects";
 import { resolveDartProjectDirectories } from "./dart-projects";
 import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
@@ -235,6 +237,7 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[], isP
  * group is returned separately so callers know those have no package.json.
  */
 interface NonJsOptions {
+    composerProjects: boolean;
     dartProjects: boolean;
     goProjects: boolean;
     gradleProjects: boolean;
@@ -253,7 +256,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "dart" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
+    id: "cargo" | "composer" | "dart" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -321,6 +324,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "dart",
         readName: () => undefined,
         resolve: (workspaceRoot, _candidates, claimed) => resolveDartProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Composer packages are found by their composer.json under the root, not the workspace patterns.
+        detector: composerDetector,
+        enabled: (options) => options.composerProjects,
+        id: "composer",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveComposerProjectDirectories(workspaceRoot, claimed),
     },
 ];
 
@@ -1040,6 +1051,7 @@ const discoverWorkspace = (
     }
 
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        composerProjects: config.composer?.discover === true,
         dartProjects: config.dart?.discover === true,
         goProjects: config.go?.discover === true,
         gradleProjects: config.gradle?.discover === true,
@@ -1370,6 +1382,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
     // Overlay files are read for every candidate. They only apply to projects that
     // discoverWorkspace keeps, so reading them for Python directories is harmless.
     const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
+        composerProjects: true,
         dartProjects: true,
         goProjects: true,
         gradleProjects: true,

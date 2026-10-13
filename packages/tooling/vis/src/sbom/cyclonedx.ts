@@ -8,6 +8,7 @@ import { toXML } from "jstoxml";
 
 import { resolveFocusProjects } from "../util/docker";
 import { buildCargoSbomParts } from "./cargo";
+import { buildComposerSbomParts } from "./composer";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
@@ -496,17 +497,18 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const metadataRef = metadataComponent["bom-ref"];
     const filteredProjectComponents = metadataRef ? projectComponents.filter((component) => component["bom-ref"] !== metadataRef) : projectComponents;
 
-    // Cargo.lock and uv.lock components and edges, appended to the same BOM, limited to
+    // Cargo.lock, uv.lock and composer.lock components and edges, appended to the same BOM, limited to
     // what the selected projects reach. Empty without a lockfile.
     const lockOptions = { focusNames: focus && focus.length > 0 ? projectNames : undefined, includeDev };
     const cargo = buildCargoSbomParts(workspaceRoot, lockOptions);
     const python = buildPythonSbomParts(workspaceRoot, lockOptions);
+    const composer = buildComposerSbomParts(workspaceRoot, lockOptions);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],

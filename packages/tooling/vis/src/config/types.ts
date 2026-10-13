@@ -307,6 +307,12 @@ export interface VisConfig {
     codeowners?: CodeownersConfig;
 
     /**
+     * Composer packages as task projects. Off by default: a `composer.json` in a
+     * subdirectory gets validate and, when its scripts define them, test and lint targets.
+     */
+    composer?: { discover?: boolean };
+
+    /**
      * Project dependency constraints.
      * Enforced after building the project graph, before running tasks.
      */

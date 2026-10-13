@@ -66,7 +66,7 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // has its own Rust range matcher and lockfile reader; unknown values
 // (or ones whose matcher hasn't landed yet) get a non-fatal warning so
 // CI invocations stay stable as more ecosystems land.
-const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
+const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "composer", "crates.io", "go", "maven", "npm", "packagist", "pypi", "rubygems"]);
 
 // The online advisory catalog only covers npm. A non-npm `--ecosystem` run
 // online would skip that ecosystem silently, so it is rejected up front.

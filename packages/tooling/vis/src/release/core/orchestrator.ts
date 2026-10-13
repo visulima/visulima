@@ -228,7 +228,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     let zigProjects: ZigProject[] = [];
     let dartProjects: DartProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover) {
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -342,6 +342,26 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...gradleProjects.map((project) => project.package)];
+        }
+
+        if (config.composer?.discover) {
+            const { discoverComposerProjects } = await import("./composer-projects");
+            // A JS package that releases a Composer package (versionActions "composer") claims its directory.
+            const composerClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                if (perPackageConfig.get(pkg.name)?.versionActions === "composer") {
+                    composerClaimedDirs.add(resolve(pkg.dir));
+                }
+            }
+
+            const composerProjects = await discoverComposerProjects({ claimedDirs: composerClaimedDirs, cwd });
+
+            for (const project of composerProjects) {
+                perPackageConfig.set(project.name, { ...project.perPackage, ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...composerProjects.map((project) => project.package)];
         }
 
         if (config.go?.discover) {

@@ -9,22 +9,26 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
+import { composerVersionFromLock } from "../util/composer";
 import type { InstalledPackage } from "./dependency-scan";
 
 const ECOSYSTEM_LOCKFILES: Record<string, string[]> = {
     "crates.io": ["Cargo.lock"],
     Go: ["go.sum"],
     Maven: ["gradle.lockfile", "pom.xml"],
+    Packagist: ["composer.lock"],
     PyPI: ["uv.lock", "poetry.lock", "Pipfile.lock"],
     RubyGems: ["Gemfile.lock"],
 };
 
 const ECOSYSTEM_ALIASES: Record<string, string> = {
     cargo: "crates.io",
+    composer: "Packagist",
     "crates.io": "crates.io",
     go: "Go",
     maven: "Maven",
     npm: "npm",
+    packagist: "Packagist",
     pypi: "PyPI",
     rubygems: "RubyGems",
 };
@@ -182,6 +186,42 @@ const parseGradleLockfile = (content: string): InstalledPackage[] => {
     return entries;
 };
 
+/**
+ * `composer.lock`: the `packages` and `packages-dev` arrays, each entry with a `name` and
+ * `version`. The version is Composer's pretty version, which keeps the tag's `v`; the
+ * `v` is dropped so the version matches the bare numbers the advisory data uses.
+ */
+const parseComposerLock = (content: string): InstalledPackage[] => {
+    const entries: InstalledPackage[] = [];
+    let lock: Record<string, unknown>;
+
+    try {
+        lock = JSON.parse(content) as Record<string, unknown>;
+    } catch {
+        // A lockfile that does not parse yields no packages, the same as the other readers.
+        return entries;
+    }
+
+    for (const [key, isDev] of [
+        ["packages", false],
+        ["packages-dev", true],
+    ] as const) {
+        const list = lock[key];
+
+        if (!Array.isArray(list)) {
+            continue;
+        }
+
+        for (const item of list as { name?: unknown; version?: unknown }[]) {
+            if (typeof item.name === "string" && typeof item.version === "string") {
+                entries.push({ isDev, name: item.name, version: composerVersionFromLock(item.version) });
+            }
+        }
+    }
+
+    return entries;
+};
+
 const parseGoSum = (content: string): InstalledPackage[] => {
     const entries: InstalledPackage[] = [];
 
@@ -281,6 +321,10 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
         case "poetry.lock":
         case "uv.lock": {
             parsed = parseTomlPackages(content);
+            break;
+        }
+        case "composer.lock": {
+            parsed = parseComposerLock(content);
             break;
         }
         case "Gemfile.lock": {

@@ -945,3 +945,15 @@ export default defineConfig({
 ```
 
 With it on, the project is named by `[project].name`, and the Python detector infers `build` (`uv build`). It does not infer `test`: vis cannot tell whether a test runner is installed or declared, so declare the test command in `project.json` or `vis.task.ts`. Python files under the project are the cache inputs, so flat and `src` layouts both invalidate correctly. Turn the detector off with `inferTargets: { python: false }`.
+
+#### Composer packages
+
+A `composer.json` in a subdirectory is a task project only when you turn it on. The root `composer.json` is not one.
+
+```typescript
+export default defineConfig({
+    composer: { discover: true },
+});
+```
+
+With it on, the Composer detector infers `validate` (`composer validate --strict`). It infers `test` and `lint` only when `scripts.test` or `scripts.lint` exists in that `composer.json`. A `scripts.format` entry is not turned into a target, because it may rewrite files. Composer has no build step. The Composer tasks are not verified on Windows: they are POSIX only.

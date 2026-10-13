@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "dart" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "composer" | "dart" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1253,6 +1253,14 @@ export interface VisReleaseConfig {
     changesDir?: string;
     /** Per-channel routing config (semantic-release-style). */
     channels?: Record<string, ChannelConfig>;
+
+    /**
+     * Composer packages as release packages. Off by default. When on, the root
+     * `composer.json` with a `name` is a release package. The version is the
+     * highest `vX.Y.Z` git tag, and the release creates the next tag. Nested
+     * packages and a `"version"` key are refused.
+     */
+    composer?: { discover?: boolean };
 
     /**
      * Source of truth for "what is the current version of this package?",

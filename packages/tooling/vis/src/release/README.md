@@ -165,6 +165,17 @@ Opt-in. With `release: { gradle: { discover: true } }`, every module listed in `
 - Publishing runs `<root>/gradlew :<path>:publish` through the argv runner, with no shell, POSIX only. A version the Maven metadata already lists is skipped first (`mavenMetadataUrl` overrides the URL, `""` disables the check).
 - Gradle has no lockfile vis maintains, so nothing else is written.
 
+## Composer packages as release packages (`release.composer.discover`)
+
+Opt-in. With `release: { composer: { discover: true } }`, the root `composer.json` with a `name` (`vendor/package`) is a release package. Nothing else is discovered.
+
+- The version is the highest `vX.Y.Z` git tag, `0.0.0` without one. The tag pattern is `v{version}`. The release writes no file.
+- A `"version"` key fails the release with `CONFIG_INVALID`: Packagist ignores it and reads the tag.
+- A named `composer.json` in a subdirectory fails the release with `CONFIG_INVALID`: Packagist reads only the repository root.
+- Publish checks the tag locally (`alreadyPublished` skips it). The orchestrator creates and pushes the tag after every publish succeeds. Packagist is not queried.
+- POSIX only: publish refuses on Windows with `CONFIG_INVALID` after the dry run.
+- `composer.lock` feeds the audit (`Packagist`) and the SBOM graph (`pkg:composer/...` with `require` edges).
+
 ## Go modules as release packages (`release.go.discover`)
 
 Opt-in. With `release: { go: { discover: true } }`, every `use` entry of `go.work` (or the root `go.mod` without one) is a release package named by its module path. Version source: the highest git tag for the module. Full notes in `docs/guides/release.mdx`.

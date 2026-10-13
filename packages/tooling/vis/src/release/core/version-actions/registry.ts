@@ -14,6 +14,7 @@
  * the orchestrator or resolver does not create a circular dependency.
  */
 import { CargoVersionActions } from "./cargo";
+import { ComposerVersionActions } from "./composer";
 import { ContainerActions } from "./container";
 import { DartVersionActions } from "./dart";
 import { GoVersionActions } from "./go";
@@ -41,6 +42,9 @@ export const createVersionActions = (id: string): VersionActions => {
     switch (id) {
         case "cargo": {
             return new CargoVersionActions();
+        }
+        case "composer": {
+            return new ComposerVersionActions();
         }
         case "container": {
             return new ContainerActions();

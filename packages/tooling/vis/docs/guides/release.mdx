@@ -514,6 +514,24 @@ Publishing runs `./gradlew :<path>:publish`, so the module needs a publishing pl
 
 vis refuses what it cannot read to a version: a version set from a property or a function, a version in `gradle.properties`, a `projectDir` remap, an `archivesName` rename, two modules with the same coordinates, or a group that is not declared.
 
+### Composer packages as release packages
+
+Set `release.composer.discover: true` in `vis.config.ts` to release the root `composer.json` when it has a `name` such as `acme/tool`. It is off by default and needs no `package.json`.
+
+Composer has no version field, and Packagist reads versions from the git tags of the repository. So the version is the highest `vX.Y.Z` tag, and a package with no tag yet starts at `0.0.0`. The tag form is `v{version}`, which Composer reads as the version with the `v` removed. The release writes no file: it creates and pushes that tag. A `"version"` key in `composer.json` is refused with `CONFIG_INVALID`, because Packagist ignores it and it would drift from the tag.
+
+Packagist reads a package from its repository root. Only the root `composer.json` can be released. A named `composer.json` in a subdirectory is refused with `CONFIG_INVALID`, because its tag would sit in a repository Packagist never looks at. Move such a package to its own repository. A `composer.json` without `name` is not a package and is not released. Duplicate names are refused.
+
+A `require` entry that names another discovered package orders the publish. Nothing is rewritten.
+
+The publish step checks that the tag is free locally. If it exists, the package is skipped. The Packagist API is not queried. Packagist picks up new tags from the repository after the repository is registered there, a one-time step outside vis.
+
+Publishing is POSIX only for now. On Windows, publish fails with `CONFIG_INVALID` after the dry run.
+
+Tasks for these packages are a separate opt-in, `composer.discover: true` in `vis.config.ts`. They run `composer validate --strict`, which exits non-zero on warnings too, as the `validate` target. `test` (`composer run-script test`) and `lint` (`composer run-script lint`) exist only when `scripts.test` or `scripts.lint` is set in `composer.json`. A `scripts.format` entry is not turned into a target, because a format script usually rewrites files and would pass a check it did not make. Composer has no build step. The root `composer.json` is not a task project, so a single-package repository gets no Composer tasks. The Composer tasks are not verified on Windows: they are POSIX only.
+
+Composer's `composer.lock` is read for the audit and the SBOM. Its `packages` and `packages-dev` arrays give the locked versions, and the `require` maps give the SBOM dependency edges.
+
 ### Go modules as release packages
 
 Set `release.go.discover: true` in `vis.config.ts` to release the Go modules in `go.work` (each `use` entry), or the root `go.mod` when there is no `go.work`. It is off by default. Each module is named by its module path, such as `github.com/acme/tool`, and needs no `package.json`.
