@@ -157,6 +157,13 @@
                     "description": "Default giget provider for `owner/repo` shorthand inputs.",
                     "default": "github"
                 },
+                "defaultTemplate": {
+                    "type": "string",
+                    "description": "Template used by a bare `vis create`. Accepts any template input, including an organization scope (`@acme` opens the `@acme/create` manifest picker, `@acme:app` selects one entry directly). In a terminal the usual prompts still run, minus the template step.",
+                    "examples": [
+                        "@acme"
+                    ]
+                },
                 "gitInit": {
                     "type": "boolean",
                     "description": "Initialize a git repository after scaffolding standalone projects.",

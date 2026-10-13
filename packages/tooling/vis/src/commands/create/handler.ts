@@ -20,8 +20,11 @@ import { pail } from "../../io/logger";
 import { detectPm, runInstall } from "../../pm/pm-runner";
 import { discoverTemplate, inferParentDir } from "./discovery";
 import type { CreateCommandOptions } from "./index";
+import type { OrgChoice } from "./org-templates";
+import { isOrgInput, resolveOrgTemplate } from "./org-templates";
 import { runInteractivePrompts } from "./prompts";
 import { executeTemplate } from "./templates";
+import type { TemplateConfig } from "./templates/types";
 import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackageName } from "./utils";
 
 /**
@@ -256,17 +259,38 @@ const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInst
 const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, CreateCommandOptions>): Promise<void> => {
     const args: string[] = Array.isArray(argument) ? argument : argument ? [argument] : [];
     const createConfig = visConfig?.create;
+    const cwd = ((options as Record<string, unknown>).cwd as string | undefined) || wsRoot || process.cwd();
+    const isTTY = Boolean(process.stdin.isTTY);
+    const interactive = isTTY && (options as Record<string, unknown>).interactive !== false;
 
-    // --list: show available templates (including config aliases)
+    // --list: show available templates (including config aliases); `vis create @org --list` shows the org's manifest
     if (options.list) {
+        if (args[0] && isOrgInput(args[0])) {
+            await resolveOrgTemplate(args[0], { args: [], cwd: wsRoot || cwd, interactive: false, list: true });
+
+            return;
+        }
+
         listTemplates(createConfig?.templates);
 
         return;
     }
 
-    const cwd = ((options as Record<string, unknown>).cwd as string | undefined) || wsRoot || process.cwd();
     const inMonorepo = Boolean(wsRoot);
-    const isTTY = Boolean(process.stdin.isTTY);
+    // A bare `vis create` runs the prompts; with `create.defaultTemplate` the template step is skipped.
+    const runsPrompts = args.length === 0 && interactive;
+    const defaultTemplate = createConfig?.defaultTemplate;
+
+    if (args.length === 0 && defaultTemplate && !runsPrompts) {
+        args.push(defaultTemplate);
+    }
+
+    // Org picker is shown before the prompt flow opens its readline, so the name prompt comes after the choice.
+    const presetOrg: OrgChoice | undefined
+        = runsPrompts && defaultTemplate && isOrgInput(defaultTemplate)
+            ? await resolveOrgTemplate(defaultTemplate, { args: [], cwd: wsRoot || cwd, interactive: true })
+            : undefined;
+
     const detectedPm = detectPm(cwd);
 
     let templateInput: string | undefined;
@@ -280,7 +304,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // Tracks whether the user already confirmed overwriting a non-empty directory
     let userConfirmedOverwrite = false;
 
-    if (args.length === 0 && isTTY && (options as Record<string, unknown>).interactive !== false) {
+    if (runsPrompts) {
         const answers = await runInteractivePrompts({
             cwd,
             defaultEditor: createConfig?.defaultEditor,
@@ -289,6 +313,7 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
             // otherwise show the PM picker so the user can choose.
             defaultPm: createConfig?.defaultPm,
             inMonorepo,
+            presetTemplate: defaultTemplate,
         });
 
         templateInput = answers.template;
@@ -331,7 +356,8 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
 
         [templateInput, projectName] = ownArgs;
 
-        if (!projectName && templateInput) {
+        // Org templates default their name to the chosen template (see below), not to the scope.
+        if (!projectName && templateInput && !isOrgInput(templateInput)) {
             // Extract a sensible name: "user/repo" → "repo", URL → last path segment
             projectName = extractRepoName(templateInput);
         }
@@ -348,8 +374,21 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     // Resolve config template aliases BEFORE discovery and parent dir inference
     const resolvedInput = createConfig?.templates?.[templateInput] ?? templateInput;
 
-    // Discover template type from the resolved input
-    const config = discoverTemplate(resolvedInput, extraArgs);
+    // Organization scopes resolve through their manifest (or fall back to @org/create); everything else is discovered.
+    let config: TemplateConfig;
+
+    if (isOrgInput(resolvedInput)) {
+        const org = presetOrg ?? (await resolveOrgTemplate(resolvedInput, { args: extraArgs, cwd: wsRoot || cwd, interactive }));
+
+        if (!org) {
+            return;
+        }
+
+        config = org.config;
+        projectName ??= org.name;
+    } else {
+        config = discoverTemplate(resolvedInput, extraArgs);
+    }
 
     // For non-interactive mode, resolve target directory with parent inference
     if (!targetDir) {

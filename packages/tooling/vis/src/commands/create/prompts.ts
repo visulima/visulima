@@ -75,6 +75,23 @@ export interface PromptResult {
 }
 
 /**
+ * Single-choice picker on its own readline. Used for organization template manifests,
+ * which are picked before the main prompt flow opens its readline.
+ * @param title Heading printed above the choices.
+ * @param choices Options to pick from; `value` is returned.
+ * @returns The `value` of the chosen option.
+ */
+export const runTemplatePicker = async (title: string, choices: { hint?: string; label: string; value: string }[]): Promise<string> => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    try {
+        return await select(rl, title, choices);
+    } finally {
+        rl.close();
+    }
+};
+
+/**
  * Run the full interactive prompt flow and return the collected answers.
  * @param options Prompt options.
  * @param options.cwd Working directory for resolving paths.
@@ -82,6 +99,7 @@ export interface PromptResult {
  * @param options.defaultGitInit Default for the git-init prompt (from vis.config.ts).
  * @param options.defaultEditor Default for the editor prompt (from vis.config.ts).
  * @param options.inMonorepo Whether we are inside an existing monorepo workspace.
+ * @param options.presetTemplate Template input to use instead of the template prompt.
  * @returns Collected answers including template, name, directory, PM, and flags.
  */
 export const runInteractivePrompts = async (options: {
@@ -90,6 +108,8 @@ export const runInteractivePrompts = async (options: {
     defaultGitInit?: boolean;
     defaultPm?: string;
     inMonorepo: boolean;
+    /** Skip the template step and use this input (e.g. `create.defaultTemplate`). */
+    presetTemplate?: string;
 }): Promise<PromptResult> => {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
@@ -97,28 +117,32 @@ export const runInteractivePrompts = async (options: {
         process.stderr.write(`\n  ${bold(cyan("vis create"))} ${dim("— project scaffolding")}\n\n`);
 
         // 1. Template selection
-        const templateChoices = options.inMonorepo
-            ? [
-                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-            ]
-            : [
-                { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
-                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-            ];
+        let template = options.presetTemplate;
 
-        let template = await select(rl, "Select a template:", templateChoices);
+        if (!template) {
+            const templateChoices = options.inMonorepo
+                ? [
+                    { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                    { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                    { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                    { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+                ]
+                : [
+                    { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
+                    { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                    { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                    { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                    { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+                ];
 
-        if (template === "__custom__") {
-            template = await ask(rl, `\n  ${dim("Template (npm package or GitHub URL):")} `);
+            template = await select(rl, "Select a template:", templateChoices);
 
-            if (!template) {
-                throw new Error("No template specified.");
+            if (template === "__custom__") {
+                template = await ask(rl, `\n  ${dim("Template (npm package, @org, or GitHub URL):")} `);
+
+                if (!template) {
+                    throw new Error("No template specified.");
+                }
             }
         }
 

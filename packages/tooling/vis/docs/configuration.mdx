@@ -696,6 +696,26 @@ export default defineConfig({
 
 Discovery and override semantics — including how to vendor a customised copy of a builtin (e.g. `buildkite-ci`) at `.vis/templates/<name>/` — are in the [`vis generate` reference](/commands/generate#discovery).
 
+### Create
+
+Defaults for [`vis create`](/commands/create#configuration).
+
+```typescript
+export default defineConfig({
+    create: {
+        // A bare `vis create` opens the picker for this organization's templates.
+        defaultTemplate: "@acme",
+        // Skip the package manager prompt.
+        defaultPm: "pnpm",
+    },
+});
+```
+
+| Field                    | Default | Description                                                                                                                                                                                 |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create.defaultTemplate` |         | Template used by a bare `vis create`. Accepts any template input, including `@org` (picker over the org's manifest) and `@org:name` (one entry). In a terminal the other prompts still run. |
+| `create.templates`       |         | Named aliases for template inputs. See [template aliases](/commands/create#template-aliases).                                                                                               |
+
 ---
 
 ## project.json
