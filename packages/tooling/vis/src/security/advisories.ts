@@ -20,6 +20,8 @@ import { findCacheDirSync } from "@visulima/find-cache-dir";
 import type { AdvisoryDbStatus, AdvisoryQueryResult, NativeVulnerabilityJs } from "#native";
 import { advisoriesIngest, advisoriesQuery as nativeQuery, advisoriesStatus as nativeStatus, NATIVE_BINDING_VERSION } from "#native";
 
+import { VisUserError } from "../errors/vis-user-error";
+
 const EXPECTED_BINDING_VERSION = 6;
 
 if (NATIVE_BINDING_VERSION !== EXPECTED_BINDING_VERSION) {
@@ -283,6 +285,26 @@ const rebuildAdvisoryDb = async (
 };
 
 /**
+ * The zip URL for one OSV ecosystem under the configured source. An ecosystem name is an OSV
+ * directory name: no separators, no traversal, no empty segments. The resolved URL must still sit
+ * under the source, so a crafted name cannot reach another host or path.
+ */
+export const advisoryZipUrl = (source: URL, ecosystem: string): URL => {
+    if (!/^[A-Z0-9][\w.:-]*$/i.test(ecosystem)) {
+        throw new VisUserError(`Advisory ecosystem "${ecosystem}" is not a valid OSV name.`);
+    }
+
+    const baseUrl = ensureTrailingSlash(source.toString());
+    const resolved = new URL(`${ecosystem}/all.zip`, baseUrl);
+
+    if (resolved.origin !== source.origin || !resolved.pathname.startsWith(new URL(baseUrl).pathname)) {
+        throw new VisUserError(`Advisory ecosystem "${ecosystem}" resolves outside the configured advisory source.`);
+    }
+
+    return resolved;
+};
+
+/**
  * Download + ingest one ecosystem. Two-step:
  *   1. HEAD &lt;source>/&lt;eco>/all.zip; compare ETag against stored meta.
  *      Short-circuit when unchanged unless `force`.
@@ -294,8 +316,7 @@ const rebuildAdvisoryDb = async (
 export const syncAdvisories = async (options: SyncOptions): Promise<SyncResult> => {
     const dbPath = options.dbPath ?? resolveAdvisoryDbPath(options.workspaceRoot);
     const url = validateAdvisorySource(options.source, options.allowedHosts);
-    const baseUrl = ensureTrailingSlash(url.toString());
-    const zipUrlFor = (ecosystem: string): URL => new URL(`${ecosystem}/all.zip`, baseUrl);
+    const zipUrlFor = (ecosystem: string): URL => advisoryZipUrl(url, ecosystem);
 
     // Checked before the ETag short-circuit: an outdated database is rebuilt, never reported as "up to date".
     if (existsSync(dbPath)) {
