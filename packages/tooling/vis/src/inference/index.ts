@@ -52,6 +52,7 @@ import { viteDetector } from "./detectors/vite";
 import { vitepressDetector } from "./detectors/vitepress";
 import { vitestDetector } from "./detectors/vitest";
 import { webpackDetector } from "./detectors/webpack";
+import { zigDetector } from "./detectors/zig";
 import type { DetectContext, Detector } from "./types";
 
 export type { DetectContext, Detector } from "./types";
@@ -129,6 +130,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     nugetDetector,
     swiftDetector,
     dartDetector,
+    zigDetector,
 ];
 
 const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies" | "optionalDependencies" | "peerDependencies">, name: string): boolean =>

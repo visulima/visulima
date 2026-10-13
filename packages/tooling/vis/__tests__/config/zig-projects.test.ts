@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { discoverWorkspace } from "../../src/config/workspace";
 import { resolveZigProjectDirectories } from "../../src/config/zig-projects";
 import { zigDetector } from "../../src/inference/detectors/zig";
 
@@ -17,6 +18,8 @@ describe("zig task projects", () => {
 
     beforeEach(() => {
         root = realpathSync(mkdtempSync(join(tmpdir(), "vis-zig-tasks-")));
+        write("pnpm-workspace.yaml", "packages:\n  - \"packages/*\"\n");
+        write("package.json", JSON.stringify({ name: "root", private: true }));
     });
 
     afterEach(() => {
@@ -32,6 +35,20 @@ describe("zig task projects", () => {
 
         expect(resolveZigProjectDirectories(root, []).sort()).toStrictEqual(["packages/core", "web"]);
         expect(resolveZigProjectDirectories(root, ["web"])).toStrictEqual(["packages/core"]);
+    });
+
+    it("gives a discovered Zig package its build, test and format:check targets through discoverWorkspace", () => {
+        expect.hasAssertions();
+
+        write("build.zig.zon", ".{ .name = .app, .version = \"1.0.0\", .dependencies = .{ .core = .{ .path = \"packages/core\" } }, .paths = .{ \"build.zig\" } }\n");
+        write("packages/core/build.zig.zon", ".{ .name = .core, .version = \"1.0.0\", .paths = .{ \"build.zig\" } }\n");
+
+        const { workspace } = discoverWorkspace(root, { zig: { discover: true } });
+        const targets = workspace.projects["core"]?.targets ?? {};
+
+        expect(targets["build"]).toMatchObject({ command: "zig build" });
+        expect(targets["test"]).toMatchObject({ command: "zig build test" });
+        expect(targets["format:check"]).toMatchObject({ command: "zig fmt --check ." });
     });
 
     it("returns nothing when the root manifest does not parse", () => {
