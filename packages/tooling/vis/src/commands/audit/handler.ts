@@ -24,7 +24,7 @@ import { emitJUnitAudit } from "../../report/junit-audit";
 import { emitSarif } from "../../report/sarif";
 import { buildCycloneDxBom } from "../../sbom/cyclonedx";
 import { startScanProgress } from "../../scan/scan-progress";
-import { AdvisoryDbNotFoundError, advisoryDbSchemaError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
+import { AdvisoryDbNotFoundError, advisoryDbSchemaError, advisoryKey, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
 import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import type { DependencyPath } from "../../security/dependency-paths";
@@ -800,7 +800,8 @@ const executeAudit = async (
             continue;
         }
 
-        const vulns = vulnMap.get(pkg.name) ?? [];
+        // Offline results are keyed per version; the online catalog is still keyed by name.
+        const vulns = (isOffline ? vulnMap.get(advisoryKey(pkg.name, pkg.version)) : vulnMap.get(pkg.name)) ?? [];
         const report = socketReports.get(`${pkg.name}@${pkg.version}`);
         const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
 
@@ -837,7 +838,7 @@ const executeAudit = async (
                 );
 
                 for (const pkg of ecoPackages) {
-                    const vulns = ecoVulnMap.get(pkg.name) ?? [];
+                    const vulns = ecoVulnMap.get(advisoryKey(pkg.name, pkg.version)) ?? [];
 
                     if (vulns.length === 0) {
                         continue;

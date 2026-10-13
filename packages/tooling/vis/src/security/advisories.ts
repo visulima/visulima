@@ -263,9 +263,14 @@ export const syncAdvisories = async (options: SyncOptions): Promise<SyncResult> 
 };
 
 /**
- * Map a batch of installed packages to vulnerabilities, returning the same
- * `Map&lt;name, SecurityVulnerability[]>` shape the online path produces in
- * `util/catalog.ts:fetchVulnerabilities`.
+ * Key under which `queryAdvisories` files a result. A lock file can hold several
+ * versions of one package, so the key must include the version.
+ */
+export const advisoryKey = (name: string, version: string): string => `${name}@${version}`;
+
+/**
+ * Map a batch of installed packages to vulnerabilities, keyed by `advisoryKey(name, version)`.
+ * Each entry is one installed version. Every version of a package gets its own result.
  */
 export const queryAdvisories = (packages: { name: string; version: string }[], options: QueryOptions): Map<string, SecurityVulnerability[]> => {
     if (packages.length === 0) {
@@ -298,7 +303,7 @@ export const queryAdvisories = (packages: { name: string; version: string }[], o
         }
 
         out.set(
-            packageInfo.name,
+            advisoryKey(packageInfo.name, packageInfo.version),
             hit.vulnerabilities.map((v) => toSecurityVulnerability(v)),
         );
     }
