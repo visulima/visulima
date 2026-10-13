@@ -275,3 +275,13 @@ describe(inferParentDir, () => {
         expect(inferParentDir("builtin:monorepo")).toBe(".");
     });
 });
+
+describe("self-hosted and ssh sources", () => {
+    it("should route self-hosted GitLab and any scp-style host to remote:git", () => {
+        expect.assertions(3);
+
+        expect(discoverTemplate("gitlab://git.example.com/group/repo").type).toBe("remote:git");
+        expect(discoverTemplate("git@git.example.com:group/repo").type).toBe("remote:git");
+        expect(discoverTemplate("@scope/pkg").type).toBe("remote:npm");
+    });
+});

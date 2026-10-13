@@ -66,17 +66,25 @@ vis create --list
 
 Templates can be downloaded from any git host using [giget](https://github.com/unjs/giget):
 
-| Format              | Example                                        |
-| ------------------- | ---------------------------------------------- |
-| GitHub shorthand    | `user/repo`                                    |
-| GitHub with branch  | `user/repo#dev`                                |
-| GitHub subdirectory | `user/repo/tree/main/packages/template`        |
-| GitLab              | `gitlab:group/repo`                            |
-| Bitbucket           | `bitbucket:team/repo`                          |
-| Sourcehut           | `sourcehut:~user/repo`                         |
-| SSH                 | `git:git@github.com:user/repo`                 |
-| Full URL            | `https://github.com/user/repo`                 |
-| Tarball URL         | `https://example.com/templates/starter.tar.gz` |
+| Format                 | Example                                        |
+| ---------------------- | ---------------------------------------------- |
+| GitHub shorthand       | `user/repo`                                    |
+| GitHub with branch     | `user/repo#dev`                                |
+| GitHub subdirectory    | `user/repo/tree/main/packages/template`        |
+| GitLab                 | `gitlab:group/repo`                            |
+| GitLab nested groups   | `gitlab:group/subgroup/repo`                   |
+| Self-hosted GitLab     | `gitlab://git.example.com/group/repo`          |
+| Bitbucket              | `bitbucket:team/repo`                          |
+| Sourcehut              | `sourcehut:~user/repo`                         |
+| Full URL (known hosts) | `https://gitlab.com/group/repo`                |
+| Host without scheme    | `github.com/user/repo`, `git.sr.ht/~user/repo` |
+| SSH (any host)         | `git@git.example.com:group/repo`               |
+| Forced SSH clone       | `git:git@github.com:user/repo`                 |
+| Tarball URL            | `https://example.com/templates/starter.tar.gz` |
+
+Full URLs and `host/owner/repo` forms for GitHub, GitLab, Bitbucket, and Sourcehut are rewritten to the matching provider before download, and `tree/<ref>/<subdir>` paths become a subdirectory plus a ref. Any other `https://` URL is treated as a tarball.
+
+`git@host:group/repo` on a host other than GitHub, GitLab.com, Bitbucket, or Sourcehut clones over SSH with your own git credentials (keys or agent), which is the way to reach other private or self-hosted servers. On the four known hosts the same form downloads an archive with the host's token; prefix it with `git:` (`git:git@github.com:user/repo`) to force an SSH clone. Self-hosted GitLab (`gitlab://host/…`) downloads the repository archive over HTTPS from that host and uses `GITLAB_TOKEN` for private projects.
 
 ### Private Repositories
 
@@ -92,6 +100,8 @@ export GITLAB_TOKEN=glpat-...
 # Bitbucket
 export BITBUCKET_TOKEN=...
 ```
+
+Each token is only sent to its own host: `GITHUB_TOKEN` (or `GH_TOKEN`) to GitHub, `GITLAB_TOKEN` to GitLab, `BITBUCKET_TOKEN` to Bitbucket. Tarball URLs receive no token unless you set `create.auth` or `GIGET_AUTH`.
 
 Or pass a token inline via URL:
 

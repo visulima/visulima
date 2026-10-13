@@ -224,8 +224,10 @@ const listTemplates = (aliases?: Record<string, string>): void => {
     pail.info("  Remote templates:");
     pail.info(`    ${dim("Any npm create-* package:")}  vis create vite`);
     pail.info(`    ${dim("GitHub repository:")}         vis create user/repo`);
-    pail.info(`    ${dim("GitLab / Bitbucket:")}        vis create gitlab:user/repo`);
+    pail.info(`    ${dim("GitLab / Bitbucket:")}        vis create gitlab:group/subgroup/repo`);
+    pail.info(`    ${dim("Self-hosted GitLab:")}        vis create gitlab://git.example.com/group/repo`);
     pail.info(`    ${dim("Full URL:")}                  vis create https://github.com/user/repo`);
+    pail.info(`    ${dim("SSH (private repos):")}       vis create git@git.example.com:group/repo`);
     pail.info("");
     pail.info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
     pail.info("");

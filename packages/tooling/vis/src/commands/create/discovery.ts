@@ -48,6 +48,7 @@ const GIGET_PREFIXES = [
     "github:",
     "gh:",
     "gitlab:",
+    "gitlab://",
     "bitbucket:",
     "sourcehut:",
     "git:",
@@ -67,6 +68,11 @@ export const isGitUrl = (input: string): boolean => {
         if (input.startsWith(prefix)) {
             return true;
         }
+    }
+
+    // SSH scp-style URL for any host (`git@git.example.com:group/repo`)
+    if (/^[\w.-]+@[\w.-]+:/.test(input)) {
+        return true;
     }
 
     // owner/repo shorthand (but NOT @scope/package — that's npm)
