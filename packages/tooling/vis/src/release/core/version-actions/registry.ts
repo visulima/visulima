@@ -26,6 +26,7 @@ import { JsrVersionActions } from "./jsr";
 import { MavenVersionActions } from "./maven";
 import { NativeAddonVersionActions } from "./native-addon";
 import { NpmVersionActions } from "./npm";
+import { NuGetVersionActions } from "./nuget";
 import { PrivateVersionActions } from "./private";
 import { PythonVersionActions } from "./python";
 import { ShellPublishActions } from "./shell";
@@ -75,6 +76,9 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "native-addon": {
             return new NativeAddonVersionActions();
+        }
+        case "nuget": {
+            return new NuGetVersionActions();
         }
         case "private": {
             return new PrivateVersionActions();

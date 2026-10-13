@@ -764,6 +764,13 @@ export interface VisConfig {
      */
     namedInputs?: NamedInputs;
 
+    /**
+     * NuGet projects as task projects. Off by default: each directory with one `*.csproj` or
+     * `*.fsproj` (outside `bin`, `obj` and `node_modules`) gets build, test and format:check
+     * targets when this is set. POSIX only: the inferred commands are not verified on Windows.
+     */
+    nuget?: { discover?: boolean };
+
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
 

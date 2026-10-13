@@ -588,6 +588,24 @@ The task side is `hex.discover: true` in `vis.config.ts` (off by default). It fi
 
 `vis sbom` reads the workspace's `mix.lock`: each locked Hex package is a `pkg:hex/` component, with the edges between locked packages. Mix does not record which packages are direct or dev-only, so the whole lock is kept, and a focused SBOM does not narrow it. `vis audit` does not read `mix.lock`: `--ecosystem hex` warns that Hex is not yet supported and reports nothing for it.
 
+### NuGet packages as release packages
+
+Set `release.nuget.discover: true` in `vis.config.ts` to release NuGet packages. It is off by default. Every `*.csproj` and `*.fsproj` under the root is one package (skipping `bin`, `obj`, `node_modules`, dot-directories and anything under a JS package directory). A project is not released when it sets `IsPackable` to `false`, sets `IsTestProject` to `true`, or references `Microsoft.NET.Test.Sdk` (the usual test-project marker). Test projects that inherit a shared `Directory.Build.props` version therefore stay out of its lockstep group. vis reads these markers literally; it does not evaluate the SDK's own defaults.
+
+The package is named by its `PackageId` literal, else `AssemblyName`, else the file name. NuGet ids compare case-insensitively, so the release name is the lowercased id, and two projects with the same id are refused. An MSBuild expression in the id is refused.
+
+The version is a plain `<Version>1.2.0</Version>` literal on one line inside an unconditional `PropertyGroup`, either in the project file or in the nearest `Directory.Build.props`. A project's own literal overrides the props value, as MSBuild does. Projects that inherit one props declaration release together at one version, and the props file is written once. vis refuses anything that could set the version elsewhere, with `CONFIG_INVALID`: `PackageVersion`, `VersionPrefix`, `VersionSuffix`, `Import`, a `Version` in `Directory.Build.targets`, a conditional or repeated `Version`, and an expression such as `$(MyVersion)`. A project with no version is not released.
+
+`ProjectReference` to another released project orders the publish. `PackageReference` is not rewritten.
+
+Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet nuget push <that one package> --source https://api.nuget.org/v3/index.json --api-key <key>`. The key is read from `NUGET_API_KEY`. `dotnet nuget push` has no environment input for the key, so it is passed on the command's argument list; vis never logs that list, and it redacts the key from every error. A version nuget.org already lists (checked at `https://api.nuget.org/v3-flatcontainer/<id>/index.json`) is skipped. A failed lookup does not skip; the push then reports the real error.
+
+Publishing is POSIX only. On Windows it fails with `CONFIG_INVALID` after the dry run. The `dotnet` CLI (the .NET SDK) must be on `PATH`.
+
+The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` (the last only for C# projects). `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
+
+The SBOM and audit have no NuGet graph: `packages.lock.json` is opt-in (`RestorePackagesWithLockFile`) and vis has no reader for it, so NuGet dependencies are not in the CycloneDX output.
+
 ### Zig packages as release packages
 
 Set `release.zig.discover: true` in `vis.config.ts` to release Zig packages. It is off by default. The workspace root's `build.zig.zon` is a package, and so is every `.path` dependency that holds its own `build.zig.zon` and sits inside the workspace (followed transitively). The name is the manifest's `.name`, which must be lowercase (`[a-z0-9._-]`), so a Zig name with uppercase letters is refused. A manifest with no `.version` is an aggregate and is skipped; the root is released only with its own version.

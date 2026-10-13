@@ -32,6 +32,7 @@ import type { GoProject } from "./go-projects";
 import type { GradleProject } from "./gradle-projects";
 import type { HexProject } from "./hex-projects";
 import type { MavenProject } from "./maven-projects";
+import type { NuGetProject } from "./nuget-projects";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
 import { collectContributors, expandReleaseNoteTemplate } from "./release-note-template";
@@ -72,6 +73,8 @@ export interface OrchestratorContext {
     hexProjects?: HexProject[];
     /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
     mavenProjects?: MavenProject[];
+    /** NuGet projects discovered under `release.nuget.discover` (empty otherwise); the NuGet plan reads their owners from here. */
+    nugetProjects?: NuGetProject[];
     packages: WorkspacePackage[];
     perPackageConfig: Map<string, PerPackageReleaseConfig>;
     plan: ReleasePlan;
@@ -235,10 +238,11 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     let dartProjects: DartProject[] = [];
 
     let gemProjects: GemProject[] = [];
+    let nugetProjects: NuGetProject[] = [];
 
     let hexProjects: HexProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover || config.hex?.discover) {
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover || config.hex?.discover || config.nuget?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -482,6 +486,35 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...hexProjects.map((project) => project.package)];
+        }
+
+        if (config.nuget?.discover) {
+            const { discoverNuGetProjects } = await import("./nuget-projects");
+            // A JS package that releases a NuGet project (versionActions "nuget") or writes its project file or
+            // Directory.Build.props (an extraFiles rule) claims that directory.
+            const nugetClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "nuget") {
+                    nugetClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                for (const rule of perPkg.extraFiles ?? []) {
+                    if (/\.(?:cs|fs)proj$|(?:^|\/)Directory\.Build\.props$/.test(rule.path)) {
+                        nugetClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
+                    }
+                }
+            }
+
+            nugetProjects = await discoverNuGetProjects({ claimedDirs: nugetClaimedDirs, cwd });
+
+            for (const project of nugetProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "nuget", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...nugetProjects.map((project) => project.package)];
         }
 
         if (config.zig?.discover) {
@@ -763,6 +796,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         gradleProjects,
         hexProjects,
         mavenProjects,
+        nugetProjects,
         packages,
         perPackageConfig,
         plan,
@@ -1268,6 +1302,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const hexTouched = await planHexWorkspace({ pending, projects: context.hexProjects ?? [], releases: hexReleases });
 
             for (const path of hexTouched) {
+                touched.add(path);
+            }
+        }
+
+        const nugetReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "nuget" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (nugetReleases.length > 0) {
+            const { planNuGetWorkspace } = await import("./nuget-plan");
+            const nugetTouched = await planNuGetWorkspace({ pending, projects: context.nugetProjects ?? [], releases: nugetReleases });
+
+            for (const path of nugetTouched) {
                 touched.add(path);
             }
         }

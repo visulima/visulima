@@ -28,6 +28,7 @@ import { knipDetector } from "./detectors/knip";
 import { mavenDetector } from "./detectors/maven";
 import { nestDetector } from "./detectors/nest";
 import { nextDetector } from "./detectors/next";
+import { nugetDetector } from "./detectors/nuget";
 import { nuxtDetector } from "./detectors/nuxt";
 import { oxfmtDetector } from "./detectors/oxfmt";
 import { oxlintDetector } from "./detectors/oxlint";
@@ -123,6 +124,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     gradleDetector,
     hexDetector,
     gemDetector,
+    nugetDetector,
     swiftDetector,
     dartDetector,
 ];

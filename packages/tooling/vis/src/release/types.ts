@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1550,6 +1550,15 @@ export interface VisReleaseConfig {
      * fail the publish.
      */
     notifications?: NotificationsConfig;
+
+    /**
+     * NuGet projects as release packages. Off by default. Every `*.csproj` / `*.fsproj` under the
+     * root (skipping `bin`, `obj`, `node_modules` and claimed JS directories) is a release package
+     * named by its lowercased package id. The version is a plain `&lt;Version>` literal in the project
+     * file, or in the nearest `Directory.Build.props`, which releases its inheriting projects in
+     * lockstep. Publish runs `dotnet pack` and `dotnet nuget push` (POSIX only).
+     */
+    nuget?: { discover?: boolean };
 
     /**
      * Emit one release commit per package (a `release(channel): pkg\@version

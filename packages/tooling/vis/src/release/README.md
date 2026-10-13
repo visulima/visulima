@@ -235,6 +235,15 @@ Opt-in. With `release: { hex: { discover: true } }`, the root `mix.exs` is a rel
 - POSIX only for now. Publish on Windows fails with `CONFIG_INVALID` after the dry run.
 - `mix.lock` is read for `vis sbom`: every locked Hex package is a component, with the edges between them.
 
+## NuGet packages as release packages (`release.nuget.discover`)
+
+Opt-in. With `release: { nuget: { discover: true } }`, every `*.csproj` / `*.fsproj` under the root (skipping `bin`, `obj`, `node_modules`, dot-directories and claimed JS directories) is a release package named by its lowercased `PackageId` (else `AssemblyName`, else the file name).
+
+- The version is a plain `<Version>` literal, in the project file or the nearest `Directory.Build.props`. A project's own literal wins over the props value. Projects inheriting one props declaration release in lockstep; the props file is written once. `PackageVersion`, `VersionPrefix`, `VersionSuffix`, `Import`, a `Version` in `Directory.Build.targets`, conditional or repeated declarations, and expressions fail the release with `CONFIG_INVALID`. Projects with no version, with `IsPackable` set to `false`, with `IsTestProject` set to `true`, or referencing `Microsoft.NET.Test.Sdk` are not released.
+- `ProjectReference` to another released project is recorded as `*`. `PackageReference` is not rewritten.
+- Publishing runs `dotnet pack -c Release -o <temp>` and `dotnet nuget push` to nuget.org, with the key from `NUGET_API_KEY`. A version the flat container already lists is skipped. The key is on the push's argv (the CLI has no environment input for it) and is redacted from every error.
+- The NuGet lock file is not read, so the SBOM has no NuGet graph. POSIX only; Windows refuses after the dry run.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

@@ -23,6 +23,7 @@ import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
 import { hexDetector } from "../inference/detectors/hex";
 import { mavenDetector } from "../inference/detectors/maven";
+import { nugetDetector } from "../inference/detectors/nuget";
 import { pythonDetector } from "../inference/detectors/python";
 import { swiftDetector } from "../inference/detectors/swift";
 import { zigDetector } from "../inference/detectors/zig";
@@ -47,6 +48,7 @@ import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
 import { resolveHexProjectDirectories } from "./hex-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
+import { resolveNuGetProjectDirectories } from "./nuget-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
 import { readSwiftProjectName, resolveSwiftProjectDirectories } from "./swift-projects";
 import type {
@@ -248,6 +250,7 @@ interface NonJsOptions {
     gradleProjects: boolean;
     hexProjects: boolean;
     mavenProjects: boolean;
+    nugetProjects: boolean;
     pythonProjects: boolean;
     swiftProjects: boolean;
     zigProjects: boolean;
@@ -262,7 +265,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "python" | "swift" | "zig";
+    id: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "nuget" | "python" | "swift" | "zig";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -330,6 +333,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "gem",
         readName: () => undefined,
         resolve: (workspaceRoot, _candidates, claimed) => resolveGemProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // NuGet project directories come from the project files under the root, not the workspace patterns.
+        detector: nugetDetector,
+        enabled: (options) => options.nugetProjects,
+        id: "nuget",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveNuGetProjectDirectories(workspaceRoot, claimed),
     },
     {
         // Zig packages come from the root manifest's path dependencies, not the workspace patterns.
@@ -1080,6 +1091,7 @@ const discoverWorkspace = (
         gradleProjects: config.gradle?.discover === true,
         hexProjects: config.hex?.discover === true,
         mavenProjects: config.maven?.discover === true,
+        nugetProjects: config.nuget?.discover === true,
         pythonProjects: config.python?.discover === true,
         swiftProjects: config.swift?.discover === true,
         zigProjects: config.zig?.discover === true,
@@ -1413,6 +1425,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         gradleProjects: true,
         hexProjects: true,
         mavenProjects: true,
+        nugetProjects: true,
         pythonProjects: true,
         swiftProjects: true,
         zigProjects: true,
