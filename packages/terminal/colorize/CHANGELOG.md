@@ -1,3 +1,17 @@
+## @visulima/colorize [2.2.0](https://github.com/visulima/visulima/compare/@visulima/colorize@2.1.1...@visulima/colorize@2.2.0) (2026-10-13)
+
+### Features
+
+* **vis:** release, task, audit and SBOM support for all languages ([#954](https://github.com/visulima/visulima/issues/954)) ([3bbd816](https://github.com/visulima/visulima/commit/3bbd816777b409d841bb6a2501ebc96db9bf0233)), closes [#947](https://github.com/visulima/visulima/issues/947)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+### Build System
+
+* **deps:** refresh catalog and package manifests ([#832](https://github.com/visulima/visulima/issues/832)) ([9b7590d](https://github.com/visulima/visulima/commit/9b7590d6496e633ba2c0681484ae4497eeb824c9))
+
 ## @visulima/colorize [2.1.1](https://github.com/visulima/visulima/compare/%40visulima%2Fcolorize%402.1.0...%40visulima%2Fcolorize%402.1.1) (2026-08-08)
 
 
