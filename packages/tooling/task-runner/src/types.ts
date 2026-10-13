@@ -1,4 +1,5 @@
 import type { RemoteCacheOptions } from "./backends/types";
+import type { ChildEnvOptions } from "./child-env";
 import type { CacheMissReason } from "./fingerprint";
 import type { WhenCondition } from "./when-condition";
 
@@ -961,6 +962,18 @@ export interface TaskRunnerOptions {
      */
     dryRun?: boolean;
 
+    /**
+     * Workspace child-environment policy. `clean` gives every task a child
+     * with only the allow-listed parent variables, `PATH`, `HOME`, `TERM`,
+     * `CI`, the platform essentials, and whatever the executor injects.
+     * Default `inherit` (the whole parent environment).
+     *
+     * The executor that spawns the task applies the policy. `vis run` does.
+     * The cache key follows it too: a name a clean task cannot see hashes as
+     * unset, and allow-listed names are not added to the key.
+     */
+    env?: ChildEnvOptions;
+
     /** Custom environment variables to include in hash */
     envVars?: string[];
 
@@ -1168,6 +1181,12 @@ export type TasksRunner = (tasks: Task[], options: TaskRunnerOptions, context: T
  * Context provided to the task runner.
  */
 export interface TaskRunnerContext {
+    /**
+     * Child-environment policy for one task, after per-target overrides.
+     * Hashing uses it to decide which env names the task can see. When
+     * absent, the workspace {@link TaskRunnerOptions.env} applies to every task.
+     */
+    childEnvPolicy?: (task: Task) => ChildEnvOptions;
     /** Lifecycle hooks */
     lifeCycle: LifeCycleInterface;
     /** The project graph */

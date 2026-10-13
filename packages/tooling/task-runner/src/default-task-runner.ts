@@ -3,6 +3,7 @@ import { xxh3Hash } from "@shared/xxh3";
 
 import { createRemoteCacheBackend } from "./backends/factory";
 import { Cache } from "./cache";
+import { childEnvNameFilter } from "./child-env";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
 import { IncrementalFileHasher } from "./incremental-hasher";
 import { splitCompoundTasks } from "./split-compound-tasks";
@@ -64,15 +65,18 @@ const partitionAlwaysTasks = (taskGraph: TaskGraph): { alwaysTasks: Task[]; grap
  *
  * Returns `undefined` when there are no globalEnv entries — callers
  * skip namespacing rather than creating an empty `ns/` subtree.
+ *
+ * A name the workspace child-env policy hides hashes as empty, the same as
+ * the task hasher treats it.
  */
-const computeGlobalEnvNamespace = (globalEnv: string[] | undefined): string | undefined => {
+export const computeGlobalEnvNamespace = (globalEnv: string[] | undefined, isVisible: (name: string) => boolean = () => true): string | undefined => {
     if (!globalEnv || globalEnv.length === 0) {
         return undefined;
     }
 
     const payload = [...globalEnv]
         .sort()
-        .map((name) => `${name}=${process.env[name] ?? ""}`)
+        .map((name) => `${name}=${isVisible(name) ? (process.env[name] ?? "") : ""}`)
         .join("\n");
 
     return xxh3Hash(Buffer.from(payload)).slice(0, 16);
@@ -196,12 +200,35 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * ```
  */
 const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
-    const { lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
+    const { childEnvPolicy, lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
+
+    // Which env names a task's child can see under the clean-env policy.
+    // Built only when a clean policy can apply, so default runs hash
+    // exactly as they did before the policy existed.
+    const workspaceChildEnv = options.env ?? { mode: "inherit" as const };
+    const mayHideEnv = workspaceChildEnv.mode === "clean" || childEnvPolicy !== undefined;
+    const childEnvFilters = new Map<string, (name: string) => boolean>();
+    const childEnvVisible = mayHideEnv
+        ? (name: string, task?: Task): boolean => {
+            const policy = task && childEnvPolicy ? childEnvPolicy(task) : workspaceChildEnv;
+            const key = JSON.stringify(policy);
+            let keep = childEnvFilters.get(key);
+
+            if (!keep) {
+                keep = childEnvNameFilter(policy);
+                childEnvFilters.set(key, keep);
+            }
+
+            return keep(name);
+        }
+        : undefined;
 
     // Partition the cache by globalEnv fingerprint when the caller
     // opts in. Flipping an env var no longer busts every entry — the
     // old namespace survives, so rolling back the env restores its hits.
-    const cacheNamespace = options.namespaceByGlobalEnv ? computeGlobalEnvNamespace(options.globalEnv) : undefined;
+    const cacheNamespace = options.namespaceByGlobalEnv
+        ? computeGlobalEnvNamespace(options.globalEnv, (name) => childEnvVisible?.(name) ?? true)
+        : undefined;
 
     // Create the cache
     const cache = new Cache({
@@ -236,6 +263,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
 
     const taskHasher = new InProcessTaskHasher({
         autoEnvVars: options.autoEnvVars,
+        childEnvVisible,
         envVars: options.envVars,
         frameworkInference: options.frameworkInference,
         globalEnv: options.globalEnv,

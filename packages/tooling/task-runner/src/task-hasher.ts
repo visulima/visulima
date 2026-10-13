@@ -56,6 +56,14 @@ interface TaskHasherOptions {
      */
     autoEnvVars?: boolean;
 
+    /**
+     * Whether the child process of `task` (or of the workspace, when `task` is
+     * omitted) can see an env name under the child-environment policy. A name
+     * the child cannot see hashes as unset, so changing it does not bust the
+     * key. Omit to hash every name as the parent process sees it.
+     */
+    childEnvVisible?: (name: string, task?: Task) => boolean;
+
     /** Additional environment variables to include in hash */
     envVars?: string[];
 
@@ -341,9 +349,12 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #onDiagnostic: ((taskId: string, message: string) => void) | undefined;
 
+    readonly #childEnvVisible: ((name: string, task?: Task) => boolean) | undefined;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
+        this.#childEnvVisible = options.childEnvVisible;
         this.#workspaceRoot = options.workspaceRoot;
         this.#projects = options.projects;
         this.#namedInputs = options.namedInputs ?? {};
@@ -360,6 +371,19 @@ class InProcessTaskHasher implements TaskHasher {
         this.#incrementalHasher = options.incrementalHasher;
         this.#onFingerprint = options.onFingerprint;
         this.#onDiagnostic = options.onDiagnostic;
+    }
+
+    /**
+     * {@link envSignature}, except a name the child cannot see under the
+     * clean-env policy hashes as unset. The task's own value never reaches the
+     * key when the child could not have read it.
+     */
+    #envSignature(name: string, task?: Task): string {
+        if (this.#childEnvVisible && !this.#childEnvVisible(name, task)) {
+            return "0:";
+        }
+
+        return envSignature(name);
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -397,7 +421,7 @@ class InProcessTaskHasher implements TaskHasher {
                 // eslint-disable-next-line no-await-in-loop -- runtime inputs processed within sequential input loop
                 runtime[input.runtime] = await hashRuntimeValue(input.runtime);
             } else if (isEnvironmentInput(input)) {
-                runtime[`env:${input.env}`] = hashStrings(input.env, envSignature(input.env));
+                runtime[`env:${input.env}`] = hashStrings(input.env, this.#envSignature(input.env, task));
             } else if (isExternalDependencyInput(input)) {
                 // eslint-disable-next-line no-await-in-loop -- external dependencies processed within sequential input loop
                 const depHashes = await Promise.all(input.externalDependencies.map(async (dep) => [dep, await this.#hashExternalDependency(dep)] as const));
@@ -425,14 +449,14 @@ class InProcessTaskHasher implements TaskHasher {
         const isUntracked = createEnvMatcher([...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])]);
 
         for (const envVariable of this.#envVars) {
-            runtime[`env:${envVariable}`] = hashStrings(envVariable, envSignature(envVariable));
+            runtime[`env:${envVariable}`] = hashStrings(envVariable, this.#envSignature(envVariable, task));
         }
 
         // Per-target `fingerprintEnv` names/patterns are explicit, so they
         // are hashed like `envVars`, minus anything the task marks untracked.
         for (const name of Object.keys(resolveEnvPatterns(task.fingerprintEnv ?? [], process.env))) {
             if (!isUntracked(name)) {
-                runtime[`env:${name}`] = hashStrings(name, envSignature(name));
+                runtime[`env:${name}`] = hashStrings(name, this.#envSignature(name, task));
             }
         }
 
@@ -449,7 +473,7 @@ class InProcessTaskHasher implements TaskHasher {
 
                     // Don't overwrite if the user already declared it.
                     if (runtime[key] === undefined && !isUntracked(name)) {
-                        runtime[key] = hashStrings(name, envSignature(name));
+                        runtime[key] = hashStrings(name, this.#envSignature(name, task));
                     }
                 }
             }
@@ -473,7 +497,7 @@ class InProcessTaskHasher implements TaskHasher {
 
                 for (const envName of Object.keys(frameworkEnvVariables)) {
                     if (!isUntracked(envName)) {
-                        runtime[`framework-env:${envName}`] = hashStrings(envName, envSignature(envName));
+                        runtime[`framework-env:${envName}`] = hashStrings(envName, this.#envSignature(envName, task));
                     }
                 }
             }
@@ -834,7 +858,7 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         for (const envName of this.#globalEnv) {
-            hash.update(`globalEnv:${envName}=${envSignature(envName)}`);
+            hash.update(`globalEnv:${envName}=${this.#envSignature(envName)}`);
             hasContent = true;
         }
 
