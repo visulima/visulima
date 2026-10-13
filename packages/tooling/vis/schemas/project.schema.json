@@ -248,6 +248,13 @@
                     "type": "string",
                     "description": "The executor/command to run"
                 },
+                "fingerprintEnv": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Env vars folded into this target's cache key, as names or `*` patterns (`\"VITE_*\"`). In `\"declared\"` mode each match becomes an env input, the same as `env://NAME`; in `\"trace\"` mode it extends  {@link  TaskRunnerOptions.fingerprintEnvPatterns }  for this target."
+                },
                 "hashMode": {
                     "type": "string",
                     "enum": [
@@ -390,6 +397,13 @@
                 "pty": {
                     "type": "boolean",
                     "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
+                },
+                "untrackedEnv": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Env vars this target receives but keeps out of its cache key, as names or `*` patterns (`\"CI_*\"`). Applies on top of  {@link  TaskRunnerOptions.untrackedEnvVars }  and wins over `fingerprintEnv`, `autoEnvVars`, framework inference and trace-mode fingerprint patterns. Explicit `env://` inputs and the workspace `envVars` / `globalEnv` lists are not affected."
                 },
                 "warningPattern": {
                     "anyOf": [

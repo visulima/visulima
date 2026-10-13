@@ -1683,6 +1683,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
         return {
             cache: visTarget.cache,
+            fingerprintEnv: visTarget.fingerprintEnv,
             hashMode: hashModeOverride ?? visTarget.hashMode,
             id: taskId,
             outputs: expandedOutputs,
@@ -1695,6 +1696,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             parallelism: visTarget.parallelism,
             projectRoot: project?.root,
             target: taskTarget,
+            untrackedEnv: visTarget.untrackedEnv,
         };
     });
 
