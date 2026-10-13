@@ -1099,7 +1099,7 @@ export interface VisConfig {
 
     /**
      * Python projects as task projects. Off by default: a directory with a
-     * `pyproject.toml` (and `[project]`) gets build and test targets only when this is set.
+     * `pyproject.toml` (and `[project]`) gets an inferred build target only when this is set.
      */
     python?: { discover?: boolean };
 
