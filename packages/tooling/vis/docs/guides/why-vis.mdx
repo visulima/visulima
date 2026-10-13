@@ -1,6 +1,6 @@
 ---
 title: Why vis vs. Vite Task / Turbo / Nx / moon
-description: "Side-by-side capability matrix comparing vis with Vite Task (Vite+ alpha), Turborepo, Nx, and moon"
+description: "Side-by-side capability matrix comparing vis with Vite Task (Vite+), Turborepo, Nx, and moon"
 ---
 
 # Why vis vs. Vite Task / Turbo / Nx / moon
@@ -56,7 +56,7 @@ Status sources: [Vite Task open issues](https://github.com/voidzero-dev/vite-tas
 
 ## When to pick something else
 
-**Your monorepo is Vite-centric and you want the toolchain unified.** [Vite+ alpha](https://viteplus.dev) bundles Vite + Vitest + Oxlint + Oxfmt + Rolldown + tsdown + Vite Task in one binary. The Oxc-speed defaults (~50–100× ESLint, ~30× Prettier) are real. vis is the orchestrator; you'd still wire each tool yourself.
+**Your monorepo is Vite-centric and you want the toolchain unified.** [Vite+](https://viteplus.dev) (stable since 1.0) bundles Vite + Vitest + Oxlint + Oxfmt + Rolldown + tsdown + Vite Task in one binary, and manages the Node.js runtime and package manager itself. vis delegates runtime management to proto, mise, fnm, volta, and similar tools. The Oxc-speed defaults (~50–100× ESLint, ~30× Prettier) are real. vis is the orchestrator; you'd still wire each tool yourself.
 
 **You need real-time distributed agents at PR scale.** Nx Cloud's Agents auto-scale based on PR size. vis's "shared cache + Redis lock" Cobuilds-style pattern handles the same load for most teams, but if you need the auto-scaling and per-PR resource telemetry, Nx Cloud is the answer.
 
