@@ -84,6 +84,28 @@ export class AdvisoryDbNotFoundError extends Error {
     }
 }
 
+/** Schema version the native reader writes. Must match NATIVE_KNOWN_VERSION in native/src/advisories/schema.rs. */
+export const ADVISORY_DB_SCHEMA_VERSION = 2;
+
+/** An existing advisory database was written by an older build. Refresh it; the file is not migrated. */
+export class AdvisoryDbSchemaError extends Error {
+    override readonly cause = "DB_SCHEMA_OUTDATED";
+
+    constructor(path: string, schemaVersion: number) {
+        super(
+            `Advisory DB at ${path} uses schema v${String(schemaVersion)}; this build of vis needs v${String(ADVISORY_DB_SCHEMA_VERSION)}. Refresh it: run 'vis advisories prune --force', then 'vis advisories sync'.`,
+        );
+        this.name = "AdvisoryDbSchemaError";
+    }
+}
+
+/** Returns the schema error for an existing database that is older than this build, otherwise undefined. */
+export const advisoryDbSchemaError = (dbPath: string): AdvisoryDbSchemaError | undefined => {
+    const { schemaVersion } = nativeStatus(dbPath);
+
+    return schemaVersion < ADVISORY_DB_SCHEMA_VERSION ? new AdvisoryDbSchemaError(dbPath, schemaVersion) : undefined;
+};
+
 export class AdvisorySourceNotAllowedError extends Error {
     // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "SOURCE_NOT_ALLOWED";
@@ -152,6 +174,15 @@ export const validateAdvisorySource = (source: string, allowedHosts?: string[]):
  */
 export const syncAdvisories = async (options: SyncOptions): Promise<SyncResult> => {
     const dbPath = options.dbPath ?? resolveAdvisoryDbPath(options.workspaceRoot);
+
+    // Checked before the ETag short-circuit, so an outdated database is reported instead of "up to date".
+    if (existsSync(dbPath)) {
+        const schemaError = advisoryDbSchemaError(dbPath);
+
+        if (schemaError) {
+            throw schemaError;
+        }
+    }
 
     await mkdir(dirname(dbPath), { recursive: true });
 

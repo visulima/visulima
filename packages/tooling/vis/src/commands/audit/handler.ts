@@ -23,7 +23,7 @@ import { emitJUnitAudit } from "../../report/junit-audit";
 import { emitSarif } from "../../report/sarif";
 import { buildCycloneDxBom } from "../../sbom/cyclonedx";
 import { startScanProgress } from "../../scan/scan-progress";
-import { AdvisoryDbNotFoundError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
+import { AdvisoryDbNotFoundError, advisoryDbSchemaError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
 import type { DirectApplyPlan } from "../../security/apply-direct";
 import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
 import type { DependencyPath } from "../../security/dependency-paths";
@@ -432,9 +432,10 @@ const executeAudit = async (
             .then(() => true)
             .catch(() => false);
 
-        if (!dbExists) {
-            const error = new AdvisoryDbNotFoundError(resolvedDb);
+        // An older database is refused like a missing one: a stale schema would otherwise read as "no findings".
+        const error = dbExists ? advisoryDbSchemaError(resolvedDb) : new AdvisoryDbNotFoundError(resolvedDb);
 
+        if (error) {
             if (quietHeader) {
                 process.stderr.write(`${error.message}\n`);
             } else {

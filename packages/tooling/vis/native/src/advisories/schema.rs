@@ -58,7 +58,7 @@ impl std::fmt::Display for AdvisorySchemaError {
             ),
             Self::TooNew { observed } => write!(
                 f,
-                "Advisory DB schema is v{observed}, this build of vis only knows up to v{NATIVE_KNOWN_VERSION}. Upgrade vis or run 'vis advisories sync --force' to rebuild.",
+                "Advisory DB schema is v{observed}, this build of vis only knows up to v{NATIVE_KNOWN_VERSION}. Upgrade vis, or run 'vis advisories prune --force', then 'vis advisories sync'.",
             ),
             Self::Corrupt(msg) => write!(f, "Advisory DB schema is unreadable: {msg}"),
         }

@@ -9,10 +9,21 @@ const state = vi.hoisted(() => {
         dbPath: "",
         ecosystemPackages: {},
         npmPackages: [] as { name: string; version: string }[],
+        schemaVersion: 2,
     };
 });
 
 const queryAdvisories = vi.hoisted(() => vi.fn((): Map<string, never[]> => new Map()));
+
+// The schema gate reads the version through the native status call. The file itself only has to exist.
+vi.mock(import("#native"), async (importOriginal) => {
+    const actual = await importOriginal();
+
+    return {
+        ...actual,
+        advisoriesStatus: () => { return { ecosystems: [], exists: true, schemaVersion: state.schemaVersion, sizeBytes: 0 }; },
+    };
+});
 
 vi.mock(import("../../../src/security/advisories"), async (importOriginal) => {
     const actual = await importOriginal();
@@ -52,8 +63,6 @@ const { default: execute } = await import("../../../src/commands/audit/handler")
 const runOffline = async (ecosystem: string): Promise<void> => {
     const workspaceRoot = mkdtempSync(join(tmpdir(), "vis-audit-routing-"));
 
-    writeFileSync(state.dbPath, "");
-
     await execute({
         fs: fsPromises,
         logger: console,
@@ -70,6 +79,9 @@ const queriedAs = (ecosystem: string): { name: string; version: string }[][] => 
 describe("vis audit offline routing", () => {
     beforeEach(() => {
         state.dbPath = join(mkdtempSync(join(tmpdir(), "vis-audit-db-")), "advisories.sqlite");
+        writeFileSync(state.dbPath, "");
+        state.schemaVersion = 2;
+        process.exitCode = undefined;
         state.npmPackages = [];
         state.ecosystemPackages = {};
         queryAdvisories.mockClear();
@@ -111,5 +123,17 @@ describe("vis audit offline routing", () => {
 
         expect(queriedAs("Pub")).toStrictEqual([[{ name: "http", version: "1.2.0" }]]);
         expect(process.exitCode).not.toBe(1);
+    });
+
+    it("refuses an offline run on an older advisory database and exits 1 without querying", async () => {
+        expect.assertions(2);
+
+        state.schemaVersion = 1;
+        state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
+
+        await runOffline("npm");
+
+        expect(queryAdvisories).not.toHaveBeenCalled();
+        expect(process.exitCode).toBe(1);
     });
 });
