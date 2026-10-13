@@ -131,7 +131,7 @@ describe("useInput control sequences", () => {
         await delay(100);
     });
 
-    const run = async (chunks: string[]) => {
+    const run = async (chunks: string[], exitOnCtrlC = true) => {
         const received: { input: string; key: Record<string, unknown> }[] = [];
         const stdin = createStdin();
 
@@ -143,7 +143,7 @@ describe("useInput control sequences", () => {
             return <Text>probe</Text>;
         };
 
-        const { unmount } = render(<Probe />, { debug: true, stdin, stdout: createStdout() });
+        const { unmount } = render(<Probe />, { debug: true, exitOnCtrlC, stdin, stdout: createStdout() });
 
         currentUnmount = unmount;
 
@@ -174,6 +174,38 @@ describe("useInput control sequences", () => {
         expect(received[0]).toMatchObject({ input: "x", key: { meta: true } });
         expect(received[1]?.key).toMatchObject({ upArrow: true });
         expect(received).toHaveLength(3);
+    });
+
+    it("reports Ctrl+C that arrives together with ordinary input as its own key", async () => {
+        expect.assertions(1);
+
+        const received = await run(["ab\u0003"], false);
+
+        expect(received.map(({ input, key }) => `${key.ctrl ? "ctrl+" : ""}${input}`)).toStrictEqual(["ab", "ctrl+c"]);
+    });
+
+    it("exits on Ctrl+C that arrives together with ordinary input", async () => {
+        expect.assertions(1);
+
+        const stdin = createStdin();
+
+        const Probe = () => {
+            useInput(() => {});
+
+            return <Text>probe</Text>;
+        };
+
+        const { waitUntilExit } = render(<Probe />, { debug: true, stdin, stdout: createStdout() });
+        let exited = false;
+
+        void waitUntilExit().then(() => {
+            exited = true;
+        });
+        await delay(50);
+        emitReadable(stdin, "ab\u0003");
+        await delay(100);
+
+        expect(exited).toBe(true);
     });
 
     it("treats application keypad Enter like Return", async () => {
@@ -567,5 +599,20 @@ describe("layout details", () => {
         );
 
         expect(output.split("\n")[0]).toHaveLength(13);
+    });
+});
+
+describe("colors", () => {
+    it("accepts whitespace inside rgb()", () => {
+        expect.assertions(1);
+
+        expect(renderToString(<Text color="rgb( 255 , 0 , 0 )">hi</Text>)).toBe(renderToString(<Text color="rgb(255,0,0)">hi</Text>));
+    });
+
+    it("leaves text uncolored for a malformed hex color", () => {
+        expect.assertions(2);
+
+        expect(renderToString(<Text backgroundColor="#12">hi</Text>)).toBe("hi");
+        expect(renderToString(<Text color="#12345">hi</Text>)).toBe("hi");
     });
 });
