@@ -8,10 +8,13 @@
  *   lowercased, without `+metadata`) is skipped. A failed lookup does not skip: the push
  *   then reports the real error.
  * - **Publish.** `dotnet pack &lt;project> -c Release -o &lt;temp dir>`, then
- *   `dotnet nuget push &lt;that one .nupkg> --source &lt;nuget.org> --api-key &lt;key>`, each
- *   through the package manager's argv runner with no shell. `dotnet nuget push` has no
- *   environment input for the key, so the key is on its argv. vis never prints argv, and
- *   it redacts the key from every error it builds. The temp directory is removed after.
+ *   `dotnet nuget push &lt;that one .nupkg> --source &lt;nuget.org>`, each through the package
+ *   manager's argv runner with no shell. The key is not on argv: it is passed as the
+ *   `NUGET_API_KEY` environment variable, which NuGet 7.6 and later read for push
+ *   (nuget.config reference, `apikeys` section). NuGet 7.6 ships with .NET SDK 10.0.300
+ *   (NuGet "duplicate frameworks" docs), so publish refuses a dotnet older than 10.0.300,
+ *   or a pre-release of 10.0.300, with `CONFIG_INVALID`. vis redacts the key from every error it builds, and the temp
+ *   directory is removed after.
  *
  * POSIX only for now: publish refuses on win32 with `CONFIG_INVALID`, after the dry run.
  */
@@ -32,6 +35,27 @@ const PUSH_SOURCE = "https://api.nuget.org/v3/index.json";
 const FLAT_CONTAINER = "https://api.nuget.org/v3-flatcontainer";
 /** The environment variable that holds the API key. The key itself is never named in a message. */
 const KEY_VARIABLE = "NUGET_API_KEY";
+/** The first .NET SDK whose NuGet reads `NUGET_API_KEY` for push. A pre-release of the same version predates it. */
+const ENV_KEY_SDK: readonly [number, number, number] = [10, 0, 300];
+
+/** True when `dotnet --version` output is at or above {@link ENV_KEY_SDK} and is a release, not a pre-release. */
+const supportsEnvironmentKey = (sdkVersion: string): boolean => {
+    const match = /^(\d+)\.(\d+)\.(\d+)(-[\w.-]+)?/.exec(sdkVersion.trim());
+
+    if (!match) {
+        return false;
+    }
+
+    const parts = [Number(match[1]), Number(match[2]), Number(match[3])];
+
+    for (const [index, part] of parts.entries()) {
+        if (part !== ENV_KEY_SDK[index]) {
+            return part > (ENV_KEY_SDK[index] as number);
+        }
+    }
+
+    return match[4] === undefined;
+};
 
 /** The version as NuGet lists it: lowercased, without build metadata. */
 const normalize = (version: string): string => version.split("+")[0]!.toLowerCase();
@@ -92,15 +116,23 @@ export class NuGetVersionActions extends VersionActions {
             });
         }
 
-        const hasDotnet = await context.pm.runner
+        const sdkVersion = await context.pm.runner
             .run("dotnet", ["--version"], { cwd, silent: true })
-            .then((result) => result.exitCode === 0)
-            .catch(() => false);
+            .then((result) => (result.exitCode === 0 ? result.stdout : undefined))
+            .catch(() => undefined);
 
-        if (!hasDotnet) {
+        if (sdkVersion === undefined) {
             throw new VisReleaseError({
                 code: "CONFIG_INVALID",
                 message: `${name} needs the dotnet CLI on PATH to publish, and "dotnet --version" failed. Install the .NET SDK on the runner.`,
+                packageName: name,
+            });
+        }
+
+        if (!supportsEnvironmentKey(sdkVersion)) {
+            throw new VisReleaseError({
+                code: "CONFIG_INVALID",
+                message: `${name} publishes with the ${KEY_VARIABLE} environment variable, which dotnet nuget push reads from .NET SDK ${ENV_KEY_SDK.join(".")} (NuGet 7.6) on. This runner has dotnet ${sdkVersion.trim()}. Install .NET SDK ${ENV_KEY_SDK.join(".")} or later on the runner.`,
                 packageName: name,
             });
         }
@@ -149,12 +181,16 @@ export class NuGetVersionActions extends VersionActions {
                 });
             }
 
-            const pushed = await context.pm.runner.run("dotnet", ["nuget", "push", join(outputDir, packages[0] as string), "--source", PUSH_SOURCE, "--api-key", key], { cwd, silent: false });
+            const pushed = await context.pm.runner.run("dotnet", ["nuget", "push", join(outputDir, packages[0] as string), "--source", PUSH_SOURCE], {
+                cwd,
+                env: { [KEY_VARIABLE]: key },
+                silent: false,
+            });
 
             if (pushed.exitCode !== 0) {
                 throw new VisReleaseError({
                     code: "PUBLISH_FAILED",
-                    hint: `Failing step: dotnet nuget push\nCheck the output above. A version nuget.org already has is refused; the key comes from ${KEY_VARIABLE}.`,
+                    hint: `Failing step: dotnet nuget push\nCheck the output above. A version nuget.org already has is refused. The key comes from ${KEY_VARIABLE}, which dotnet nuget push reads on .NET SDK ${ENV_KEY_SDK.join(".")} or later.`,
                     message: `dotnet nuget push failed for ${name}@${version}: exit ${pushed.exitCode}. stderr: ${redact(pushed.stderr, key)}`,
                     packageName: name,
                 });

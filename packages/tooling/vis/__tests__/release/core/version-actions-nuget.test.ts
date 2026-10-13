@@ -29,7 +29,7 @@ describe.skipIf(process.platform === "win32")(NuGetVersionActions, () => {
     };
 
     /** A fake runner. `pack` writes one `.nupkg` into the `-o` directory, so the real temp-directory flow runs. */
-    const fakeRunner = (overrides: { exitCodes?: Record<string, number>; packages?: string[]; stderr?: Record<string, string> } = {}) => {
+    const fakeRunner = (overrides: { exitCodes?: Record<string, number>; packages?: string[]; sdk?: string; stderr?: Record<string, string> } = {}) => {
         const run = vi.fn(async (_cmd: string, argv: string[]) => {
             const verb = argv[0] ?? "";
             const name = verb === "nuget" ? "push" : verb;
@@ -41,7 +41,9 @@ describe.skipIf(process.platform === "win32")(NuGetVersionActions, () => {
                 }
             }
 
-            return { exitCode: overrides.exitCodes?.[name] ?? 0, stderr: overrides.stderr?.[name] ?? "", stdout: "" };
+            const stdout = verb === "--version" ? `${overrides.sdk ?? "10.0.300"}\n` : "";
+
+            return { exitCode: overrides.exitCodes?.[name] ?? 0, stderr: overrides.stderr?.[name] ?? "", stdout };
         });
 
         return { run, runner: { run } as unknown as CommandRunner };
@@ -92,7 +94,7 @@ describe.skipIf(process.platform === "win32")(NuGetVersionActions, () => {
         expect(fake.run).not.toHaveBeenCalled();
     });
 
-    it("packs, then pushes the one package with the key in argv but not in any output", async () => {
+    it("packs, then pushes the one package with the key in the environment, never in argv or output", async () => {
         expect.hasAssertions();
 
         const fake = fakeRunner();
@@ -103,8 +105,37 @@ describe.skipIf(process.platform === "win32")(NuGetVersionActions, () => {
 
         const pushCall = fake.run.mock.calls.find(([, argv]) => argv[0] === "nuget");
 
-        expect(pushCall?.[1]).toStrictEqual(expect.arrayContaining(["nuget", "push", "--source", "https://api.nuget.org/v3/index.json", "--api-key", KEY]));
-        expect(pushCall?.[1][2]).toMatch(/Contoso\.Lib\.1\.1\.0\.nupkg$/);
+        expect(pushCall?.[1]).toStrictEqual(["nuget", "push", expect.stringMatching(/Contoso\.Lib\.1\.1\.0\.nupkg$/), "--source", "https://api.nuget.org/v3/index.json"]);
+        expect(pushCall?.[1]).not.toContain(KEY);
+        expect(pushCall?.[2]).toMatchObject({ env: { NUGET_API_KEY: KEY } });
+    });
+
+    it.each([
+        ["an older SDK", "10.0.200"],
+        ["a pre-release of 10.0.300", "10.0.300-preview.1.26000.1"],
+        ["an unreadable version", "not-a-version"],
+    ])("refuses with CONFIG_INVALID on %s and names the required SDK, never the key", async (_label, sdk) => {
+        expect.hasAssertions();
+
+        const fake = fakeRunner({ sdk });
+
+        const error = await new NuGetVersionActions().publish(context({ runner: fake.runner })).catch((error_: unknown) => error_);
+
+        expect(error).toMatchObject({ code: "CONFIG_INVALID", message: expect.stringContaining("10.0.300") });
+        expect(String((error as Error).message)).not.toContain(KEY);
+        expect(fake.run).not.toHaveBeenCalledWith("dotnet", expect.arrayContaining(["pack"]), expect.anything());
+    });
+
+    it("never puts the key in a pack failure's message or hint", async () => {
+        expect.hasAssertions();
+
+        const fake = fakeRunner({ exitCodes: { pack: 1 }, stderr: { pack: `pack echoed ${KEY}` } });
+
+        const error = await new NuGetVersionActions().publish(context({ runner: fake.runner })).catch((error_: unknown) => error_);
+        const text = `${String((error as Error).message)} ${String((error as { hint?: string }).hint ?? "")} ${JSON.stringify(error)}`;
+
+        expect(error).toMatchObject({ code: "PUBLISH_FAILED" });
+        expect(text).not.toContain(KEY);
     });
 
     it("skips a version the flat container already lists, comparing lowercased without build metadata", async () => {

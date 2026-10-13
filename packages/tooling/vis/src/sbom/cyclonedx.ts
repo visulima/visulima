@@ -17,6 +17,7 @@ import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
+import { buildNuGetSbomParts } from "./nuget";
 import { toNpmPurl } from "./purl";
 import { buildPythonSbomParts } from "./python";
 import type { VersionIndex } from "./resolve-specifier";
@@ -511,12 +512,14 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const hex = buildHexSbomParts(workspaceRoot, { includeDev });
     // go.sum, pubspec.lock and Package.resolved list versions with no edges (see flat.ts), so each is a flat list.
     const flat = (["Go", "Pub", "SwiftURL"] as const).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
+    // packages.lock.json cannot be narrowed to focused projects (see nuget.ts), so no focus option is passed.
+    const nuget = buildNuGetSbomParts(workspaceRoot);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components)],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies)].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components), ...nuget.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],

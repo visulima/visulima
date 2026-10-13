@@ -600,13 +600,13 @@ The version is a plain `<Version>1.2.0</Version>` literal on one line inside an 
 
 `ProjectReference` to another released project orders the publish. `PackageReference` is not rewritten.
 
-Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet nuget push <that one package> --source https://api.nuget.org/v3/index.json --api-key <key>`. The key is read from `NUGET_API_KEY`. `dotnet nuget push` has no environment input for the key, so it is passed on the command's argument list; vis never logs that list, and it redacts the key from every error. A version nuget.org already lists (checked at `https://api.nuget.org/v3-flatcontainer/<id>/index.json`) is skipped. A failed lookup does not skip; the push then reports the real error.
+Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet nuget push <that one package> --source https://api.nuget.org/v3/index.json`. The key is read from `NUGET_API_KEY` and passed to the push as that environment variable, never on the argument list. NuGet reads `NUGET_API_KEY` for push from NuGet 7.6, which ships with .NET SDK 10.0.300; vis checks `dotnet --version` first and refuses a dotnet older than 10.0.300, or a pre-release of 10.0.300, with `CONFIG_INVALID`. vis redacts the key from every error. A version nuget.org already lists (checked at `https://api.nuget.org/v3-flatcontainer/<id>/index.json`) is skipped. A failed lookup does not skip; the push then reports the real error.
 
 Publishing is POSIX only. On Windows it fails with `CONFIG_INVALID` after the dry run. The `dotnet` CLI (the .NET SDK) must be on `PATH`.
 
 The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` (the last only for C# projects). `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
 
-The SBOM and audit have no NuGet graph: `packages.lock.json` is opt-in (`RestorePackagesWithLockFile`) and vis has no reader for it, so NuGet dependencies are not in the CycloneDX output.
+The SBOM reads `packages.lock.json` at the workspace root when it exists (opt-in with `RestorePackagesWithLockFile`) and adds its `pkg:nuget` components and edges to the CycloneDX output. Focus mode cannot narrow it, so the whole lock is kept. Audit does not check NuGet packages: vis has no offline NuGet version-range matcher, so a NuGet audit would match nothing.
 
 ### Zig packages as release packages
 

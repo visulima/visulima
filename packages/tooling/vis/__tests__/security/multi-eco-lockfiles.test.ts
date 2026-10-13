@@ -229,6 +229,35 @@ describe("findEcosystemLockfile + lockedPackagesForEcosystem", () => {
         ]);
     });
 
+    it("parses a packages.lock.json, one entry per id and version across frameworks", () => {
+        expect.assertions(2);
+
+        // Two frameworks: Serilog is locked at a different version in each, and Newtonsoft.Json repeats with the same version.
+        writeFileSync(
+            join(workspaceRoot, "packages.lock.json"),
+            JSON.stringify({
+                dependencies: {
+                    "net8.0": {
+                        "Microsoft.Extensions.Logging": { resolved: "8.0.0", type: "Transitive" },
+                        "Newtonsoft.Json": { resolved: "13.0.1", type: "Direct" },
+                        Serilog: { dependencies: { "Microsoft.Extensions.Logging": "[8.0.0, )" }, resolved: "3.1.1", type: "Transitive" },
+                    },
+                    net48: {
+                        "Newtonsoft.Json": { resolved: "13.0.1", type: "Direct" },
+                        Serilog: { resolved: "3.0.0", type: "Transitive" },
+                    },
+                },
+                version: 2,
+            }),
+        );
+
+        const packages = lockedPackagesForEcosystem(workspaceRoot, "nuget").map((pkg) => `${pkg.name}@${pkg.version}`);
+
+        // Compared sorted: the entries follow the lock file's key order, which is not part of the contract.
+        expect(packages.toSorted()).toStrictEqual(["Microsoft.Extensions.Logging@8.0.0", "Newtonsoft.Json@13.0.1", "Serilog@3.0.0", "Serilog@3.1.1"]);
+        expect(canonicalEcosystem("nuget")).toBe("NuGet");
+    });
+
     it("returns an empty list when no lockfile is present", () => {
         expect.assertions(2);
 

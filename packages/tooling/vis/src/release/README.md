@@ -244,8 +244,8 @@ Opt-in. With `release: { nuget: { discover: true } }`, every `*.csproj` / `*.fsp
 
 - The version is a plain `<Version>` literal, in the project file or the nearest `Directory.Build.props`. A project's own literal wins over the props value. Projects inheriting one props declaration release in lockstep; the props file is written once. `PackageVersion`, `VersionPrefix`, `VersionSuffix`, `Import`, a `Version` in `Directory.Build.targets`, conditional or repeated declarations, and expressions fail the release with `CONFIG_INVALID`. Projects with no version, with `IsPackable` set to `false`, with `IsTestProject` set to `true`, or referencing `Microsoft.NET.Test.Sdk` are not released.
 - `ProjectReference` to another released project is recorded as `*`. `PackageReference` is not rewritten.
-- Publishing runs `dotnet pack -c Release -o <temp>` and `dotnet nuget push` to nuget.org, with the key from `NUGET_API_KEY`. A version the flat container already lists is skipped. The key is on the push's argv (the CLI has no environment input for it) and is redacted from every error.
-- The NuGet lock file is not read, so the SBOM has no NuGet graph. POSIX only; Windows refuses after the dry run.
+- Publishing runs `dotnet pack -c Release -o <temp>` and `dotnet nuget push` to nuget.org. The key comes from `NUGET_API_KEY` and reaches the push as that environment variable, not argv (NuGet 7.6+, .NET SDK 10.0.300+; older SDKs are refused). A version the flat container already lists is skipped. The key is redacted from every error.
+- The SBOM reads `packages.lock.json` at the workspace root (see `src/sbom/nuget.ts`). POSIX only; Windows refuses after the dry run.
 
 ## Workspace + catalog: protocol resolution
 

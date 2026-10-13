@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
+import { parseNuGetLockEntries } from "../sbom/nuget";
 import { composerVersionFromLock } from "../util/composer";
 import type { InstalledPackage } from "./dependency-scan";
 
@@ -16,6 +17,7 @@ const ECOSYSTEM_LOCKFILES: Record<string, string[]> = {
     "crates.io": ["Cargo.lock"],
     Go: ["go.sum"],
     Maven: ["gradle.lockfile", "pom.xml"],
+    NuGet: ["packages.lock.json"],
     Packagist: ["composer.lock"],
     Pub: ["pubspec.lock"],
     PyPI: ["uv.lock", "poetry.lock", "Pipfile.lock"],
@@ -30,6 +32,7 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
     go: "Go",
     maven: "Maven",
     npm: "npm",
+    nuget: "NuGet",
     packagist: "Packagist",
     pypi: "PyPI",
     rubygems: "RubyGems",
@@ -432,6 +435,12 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
         }
         case "Package.resolved": {
             parsed = parsePackageResolved(content);
+            break;
+        }
+        case "packages.lock.json": {
+            parsed = parseNuGetLockEntries(content).map((entry) => {
+                return { isDev: false, name: entry.name, version: entry.version };
+            });
             break;
         }
         case "Pipfile.lock": {
