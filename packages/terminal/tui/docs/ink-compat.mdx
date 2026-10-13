@@ -50,7 +50,7 @@ description: "Ink API parity matrix, render option differences, and native-only 
 
 The Ink layer follows Ink 8 for these points:
 
-- `stdin`, `stdout` and `stderr` accept any Node.js stream; `useStdout()` / `useStderr()` / `useStdin()` expose them as generic streams, so use `useWindowSize()` instead of `stdout.columns`. Raw mode is only used when `stdin` is a TTY that has `setRawMode()`; `useInput()` and `useFocus()` still need such a stdin and throw otherwise.
+- `stdin`, `stdout` and `stderr` accept any Node.js stream; `useStdout()` / `useStderr()` / `useStdin()` expose them as generic streams, so use `useWindowSize()` instead of `stdout.columns`. Raw mode is only used when `stdin` is a TTY that has `setRawMode()`, and `isRawModeSupported` reports that. `useInput()` and `usePaste()` throw on any other stdin, so guard them with `isRawModeSupported`. `useFocus()` does not throw: focus still works through `autoFocus` and `focus()`, but no Tab key reaches it because input is not read from such a stdin.
 - `<Box>` `minWidth` / `maxWidth` take a number of columns. Percentages are not supported.
 - `<Box>` `contentOffsetX` / `contentOffsetY` shift children for scrollable views.
 - `useInput` ignores terminal replies and reports (focus in/out, cursor position, mouse) instead of passing them as typed input; the application keypad Enter arrives as `key.return`.

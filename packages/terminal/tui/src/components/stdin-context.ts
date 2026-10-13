@@ -11,7 +11,7 @@ export type PublicProps = {
     readonly isRawModeSupported: boolean;
 
     /**
-     * Ink exposes this function via own `&lt;StdinContext>` to be able to handle Ctrl+C, that's why you should use Ink's `setRawMode` instead of `process.stdin.setRawMode`. If the `stdin` stream passed to Ink does not support setRawMode, this function does nothing.
+     * Ink exposes this function via own `&lt;StdinContext>` to be able to handle Ctrl+C, that's why you should use Ink's `setRawMode` instead of `process.stdin.setRawMode`. It throws unless `isRawModeSupported` is `true`, so guard calls with that flag.
      */
     readonly setRawMode: (value: boolean) => void;
 

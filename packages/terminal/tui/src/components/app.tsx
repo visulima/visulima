@@ -243,7 +243,8 @@ const App = ({
 
     // Determines if TTY is supported on the provided stdin
     // Raw mode needs a TTY that actually exposes `setRawMode()`; other streams (e.g. a `PassThrough`) are not raw-capable.
-    const isRawModeSupported = stdin.isTTY && typeof stdin.setRawMode === "function";
+    // `isTTY` is absent (undefined) on non-TTY streams, so the result must be coerced to a real boolean.
+    const isRawModeSupported = stdin.isTTY ? typeof stdin.setRawMode === "function" : false;
 
     const detachReadableListener = useCallback((): void => {
         if (!readableListenerRef.current) {
