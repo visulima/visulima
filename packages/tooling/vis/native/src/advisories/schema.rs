@@ -1,9 +1,9 @@
 use rusqlite::{params, Connection};
 
 /// Schema version that this build of `vis-native` writes.
-pub const NATIVE_KNOWN_VERSION: u32 = 1;
+pub const NATIVE_KNOWN_VERSION: u32 = 2;
 /// Oldest schema version this build can still read.
-pub const MIN_SUPPORTED_VERSION: u32 = 1;
+pub const MIN_SUPPORTED_VERSION: u32 = 2;
 
 const SCHEMA_SQL: &str = r#"
 CREATE TABLE IF NOT EXISTS meta (
@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS affected (
     package     TEXT NOT NULL,
     introduced  TEXT NOT NULL,
     fixed       TEXT,
+    last_affected TEXT,
     range_index INTEGER NOT NULL,
     PRIMARY KEY (advisory_id, ecosystem, package, introduced, range_index)
 );
@@ -53,11 +54,11 @@ impl std::fmt::Display for AdvisorySchemaError {
         match self {
             Self::TooOld { observed } => write!(
                 f,
-                "Advisory DB schema is v{observed}, this build of vis expects >= v{MIN_SUPPORTED_VERSION}. Run 'vis advisories sync --force'.",
+                "Advisory DB schema is v{observed}, this build of vis expects v{NATIVE_KNOWN_VERSION}. Run 'vis advisories sync' to rebuild it.",
             ),
             Self::TooNew { observed } => write!(
                 f,
-                "Advisory DB schema is v{observed}, this build of vis only knows up to v{NATIVE_KNOWN_VERSION}. Upgrade vis or run 'vis advisories sync --force' to rebuild.",
+                "Advisory DB schema is v{observed}, this build of vis only knows up to v{NATIVE_KNOWN_VERSION}. Upgrade vis, or run 'vis advisories prune --force', then 'vis advisories sync'.",
             ),
             Self::Corrupt(msg) => write!(f, "Advisory DB schema is unreadable: {msg}"),
         }
@@ -103,9 +104,30 @@ pub fn check_schema(conn: &Connection) -> Result<(), AdvisorySchemaError> {
     }
 }
 
+/// Gate for ingest. `ensure_schema` uses `CREATE TABLE IF NOT EXISTS`, so an
+/// older `affected` table would survive without the new columns. A file with
+/// no readable version is new and passes; anything else must match this build.
+pub fn check_writable(conn: &Connection) -> Result<(), AdvisorySchemaError> {
+    if read_schema_version(conn).is_err() {
+        return Ok(());
+    }
+    check_schema(conn)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn check_writable_refuses_older_schema_and_accepts_fresh_file() {
+        let fresh = Connection::open_in_memory().unwrap();
+        assert!(check_writable(&fresh).is_ok());
+
+        let old = Connection::open_in_memory().unwrap();
+        ensure_schema(&old).unwrap();
+        old.execute("UPDATE meta SET value = '1' WHERE ecosystem = '' AND key = 'schema_version'", []).unwrap();
+        assert!(matches!(check_writable(&old), Err(AdvisorySchemaError::TooOld { observed: 1 })));
+    }
 
     #[test]
     fn ensure_creates_tables_and_stamps_version() {

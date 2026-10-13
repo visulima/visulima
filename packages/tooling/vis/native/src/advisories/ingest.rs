@@ -8,7 +8,7 @@ use rusqlite::{params, Connection};
 use zip::ZipArchive;
 
 use super::osv;
-use super::schema::ensure_schema;
+use super::schema::{check_writable, ensure_schema};
 
 /// Per-entry uncompressed cap. Real OSV records are < 64 KiB; the cap is
 /// generous to allow upstream growth without rebuild but tight enough to stop
@@ -109,6 +109,7 @@ pub fn ingest<P: AsRef<Path>>(
     conn.pragma_update(None, "synchronous", "NORMAL")?;
     conn.pragma_update(None, "foreign_keys", "ON")?;
 
+    check_writable(&conn).map_err(IngestError::Schema)?;
     ensure_schema(&conn)?;
 
     let file = File::open(zip_path.as_ref())?;
@@ -134,8 +135,8 @@ pub fn ingest<P: AsRef<Path>>(
         let mut insert_alias =
             tx.prepare("INSERT OR IGNORE INTO advisory_alias (advisory_id, alias) VALUES (?1, ?2)")?;
         let mut insert_affected = tx.prepare(
-            "INSERT OR REPLACE INTO affected (advisory_id, ecosystem, package, introduced, fixed, range_index) \
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            "INSERT OR REPLACE INTO affected (advisory_id, ecosystem, package, introduced, fixed, last_affected, range_index) \
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
         )?;
 
         for i in 0..total {
@@ -172,16 +173,19 @@ pub fn ingest<P: AsRef<Path>>(
             // overlapping ranges don't collide on the PK.
             let mut per_package: HashMap<(String, String), i64> = HashMap::new();
             for affected in &advisory.affected {
-                if !affected.package.ecosystem.eq_ignore_ascii_case(ecosystem) {
+                let Some(package) = affected.package.as_ref() else {
+                    continue;
+                };
+                if !package.ecosystem.eq_ignore_ascii_case(ecosystem) {
                     continue;
                 }
-                let package_norm = affected.package.name.to_lowercase();
+                let package_norm = package.name.to_lowercase();
                 for range in &affected.ranges {
                     if range.kind != "SEMVER" && range.kind != "ECOSYSTEM" {
                         continue;
                     }
                     for pair in range.to_pairs() {
-                        let key = (affected.package.ecosystem.clone(), package_norm.clone());
+                        let key = (package.ecosystem.clone(), package_norm.clone());
                         let idx = per_package.entry(key).or_insert(0);
                         let range_index = *idx;
                         *idx += 1;
@@ -192,6 +196,7 @@ pub fn ingest<P: AsRef<Path>>(
                             package_norm,
                             pair.introduced,
                             pair.fixed,
+                            pair.last_affected,
                             range_index,
                         ])?;
                     }

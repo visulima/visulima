@@ -20,6 +20,8 @@ packages:
   - "!packages/tooling/vis/__fixtures__/init/**"
   - "!packages/tooling/vis/__tests__/release/fixtures/**"
   - "!packages/tooling/vis/__bench__/cli/fixtures/**"
+  - "!packages/tooling/vis/examples/docker/packages/api"
+  - "!packages/tooling/vis/examples/service-preflight/packages/api"
 
 allowBuilds:
   '@firebase/util': false
@@ -102,7 +104,7 @@ autoInstallPeers: true
 
 blockExoticSubdeps: true
 
-managePackageManagerVersions: true
+pmOnFail: download
 
 catalogs:
   backend:

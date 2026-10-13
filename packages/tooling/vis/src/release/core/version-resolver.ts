@@ -30,6 +30,7 @@ import semver from "semver";
 
 import type { PerPackageReleaseConfig, VisReleaseConfig, WorkspacePackage } from "../types";
 import type { DependencyGraph } from "./dep-graph";
+import { tagSafeName } from "./git";
 import type { CommandRunner, PackageManagerAdapter } from "./package-managers/interface";
 import { createVersionActions } from "./version-actions/registry";
 import { resolveVersionActionsId } from "./workspace";
@@ -196,12 +197,12 @@ export const compileReleaseTagRegex = (pattern: string, pkg: { name: string }): 
 
         switch (key) {
             case "name": {
-                reSource += escape(pkg.name);
+                reSource += escape(tagSafeName(pkg.name));
 
                 break;
             }
             case "unscopedName": {
-                reSource += escape(pkg.name.replace(/^@[^/]+\//, ""));
+                reSource += escape(tagSafeName(pkg.name.replace(/^@[^/]+\//, "")));
 
                 break;
             }
@@ -238,11 +239,11 @@ export const DEFAULT_RELEASE_TAG_PATTERN = "{name}@{version}";
 export const releaseTagListGlob = (pattern: string, pkg: { name: string }): string =>
     pattern.replaceAll(/\{(name|unscopedName|version|major|minor|patch|date|channel)\}/g, (_match, key: string) => {
         if (key === "name") {
-            return pkg.name;
+            return tagSafeName(pkg.name);
         }
 
         if (key === "unscopedName") {
-            return pkg.name.replace(/^@[^/]+\//, "");
+            return tagSafeName(pkg.name.replace(/^@[^/]+\//, ""));
         }
 
         return "*";

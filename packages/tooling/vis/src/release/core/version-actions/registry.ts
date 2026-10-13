@@ -14,15 +14,24 @@
  * the orchestrator or resolver does not create a circular dependency.
  */
 import { CargoVersionActions } from "./cargo";
+import { ComposerVersionActions } from "./composer";
 import { ContainerActions } from "./container";
+import { DartVersionActions } from "./dart";
+import { GemVersionActions } from "./gem";
+import { GoVersionActions } from "./go";
+import { GradleVersionActions } from "./gradle";
+import { HexVersionActions } from "./hex";
 import type { VersionActions } from "./interface";
 import { JsrVersionActions } from "./jsr";
 import { MavenVersionActions } from "./maven";
 import { NativeAddonVersionActions } from "./native-addon";
 import { NpmVersionActions } from "./npm";
+import { NuGetVersionActions } from "./nuget";
 import { PrivateVersionActions } from "./private";
 import { PythonVersionActions } from "./python";
 import { ShellPublishActions } from "./shell";
+import { SwiftVersionActions } from "./swift";
+import { ZigVersionActions } from "./zig";
 
 /**
  * Construct the {@link VersionActions} implementation for a resolved id.
@@ -37,8 +46,27 @@ export const createVersionActions = (id: string): VersionActions => {
         case "cargo": {
             return new CargoVersionActions();
         }
+        case "composer": {
+            return new ComposerVersionActions();
+        }
         case "container": {
             return new ContainerActions();
+        }
+        case "dart": {
+            return new DartVersionActions();
+        }
+        case "gem": {
+            return new GemVersionActions();
+        }
+
+        case "go": {
+            return new GoVersionActions();
+        }
+        case "gradle": {
+            return new GradleVersionActions();
+        }
+        case "hex": {
+            return new HexVersionActions();
         }
         case "jsr": {
             return new JsrVersionActions();
@@ -49,6 +77,9 @@ export const createVersionActions = (id: string): VersionActions => {
         case "native-addon": {
             return new NativeAddonVersionActions();
         }
+        case "nuget": {
+            return new NuGetVersionActions();
+        }
         case "private": {
             return new PrivateVersionActions();
         }
@@ -57,6 +88,12 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "shell": {
             return new ShellPublishActions();
+        }
+        case "swift": {
+            return new SwiftVersionActions();
+        }
+        case "zig": {
+            return new ZigVersionActions();
         }
         default: {
             return new NpmVersionActions();

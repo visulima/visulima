@@ -657,7 +657,7 @@ export const assembleReleasePlan = (
     config: VisReleaseConfig,
     options: AssembleReleasePlanOptions = {},
 ): ReleasePlan => {
-    // Replay files (tegami parity) are changelog-only + retained — they must
+    // Replay files are changelog-only + retained — they must
     // not feed version computation. Split them off so every existing bump path
     // (collectExplicitBumps / phaseC / findChangeFilesFor) sees only normal
     // files; the replay engine re-attaches their bodies after the plan is built.

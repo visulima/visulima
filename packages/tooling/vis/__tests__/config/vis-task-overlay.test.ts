@@ -164,6 +164,27 @@ describe("vis.task.ts per-package overlay", () => {
         expect(target?.always).toBe(false);
     });
 
+    it("skips overlays of Python directories while python.discover is off", async () => {
+        expect.assertions(3);
+
+        const pyDirectory = join(scratch, "packages", "py-lib");
+
+        mkdirSync(pyDirectory, { recursive: true });
+        writeFileSync(join(pyDirectory, "pyproject.toml"), "[project]\nname = \"py-lib\"\nversion = \"0.1.0\"\n");
+        writeFileSync(join(pyDirectory, "vis.task.ts"), "export default { tasks: { build: { command: ");
+
+        // The overlay is broken, but discovery never keeps the directory, so loading must not reject.
+        await expect(loadVisTaskConfigsForWorkspace(scratch, {})).resolves.toStrictEqual(new Map());
+
+        writeFileSync(join(pyDirectory, "vis.task.ts"), "export default { tasks: { build: { command: \"from-py-overlay\" } } };");
+
+        const off = await loadVisTaskConfigsForWorkspace(scratch, {});
+        const on = await loadVisTaskConfigsForWorkspace(scratch, { python: { discover: true } });
+
+        expect(off.has("packages/py-lib")).toBe(false);
+        expect(on.has("packages/py-lib")).toBe(true);
+    });
+
     it("uses project.json#name as the project key when set, overriding package.json#name", async () => {
         expect.assertions(3);
 

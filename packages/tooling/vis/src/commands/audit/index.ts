@@ -28,7 +28,7 @@ const auditOptionDefinitions = {
     },
     ecosystem: {
         description:
-                "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
+                "Comma-separated list of OSV ecosystems to scan (default: npm). Supported: npm, pypi, crates.io (or 'cargo'), maven, go, hex, rubygems. Non-npm ecosystems require --offline (online OSV path is npm-only).",
         type: String,
     },
     "exit-code": {

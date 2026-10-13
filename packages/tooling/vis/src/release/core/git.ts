@@ -786,11 +786,18 @@ export const pushBranch = async (ctx: GitContext, branch: string, options: { for
 // ── Tag-pattern computation ────────────────────────────────────────
 
 /**
+ * The package name as it appears in a git tag. Git refuses `:` in ref names,
+ * so a Maven coordinate (`groupId:artifactId`) tags as `groupId/artifactId`.
+ * npm, Cargo and Python names never contain `:`, so they are unchanged.
+ */
+export const tagSafeName = (packageName: string): string => packageName.replaceAll(":", "/");
+
+/**
  * Default tag pattern for a release: `&lt;package-name>@&lt;version>`.
  * Matches semantic-release / changesets / bumpy convention so existing
  * tag history continues to work post-migration.
  */
-export const defaultTagFor = (packageName: string, version: string): string => `${packageName}@${version}`;
+export const defaultTagFor = (packageName: string, version: string): string => `${tagSafeName(packageName)}@${version}`;
 
 /**
  * Floating major tag for a package version: the scope-qualified name with `@`
@@ -800,7 +807,7 @@ export const defaultTagFor = (packageName: string, version: string): string => `
  */
 export const floatingMajorTagFor = (packageName: string, version: string): string | undefined => {
     const major = version.split(/[-+]/u, 1)[0]!.split(".")[0];
-    const safeName = packageName.replace(/^@/u, "").replaceAll("/", "-");
+    const safeName = packageName.replace(/^@/u, "").replaceAll("/", "-").replaceAll(":", "-");
 
     return major === undefined || major === "" || safeName === "" ? undefined : `${safeName}-v${major}`;
 };
@@ -832,9 +839,9 @@ export const renderTagPattern = (template: string, tokens: { channel?: string; d
         date: tokens.date ?? new Date().toISOString().slice(0, 10),
         major,
         minor,
-        name: tokens.name ?? "",
+        name: tokens.name ? tagSafeName(tokens.name) : "",
         patch,
-        unscopedName: tokens.name ? tokens.name.replace(/^@[^/]+\//, "") : "",
+        unscopedName: tokens.name ? tagSafeName(tokens.name.replace(/^@[^/]+\//, "")) : "",
         version,
     };
 
