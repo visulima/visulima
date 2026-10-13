@@ -43,12 +43,15 @@ describe("zig task projects", () => {
         write("build.zig.zon", ".{ .name = .app, .version = \"1.0.0\", .dependencies = .{ .core = .{ .path = \"packages/core\" } }, .paths = .{ \"build.zig\" } }\n");
         write("packages/core/build.zig.zon", ".{ .name = .core, .version = \"1.0.0\", .paths = .{ \"build.zig\" } }\n");
 
-        const { workspace } = discoverWorkspace(root, { zig: { discover: true } });
-        const targets = workspace.projects["core"]?.targets ?? {};
+        // The runner reads target types from projectOptions; the Nx-shaped workspace view strips `type`.
+        const { projectOptions, workspace } = discoverWorkspace(root, { zig: { discover: true } });
+        const targets = projectOptions.get("core") ?? {};
 
+        expect(workspace.projects["core"]?.targets).toHaveProperty("test");
         expect(targets["build"]).toMatchObject({ command: "zig build" });
-        expect(targets["test"]).toMatchObject({ command: "zig build test" });
-        expect(targets["format:check"]).toMatchObject({ command: "zig fmt --check ." });
+        expect(targets["build"]).not.toHaveProperty("type");
+        expect(targets["test"]).toMatchObject({ command: "zig build test", type: "test" });
+        expect(targets["format:check"]).toMatchObject({ command: "zig fmt --check .", type: "test" });
     });
 
     it("returns nothing when the root manifest does not parse", () => {
