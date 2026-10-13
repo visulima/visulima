@@ -29,7 +29,22 @@ export interface ZigStringValue {
     value: string;
 }
 
+/** One entry of `.dependencies`. A dependency has a `.url` and `.hash`, or a `.path`. */
+export interface ZigDependency {
+    /** The `.hash` string, as written (a multihash, or the `name-version-hashplus` form). */
+    hash: string | undefined;
+    line: number;
+    /** The field name in `.dependencies`, e.g. `clap` for `.clap = .{ ... }`. */
+    name: string;
+    /** The `.path` string, as written. */
+    path: string | undefined;
+    /** The `.url` string, as written. */
+    url: string | undefined;
+}
+
 export interface ZigManifest {
+    /** Every entry of `.dependencies`, in file order. */
+    dependencies: ZigDependency[];
     /** The `.name` value, from an enum literal (`.foo`) or a string. */
     name: { line: number; value: string } | undefined;
     /** Relative `.path` values of `.dependencies`, as written in the file. */
@@ -296,6 +311,7 @@ export const parseZigManifest = (raw: string, file: string): ZigManifest => {
     }
 
     const pathDependencies: string[] = [];
+    const dependencyList: ZigDependency[] = [];
     const dependencies = onlyField("dependencies");
 
     if (dependencies !== undefined) {
@@ -308,17 +324,33 @@ export const parseZigManifest = (raw: string, file: string): ZigManifest => {
                 throw new ZigManifestError(file, `${file} line ${String(dependency.line)}: dependency .${dependency.name} is not a struct.`);
             }
 
-            for (const field of dependency.value.fields.filter((candidate) => candidate.name === "path")) {
-                if (field.value.kind !== "string") {
-                    throw new ZigManifestError(file, `${file} line ${String(field.line)}: dependency .${dependency.name} sets .path to something other than a string literal.`);
+            const stringField = (fieldName: "hash" | "path" | "url"): string | undefined => {
+                const matches = dependency.value.kind === "struct" ? dependency.value.fields.filter((candidate) => candidate.name === fieldName) : [];
+
+                if (matches.length === 0) {
+                    return undefined;
                 }
 
-                pathDependencies.push(field.value.value);
+                const field = matches[0];
+
+                if (field?.value.kind !== "string") {
+                    throw new ZigManifestError(file, `${file} line ${String(field?.line ?? dependency.line)}: dependency .${dependency.name} sets .${fieldName} to something other than a string literal.`);
+                }
+
+                return field.value.value;
+            };
+
+            const path = stringField("path");
+
+            if (path !== undefined) {
+                pathDependencies.push(path);
             }
+
+            dependencyList.push({ hash: stringField("hash"), line: dependency.line, name: dependency.name, path, url: stringField("url") });
         }
     }
 
-    return { name, pathDependencies, version };
+    return { dependencies: dependencyList, name, pathDependencies, version };
 };
 
 export interface ZigManifestNode {

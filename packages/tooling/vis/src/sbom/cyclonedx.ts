@@ -23,6 +23,7 @@ import { buildPythonSbomParts } from "./python";
 import type { VersionIndex } from "./resolve-specifier";
 import { resolveSpecifier } from "./resolve-specifier";
 import type { Component, ComponentScope, CycloneDxBom, Dependency, ExternalReference, Hash, LicenseChoice } from "./types";
+import { buildZigSbomParts } from "./zig";
 
 /**
  * CycloneDX 1.7 BOM builder — bridges vis' workspace graph and the
@@ -514,12 +515,14 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const flat = (["Go", "Pub", "SwiftURL"] as const).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
     // packages.lock.json cannot be narrowed to focused projects (see nuget.ts), so no focus option is passed.
     const nuget = buildNuGetSbomParts(workspaceRoot);
+    // build.zig.zon `.dependencies` of the root and its in-workspace path packages: a flat list with no edges (see zig.ts).
+    const zig = buildZigSbomParts(workspaceRoot);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components), ...nuget.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],

@@ -618,6 +618,8 @@ Zig has no registry, so publishing is the git tag. The release creates the tag `
 
 The task side is `zig.discover: true` in `vis.config.ts` (off by default). It adds `build` (`zig build`), `test` (`zig build test`) and `format:check` (`zig fmt --check .`) to each Zig package, run in the package directory. The workspace root is not a task project, so a single-package repo gets no Zig tasks from this option. These commands are POSIX only; the Windows path is not verified.
 
+`vis sbom` lists the `.dependencies` of the root `build.zig.zon` and of its in-workspace `.path` packages as a flat list with no edges. A `.url` dependency is named by its host and path, as `pkg:github/` for github.com and `pkg:generic/` elsewhere. Only a tag archive (`…/archive/refs/tags/<tag>.tar.gz`, `.tgz` or `.zip`) gets a version, which is the tag with a leading `v` removed. Any other URL, such as a commit archive or a `git+` URL, has no version, and the component's `vis:zig:version` property says so. A `.path` dependency is named by its directory and has no version. A legacy `1220…` hash is recorded as a SHA-256. The current `name-version-hash` form is kept in the `vis:zig:hash` property, because its digest is truncated and is not a full SHA-256. The hash is over the package's files as Zig filters them, not over the archive.
+
 `vis audit --ecosystem zig` is refused: OSV has no Zig ecosystem and there is no Zig lockfile with versions.
 
 ### Dart packages as release packages

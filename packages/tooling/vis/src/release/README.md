@@ -208,6 +208,7 @@ Opt-in. With `release: { zig: { discover: true } }`, the root `build.zig.zon` an
 - `.path` dependencies order the release and are recorded as `*`. `.url` dependencies are not rewritten.
 - Publishing is the git tag: the existing tag (`releaseTagPattern` or `<name>@<version>`) marks the package as already published. No command runs and nothing is uploaded. POSIX only; Windows refuses after the dry run.
 - Zig has no lockfile vis maintains, so nothing else is written.
+- `vis sbom` lists the `.dependencies` of the root `build.zig.zon` and of its in-workspace `.path` packages as a flat list with no edges. A `.url` dependency is named by its host and path, as `pkg:github/` for github.com and `pkg:generic/` elsewhere. Only a tag archive (`…/archive/refs/tags/<tag>.tar.gz`, `.tgz` or `.zip`) gets a version, which is the tag with a leading `v` removed. Any other URL, such as a commit archive or a `git+` URL, has no version, and the component's `vis:zig:version` property says so. A `.path` dependency is named by its directory and has no version. A legacy `1220…` hash is recorded as a SHA-256. The current `name-version-hash` form is kept in the `vis:zig:hash` property, because its digest is truncated and is not a full SHA-256. The hash is over the package's files as Zig filters them, not over the archive.
 
 ## Dart packages as release packages (`release.dart.discover`)
 
