@@ -1574,7 +1574,9 @@ export default class Ink {
             // `output` here would leave the log believing the live region is one
             // row taller than it is, and the next clear() would erase the bottom
             // line of the static block above it. See vadimdemedes/ink#974.
-            this.options.stdout.write(clearScreenAndHomeCursor + this.fullStaticOutput + backbufferOutput + outputToRender);
+            // <Static> output is not replayed here: it was already written once, and replaying it on every
+            // full clear would stack another copy of the static history into the terminal's scrollback.
+            this.options.stdout.write(clearScreenAndHomeCursor + backbufferOutput + outputToRender);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;

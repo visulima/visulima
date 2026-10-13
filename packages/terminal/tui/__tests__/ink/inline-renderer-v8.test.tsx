@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign, no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group, regexp/no-obscure-range -- the VT model mutates its screen and parses control bytes by design */
 import { describe, expect, it } from "vitest";
 
-import { Box, Cursor, Text } from "../../src/components/index";
+import { Box, Cursor, Static, Text } from "../../src/components/index";
 import { render } from "../../src/ink/index";
 import logUpdate from "../../src/ink/log-update";
 import createStdout from "../helpers/ink-create-stdout";
@@ -483,6 +483,39 @@ describe("inline renderer: rows shrinking", () => {
 
         expect(visibleRows(screen)[0]).toBe("$ prompt");
         expect(countOccurrences(visibleRows(screen).join("\n"), "Frame text")).toBe(1);
+
+        unmount();
+    });
+});
+
+const ALT_SCREEN_ON = "\u001B[?1049h";
+
+describe("inline renderer: static output", () => {
+    const staticItem = (item: string) => <Text key={item}>{item}</Text>;
+
+    it("does not replay static output on a full-clear frame", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, 6);
+
+        const tree = (height: number) => (
+            <>
+                <Static items={["static-one"]}>{staticItem}</Static>
+                <Box flexDirection="column" height={height}>
+                    <Text>live</Text>
+                </Box>
+            </>
+        );
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(tree(2), { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        rerender(tree(7));
+
+        await waitUntilRenderFlush();
+
+        expect(countOccurrences(stdout.getWrites().join(""), "static-one")).toBe(1);
 
         unmount();
     });
