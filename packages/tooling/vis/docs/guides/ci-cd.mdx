@@ -203,6 +203,35 @@ heal:
 
 When a maintainer comments `/vis heal accept` on the MR, run `vis ai heal accept` from a follow-up pipeline (or scheduled poll) — the command re-derives the proposal, validates it, and commits via the GitLab REST API using the same token.
 
+## Azure Pipelines
+
+`vis ci` detects Azure Pipelines via `TF_BUILD=True` and derives the affected-graph base from `SYSTEM_PULLREQUEST_TARGETBRANCHNAME` (set on pull-request builds, from the `System.PullRequest.TargetBranchName` variable) and the head from `BUILD_SOURCEVERSION` (`Build.SourceVersion`). Azure exposes no previous-build SHA, so non-PR builds compare against `origin/<defaultBase>`.
+
+```yaml
+trigger: none
+
+pr:
+    branches:
+        include:
+            - main
+
+pool:
+    vmImage: ubuntu-latest
+
+steps:
+    - checkout: self
+      fetchDepth: 0 # Full history so origin/<target> resolves for affected detection
+    - task: UseNode@1
+      inputs:
+          version: 22.x
+    - script: corepack enable && corepack prepare pnpm@latest --activate
+      displayName: Enable pnpm
+    - script: pnpm vis ci lint,test,build
+      displayName: vis ci
+```
+
+Pass `--base` or `--head` to `vis ci` to override the detected refs. Set `defaultBase` in `vis.config.ts` if your default branch is not `main`.
+
 ## Buildkite
 
 Buildkite agents auto-detect through `BUILDKITE`, `BUILDKITE_PULL_REQUEST_BASE_BRANCH`, and `BUILDKITE_COMMIT`. `vis ai heal` renders as a build [annotation](https://buildkite.com/docs/agent/v3/cli-annotate); acceptance is a manual unblock on a [block step](https://buildkite.com/docs/pipelines/block-step) — there is no PR-comment surface to listen to.

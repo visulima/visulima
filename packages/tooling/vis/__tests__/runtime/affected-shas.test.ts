@@ -157,6 +157,56 @@ describe(resolveAffectedShas, () => {
         });
     });
 
+    describe("azure pipelines provider", () => {
+        it("uses SYSTEM_PULLREQUEST_TARGETBRANCHNAME and BUILD_SOURCEVERSION on PR builds", () => {
+            expect.assertions(3);
+
+            const result = resolveAffectedShas(
+                makeOptions({
+                    env: { BUILD_SOURCEVERSION: "azSha", SYSTEM_PULLREQUEST_TARGETBRANCHNAME: "main", TF_BUILD: "True" },
+                }),
+            );
+
+            expect(result.provider).toBe("azure");
+            expect(result.base).toBe("origin/main");
+            expect(result.head).toBe("azSha");
+        });
+
+        it("strips refs/heads/ from SYSTEM_PULLREQUEST_TARGETBRANCH when the short name is missing", () => {
+            expect.assertions(1);
+
+            const result = resolveAffectedShas(
+                makeOptions({
+                    env: { BUILD_SOURCEVERSION: "azSha", SYSTEM_PULLREQUEST_TARGETBRANCH: "refs/heads/release", TF_BUILD: "True" },
+                }),
+            );
+
+            expect(result.base).toBe("origin/release");
+        });
+
+        it("detects Azure from lower-case TF_BUILD and falls back to origin/<defaultBase> on non-PR builds", () => {
+            expect.assertions(2);
+
+            const result = resolveAffectedShas(
+                makeOptions({
+                    defaultBase: "develop",
+                    env: { BUILD_SOURCEVERSION: "azSha", TF_BUILD: "true" },
+                }),
+            );
+
+            expect(result.provider).toBe("azure");
+            expect(result.base).toBe("origin/develop");
+        });
+
+        it("ignores TF_BUILD when it is not true", () => {
+            expect.assertions(1);
+
+            const result = resolveAffectedShas(makeOptions({ env: { TF_BUILD: "False" } }));
+
+            expect(result.provider).toBe("local");
+        });
+    });
+
     describe("buildkite provider (naive)", () => {
         it("uses BUILDKITE_PULL_REQUEST_BASE_BRANCH on PR builds", () => {
             expect.assertions(3);
