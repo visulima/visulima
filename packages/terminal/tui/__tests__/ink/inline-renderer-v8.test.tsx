@@ -432,3 +432,58 @@ describe("inline renderer: clear() keeps history and restores the frame", () => 
         expect(stdout.getWrites().slice(before).join("")).not.toContain("Only once");
     });
 });
+
+const countOccurrences = (haystack: string, needle: string): number => haystack.split(needle).length - 1;
+
+describe("inline renderer: rows shrinking", () => {
+    it("redraws the frame after the terminal loses rows", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const { unmount, waitUntilRenderFlush } = render(<Text>Frame text</Text>, { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        const before = stdout.getWrites().length;
+
+        stdout.rows = 6;
+        stdout.emit("resize");
+
+        await waitUntilRenderFlush();
+
+        expect(stdout.getWrites().slice(before).join("")).toContain("Frame text");
+
+        unmount();
+    });
+
+    it("keeps content above the frame when rows shrink while the cursor is shown", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        stdout.write("$ prompt\n");
+
+        const { unmount, waitUntilRenderFlush } = render(
+            <Box flexDirection="column">
+                <Text>Frame text</Text>
+                <Cursor />
+            </Box>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        stdout.rows = 6;
+        stdout.emit("resize");
+
+        await waitUntilRenderFlush();
+
+        const screen = inkScreen(stdout);
+
+        expect(visibleRows(screen)[0]).toBe("$ prompt");
+        expect(countOccurrences(visibleRows(screen).join("\n"), "Frame text")).toBe(1);
+
+        unmount();
+    });
+});

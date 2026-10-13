@@ -358,6 +358,8 @@ export default class Ink {
 
     private lastTerminalWidth: number;
 
+    private lastTerminalRows: number;
+
     private readonly nativeLog: NativeLogUpdate | undefined;
 
     private readonly useNativeRenderer: boolean;
@@ -537,7 +539,10 @@ export default class Ink {
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
         this.isFrameCleared = false;
-        this.lastTerminalWidth = getWindowSize(this.options.stdout).columns;
+        const initialSize = getWindowSize(this.options.stdout);
+
+        this.lastTerminalWidth = initialSize.columns;
+        this.lastTerminalRows = initialSize.rows;
 
         // This variable is used only in debug mode to store full static output
         // so that it's rerendered every time, not just new static parts, like in non-debug mode
@@ -614,10 +619,11 @@ export default class Ink {
     }
 
     resized = (): void => {
-        const currentWidth = getWindowSize(this.options.stdout).columns;
+        const { columns: currentWidth, rows: currentRows } = getWindowSize(this.options.stdout);
 
-        if (currentWidth < this.lastTerminalWidth) {
-            // We clear the screen when decreasing terminal width to prevent duplicate overlapping re-renders.
+        if (currentWidth < this.lastTerminalWidth || currentRows < this.lastTerminalRows) {
+            // Shrinking the terminal re-wraps or scrolls the frame, so the log no longer knows where it is.
+            // We clear the frame and draw it again to prevent duplicate overlapping re-renders.
             this.log.clear();
             this.lastOutput = "";
             this.lastOutputToRender = "";
@@ -635,6 +641,7 @@ export default class Ink {
         this.onRender();
 
         this.lastTerminalWidth = currentWidth;
+        this.lastTerminalRows = currentRows;
     };
 
     resolveExitPromise: (result?: unknown) => void = () => {};
