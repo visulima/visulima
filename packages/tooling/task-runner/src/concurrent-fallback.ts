@@ -62,14 +62,21 @@ const STDIO_DRAIN_GRACE_MS = 2000;
  * disable color for tools that misbehave with ANSI / emit JSON. See
  * voidzero-dev/vite-task#379.
  */
-const mergeEnvWithForceColor = (configEnv: NodeJS.ProcessEnv | undefined, extras: Record<string, string> = {}): NodeJS.ProcessEnv => {
+const mergeEnvWithForceColor = (
+    configEnv: NodeJS.ProcessEnv | undefined,
+    extras: Record<string, string> = {},
+    inheritEnv: boolean | undefined = true,
+): NodeJS.ProcessEnv => {
     const callerForceColor = configEnv?.["FORCE_COLOR"];
+    // `inheritEnv: false` means the caller already built the whole child
+    // environment (clean mode), so the parent env is not a fallback source.
+    const parentEnv: NodeJS.ProcessEnv = inheritEnv ? process.env : {};
 
     return {
-        ...process.env,
+        ...parentEnv,
         ...configEnv,
         ...extras,
-        FORCE_COLOR: callerForceColor ?? process.env["FORCE_COLOR"] ?? "1",
+        FORCE_COLOR: callerForceColor ?? parentEnv["FORCE_COLOR"] ?? "1",
     };
 };
 
@@ -181,7 +188,7 @@ const spawnCommand = (
         child = spawn(shellProgram, shellArgs, {
             cwd: config.cwd,
             detached: process.platform !== "win32",
-            env: mergeEnvWithForceColor(config.env),
+            env: mergeEnvWithForceColor(config.env, {}, config.inheritEnv),
             stdio: [stdinStdio, "pipe", "pipe"],
             windowsVerbatimArguments: verbatimArgs,
         });
@@ -194,7 +201,7 @@ const spawnCommand = (
         child = spawn(program, args, {
             cwd: config.cwd,
             detached: process.platform !== "win32",
-            env: mergeEnvWithForceColor(config.env),
+            env: mergeEnvWithForceColor(config.env, {}, config.inheritEnv),
             stdio: [stdinStdio, "pipe", "pipe"],
         });
     }
@@ -424,7 +431,7 @@ const spawnCommandPty = (
         cols: config.ptySize?.cols ?? 80,
         cwd: config.cwd ?? process.cwd(),
         env: Object.fromEntries(
-            Object.entries(mergeEnvWithForceColor(config.env, { TERM: "xterm-256color" })).filter(
+            Object.entries(mergeEnvWithForceColor(config.env, { TERM: "xterm-256color" }, config.inheritEnv)).filter(
                 (entry): entry is [string, string] => typeof entry[1] === "string",
             ),
         ),

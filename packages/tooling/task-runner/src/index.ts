@@ -32,6 +32,18 @@ export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } 
 export { digestBuffer, digestFile } from "./cas/digest";
 export { acEntryPath, casBlobPath, taskHashIndexPath, V2_AC, V2_CAS, V2_INDEX, V2_ROOT, V2_TMP } from "./cas/paths";
 export { containsBlob, fetchBlobToFile, putBlobFromBytes, putBlobFromFile, touchBlob, verifyBlob } from "./cas/store";
+// Child-process environment policy (clean mode)
+export type { ChildEnvOptions } from "./child-env";
+export {
+    buildChildEnv,
+    childEnvNameFilter,
+    CLEAN_ENV_BASE_NAMES,
+    CLEAN_ENV_POSIX_NAMES,
+    CLEAN_ENV_WIN32_NAMES,
+    cleanEnvEssentialNames,
+    pickChildParentEnv,
+    resolveChildEnvPolicy,
+} from "./child-env";
 // Chrome tracing profile (--profile)
 export type { ChromeTraceEvent } from "./chrome-trace";
 export { toChromeTrace, writeChromeTrace } from "./chrome-trace";

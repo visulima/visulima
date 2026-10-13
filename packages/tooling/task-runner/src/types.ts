@@ -1207,6 +1207,14 @@ export interface ConcurrentCommandConfig {
     cwd?: string;
     /** Additional environment variables merged with process env. */
     env?: Record<string, string>;
+
+    /**
+     * Whether the child inherits the parent `process.env` under `env`.
+     * Default `true`. `false` spawns the child with only `env` (plus the PATH
+     * enhancement), so the caller owns the whole environment. This forces the
+     * JS spawner, since the native addon always copies the parent environment.
+     */
+    inheritEnv?: boolean;
     /** Human-readable name for this command (used in prefixes/logs). */
     name?: string;
 

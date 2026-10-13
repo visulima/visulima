@@ -172,7 +172,10 @@ const coreRun = async (rawConfigs: ConcurrentCommandConfig[], options: Concurren
     // - any command needs stdin piping or PTY (native addon can't do those)
     // - onEvent streaming is requested (native addon's NAPI callback can emit
     //   null events on some platforms/CI, making it unreliable for streaming)
-    const needsJsFallback = configs.some((c) => c.stdin === "pipe" || c.stdin === "pty") || !!options.onEvent;
+    // - a command opts out of parent-env inheritance (`inheritEnv: false`):
+    //   the native addon always copies the parent environment, so only the JS
+    //   spawner can give the child exactly the env it was handed
+    const needsJsFallback = configs.some((c) => c.stdin === "pipe" || c.stdin === "pty" || c.inheritEnv === false) || !!options.onEvent;
 
     if (native && !needsJsFallback) {
         const nativeOptions = {
