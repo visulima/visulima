@@ -260,6 +260,24 @@ mod tests {
     }
 
     #[test]
+    fn query_returns_one_hit_per_version_of_the_same_package() {
+        let tmp = tempfile_path();
+        seed_db(&tmp);
+
+        // Two versions of one package: 4.17.10 is affected, 4.17.12 is the fix.
+        let inputs = vec![
+            QueryInput { ecosystem: "npm".into(), name: "lodash".into(), version: "4.17.10".into() },
+            QueryInput { ecosystem: "npm".into(), name: "lodash".into(), version: "4.17.12".into() },
+        ];
+        let hits = query(&tmp, &inputs).unwrap();
+        assert_eq!(hits.len(), 2);
+        assert_eq!((hits[0].name.as_str(), hits[0].version.as_str()), ("lodash", "4.17.10"));
+        assert_eq!(hits[0].vulnerabilities.len(), 1, "affected version keeps its finding");
+        assert_eq!((hits[1].name.as_str(), hits[1].version.as_str()), ("lodash", "4.17.12"));
+        assert!(hits[1].vulnerabilities.is_empty(), "fixed version must not inherit the affected finding");
+    }
+
+    #[test]
     fn query_rejects_v1_database_with_refresh_hint() {
         let tmp = tempfile_path();
         let conn = Connection::open(&tmp).unwrap();
@@ -278,7 +296,10 @@ mod tests {
     fn tempfile_path() -> std::path::PathBuf {
         let pid = std::process::id();
         let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
-        let path = std::env::temp_dir().join(format!("vis-advisories-test-{pid}-{nanos}.sqlite"));
+        // Tests run in parallel; a counter keeps two calls in the same clock tick on separate files.
+        static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!("vis-advisories-test-{pid}-{nanos}-{seq}.sqlite"));
         let _ = std::fs::remove_file(&path);
         path
     }
