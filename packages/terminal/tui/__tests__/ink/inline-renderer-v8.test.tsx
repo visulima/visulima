@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign, no-control-regex, sonarjs/no-control-regex, regexp/no-unused-capturing-group, regexp/no-obscure-range -- the VT model mutates its screen and parses control bytes by design */
 import delay from "delay";
 import type { ReactNode } from "react";
-import { startTransition, Suspense, useEffect } from "react";
+import { memo, startTransition, Suspense, useEffect } from "react";
 import { describe, expect, it } from "vitest";
 
 import { Box, Cursor, Static, Text } from "../../src/components/index";
@@ -309,6 +309,47 @@ describe("inline renderer: cursor placement", () => {
 
         expect(screen.cursorY).toBe(1);
         expect(screen.cursorX).toBe(1);
+    });
+
+    it("leaves the cursor where the cursor component put it when a sibling re-renders", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const Prompt = memo(() => (
+            <Box>
+                <Text>{"> ab"}</Text>
+                <Cursor />
+            </Box>
+        ));
+
+        const Sibling = ({ text }: { readonly text: string }) => <Text>{text}</Text>;
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(
+            <Box flexDirection="column">
+                <Sibling text="first" />
+                <Prompt />
+            </Box>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        rerender(
+            <Box flexDirection="column">
+                <Sibling text="second" />
+                <Prompt />
+            </Box>,
+        );
+
+        await waitUntilRenderFlush();
+
+        const screen = inkScreen(stdout);
+
+        expect(visibleRows(screen).slice(0, 2)).toEqual(["second", "> ab"]);
+        expect(screen.cursorX).toBe(4);
+
+        unmount();
     });
 });
 
@@ -701,6 +742,108 @@ describe("inline renderer: static output across concurrent renders", () => {
         const writes = stdout.getWrites().join("");
 
         expect(writes.slice(writes.lastIndexOf(ALT_SCREEN_ON))).toContain("static-one");
+
+        unmount();
+    });
+});
+
+describe("inline renderer: <Static> identity", () => {
+    it("drops static output from a replaced <Static> and keeps the new one", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(
+            <>
+                <Static items={["old-item"]} key="old">{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                <Text>v1</Text>
+            </>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        rerender(
+            <>
+                <Static items={["new-item"]} key="new">{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                <Text>v2</Text>
+            </>,
+        );
+
+        await waitUntilRenderFlush();
+
+        const before = stdout.getWrites().length;
+
+        rerender(
+            <>
+                <Static items={["new-item"]} key="new">{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                <Text>v3</Text>
+            </>,
+        );
+
+        await waitUntilRenderFlush();
+
+        expect(stdout.getWrites().slice(before).join("")).not.toContain("old-item");
+        expect(countOccurrences(stdout.getWrites().join(""), "new-item")).toBe(1);
+
+        unmount();
+    });
+});
+
+describe("inline renderer: incremental rendering through render()", () => {
+    const frame = (middle: string, withBlank: boolean) => (
+        <Box flexDirection="column">
+            <Text>Line 1</Text>
+            <Text>{middle}</Text>
+            {withBlank ? <Box height={1} /> : null}
+            <Text>Line 3</Text>
+        </Box>
+    );
+
+    it("updates a single line in place", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        stdout.write(SENTINEL);
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(frame("Line 2", false), {
+            incrementalRendering: true,
+            interactive: true,
+            stdout,
+        });
+
+        await waitUntilRenderFlush();
+
+        rerender(frame("Updated", false));
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 4)).toEqual(["$ prompt", "Line 1", "Updated", "Line 3"]);
+
+        unmount();
+    });
+
+    it("renders a new blank row between existing rows", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        stdout.write(SENTINEL);
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(frame("Line 2", false), {
+            incrementalRendering: true,
+            interactive: true,
+            stdout,
+        });
+
+        await waitUntilRenderFlush();
+
+        rerender(frame("Line 2", true));
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 6)).toEqual(["$ prompt", "Line 1", "Line 2", "", "Line 3", ""]);
 
         unmount();
     });
