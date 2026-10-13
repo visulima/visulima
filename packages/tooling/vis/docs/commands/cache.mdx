@@ -64,6 +64,8 @@ vis cache why @myorg/app:build
 
 Reads `.vis/last-summary.json` (always written after each non-aborted run), finds the task, and diffs its `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run. Output highlights which bucket rotated and which keys inside it were added, changed, or removed.
 
+A task with `hashMode: "trace"` has no declared hash details, so its explanation is the miss reasons recorded for that run instead, such as `File modified: src/a.ts` or `Environment variable changed: NODE_ENV`. `--json` returns them as `task.cacheMissReasons` (`null` for hits and for declared tasks).
+
 ```bash
 vis cache why @myorg/app:build --json     # machine-readable, stable shape for CI
 vis cache why @myorg/app:build --run <id> # diff against a specific historical run
@@ -80,6 +82,8 @@ vis cache hash @myorg/app:build
 vis cache hash @myorg/app:build --json
 vis cache hash @myorg/app:build --run <id>
 ```
+
+For a traced task, `cache hash` prints the files, env var names and missing paths that the run tracked, read from the cache entry for its hash. `--json` returns them as `trackedFingerprint`.
 
 Useful as a low-noise sanity check — e.g. confirming two runs produced the same hash, or piping into `jq` to extract a single bucket.
 

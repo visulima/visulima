@@ -15,10 +15,10 @@ little else.
 Two separate directories, with two separate lifecycles. You need both to
 write a CI cache block, and only one of them should ever be cached.
 
-| What                     | Default location            | Config key                | Cache it in CI? |
-| ------------------------ | --------------------------- | ------------------------- | --------------- |
-| Task cache               | `node_modules/.cache/vis`   | `taskRunner.cacheDirectory` | **Yes**       |
-| Run state (`.vis/`)      | `<workspaceRoot>/.vis`      | `taskRunner.dataDirectory`  | No            |
+| What                | Default location          | Config key                  | Cache it in CI? |
+| ------------------- | ------------------------- | --------------------------- | --------------- |
+| Task cache          | `node_modules/.cache/vis` | `taskRunner.cacheDirectory` | **Yes**         |
+| Run state (`.vis/`) | `<workspaceRoot>/.vis`    | `taskRunner.dataDirectory`  | No              |
 
 ### Task cache — `node_modules/.cache/vis`
 
@@ -63,16 +63,82 @@ Run summaries, failure logs, and the release/template/hook files vis reads
 back. **Do not ignore or cache `.vis/` wholesale** — parts of it are meant
 to be committed:
 
-| Path                     | Tracked? | Written when                            |
-| ------------------------ | -------- | --------------------------------------- |
-| `.vis/templates/`        | Yes      | `vis generate` scaffolding you commit   |
-| `.vis/hooks/`            | Yes      | `vis hook` git hooks you commit         |
-| `.vis/release/`          | Yes      | `vis release add` change files          |
-| `.vis/runs/`             | No       | every run, when `taskRunner.summarize`  |
-| `.vis/last-summary.json` | No       | every run                               |
-| `.vis/last-failures/`    | No       | on failure                              |
+| Path                     | Tracked? | Written when                           |
+| ------------------------ | -------- | -------------------------------------- |
+| `.vis/templates/`        | Yes      | `vis generate` scaffolding you commit  |
+| `.vis/hooks/`            | Yes      | `vis hook` git hooks you commit        |
+| `.vis/release/`          | Yes      | `vis release add` change files         |
+| `.vis/runs/`             | No       | every run, when `taskRunner.summarize` |
+| `.vis/last-summary.json` | No       | every run                              |
+| `.vis/last-failures/`    | No       | on failure                             |
 
 `vis init` appends exactly the ephemeral three to `.gitignore`.
+
+## Cache keys: declared and traced inputs
+
+By default a task's cache key is built from the `inputs` you declare: the files,
+env vars and runtime values you list, plus the lockfile. A file you do not list
+cannot change the key.
+
+A target can instead use `hashMode: "trace"`. vis then runs the command under its
+file-access tracker and keys the cache on the files the command actually read and
+the env vars it actually consulted, so no `inputs` list is needed:
+
+```ts
+export default defineConfig({
+    tasks: {
+        build: { hashMode: "trace" },
+    },
+});
+```
+
+For a single run, `vis run build --hash-mode trace` traces the requested target
+(`--hash-mode declared` turns a configured trace target back off). The workspace
+switch `taskRunner.autoFingerprint: true` traces every task.
+
+How reads are observed depends on the platform:
+
+| Platform        | Observed by                                              | What is seen                                  |
+| --------------- | -------------------------------------------------------- | --------------------------------------------- |
+| Linux           | `strace`, or the bundled seccomp helper                  | Every file syscall, including child processes |
+| macOS / Windows | Interposition for a command run directly, no shell       | Every file access of that command             |
+| macOS / Windows | Node preload for shell commands (`&&`, pipes, redirects) | Only `fs` calls made by Node processes        |
+
+When the tracker observes no workspace access at all (for example a static binary
+on a host without `strace`), the run is not cached. vis prints a warning instead of
+storing an entry under an empty key.
+
+Traced keys can differ between machines, because the observed read set depends on
+the platform. Keep targets on `"declared"` whenever you can list their inputs.
+
+## Environment variables in the cache key
+
+An env var enters a key only when a source names it:
+
+| Source                              | Mode     | Effect                                                                                                                   |
+| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `inputs: ["env://NAME"]`            | declared | Hashes `NAME`.                                                                                                           |
+| `envVars`, `globalEnv`              | declared | Hashes the listed names for every task. Never filtered by `untrackedEnv`.                                                |
+| `autoEnvVars: true`                 | declared | Hashes each `$VAR` / `${VAR}` referenced in the command text.                                                            |
+| `fingerprintEnv` (target)           | both     | Hashes the names or patterns for this target.                                                                            |
+| `taskRunner.fingerprintEnvPatterns` | trace    | Hashes matching vars for every traced task.                                                                              |
+| `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.               |
+| `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys. |
+
+Patterns accept `*` anywhere in the name, for example `VITE_*`, `*_TOKEN` or
+`AWS_*_KEY`:
+
+```ts
+export default defineConfig({
+    tasks: {
+        build: {
+            hashMode: "trace",
+            fingerprintEnv: ["NEXT_PUBLIC_*"],
+            untrackedEnv: ["NEXT_PUBLIC_BUILD_ID"],
+        },
+    },
+});
+```
 
 ## Making the cache work in CI
 
@@ -145,19 +211,24 @@ See [`vis ci`](/commands/ci) and the [CI/CD guide](/guides/ci-cd).
 
 ## Inspecting and debugging the cache
 
-| Command                   | Use it to                                                      |
-| ------------------------- | -------------------------------------------------------------- |
-| `vis cache size`          | Confirm the resolved directory and on-disk footprint            |
-| `vis cache list`          | See individual entries with age and size                        |
-| `vis cache why <task>`    | Explain a miss by diffing hash inputs against the previous run  |
-| `vis cache hash <task>`   | Print the recorded hash and its per-bucket breakdown            |
-| `vis cache verify <task>` | Detect drift between the cached entry and the live workspace    |
-| `vis cache prune`         | Evict by age, size, or count                                    |
-| `vis cache clean`         | Clear everything                                                |
+| Command                   | Use it to                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `vis cache size`          | Confirm the resolved directory and on-disk footprint                                                               |
+| `vis cache list`          | See individual entries with age and size                                                                           |
+| `vis cache why <task>`    | Explain a miss: diff declared inputs against the previous run, or print the recorded miss reasons of a traced task |
+| `vis cache hash <task>`   | Print the recorded hash and its per-bucket breakdown, or the files and env a traced run tracked                    |
+| `vis cache verify <task>` | Detect drift between the cached entry and the live workspace                                                       |
+| `vis cache prune`         | Evict by age, size, or count                                                                                       |
+| `vis cache clean`         | Clear everything                                                                                                   |
 
-`vis cache why` needs a recorded run summary, so enable
-`taskRunner.summarize` (which writes `.vis/runs/`) if you want to diff runs
-after the fact.
+`vis cache why` and `vis cache hash` read `.vis/last-summary.json`, which every
+run writes. Diffing against an older run (`--run <id>`) needs the historical
+summary in `.vis/runs/`, written by `--summarize` or `taskRunner.summarize`.
+
+For a traced task, a miss records why it missed (for example `File modified:
+src/a.ts`), and `vis cache hash` lists the files, env var names and missing paths
+the run tracked. Set `taskRunner.cacheDiagnostics: true` to also fire the `task:cacheMiss`
+plugin hook with the same reasons as each miss happens.
 
 ## Related
 
