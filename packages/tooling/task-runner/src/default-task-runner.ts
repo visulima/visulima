@@ -68,19 +68,22 @@ const partitionAlwaysTasks = (taskGraph: TaskGraph): { alwaysTasks: Task[]; grap
  * still read the parent's value, so every name is keyed as the parent sees it.
  * A key that omits a name the child reads gives a stale hit; an extra name only
  * costs a miss.
+ *
+ * With no task (the workspace global hash and the global namespace), a name is
+ * hidden only when no task in `tasks` can see it. One inherit task in a clean
+ * workspace still reads the variable, so the shared key must include it.
  */
 export const buildChildEnvVisible = (
     workspace: ChildEnvOptions,
     childEnvPolicy: ((task: Task) => ChildEnvOptions) | undefined,
+    tasks: ReadonlyArray<Task> = [],
 ): ((name: string, task?: Task) => boolean) | undefined => {
     if (childEnvPolicy === undefined) {
         return undefined;
     }
 
     const filters = new Map<string, (name: string) => boolean>();
-
-    return (name: string, task?: Task): boolean => {
-        const policy = task ? childEnvPolicy(task) : workspace;
+    const keepFor = (policy: ChildEnvOptions): ((name: string) => boolean) => {
         const key = JSON.stringify(policy);
         let keep = filters.get(key);
 
@@ -89,7 +92,19 @@ export const buildChildEnvVisible = (
             filters.set(key, keep);
         }
 
-        return keep(name);
+        return keep;
+    };
+
+    return (name: string, task?: Task): boolean => {
+        if (task) {
+            return keepFor(childEnvPolicy(task))(name);
+        }
+
+        if (tasks.length === 0) {
+            return keepFor(workspace)(name);
+        }
+
+        return tasks.some((candidate) => keepFor(childEnvPolicy(candidate))(name));
     };
 };
 
@@ -240,7 +255,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     // Which env names a task's child can see. Only the executor that is given
     // `childEnvPolicy` enforces it; without the hook every name is keyed as the
     // parent sees it.
-    const childEnvVisible = buildChildEnvVisible(options.env ?? { mode: "inherit" }, childEnvPolicy);
+    const childEnvVisible = buildChildEnvVisible(options.env ?? { mode: "inherit" }, childEnvPolicy, Object.values(taskGraph.tasks));
 
     // Partition the cache by globalEnv fingerprint when the caller
     // opts in. Flipping an env var no longer busts every entry — the

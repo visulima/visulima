@@ -203,4 +203,41 @@ describe("child env visibility in the cache key", () => {
         // No task (globalEnv): the workspace policy applies, which allow-lists the name.
         expect(visible?.("G2_HASH_ENVVAR")).toBe(true);
     });
+
+    it("hides a global name only when no task in the run can see it", () => {
+        expect.assertions(2);
+
+        const tasks = [task("lib-a:build"), task("lib-a:open")];
+        const mixed = buildChildEnvVisible(
+            { allow: [], mode: "clean" },
+            (forTask) => (forTask.id === "lib-a:open" ? { allow: [], mode: "inherit" } : { allow: [], mode: "clean" }),
+            tasks,
+        );
+        const allClean = buildChildEnvVisible({ allow: [], mode: "clean" }, () => { return { allow: [], mode: "clean" }; }, tasks);
+
+        // `lib-a:open` inherits, so it reads the name and the shared key must include it.
+        expect(mixed?.("G2_HASH_GLOBAL")).toBe(true);
+        expect(allClean?.("G2_HASH_GLOBAL")).toBe(false);
+    });
+
+    it("keys the shared globalEnv hash when one task in a clean run inherits the name", async () => {
+        expect.assertions(2);
+
+        const tasks = [task("lib-a:build"), task("lib-a:open")];
+        const visible = buildChildEnvVisible(
+            { allow: [], mode: "clean" },
+            (forTask) => (forTask.id === "lib-a:open" ? { allow: [], mode: "inherit" } : { allow: [], mode: "clean" }),
+            tasks,
+        );
+
+        // A fresh hasher per read: the global hash is cached per instance.
+        process.env["G2_HASH_GLOBAL"] = "one";
+        const first = await globalEntry(hasherFor({ childEnvVisible: visible, globalEnv: ["G2_HASH_GLOBAL"] }), task("lib-a:build"));
+
+        process.env["G2_HASH_GLOBAL"] = "two";
+        const second = await globalEntry(hasherFor({ childEnvVisible: visible, globalEnv: ["G2_HASH_GLOBAL"] }), task("lib-a:build"));
+
+        expect(first).toBeDefined();
+        expect(second).not.toBe(first);
+    });
 });
