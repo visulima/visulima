@@ -959,6 +959,72 @@ describe(TaskOrchestrator, () => {
         });
     });
 
+    describe("trace key upgrade", () => {
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+        };
+
+        // A real command that reads a workspace file, so the tracker records a non-empty fingerprint.
+        const readsSource = (): string => `node -e "require('fs').readFileSync('${join(workspaceRoot, "packages/app/src/index.ts")}')"`;
+
+        const runStatus = async (): Promise<string | undefined> => {
+            const results = await createOrchestrator([task], successExecutor, { autoFingerprint: true, resolveCommand: readsSource }).run();
+
+            return results.get("app:build")?.status;
+        };
+
+        // Replant the entry the way an older release stored it: under a different key, with no tracker kind.
+        const storeAsLegacyEntry = async (mutate?: (fileHashes: Record<string, string>) => void): Promise<void> => {
+            const cache = new Cache({ workspaceRoot });
+            const stored = await cache.getByTaskId("app:build");
+
+            expect(stored?.fingerprint).toBeDefined();
+
+            const legacy = { ...stored!.fingerprint! };
+
+            delete legacy.tracker;
+
+            const fileHashes = { ...legacy.fileHashes };
+
+            mutate?.(fileHashes);
+            await cache.put("legacy-pre-tracker-key", stored!.terminalOutput, task.outputs, stored!.code, { ...legacy, fileHashes });
+            await cache.setTaskIndex("app:build", "legacy-pre-tracker-key");
+        };
+
+        it("still hits an entry stored under a key from before the tracker kind was added", async () => {
+            expect.assertions(4);
+
+            await expect(runStatus()).resolves.toBe("success");
+
+            await storeAsLegacyEntry();
+
+            // The lookup goes through the task index and validates the recorded file hashes; it never recomputes the key.
+            await expect(runStatus()).resolves.toBe("local-cache");
+
+            const indexed = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(indexed?.hash).toBe("legacy-pre-tracker-key");
+        });
+
+        it("still misses when a recorded file changed, so the hit above is real validation", async () => {
+            expect.assertions(3);
+
+            await expect(runStatus()).resolves.toBe("success");
+
+            await storeAsLegacyEntry((fileHashes) => {
+                for (const key of Object.keys(fileHashes)) {
+                    fileHashes[key] = "stale";
+                }
+            });
+
+            await expect(runStatus()).resolves.toBe("success");
+        });
+    });
+
     describe("per-target hashMode: trace", () => {
         it("routes a hashMode:'trace' task through the fingerprint path even with autoFingerprint off", async () => {
             expect.assertions(3);
