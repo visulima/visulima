@@ -1536,6 +1536,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     if (projectsWithTarget.length === 0) {
+        if (options.ifPresent) {
+            logger.info(`No projects have the "${target}" target; skipping (--if-present).`);
+
+            return;
+        }
+
         const available = collectAvailableTargets(workspace);
         const exactMatchProjects = Object.entries(workspace.projects)
             .filter(([, proj]) => proj.targets?.[target] !== undefined)
