@@ -319,6 +319,16 @@ const executeAudit = async (
         return;
     }
 
+    // Hex has no lockfile reader for audit (mix.lock is read for the SBOM only), so an audit would scan nothing. Refuse it the same way.
+    if (ecosystems.all.some((eco) => eco.toLowerCase() === "hex")) {
+        pail.error(
+            "--ecosystem hex is not supported: vis does not read mix.lock for audit, so the audit cannot check Hex packages. Remove hex from --ecosystem.",
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
     const onlineNonNpm = nonNpmEcosystemsWithoutOffline(ecosystems.all, isOffline);
 
     if (onlineNonNpm.length > 0) {
