@@ -353,6 +353,9 @@ export default class Ink {
 
     private lastOutputHeight: number;
 
+    /** Set by clear(): the frame has been erased and must be drawn again by the next render. */
+    private isFrameCleared: boolean;
+
     private lastTerminalWidth: number;
 
     private readonly nativeLog: NativeLogUpdate | undefined;
@@ -533,6 +536,7 @@ export default class Ink {
         this.lastOutput = "";
         this.lastOutputToRender = "";
         this.lastOutputHeight = 0;
+        this.isFrameCleared = false;
         this.lastTerminalWidth = getWindowSize(this.options.stdout).columns;
 
         // This variable is used only in debug mode to store full static output
@@ -668,7 +672,8 @@ export default class Ink {
     };
 
     restoreLastOutput = (): void => {
-        if (!this.interactive) {
+        // A cleared frame stays cleared until the next render draws it again.
+        if (!this.interactive || this.isFrameCleared) {
             return;
         }
 
@@ -1096,6 +1101,12 @@ export default class Ink {
             reconciler.updateContainerSync(tree, this.container, null, noop);
             reconciler.flushSyncWork();
         }
+
+        // A commit with no host changes skips the layout hook, so a cleared frame would stay
+        // hidden. Draw it again.
+        if (this.isFrameCleared) {
+            this.onRender();
+        }
     }
 
     writeToStdout = (data: string): void => {
@@ -1191,7 +1202,7 @@ export default class Ink {
             // primary screen buffer.
             && !this.alternateScreen
         ) {
-            const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
+            const shouldRenderFinalFrame = (!this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "")) && !this.isFrameCleared;
 
             if (shouldRenderFinalFrame) {
                 this.calculateLayout();
@@ -1395,9 +1406,7 @@ export default class Ink {
         }
 
         this.log.clear();
-        // Sync lastOutput so that unmount's final onRender
-        // sees it as unchanged and log-update skips it
-        this.log.sync(this.lastOutputToRender || `${this.lastOutput}\n`);
+        this.isFrameCleared = true;
     }
 
     patchConsole(): void {
@@ -1479,6 +1488,10 @@ export default class Ink {
     }
 
     private renderInteractiveFrame(output: string, outputHeight: number, staticOutput: string, backbufferOutput = ""): void {
+        const { isFrameCleared } = this;
+
+        this.isFrameCleared = false;
+
         // Both <Static> output and scrolled-off backbuffer lines ride the same
         // "above the live region" channel. backbufferOutput is intentionally
         // NOT accumulated into this.fullStaticOutput by the caller: those lines
@@ -1583,7 +1596,7 @@ export default class Ink {
             if (isSync) {
                 this.options.stdout.write(esu);
             }
-        } else if (output !== this.lastOutput || this.log.isCursorDirty()) {
+        } else if (output !== this.lastOutput || this.log.isCursorDirty() || isFrameCleared) {
             // ThrottledLog manages its own bsu/esu at actual write time
             this.throttledLog(outputToRender);
         }

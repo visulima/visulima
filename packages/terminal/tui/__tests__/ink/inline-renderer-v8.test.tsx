@@ -350,3 +350,85 @@ describe("inline renderer: cursor left inside the frame on exit", () => {
         expect(visibleRows(screen).slice(0, 2)).toEqual(["> ab", "$"]);
     });
 });
+
+describe("inline renderer: clear() keeps history and restores the frame", () => {
+    it("leaves shell history above the frame when cleared and a line is printed", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        stdout.write("$ prompt\n");
+
+        const { clear, unmount, waitUntilRenderFlush } = render(
+            <Box flexDirection="column">
+                <Text>Line 1</Text>
+                <Text>Line 2</Text>
+            </Box>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        clear();
+
+        // Goes through Ink's console patch, which writes above the live region.
+        // eslint-disable-next-line no-console
+        console.log("printed after clear");
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 2)).toEqual(["$ prompt", "printed after clear"]);
+
+        unmount();
+    });
+
+    it("restores the unchanged frame when re-rendering after clear()", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        stdout.write("$ prompt\n");
+
+        const tree = () => (
+            <Box flexDirection="column">
+                <Text>Line 1</Text>
+                <Text>Line 2</Text>
+            </Box>
+        );
+        const { clear, rerender, unmount, waitUntilRenderFlush } = render(tree(), { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        clear();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 3)).toEqual(["$ prompt", "", ""]);
+
+        rerender(tree());
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 3)).toEqual(["$ prompt", "Line 1", "Line 2"]);
+
+        unmount();
+    });
+
+    it("does not draw the cleared frame again on unmount", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const { clear, unmount, waitUntilRenderFlush } = render(<Text>Only once</Text>, { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        clear();
+
+        const before = stdout.getWrites().length;
+
+        unmount();
+
+        await waitUntilRenderFlush();
+
+        expect(stdout.getWrites().slice(before).join("")).not.toContain("Only once");
+    });
+});
