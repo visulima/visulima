@@ -1045,6 +1045,26 @@ const resolveProjectName = (
     projectJson?.name ?? (pkg ? pkg.name : (ecosystem?.readName(join(workspaceRoot, projectDirectory)) ?? basename(projectDirectory)));
 
 /**
+ * The non-JS discovery flags for a config. Shared by `discoverWorkspace` and
+ * the overlay pre-pass so both keep exactly the same directories.
+ */
+const nonJsDiscoverOptions = (config: VisConfig): NonJsOptions => {
+    return {
+        composerProjects: config.composer?.discover === true,
+        dartProjects: config.dart?.discover === true,
+        gemProjects: config.gem?.discover === true,
+        goProjects: config.go?.discover === true,
+        gradleProjects: config.gradle?.discover === true,
+        hexProjects: config.hex?.discover === true,
+        mavenProjects: config.maven?.discover === true,
+        nugetProjects: config.nuget?.discover === true,
+        pythonProjects: config.python?.discover === true,
+        swiftProjects: config.swift?.discover === true,
+        zigProjects: config.zig?.discover === true,
+    };
+};
+
+/**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
 const discoverWorkspace = (
@@ -1083,19 +1103,11 @@ const discoverWorkspace = (
         throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
-    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
-        composerProjects: config.composer?.discover === true,
-        dartProjects: config.dart?.discover === true,
-        gemProjects: config.gem?.discover === true,
-        goProjects: config.go?.discover === true,
-        gradleProjects: config.gradle?.discover === true,
-        hexProjects: config.hex?.discover === true,
-        mavenProjects: config.maven?.discover === true,
-        nugetProjects: config.nuget?.discover === true,
-        pythonProjects: config.python?.discover === true,
-        swiftProjects: config.swift?.discover === true,
-        zigProjects: config.zig?.discover === true,
-    });
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(
+        workspaceRoot,
+        workspacePatterns,
+        nonJsDiscoverOptions(config),
+    );
 
     for (const projectDirectory of projectDirectories) {
         const nonJs = nonJsEcosystems.get(projectDirectory);
@@ -1391,14 +1403,15 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 /**
  * Pre-load every project's `vis.task.ts` overlay in parallel. Returns
  * a {@link VisTaskConfigIndex} keyed by relative project directory, ready
- * to pass into {@link discoverWorkspace}.
+ * to pass into {@link discoverWorkspace}. Pass the same `config` so the
+ * overlays cover exactly the directories discovery keeps.
  *
  * This pre-pass is the bridge between sync `discoverWorkspace` and the
  * async overlay loader — callers that want overlay support load this
  * once up front, callers that don't simply omit the third argument and
  * keep the legacy "no overlay" behaviour.
  */
-const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<VisTaskConfigIndex> => {
+const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string, config: VisConfig = {}): Promise<VisTaskConfigIndex> => {
     const { loadVisTaskConfig } = await import("./config");
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
     const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
@@ -1415,21 +1428,13 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         return new Map();
     }
 
-    // Overlay files are read for every candidate. They only apply to projects that
-    // discoverWorkspace keeps, so reading them for Python directories is harmless.
-    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(workspaceRoot, workspacePatterns, {
-        composerProjects: true,
-        dartProjects: true,
-        gemProjects: true,
-        goProjects: true,
-        gradleProjects: true,
-        hexProjects: true,
-        mavenProjects: true,
-        nugetProjects: true,
-        pythonProjects: true,
-        swiftProjects: true,
-        zigProjects: true,
-    });
+    // Use the same candidate set as discoverWorkspace. An overlay for a directory
+    // that is not discovered could fail to load and reject the whole workspace.
+    const { directories: projectDirectories, nonJsEcosystems } = resolveProjectDirectories(
+        workspaceRoot,
+        workspacePatterns,
+        nonJsDiscoverOptions(config),
+    );
     const result: VisTaskConfigIndex = new Map();
 
     await Promise.all(

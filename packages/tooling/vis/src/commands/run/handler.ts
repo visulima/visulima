@@ -1275,7 +1275,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // matches pnpm/npm/yarn semantics so scripts can resolve paths
     // relative to where the user actually ran the command.
     const invocationCwd = process.cwd();
-    const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot);
+    const taskConfigs = await loadVisTaskConfigsForWorkspace(workspaceRoot, visConfig);
     const { config, fileOwners, packageJsons, projectOptions, workspace } = discoverWorkspace(workspaceRoot, visConfig, taskConfigs);
     const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
