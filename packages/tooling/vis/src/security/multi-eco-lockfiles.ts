@@ -38,6 +38,8 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
     pub: "Pub",
     pypi: "PyPI",
     rubygems: "RubyGems",
+    swift: "SwiftURL",
+    swifturl: "SwiftURL",
 };
 
 export const canonicalEcosystem = (raw: string): string => ECOSYSTEM_ALIASES[raw.toLowerCase()] ?? raw;

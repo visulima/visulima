@@ -34,9 +34,10 @@ describe("vis audit offline routing", () => {
     });
 
     it("lists each non-npm lockfile ecosystem once, under its canonical name", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         expect(offlineNonNpmEcosystems(["npm", "dart", "pub", "cargo", "crates.io"])).toStrictEqual(["Pub", "crates.io"]);
+        expect(offlineNonNpmEcosystems(["nuget", "swift", "swifturl"])).toStrictEqual(["NuGet", "SwiftURL"]);
         expect(offlineNonNpmEcosystems(["npm"])).toStrictEqual([]);
     });
 });

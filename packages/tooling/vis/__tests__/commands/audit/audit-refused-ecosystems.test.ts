@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { refusedEcosystemMessage } from "../../../src/commands/audit/handler";
 
 /**
- * Pub (Dart) has a range matcher, so it is no longer refused. NuGet and SwiftURL
- * have last_affected ranges that the matcher cannot treat as inclusive, so the
- * audit refuses them instead of reporting a clean result.
+ * Pub, NuGet and SwiftURL have range matchers that treat OSV last_affected as an inclusive bound,
+ * so the audit scans them. Hex and Zig stay refused: no Hex lockfile reader or matcher exists here,
+ * and OSV has no Zig ecosystem.
  */
 describe("vis audit refused ecosystems", () => {
     it("does not refuse Pub, its dart alias, or the canonical name", () => {
@@ -16,18 +16,18 @@ describe("vis audit refused ecosystems", () => {
         expect(refusedEcosystemMessage(["Pub"])).toBeUndefined();
     });
 
-    it("refuses NuGet and names the last_affected reason", () => {
+    it("does not refuse NuGet", () => {
         expect.assertions(2);
 
-        expect(refusedEcosystemMessage(["nuget"])).toContain("--ecosystem nuget is not supported");
-        expect(refusedEcosystemMessage(["NuGet"])).toContain("last_affected");
+        expect(refusedEcosystemMessage(["nuget"])).toBeUndefined();
+        expect(refusedEcosystemMessage(["NuGet"])).toBeUndefined();
     });
 
-    it("keeps refusing SwiftURL under both of its names", () => {
+    it("does not refuse SwiftURL under either of its names", () => {
         expect.assertions(2);
 
-        expect(refusedEcosystemMessage(["swift"])).toContain("--ecosystem swift is not supported");
-        expect(refusedEcosystemMessage(["swifturl"])).toContain("--ecosystem swifturl is not supported");
+        expect(refusedEcosystemMessage(["swift"])).toBeUndefined();
+        expect(refusedEcosystemMessage(["swifturl"])).toBeUndefined();
     });
 
     it("keeps refusing hex and zig", () => {
@@ -40,8 +40,8 @@ describe("vis audit refused ecosystems", () => {
     it("refuses a mixed list when any entry is refused, and passes a clean list", () => {
         expect.assertions(2);
 
-        expect(refusedEcosystemMessage(["npm", "pub", "nuget"])).toContain("--ecosystem nuget");
-        expect(refusedEcosystemMessage(["npm", "pub", "cargo"])).toBeUndefined();
+        expect(refusedEcosystemMessage(["npm", "pub", "hex"])).toContain("--ecosystem hex");
+        expect(refusedEcosystemMessage(["npm", "pub", "nuget", "cargo"])).toBeUndefined();
     });
 
     it("does not treat inherited object keys as refused ecosystems", () => {

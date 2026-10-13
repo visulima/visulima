@@ -66,7 +66,22 @@ const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
 // has its own Rust range matcher and lockfile reader; unknown values
 // (or ones whose matcher hasn't landed yet) get a non-fatal warning so
 // CI invocations stay stable as more ecosystems land.
-const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "composer", "crates.io", "dart", "go", "maven", "npm", "packagist", "pub", "pypi", "rubygems"]);
+const SUPPORTED_ECOSYSTEMS = new Set([
+    "cargo",
+    "composer",
+    "crates.io",
+    "dart",
+    "go",
+    "maven",
+    "npm",
+    "nuget",
+    "packagist",
+    "pub",
+    "pypi",
+    "rubygems",
+    "swift",
+    "swifturl",
+]);
 
 // The online advisory catalog only covers npm. A non-npm `--ecosystem` run
 // online would skip that ecosystem silently, so it is rejected up front.
@@ -111,9 +126,6 @@ export const offlineNonNpmEcosystems = (ecosystems: string[]): string[] => [
 // object, so names like "constructor" cannot match inherited properties.
 const REFUSED_ECOSYSTEMS = new Map<string, (name: string) => string>([
     ["hex", (name) => `--ecosystem ${name} is not supported: vis does not read mix.lock for audit, so the audit cannot check Hex packages. Remove ${name} from --ecosystem.`],
-    ["nuget", (name) => `--ecosystem ${name} is not supported: OSV's NuGet records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
-    ["swift", (name) => `--ecosystem ${name} is not supported: OSV's SwiftURL records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
-    ["swifturl", (name) => `--ecosystem ${name} is not supported: OSV's SwiftURL records carry last_affected ranges, which vis matches as exclusive, so a version equal to the last affected one would be missed. Remove ${name} from --ecosystem.`],
     ["zig", (name) => `--ecosystem ${name} is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove ${name} from --ecosystem.`],
 ]);
 
