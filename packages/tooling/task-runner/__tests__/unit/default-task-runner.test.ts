@@ -202,6 +202,43 @@ describe(defaultTaskRunner, () => {
         delete process.env["NEXT_PUBLIC_E2E_TEST_URL"];
     });
 
+    describe("env vars referenced in the command (autoEnvVars)", () => {
+        const withCommand = (command: string): Task => { return { ...makeTask(), overrides: { command } }; };
+
+        const runTwiceChangingEnv = async (options: TaskRunnerOptions): Promise<number> => {
+            const task = withCommand("echo $GITHUB_E2E_TEST_VAR");
+            const { executor, getCount } = createCountingExecutor();
+            const context = createContext(workspaceRoot, [task], executor);
+
+            process.env["GITHUB_E2E_TEST_VAR"] = "one";
+            await defaultTaskRunner([task], { autoEnvVars: true, ...options }, context);
+
+            process.env["GITHUB_E2E_TEST_VAR"] = "two";
+            await defaultTaskRunner([task], { autoEnvVars: true, ...options }, context);
+
+            return getCount();
+        };
+
+        afterEach(() => {
+            delete process.env["GITHUB_E2E_TEST_VAR"];
+        });
+
+        // The built-in CI exclusions (`GITHUB_*`, `CI_*`, ...) only apply to trace-mode
+        // fingerprints. Declared-mode keys must stay exactly as they were, so a changed
+        // `GITHUB_*` variable that the command references still invalidates the cache.
+        it("keeps built-in CI exclusions out of declared-mode keys", async () => {
+            expect.assertions(1);
+
+            await expect(runTwiceChangingEnv({})).resolves.toBe(2);
+        });
+
+        it("lets the user exclude a referenced variable with a wildcard", async () => {
+            expect.assertions(1);
+
+            await expect(runTwiceChangingEnv({ untrackedEnvVars: ["GITHUB_E2E_*"] })).resolves.toBe(1);
+        });
+    });
+
     it("should generate summary when summarize is enabled", async () => {
         expect.assertions(8);
 
