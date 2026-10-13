@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverSwiftPackages } from "../../../src/release/core/swift-projects";
+import { discoverSwiftProjects } from "../../../src/release/core/swift-projects";
 
 const manifest = (name: string, extra = ""): string =>
     `// swift-tools-version:5.9\nimport PackageDescription\n\nlet package = Package(\n    name: "${name}",\n    dependencies: [${extra}],\n    targets: [.target(name: "Other")]\n)\n`;
@@ -22,7 +22,7 @@ describe("swift projects", () => {
         writeFileSync(join(cwd, rel), content);
     };
 
-    const discover = (claimed: string[] = []) => discoverSwiftPackages({ claimedDirs: new Set(claimed.map((dir) => join(cwd, dir))), cwd });
+    const discover = (claimed: string[] = []) => discoverSwiftProjects({ claimedDirs: new Set(claimed.map((dir) => join(cwd, dir))), cwd });
 
     beforeEach(() => {
         cwd = realpathSync(mkdtempSync(join(tmpdir(), "vis-swift-")));

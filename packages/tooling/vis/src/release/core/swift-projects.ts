@@ -37,7 +37,7 @@ const invalid = (file: string, message: string): VisReleaseError => new VisRelea
  * Discover the Swift packages under `cwd`. `options.claimedDirs` are package
  * directories a JS package already releases; they are skipped.
  */
-export const discoverSwiftPackages = async (options: { claimedDirs: ReadonlySet<string>; cwd: string }): Promise<SwiftProject[]> => {
+export const discoverSwiftProjects = async (options: { claimedDirs: ReadonlySet<string>; cwd: string }): Promise<SwiftProject[]> => {
     const { claimedDirs, cwd } = options;
 
     const entries: { dir: string; manifestPath: string; name: string; paths: string[] }[] = [];

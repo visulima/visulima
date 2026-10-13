@@ -271,9 +271,9 @@ const swift = defineEcosystem<SwiftProject>({
     claimedDirs: (pkg, _perPkg, cwd) => (pkg.ecosystem === undefined && resolve(pkg.dir) !== resolve(cwd) ? [resolve(pkg.dir)] : []),
     configKey: "swift",
     discover: async (options) => {
-        const { discoverSwiftPackages } = await import("./swift-projects");
+        const { discoverSwiftProjects } = await import("./swift-projects");
 
-        return discoverSwiftPackages(options);
+        return discoverSwiftProjects(options);
     },
     id: "swift",
     // SwiftPM resolves a package from the manifest at the root of its repository, and reads its version from a bare
