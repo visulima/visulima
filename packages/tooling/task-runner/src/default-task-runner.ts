@@ -3,6 +3,7 @@ import { xxh3Hash } from "@shared/xxh3";
 
 import { createRemoteCacheBackend } from "./backends/factory";
 import { Cache } from "./cache";
+import type { ChildEnvOptions } from "./child-env";
 import { childEnvNameFilter } from "./child-env";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
 import { IncrementalFileHasher } from "./incremental-hasher";
@@ -55,6 +56,40 @@ const partitionAlwaysTasks = (taskGraph: TaskGraph): { alwaysTasks: Task[]; grap
             roots: taskGraph.roots.filter((id) => !alwaysIds.has(id)),
             tasks: remaining,
         },
+    };
+};
+
+/**
+ * The predicate the task hasher and the global namespace use to decide whether
+ * the child can see an env name.
+ *
+ * Built only when the executor is given `childEnvPolicy`, because that hook is
+ * the signal that the executor enforces the policy. Without it the child may
+ * still read the parent's value, so every name is keyed as the parent sees it.
+ * A key that omits a name the child reads gives a stale hit; an extra name only
+ * costs a miss.
+ */
+export const buildChildEnvVisible = (
+    workspace: ChildEnvOptions,
+    childEnvPolicy: ((task: Task) => ChildEnvOptions) | undefined,
+): ((name: string, task?: Task) => boolean) | undefined => {
+    if (childEnvPolicy === undefined) {
+        return undefined;
+    }
+
+    const filters = new Map<string, (name: string) => boolean>();
+
+    return (name: string, task?: Task): boolean => {
+        const policy = task ? childEnvPolicy(task) : workspace;
+        const key = JSON.stringify(policy);
+        let keep = filters.get(key);
+
+        if (!keep) {
+            keep = childEnvNameFilter(policy);
+            filters.set(key, keep);
+        }
+
+        return keep(name);
     };
 };
 
@@ -202,26 +237,10 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
 const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
     const { childEnvPolicy, lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
 
-    // Which env names a task's child can see under the clean-env policy.
-    // Built only when a clean policy can apply, so default runs hash
-    // exactly as they did before the policy existed.
-    const workspaceChildEnv = options.env ?? { mode: "inherit" as const };
-    const mayHideEnv = workspaceChildEnv.mode === "clean" || childEnvPolicy !== undefined;
-    const childEnvFilters = new Map<string, (name: string) => boolean>();
-    const childEnvVisible = mayHideEnv
-        ? (name: string, task?: Task): boolean => {
-            const policy = task && childEnvPolicy ? childEnvPolicy(task) : workspaceChildEnv;
-            const key = JSON.stringify(policy);
-            let keep = childEnvFilters.get(key);
-
-            if (!keep) {
-                keep = childEnvNameFilter(policy);
-                childEnvFilters.set(key, keep);
-            }
-
-            return keep(name);
-        }
-        : undefined;
+    // Which env names a task's child can see. Only the executor that is given
+    // `childEnvPolicy` enforces it; without the hook every name is keyed as the
+    // parent sees it.
+    const childEnvVisible = buildChildEnvVisible(options.env ?? { mode: "inherit" }, childEnvPolicy);
 
     // Partition the cache by globalEnv fingerprint when the caller
     // opts in. Flipping an env var no longer busts every entry — the

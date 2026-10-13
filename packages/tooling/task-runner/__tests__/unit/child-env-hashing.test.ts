@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { computeGlobalEnvNamespace } from "../../src/default-task-runner";
+import { buildChildEnvVisible, computeGlobalEnvNamespace } from "../../src/default-task-runner";
 import { InProcessTaskHasher } from "../../src/task-hasher";
 import type { Task } from "../../src/types";
 
@@ -184,5 +184,23 @@ describe("child env visibility in the cache key", () => {
         expect(visibleTwo).not.toBe(visibleOne);
         expect(hiddenTwo).toBe(hiddenOne);
         expect(hiddenOne).not.toBe(visibleOne);
+    });
+
+    it("builds no predicate without the executor hook, so a clean workspace alone keys every name", () => {
+        expect.assertions(1);
+
+        expect(buildChildEnvVisible({ allow: [], mode: "clean" }, undefined)).toBeUndefined();
+    });
+
+    it("hides a name per task from the hook, and keeps the workspace policy for globalEnv", () => {
+        expect.assertions(3);
+
+        const visible = buildChildEnvVisible({ allow: ["G2_HASH_ENVVAR"], mode: "clean" }, (forTask) =>
+            forTask.id === "lib-a:deploy" ? { allow: [], mode: "clean" } : { allow: [], mode: "inherit" });
+
+        expect(visible?.("G2_HASH_ENVVAR", task("lib-a:deploy"))).toBe(false);
+        expect(visible?.("G2_HASH_ENVVAR", task("lib-a:build"))).toBe(true);
+        // No task (globalEnv): the workspace policy applies, which allow-lists the name.
+        expect(visible?.("G2_HASH_ENVVAR")).toBe(true);
     });
 });

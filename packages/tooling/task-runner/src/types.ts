@@ -969,8 +969,10 @@ export interface TaskRunnerOptions {
      * Default `inherit` (the whole parent environment).
      *
      * The executor that spawns the task applies the policy. `vis run` does.
-     * The cache key follows it too: a name a clean task cannot see hashes as
-     * unset, and allow-listed names are not added to the key.
+     * The cache key follows it only when the runner context also carries a
+     * `childEnvPolicy` hook (see {@link TaskRunnerContext}). Then a name the clean
+     * child cannot see hashes as unset. Without that hook every name is keyed as
+     * the parent sees it. Allow-listed names are not added to the key.
      */
     env?: ChildEnvOptions;
 
