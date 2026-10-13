@@ -22,6 +22,10 @@ describe("type boolean", () => {
             // eslint-disable-next-line sonarjs/no-globals-shadowing
             const Boolean = (...args: any[]) => origBoolean.apply(origBoolean, args);
 
+            // The type is recognised by its name, and bundlers rename a shadowed `Boolean`
+            // (esbuild emits `Boolean2`), so pin the name the override is meant to carry.
+            Object.defineProperty(Boolean, "name", { value: "Boolean" });
+
             const optionDefinitions = [{ name: "one", type: Boolean }];
 
             expect(commandLineArgs(optionDefinitions, { argv: ["--one"] })).toStrictEqual({ one: true });
