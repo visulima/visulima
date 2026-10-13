@@ -2102,6 +2102,31 @@
                     "description": "Dry-run mode: compute hashes and check cache but don't execute tasks. Useful for debugging cache hits/misses.",
                     "default": false
                 },
+                "env": {
+                    "type": "object",
+                    "properties": {
+                        "allow": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Names and `*` wildcard patterns kept from the parent environment in `clean` mode. Ignored under `inherit`. Matching is case-insensitive on Windows, where environment names are case-insensitive."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "inherit",
+                                "clean"
+                            ],
+                            "description": "Whether the child inherits the parent environment."
+                        }
+                    },
+                    "required": [
+                        "mode"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Workspace child-environment policy. `clean` gives every task a child with only the allow-listed parent variables, `PATH`, `HOME`, `TERM`, `CI`, the platform essentials, and whatever the executor injects. Default `inherit` (the whole parent environment).\n\nThe executor that spawns the task applies the policy. `vis run` does. The cache key follows it only when the runner context also carries a `childEnvPolicy` hook (see  {@link  TaskRunnerContext } ). Then a name the clean child cannot see hashes as unset. Without that hook every name is keyed as the parent sees it. Allow-listed names are not added to the key."
+                },
                 "envVars": {
                     "type": "array",
                     "items": {
@@ -6491,6 +6516,31 @@
                     "$ref": "#/$defs/AffectedFilesMode",
                     "description": "How to forward affected files to the task process. Only used when invoked via `vis affected &lt;target>`.",
                     "default": false
+                },
+                "env": {
+                    "type": "object",
+                    "properties": {
+                        "allow": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Names and `*` wildcard patterns kept from the parent environment in `clean` mode. Ignored under `inherit`. Matching is case-insensitive on Windows, where environment names are case-insensitive."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "inherit",
+                                "clean"
+                            ],
+                            "description": "Whether the child inherits the parent environment."
+                        }
+                    },
+                    "required": [
+                        "mode"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Child-process environment for this target. Overrides the workspace `taskRunner.env`.\n- `mode: \"inherit\"`: the child gets the whole parent environment, even   when the workspace is `clean`.\n- `mode: \"clean\"`: the child gets only the allow-listed names, `PATH`,   `HOME`, `TERM`, `CI`, the platform essentials and what vis injects   (`VIS_TASK_SLOTS`, `VIS_ARG_*`, `envFile` values, service env).\n- `allow`: names and `*` wildcard patterns kept under `clean`. Added to   the workspace allow-list when the workspace is also `clean`.\n\nA target that runs through syscall tracking (`hashMode: \"trace\"`, or a workspace `autoFingerprint`) cannot be `clean`: those runs bypass the executor that builds the clean environment, so the run fails instead of silently inheriting. Without this option the workspace `taskRunner.env` applies, and that defaults to `inherit`."
                 },
                 "envFile": {
                     "anyOf": [

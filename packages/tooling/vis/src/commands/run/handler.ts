@@ -1,7 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { readFileSync, removeSync } from "@visulima/fs";
 import type {
-    ConcurrentCommandInput,
+    ChildEnvOptions,
     LifeCycleInterface,
     LogMode,
     OutputSpec,
@@ -22,7 +22,9 @@ import {
     generateRunSummary,
     getLastRunSummaryPath,
     parsePartition,
+    pickChildParentEnv,
     readLastRunSummary,
+    resolveChildEnvPolicy,
     resolveTurboEnvCompat,
     reverseTaskGraph,
     runConcurrently,
@@ -85,6 +87,7 @@ import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
 import { buildBootstrapPaths, describeServicesPolicySource, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
 import { resolveTaskArguments } from "./task-arguments";
+import { cleanChildAllowList, composeTaskEnv, findTrackedCleanTasks, taskSpawnOptions } from "./task-env";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
 
@@ -122,8 +125,9 @@ const runPersistentTasks = async (
     workspaceRoot: string,
     affectedFiles: string[] | undefined,
     initCwd: string,
-    lifecycleHooks?: PersistentTasksLifecycleHooks,
-    serviceEnvByTaskId?: ReadonlyMap<string, Record<string, string>>,
+    lifecycleHooks: PersistentTasksLifecycleHooks | undefined,
+    serviceEnvByTaskId: ReadonlyMap<string, Record<string, string>> | undefined,
+    childEnvPolicy: (task: Task) => Required<ChildEnvOptions>,
 ): Promise<void> => {
     const commands = tasks
         .map((task) => {
@@ -137,7 +141,7 @@ const runPersistentTasks = async (
             const cwd = resolveTaskCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
 
             const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv
+            const affectedEnv: Record<string, string>
                 = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
                     ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
                     : {};
@@ -163,16 +167,21 @@ const runPersistentTasks = async (
                 workspacePty: visOptions?.pty,
             });
 
+            // The same child-env policy as the executor: a clean target gets only
+            // its allow-listed parent names plus the variables injected here.
+            const spawn = taskSpawnOptions(childEnvPolicy(task), {
+                INIT_CWD: initCwd,
+                ...envFileVars,
+                ...serviceEnv,
+                ...affectedEnv,
+                ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
+            });
+
             return {
                 command,
                 cwd,
-                env: {
-                    INIT_CWD: initCwd,
-                    ...envFileVars,
-                    ...serviceEnv,
-                    ...affectedEnv,
-                    ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
-                },
+                env: spawn.env,
+                inheritEnv: spawn.inheritEnv,
                 name: task.id,
                 ...(usePty
                     ? {
@@ -189,7 +198,7 @@ const runPersistentTasks = async (
     }
 
     if (!lifecycleHooks) {
-        await runConcurrently(commands as ConcurrentCommandInput[], {
+        await runConcurrently(commands, {
             killOthers: ["failure"],
             onEvent: () => {
                 // No-op — presence forces the JS fallback path, which is
@@ -292,7 +301,7 @@ const runPersistentTasks = async (
     }
 
     try {
-        await runConcurrently(commands as ConcurrentCommandInput[], {
+        await runConcurrently(commands, {
             killOthers: ["failure"],
             onEvent: (event: ProcessEvent) => {
                 const task = runnableTasks[event.index];
@@ -714,6 +723,13 @@ interface ExecutorDependencies {
     affectedFiles?: string[];
 
     /**
+     * Child-environment policy for one task, after the per-target
+     * `options.env` override. A clean policy builds the child environment
+     * exactly and turns parent inheritance off on the spawn.
+     */
+    childEnvPolicy: (task: Task) => Required<ChildEnvOptions>;
+
+    /**
      * Host OS resolved once at run-start so the per-task executor
      * doesn't call `os.platform()` on every invocation.
      */
@@ -886,22 +902,22 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
 
         const serviceEnv = serviceEnvByTaskId?.get(task.id);
 
-        const mergedEnv: Record<string, string> = {
-            INIT_CWD: initCwd,
-            // Effective parallelism vis grants this run, so child tasks can
-            // size their own worker pools instead of assuming the whole
-            // machine (which oversubscribes when N projects run at once).
-            VIS_TASK_SLOTS: String(taskSlots),
-            ...envFileVars,
-            // Externally-registered service env merges below the
-            // task's explicit env so users can override service-
-            // provided defaults (e.g. point a test at a staging URL
-            // without restarting the registered service).
-            ...serviceEnv,
-            ...execOptions.env,
-            ...affectedFilesEnv,
-            ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
-        };
+        const mergedEnv = composeTaskEnv({
+            affectedFilesEnv,
+            envFileVars,
+            execEnv: execOptions.env,
+            initCwd,
+            serviceEnv,
+            taskArgEnv: task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined,
+            taskSlots,
+        });
+
+        // Clean mode builds the child environment here, so the child sees only
+        // the allow-listed parent names plus `mergedEnv`, and the spawn does not
+        // inherit the parent env. Inherit mode keeps the spawner's default.
+        const childPolicy = deps.childEnvPolicy(task);
+        const cleanChild = childPolicy.mode === "clean";
+        const spawn = taskSpawnOptions(childPolicy, mergedEnv);
 
         // Per-target opt-in/out wins over the workspace flag — let a
         // single target tolerate `$VAR` references when the rest of the
@@ -911,7 +927,9 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
         if (strictEnvActive) {
             const violation = checkStrictEnv({
                 command: commandWithAffected,
-                processEnv: process.env,
+                // A variable the clean child cannot see is unset for the check,
+                // so `$VAR` fails the task instead of expanding to "".
+                processEnv: cleanChild ? pickChildParentEnv(process.env, { allow: cleanChildAllowList(childPolicy.allow), mode: "clean" }) : process.env,
                 taskEnv: mergedEnv,
                 taskId: task.id,
             });
@@ -1056,7 +1074,8 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
                         {
                             command,
                             cwd: resolvedCwd,
-                            env: mergedEnv,
+                            env: spawn.env,
+                            inheritEnv: spawn.inheritEnv,
                             name: task.id,
                             ...(isPty
                                 ? {
@@ -2481,6 +2500,26 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         },
     };
 
+    // Child-environment policy per task: the workspace `taskRunner.env`, unless
+    // the target sets its own `options.env`. The executor builds the child env
+    // with it, and the task hasher keys on the names it lets through.
+    const childEnvPolicyFor = (task: Task): Required<ChildEnvOptions> => resolveChildEnvPolicy(runnerOptions.env, getTaskOptions(task)?.env);
+
+    // Tracked runs bypass the executor, so a clean child cannot be applied to
+    // them. Fail before anything runs rather than inherit silently.
+    const trackedCleanTasks = findTrackedCleanTasks(Object.values(taskGraph.tasks), {
+        autoFingerprint: runnerOptions.autoFingerprint === true,
+        policyFor: childEnvPolicyFor,
+    });
+
+    if (trackedCleanTasks.length > 0) {
+        throw new VisUserError(
+            `A clean environment (taskRunner.env or options.env) cannot apply to tasks that run with syscall tracking `
+            + `(autoFingerprint or hashMode "trace"): ${trackedCleanTasks.join(", ")}. `
+            + `Set those targets to { mode: "inherit" } or use declared hashing.`,
+        );
+    }
+
     // Resolve the remote-cache config in three layers (CLI > vis.config.ts
     // > Turbo env-var compat). Fill missing HTTP fields from TURBO_API /
     // TURBO_TOKEN / TURBO_TEAM so a workspace migrating from Turbo keeps
@@ -2691,6 +2730,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             const mutexPool: MutexPool = new Map();
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
+                childEnvPolicy: childEnvPolicyFor,
                 currentOs,
                 hooks,
                 initCwd: invocationCwd,
@@ -2723,6 +2763,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             while (loopAction !== "quit") {
                 if (loopAction === "rerun") {
                     lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
+                        childEnvPolicy: childEnvPolicyFor,
                         lifeCycle,
                         projectGraph,
                         taskExecutor,
@@ -2772,6 +2813,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                                 store,
                             },
                             serviceEnvByTaskId,
+                            childEnvPolicyFor,
                         );
                     }
                 } else if (loopAction === "retry" && retryTaskId) {
@@ -2785,11 +2827,17 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
                         const retryTermBuf = new TerminalBuffer(MAX_OUTPUT_BYTES);
 
+                        // The retry spawn injects nothing, so the policy only decides
+                        // whether the child inherits the parent environment.
+                        const retrySpawn = taskSpawnOptions(childEnvPolicyFor(task), {});
+
                         const retryResult = await runConcurrently(
                             [
                                 {
                                     command,
                                     cwd: resolvedCwd,
+                                    env: retrySpawn.env,
+                                    inheritEnv: retrySpawn.inheritEnv,
                                     name: task.id,
                                     ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
                                     stdin: "pty",
@@ -2902,6 +2950,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
+                childEnvPolicy: childEnvPolicyFor,
                 currentOs,
                 hooks,
                 initCwd: invocationCwd,
@@ -2919,6 +2968,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 const runStart = Date.now();
 
                 const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+                    childEnvPolicy: childEnvPolicyFor,
                     lifeCycle,
                     projectGraph,
                     taskExecutor,
@@ -3236,7 +3286,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {
-                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, undefined, serviceEnvByTaskId);
+                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, undefined, serviceEnvByTaskId, childEnvPolicyFor);
             }
 
             if (registryStartedCount > 0) {

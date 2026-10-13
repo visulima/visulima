@@ -1,4 +1,4 @@
-import type { TargetConfiguration } from "@visulima/task-runner";
+import type { ChildEnvOptions, TargetConfiguration } from "@visulima/task-runner";
 
 import type { ServiceConfig } from "../services/types";
 import type { TaskArgument } from "./arguments";
@@ -59,6 +59,25 @@ export interface VisTargetOptions {
      * @default false
      */
     affectedFiles?: AffectedFilesMode;
+
+    /**
+     * Child-process environment for this target. Overrides the workspace
+     * `taskRunner.env`.
+     * - `mode: "inherit"`: the child gets the whole parent environment, even
+     *   when the workspace is `clean`.
+     * - `mode: "clean"`: the child gets only the allow-listed names, `PATH`,
+     *   `HOME`, `TERM`, `CI`, the platform essentials and what vis injects
+     *   (`VIS_TASK_SLOTS`, `VIS_ARG_*`, `envFile` values, service env).
+     * - `allow`: names and `*` wildcard patterns kept under `clean`. Added to
+     *   the workspace allow-list when the workspace is also `clean`.
+     *
+     * A target that runs through syscall tracking (`hashMode: "trace"`, or a
+     * workspace `autoFingerprint`) cannot be `clean`: those runs bypass the
+     * executor that builds the clean environment, so the run fails instead of
+     * silently inheriting. Without this option the workspace `taskRunner.env`
+     * applies, and that defaults to `inherit`.
+     */
+    env?: ChildEnvOptions;
 
     /**
      * Load environment variables from dotenv file(s) before running.
