@@ -8,6 +8,7 @@ pub mod cargo;
 pub mod go;
 pub mod maven;
 pub mod npm;
+pub mod nuget;
 pub mod pep440;
 pub mod pub_semver;
 pub mod rubygems;
@@ -66,6 +67,7 @@ pub fn matcher_for(ecosystem: &str) -> Option<&'static dyn RangeMatcher> {
         // SwiftPM tags are SemVer. The lenient parser also accepts the
         // two-part fixed versions (`1.20`) that OSV carries for SwiftURL.
         "swifturl" => Some(&npm::NpmSemverMatcher),
+        "nuget" => Some(&nuget::NuGetMatcher),
         _ => None,
     }
 }
@@ -88,6 +90,15 @@ mod tests {
         let m = matcher_for("pub").expect("pub has a matcher");
         assert!(m.matches("1.0.0-dev.1", "0", Some("1.0.0")));
         assert!(!m.matches("1.0.0", "0", Some("1.0.0")));
+    }
+
+    #[test]
+    fn nuget_dispatches_case_insensitively() {
+        let m = matcher_for("NuGet").expect("NuGet has a matcher");
+        // GHSA-hh56-x62g-gvhc (CLEditor): last_affected 1.4.5 is inclusive.
+        assert!(row_matches(m, "1.4.5", "0", None, Some("1.4.5")));
+        assert!(!row_matches(m, "1.4.5.1", "0", None, Some("1.4.5")));
+        assert!(matcher_for("nuget").is_some());
     }
 
     #[test]

@@ -357,3 +357,27 @@ fn corpus_swifturl_zip_last_affected_is_inclusive() {
     assert_dispatch(&advisory, 0, "2.1.2", true);
     assert_dispatch(&advisory, 0, "2.1.3", false);
 }
+
+// Real shape from GHSA-hh56-x62g-gvhc (CLEditor, NuGet). The range is
+// `last_affected: 1.4.5`, an inclusive bound: 1.4.5 is affected and 1.4.6
+// is clean.
+#[test]
+fn corpus_nuget_cleditor_last_affected_is_inclusive() {
+    let json = r#"{"id":"GHSA-hh56-x62g-gvhc","summary":"Cross-site scripting in CLEditor","aliases":["CVE-2019-1010113"],"affected":[{"package":{"name":"CLEditor","ecosystem":"NuGet","purl":"pkg:nuget/CLEditor"},"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"0"},{"last_affected":"1.4.5"}]}],"versions":["1.3.0","1.4.1","1.4.3","1.4.4","1.4.5"],"database_specific":{"source":"https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2019/07/GHSA-hh56-x62g-gvhc/GHSA-hh56-x62g-gvhc.json"}}]}"#;
+    let advisory = parse(json);
+    assert_dispatch(&advisory, 0, "1.4.4", true);
+    assert_dispatch(&advisory, 0, "1.4.5", true);
+    assert_dispatch(&advisory, 0, "1.4.6", false);
+}
+
+// Real shape from GHSA-8336-mxp6-v5h9 (OPCFoundation.NetStandard.Opc.Ua,
+// NuGet). Four-part fixed version 1.4.353.15: the fourth part decides the
+// boundary.
+#[test]
+fn corpus_nuget_four_part_fixed_version() {
+    let json = r#"{"id":"GHSA-8336-mxp6-v5h9","summary":"Moderate severity vulnerability that affects OPCFoundation.NetStandard.Opc.Ua","aliases":["CVE-2018-12087"],"affected":[{"package":{"name":"OPCFoundation.NetStandard.Opc.Ua","ecosystem":"NuGet","purl":"pkg:nuget/OPCFoundation.NetStandard.Opc.Ua"},"ranges":[{"type":"ECOSYSTEM","events":[{"introduced":"0"},{"fixed":"1.4.353.15"}]}],"versions":["0.4.0","0.4.1","0.4.3","0.4.4","0.4.5","1.3.348","1.3.349","1.3.350","1.3.350.1","1.3.350.3","1.3.350.4","1.3.350.5","1.3.350.6","1.3.351.7","1.3.352.10","1.3.352.11","1.3.352.12","1.3.352.9","1.4.353.13","1.4.353.14"],"database_specific":{"last_known_affected_version_range":"<= 1.4.352.12","source":"https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2018/10/GHSA-8336-mxp6-v5h9/GHSA-8336-mxp6-v5h9.json"}}]}"#;
+    let advisory = parse(json);
+    assert_dispatch(&advisory, 0, "1.4.353.14", true);
+    assert_dispatch(&advisory, 0, "1.4.353.15", false);
+    assert_dispatch(&advisory, 0, "1.4.353", true);
+}
