@@ -17,6 +17,7 @@ export interface PomSlot {
 export interface PomDependency {
     artifactId?: PomSlot;
     groupId?: PomSlot;
+    scope?: PomSlot;
     version?: PomSlot;
 }
 
@@ -128,6 +129,7 @@ export const scanPom = (raw: string): PomScan => {
             scan.dependencies.push({
                 artifactId: field(match[1]!, base, "artifactId"),
                 groupId: field(match[1]!, base, "groupId"),
+                scope: field(match[1]!, base, "scope"),
                 version: field(match[1]!, base, "version"),
             });
         }

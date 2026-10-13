@@ -17,6 +17,7 @@ import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
 import type { ResolvedPackage } from "./lockfile";
 import { readLockfilePackages } from "./lockfile";
+import { buildMavenSbomParts } from "./maven";
 import { buildNuGetSbomParts } from "./nuget";
 import { toNpmPurl } from "./purl";
 import { buildPythonSbomParts } from "./python";
@@ -511,6 +512,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const gem = buildGemSbomParts(workspaceRoot, lockOptions);
     // mix.lock has no focus-able member names (see hex.ts), so only includeDev is passed.
     const hex = buildHexSbomParts(workspaceRoot, { includeDev });
+    // pom.xml modules and their declared dependencies, with edges (see maven.ts). No focus option: module names are not Nx project names.
+    const maven = buildMavenSbomParts(workspaceRoot, { includeDev });
     // go.sum, pubspec.lock and Package.resolved list versions with no edges (see flat.ts), so each is a flat list.
     const flat = (["Go", "Pub", "SwiftURL"] as const).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
     // packages.lock.json cannot be narrowed to focused projects (see nuget.ts), so no focus option is passed.
@@ -521,8 +524,8 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...maven.components, ...flat.flatMap((part) => part.components), ...nuget.components, ...zig.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...maven.dependencies, ...flat.flatMap((part) => part.dependencies), ...nuget.dependencies, ...zig.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
@@ -713,6 +716,15 @@ const componentToXmlElement = (component: Component): XmlElement => {
                 };
             }),
             _name: "externalReferences",
+        });
+    }
+
+    if (component.properties && component.properties.length > 0) {
+        children.push({
+            _content: component.properties.map((property) => {
+                return { _attrs: { name: property.name }, _content: property.value ?? "", _name: "property" };
+            }),
+            _name: "properties",
         });
     }
 
