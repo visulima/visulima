@@ -75,6 +75,10 @@ vis audit --policies none                   # skip the policy engine entirely
 
 **Zig** cannot be audited. OSV has no Zig ecosystem, and the GitHub Advisory Database does not cover Zig either, so there is no advisory source to match against. `vis audit --ecosystem zig` is refused with an error, so a clean result is never reported for packages that were not checked. Zig packages still appear in `vis sbom`, with the limits described there.
 
+### Offline lock files
+
+With `--offline`, each ecosystem named in `--ecosystem` must have its lock file present. If one is missing, the run fails with exit code 1 and names the missing file before anything is scanned, so a missing lock file is never reported as a clean result. An ecosystem whose lock file exists but lists no packages passes.
+
 ### Output formats
 
 | Option                   | Description                                                                                                                                                         |

@@ -7,7 +7,7 @@ description: "Bump Maven versions and detect already-published artifacts on Mave
 
 Use this when you ship a JVM artifact alongside the JS / TS packages in your monorepo and want `vis release` to drive the version bump and the publish decision.
 
-vis bumps `<version>` in `pom.xml`, probes Maven Central to skip a publish that's already live, and publishes each module with `mvn -B -f <pom> deploy`. Credentials come from `~/.m2/settings.xml`, and the deploy target comes from your pom. **vis does not call the Sonatype Central Portal upload API itself.** This page walks through setup end-to-end.
+vis bumps `<version>` in `pom.xml`, probes Maven Central to skip a publish that's already live, and publishes each module with `mvn -B -N -f <pom> deploy`. The `-N` flag deploys only that module's own pom, so a parent pom does not redeploy the modules beneath it. Credentials come from `~/.m2/settings.xml`, and the deploy target comes from your pom. **vis does not call the Sonatype Central Portal upload API itself.** This page walks through setup end-to-end.
 
 ## What works today
 
@@ -35,7 +35,7 @@ The version bump itself flows through the existing extra-files engine
 
 Native publishing — vis running the Sonatype Central Portal upload flow directly — is not yet wired up. The flow Sonatype expects (GPG-sign every artifact, bundle into a deployment `.zip`, `POST /api/v1/publisher/upload`, poll status, trigger publish) is non-trivial and deferred until the rest of vis's JVM story catches up.
 
-`vis release publish` on a Maven package runs `mvn -B -f <pom> deploy`. A non-zero exit fails the release with `PUBLISH_FAILED`, and the message names the module's `groupId:artifactId`. The shell-path workaround below remains available for a custom publish command.
+`vis release publish` on a Maven package runs `mvn -B -N -f <pom> deploy`. A non-zero exit fails the release with `PUBLISH_FAILED`, and the message names the module's `groupId:artifactId`. Publish is POSIX only for now: on Windows it fails with `CONFIG_INVALID` after the dry run, because `mvn` is not run through a shell there and that path is not tested. The shell-path workaround below remains available for a custom publish command.
 
 ## The shell-path workaround
 
@@ -171,7 +171,7 @@ the wrong tool; reach for `mvn versions:set` driven from a custom
 
 ## Default path
 
-The `pomXml({...})` preset returns `versionActions: "maven"`, which publishes with `mvn -B -f <pom> deploy`. Drop the `versionActions: "shell"` override and the `publishCommand` to use it. The shell-path config keeps working as the escape hatch for a custom publish command.
+The `pomXml({...})` preset returns `versionActions: "maven"`, which publishes with `mvn -B -N -f <pom> deploy`. Drop the `versionActions: "shell"` override and the `publishCommand` to use it. The shell-path config keeps working as the escape hatch for a custom publish command.
 
 ## OIDC trusted publishing
 

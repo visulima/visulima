@@ -480,7 +480,7 @@ A package that also ships a version in another ecosystem's manifest lists those 
 - `Cargo.toml` — `version` under `[package]` and `[workspace.package]`. Dependency requirements and inherited versions (`version.workspace = true`) are not touched.
 - `tauri.conf.json` — Tauri v2 top-level `version`, or Tauri v1 `package.version`. A path value such as `"../package.json"` is left alone.
 
-Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` follows the bump: the crate's workspace-member entry is rewritten, and registry or git dependencies are never touched. A crate missing from the lockfile produces a warning.
+Edits are targeted, so comments and formatting survive. An unsupported basename fails the release before anything is written. A listed file that is missing, unreadable, or has no version field also fails the release with `CONFIG_INVALID` naming the file, rather than warning and leaving the manifest at its old version. `vis release doctor` warns when a listed manifest declares a different version from `package.json`. `Cargo.lock` follows the bump: the crate's workspace-member entry is rewritten, and registry or git dependencies are never touched. A crate missing from the lockfile produces a warning.
 
 ### Cargo crates as release packages
 
@@ -518,13 +518,13 @@ vis refuses what it cannot read to a version: a version set from a property or a
 
 Set `release.composer.discover: true` in `vis.config.ts` to release the root `composer.json` when it has a `name` such as `acme/tool`. It is off by default and needs no `package.json`.
 
-Composer has no version field, and Packagist reads versions from the git tags of the repository. So the version is the highest `vX.Y.Z` tag, and a package with no tag yet starts at `0.0.0`. The tag form is `v{version}`, which Composer reads as the version with the `v` removed. The release writes no file: it creates and pushes that tag. A `"version"` key in `composer.json` is refused with `CONFIG_INVALID`, because Packagist ignores it and it would drift from the tag.
+Composer has no version field, and Packagist reads versions from the git tags of the repository. So the version is the highest `vX.Y.Z` tag, and a package with no tag yet starts at `0.0.0`. The tag form is `v{version}`, which Composer reads as the version with the `v` removed. The release writes no file: it creates and pushes that tag. A `"version"` key in `composer.json` is refused with `CONFIG_INVALID`, because Packagist ignores it and it would drift from the tag. If the tags cannot be read (a shallow clone, for example), the release fails with `CONFIG_INVALID` and suggests `git fetch --tags --unshallow`, rather than planning from `0.0.0`. A repository with no tags at all still starts at `0.0.0`.
 
 Packagist reads a package from its repository root. Only the root `composer.json` can be released. A named `composer.json` in a subdirectory is refused with `CONFIG_INVALID`, because its tag would sit in a repository Packagist never looks at. Move such a package to its own repository. A `composer.json` without `name` is not a package and is not released. Duplicate names are refused.
 
 A `require` entry that names another discovered package orders the publish. Nothing is rewritten.
 
-The publish step checks that the tag is free locally. If it exists, the package is skipped. The Packagist API is not queried. Packagist picks up new tags from the repository after the repository is registered there, a one-time step outside vis.
+The publish step checks that the tag is free locally. If it exists, the package is skipped. If the tag cannot be created, the release fails and the package is not reported as published. The Packagist API is not queried. Packagist picks up new tags from the repository after the repository is registered there, a one-time step outside vis.
 
 Publishing is POSIX only for now. On Windows, publish fails with `CONFIG_INVALID` after the dry run.
 
@@ -544,7 +544,7 @@ The publish step checks that the tag is free locally. If it exists, the module i
 
 Two settings apply to the whole workspace, not to Go alone. `floatingMajorTag` creates a floating tag for each Go module as well, and a `syncGitTag` group that includes a Go module makes one shared tag. Leave both off for Go modules. The module's own `require` lines are not rewritten, so dependents keep the old version until someone updates them.
 
-Tags are created on POSIX only. On Windows, publish fails with `CONFIG_INVALID` after the dry run, because that path is not tested there.
+Tags are created on POSIX only. On Windows, publish fails with `CONFIG_INVALID` after the dry run, because that path is not tested there. If the tags cannot be read (a shallow clone, for example), the release fails with `CONFIG_INVALID` and suggests `git fetch --tags --unshallow`, rather than planning from `0.0.0`. A module with no tags at all still starts at `0.0.0`. If the tag cannot be created, the release fails and the module is not reported as published.
 
 With `--no-tag`, a Go release creates no tag, so nothing is released for that module.
 
@@ -604,7 +604,7 @@ Publishing runs `dotnet pack <project> -c Release -o <temp dir>`, then `dotnet n
 
 Publishing is POSIX only. On Windows it fails with `CONFIG_INVALID` after the dry run. The `dotnet` CLI (the .NET SDK) must be on `PATH`.
 
-The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and `dotnet format --verify-no-changes` (the last only for C# projects: F# is refused, because the [`dotnet format` reference](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support, so an F# project gets build and test only). `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
+The tasks side is `nuget.discover: true` in `vis.config.ts`: each directory with one project file gets `dotnet build`, `dotnet test`, and a format check: `dotnet format --verify-no-changes` for a C# project, and `dotnet fantomas --check .` for an F# project. [`dotnet format`](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support, so F# uses [Fantomas](https://fsprojects.github.io/fantomas/docs/end-users/FormattingCheck.html), which exits 0 when the code is formatted and 99 when a file needs formatting. Fantomas must be installed as a dotnet tool (`dotnet tool install fantomas`); without it the check fails with the tool's "not found" error rather than passing. `dotnet test` needs a test project, so enable it only where a test target is wanted. The root directory is not a task project, and a directory with more than one project file is skipped. Tasks and publish are POSIX only; the inferred commands are not verified on Windows.
 
 The SBOM reads `packages.lock.json` at the workspace root when it exists (opt-in with `RestorePackagesWithLockFile`) and adds its `pkg:nuget` components and edges to the CycloneDX output. Focus mode cannot narrow it, so the whole lock is kept. Audit does not check NuGet packages: vis has no offline NuGet version-range matcher, so a NuGet audit would match nothing.
 
