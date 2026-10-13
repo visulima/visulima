@@ -431,6 +431,9 @@
                         },
                         "stylelint": {
                             "$ref": "#/$defs/LintFmtAdapterOverride"
+                        },
+                        "typecheck": {
+                            "$ref": "#/$defs/LintFmtAdapterOverride"
                         }
                     },
                     "additionalProperties": false,
@@ -3921,7 +3924,8 @@
                 "oxlint",
                 "ruff-check",
                 "shellcheck",
-                "stylelint"
+                "stylelint",
+                "typecheck"
             ],
             "description": "Adapter IDs that can lint (adapter `kind` is `\"lint\"` or `\"both\"`)."
         },
