@@ -105,8 +105,18 @@ How reads are observed depends on the platform:
 | macOS / Windows | Node preload for shell commands (`&&`, pipes, redirects) | Only `fs` calls made by Node processes        |
 
 When the tracker observes no workspace access at all (for example a static binary
-on a host without `strace`), the run is not cached. vis prints a warning instead of
-storing an entry under an empty key.
+on a host without `strace`), what happens next depends on the target:
+
+- **The target declares `inputs`.** The run is keyed on its declared hash, the same
+  key `declared` mode uses. A later run hits as long as the declared inputs have not
+  changed, and a change re-executes the task. `vis cache why` prints
+  `key: declared-fallback`, and the run summary records `hashSource: "declared-fallback"`.
+- **The target declares no `inputs`.** Nothing declared can key the run, so it is not
+  cached. vis prints a warning instead of storing an entry under an empty key.
+
+A traced key is a digest of the observed file hashes, the env values, and the tracker
+that produced them (`seccomp`, `strace`, `interpose`, `iat` or `preload`). The same
+workspace traced on two platforms therefore never shares a key.
 
 Traced keys can differ between machines, because the observed read set depends on
 the platform. Keep targets on `"declared"` whenever you can list their inputs.

@@ -46,14 +46,17 @@ filtered.
 
 ### G1. An empty tracker means "do not cache", not "fall back to declared"
 
+**Status: done (option B).** Stage 1 implements option B below.
+
 `TrackedTaskExecutor.isTrackingSupported` returns `true` unconditionally. When
 the tracker observes no workspace access, the orchestrator sets
 `emptyFingerprint`, prints a warning, and skips the cache write. A target that
 declares `inputs` therefore gets no caching in that environment, even though
 its declared key would be valid.
 
-The `autoFingerprint` doc comment in `types.ts` claims a fallback to declared
-inputs. That was inaccurate and is corrected alongside this RFC.
+The `autoFingerprint` doc comment in `types.ts` was corrected earlier to say that
+an empty run is not cached. Stage 1 changes that behaviour, so the comment now
+describes the fallback.
 
 Options:
 
@@ -67,9 +70,12 @@ Options:
 - **C.** Compute the declared hash for every traced run and record both keys.
   Doubles hashing work. Only worth it for diagnostics.
 
-**Recommendation: B.** It is a TS-only change in `task-orchestrator.ts`. It
-needs the declared hash computed before the trace lookup, and a result flag
-(`hashSource: "declared-fallback"`) so `cache why` can say which key was used.
+**Recommendation: B.** Implemented. The declared hash is computed after the run,
+and only when the tracker was empty. Nothing tracked means the run used no
+workspace input, so the inputs hashed afterwards are the ones it used. The
+lookup computes the declared hash only for an indexed fallback entry (one with
+no fingerprint), so non-fallback runs do no extra hashing. `TaskResult.hashSource`
+(`"declared-fallback"`) records the key, and `vis cache why` prints it.
 
 ### G2. No clean-environment default
 
@@ -130,6 +136,9 @@ Staged:
 
 ### G4. Trace keys are not portable across platforms
 
+**Status: done.** The trace key includes the tracker kind (`seccomp`, `strace`,
+`interpose`, `iat`, `preload`); see `hashFingerprint` in `fingerprint.ts`.
+
 A trace key depends on which files the tracker can see, so the same workspace
 can produce different keys on Linux and macOS. The existing cache is local, so
 this only matters for a shared remote cache. Options: refuse to upload traced
@@ -148,14 +157,14 @@ in `task-hasher` and avoids accidental cross-platform hits.
 
 ## Ordering
 
-| Stage | Item                                       | Native code | Breaking                    |
-| ----- | ------------------------------------------ | ----------- | --------------------------- |
-| 1     | G1-B declared fallback for empty trace     | no          | no                          |
-| 1     | G4 tracker kind in the trace key           | no          | cache miss once per upgrade |
-| 2     | G3.1 compound parser, refusing unsupported | no          | no                          |
-| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                          |
-| 3     | G2-B opt-in clean env                      | no          | opt-in                      |
-| 3     | G3.3 trace-mode segments                   | no          | no                          |
+| Stage | Item                                       | Native code | Breaking                                            | Status |
+| ----- | ------------------------------------------ | ----------- | --------------------------------------------------- | ------ |
+| 1     | G1-B declared fallback for empty trace     | no          | no                                                  | done   |
+| 1     | G4 tracker kind in the trace key           | no          | new trace keys after upgrade; old entries still hit | done   |
+| 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | open   |
+| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | open   |
+| 3     | G2-B opt-in clean env                      | no          | opt-in                                              | open   |
+| 3     | G3.3 trace-mode segments                   | no          | no                                                  | open   |
 
 ## References
 
