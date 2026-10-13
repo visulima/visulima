@@ -309,10 +309,21 @@ const executeAudit = async (
         return;
     }
 
-    // Dart has no lockfile reader here: pubspec.lock is not read for versions, so an audit would scan nothing. Refuse it the same way.
+    // Dart and Swift: OSV has a Pub and a SwiftURL ecosystem, and vis reads pubspec.lock and Package.resolved for SBOM,
+    // but vis has no range matcher for either (native/src/advisories/range/mod.rs), so an audit would report nothing.
+    // Refuse both the same way rather than print a clean result.
     if (ecosystems.all.some((eco) => ["dart", "pub"].includes(eco.toLowerCase()))) {
         pail.error(
-            "--ecosystem pub (Dart) is not supported: vis does not read pubspec.lock for audit, so the audit cannot check Dart packages. Remove pub from --ecosystem.",
+            "--ecosystem pub (Dart) is not supported: OSV has a Pub ecosystem, but vis has no range matcher for it, so the audit would report nothing. Remove pub from --ecosystem.",
+        );
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (ecosystems.all.some((eco) => ["swift", "swifturl"].includes(eco.toLowerCase()))) {
+        pail.error(
+            "--ecosystem swift is not supported: OSV has a SwiftURL ecosystem, but vis has no range matcher for it, so the audit would report nothing. Remove swift from --ecosystem.",
         );
         process.exitCode = 1;
 

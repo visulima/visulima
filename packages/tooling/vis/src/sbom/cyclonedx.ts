@@ -9,6 +9,7 @@ import { toXML } from "jstoxml";
 import { resolveFocusProjects } from "../util/docker";
 import { buildCargoSbomParts } from "./cargo";
 import { buildComposerSbomParts } from "./composer";
+import { buildFlatSbomParts } from "./flat";
 import { buildGemSbomParts } from "./gem";
 import { buildHexSbomParts } from "./hex";
 import { readInstalledPackageMetadata } from "./installed-package";
@@ -508,12 +509,14 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const gem = buildGemSbomParts(workspaceRoot, lockOptions);
     // mix.lock has no focus-able member names (see hex.ts), so only includeDev is passed.
     const hex = buildHexSbomParts(workspaceRoot, { includeDev });
+    // go.sum, pubspec.lock and Package.resolved list versions with no edges (see flat.ts), so each is a flat list.
+    const flat = (["Go", "Pub", "SwiftURL"] as const).map((ecosystem) => buildFlatSbomParts(workspaceRoot, ecosystem));
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components, ...hex.components, ...flat.flatMap((part) => part.components)],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies, ...hex.dependencies, ...flat.flatMap((part) => part.dependencies)].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],

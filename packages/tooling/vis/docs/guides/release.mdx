@@ -548,6 +548,8 @@ Tags are created on POSIX only. On Windows, publish fails with `CONFIG_INVALID` 
 
 With `--no-tag`, a Go release creates no tag, so nothing is released for that module.
 
+`vis sbom` lists the module versions in `go.sum` as `pkg:golang/` components. The list is flat, with no dependency edges, and `go.sum` can hold modules the build does not compile.
+
 Tasks for these modules are a separate opt-in, `go.discover: true` in `vis.config.ts`. They run `go build ./...`, `go test ./...`, `go vet ./...`, and `gofmt -d .` as `format:check`, which exits 1 when a file needs formatting. `gofmt -d .` also walks `vendor/` if the module has one. The root module is not a task project, so a single-module repository gets no Go tasks.
 
 ### Swift packages as release packages
@@ -562,7 +564,7 @@ Publishing uploads nothing. The release's tag step creates the tag and pushes it
 
 Tasks: with `swift.discover: true`, each package directory gets `swift build` and `swift test`, plus a `swift-format lint --strict --recursive` check over the `Sources` and `Tests` directories that exist. The check exits non-zero on lint warnings. The workspace root is not a task project.
 
-Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains, and `Package.resolved` has no dependency edges, so the SBOM has no Swift graph.
+Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains. `vis sbom` lists the pins in `Package.resolved` (format v2 and v3) as `pkg:swift/` components, one per pin with a version. The list is flat: it has no dependency edges, so it says nothing about what depends on what. `vis audit --ecosystem swift` is refused: OSV has a SwiftURL ecosystem, but vis has no range matcher for it, so an audit would report nothing.
 
 ### Gem packages as release packages
 
@@ -632,7 +634,7 @@ The task side is `dart.discover: true` in `vis.config.ts` (off by default). It a
 
 Dart support is POSIX only. The Windows path is not verified, so publish refuses on Windows with `CONFIG_INVALID` after the dry run.
 
-Audit and SBOM: `vis audit --ecosystem pub` (or `dart`) is refused: vis does not read `pubspec.lock` for audit. `pubspec.lock` is not read for an SBOM either. The lockfile lists versions but not dependency edges, and the edges live in each package's pubspec.
+Audit and SBOM: `vis audit --ecosystem pub` (or `dart`) is refused: OSV has a Pub ecosystem, but vis has no range matcher for it, so an audit would report nothing. `vis sbom` lists each hosted package in `pubspec.lock` as a `pkg:pub/` component. Only `source: hosted` entries are pub.dev packages; `sdk`, `git` and `path` entries are skipped. The list is flat, with no dependency edges, because the lockfile lists versions but not edges and the edges live in each package's pubspec.
 
 ### Custom per-package commands
 

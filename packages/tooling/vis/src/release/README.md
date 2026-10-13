@@ -187,6 +187,7 @@ Opt-in. With `release: { go: { discover: true } }`, every `use` entry of `go.wor
 - Rejects `gopkg.in/` paths, uppercase module paths, `use` entries outside the workspace or without a `go.mod`, and duplicate module paths.
 - POSIX only: publish refuses on win32 with `CONFIG_INVALID` after the dry run.
 - Go has no lockfile vis writes and `go.mod` is never rewritten. The `require` lines between modules are not moved.
+- `vis sbom` lists the module versions in `go.sum` as a flat `pkg:golang/` list with no edges.
 
 ## Swift packages as release packages (`release.swift.discover`)
 
@@ -196,6 +197,7 @@ Opt-in. With `release: { swift: { discover: true } }`, every directory under the
 - The version comes from Git tags (`currentVersionResolver: "git-tag"`). The root package uses the bare tag (`releaseTagPattern: "{version}"`), the form SwiftPM reads. A nested package keeps the workspace tag pattern, so two packages never share a bare tag. Until a tag exists the package starts from `0.0.0`.
 - A `.package(path:)` dependency on another discovered package orders the publish (`"*"`). Nothing is written to the manifest, and remote dependencies are not rewritten.
 - Publish uploads nothing: the tag step creates the tag. The published check is `git rev-parse` on the tag, so an existing tag is skipped. Publish refuses on Windows with `CONFIG_INVALID`, after the dry run.
+- `vis sbom` lists the `Package.resolved` pins as a flat `pkg:swift/` list with no edges. `vis audit --ecosystem swift` is refused: OSV has a SwiftURL ecosystem, but vis has no range matcher for it.
 
 ## Zig packages as release packages (`release.zig.discover`)
 
@@ -214,7 +216,7 @@ Opt-in. With `release: { dart: { discover: true } }`, the root `pubspec.yaml` (w
 - A `publish_to` that is not pub.dev fails the release. Workspace entries are literal paths or `dir/*`; anything else fails it.
 - A dependency key that names another released package orders the publish (`"*"`). Hosted dependencies are not rewritten.
 - Publishing runs `dart pub publish --force` with the argv runner, no shell, POSIX only. `https://pub.dev/api/packages/<name>` is checked first; a listed version is skipped. Credentials come from the Dart SDK's token store or OIDC, never argv.
-- Dart has no lockfile edits: `pubspec.lock` is not rewritten.
+- Dart has no lockfile edits: `pubspec.lock` is not rewritten. `vis sbom` lists its hosted packages as a flat `pkg:pub/` list with no edges; `vis audit --ecosystem pub` is refused (OSV has a Pub ecosystem, but vis has no range matcher for it).
 
 ## Gem packages as release packages (`release.gem.discover`)
 

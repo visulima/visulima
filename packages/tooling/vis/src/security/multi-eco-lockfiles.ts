@@ -17,8 +17,10 @@ const ECOSYSTEM_LOCKFILES: Record<string, string[]> = {
     Go: ["go.sum"],
     Maven: ["gradle.lockfile", "pom.xml"],
     Packagist: ["composer.lock"],
+    Pub: ["pubspec.lock"],
     PyPI: ["uv.lock", "poetry.lock", "Pipfile.lock"],
     RubyGems: ["Gemfile.lock"],
+    SwiftURL: ["Package.resolved"],
 };
 
 const ECOSYSTEM_ALIASES: Record<string, string> = {
@@ -299,6 +301,93 @@ const parseGemfileLock = (content: string): InstalledPackage[] => {
     return entries;
 };
 
+/**
+ * `pubspec.lock`: the `packages` map, each entry with a `source` and a `version`. Only
+ * `source: hosted` entries are pub.dev packages; `sdk`, `git` and `path` entries have no
+ * pub.dev version and are skipped. `dependency: direct dev` marks a dev package.
+ */
+const parsePubspecLock = (content: string): InstalledPackage[] => {
+    const records: { dependency?: string; name: string; source?: string; version?: string }[] = [];
+    let inPackages = false;
+
+    for (const line of content.split(/\r?\n/)) {
+        if (/^\S/.test(line)) {
+            inPackages = line.trimEnd() === "packages:";
+
+            continue;
+        }
+
+        const last = records.at(-1);
+        const header = /^ {2}(\S+):\s*$/.exec(line);
+
+        if (inPackages && header?.[1] !== undefined) {
+            records.push({ name: header[1] });
+
+            continue;
+        }
+
+        const [, key, value] = /^ {4}(dependency|source|version): "?([^"]*)"?\s*$/.exec(line) ?? [];
+
+        if (inPackages && last !== undefined && key !== undefined && value !== undefined) {
+            if (key === "source") {
+                last.source = value;
+            } else if (key === "version") {
+                last.version = value;
+            } else {
+                last.dependency = value;
+            }
+        }
+    }
+
+    return records
+        .filter((record) => record.source === "hosted" && record.version !== undefined && record.version.length > 0)
+        .map((record) => {
+            return { isDev: record.dependency === "direct dev", name: record.name, version: record.version! };
+        });
+};
+
+/**
+ * The package name SwiftPM uses for a pin, which is the host/owner/repo form OSV's SwiftURL
+ * records use: no scheme, no `.git` suffix. `git@host:owner/repo.git` is read the same way.
+ */
+export const swiftPackageName = (location: string): string =>
+    location
+        .trim()
+        .replace(/^[a-z+]+:\/\//i, "")
+        .replace(/^[^@/]+@([^:/]+):/, "$1/")
+        .replace(/\.git$/, "")
+        .replace(/\/+$/, "");
+
+/**
+ * `Package.resolved` (format v2 and v3): a top-level `pins` array. Each pin has a `location`
+ * and a `state.version`. A pin pinned to a branch or revision has no version and is skipped.
+ */
+const parsePackageResolved = (content: string): InstalledPackage[] => {
+    let json: unknown;
+
+    try {
+        json = JSON.parse(content);
+    } catch {
+        return [];
+    }
+
+    const pins = typeof json === "object" && json !== null ? (json as { pins?: unknown }).pins : undefined;
+
+    if (!Array.isArray(pins)) {
+        return [];
+    }
+
+    const entries: InstalledPackage[] = [];
+
+    for (const pin of pins as { location?: unknown; state?: { version?: unknown } }[]) {
+        if (typeof pin.location === "string" && typeof pin.state?.version === "string" && pin.state.version.length > 0) {
+            entries.push({ isDev: false, name: swiftPackageName(pin.location), version: pin.state.version });
+        }
+    }
+
+    return entries;
+};
+
 export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: string): InstalledPackage[] => {
     const lockfile = findEcosystemLockfile(workspaceRoot, ecosystem);
 
@@ -341,12 +430,20 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
             parsed = parseGradleLockfile(content);
             break;
         }
+        case "Package.resolved": {
+            parsed = parsePackageResolved(content);
+            break;
+        }
         case "Pipfile.lock": {
             parsed = parsePipfileLock(content);
             break;
         }
         case "pom.xml": {
             parsed = parsePomXml(content);
+            break;
+        }
+        case "pubspec.lock": {
+            parsed = parsePubspecLock(content);
             break;
         }
         default: {
