@@ -965,7 +965,7 @@ export default class Ink {
         // Native renderer path: write buffer directly via Rust diff engine
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
             // Handle static output through the normal string path
-            if (staticOutput && staticOutput !== "\n") {
+            if (staticOutput) {
                 this.options.stdout.write(staticOutput);
             }
 
@@ -987,7 +987,7 @@ export default class Ink {
         }
 
         // If <Static> output isn't empty, it means new children have been added to it
-        const hasStaticOutput = staticOutput && staticOutput !== "\n";
+        const hasStaticOutput = staticOutput !== "";
 
         if (this.options.debug) {
             if (hasStaticOutput) {

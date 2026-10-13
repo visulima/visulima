@@ -205,6 +205,19 @@ const getReusableOutput = ({ caches, height, node, outputs, width }: ReusableOut
     return output;
 };
 
+// Static output is only written on the render that mounted its children; afterwards the <Static> box
+// keeps just its padding, which must not be written again. While the children are mounted, every row
+// is written, blank ones included, so a row that renders empty still takes up its line.
+const serializeStaticOutput = (staticNode: DOMElement | undefined, staticOutput: Output | undefined): string => {
+    if (!staticNode || !staticOutput || staticNode.childNodes.length === 0) {
+        return "";
+    }
+
+    const { height, output } = staticOutput.get();
+
+    return height > 0 ? `${output}\n` : "";
+};
+
 const renderer = (
     node: DOMElement,
     isScreenReaderEnabled: boolean,
@@ -291,7 +304,7 @@ const renderer = (
                 outputBuffer,
                 outputHeight,
                 outputWidth: output.width,
-                staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+                staticOutput: serializeStaticOutput(node.staticNode, staticOutput),
             };
         }
 
@@ -305,7 +318,7 @@ const renderer = (
             outputHeight,
             // Newline at the end is needed, because static output doesn't have one, so
             // interactive output will override last line of static output
-            staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+            staticOutput: serializeStaticOutput(node.staticNode, staticOutput),
         };
     }
 

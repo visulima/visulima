@@ -90,7 +90,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     rootNode.onImmediateRender = () => {
         const { staticOutput } = renderer(rootNode, false);
 
-        if (staticOutput && staticOutput !== "\n") {
+        if (staticOutput) {
             capturedStaticOutput += staticOutput;
         }
     };

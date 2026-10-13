@@ -560,4 +560,24 @@ describe("inline renderer: static output", () => {
 
         unmount();
     });
+
+    it("keeps blank rows rendered by <Static>", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, CLEAR_RESIZE_ROWS);
+
+        const { unmount, waitUntilRenderFlush } = render(
+            <>
+                <Static items={[1]}>{(item) => <Box height={1} key={item} />}</Static>
+                <Text>live</Text>
+            </>,
+            { interactive: true, stdout },
+        );
+
+        await waitUntilRenderFlush();
+
+        expect(visibleRows(inkScreen(stdout)).slice(0, 2)).toEqual(["", "live"]);
+
+        unmount();
+    });
 });
