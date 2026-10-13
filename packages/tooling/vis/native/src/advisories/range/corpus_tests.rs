@@ -302,6 +302,57 @@ fn corpus_pub_jose_build_suffix_fix() {
     assert_dispatch(&adv, 0, "0.3.6", false);
 }
 
+// Real shape from GHSA-9v85-q87q-g4vg (archive, fixed in 3.3.8). The advisory
+// is written as `<= 3.3.7` in the GitHub database and as introduced/fixed in
+// OSV, so the boundary is 3.3.7 affected and 3.3.8 clean.
+#[test]
+fn corpus_pub_archive_upper_boundary() {
+    let json = r#"{
+        "id": "GHSA-9v85-q87q-g4vg",
+        "summary": "archive affected by a path traversal",
+        "affected": [{
+            "package": { "ecosystem": "Pub", "name": "archive" },
+            "ranges": [{
+                "type": "ECOSYSTEM",
+                "events": [
+                    { "introduced": "0" },
+                    { "fixed": "3.3.8" }
+                ]
+            }]
+        }]
+    }"#;
+    let adv = parse(json);
+
+    assert_dispatch(&adv, 0, "3.3.7", true);
+    assert_dispatch(&adv, 0, "3.3.8", false);
+}
+
+// Real shape from GHSA-fmj7-7gfw-64pg (agent_dart, fixed in 1.0.0-dev.29). The
+// boundary is a pre-release: 1.0.0-dev.28 is affected, 1.0.0-dev.29 is clean,
+// and the final 1.0.0 is clean as well.
+#[test]
+fn corpus_pub_agent_dart_prerelease_boundary() {
+    let json = r#"{
+        "id": "GHSA-fmj7-7gfw-64pg",
+        "summary": "agent_dart affected by a prerelease-era vulnerability",
+        "affected": [{
+            "package": { "ecosystem": "Pub", "name": "agent_dart" },
+            "ranges": [{
+                "type": "ECOSYSTEM",
+                "events": [
+                    { "introduced": "0" },
+                    { "fixed": "1.0.0-dev.29" }
+                ]
+            }]
+        }]
+    }"#;
+    let adv = parse(json);
+
+    assert_dispatch(&adv, 0, "1.0.0-dev.28", true);
+    assert_dispatch(&adv, 0, "1.0.0-dev.29", false);
+    assert_dispatch(&adv, 0, "1.0.0", false);
+}
+
 // Real shape from GHSA-35jh-r3h4-6jhm (lodash.template command injection).
 // The package's range is `last_affected: 4.5.0`, an inclusive bound, so
 // 4.5.0 itself is affected and 4.5.1 is clean. Recorded in the OSV dump as
