@@ -8,10 +8,12 @@ import type { DetectContext, DetectedTargets, Detector } from "../types";
  * project file there. `build` writes `bin/` and `obj/`, so it is uncached like the Gradle
  * build. `test` and `format:check` are `type: "test"` checks with no outputs.
  * `dotnet format --verify-no-changes` exits non-zero when a file would be reformatted,
- * so the check fails rather than passing silently. The format check is only added for a
- * C# project. Refused for F#: the `dotnet format` page on learn.microsoft.com
- * (https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format) documents no F# support,
- * so an F# directory gets build and test only, and a check that silently formats nothing is avoided.
+ * so the check fails rather than passing silently. A C# project gets that check.
+ * `dotnet format` documents no F# support (https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-format),
+ * so an F# project gets `dotnet fantomas --check .` instead: Fantomas exits 0 when the code is
+ * formatted, 99 when a file needs formatting, and 1 on errors (its FormattingCheck page). The
+ * Fantomas tool must be installed (`dotnet tool install fantomas`); without it the check fails
+ * with the tool's own "not found" error rather than passing.
  * `dotnet test` needs a test project, so enable `nuget.discover` only where the test target
  * is wanted. POSIX only: the Windows path is not verified.
  */
@@ -51,6 +53,14 @@ export const nugetDetector: Detector = {
             targets["format:check"] = {
                 command: "dotnet format --verify-no-changes",
                 description: "dotnet format --verify-no-changes (inferred)",
+                inputs,
+                outputs: [],
+                type: "test",
+            };
+        } else if (context.matchedConfigs.includes("*.fsproj")) {
+            targets["format:check"] = {
+                command: "dotnet fantomas --check .",
+                description: "dotnet fantomas --check . (inferred; needs the fantomas tool)",
                 inputs,
                 outputs: [],
                 type: "test",

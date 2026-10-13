@@ -25,12 +25,13 @@ describe("nuget detector", () => {
         expect(targets["format:check"]).toMatchObject({ command: "dotnet format --verify-no-changes", outputs: [], type: "test" });
     });
 
-    it("omits the format check for an F# project, which is not verified", () => {
+    it("uses Fantomas for an F# project, whose format check dotnet format does not cover", () => {
         expect.hasAssertions();
 
         const { targets } = nugetDetector.detect(context(["*.fsproj"])) as { targets: Record<string, unknown> };
 
-        expect(Object.keys(targets).sort()).toStrictEqual(["build", "test"]);
+        expect(Object.keys(targets).sort()).toStrictEqual(["build", "format:check", "test"]);
+        expect(targets["format:check"]).toMatchObject({ command: "dotnet fantomas --check .", outputs: [], type: "test" });
     });
 
     it("is registered for the *.csproj and *.fsproj config files", () => {
