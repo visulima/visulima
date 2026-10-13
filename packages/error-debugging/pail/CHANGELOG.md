@@ -1,3 +1,14 @@
+## @visulima/pail [5.0.1](https://github.com/visulima/visulima/compare/@visulima/pail@5.0.0...@visulima/pail@5.0.1) (2026-10-13)
+
+### Miscellaneous Chores
+
+* point every Discord link at the anolilab server ([#858](https://github.com/visulima/visulima/issues/858)) ([4002bfc](https://github.com/visulima/visulima/commit/4002bfcd8d3c748d7008efe208e6aaae7bd18753))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.2.0
+
 ## @visulima/pail [5.0.0](https://github.com/visulima/visulima/compare/@visulima/pail@4.1.1...@visulima/pail@5.0.0) (2026-09-03)
 
 ### ⚠ BREAKING CHANGES
