@@ -848,3 +848,39 @@ describe("inline renderer: incremental rendering through render()", () => {
         unmount();
     });
 });
+
+describe("inline renderer: scrollback", () => {
+    it("never erases the terminal scrollback while redrawing or clearing", async () => {
+        expect.assertions(2);
+
+        const stdout = createStdout(40, true, 6);
+        const tree = (height: number) => (
+            <Box flexDirection="column" height={height}>
+                <Text>live</Text>
+            </Box>
+        );
+
+        const { clear, rerender, unmount, waitUntilRenderFlush } = render(tree(2), { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        // Growing past the viewport takes the full-clear path; clear() erases the live region.
+        rerender(tree(8));
+
+        await waitUntilRenderFlush();
+
+        clear();
+
+        rerender(tree(3));
+
+        await waitUntilRenderFlush();
+
+        const output = stdout.getWrites().join("");
+
+        // CSI 3 J erases scrollback and RIS (ESC c) resets the terminal; both destroy history.
+        expect(output).not.toContain("\u001B[3J");
+        expect(output).not.toContain("\u001Bc");
+
+        unmount();
+    });
+});
