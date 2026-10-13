@@ -346,3 +346,14 @@ fn corpus_npm_lodash_template_last_affected_is_inclusive() {
     assert_dispatch(&advisory, 0, "4.4.9", true);
     assert_dispatch(&advisory, 0, "4.5.1", false);
 }
+
+// Real shape from GHSA-g454-wj9r-jpg4 (marmelroy/Zip, SwiftURL). The OSV
+// range is `last_affected: 2.1.2`, so 2.1.2 is affected and 2.1.3 is clean.
+#[test]
+fn corpus_swifturl_zip_last_affected_is_inclusive() {
+    let json = r#"{"id":"GHSA-g454-wj9r-jpg4","summary":"Path traversal in Zip Swift","aliases":["CVE-2023-39135"],"affected":[{"package":{"name":"github.com/marmelroy/Zip","ecosystem":"SwiftURL","purl":"pkg:swift/github.com/marmelroy/Zip"},"ranges":[{"type":"SEMVER","events":[{"introduced":"0"},{"last_affected":"2.1.2"}]}],"database_specific":{"source":"https://github.com/github/advisory-database/blob/main/advisories/github-reviewed/2023/08/GHSA-g454-wj9r-jpg4/GHSA-g454-wj9r-jpg4.json"}}]}"#;
+    let advisory = parse(json);
+    assert_dispatch(&advisory, 0, "2.1.1", true);
+    assert_dispatch(&advisory, 0, "2.1.2", true);
+    assert_dispatch(&advisory, 0, "2.1.3", false);
+}

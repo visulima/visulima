@@ -63,6 +63,9 @@ pub fn matcher_for(ecosystem: &str) -> Option<&'static dyn RangeMatcher> {
         "maven" => Some(&maven::MavenMatcher),
         "rubygems" => Some(&rubygems::RubyGemsMatcher),
         "pub" => Some(&pub_semver::PubMatcher),
+        // SwiftPM tags are SemVer. The lenient parser also accepts the
+        // two-part fixed versions (`1.20`) that OSV carries for SwiftURL.
+        "swifturl" => Some(&npm::NpmSemverMatcher),
         _ => None,
     }
 }
@@ -85,6 +88,19 @@ mod tests {
         let m = matcher_for("pub").expect("pub has a matcher");
         assert!(m.matches("1.0.0-dev.1", "0", Some("1.0.0")));
         assert!(!m.matches("1.0.0", "0", Some("1.0.0")));
+    }
+
+    #[test]
+    fn swifturl_uses_semver_bounds_and_lenient_two_part_versions() {
+        let m = matcher_for("SwiftURL").expect("SwiftURL has a matcher");
+        // GHSA-7fj7-39wj-c64f (apple/swift-nio): fixed 2.42.0.
+        assert!(row_matches(m, "2.41.0", "2.41.0", Some("2.42.0"), None));
+        assert!(!row_matches(m, "2.42.0", "2.41.0", Some("2.42.0"), None));
+        // Two-part fixed version from the same dump.
+        assert!(row_matches(m, "1.19.9", "0", Some("1.20"), None));
+        assert!(!row_matches(m, "1.20.0", "0", Some("1.20"), None));
+        // Pre-release precedes its release.
+        assert!(row_matches(m, "2.0.0-alpha.1", "0", Some("2.0.0"), None));
     }
 
     #[test]
