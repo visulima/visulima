@@ -4,6 +4,7 @@ import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import runExecute from "../../../src/commands/run/handler";
+import { VisUserError } from "../../../src/errors/vis-user-error";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
 const capture = (): { errors: string[]; infos: string[]; logger: Record<"debug" | "error" | "info" | "warn", (...args: unknown[]) => void> } => {
@@ -38,11 +39,9 @@ describe("vis run --if-present", () => {
         cleanupTemporaryDirectory(workspaceRoot);
     });
 
-    const run = async (ifPresent: boolean): Promise<ReturnType<typeof capture>> => {
-        const captured = capture();
-
+    const runTarget = async (target: string, ifPresent: boolean, captured = capture()): Promise<ReturnType<typeof capture>> => {
         await runExecute({
-            argument: ["lint"],
+            argument: [target],
             logger: captured.logger,
             options: { cache: false, dryRun: true, ifPresent, parallel: 1, skipToolchain: true },
             runtime: {} as never,
@@ -53,16 +52,30 @@ describe("vis run --if-present", () => {
         return captured;
     };
 
-    it("reports the missing target as an error by default", async () => {
-        expect.assertions(2);
+    const run = async (ifPresent: boolean, captured = capture()): Promise<ReturnType<typeof capture>> => runTarget("lint", ifPresent, captured);
 
-        const { errors, infos } = await run(false);
+    it("fails with a non-zero exit by default so a mistyped target cannot pass CI", async () => {
+        expect.assertions(3);
 
-        expect(errors).toContain("No projects have the \"lint\" target.");
-        expect(infos.join("\n")).not.toContain("--if-present");
+        const captured = capture();
+        const failure = await run(false, captured).catch((error: unknown) => error);
+
+        expect(failure).toBeInstanceOf(VisUserError);
+        expect((failure as Error).message).toContain("No projects have the \"lint\" target.");
+        // The old behaviour printed the report and returned, which the CLI turned into exit 0.
+        expect(captured.infos.join("\n")).not.toContain("--if-present):");
     });
 
-    it("skips with a notice and no error when the flag is set", async () => {
+    it("suggests a close target and the escape hatch", async () => {
+        expect.assertions(2);
+
+        const failure = await runTarget("buidl", false).catch((error: unknown) => error);
+
+        expect((failure as Error).message).toContain("Did you mean \"build\"?");
+        expect((failure as Error).message).toContain("--if-present");
+    });
+
+    it("skips with a notice and succeeds when the flag is set", async () => {
         expect.assertions(2);
 
         const { errors, infos } = await run(true);

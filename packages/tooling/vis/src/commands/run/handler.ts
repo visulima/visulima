@@ -1547,37 +1547,33 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             .filter(([, proj]) => proj.targets?.[target] !== undefined)
             .map(([name]) => name);
 
-        logger.error(`No projects have the "${target}" target.`);
+        // A run that executed nothing must not look like a pass: throw so the CLI exits non-zero.
+        // `--if-present` (handled above) is the explicit opt-out.
+        const lines = [`No projects have the "${target}" target.`];
 
         if (exactMatchProjects.length > 0) {
             // The target exists somewhere in the workspace — it was
             // just filtered out by selector/query/os/runInCI/runner-tags.
             // Tell the user which projects do implement it.
-            logger.info("");
-            logger.info(`Target "${target}" exists in these projects but was filtered out:`);
-
-            for (const name of exactMatchProjects.slice(0, 5)) {
-                logger.info(`  - ${name}`);
-            }
+            lines.push("", `Target "${target}" exists in these projects but was filtered out:`, ...exactMatchProjects.slice(0, 5).map((name) => `  - ${name}`));
 
             if (exactMatchProjects.length > 5) {
-                logger.info(`  …and ${exactMatchProjects.length - 5} more`);
+                lines.push(`  …and ${exactMatchProjects.length - 5} more`);
             }
         } else {
             const suggestions = suggestTargets(target, available, 3);
 
             if (suggestions.length > 0) {
-                logger.info("");
-                logger.info(
+                lines.push(
+                    "",
                     suggestions.length === 1 ? `Did you mean "${suggestions[0]}"?` : `Did you mean one of: ${suggestions.map((s) => `"${s}"`).join(", ")}?`,
                 );
             }
 
-            logger.info("");
-            logger.info("Run `vis run` without arguments to see all available targets.");
+            lines.push("", "Run `vis run` without arguments to see all available targets, or pass --if-present to skip when no project has the target.");
         }
 
-        return;
+        throw new VisUserError(lines.join("\n"));
     }
 
     const ptyFlag = options.pty;
