@@ -114,6 +114,17 @@ describe("vis audit offline routing", () => {
         expect(queriedAs("Pub")).toStrictEqual([[{ name: "http", version: "1.2.0" }]]);
     });
 
+    it("reads a mix.lock as Hex and queries it under the Hex ecosystem", async () => {
+        expect.assertions(2);
+
+        state.ecosystemPackages = { Hex: [{ name: "plug", version: "1.15.0" }] };
+
+        await runOffline("hex");
+
+        expect(queriedAs("Hex")).toStrictEqual([[{ name: "plug", version: "1.15.0" }]]);
+        expect(process.exitCode).not.toBe(1);
+    });
+
     it("scans a Dart-only repository when the JavaScript lockfile has no entries", async () => {
         expect.assertions(2);
 

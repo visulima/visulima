@@ -6,13 +6,16 @@ import { pail } from "../../io/logger";
 import { startScanProgress } from "../../scan/scan-progress";
 import type { SyncResult } from "../../security/advisories";
 import { DEFAULT_ADVISORY_SOURCE, syncAdvisories } from "../../security/advisories";
+import { canonicalEcosystem } from "../../security/multi-eco-lockfiles";
 import type { AdvisoriesSyncOptions } from "./index";
 
 type AdvisoriesConfig = NonNullable<NonNullable<NonNullable<VisConfig["security"]>["audit"]>["advisories"]>;
 
 const readAdvisoriesConfig = (visConfig: VisConfig | undefined): AdvisoriesConfig => visConfig?.security?.audit?.advisories ?? {};
 
-const parseEcosystems = (input: string | undefined): string[] => {
+// Names are mapped to the OSV bucket name (`hex` -> `Hex`, `cargo` -> `crates.io`). The bucket URL is case-sensitive,
+// so an alias passed through as-is would 404 and the sync would fail.
+export const parseEcosystems = (input: string | undefined): string[] => {
     if (!input) {
         return ["npm"];
     }
@@ -20,7 +23,8 @@ const parseEcosystems = (input: string | undefined): string[] => {
     return input
         .split(",")
         .map((s) => s.trim())
-        .filter((s) => s.length > 0);
+        .filter((s) => s.length > 0)
+        .map((s) => canonicalEcosystem(s));
 };
 
 const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: Toolbox<Console, AdvisoriesSyncOptions>): Promise<void> => {

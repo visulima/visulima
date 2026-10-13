@@ -19,6 +19,13 @@ describe(canonicalEcosystem, () => {
         expect(canonicalEcosystem("rubygems")).toBe("RubyGems");
     });
 
+    it("maps the Hex name to the OSV Hex ecosystem", () => {
+        expect.assertions(2);
+
+        expect(canonicalEcosystem("hex")).toBe("Hex");
+        expect(canonicalEcosystem("Hex")).toBe("Hex");
+    });
+
     it("maps the Pub and dart names to the OSV Pub ecosystem", () => {
         expect.assertions(3);
 
@@ -215,6 +222,31 @@ describe("findEcosystemLockfile + lockedPackagesForEcosystem", () => {
         expect(found).toStrictEqual([
             { isDev: false, name: "org.example:util", version: "1.0.0" },
             { isDev: false, name: "com.google.guava:guava", version: "32.1.3-jre" },
+        ]);
+    });
+
+    it("parses a mix.lock, one entry per Hex package and skipping git and path entries", () => {
+        expect.assertions(1);
+
+        writeFileSync(
+            join(workspaceRoot, "mix.lock"),
+            [
+                "%{",
+                "  \"bandit\": {:hex, :bandit, \"1.12.4\", \"10bbab488edf8162318d736c19c5837077b8fca2bf5d95b07b33830387124f62\", [:mix], [{:hpax, \"~> 1.0\", [hex: :hpax, repo: \"hexpm\", optional: false]}, {:plug, \"~> 1.18\", [hex: :plug, repo: \"hexpm\", optional: false]}, {:telemetry, \"~> 0.4 or ~> 1.0\", [hex: :telemetry, repo: \"hexpm\", optional: false]}, {:thousand_island, \"~> 1.5\", [hex: :thousand_island, repo: \"hexpm\", optional: false]}, {:websock, \"~> 0.5\", [hex: :websock, repo: \"hexpm\", optional: false]}], \"hexpm\", \"84513318c5752a2a8017664450f889b47fae5d53d64698ddf1e4fb09a7449e8d\"},",
+                "  \"plug\": {:hex, :plug, \"1.20.3\", \"56c480c633ec2ce10140e236e15233bf576e1d323887d7c96711bd02ab5160db\", [:mix], [{:mime, \"~> 1.0 or ~> 2.0\", [hex: :mime, repo: \"hexpm\", optional: false]}, {:plug_crypto, \"~> 1.1.1 or ~> 1.2 or ~> 2.0\", [hex: :plug_crypto, repo: \"hexpm\", optional: false]}, {:telemetry, \"~> 0.4.3 or ~> 1.0\", [hex: :telemetry, repo: \"hexpm\", optional: false]}], \"hexpm\", \"be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76\"},",
+                "  \"local_app\": {:git, \"https://example.com/local_app.git\", \"abc123\", []},",
+                "  \"mime\": {:hex, :mime, \"2.0.7\", \"b8d739037be7cd402aee1ba0306edfdef982687ee7e9859bee6198c1e7e2f128\", [:mix], [], \"hexpm\", \"6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd\"},",
+                "}",
+                "",
+            ].join("\n"),
+        );
+
+        const found = lockedPackagesForEcosystem(workspaceRoot, "hex");
+
+        expect(found).toStrictEqual([
+            { isDev: false, name: "bandit", version: "1.12.4" },
+            { isDev: false, name: "plug", version: "1.20.3" },
+            { isDev: false, name: "mime", version: "2.0.7" },
         ]);
     });
 

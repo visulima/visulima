@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
+import { parseMixLockEntries } from "../sbom/hex";
 import { parseNuGetLockEntries } from "../sbom/nuget";
 import { composerVersionFromLock } from "../util/composer";
 import type { InstalledPackage } from "./dependency-scan";
@@ -16,6 +17,7 @@ import type { InstalledPackage } from "./dependency-scan";
 const ECOSYSTEM_LOCKFILES: Record<string, string[]> = {
     "crates.io": ["Cargo.lock"],
     Go: ["go.sum"],
+    Hex: ["mix.lock"],
     Maven: ["gradle.lockfile", "pom.xml"],
     NuGet: ["packages.lock.json"],
     Packagist: ["composer.lock"],
@@ -31,6 +33,7 @@ const ECOSYSTEM_ALIASES: Record<string, string> = {
     "crates.io": "crates.io",
     dart: "Pub",
     go: "Go",
+    hex: "Hex",
     maven: "Maven",
     npm: "npm",
     nuget: "NuGet",
@@ -435,6 +438,12 @@ export const lockedPackagesForEcosystem = (workspaceRoot: string, ecosystem: str
         }
         case "gradle.lockfile": {
             parsed = parseGradleLockfile(content);
+            break;
+        }
+        case "mix.lock": {
+            parsed = parseMixLockEntries(content).map((entry) => {
+                return { isDev: false, name: entry.name, version: entry.version };
+            });
             break;
         }
         case "Package.resolved": {

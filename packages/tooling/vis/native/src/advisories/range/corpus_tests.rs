@@ -25,8 +25,9 @@ fn parse(json: &str) -> Advisory {
 
 fn assert_dispatch(advisory: &Advisory, affected_idx: usize, version: &str, expected_affected: bool) {
     let affected = &advisory.affected[affected_idx];
-    let matcher = matcher_for(&affected.package.ecosystem)
-        .unwrap_or_else(|| panic!("no matcher registered for ecosystem {}", affected.package.ecosystem));
+    let package = affected.package.as_ref().expect("corpus advisory names a package");
+    let matcher = matcher_for(&package.ecosystem)
+        .unwrap_or_else(|| panic!("no matcher registered for ecosystem {}", package.ecosystem));
 
     let mut any_match = false;
     for range in &affected.ranges {
@@ -44,7 +45,7 @@ fn assert_dispatch(advisory: &Advisory, affected_idx: usize, version: &str, expe
     assert_eq!(
         any_match, expected_affected,
         "ecosystem {} version {} classification mismatch (advisory {})",
-        affected.package.ecosystem, version, advisory.id,
+        package.ecosystem, version, advisory.id,
     );
 }
 
@@ -380,4 +381,74 @@ fn corpus_nuget_four_part_fixed_version() {
     assert_dispatch(&advisory, 0, "1.4.353.14", true);
     assert_dispatch(&advisory, 0, "1.4.353.15", false);
     assert_dispatch(&advisory, 0, "1.4.353", true);
+}
+
+//
+// Real shape from EEF-CVE-2026-32689 (phoenix long-poll memory exhaustion,
+// fixed in 1.7.22 and 1.8.6). Hex advisories from the ERLEF feed use SEMVER
+// ranges with introduced and fixed events. The trailing GIT affected entry has
+// no `package` member, which must deserialize and be skipped at ingest.
+#[test]
+fn corpus_hex_phoenix_long_poll_two_branch_fix() {
+    let json = r#"{
+  "id": "EEF-CVE-2026-32689",
+  "summary": "Long-poll NDJSON body splitting causes unbounded memory allocation in Phoenix",
+  "aliases": [
+    "CVE-2026-32689",
+    "GHSA-628h-q48j-jr6q"
+  ],
+  "affected": [
+    {
+      "package": {
+        "name": "phoenix",
+        "ecosystem": "Hex",
+        "purl": "pkg:hex/phoenix"
+      },
+      "ranges": [
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "1.7.0"
+            },
+            {
+              "fixed": "1.7.22"
+            }
+          ]
+        },
+        {
+          "type": "SEMVER",
+          "events": [
+            {
+              "introduced": "1.8.0"
+            },
+            {
+              "fixed": "1.8.6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ranges": [
+        {
+          "type": "GIT",
+          "repo": "https://github.com/phoenixframework/phoenix",
+          "events": [
+            { "introduced": "2674c6ea30634667f9b09966b90269393b445953" },
+            { "fixed": "1a67c61ff9ce0a7711662ac7354861917a7c80f7" }
+          ]
+        }
+      ]
+    }
+  ]
+}"#;
+    let adv = parse(json);
+
+    assert_dispatch(&adv, 0, "1.6.9", false);
+    assert_dispatch(&adv, 0, "1.7.0", true);
+    assert_dispatch(&adv, 0, "1.7.21", true);
+    assert_dispatch(&adv, 0, "1.7.22", false);
+    assert_dispatch(&adv, 0, "1.8.5", true);
+    assert_dispatch(&adv, 0, "1.8.6", false);
 }

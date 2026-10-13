@@ -72,6 +72,7 @@ const SUPPORTED_ECOSYSTEMS = new Set([
     "crates.io",
     "dart",
     "go",
+    "hex",
     "maven",
     "npm",
     "nuget",
@@ -125,7 +126,6 @@ export const offlineNonNpmEcosystems = (ecosystems: string[]): string[] => [
 // Ecosystems the audit refuses, keyed by lowercase name, with the message shown for each. A Map, not an
 // object, so names like "constructor" cannot match inherited properties.
 const REFUSED_ECOSYSTEMS = new Map<string, (name: string) => string>([
-    ["hex", (name) => `--ecosystem ${name} is not supported: vis does not read mix.lock for audit, so the audit cannot check Hex packages. Remove ${name} from --ecosystem.`],
     ["zig", (name) => `--ecosystem ${name} is not supported: OSV has no Zig ecosystem and vis finds no Zig lockfile with versions, so the audit cannot check Zig packages. Remove ${name} from --ecosystem.`],
 ]);
 
@@ -457,7 +457,7 @@ const executeAudit = async (
     if (!quietHeader && ecosystems.unsupported.length > 0) {
         pail.warn(
             `Ecosystems ${ecosystems.unsupported.map((e) => `'${e}'`).join(", ")} are not yet supported by the audit matcher. `
-            + "Supported: npm, pypi, crates.io, cargo, maven, go, rubygems.",
+            + "Supported: npm, pypi, crates.io, cargo, maven, go, hex, rubygems.",
         );
     }
 

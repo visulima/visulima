@@ -39,7 +39,8 @@ pub struct DatabaseSpecific {
 
 #[derive(Debug, Deserialize)]
 pub struct Affected {
-    pub package: Package,
+    /// Absent on commit-only (`GIT`) ranges, which OSV allows for Hex and Go records.
+    pub package: Option<Package>,
     #[serde(default)]
     pub ranges: Vec<Range>,
 }

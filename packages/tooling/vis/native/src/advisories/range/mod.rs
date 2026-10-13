@@ -6,6 +6,7 @@
 
 pub mod cargo;
 pub mod go;
+pub mod hex;
 pub mod maven;
 pub mod npm;
 pub mod nuget;
@@ -61,6 +62,7 @@ pub fn matcher_for(ecosystem: &str) -> Option<&'static dyn RangeMatcher> {
         "pypi" => Some(&pep440::Pep440Matcher),
         "crates.io" | "cargo" => Some(&cargo::CargoMatcher),
         "go" => Some(&go::GoMatcher),
+        "hex" => Some(&hex::HexMatcher),
         "maven" => Some(&maven::MavenMatcher),
         "rubygems" => Some(&rubygems::RubyGemsMatcher),
         "pub" => Some(&pub_semver::PubMatcher),

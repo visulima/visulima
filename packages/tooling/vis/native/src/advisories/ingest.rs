@@ -173,16 +173,19 @@ pub fn ingest<P: AsRef<Path>>(
             // overlapping ranges don't collide on the PK.
             let mut per_package: HashMap<(String, String), i64> = HashMap::new();
             for affected in &advisory.affected {
-                if !affected.package.ecosystem.eq_ignore_ascii_case(ecosystem) {
+                let Some(package) = affected.package.as_ref() else {
+                    continue;
+                };
+                if !package.ecosystem.eq_ignore_ascii_case(ecosystem) {
                     continue;
                 }
-                let package_norm = affected.package.name.to_lowercase();
+                let package_norm = package.name.to_lowercase();
                 for range in &affected.ranges {
                     if range.kind != "SEMVER" && range.kind != "ECOSYSTEM" {
                         continue;
                     }
                     for pair in range.to_pairs() {
-                        let key = (affected.package.ecosystem.clone(), package_norm.clone());
+                        let key = (package.ecosystem.clone(), package_norm.clone());
                         let idx = per_package.entry(key).or_insert(0);
                         let range_index = *idx;
                         *idx += 1;
