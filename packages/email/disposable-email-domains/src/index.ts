@@ -1,6 +1,4 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import type { readFileSync } from "node:fs";
 
 /**
  * Options accepted by the lookup helpers.
@@ -49,8 +47,12 @@ let listLoaded = false;
  */
 let hasWarnedOnDomainsFailure = false;
 
-const filename = fileURLToPath(import.meta.url);
-const dirnamePath = dirname(filename);
+/**
+ * Location of the generated list relative to this module (`dist/index.js` and `src/index.ts`
+ * both sit one level below the package root). Kept in a variable so bundlers do not treat
+ * `new URL(a string literal, import.meta.url)` as an asset reference.
+ */
+const DOMAINS_FILE_PATH = "../dist/domains.json";
 
 /**
  * Reads and parses the generated `dist/domains.json` from disk (Node runtimes).
@@ -58,8 +60,16 @@ const dirnamePath = dirname(filename);
  */
 const readDomainsFile = (): string[] | undefined => {
     try {
-        const domainsPath = join(dirnamePath, "..", "dist", "domains.json");
-        const domainsContent = readFileSync(domainsPath, "utf8");
+        // Nothing here may run at import time: `import.meta.url` is undefined and `node:fs` is
+        // missing in some bundled runtimes (e.g. Cloudflare Workers), where `setDomains` is the
+        // supported way to provide the list.
+        const fs = (globalThis as { process?: { getBuiltinModule?: (id: "node:fs") => { readFileSync: typeof readFileSync } } }).process?.getBuiltinModule?.("node:fs");
+
+        if (fs === undefined || typeof import.meta.url !== "string") {
+            throw new TypeError("The filesystem or import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
+        }
+
+        const domainsContent = fs.readFileSync(new URL(DOMAINS_FILE_PATH, import.meta.url), "utf8");
         const parsed: unknown = JSON.parse(domainsContent);
 
         if (!Array.isArray(parsed)) {
