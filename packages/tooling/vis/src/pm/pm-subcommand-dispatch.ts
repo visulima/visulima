@@ -204,6 +204,26 @@ export const dispatchSubcommand = (pm: Pick<InstallerInfo, "name" | "version">, 
             return { kind: "passthrough" };
         }
 
+        case "pkg": {
+            // `pkg get|set|delete|fix` edits package.json and is npm-native. pnpm and npm accept it
+            // directly; bun nests it under `bun pm`; yarn has no equivalent (yarn 1 would run a
+            // script named "pkg"), and the result is identical whichever tool writes the file.
+            if (pm.name === "bun") {
+                return { args: ["pm", "pkg", ...args], bin: "bun", kind: "rewrite" };
+            }
+
+            if (pm.name === "yarn" || pm.name === "deno") {
+                return {
+                    args: ["pkg", ...args],
+                    bin: "npm",
+                    kind: "rewrite",
+                    warning: `${pm.name} has no \`pkg\` command; falling back to \`npm pkg\`.`,
+                };
+            }
+
+            return { kind: "passthrough" };
+        }
+
         case "plugin": {
             // yarn berry is the only PM with a plugin subcommand. For
             // everyone else there is no useful npm fallback — emit a
