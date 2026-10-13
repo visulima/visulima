@@ -225,6 +225,16 @@ Opt-in. With `release: { gem: { discover: true } }`, every `*.gemspec` under the
 - Publishing runs `gem build <gemspec> --output <name>-<version>.gem`, then `gem push <file>`, with no shell. The API key comes from `GEM_HOST_API_KEY`. A version RubyGems already lists is skipped. The built file is removed afterwards.
 - Versions must be dot-separated alphanumerics (`1.2.0`, `1.2.0.beta.1`); a semver prerelease with `-` is refused. POSIX only; Windows refuses after the dry run.
 
+## Hex packages as release packages (`release.hex.discover`)
+
+Opt-in. With `release: { hex: { discover: true } }`, the root `mix.exs` is a release package, and so is each `<apps_path>/*` app of an umbrella that holds its own `mix.exs`. The name is the `package: [name: "…"]` string, or else the `app:` atom.
+
+- The version is a `version: "…"` literal in `project/0`, or `version: @version` with a literal `@version "…"` attribute. Any other value (including concatenation or interpolation), or a repeated key, fails the release with `CONFIG_INVALID`. A `mix.exs` with no `version:` key is an aggregate and is skipped, as is an umbrella root with no `app:`; the root is otherwise released only with its own version. The new version must be semver.
+- `{:app, in_umbrella: true}` and `{:app, path: "…"}` dependencies on another discovered app order the release and are recorded as `*`. Hosted requirements are not rewritten.
+- Publish runs `mix hex.publish --yes` in the package directory. The API key comes from `HEX_API_KEY`. A version already listed at `https://hex.pm/api/packages/<name>` is skipped; a failed lookup does not skip, and the publish reports the real error.
+- POSIX only for now. Publish on Windows fails with `CONFIG_INVALID` after the dry run.
+- `mix.lock` is read for `vis sbom`: every locked Hex package is a component, with the edges between them.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

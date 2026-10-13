@@ -30,6 +30,7 @@ import { DependencyGraph } from "./dep-graph";
 import type { GemProject } from "./gem-projects";
 import type { GoProject } from "./go-projects";
 import type { GradleProject } from "./gradle-projects";
+import type { HexProject } from "./hex-projects";
 import type { MavenProject } from "./maven-projects";
 import { createAdapter, detectPackageManager } from "./package-managers/detect";
 import type { PackageManagerAdapter } from "./package-managers/interface";
@@ -67,6 +68,8 @@ export interface OrchestratorContext {
     goProjects?: GoProject[];
     /** Gradle modules discovered under `release.gradle.discover` (empty otherwise); the Gradle plan reads their owners from here. */
     gradleProjects?: GradleProject[];
+    /** Hex packages discovered under `release.hex.discover` (empty otherwise); the Hex plan reads their owners from here. */
+    hexProjects?: HexProject[];
     /** Maven modules discovered under `release.maven.discover` (empty otherwise); the Maven plan reads their owners from here. */
     mavenProjects?: MavenProject[];
     packages: WorkspacePackage[];
@@ -233,7 +236,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
 
     let gemProjects: GemProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover) {
+    let hexProjects: HexProject[] = [];
+
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover || config.hex?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -449,6 +454,34 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...gemProjects.map((project) => project.package)];
+        }
+
+        if (config.hex?.discover) {
+            const { discoverHexProjects } = await import("./hex-projects");
+            // A JS package that releases a Hex package (versionActions "hex") or writes its mix.exs (an extraFiles rule) claims its directory.
+            const hexClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "hex") {
+                    hexClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                for (const rule of perPkg.extraFiles ?? []) {
+                    if (/(?:^|\/)mix\.exs$/.test(rule.path)) {
+                        hexClaimedDirs.add(dirname(resolve(pkg.dir, rule.path)));
+                    }
+                }
+            }
+
+            hexProjects = await discoverHexProjects({ claimedDirs: hexClaimedDirs, cwd });
+
+            for (const project of hexProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "hex", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...hexProjects.map((project) => project.package)];
         }
 
         if (config.zig?.discover) {
@@ -728,6 +761,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         gemProjects,
         goProjects,
         gradleProjects,
+        hexProjects,
         mavenProjects,
         packages,
         perPackageConfig,
@@ -1219,6 +1253,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const gemTouched = await planGemWorkspace({ pending, projects: context.gemProjects ?? [], releases: gemReleases });
 
             for (const path of gemTouched) {
+                touched.add(path);
+            }
+        }
+
+        const hexReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "hex" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (hexReleases.length > 0) {
+            const { planHexWorkspace } = await import("./hex-plan");
+            const hexTouched = await planHexWorkspace({ pending, projects: context.hexProjects ?? [], releases: hexReleases });
+
+            for (const path of hexTouched) {
                 touched.add(path);
             }
         }

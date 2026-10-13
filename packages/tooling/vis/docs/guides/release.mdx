@@ -574,6 +574,20 @@ Publishing runs `gem build` and then `gem push`. Set `GEM_HOST_API_KEY` in the e
 
 Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` before running anything. The gem command must be on `PATH` (it ships with Ruby).
 
+### Hex packages as release packages
+
+Set `release.hex.discover: true` in `vis.config.ts` to release Hex packages. It is off by default. The root `mix.exs` is a package, and so is each `<apps_path>/*` app of an umbrella that holds a `mix.exs`. The name is the `package: [name: "…"]` string, or else the `app:` atom, and must be a valid Hex name (lowercase letters, digits, `_`, `.` and `-`). A `mix.exs` with no `version:` key is an aggregate and is skipped, and so is an umbrella root with no `app:`. The root is otherwise released only with its own version.
+
+The version must be a `version: "…"` string literal in `project/0`, or `version: @version` with a literal `@version "…"` attribute. A bump rewrites that literal and nothing else. A `version:` that is not one plain string or `@version` (so `"1.0" <> suffix`, interpolation and expressions are refused), a repeated key, or a `package:` that is not a literal keyword list (`package: package()` is refused) with a string `name:` fails the release with `CONFIG_INVALID`. The new version must be semver (`1.2.3`, `1.2.3-rc.1`).
+
+An `{:app, in_umbrella: true}` or `{:app, path: "…"}` dependency on another discovered app orders the publish and is recorded as `*`. Hosted dependency requirements are not rewritten.
+
+Publishing runs `mix hex.publish --yes` in the package directory. The API key is read from the `HEX_API_KEY` environment variable, never from argv. Before publishing, vis asks `https://hex.pm/api/packages/<name>`; a `releases` entry with the new `version` marks the package as already published and skips it. A failed lookup, including a 404 for a new package, does not skip, so the publish reports the real error. The run needs `mix` on `PATH`; vis checks it with `mix help`. Publishing is POSIX only: on Windows it fails with `CONFIG_INVALID` after the dry run.
+
+The task side is `hex.discover: true` in `vis.config.ts` (off by default). It finds the apps of an umbrella `mix.exs`; the root project is not a task project, so a single-package repo gets no Hex tasks from this option. Each app gets `build` (`mix compile`, uncached), `test` (`mix test`, only when the app has a `test/` directory) and `format:check` (`mix format --check-formatted`, only when it has a `.formatter.exs`). `format:check` fails on unformatted files. These commands are POSIX only; the Windows path is not verified.
+
+`vis sbom` reads the workspace's `mix.lock`: each locked Hex package is a `pkg:hex/` component, with the edges between locked packages. Mix does not record which packages are direct or dev-only, so the whole lock is kept, and a focused SBOM does not narrow it. `vis audit` does not read `mix.lock`: `--ecosystem hex` warns that Hex is not yet supported and reports nothing for it.
+
 ### Zig packages as release packages
 
 Set `release.zig.discover: true` in `vis.config.ts` to release Zig packages. It is off by default. The workspace root's `build.zig.zon` is a package, and so is every `.path` dependency that holds its own `build.zig.zon` and sits inside the workspace (followed transitively). The name is the manifest's `.name`, which must be lowercase (`[a-z0-9._-]`), so a Zig name with uppercase letters is refused. A manifest with no `.version` is an aggregate and is skipped; the root is released only with its own version.

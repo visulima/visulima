@@ -553,6 +553,13 @@ export interface VisConfig {
     gradle?: { discover?: boolean };
 
     /**
+     * Hex apps as task projects. Off by default: each `&lt;apps_path>/*` app of an umbrella
+     * `mix.exs` gets build, test and format-check targets when this is set. The root project
+     * is not a task project. POSIX only: the inferred commands are not verified on Windows.
+     */
+    hex?: { discover?: boolean };
+
+    /**
      * Auto-create targets from detected config files (Project Crystal-style).
      * Detectors run by default; set `false` to disable them entirely, or use
      * the object form to disable individual ones. See the note at the bottom

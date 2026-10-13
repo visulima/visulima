@@ -20,6 +20,7 @@ import { DartVersionActions } from "./dart";
 import { GemVersionActions } from "./gem";
 import { GoVersionActions } from "./go";
 import { GradleVersionActions } from "./gradle";
+import { HexVersionActions } from "./hex";
 import type { VersionActions } from "./interface";
 import { JsrVersionActions } from "./jsr";
 import { MavenVersionActions } from "./maven";
@@ -62,6 +63,9 @@ export const createVersionActions = (id: string): VersionActions => {
         }
         case "gradle": {
             return new GradleVersionActions();
+        }
+        case "hex": {
+            return new HexVersionActions();
         }
         case "jsr": {
             return new JsrVersionActions();

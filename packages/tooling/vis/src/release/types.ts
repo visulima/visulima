@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1457,6 +1457,15 @@ export interface VisReleaseConfig {
     groupPreVersionCommands?: Record<string, string>;
 
     /**
+     * Hex packages as release packages. Off by default. The root `mix.exs` is a package, and so is
+     * each `&lt;apps_path>/*` app of an umbrella. The name is the `package: [name: "…"]` string, or the
+     * `app:` atom. The version is a `version: "…"` literal, or `version: \@version` with a literal
+     * `\@version "…"` attribute; a `mix.exs` with no `version:` key is an aggregate and is skipped.
+     * Publish runs `mix hex.publish --yes` (POSIX only), with the key in `HEX_API_KEY`.
+     */
+    hex?: { discover?: boolean };
+
+    /**
      * HTTPS proxy URL (e.g. `"http://proxy.acme.com:8080"`) for
      * enterprise networks that route outbound HTTPS through a proxy.
      *
@@ -1543,7 +1552,7 @@ export interface VisReleaseConfig {
     notifications?: NotificationsConfig;
 
     /**
-     * Emit one release commit per package (a `release(channel): pkg@version
+     * Emit one release commit per package (a `release(channel): pkg\@version
      * [skip ci]` message) instead of a single aggregate commit for the whole
      * wave (RFC §19.5). Mirrors the per-package commit history that
      * multi-semantic-release produced — useful for projects migrating off it

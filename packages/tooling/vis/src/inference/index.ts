@@ -22,6 +22,7 @@ import { gemDetector } from "./detectors/gem";
 import { goDetector } from "./detectors/go";
 import { gradleDetector } from "./detectors/gradle";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
+import { hexDetector } from "./detectors/hex";
 import { jestDetector } from "./detectors/jest";
 import { knipDetector } from "./detectors/knip";
 import { mavenDetector } from "./detectors/maven";
@@ -120,6 +121,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     mavenDetector,
     goDetector,
     gradleDetector,
+    hexDetector,
     gemDetector,
     swiftDetector,
     dartDetector,

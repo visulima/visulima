@@ -21,6 +21,7 @@ import { dartDetector } from "../inference/detectors/dart";
 import { gemDetector } from "../inference/detectors/gem";
 import { goDetector } from "../inference/detectors/go";
 import { gradleDetector } from "../inference/detectors/gradle";
+import { hexDetector } from "../inference/detectors/hex";
 import { mavenDetector } from "../inference/detectors/maven";
 import { pythonDetector } from "../inference/detectors/python";
 import { swiftDetector } from "../inference/detectors/swift";
@@ -44,6 +45,7 @@ import { resolveDartProjectDirectories } from "./dart-projects";
 import { resolveGemProjectDirectories } from "./gem-projects";
 import { resolveGoProjectDirectories } from "./go-projects";
 import { resolveGradleProjectDirectories } from "./gradle-projects";
+import { resolveHexProjectDirectories } from "./hex-projects";
 import { readMavenProjectArtifact, resolveMavenProjectDirectories } from "./maven-projects";
 import { readPythonProjectName, resolvePythonProjectDirectories } from "./python-projects";
 import { readSwiftProjectName, resolveSwiftProjectDirectories } from "./swift-projects";
@@ -244,6 +246,7 @@ interface NonJsOptions {
     gemProjects: boolean;
     goProjects: boolean;
     gradleProjects: boolean;
+    hexProjects: boolean;
     mavenProjects: boolean;
     pythonProjects: boolean;
     swiftProjects: boolean;
@@ -259,7 +262,7 @@ interface NonJsOptions {
 interface NonJsEcosystem {
     detector: Detector;
     enabled: (options: NonJsOptions) => boolean;
-    id: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "maven" | "python" | "swift" | "zig";
+    id: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "hex" | "maven" | "python" | "swift" | "zig";
     /** The project name the manifest declares, or undefined to fall back to the directory name. */
     readName: (projectRoot: string) => string | undefined;
     resolve: (workspaceRoot: string, candidates: string[], claimed: string[]) => string[];
@@ -303,6 +306,14 @@ const NON_JS_ECOSYSTEMS: ReadonlyArray<NonJsEcosystem> = [
         id: "gradle",
         readName: () => undefined,
         resolve: (workspaceRoot, _candidates, claimed) => resolveGradleProjectDirectories(workspaceRoot, claimed),
+    },
+    {
+        // Hex apps come from the umbrella mix.exs's apps_path, not the workspace patterns.
+        detector: hexDetector,
+        enabled: (options) => options.hexProjects,
+        id: "hex",
+        readName: () => undefined,
+        resolve: (workspaceRoot, _candidates, claimed) => resolveHexProjectDirectories(workspaceRoot, claimed),
     },
     {
         // Swift packages are found by their Package.swift under the root, not the workspace patterns.
@@ -1067,6 +1078,7 @@ const discoverWorkspace = (
         gemProjects: config.gem?.discover === true,
         goProjects: config.go?.discover === true,
         gradleProjects: config.gradle?.discover === true,
+        hexProjects: config.hex?.discover === true,
         mavenProjects: config.maven?.discover === true,
         pythonProjects: config.python?.discover === true,
         swiftProjects: config.swift?.discover === true,
@@ -1399,6 +1411,7 @@ const loadVisTaskConfigsForWorkspace = async (workspaceRoot: string): Promise<Vi
         gemProjects: true,
         goProjects: true,
         gradleProjects: true,
+        hexProjects: true,
         mavenProjects: true,
         pythonProjects: true,
         swiftProjects: true,
