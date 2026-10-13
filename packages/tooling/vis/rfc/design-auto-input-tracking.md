@@ -121,18 +121,28 @@ Design sketch:
   these or refuse to split when they appear. Refusing is the first stage.
 - **Failure.** A failing segment stops the chain, as `&&` already does. Later
   segments are neither run nor cached.
-- **Outputs.** Declared outputs attach to the last segment. An earlier segment
-  that writes an output must declare it, or the chain is refused.
+- **Outputs.** Stage 2 refuses the split when the target declares outputs. A cache
+  hit restores outputs from the cache entry, so an earlier segment's files would
+  be missing when a later segment that reads them executes, and nothing records
+  which segment wrote them. Attaching outputs to the last segment is sound once
+  outputs can be attributed per segment, which is part of stage 3.
 
 Staged:
 
-1. Parser only, in `command-parser/`: split top-level `&&` with quote-aware
-   tokenising, refuse on `cd`, `export`, `VAR=` prefixes and any unsupported
-   construct. Unit tests on the parser alone. No behaviour change.
-2. Opt-in `splitCompound: true` on a target, declared mode only, with the
-   chained key. Integration tests on a two-segment fixture.
+1. **Done.** Parser only, in `command-parser/`: `splitCompoundCommand` splits
+   top-level `&&` with quote-aware tokenising and refuses (returns the command
+   whole, with a reason) on `cd`, `export`, `VAR=` prefixes and any other
+   unsupported construct. Unit tests on the parser alone. No behaviour change.
+2. **Done.** Opt-in `splitCompound: true` on a target, declared mode only. The
+   engine rewrites the task into chained segment tasks (`target#1`, `target#2`),
+   each folding in the previous segment's key. A failing segment stops the chain.
+   Declared outputs, `when`, `always`, trace hashing and custom shells are
+   refused with a warning. Integration tests cover the last-segment and
+   first-segment key behaviour, the failing middle segment, the unsupported
+   construct, trace refusal and output replay order. A vis-level test covers the
+   option forwarding and the last-segment-only forwarded arguments.
 3. Trace mode per segment, after the tracker can attribute accesses to a
-   segment. Depends on G1.
+   segment. Depends on G1. **Not started.**
 
 ### G4. Trace keys are not portable across platforms
 
@@ -161,8 +171,8 @@ in `task-hasher` and avoids accidental cross-platform hits.
 | ----- | ------------------------------------------ | ----------- | --------------------------------------------------- | ------ |
 | 1     | G1-B declared fallback for empty trace     | no          | no                                                  | done   |
 | 1     | G4 tracker kind in the trace key           | no          | new trace keys after upgrade; old entries still hit | done   |
-| 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | open   |
-| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | open   |
+| 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | done   |
+| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | done   |
 | 3     | G2-B opt-in clean env                      | no          | opt-in                                              | open   |
 | 3     | G3.3 trace-mode segments                   | no          | no                                                  | open   |
 

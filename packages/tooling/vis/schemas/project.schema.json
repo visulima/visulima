@@ -398,6 +398,10 @@
                     "type": "boolean",
                     "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
                 },
+                "splitCompound": {
+                    "type": "boolean",
+                    "description": "Split the target's command on top-level `&amp;&amp;` into one chained task per segment, each with its own cache key. Segment _n_ folds in the key of segment _n−1_, so changing a later segment re-runs only that segment and later ones, and a failing segment stops the chain.\n\nOpt-in and declared-mode only. The split is refused, with a diagnostic and the target run whole, when the command contains a construct the splitter does not model (`;`, `||`, subshells, `cd`, `export`, `VAR=…` prefixes, command substitution, …), when `hashMode` is `\"trace\"`, when the target declares `outputs`, when it has a `when` condition, or when it is `always`."
+                },
                 "untrackedEnv": {
                     "type": "array",
                     "items": {

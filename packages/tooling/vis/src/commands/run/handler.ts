@@ -26,6 +26,7 @@ import {
     resolveTurboEnvCompat,
     reverseTaskGraph,
     runConcurrently,
+    splitCompoundTasks,
     TaskScheduler,
     TerminalBuffer,
     writeChromeTrace,
@@ -857,8 +858,11 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
         }
 
-        const commandWithArgs = appendForwardedArgs(expandedCommand, task);
-        const commandWithAffected = buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
+        // Forwarded args and `affectedFiles: "args"` belong to the end of the
+        // whole `&&` chain, so only the last segment of a split target gets them.
+        const isChainHead = task.segment !== undefined && task.segment.index < task.segment.count;
+        const commandWithArgs = isChainHead ? expandedCommand : appendForwardedArgs(expandedCommand, task);
+        const commandWithAffected = isChainHead ? commandWithArgs : buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
         const customShell = resolveTargetShell(visOptions, currentOs);
         // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
@@ -1697,6 +1701,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             },
             parallelism: visTarget.parallelism,
             projectRoot: project?.root,
+            splitCompound: visTarget.splitCompound,
             target: taskTarget,
             untrackedEnv: visTarget.untrackedEnv,
         };
@@ -2275,6 +2280,27 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         logger.debug?.(`Reversed task graph: ${String(taskGraph.roots.length)} new root(s) (originally leaves)`);
     }
 
+    // `splitCompound` splits a POSIX shell line, so a target with a custom
+    // shell runs its command in another language and stays whole.
+    for (const task of Object.values(taskGraph.tasks)) {
+        const shellOptions = projectOptions.get(task.target.project)?.[task.target.target]?.options;
+
+        if (task.splitCompound && resolveTargetShell(shellOptions) !== undefined) {
+            logger.warn(`splitCompound ignored for ${task.id}: it uses a custom shell. Running the command as one unit.`);
+            task.splitCompound = undefined;
+        }
+    }
+
+    // Split `splitCompound` targets into chained segment tasks before the
+    // dry-run plan and the scheduler read the graph. The runner's own split
+    // pass then finds nothing left to do.
+    taskGraph = splitCompoundTasks(taskGraph, {
+        commandOf: (task) => task.overrides["command"] as string | undefined,
+        onDiagnostic: (_taskId, message) => {
+            logger.warn(message);
+        },
+    });
+
     if (options.dryRun) {
         const taskCount = Object.keys(taskGraph.tasks).length;
         const rootCount = taskGraph.roots.length;
@@ -2296,7 +2322,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
             const task = taskGraph.tasks[id];
             const indent = "  ".repeat(depth + 1);
-            const annotations = `${task?.cache === false ? " (no-cache)" : ""}${task?.hashMode === "trace" ? " (trace)" : ""}`;
+            const segmentNote = task?.segment ? ` (segment ${String(task.segment.index)}/${String(task.segment.count)}: ${String(task.overrides["command"])})` : "";
+            const annotations = `${task?.cache === false ? " (no-cache)" : ""}${task?.hashMode === "trace" ? " (trace)" : ""}${segmentNote}`;
 
             logger.info(`${indent}${id}${annotations}`);
         };
@@ -2558,7 +2585,13 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         args: { parallel: runnerOptions.parallel, targets: [target] },
         autoExit: autoExitConfig,
         projectNames: projectsWithTarget,
-        tasks: [...initialTasks, ...persistentTasks],
+        // A `splitCompound` target runs as its segments, so list those in its
+        // place; the unsplit parent never completes and would show as skipped.
+        tasks: [...initialTasks, ...persistentTasks].flatMap((task) => {
+            const segments = Object.values(taskGraph.tasks).filter((candidate) => candidate.segment !== undefined && candidate.id.startsWith(`${task.id}#`));
+
+            return segments.length > 0 ? segments : [task];
+        }),
         // The table rows above only cover the directly-requested tasks. The
         // executor also runs every `dependsOn` dependency in `taskGraph`, and
         // those count toward the succeeded/failed/cached tallies. Pass the

@@ -121,6 +121,55 @@ workspace traced on two platforms therefore never shares a key.
 Traced keys can differ between machines, because the observed read set depends on
 the platform. Keep targets on `"declared"` whenever you can list their inputs.
 
+## Splitting a command chain: `splitCompound`
+
+A target whose command is one long `&&` chain is cached as a single unit: change
+the last step and every step re-runs. Set `splitCompound: true` to cache each
+step on its own:
+
+```ts
+export default defineConfig({
+    tasks: {
+        check: {
+            command: "eslint . && tsc --noEmit && vitest run --passWithNoTests",
+            inputs: ["production"],
+            splitCompound: true,
+        },
+    },
+});
+```
+
+vis splits the command on top-level `&&` and runs each segment as its own task,
+`check#1`, `check#2` and `check#3`. The split is visible in `vis run check --dry-run`
+and in the run summary, where each segment carries its position in the chain.
+
+- **Chained keys.** A segment's key includes the key of the segment before it,
+  because an earlier step can change files or state that a later step reads. A
+  change to the last step re-runs only that step. A change to the first step
+  re-runs all three.
+- **Failure stops the chain.** A failing segment ends the run for that target, as
+  `&&` does on the command line. Later segments are neither run nor cached.
+- **Output order is kept.** On a cache hit, each segment's saved output is replayed
+  in chain order.
+- **Forwarded arguments** (`vis run check -- --reporter dot`) go to the last segment,
+  where they sit in the command line.
+
+The split is refused, and the target runs as one unit with a warning, when:
+
+- the command contains anything the splitter does not model: `;`, `||`, a
+  background `&`, subshells `( … )`, command substitution `$( … )` or backticks,
+  heredocs, `#` comments, an empty segment (`a &&`), or a shell-state change at the
+  start of a segment (`cd`, `export`, `source`, `set`, `trap`, `exec`, a leading
+  `VAR=value`). Quoted `&&` such as `echo "a && b"` is not a boundary and does not
+  stop the split;
+- the target uses `hashMode: "trace"`, or the workspace enables auto-fingerprinting;
+- the target declares `outputs`. Outputs are cached with the whole chain, so an
+  earlier segment's files would not be restored on a cache hit and a later segment
+  that reads them could fail on a clean checkout. Split the chain into separate
+  targets when a step produces files for the next one;
+- the target has a `when` condition or `always`, or a custom `shell`, which runs the
+  command in another language.
+
 ## Environment variables in the cache key
 
 An env var enters a key only when a source names it:
