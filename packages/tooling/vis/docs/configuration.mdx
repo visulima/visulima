@@ -944,7 +944,7 @@ export default defineConfig({
 });
 ```
 
-With it on, the project is named by `[project].name`, and the Python detector infers `build` (`uv build`). It does not infer `test`: vis cannot tell whether a test runner is installed or declared, so declare the test command in `project.json` or `vis.task.ts`. Python files under the project are the cache inputs, so flat and `src` layouts both invalidate correctly. Turn the detector off with `inferTargets: { python: false }`.
+With it on, the project is named by `[project].name`, and the Python detector infers `build` (`uv build`). It does not infer `test`: vis cannot tell whether a test runner is installed or declared, so declare the test command in `project.json` or `vis.task.ts`. The inferred build declares the Python files under the project as inputs, so flat and `src` layouts are both covered, but caching is disabled for it (`cache: false`), so it runs every time. Turn the detector off with `inferTargets: { python: false }`.
 
 #### Composer packages
 

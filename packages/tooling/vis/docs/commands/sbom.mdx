@@ -80,7 +80,7 @@ What is kept follows the same rules as the npm closure:
 
 - Only packages reachable from the workspace members are included. With `--focus`, the walk starts from the focused projects that are Cargo or uv projects.
 - Dev dependencies are left out unless `--include-dev` is set. For Cargo, dev-dependencies are read from each member's `Cargo.toml`, because the lockfile merges them with normal dependencies. For uv, dependency groups are read from their own section. uv extras are always kept, like optional npm dependencies.
-- When two packages share a name and version but come from different sources, the second gets a `?source=` qualifier on its `bom-ref`, so the two stay distinct.
+- When two packages share a name and version but come from different sources, every one of them that has a source gets a `?source=` qualifier on its `bom-ref` and `purl`, so they stay distinct. An entry without a source, such as the Cargo workspace entry, keeps the plain purl.
 
 Without a lockfile, these ecosystems add nothing to the BOM.
 
