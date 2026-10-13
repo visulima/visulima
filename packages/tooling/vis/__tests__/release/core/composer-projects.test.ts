@@ -6,6 +6,8 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { discoverComposerProjects } from "../../../src/release/core/composer-projects";
+import type { CommandRunner } from "../../../src/release/core/package-managers/interface";
+import { createShellRunner } from "../../../src/release/core/shell-runner";
 
 // git hooks export these; a temp repo must not inherit the outer repository.
 delete process.env.GIT_DIR;
@@ -71,6 +73,32 @@ describe("composer projects discovery", () => {
         write("composer.json", { description: "an application" });
 
         await expect(discover()).resolves.toStrictEqual([]);
+    });
+
+    it.each([
+        ["a non-zero git exit", async () => { return { exitCode: 128, stderr: "fatal: not a git repository", stdout: "" }; }],
+        ["a spawn error", async () => { throw new Error("spawn git ENOENT"); }],
+    ])("throws CONFIG_INVALID naming the shallow checkout when git tag fails with %s", async (_label, failTags) => {
+        expect.hasAssertions();
+
+        write("composer.json", { name: "acme/root" });
+
+        const real = createShellRunner();
+        const runner: CommandRunner = {
+            run: async (command, args, options) => {
+                if (command === "git" && args[0] === "tag") {
+                    return failTags();
+                }
+
+                return real.run(command, args, options);
+            },
+        };
+
+        const error = await discoverComposerProjects({ claimedDirs: new Set(), cwd: dir, runner }).catch((error_: unknown) => error_);
+
+        expect(error).toMatchObject({ code: "CONFIG_INVALID" });
+        expect((error as Error).message).toContain("git tags");
+        expect((error as Error).message).toContain("git fetch --tags --unshallow");
     });
 
     it("refuses a version key, because Packagist would ignore it", async () => {

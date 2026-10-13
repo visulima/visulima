@@ -40,6 +40,10 @@ export interface GoProject {
 
 const invalid = (file: string, message: string): VisReleaseError => new VisReleaseError({ code: "CONFIG_INVALID", file, message });
 
+/** A tag read that failed is not "no tags": planning `0.0.0` then would publish a wrong version permanently. */
+const unreadableTags = (file: string, dir: string, reason: string): VisReleaseError =>
+    invalid(file, `Could not read the git tags in ${dir} (${reason}). The checkout may be shallow. Run \`git fetch --tags --unshallow\` and re-run the release.`);
+
 const readOptional = async (path: string): Promise<string | undefined> => {
     try {
         return await readFile(path, "utf8");
@@ -192,10 +196,16 @@ export const discoverGoProjects = async (options: {
  * or v1 only).
  */
 export const latestTagVersion = async (runner: CommandRunner, dir: string, prefix: string, suffixMajor: number | undefined): Promise<string | undefined> => {
-    const result = await runner.run("git", ["tag", "--list"], { cwd: dir, silent: true });
+    let result;
+
+    try {
+        result = await runner.run("git", ["tag", "--list"], { cwd: dir, silent: true });
+    } catch (error) {
+        throw unreadableTags(join(dir, "go.mod"), dir, (error as Error).message);
+    }
 
     if (result.exitCode !== 0) {
-        return undefined;
+        throw unreadableTags(join(dir, "go.mod"), dir, `git tag --list exited ${result.exitCode}`);
     }
 
     const tagRe = new RegExp(String.raw`^${escapeRegExp(prefix)}v(\d+\.\d+\.\d+)$`, "u");

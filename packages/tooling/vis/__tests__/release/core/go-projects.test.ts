@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { planGoWorkspace } from "../../../src/release/core/go-plan";
 import { discoverGoProjects } from "../../../src/release/core/go-projects";
+import type { CommandRunner } from "../../../src/release/core/package-managers/interface";
+import { createShellRunner } from "../../../src/release/core/shell-runner";
 
 /**
  * Go modules as release packages: discovery reads the module path and the highest
@@ -91,6 +93,42 @@ describe("go projects", () => {
         expect(projects).toHaveLength(1);
         expect(projects[0]?.perPackage.releaseTagPattern).toBe("lib/core/v{version}");
         expect(projects[0]?.package.version).toBe("0.3.0");
+    });
+
+    it("keeps the 0.0.0 baseline for a repository with no tags at all", async () => {
+        expect.hasAssertions();
+
+        write("go.mod", "module github.com/acme/tool\n");
+
+        const projects = await discoverGoProjects({ claimedDirs: new Set(), cwd, runner: createShellRunner() });
+
+        expect(projects[0]?.package.version).toBe("0.0.0");
+    });
+
+    it.each([
+        ["a non-zero git exit", async () => { return { exitCode: 128, stderr: "fatal: not a git repository", stdout: "" }; }],
+        ["a spawn error", async () => { throw new Error("spawn git ENOENT"); }],
+    ])("throws CONFIG_INVALID naming the shallow checkout when git tag fails with %s", async (_label, failTags) => {
+        expect.hasAssertions();
+
+        write("go.mod", "module github.com/acme/tool\n");
+
+        const real = createShellRunner();
+        const runner: CommandRunner = {
+            run: async (command, args, options) => {
+                if (command === "git" && args[0] === "tag") {
+                    return failTags();
+                }
+
+                return real.run(command, args, options);
+            },
+        };
+
+        const error = await discoverGoProjects({ claimedDirs: new Set(), cwd, runner }).catch((error_: unknown) => error_);
+
+        expect(error).toMatchObject({ code: "CONFIG_INVALID" });
+        expect((error as Error).message).toContain("git tags");
+        expect((error as Error).message).toContain("git fetch --tags --unshallow");
     });
 
     it("refuses a /vN module with no tag for its major", async () => {
