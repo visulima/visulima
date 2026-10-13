@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 
 import { join } from "@visulima/path";
 
@@ -18,6 +18,7 @@ import { dprintDetector } from "./detectors/dprint";
 import { drizzleDetector } from "./detectors/drizzle";
 import { eslintDetector } from "./detectors/eslint";
 import { gatsbyDetector } from "./detectors/gatsby";
+import { gemDetector } from "./detectors/gem";
 import { goDetector } from "./detectors/go";
 import { gradleDetector } from "./detectors/gradle";
 import { graphqlCodegenDetector } from "./detectors/graphql-codegen";
@@ -119,6 +120,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     mavenDetector,
     goDetector,
     gradleDetector,
+    gemDetector,
     swiftDetector,
     dartDetector,
 ];
@@ -134,9 +136,17 @@ const hasDependency = (pkg: Pick<PackageJson, "dependencies" | "devDependencies"
     || (pkg.optionalDependencies !== undefined && Object.hasOwn(pkg.optionalDependencies, name));
 const matchConfigFiles = (projectRoot: string, configFiles: ReadonlyArray<string>): string[] => {
     const matched: string[] = [];
+    let entries: string[] | undefined;
 
     for (const file of configFiles) {
-        if (existsSync(join(projectRoot, file))) {
+        // A `*.ext` entry matches any top-level file with that extension (a gem's `*.gemspec`); other entries are exact names.
+        if (file.startsWith("*.")) {
+            entries ??= existsSync(projectRoot) ? readdirSync(projectRoot) : [];
+
+            if (entries.some((entry) => entry.endsWith(file.slice(1)))) {
+                matched.push(file);
+            }
+        } else if (existsSync(join(projectRoot, file))) {
             matched.push(file);
         }
     }

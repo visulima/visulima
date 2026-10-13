@@ -216,6 +216,15 @@ Opt-in. With `release: { dart: { discover: true } }`, the root `pubspec.yaml` (w
 - Publishing runs `dart pub publish --force` with the argv runner, no shell, POSIX only. `https://pub.dev/api/packages/<name>` is checked first; a listed version is skipped. Credentials come from the Dart SDK's token store or OIDC, never argv.
 - Dart has no lockfile edits: `pubspec.lock` is not rewritten.
 
+## Gem packages as release packages (`release.gem.discover`)
+
+Opt-in. With `release: { gem: { discover: true } }`, every `*.gemspec` under the root (skipping `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name` literal. One gemspec per directory.
+
+- The version is `spec.version = "…"` as a string literal, or `spec.version = Name::VERSION` with `VERSION = "…"` in `lib/<name>/version.rb`. The file that holds the literal is rewritten in place. Any other form, a repeated declaration, or a name that is not a valid package name fails the release with `CONFIG_INVALID`. A gemspec with no version is an aggregate and is skipped.
+- `add_dependency` / `add_runtime_dependency` on another discovered gem orders the release and is recorded as `*`.
+- Publishing runs `gem build <gemspec> --output <name>-<version>.gem`, then `gem push <file>`, with no shell. The API key comes from `GEM_HOST_API_KEY`. A version RubyGems already lists is skipped. The built file is removed afterwards.
+- Versions must be dot-separated alphanumerics (`1.2.0`, `1.2.0.beta.1`); a semver prerelease with `-` is refused. POSIX only; Windows refuses after the dry run.
+
 ## Workspace + catalog: protocol resolution
 
 `workspace:^1.0.0`, `workspace:~1.0.0`, `workspace:*`, `workspace:^`, `workspace:~`, and `catalog:`/`catalog:<name>` refs are resolved at publish time. Default: trust pnpm's pack to do `workspace:`/`catalog:` rewriting; for npm/yarn/bun, rewrite in-place before pack (since only `pnpm pack` understands `catalog:`).

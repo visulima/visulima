@@ -16,7 +16,7 @@ export const BUMP_LEVELS: ReadonlyArray<BumpLevel> = ["major", "minor", "patch",
 
 /**
  * Numeric ranking used to compare two bump levels.
- * `major` &gt; `minor` &gt; `patch` &gt; `none`.
+ * `major` > `minor` > `patch` > `none`.
  */
 export const bumpRank = (level: BumpLevel): number => {
     switch (level) {
@@ -116,7 +116,7 @@ export interface WorkspacePackage {
      * Cargo crates discovered from `Cargo.toml` (opt-in) set `"cargo"`; their
      * `manifest` is synthetic and must never be serialized into `manifestPath`.
      */
-    ecosystem?: "cargo" | "composer" | "dart" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
+    ecosystem?: "cargo" | "composer" | "dart" | "gem" | "go" | "gradle" | "maven" | "npm" | "python" | "swift" | "zig";
     /** Raw `package.json` contents. */
     manifest: PackageManifest;
     /** Path to `package.json`. */
@@ -1396,6 +1396,22 @@ export interface VisReleaseConfig {
     formatChangedFiles?: boolean;
 
     /**
+     * Gradle modules as release packages. Off by default. When on, the root build
+     * and every module in `settings.gradle(.kts)` is a release package named
+     * `group:artifact`. The version must be a string literal in the module's
+     * script or the root script's allprojects / subprojects block; a group or
+     * version the release cannot read fails it.
+     */
+
+    /**
+     * Gems as release packages. Off by default. Every `*.gemspec` under the root (skipping
+     * `vendor`, `node_modules` and `.bundle`) is a release package named by its `spec.name`
+     * literal. The version is `spec.version = "…"`, or `Name::VERSION` with `VERSION = "…"`
+     * in `lib/&lt;name>/version.rb`. Publish runs `gem build` and `gem push` (POSIX only).
+     */
+    gem?: { discover?: boolean };
+
+    /**
      * Self-hosted GitHub Enterprise host (e.g. `"github.acme.com"` — no
      * scheme). Translates to the `GH_HOST` env var that the `gh` CLI
      * consumes natively, so all adapter calls land on the right
@@ -1431,14 +1447,6 @@ export interface VisReleaseConfig {
      * release creates the next tag. A `/vN` major needs a matching module path.
      */
     go?: { discover?: boolean };
-
-    /**
-     * Gradle modules as release packages. Off by default. When on, the root build
-     * and every module in `settings.gradle(.kts)` is a release package named
-     * `group:artifact`. The version must be a string literal in the module's
-     * script or the root script's allprojects / subprojects block; a group or
-     * version the release cannot read fails it.
-     */
     gradle?: { discover?: boolean };
 
     /**

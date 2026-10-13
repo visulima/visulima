@@ -564,6 +564,16 @@ Tasks: with `swift.discover: true`, each package directory gets `swift build` an
 
 Both paths are POSIX only. On Windows the release fails with `CONFIG_INVALID` after the dry run, and SwiftPM is not run there. Swift has no lockfile vis maintains, and `Package.resolved` has no dependency edges, so the SBOM has no Swift graph.
 
+### Gem packages as release packages
+
+Set `release.gem.discover: true` in `vis.config.ts` to release every gem in the repository. Each `*.gemspec` (outside `vendor`, `node_modules` and `.bundle`) is one package, named by its `spec.name` literal. It is off by default.
+
+The version is a string literal in the gemspec (`spec.version = "1.2.0"`), or `spec.version = Name::VERSION` with a `VERSION = "1.2.0"` literal in `lib/<name>/version.rb`. vis rewrites whichever file holds the literal. A gemspec with no version is skipped.
+
+Publishing runs `gem build` and then `gem push`. Set `GEM_HOST_API_KEY` in the environment. A version RubyGems already lists is skipped. Versions must be dot-separated (`1.2.0.beta.1`), since a semver prerelease with `-` is not a valid gem version.
+
+Publishing is POSIX only for now: on Windows it fails with `CONFIG_INVALID` before running anything. The gem command must be on `PATH` (it ships with Ruby).
+
 ### Zig packages as release packages
 
 Set `release.zig.discover: true` in `vis.config.ts` to release Zig packages. It is off by default. The workspace root's `build.zig.zon` is a package, and so is every `.path` dependency that holds its own `build.zig.zon` and sits inside the workspace (followed transitively). The name is the manifest's `.name`, which must be lowercase (`[a-z0-9._-]`), so a Zig name with uppercase letters is refused. A manifest with no `.version` is an aggregate and is skipped; the root is released only with its own version.

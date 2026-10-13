@@ -285,7 +285,9 @@ const parseGemfileLock = (content: string): InstalledPackage[] => {
             const match = GEM_SPEC_RE.exec(line);
 
             if (match) {
-                const [, name, version] = match;
+                const [, name, rawVersion] = match;
+                // A platform variant (`1.16.0-arm64-darwin`) is the same gem version for OSV.
+                const version = rawVersion?.split("-")[0];
 
                 if (name && version) {
                     entries.push({ isDev: false, name, version });

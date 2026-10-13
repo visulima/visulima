@@ -14,7 +14,7 @@
  */
 
 import { unlink, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, sep } from "node:path";
 
 import semver from "semver";
 
@@ -27,6 +27,7 @@ import { readChangeFiles } from "./change-file-reader";
 import { detectCurrentBranch, resolveChannel } from "./channels";
 import type { DartProject } from "./dart-projects";
 import { DependencyGraph } from "./dep-graph";
+import type { GemProject } from "./gem-projects";
 import type { GoProject } from "./go-projects";
 import type { GradleProject } from "./gradle-projects";
 import type { MavenProject } from "./maven-projects";
@@ -60,6 +61,8 @@ export interface OrchestratorContext {
      * `bootstrap-sha` knob.
      */
     firstRelease: boolean;
+    /** Gems discovered under `release.gem.discover` (empty otherwise); the gem plan reads their owners from here. */
+    gemProjects?: GemProject[];
     /** Go modules discovered under `release.go.discover` (empty otherwise); the Go plan checks their module paths against the releases. */
     goProjects?: GoProject[];
     /** Gradle modules discovered under `release.gradle.discover` (empty otherwise); the Gradle plan reads their owners from here. */
@@ -228,7 +231,9 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
     let zigProjects: ZigProject[] = [];
     let dartProjects: DartProject[] = [];
 
-    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover) {
+    let gemProjects: GemProject[] = [];
+
+    if (config.cargo?.discover || config.python?.discover || config.maven?.discover || config.gradle?.discover || config.go?.discover || config.swift?.discover || config.zig?.discover || config.dart?.discover || config.composer?.discover || config.gem?.discover) {
         const { cargoManifestPaths } = await import("./cargo-lock");
         const claimedDirs = new Set<string>();
 
@@ -407,6 +412,43 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
             }
 
             packages = [...packages, ...swiftProjects.map((project) => project.package)];
+        }
+
+        if (config.gem?.discover) {
+            const { discoverGemProjects } = await import("./gem-projects");
+            // A JS package that releases a gem (versionActions "gem") or writes its gemspec (an extraFiles rule) claims its directory.
+            const gemClaimedDirs = new Set<string>();
+
+            for (const pkg of packages) {
+                const perPkg = perPackageConfig.get(pkg.name) ?? {};
+
+                if (perPkg.versionActions === "gem") {
+                    gemClaimedDirs.add(resolve(pkg.dir));
+                }
+
+                for (const rule of perPkg.extraFiles ?? []) {
+                    const target = resolve(pkg.dir, rule.path);
+
+                    if (/\.gemspec$/.test(rule.path)) {
+                        gemClaimedDirs.add(dirname(target));
+                    } else if (/(?:^|\/)lib\/.+\/version\.rb$/.test(rule.path)) {
+                        // The gem's directory is the one above its lib/ tree.
+                        const libIndex = target.lastIndexOf(`${sep}lib${sep}`);
+
+                        if (libIndex !== -1) {
+                            gemClaimedDirs.add(target.slice(0, libIndex));
+                        }
+                    }
+                }
+            }
+
+            gemProjects = await discoverGemProjects({ claimedDirs: gemClaimedDirs, cwd });
+
+            for (const project of gemProjects) {
+                perPackageConfig.set(project.name, { managed: true, versionActions: "gem", ...config.packages?.[project.name] });
+            }
+
+            packages = [...packages, ...gemProjects.map((project) => project.package)];
         }
 
         if (config.zig?.discover) {
@@ -683,6 +725,7 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         dartProjects,
         depGraph,
         firstRelease,
+        gemProjects,
         goProjects,
         gradleProjects,
         mavenProjects,
@@ -1161,6 +1204,21 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
             const gradleTouched = await planGradleWorkspace({ pending, projects: context.gradleProjects ?? [], releases: gradleReleases });
 
             for (const path of gradleTouched) {
+                touched.add(path);
+            }
+        }
+
+        const gemReleases = context.plan.releases.flatMap((release) => {
+            const pkg = context.depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "gem" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (gemReleases.length > 0) {
+            const { planGemWorkspace } = await import("./gem-plan");
+            const gemTouched = await planGemWorkspace({ pending, projects: context.gemProjects ?? [], releases: gemReleases });
+
+            for (const path of gemTouched) {
                 touched.add(path);
             }
         }

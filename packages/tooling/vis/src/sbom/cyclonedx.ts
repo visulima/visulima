@@ -9,6 +9,7 @@ import { toXML } from "jstoxml";
 import { resolveFocusProjects } from "../util/docker";
 import { buildCargoSbomParts } from "./cargo";
 import { buildComposerSbomParts } from "./composer";
+import { buildGemSbomParts } from "./gem";
 import { readInstalledPackageMetadata } from "./installed-package";
 import type { RawLicenseInput } from "./license";
 import { extractLicenseChoice } from "./license";
@@ -503,12 +504,13 @@ export const buildCycloneDxBom = (options: BuildSbomOptions): CycloneDxBom => {
     const cargo = buildCargoSbomParts(workspaceRoot, lockOptions);
     const python = buildPythonSbomParts(workspaceRoot, lockOptions);
     const composer = buildComposerSbomParts(workspaceRoot, lockOptions);
+    const gem = buildGemSbomParts(workspaceRoot, lockOptions);
 
     return {
         $schema: CYCLONEDX_SCHEMA_URL,
         bomFormat: CYCLONEDX_BOM_FORMAT,
-        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components],
-        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
+        components: [...filteredProjectComponents, ...registryComponents, ...cargo.components, ...python.components, ...composer.components, ...gem.components],
+        dependencies: [...dependencies, ...cargo.dependencies, ...python.dependencies, ...composer.dependencies, ...gem.dependencies].sort((a, b) => a.ref.localeCompare(b.ref)),
         metadata: {
             component: metadataComponent,
             lifecycles: [{ phase: "build" }],
