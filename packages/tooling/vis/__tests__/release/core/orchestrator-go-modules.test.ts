@@ -79,4 +79,15 @@ describe.skipIf(process.platform === "win32")("orchestrator: opt-in Go module re
         expect(git("ls-remote", "--tags", "origin")).toContain("refs/tags/a/v1.1.0");
         expect(git("tag", "--list")).not.toContain("@");
     });
+
+    it("refuses a major the module path cannot carry in buildContext, before the plan is shown", async () => {
+        expect.hasAssertions();
+
+        write(".vis/release/x.md", "---\n\"github.com/acme/a\": major\n---\n### Major a\n\nBody\n");
+
+        await expect(buildContext({ cwd })).rejects.toMatchObject({
+            code: "CONFIG_INVALID",
+            message: expect.stringContaining("needs a /v2 module path"),
+        });
+    });
 });

@@ -444,6 +444,21 @@ export const buildContext = async (options: BuildContextOptions = {}): Promise<O
         plan.releases = plan.releases.filter((r) => globs.some((g) => r.name === g || zeptomatch(g, r.name)));
     }
 
+    // Refuse a Go major the module path cannot carry before the plan is shown, not at apply time.
+    {
+        const goReleases = plan.releases.flatMap((release) => {
+            const pkg = depGraph.getPackage(release.name);
+
+            return pkg?.ecosystem === "go" ? [{ name: release.name, newVersion: release.newVersion }] : [];
+        });
+
+        if (goReleases.length > 0) {
+            const { planGoWorkspace } = await import("./go-plan");
+
+            planGoWorkspace({ projects: (projectsByEcosystem.get("go") ?? []) as Parameters<typeof planGoWorkspace>[0]["projects"], releases: goReleases });
+        }
+    }
+
     return {
         branch,
         channel: resolved ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag } : undefined,

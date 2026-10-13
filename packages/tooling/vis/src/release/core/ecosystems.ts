@@ -255,14 +255,6 @@ const go = defineEcosystem<GoProject>({
     },
     id: "go",
     perPackage: (project) => project.perPackage,
-    plan: async ({ projects, releases }) => {
-        // Go has no version file to write. The plan only refuses a major that its module path cannot carry.
-        const { planGoWorkspace } = await import("./go-plan");
-
-        planGoWorkspace({ projects, releases });
-
-        return { touched: [], warnings: [] };
-    },
     toPackage: (project) => project.package,
 });
 
