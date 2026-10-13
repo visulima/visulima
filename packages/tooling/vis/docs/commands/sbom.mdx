@@ -72,6 +72,10 @@ Every emitted BOM passes the vendored CycloneDX 1.7 JSON Schema (`bom-1.7.schema
 
 Binary `bun.lockb` is not supported.
 
+## Zig packages
+
+`vis sbom` lists the `.dependencies` of a Zig workspace's `build.zig.zon` and of its in-workspace `.path` packages, as a flat list with no edges. Zig's manifest records no dependency versions, so a version is set only for a dependency whose `.url` is a git tag archive (`refs/tags/<tag>`). Other dependencies are listed without a version and say so in a `vis:zig:version` property. Nothing is invented. The audit cannot check Zig packages at all; see `vis audit`.
+
 ## Rust and Python lockfiles
 
 The BOM also includes `Cargo.lock` (Rust) and `uv.lock` (Python) when they exist at the workspace root. Each locked package becomes a component with a `pkg:cargo/…` or `pkg:pypi/…` purl, and dependency edges come from the lockfile graph.
