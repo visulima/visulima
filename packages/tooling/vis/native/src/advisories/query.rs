@@ -289,7 +289,6 @@ mod tests {
         let err = query(&tmp, &inputs).unwrap_err();
         let message = err.to_string();
         assert!(message.contains("v1"), "{message}");
-        assert!(message.contains("prune --force"), "{message}");
         assert!(message.contains("vis advisories sync"), "{message}");
     }
 

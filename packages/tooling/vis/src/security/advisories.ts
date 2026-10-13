@@ -10,7 +10,7 @@
 
 import { randomUUID } from "node:crypto";
 import { createWriteStream, existsSync } from "node:fs";
-import { mkdir, stat, unlink } from "node:fs/promises";
+import { mkdir, rename, rm, stat, unlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -65,6 +65,8 @@ export interface SyncResult {
     advisoriesIngested: number;
     dbPath: string;
     durationMs: number;
+    /** Schema version the database had before it was rebuilt. Set only when a rebuild ran. */
+    rebuiltFromSchema?: number;
     /** True when the ETag short-circuit fired and no work happened. */
     upToDate: boolean;
 }
@@ -87,15 +89,27 @@ export class AdvisoryDbNotFoundError extends Error {
 /** Schema version the native reader writes. Must match NATIVE_KNOWN_VERSION in native/src/advisories/schema.rs. */
 export const ADVISORY_DB_SCHEMA_VERSION = 2;
 
-/** An existing advisory database was written by an older build. Refresh it; the file is not migrated. */
+/** An existing advisory database was written by an older build. `vis advisories sync` rebuilds it. */
 export class AdvisoryDbSchemaError extends Error {
     override readonly cause = "DB_SCHEMA_OUTDATED";
 
     constructor(path: string, schemaVersion: number) {
         super(
-            `Advisory DB at ${path} uses schema v${String(schemaVersion)}; this build of vis needs v${String(ADVISORY_DB_SCHEMA_VERSION)}. Refresh it: run 'vis advisories prune --force', then 'vis advisories sync'.`,
+            `Advisory DB at ${path} uses schema v${String(schemaVersion)}; this build of vis needs v${String(ADVISORY_DB_SCHEMA_VERSION)}. Run 'vis advisories sync' to rebuild it.`,
         );
         this.name = "AdvisoryDbSchemaError";
+    }
+}
+
+/** A schema rebuild failed part-way. The previous database file was left in place. */
+export class AdvisoryDbRebuildError extends Error {
+    override readonly cause = "DB_REBUILD_FAILED";
+
+    constructor(path: string, schemaVersion: number, reason: string) {
+        super(
+            `Could not rebuild advisory DB at ${path} from schema v${String(schemaVersion)} to v${String(ADVISORY_DB_SCHEMA_VERSION)}: ${reason}. The existing file was left unchanged.`,
+        );
+        this.name = "AdvisoryDbRebuildError";
     }
 }
 
@@ -164,37 +178,151 @@ export const validateAdvisorySource = (source: string, allowedHosts?: string[]):
     return url;
 };
 
+/** SQLite sidecar suffixes. A WAL left next to a replaced file would be replayed into the new one. */
+const SQLITE_SIDECARS = ["-wal", "-shm", "-journal"];
+
+interface IngestOutcome {
+    advisoriesIngested: number;
+    durationMs: number;
+}
+
+interface IngestRequest {
+    dbPath: string;
+    ecosystem: string;
+    /** ETag from a prior HEAD. When null, the GET response's ETag is stored. */
+    etag: string | null;
+    onProgress: SyncOptions["onProgress"];
+    zipUrl: URL;
+}
+
+/** GET one ecosystem zip, stream it to a temp file, and ingest it into `dbPath`. The zip is always removed. */
+const downloadAndIngest = async (request: IngestRequest): Promise<IngestOutcome> => {
+    const zipPath = `${request.dbPath}.${request.ecosystem}.${process.pid}.${randomUUID()}.zip.tmp`;
+
+    try {
+        const response = await safeFetch(request.zipUrl, { method: "GET" });
+
+        if (!response.ok || !response.body) {
+            throw new AdvisorySyncNetworkError(request.zipUrl.toString(), response.status);
+        }
+
+        const etag = request.etag ?? response.headers.get("etag");
+        const contentLength = response.headers.get("content-length");
+        const totalBytes = contentLength ? Number.parseInt(contentLength, 10) : null;
+        let downloaded = 0;
+
+        const sink = createWriteStream(zipPath);
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Readable.fromWeb works in 22.14+; stable label only flipped in 22.17.
+        const source = Readable.fromWeb(response.body as never);
+
+        if (request.onProgress && totalBytes) {
+            source.on("data", (chunk: Buffer) => {
+                downloaded += chunk.byteLength;
+                request.onProgress?.(downloaded, totalBytes, "download");
+            });
+        }
+
+        await pipeline(source, sink);
+
+        return await advisoriesIngest(
+            {
+                dbPath: request.dbPath,
+                ecosystem: request.ecosystem,
+                manifestEtag: etag ?? undefined,
+                zipPath,
+            },
+            (current, total) => request.onProgress?.(current, total, "ingest"),
+        );
+    } finally {
+        // Rust deletes the zip after a successful ingest; this removes the residual when a step threw first.
+        await unlink(zipPath).catch(() => undefined);
+    }
+};
+
+/**
+ * Rebuild a database written by an older schema. The file is shared by every ecosystem and ingest
+ * only replaces one ecosystem's rows, so every ecosystem already in the old file is downloaded again
+ * alongside the requested one. Nothing is lost by the rebuild.
+ *
+ * The new database is populated at a temp path next to the target, then renamed over it. A rename
+ * within one directory is atomic, so on failure the old file is still there.
+ */
+const rebuildAdvisoryDb = async (
+    options: SyncOptions,
+    dbPath: string,
+    fromSchema: number,
+    carriedEcosystems: string[],
+    zipUrlFor: (ecosystem: string) => URL,
+): Promise<IngestOutcome> => {
+    const tmpPath = `${dbPath}.rebuild.${process.pid}.${randomUUID()}.tmp`;
+
+    try {
+        const requested = await downloadAndIngest({
+            dbPath: tmpPath,
+            ecosystem: options.ecosystem,
+            etag: null,
+            onProgress: options.onProgress,
+            zipUrl: zipUrlFor(options.ecosystem),
+        });
+
+        for (const ecosystem of carriedEcosystems) {
+            if (ecosystem !== options.ecosystem) {
+                await downloadAndIngest({ dbPath: tmpPath, ecosystem, etag: null, onProgress: options.onProgress, zipUrl: zipUrlFor(ecosystem) });
+            }
+        }
+
+        await Promise.all(SQLITE_SIDECARS.map((suffix) => rm(`${dbPath}${suffix}`, { force: true })));
+        await rename(tmpPath, dbPath);
+
+        return requested;
+    } catch (error) {
+        await Promise.all(["", ...SQLITE_SIDECARS].map((suffix) => rm(`${tmpPath}${suffix}`, { force: true }).catch(() => undefined)));
+
+        throw new AdvisoryDbRebuildError(dbPath, fromSchema, error instanceof Error ? error.message : String(error));
+    }
+};
+
 /**
  * Download + ingest one ecosystem. Two-step:
  *   1. HEAD &lt;source>/&lt;eco>/all.zip; compare ETag against stored meta.
  *      Short-circuit when unchanged unless `force`.
- *   2. GET, stream to a `.tmp` file, then native ingest. Atomic rename
- *      not needed for the zip (Rust deletes it after ingest) but the
- *      DB write is transactional inside `advisoriesIngest`.
+ *   2. GET, stream to a `.tmp` file, then native ingest. The DB write is
+ *      transactional inside `advisoriesIngest`.
+ *
+ * A database from an older schema is rebuilt first (see `rebuildAdvisoryDb`).
  */
 export const syncAdvisories = async (options: SyncOptions): Promise<SyncResult> => {
     const dbPath = options.dbPath ?? resolveAdvisoryDbPath(options.workspaceRoot);
+    const url = validateAdvisorySource(options.source, options.allowedHosts);
+    const baseUrl = ensureTrailingSlash(url.toString());
+    const zipUrlFor = (ecosystem: string): URL => new URL(`${ecosystem}/all.zip`, baseUrl);
 
-    // Checked before the ETag short-circuit, so an outdated database is reported instead of "up to date".
+    // Checked before the ETag short-circuit: an outdated database is rebuilt, never reported as "up to date".
     if (existsSync(dbPath)) {
-        const schemaError = advisoryDbSchemaError(dbPath);
+        const status = nativeStatus(dbPath);
 
-        if (schemaError) {
-            throw schemaError;
+        if (status.schemaVersion < ADVISORY_DB_SCHEMA_VERSION) {
+            const carried = status.ecosystems.map((e) => e.name);
+            const rebuilt = await rebuildAdvisoryDb(options, dbPath, status.schemaVersion, carried, zipUrlFor);
+
+            return {
+                advisoriesIngested: rebuilt.advisoriesIngested,
+                dbPath,
+                durationMs: rebuilt.durationMs,
+                rebuiltFromSchema: status.schemaVersion,
+                upToDate: false,
+            };
         }
     }
 
     await mkdir(dirname(dbPath), { recursive: true });
-
-    const url = validateAdvisorySource(options.source, options.allowedHosts);
-    const zipUrl = new URL(`${options.ecosystem}/all.zip`, ensureTrailingSlash(url.toString()));
 
     const storedEtag = await readStoredEtag(dbPath, options.ecosystem);
 
     let etag: string | null = null;
 
     if (!options.force) {
-        const head = await safeFetch(zipUrl, { method: "HEAD" });
+        const head = await safeFetch(zipUrlFor(options.ecosystem), { method: "HEAD" });
 
         if (head.ok) {
             etag = head.headers.get("etag");
@@ -210,56 +338,20 @@ export const syncAdvisories = async (options: SyncOptions): Promise<SyncResult> 
         }
     }
 
-    const zipPath = `${dbPath}.${options.ecosystem}.${process.pid}.${randomUUID()}.zip.tmp`;
-    const response = await safeFetch(zipUrl, { method: "GET" });
+    const ingested = await downloadAndIngest({
+        dbPath,
+        ecosystem: options.ecosystem,
+        etag,
+        onProgress: options.onProgress,
+        zipUrl: zipUrlFor(options.ecosystem),
+    });
 
-    if (!response.ok || !response.body) {
-        throw new AdvisorySyncNetworkError(zipUrl.toString(), response.status);
-    }
-
-    if (!etag) {
-        etag = response.headers.get("etag");
-    }
-
-    const contentLength = response.headers.get("content-length");
-    const totalBytes = contentLength ? Number.parseInt(contentLength, 10) : null;
-    let downloaded = 0;
-
-    const sink = createWriteStream(zipPath);
-    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- Readable.fromWeb works in 22.14+; stable label only flipped in 22.17.
-    const source = Readable.fromWeb(response.body as never);
-
-    if (options.onProgress && totalBytes) {
-        source.on("data", (chunk: Buffer) => {
-            downloaded += chunk.byteLength;
-            options.onProgress?.(downloaded, totalBytes, "download");
-        });
-    }
-
-    await pipeline(source, sink);
-
-    try {
-        const result = await advisoriesIngest(
-            {
-                dbPath,
-                ecosystem: options.ecosystem,
-                manifestEtag: etag ?? undefined,
-                zipPath,
-            },
-            (current, total) => options.onProgress?.(current, total, "ingest"),
-        );
-
-        return {
-            advisoriesIngested: result.advisoriesIngested,
-            dbPath,
-            durationMs: result.durationMs,
-            upToDate: false,
-        };
-    } finally {
-        // Rust deletes the zip after a successful ingest; we clean up the
-        // residual when ingest threw before reaching that point.
-        await unlink(zipPath).catch(() => undefined);
-    }
+    return {
+        advisoriesIngested: ingested.advisoriesIngested,
+        dbPath,
+        durationMs: ingested.durationMs,
+        upToDate: false,
+    };
 };
 
 /**

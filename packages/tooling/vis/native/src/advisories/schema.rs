@@ -54,7 +54,7 @@ impl std::fmt::Display for AdvisorySchemaError {
         match self {
             Self::TooOld { observed } => write!(
                 f,
-                "Advisory DB schema is v{observed}, this build of vis expects v{NATIVE_KNOWN_VERSION}. Refresh the advisory database: run 'vis advisories prune --force', then 'vis advisories sync'.",
+                "Advisory DB schema is v{observed}, this build of vis expects v{NATIVE_KNOWN_VERSION}. Run 'vis advisories sync' to rebuild it.",
             ),
             Self::TooNew { observed } => write!(
                 f,

@@ -5,7 +5,7 @@ import type { VisConfig } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { startScanProgress } from "../../scan/scan-progress";
 import type { SyncResult } from "../../security/advisories";
-import { DEFAULT_ADVISORY_SOURCE, syncAdvisories } from "../../security/advisories";
+import { ADVISORY_DB_SCHEMA_VERSION, DEFAULT_ADVISORY_SOURCE, syncAdvisories } from "../../security/advisories";
 import { canonicalEcosystem } from "../../security/multi-eco-lockfiles";
 import type { AdvisoriesSyncOptions } from "./index";
 
@@ -75,6 +75,20 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
         }
     } finally {
         progress.stop();
+    }
+
+    // Printed after the live progress has stopped, so it cannot tear the progress display.
+    const rebuiltFrom = results.find((r) => r.result?.rebuiltFromSchema !== undefined)?.result?.rebuiltFromSchema;
+
+    if (rebuiltFrom !== undefined) {
+        const notice = `advisory database is schema v${String(rebuiltFrom)}; rebuilt to v${String(ADVISORY_DB_SCHEMA_VERSION)}`;
+
+        // In JSON mode stdout carries only the payload, so the notice goes to stderr.
+        if (isJson) {
+            process.stderr.write(`${notice}\n`);
+        } else {
+            pail.info(notice);
+        }
     }
 
     if (isJson) {

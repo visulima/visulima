@@ -141,16 +141,21 @@ describe("vis audit offline routing", () => {
         expect(process.exitCode).not.toBe(1);
     });
 
-    it("refuses an offline run on an older advisory database and exits 1 without querying", async () => {
-        expect.assertions(2);
+    it("refuses an offline run on an older advisory database, exits 1, and neither queries nor downloads", async () => {
+        expect.assertions(3);
 
         state.schemaVersion = 1;
         state.npmPackages = [{ name: "left-pad", version: "1.3.0" }];
 
+        const fetchSpy = vi.spyOn(globalThis, "fetch");
+
         await runOffline("npm");
 
         expect(queryAdvisories).not.toHaveBeenCalled();
+        expect(fetchSpy).not.toHaveBeenCalled();
         expect(process.exitCode).toBe(1);
+
+        fetchSpy.mockRestore();
     });
 });
 
