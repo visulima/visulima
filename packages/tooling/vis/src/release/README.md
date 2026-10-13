@@ -175,6 +175,7 @@ Opt-in. With `release: { composer: { discover: true } }`, the root `composer.jso
 - Publish checks the tag locally (`alreadyPublished` skips it). The orchestrator creates and pushes the tag after every publish succeeds. Packagist is not queried.
 - POSIX only: publish refuses on Windows with `CONFIG_INVALID` after the dry run.
 - `composer.lock` feeds the audit (`Packagist`) and the SBOM graph (`pkg:composer/...` with `require` edges).
+- Tasks (`composer.discover`, separate opt-in) infer `format:check` only from a dev dependency: `laravel/pint` runs `vendor/bin/pint --test`; `squizlabs/php_codesniffer` runs `vendor/bin/phpcs` only with a `phpcs.xml` or `phpcs.xml.dist`. No formatter, no format target.
 
 ## Go modules as release packages (`release.go.discover`)
 

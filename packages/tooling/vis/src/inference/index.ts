@@ -10,6 +10,7 @@ import { biomeDetector } from "./detectors/biome";
 import { bunDetector } from "./detectors/bun";
 import { cargoDetector } from "./detectors/cargo";
 import { changesetDetector } from "./detectors/changeset";
+import { composerDetector } from "./detectors/composer";
 import { cypressDetector } from "./detectors/cypress";
 import { dartDetector } from "./detectors/dart";
 import { denoDetector } from "./detectors/deno";
@@ -118,6 +119,7 @@ export const BUILT_IN_DETECTORS: ReadonlyArray<Detector> = [
     apiExtractorDetector,
     changesetDetector,
     cargoDetector,
+    composerDetector,
     pythonDetector,
     mavenDetector,
     goDetector,
