@@ -37,7 +37,8 @@ export type { ChromeTraceEvent } from "./chrome-trace";
 export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 // Command parser
 export type { ParseCommandsOptions, TokenContext } from "./command-parser";
-export { expandArguments, expandShortcut, expandTokens, expandTokensInString, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
+export type { CompoundSplit } from "./command-parser";
+export { expandArguments, expandShortcut, expandTokens, expandTokensInString, expandWildcard, parseCommands, splitCompoundCommand, stripQuotes } from "./command-parser";
 // Concurrent process runner
 export { runConcurrently } from "./concurrent";
 export { runConcurrentFallback } from "./concurrent-fallback";
