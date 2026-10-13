@@ -1,8 +1,10 @@
 import { readdir, stat } from "node:fs/promises";
 
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher } from "@shared/xxh3";
 import { relative, resolve } from "@visulima/path";
 
-import type { FileAccess } from "./file-access-tracker";
+import type { FileAccess, TrackerKind } from "./file-access-tracker";
 import { hashFile, hashStrings, sortObjectKeys } from "./utils";
 
 /**
@@ -76,6 +78,13 @@ export interface TaskFingerprint {
      * and trigger false cache hits.
      */
     modifiedInputs?: string[];
+
+    /**
+     * Which mechanism observed the accesses. Part of the trace key
+     * ({@link hashFingerprint}), so the same workspace traced by a different
+     * tracker does not produce the same key.
+     */
+    tracker?: TrackerKind;
 }
 
 /**
@@ -87,6 +96,41 @@ export interface CacheMissReason {
     previousHash?: string;
     type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
 }
+
+/**
+ * The trace key: a digest of everything a {@link TaskFingerprint} records.
+ * Two fingerprints get the same key only if they agree on the command, every
+ * observed file hash, missing and listed paths, env values, and the tracker
+ * kind that produced them.
+ */
+export const hashFingerprint = (fingerprint: TaskFingerprint): string => {
+    const hash = createXxh3Hasher();
+
+    hash.update(fingerprint.commandHash);
+
+    for (const key of Object.keys(fingerprint.fileHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.fileHashes[key] as string);
+    }
+
+    for (const path of fingerprint.missingFiles) {
+        hash.update(`missing:${path}`);
+    }
+
+    for (const key of Object.keys(fingerprint.directoryListings).toSorted()) {
+        hash.update(`dir:${key}`);
+        hash.update(JSON.stringify(fingerprint.directoryListings[key]));
+    }
+
+    for (const key of Object.keys(fingerprint.envHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.envHashes[key] as string);
+    }
+
+    hash.update(`tracker:${fingerprint.tracker ?? ""}`);
+
+    return hash.digest();
+};
 
 /**
  * One-line, human-readable explanation of a cache miss reason.
@@ -145,6 +189,7 @@ export class FingerprintManager {
         envVariables: Record<string, string | undefined>,
         envPatterns: string[] = [],
         untrackedEnvVariables: string[] = [],
+        tracker?: TrackerKind,
     ): Promise<TaskFingerprint> {
         const fileHashes: Record<string, string> = {};
         const missingPaths = new Set<string>();
@@ -235,6 +280,7 @@ export class FingerprintManager {
             fileHashes,
             missingFiles,
             ...(modifiedInputs.length > 0 ? { modifiedInputs } : {}),
+            ...(tracker === undefined ? {} : { tracker }),
         };
     }
 

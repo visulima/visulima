@@ -140,5 +140,17 @@ describe(TrackedTaskExecutor, () => {
 
             expect(result.terminalOutput).toContain("custom_value");
         });
+
+        it("reports the tracker kind that produced the accesses", async () => {
+            expect.assertions(1);
+
+            // Shell syntax never takes the direct-exec native trackers, so this
+            // run is the Linux syscall tracker there and the Node preload elsewhere.
+            const result = await executor.execute(createTask(), { cwd: workspaceRoot }, "node -e 0 && true");
+
+            const expectedKinds = executor.isStraceSupported ? ["seccomp", "strace"] : ["preload"];
+
+            expect(expectedKinds).toContain(result.tracker);
+        });
     });
 });

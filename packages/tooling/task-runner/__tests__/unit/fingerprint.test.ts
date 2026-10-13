@@ -5,7 +5,55 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { FileAccess } from "../../src/file-access-tracker";
-import { FingerprintManager } from "../../src/fingerprint";
+import { FingerprintManager, hashFingerprint } from "../../src/fingerprint";
+
+describe(hashFingerprint, () => {
+    let workspaceRoot: string;
+
+    beforeEach(async () => {
+        workspaceRoot = await createTemporaryDirectory();
+        await mkdir(join(workspaceRoot, "src"), { recursive: true });
+        await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 1;");
+    });
+
+    afterEach(async () => {
+        await rm(workspaceRoot, { force: true, recursive: true });
+    });
+
+    it("gives the same key for identical observations from the same tracker", async () => {
+        expect.assertions(1);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const first = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const second = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+
+        expect(hashFingerprint(first)).toBe(hashFingerprint(second));
+    });
+
+    it("gives a different key when the tracker kind differs for the same observations", async () => {
+        expect.assertions(1);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const strace = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const preload = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "preload");
+
+        expect(hashFingerprint(strace)).not.toBe(hashFingerprint(preload));
+    });
+
+    it("records the tracker kind on the fingerprint", async () => {
+        expect.assertions(2);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const tagged = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "interpose");
+        const untagged = await manager.createFingerprint(accesses, "build", {}, {});
+
+        expect(tagged.tracker).toBe("interpose");
+        expect(untagged).not.toHaveProperty("tracker");
+    });
+});
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random

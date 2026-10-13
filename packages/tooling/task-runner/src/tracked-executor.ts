@@ -7,7 +7,7 @@ import { join } from "@visulima/path";
 
 import type { CollectedHints } from "./cache-hints";
 import { collectHints, emptyHints, HINTS_ENV, HINTS_PROTOCOL_VERSION, PROTOCOL_ENV } from "./cache-hints";
-import type { FileAccess } from "./file-access-tracker";
+import type { FileAccess, TrackerKind } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "./file-access-tracker";
 import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
@@ -28,18 +28,23 @@ export interface TrackedExecutionResult {
      * the task didn't use the client.
      */
     hints: CollectedHints;
+
     /** The command stdout + stderr output */
     terminalOutput: string;
+    /** Mechanism that produced {@link TrackedExecutionResult.accesses}. Folded into the trace key. */
+    tracker: TrackerKind;
 }
 
 /**
  * A task executor that tracks file accesses during command execution.
  *
  * Tracking strategies (in priority order):
- * 1. **Linux**: strace-based syscall interception (most complete)
- * 2. **macOS/Windows**: Node.js preload script that patches `fs` module
- * (works for Node.js processes, not native binaries)
- * 3. **Fallback**: No tracking (accesses array will be empty)
+ * 1. **Linux**: seccomp_unotify, then strace (syscall interception, whole process tree)
+ * 2. **macOS / Windows**: DYLD interpose / IAT hook, for directly exec'd commands only
+ * 3. **Everywhere**: Node.js `--import` preload shim (Node processes only)
+ *
+ * A native tracker that cannot attach degrades to no tracking, which yields
+ * zero accesses. The orchestrator treats that as an empty observation.
  */
 export class TrackedTaskExecutor {
     readonly #tracker: FileAccessTracker;
@@ -114,6 +119,7 @@ export class TrackedTaskExecutor {
                     accesses: trackingResult.accesses,
                     code: trackingResult.code,
                     terminalOutput: trackingResult.output,
+                    tracker: this.#tracker.linuxTrackerKind(),
                 };
             } else if (directArgv && this.#tracker.isInterposeSupported()) {
                 const trackingResult = await this.#tracker.trackInterpose(directArgv, { cwd, env: trackingEnv });
@@ -122,6 +128,7 @@ export class TrackedTaskExecutor {
                     accesses: trackingResult.accesses,
                     code: trackingResult.code,
                     terminalOutput: trackingResult.output,
+                    tracker: "interpose",
                 };
             } else if (directArgv && this.#tracker.isIatHookSupported()) {
                 const trackingResult = await this.#tracker.trackIatHook(directArgv, { cwd, env: trackingEnv });
@@ -130,9 +137,10 @@ export class TrackedTaskExecutor {
                     accesses: trackingResult.accesses,
                     code: trackingResult.code,
                     terminalOutput: trackingResult.output,
+                    tracker: "iat",
                 };
             } else {
-                base = await this.#executeWithPreload(command, cwd, trackingEnv);
+                base = { ...(await this.#executeWithPreload(command, cwd, trackingEnv)), tracker: "preload" };
             }
 
             return { ...base, hints: await this.#readHints(hintsFile, cwd) };
@@ -159,7 +167,7 @@ export class TrackedTaskExecutor {
      * Executes a command with a Node.js preload script to track fs accesses.
      * Works on macOS, Windows, and Linux for Node.js-based commands.
      */
-    async #executeWithPreload(command: string, cwd: string, env?: Record<string, string>): Promise<Omit<TrackedExecutionResult, "hints">> {
+    async #executeWithPreload(command: string, cwd: string, env?: Record<string, string>): Promise<Omit<TrackedExecutionResult, "hints" | "tracker">> {
         const cacheDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
 
         await mkdir(cacheDirectory, { recursive: true });

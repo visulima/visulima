@@ -369,6 +369,18 @@ export interface FileAccess {
 }
 
 /**
+ * Which mechanism observed a run's file accesses. Part of the trace key, so
+ * the same workspace traced on two platforms (or two Linux backends) never
+ * produces the same key for different observations.
+ *
+ * - `seccomp` / `strace`: Linux syscall tracing (whole process tree).
+ * - `interpose`: macOS DYLD interpose on a directly exec'd binary.
+ * - `iat`: Windows IAT hook on a directly exec'd binary.
+ * - `preload`: Node `--import` shim (Node processes only).
+ */
+export type TrackerKind = "seccomp" | "strace" | "interpose" | "iat" | "preload";
+
+/**
  * Result of tracking file accesses during a command execution.
  */
 export interface TrackingResult {
@@ -499,6 +511,15 @@ export class FileAccessTracker {
     // eslint-disable-next-line class-methods-use-this
     public isSupported(): boolean {
         return platform() === "linux" && (isSeccompAvailable() || isStraceAvailable());
+    }
+
+    /**
+     * The Linux backend {@link track} dispatches to when {@link isSupported}
+     * is true. Same order as {@link track}: seccomp first, then strace.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public linuxTrackerKind(): "seccomp" | "strace" {
+        return isSeccompAvailable() ? "seccomp" : "strace";
     }
 
     /**

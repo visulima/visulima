@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
-import { createXxh3Hasher } from "@shared/xxh3";
 import { join, resolve } from "@visulima/path";
 
 import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
@@ -7,7 +5,7 @@ import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
 import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
 import type { CacheMissReason, TaskFingerprint } from "./fingerprint";
-import { FingerprintManager } from "./fingerprint";
+import { FingerprintManager, hashFingerprint } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
 import { findCycle } from "./task-graph-utils";
 import type { TaskHasher } from "./task-hasher";
@@ -89,33 +87,6 @@ interface TaskOrchestratorOptions {
 
 /** Upper bound on miss reasons written to the run summary (a changed generated file can list thousands). */
 const MAX_PERSISTED_MISS_REASONS = 50;
-
-const hashFingerprint = (fingerprint: TaskFingerprint): string => {
-    const hash = createXxh3Hasher();
-
-    hash.update(fingerprint.commandHash);
-
-    for (const key of Object.keys(fingerprint.fileHashes).toSorted()) {
-        hash.update(key);
-        hash.update(fingerprint.fileHashes[key] as string);
-    }
-
-    for (const path of fingerprint.missingFiles) {
-        hash.update(`missing:${path}`);
-    }
-
-    for (const key of Object.keys(fingerprint.directoryListings).toSorted()) {
-        hash.update(`dir:${key}`);
-        hash.update(JSON.stringify(fingerprint.directoryListings[key]));
-    }
-
-    for (const key of Object.keys(fingerprint.envHashes).toSorted()) {
-        hash.update(key);
-        hash.update(fingerprint.envHashes[key] as string);
-    }
-
-    return hash.digest();
-};
 
 /**
  * Returns `true` on the first warning pattern that matches `output`.
@@ -883,6 +854,7 @@ class TaskOrchestrator {
                     process.env,
                     mergeEnvPatterns([...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])], trackedResult.hints),
                     [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
+                    trackedResult.tracker,
                 );
             } else {
                 const executionResult = await this.#taskExecutor(task, {
