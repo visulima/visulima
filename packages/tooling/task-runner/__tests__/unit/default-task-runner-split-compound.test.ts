@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { defaultTaskRunner } from "../../src/default-task-runner";
 import { EmptyLifeCycle } from "../../src/life-cycle";
+import { generateRunSummary } from "../../src/run-summary";
 import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskRunnerContext, TaskRunnerOptions, TaskStatus } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
@@ -218,5 +219,21 @@ describe("defaultTaskRunner with splitCompound", () => {
 
         expect([...results.values()].map((result) => result.status)).toStrictEqual(["local-cache", "local-cache", "local-cache"]);
         expect(replayed.map((entry) => entry.id)).toStrictEqual(["app:build#1", "app:build#2", "app:build#3"]);
+    });
+
+    it("lists each segment with its position in the run summary", async () => {
+        expect.assertions(2);
+
+        const counter = createCountingExecutor();
+        const task = makeBuildTask("step-one && step-two");
+        const context = createContext(workspaceRoot, [task], counter.executor);
+        const results = await defaultTaskRunner([task], {}, context);
+        const summary = generateRunSummary(results, context.taskGraph, Date.now());
+
+        expect(summary.tasks.map((entry) => entry.taskId)).toStrictEqual(["app:build#1", "app:build#2"]);
+        expect(summary.tasks.map((entry) => entry.segment)).toStrictEqual([
+            { count: 2, index: 1 },
+            { count: 2, index: 2 },
+        ]);
     });
 });
