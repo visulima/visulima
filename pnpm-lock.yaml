@@ -6448,6 +6448,24 @@ importers:
 
   packages/filesystem/fs/__fixtures__/find-up: {}
 
+  packages/filesystem/fs/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/filesystem/fs/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/filesystem/fs/__fixtures__/package/types:
+    dependencies:
+      '@visulima/fs':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/filesystem/path:
     devDependencies:
       '@anolilab/eslint-config':
@@ -8398,6 +8416,24 @@ importers:
 
   packages/terminal/colorize/__fixtures__/cli: {}
 
+  packages/terminal/colorize/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/colorize/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/terminal/colorize/__fixtures__/package/types:
+    dependencies:
+      '@visulima/colorize':
+        specifier: workspace:*
+        version: link:../../..
+
   packages/terminal/colorize/examples/nextjs:
     dependencies:
       '@visulima/colorize':
@@ -9675,6 +9711,24 @@ importers:
       yarn:
         specifier: catalog:dev
         version: 1.22.22
+
+  packages/tooling/package/__fixtures__/package/cjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/package/__fixtures__/package/mjs:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
+
+  packages/tooling/package/__fixtures__/package/types:
+    dependencies:
+      '@visulima/package':
+        specifier: workspace:*
+        version: link:../../..
 
   packages/tooling/secret-scanner:
     dependencies:

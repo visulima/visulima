@@ -20,9 +20,6 @@ packages:
   - "!packages/tooling/vis/__fixtures__/init/**"
   - "!packages/tooling/vis/__tests__/release/fixtures/**"
   - "!packages/tooling/vis/__bench__/cli/fixtures/**"
-  - "!packages/filesystem/fs/__fixtures__/package/**"
-  - "!packages/terminal/colorize/__fixtures__/package/**"
-  - "!packages/tooling/package/__fixtures__/package/**"
   - "!packages/tooling/vis/examples/docker/packages/api"
   - "!packages/tooling/vis/examples/service-preflight/packages/api"
 
