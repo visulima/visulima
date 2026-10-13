@@ -50,6 +50,7 @@ export type { FileAccess, TrackingResult } from "./file-access-tracker";
 export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
 // Auto-fingerprinting (Vite Task-style caching)
 export type { CacheMissReason, TaskFingerprint } from "./fingerprint";
+export { describeCacheMissReason } from "./fingerprint";
 export { FingerprintManager } from "./fingerprint";
 // Flow controllers
 export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";

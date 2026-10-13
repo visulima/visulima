@@ -89,6 +89,41 @@ export interface CacheMissReason {
 }
 
 /**
+ * One-line, human-readable explanation of a cache miss reason.
+ */
+export const describeCacheMissReason = (reason: CacheMissReason): string => {
+    switch (reason.type) {
+        case "args-changed": {
+            return "Command arguments changed";
+        }
+
+        case "directory-changed": {
+            return `Directory contents changed: ${reason.detail}`;
+        }
+
+        case "env-changed": {
+            return `Environment variable changed: ${reason.detail}`;
+        }
+
+        case "file-changed": {
+            return `File modified: ${reason.detail}`;
+        }
+
+        case "file-created": {
+            return `File created (was missing): ${reason.detail}`;
+        }
+
+        case "file-deleted": {
+            return `File deleted: ${reason.detail}`;
+        }
+
+        default: {
+            return "No previous fingerprint found (first run)";
+        }
+    }
+};
+
+/**
  * Manages task fingerprints for auto-detection caching.
  *
  * Records which files a task accesses during execution, stores content
@@ -310,51 +345,7 @@ export class FingerprintManager {
 
     // eslint-disable-next-line class-methods-use-this
     public formatMissReasons(reasons: CacheMissReason[]): string {
-        const lines: string[] = ["Cache miss reasons:"];
-
-        for (const reason of reasons) {
-            switch (reason.type) {
-                case "args-changed": {
-                    lines.push(`  - Command arguments changed`);
-                    break;
-                }
-
-                case "directory-changed": {
-                    lines.push(`  - Directory contents changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "env-changed": {
-                    lines.push(`  - Environment variable changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "file-changed": {
-                    lines.push(`  - File modified: ${reason.detail}`);
-                    break;
-                }
-
-                case "file-created": {
-                    lines.push(`  - File created (was missing): ${reason.detail}`);
-                    break;
-                }
-
-                case "file-deleted": {
-                    lines.push(`  - File deleted: ${reason.detail}`);
-                    break;
-                }
-
-                case "no-fingerprint": {
-                    lines.push(`  - No previous fingerprint found (first run)`);
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-        }
-
-        return lines.join("\n");
+        return ["Cache miss reasons:", ...reasons.map((reason) => `  - ${describeCacheMissReason(reason)}`)].join("\n");
     }
 
     async #hashFileWithCache(filePath: string): Promise<string | undefined> {
