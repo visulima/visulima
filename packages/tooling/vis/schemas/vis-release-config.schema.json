@@ -247,6 +247,16 @@
             },
             "description": "Group-scoped preVersion command. Runs once before any package in the group is versioned. `groupName` matches a `fixed`/`linked` array's index (group-0, group-1, …) or a named entry (future)."
         },
+        "hex": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Hex packages as release packages. Off by default. The root `mix.exs` is a package, and so is each `&lt;apps_path>/*` app of an umbrella. The name is the `package: [name: \"…\"]` string, or the `app:` atom. The version is a `version: \"…\"` literal, or `version: \\@version` with a literal `\\@version \"…\"` attribute; a `mix.exs` with no `version:` key is an aggregate and is skipped. Publish runs `mix hex.publish --yes` (POSIX only), with the key in `HEX_API_KEY`."
+        },
         "httpProxy": {
             "type": "string",
             "description": "HTTPS proxy URL (e.g. `\"http://proxy.acme.com:8080\"`) for enterprise networks that route outbound HTTPS through a proxy.\n\nWired through to two surfaces:\n\n  1. `gh` / `glab` CLI subprocesses get `HTTPS_PROXY` and      `HTTP_PROXY` set on their env so they tunnel through the      proxy exactly as if the operator had exported the vars      manually.\n\n  2. Every internal `fetch()` call (registry probes in      version-actions/{cargo,python,maven,container}.ts and the      shared `safeFetchVersionMetadata` helper) attaches an undici      `ProxyAgent` via the `dispatcher` option, so Node's built-in      fetch routes through the proxy as well.\n\nNode 22's bundled undici handles the proxy plumbing — no `https-proxy-agent` dep needed."
@@ -304,9 +314,19 @@
             "$ref": "#/$defs/NotificationsConfig",
             "description": "Notifications — post-release fan-out to chat / webhook destinations. See  {@link  NotificationsConfig } . Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish."
         },
+        "nuget": {
+            "type": "object",
+            "properties": {
+                "discover": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false,
+            "description": "NuGet projects as release packages. Off by default. Every `*.csproj` / `*.fsproj` under the root (skipping `bin`, `obj`, `node_modules` and claimed JS directories) is a release package named by its lowercased package id. The version is a plain `&lt;Version>` literal in the project file, or in the nearest `Directory.Build.props`, which releases its inheriting projects in lockstep. Publish runs `dotnet pack` and `dotnet nuget push` (POSIX only)."
+        },
         "oneCommitPerPackage": {
             "type": "boolean",
-            "description": "Emit one release commit per package (a `release(channel): pkg@version [skip ci]` message) instead of a single aggregate commit for the whole wave (RFC §19.5). Mirrors the per-package commit history that multi-semantic-release produced — useful for projects migrating off it that want to preserve `git log` shape. Only honoured when `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed change-file deletions) ride along in the final package's commit.\n\nDefault: `false` (one aggregate commit per wave)."
+            "description": "Emit one release commit per package (a `release(channel): pkg\\@version [skip ci]` message) instead of a single aggregate commit for the whole wave (RFC §19.5). Mirrors the per-package commit history that multi-semantic-release produced — useful for projects migrating off it that want to preserve `git log` shape. Only honoured when `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed change-file deletions) ride along in the final package's commit.\n\nDefault: `false` (one aggregate commit per wave)."
         },
         "packages": {
             "type": "object",
