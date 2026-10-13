@@ -1,3 +1,14 @@
+## @visulima/storage [2.0.39](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.38...@visulima/storage@2.0.39) (2026-10-13)
+
+### Bug Fixes
+
+* **storage:** drop unneeded auth cast in google drive client ([#958](https://github.com/visulima/visulima/issues/958)) ([28c79e2](https://github.com/visulima/visulima/commit/28c79e2a3f78651fa71408ecced32d8e53efe615))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 6.1.0
+
 ## @visulima/storage [2.0.38](https://github.com/visulima/visulima/compare/@visulima/storage@2.0.37...@visulima/storage@2.0.38) (2026-10-12)
 
 ### Bug Fixes
