@@ -25,6 +25,11 @@ const squashTextNodes = (node: DOMElement): string => {
         if (childNode.nodeName === "#text") {
             nodeText = childNode.nodeValue;
         } else {
+            // A node hidden by a pending Suspense boundary keeps its text out of the parent's output.
+            if (childNode.internal_hidden) {
+                continue;
+            }
+
             if (childNode.nodeName === "ink-text" || childNode.nodeName === "ink-virtual-text") {
                 nodeText = squashTextNodes(childNode);
             }

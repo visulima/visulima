@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
+import { renderAsync } from "../helpers/ink-test-renderer";
 
 describe("text characters", () => {
     it("zero-width spaces do not overwrite box borders", () => {
@@ -110,6 +112,52 @@ describe("truncated text width", () => {
         );
 
         expect(output).toBe("你好|");
+    });
+});
+
+describe("visibility and remeasurement", () => {
+    it("resuming Suspense preserves display none", async () => {
+        expect.hasAssertions();
+
+        let resolvePromise: () => void = () => {};
+        const promise = new Promise<void>((resolve) => {
+            resolvePromise = resolve;
+        });
+
+        const Suspendable = ({ pending }: { readonly pending: boolean }) => {
+            if (pending) {
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
+                throw promise;
+            }
+
+            return <Text>Visible</Text>;
+        };
+
+        const Test = ({ pending }: { readonly pending: boolean }) => (
+            <Suspense fallback={<Text>Loading</Text>}>
+                <Box display="none">
+                    <Text>Hidden</Text>
+                </Box>
+                <Suspendable pending={pending} />
+            </Suspense>
+        );
+
+        const { rerenderAsync, stdout, unmount } = await renderAsync(<Test pending={false} />);
+
+        try {
+            expect(stdout.get()).toBe("Visible");
+
+            await rerenderAsync(<Test pending />);
+
+            expect(stdout.get()).toBe("Loading");
+
+            await rerenderAsync(<Test pending={false} />);
+
+            expect(stdout.get()).toBe("Visible");
+        } finally {
+            resolvePromise();
+            unmount();
+        }
     });
 });
 

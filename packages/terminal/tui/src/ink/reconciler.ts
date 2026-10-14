@@ -568,7 +568,8 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     trackSchedulerEvent() {},
     unhideInstance(node) {
         node.internal_hidden = false;
-        node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
+        // Resuming a Suspense boundary must not show a node that its own style hides.
+        node.yogaNode?.setDisplay(node.style.display === "none" ? Yoga.DISPLAY_NONE : Yoga.DISPLAY_FLEX);
         markNodeAsDirty(node);
     },
     unhideTextInstance(node, text) {
