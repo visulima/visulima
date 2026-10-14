@@ -223,8 +223,11 @@ export const feed = (screen: Screen, data: string): void => {
                 break;
             }
             case "H": {
-                screen.cursorX = 0;
-                screen.cursorY = 0;
+                // CUP `row;col` (1-based); a bare `CSI H` homes the cursor.
+                const [row = 1, column = 1] = params.split(";").map((value) => Number.parseInt(value, 10) || 1);
+
+                screen.cursorY = Math.min(screen.height - 1, row - 1);
+                screen.cursorX = Math.min(screen.cols - 1, column - 1);
                 break;
             }
             case "J": {
