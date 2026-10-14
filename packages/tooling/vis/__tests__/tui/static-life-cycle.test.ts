@@ -184,6 +184,25 @@ describe("tui/StaticOutputLifeCycle", () => {
         expect(allOutput).toContain("Error: something broke");
     });
 
+    it("prints the terminal output after a pre-run cache notice", () => {
+        expect.assertions(3);
+
+        const task = createTask("app-a", "build");
+        const lc = createLifeCycle([task]);
+
+        // The orchestrator's call order: notice while running, then endTasks, then the output.
+        lc.startTasks([task]);
+        lc.printEmptyFingerprintWarning(task, "no tracker");
+        lc.endTasks([createResult(task, "success")]);
+        lc.printTaskTerminalOutput(task, "success", "output for app-a:build");
+
+        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+        expect(allOutput).toContain("ⓘ app-a:build: caching skipped — no tracker");
+        expect(allOutput).toContain("output for app-a:build");
+        expect(allOutput.indexOf("output for app-a:build")).toBeGreaterThan(allOutput.indexOf("ⓘ app-a:build: caching skipped"));
+    });
+
     it("prints one declared-fallback notice per fallback run", () => {
         expect.assertions(2);
 
