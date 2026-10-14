@@ -139,6 +139,7 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 export type {
     AffectedScope,
     CacheRestoreOptions,
+    ChildSpawnEnv,
     ConcurrencyGroups,
     ConcurrentCloseEvent,
     ConcurrentCommandConfig,
