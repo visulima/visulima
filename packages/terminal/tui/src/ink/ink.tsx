@@ -372,6 +372,9 @@ export default class Ink {
     // so that it's rerendered every time, not just new static parts, like in non-debug mode
     private fullStaticOutput: string;
 
+    // Whether <Static> output has been written since the last identity change, on any render path.
+    private staticOutputWritten = false;
+
     // The single scrollable node with `overflowToBackbuffer` enabled, detected
     // during the layout/scroll walk. Only one such region is supported.
     private backbufferNode: dom.DOMElement | undefined;
@@ -856,6 +859,7 @@ export default class Ink {
     // Resets `fullStaticOutput` when the <Static> identity changes so stale items from a previous instance are not replayed on future rewrites.
     handleStaticChange = (): void => {
         this.fullStaticOutput = "";
+        this.staticOutputWritten = false;
     };
 
     /**
@@ -970,6 +974,11 @@ export default class Ink {
         // terminal's native scrollback. Never accumulated into fullStaticOutput
         // (they live in the terminal's own history; replay would duplicate).
         const backbufferOutput = this.computeBackbufferOutput();
+
+        // Remembered on every path, so the exit path knows <Static> output was already written.
+        if (staticOutput !== "") {
+            this.staticOutputWritten = true;
+        }
 
         // Native renderer path: write buffer directly via Rust diff engine
         if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
@@ -1218,7 +1227,7 @@ export default class Ink {
             // primary screen buffer.
             && !this.alternateScreen
         ) {
-            const shouldRenderFinalFrame = (!this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "")) && !this.isFrameCleared;
+            const shouldRenderFinalFrame = (!this.throttledOnRender || (!this.hasPendingThrottledRender && !this.staticOutputWritten)) && !this.isFrameCleared;
 
             if (shouldRenderFinalFrame) {
                 this.calculateLayout();
