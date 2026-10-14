@@ -1,3 +1,7 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 // @ts-expect-error -- build-time script, no type declarations
@@ -143,5 +147,72 @@ describe("free-email sync manager parsing pipeline", () => {
         expect(manager.convertToRawGitHubUrl("https://github.com/owner/repo", "/refs/heads/main/list.txt")).toBe(
             "https://raw.githubusercontent.com/owner/repo/main/list.txt",
         );
+    });
+});
+
+// The opt-in `./edge` entry registers the bundled list on import, so runtimes without a
+// filesystem need no `setDomains()` call. It re-exports the main entry's API unchanged.
+describe("free-email sync manager edge entry", () => {
+    it("emits an edge entry that registers the bundled list and re-exports the main entry", async () => {
+        expect.assertions(4);
+
+        const outputPath = await mkdtemp(join(tmpdir(), "free-domains-edge-"));
+
+        try {
+            const manager = new FreeEmailSyncManager({ outputPath });
+
+            await manager.generateDomainsList();
+
+            const edge = await readFile(join(outputPath, "edge.js"), "utf8");
+            const declaration = await readFile(join(outputPath, "edge.d.ts"), "utf8");
+
+            expect(edge).toContain("import domains from \"./domains.json\" with { type: \"json\" };");
+            expect(edge).toContain("setDomains(domains);");
+            expect(edge).toContain("export * from \"./index.js\";");
+            expect(declaration).toContain("export * from \"./index.js\";");
+        } finally {
+            await rm(outputPath, { force: true, recursive: true });
+        }
+    });
+});
+
+describe("free-email sync manager generated ./domains entry", () => {
+    const generate = async (): Promise<{ declaration: string; wrapper: string }> => {
+        const outputPath = await mkdtemp(join(tmpdir(), "free-domains-wrapper-"));
+
+        try {
+            await new FreeEmailSyncManager({ outputPath }).generateDomainsList();
+
+            return {
+                declaration: await readFile(join(outputPath, "domains.d.ts"), "utf8"),
+                wrapper: await readFile(join(outputPath, "domains.js"), "utf8"),
+            };
+        } finally {
+            await rm(outputPath, { force: true, recursive: true });
+        }
+    };
+
+    it("emits an ESM default export, not a CJS `export =`", async () => {
+        expect.assertions(2);
+
+        const { declaration } = await generate();
+
+        expect(declaration).toContain("export default domains;");
+        expect(declaration).not.toContain("export =");
+    });
+
+    // The `./domains` subpath resolves to this wrapper, not to `domains.json`: Node requires
+    // `with { type: "json" }` on a JSON module, so exporting the JSON directly made a plain
+    // `import domains from "@visulima/free-email-domains/domains"` throw
+    // ERR_IMPORT_ATTRIBUTE_MISSING.
+    it("emits a wrapper carrying the json import attribute", async () => {
+        expect.assertions(3);
+
+        const { wrapper } = await generate();
+
+        expect(wrapper).toContain("with { type: \"json\" }");
+        expect(wrapper).toContain("export default domains;");
+        // Re-exported, never inlined: the list ships once.
+        expect(wrapper).not.toContain("[");
     });
 });

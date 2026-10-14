@@ -174,6 +174,22 @@ describe("disposableEmailSyncManager generated ./domains declaration", () => {
         // Re-exported, never inlined: the list is ~2.4 MB and ships once.
         expect(wrapper).not.toContain("[");
     });
+
+    // The opt-in `./edge` entry registers the bundled list on import, so runtimes without a
+    // filesystem need no `setDomains()` call. It re-exports the main entry's API unchanged.
+    it("emits an edge entry that registers the bundled list and re-exports the main entry", async () => {
+        expect.assertions(4);
+
+        await manager.generateDomainsList([]);
+
+        const edge = await readFile(join(outputPath, "edge.js"), "utf8");
+        const declaration = await readFile(join(outputPath, "edge.d.ts"), "utf8");
+
+        expect(edge).toContain("import domains from \"./domains.json\" with { type: \"json\" };");
+        expect(edge).toContain("setDomains(domains);");
+        expect(edge).toContain("export * from \"./index.js\";");
+        expect(declaration).toContain("export * from \"./index.js\";");
+    });
 });
 
 describe("repositories.json config", () => {

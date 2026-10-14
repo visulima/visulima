@@ -488,6 +488,20 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
         // Emit a type declaration so the `./domains` subpath export carries types.
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
+
+        // The opt-in `./edge` entry: the main entry's API with the bundled list already
+        // registered, for runtimes without a filesystem (Cloudflare Workers, edge middleware)
+        // where the lazy disk loader cannot work. It is a separate entry because a bundler
+        // cannot tree-shake the list, so only callers who ask for it pay for its size.
+        //
+        // Registering is a side effect of importing this file, so `package.json` lists it in
+        // `sideEffects`; without that a bundler would skip it and import `index.js` directly.
+        await fs.writeFile(
+            join(this.syncOptions.outputPath, "edge.js"),
+            "import { setDomains } from \"./index.js\";\nimport domains from \"./domains.json\" with { type: \"json\" };\n\nsetDomains(domains);\n\nexport * from \"./index.js\";\n",
+            "utf8",
+        );
+        await fs.writeFile(join(this.syncOptions.outputPath, "edge.d.ts"), "export * from \"./index.js\";\n", "utf8");
     }
 
     /**
