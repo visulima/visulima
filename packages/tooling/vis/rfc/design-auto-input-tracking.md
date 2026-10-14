@@ -138,6 +138,20 @@ Resolved: traced and persistent tasks now receive the vis environment (`VIS_TASK
 same function as the executor (`resolveTaskSpawn`). The TUI retry of an interactive task
 still injects nothing; it only decides inheritance.
 
+Resolved for traced targets: the key now hashes the values the child receives, not the
+parent's. The names it covers (`fingerprintEnv`, the tracker's `getEnv` hints) are read from
+the resolved child env, presence-distinct (unset and empty differ), and a name the clean
+policy hides hashes as unset. A change to an `envFile` value that a key names busts the
+key. The key also covers the spawned command (forwarded args, `affectedFiles: "args"`
+paths, custom shell), built by the same resolver the executor uses. The `strictEnv` check
+runs before a traced child spawns, against the same child env, and a failure is not cached.
+Non-traced behaviour is unchanged.
+
+Gap found while resolving the above, not changed here: the declared hasher still reads
+`process.env` for `envVars` and `fingerprintEnv`, so an `envFile` value that a declared
+target names is not keyed. Persistent targets and the TUI retry spawn the raw
+`overrides.command`, so forwarded arguments do not reach them.
+
 Known gap: under clean, a traced run on macOS uses the Node preload instead of DYLD
 interpose. The native addon starts each child from the parent environment and adds to it,
 so it cannot honour a complete environment. Fixing that needs an explicit environment

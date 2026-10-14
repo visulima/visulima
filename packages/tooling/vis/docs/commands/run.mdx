@@ -348,7 +348,7 @@ The table lists what a task receives. Persistent, traced and retried targets rec
 
 Under `clean`, a variable that is not allow-listed is dropped, including the ones you usually expect to inherit such as `NODE_OPTIONS` and `npm_config_*`. Add them to `allow` if the task needs them.
 
-A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string. The strict check runs in the executor only, so a traced target does not run it: a `$VAR` it cannot see expands to an empty string there.
+A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string. The check runs for traced targets too, against the environment the traced child gets, before it spawns.
 
 ### Task conditions
 

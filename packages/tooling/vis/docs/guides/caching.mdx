@@ -121,6 +121,13 @@ A traced key is a digest of the observed file hashes, the env values, and the tr
 that produced them (`seccomp`, `strace`, `interpose`, `iat` or `preload`). The same
 workspace traced on two platforms therefore never shares a key.
 
+The key also covers the command the run spawns: forwarded arguments
+(`vis run build -- --flag`), the file paths of `affectedFiles: "args"`, and a custom
+`shell`. The env values are the ones the child receives, so an `envFile` value, a
+service value or a `VIS_ARG_*` value that a key names busts the key when it changes.
+Only the names the key covers are hashed, and a name the clean policy hides hashes as
+unset.
+
 A stored trace is also checked against the tracker the current run will use. The
 tracker is predicted before the command runs, from the same host and command checks,
 so a stored trace from a different tracker misses at once with
@@ -190,15 +197,15 @@ separate targets, and declare the file as an output of the producer's target.
 
 An env var enters a key only when a source names it:
 
-| Source                              | Mode     | Effect                                                                                                                   |
-| ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `inputs: ["env://NAME"]`            | declared | Hashes `NAME`.                                                                                                           |
-| `envVars`, `globalEnv`              | declared | Hashes the listed names for every task. Never filtered by `untrackedEnv`.                                                |
-| `autoEnvVars: true`                 | declared | Hashes each `$VAR` / `${VAR}` referenced in the command text.                                                            |
-| `fingerprintEnv` (target)           | both     | Hashes the names or patterns for this target.                                                                            |
-| `taskRunner.fingerprintEnvPatterns` | trace    | Hashes matching vars for every traced task.                                                                              |
-| `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.               |
-| `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys. |
+| Source                              | Mode     | Effect                                                                                                                           |
+| ----------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `inputs: ["env://NAME"]`            | declared | Hashes `NAME`.                                                                                                                   |
+| `envVars`, `globalEnv`              | declared | Hashes the listed names for every task. Never filtered by `untrackedEnv`.                                                        |
+| `autoEnvVars: true`                 | declared | Hashes each `$VAR` / `${VAR}` referenced in the command text.                                                                    |
+| `fingerprintEnv` (target)           | both     | Hashes the names or patterns for this target. A traced target hashes the value its child receives; a declared one, the parent's. |
+| `taskRunner.fingerprintEnvPatterns` | trace    | Hashes matching vars for every traced task.                                                                                      |
+| `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.                       |
+| `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys.         |
 
 A name the command reads that no source above covers can serve a stale result.
 `vis doctor` lists those names per target, with the source to add. See
