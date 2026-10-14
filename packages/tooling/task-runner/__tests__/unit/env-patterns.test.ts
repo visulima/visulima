@@ -131,6 +131,40 @@ describe("inProcessTaskHasher per-task env options", () => {
             ...options,
         });
 
+    describe("childEnv: keys follow the values the child will see", () => {
+        const keyOf = async (options: Partial<ConstructorParameters<typeof InProcessTaskHasher>[0]>, overrides: Partial<Task> = {}): Promise<string | undefined> => {
+            const details = await hasher(options).hashTask(task({ fingerprintEnv: ["ENV_OPT_*"], ...overrides }));
+
+            // `runtime` maps each keyed name to the hash of the value it was keyed from.
+            return JSON.stringify(details.runtime);
+        };
+
+        it("hashes a name from the child's environment, not the parent's", async () => {
+            expect.assertions(2);
+
+            const withChild = (value: string) => keyOf({ childEnv: () => { return { ENV_OPT_A: value }; } });
+
+            await expect(withChild("one")).resolves.not.toBe(await withChild("two"));
+            // The parent's own ENV_OPT_A=1 no longer matters once the child's value is known.
+            await expect(withChild("one")).resolves.toBe(await withChild("one"));
+        });
+
+        it("keys a name the parent lacks but the child has (an env-file value)", async () => {
+            expect.assertions(1);
+
+            const without = await keyOf({ childEnv: () => { return {}; } });
+            const withValue = await keyOf({ childEnv: () => { return { ENV_OPT_FROM_FILE: "x" }; } });
+
+            expect(withValue).not.toBe(without);
+        });
+
+        it("keeps today's behaviour when no child environment is supplied", async () => {
+            expect.assertions(1);
+
+            await expect(keyOf({})).resolves.toBe(await keyOf({ childEnv: () => { return { ...process.env }; } }));
+        });
+    });
+
     it("adds per-task fingerprintEnv names and wildcard patterns to the runtime key", async () => {
         expect.assertions(2);
 

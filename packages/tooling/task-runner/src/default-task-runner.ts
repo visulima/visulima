@@ -12,6 +12,7 @@ import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
 import type { ProjectConfiguration, Task, TaskGraph, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "./types";
+import { resolveTaskCwd } from "./utils";
 
 /**
  * Splits a {@link TaskGraph} into the regular dependency-graph tasks
@@ -295,8 +296,19 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         await incrementalHasher.load();
     }
 
+    // The values each task's child will see, for keying env names. Same merge as the orchestrator's
+    // `#childEnvValues`: the parent's environment under inherit, only the overlay under clean.
+    const childEnv = resolveChildEnv
+        ? (task: Task): NodeJS.ProcessEnv => {
+            const spawn = resolveChildEnv(task, { cwd: resolveTaskCwd(workspaceRoot, task) });
+
+            return spawn.inheritEnv ? { ...process.env, ...spawn.env } : spawn.env;
+        }
+        : undefined;
+
     const taskHasher = new InProcessTaskHasher({
         autoEnvVars: options.autoEnvVars,
+        childEnv,
         childEnvVisible,
         envVars: options.envVars,
         frameworkInference: options.frameworkInference,

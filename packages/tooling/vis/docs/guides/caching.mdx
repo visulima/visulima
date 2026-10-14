@@ -197,15 +197,15 @@ separate targets, and declare the file as an output of the producer's target.
 
 An env var enters a key only when a source names it:
 
-| Source                              | Mode     | Effect                                                                                                                           |
-| ----------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `inputs: ["env://NAME"]`            | declared | Hashes `NAME`.                                                                                                                   |
-| `envVars`, `globalEnv`              | declared | Hashes the listed names for every task. Never filtered by `untrackedEnv`.                                                        |
-| `autoEnvVars: true`                 | declared | Hashes each `$VAR` / `${VAR}` referenced in the command text.                                                                    |
-| `fingerprintEnv` (target)           | both     | Hashes the names or patterns for this target. A traced target hashes the value its child receives; a declared one, the parent's. |
-| `taskRunner.fingerprintEnvPatterns` | trace    | Hashes matching vars for every traced task.                                                                                      |
-| `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.                       |
-| `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys.         |
+| Source                              | Mode     | Effect                                                                                                                                                                        |
+| ----------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inputs: ["env://NAME"]`            | declared | Hashes `NAME`.                                                                                                                                                                |
+| `envVars`, `globalEnv`              | declared | Hashes the listed names for every task. `envVars` reads the task's child env; `globalEnv` is shared by all tasks, so it reads the parent's. Never filtered by `untrackedEnv`. |
+| `autoEnvVars: true`                 | declared | Hashes each `$VAR` / `${VAR}` referenced in the command text.                                                                                                                 |
+| `fingerprintEnv` (target)           | both     | Hashes the names or patterns for this target, from the value its child receives (so a value only an `envFile` defines counts).                                                |
+| `taskRunner.fingerprintEnvPatterns` | trace    | Hashes matching vars for every traced task.                                                                                                                                   |
+| `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.                                                                    |
+| `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys.                                                      |
 
 A name the command reads that no source above covers can serve a stale result.
 `vis doctor` lists those names per target, with the source to add. See

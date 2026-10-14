@@ -57,6 +57,15 @@ interface TaskHasherOptions {
     autoEnvVars?: boolean;
 
     /**
+     * The environment `task`'s child process will actually receive: the parent's
+     * (unless the policy is clean) overlaid with env-file, service, argument and
+     * per-target values. Env names are keyed from this, so a value that only an
+     * env file defines still reaches the cache key. Omit to key every name as the
+     * parent process sees it.
+     */
+    childEnv?: (task: Task) => NodeJS.ProcessEnv;
+
+    /**
      * Whether the child process of `task` (or of the workspace, when `task` is
      * omitted) can see an env name under the child-environment policy. A name
      * the child cannot see hashes as unset, so changing it does not bust the
@@ -189,9 +198,9 @@ const executeRuntimeCommand = (runtime: string): Promise<string> => {
  * flipping `CI` between unset and `""` reused the same cache entry.
  * Prefix `1:` when the key is in `process.env`, `0:` otherwise.
  */
-const envSignature = (name: string): string => {
-    if (Object.hasOwn(process.env, name)) {
-        return `1:${process.env[name] ?? ""}`;
+const envSignature = (name: string, env: NodeJS.ProcessEnv = process.env): string => {
+    if (Object.hasOwn(env, name)) {
+        return `1:${env[name] ?? ""}`;
     }
 
     return "0:";
@@ -351,10 +360,13 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #childEnvVisible: ((name: string, task?: Task) => boolean) | undefined;
 
+    readonly #childEnv: ((task: Task) => NodeJS.ProcessEnv) | undefined;
+
     #globalHash: string | undefined = undefined;
 
     public constructor(options: TaskHasherOptions) {
         this.#childEnvVisible = options.childEnvVisible;
+        this.#childEnv = options.childEnv;
         this.#workspaceRoot = options.workspaceRoot;
         this.#projects = options.projects;
         this.#namedInputs = options.namedInputs ?? {};
@@ -383,7 +395,12 @@ class InProcessTaskHasher implements TaskHasher {
             return "0:";
         }
 
-        return envSignature(name);
+        return envSignature(name, this.#envOf(task));
+    }
+
+    /** The values a name is keyed from: the child's own environment when known, else the parent's. */
+    #envOf(task?: Task): NodeJS.ProcessEnv {
+        return task && this.#childEnv ? this.#childEnv(task) : process.env;
     }
 
     public async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -454,7 +471,7 @@ class InProcessTaskHasher implements TaskHasher {
 
         // Per-target `fingerprintEnv` names/patterns are explicit, so they
         // are hashed like `envVars`, minus anything the task marks untracked.
-        for (const name of Object.keys(resolveEnvPatterns(task.fingerprintEnv ?? [], process.env))) {
+        for (const name of Object.keys(resolveEnvPatterns(task.fingerprintEnv ?? [], this.#envOf(task)))) {
             if (!isUntracked(name)) {
                 runtime[`env:${name}`] = hashStrings(name, this.#envSignature(name, task));
             }

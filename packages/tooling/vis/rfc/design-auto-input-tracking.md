@@ -145,7 +145,10 @@ policy hides hashes as unset. A change to an `envFile` value that a key names bu
 key. The key also covers the spawned command (forwarded args, `affectedFiles: "args"`
 paths, custom shell), built by the same resolver the executor uses. The `strictEnv` check
 runs before a traced child spawns, against the same child env, and a failure is not cached.
-Non-traced behaviour is unchanged.
+Declared targets follow the same rule: `envVars`, `fingerprintEnv` (including wildcard
+patterns), `env://` inputs, `autoEnvVars` and framework-inferred names are read from the
+child env the task receives, so a value that only an `envFile` defines now busts the key.
+`globalEnv` is workspace-wide and still reads the parent environment.
 
 Gap found while resolving the above, not changed here: the declared hasher still reads
 `process.env` for `envVars` and `fingerprintEnv`, so an `envFile` value that a declared
