@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands, no-bitwise, no-console, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
 import cliBoxes from "cli-boxes";
 
+import { toCellOffset } from "../core/cell-offset";
 import type { LayoutNode } from "./layout";
 import { resolveColor } from "./styles";
 import { getCodePointWidth } from "./text-width";
@@ -528,6 +529,10 @@ function paintNode(
             scrollOffsetX = -nodeStyle.scrollLeft;
         }
     }
+
+    // contentOffsetX/Y shift the children regardless of overflow; offsets are whole terminal cells.
+    scrollOffsetX -= toCellOffset(nodeStyle?.contentOffsetX);
+    scrollOffsetY -= toCellOffset(nodeStyle?.contentOffsetY);
 
     // Recurse into children with scroll offset applied
     for (const child of node.children) {

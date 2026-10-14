@@ -27,10 +27,22 @@ const useWindowSize = (): WindowSize => {
 
     useEffect(() => {
         const onResize = () => {
-            setSize(getWindowSize(stdout));
+            const next = getWindowSize(stdout);
+
+            // Keep the previous object when nothing changed so an unchanged size does not re-render.
+            setSize((previous) => {
+                if (previous.columns === next.columns && previous.rows === next.rows) {
+                    return previous;
+                }
+
+                return next;
+            });
         };
 
         stdout.on("resize", onResize);
+
+        // A resize between the first render and this subscription would otherwise go unnoticed.
+        onResize();
 
         return () => {
             stdout.off("resize", onResize);

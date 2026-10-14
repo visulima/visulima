@@ -25,14 +25,16 @@ export type Props = {
  */
 export default function Transform({ accessibilityLabel, children, transform }: Props): ReactElement | null {
     const { isScreenReaderEnabled } = useContext(accessibilityContext);
+    // An empty label is a valid override: it hides decorative content from screen readers.
+    const childrenOrAccessibilityLabel = isScreenReaderEnabled ? accessibilityLabel ?? children : children;
 
-    if (children === undefined || children === null) {
+    if (childrenOrAccessibilityLabel === undefined || childrenOrAccessibilityLabel === null) {
         return null;
     }
 
     return (
-        <ink-text internal_transform={transform} style={TRANSFORM_STYLE}>
-            {isScreenReaderEnabled && accessibilityLabel ? accessibilityLabel : children}
+        <ink-text internal_transform={isScreenReaderEnabled ? undefined : transform} style={TRANSFORM_STYLE}>
+            {childrenOrAccessibilityLabel}
         </ink-text>
     );
 }

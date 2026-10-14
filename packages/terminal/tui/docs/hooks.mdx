@@ -457,12 +457,12 @@ Read computed layout metrics from a `Box` ref.
 
 ```tsx
 const ref = useRef(null);
-const { width, height, left, top, hasMeasured } = useBoxMetrics(ref);
+const { width, height, clientWidth, clientHeight, left, top, hasMeasured } = useBoxMetrics(ref);
 
 return <Box ref={ref}>...</Box>;
 ```
 
-Returns zeroed metrics until first layout pass.
+Returns zeroed metrics until first layout pass. `clientWidth` / `clientHeight` are the size excluding borders, i.e. the space the content can occupy.
 
 > This hook relies on the full app event emitter and is intended for `render()` mode.
 
@@ -471,7 +471,7 @@ Returns zeroed metrics until first layout pass.
 Imperative element measurement. Returns position and dimensions.
 
 ```tsx
-const { x, y, width, height } = measureElement(ref.current);
+const { x, y, width, height, clientWidth, clientHeight } = measureElement(ref.current);
 ```
 
 Additional measurement utilities are available for advanced use cases:

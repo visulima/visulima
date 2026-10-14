@@ -51,6 +51,8 @@ Layout primitive backed by Yoga.
 
 ### Overflow and CSS-Level Scrolling
 
+`Box` also accepts `contentOffsetX` / `contentOffsetY`, which shift its children left / up by that many cells. Combine them with `overflow="hidden"` to build a scrollable view yourself; layout coordinates (`measureElement()`, `useBoxMetrics()`) do not include the offset. Measure the content wrapper (with `flexShrink={0}`) and the viewport's `clientHeight` to clamp the offset.
+
 `Box` supports CSS-level scrolling via `overflow: 'scroll'`. This is separate from the component-based `ScrollView` and provides native-style overflow clipping with integrated scrollbar rendering.
 
 ```tsx

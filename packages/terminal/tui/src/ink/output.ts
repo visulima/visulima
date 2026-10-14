@@ -36,6 +36,92 @@ type OutputCachesOptions = {
     pruneToFactor?: number;
 };
 
+// eslint-disable-next-line no-control-regex
+const sgrSequenceRe = /\u001B\[([\d:;]*)m/g;
+
+// SGR codes that switch a single attribute off, keyed to the attribute entries they clear.
+const sgrAttributeOff: Record<number, string[]> = { 22: ["1", "2"], 23: ["3"], 24: ["4"], 25: ["5", "6"], 27: ["7"], 28: ["8"], 29: ["9"], 55: ["53"] };
+
+// Extended-colour introducers (38/48/58) and their "default" counterparts (39/49/59) share a target.
+const sgrColorTarget: Record<number, string> = { 38: "fg", 39: "fg", 48: "bg", 49: "bg", 58: "ul", 59: "ul" };
+
+/**
+ * Fold one SGR parameter string into the attributes that are currently open. Each attribute holds at
+ * most one entry, so the state stays small however many sequences a text contains.
+ */
+const applySgrToOpenAttributes = (open: Map<string, string>, parameterString: string): void => {
+    // A colon sub-parameter on underline (`4:3` curly, `4:0` none) belongs to code 4 and must not be split
+    // into a second code. Colour codes use colons as separators (`38:2::r:g:b`), which read like semicolons.
+    const normalized = parameterString.replaceAll(/(^|;)4:(\d)(?=;|$)/g, (_match, lead: string, style: string) => `${lead}${style === "0" ? "24" : "4"}`);
+    const params = normalized.replaceAll(":", ";").split(";").filter((parameter) => parameter.length > 0).map(Number);
+
+    if (params.length === 0) {
+        open.clear();
+
+        return;
+    }
+
+    for (let index = 0; index < params.length; index++) {
+        const code = params[index]!;
+        let key: string | undefined;
+        let value = String(code);
+
+        if (code === 0) {
+            open.clear();
+        } else if (code in sgrAttributeOff) {
+            for (const attribute of sgrAttributeOff[code]!) {
+                open.delete(attribute);
+            }
+        } else if (code in sgrColorTarget && code >= 39 && code % 10 === 9) {
+            open.delete(sgrColorTarget[code]!);
+        } else if (code === 38 || code === 48 || code === 58) {
+            key = sgrColorTarget[code];
+
+            const length = params[index + 1] === 2 ? 5 : 3;
+
+            value = params.slice(index, index + length).join(";");
+            index += length - 1;
+        } else if ((code >= 30 && code <= 37) || (code >= 90 && code <= 97)) {
+            key = "fg";
+        } else if ((code >= 40 && code <= 47) || (code >= 100 && code <= 107)) {
+            key = "bg";
+        } else if (code >= 1 && code <= 9) {
+            key = String(code);
+        } else if (code === 53) {
+            key = "53";
+        }
+
+        if (key !== undefined) {
+            open.set(key, value);
+        }
+    }
+};
+
+/**
+ * Split text on newlines while keeping SGR styling that is still open at a line break active on the
+ * next line. Lines are styled independently, so without this a colour opened before an explicit
+ * newline would only apply to the first line. Lines that close what they open get no prefix.
+ */
+const splitLinesKeepingSgr = (text: string): string[] => {
+    const lines = text.split("\n");
+
+    if (lines.length === 1) {
+        return lines;
+    }
+
+    const open = new Map<string, string>();
+
+    return lines.map((line) => {
+        const styled = open.size === 0 ? line : `\u001B[${[...open.values()].join(";")}m${line}`;
+
+        for (const match of line.matchAll(sgrSequenceRe)) {
+            applySgrToOpenAttributes(open, match[1] ?? "");
+        }
+
+        return styled;
+    });
+};
+
 export class OutputCaches {
     widths: Map<string, number> = new Map<string, number>();
 
@@ -100,7 +186,7 @@ export class OutputCaches {
         let cached = this.lines.get(text);
 
         if (cached === undefined) {
-            cached = text.split("\n");
+            cached = this.hasAnsiControlMarker(text) ? splitLinesKeepingSgr(text) : text.split("\n");
             this.setCacheEntry(this.lines, text, cached);
         }
 
@@ -144,6 +230,24 @@ const ansiControlMarkerCodePoints = new Set<number>([27, 144, 152, 155, 157, 158
 
 const memoizationDisableRatio = 0.6;
 const memoizationProbeInterval = 30;
+
+/**
+ * Called before a character is written over `width` cells from `start`. Overwriting half of a wide character
+ * leaves the other half without a partner, so that half becomes a blank in the character's own style. Otherwise
+ * the cells after it would shift left when the row is serialized.
+ */
+const repairWideOverlap = (row: StyledLine, start: number, width: number): void => {
+    // A second half is an empty cell right after a wide head; an unwritten cell is empty too, so check the head.
+    if (start > 0 && start < row.length && row.getFullWidth(start - 1) && row.getValue(start) === "") {
+        row.setCharFast(start - 1, " ", row.getFormatFlags(start), row.getFgColor(start), row.getBgColor(start), row.getLink(start));
+    }
+
+    const end = start + width;
+
+    if (end > 0 && end < row.length && row.getFullWidth(end - 1) && row.getValue(end) === "") {
+        row.setCharFast(end, " ", row.getFormatFlags(end), row.getFgColor(end), row.getBgColor(end), row.getLink(end));
+    }
+};
 
 export default class Output {
     width: number;
@@ -247,37 +351,50 @@ export default class Output {
                     break;
                 }
 
-                if (clip && (offsetX < clip.x1! || offsetX >= clip.x2!)) {
-                    offsetX++;
+                const isFullWidth = parsed.getFullWidth(i);
+                const span = parsedSpans[spanCursor];
+                const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
+                const cellEnd = offsetX + (isFullWidth ? 2 : 1);
+                const isOutsideClip = clip !== undefined && (cellEnd <= clip.x1! || offsetX >= clip.x2!);
 
-                    if (parsed.getFullWidth(i)) {
-                        offsetX++;
-                    }
+                // Clipping works in columns, so a character entirely outside the clip or the output takes no cells.
+                if (isOutsideClip || cellEnd <= 0) {
+                    offsetX = cellEnd;
 
                     continue;
                 }
 
-                if (offsetX >= 0) {
-                    // Grow row if writing beyond current length (no clip active)
+                // A wide character cut by an edge keeps its visible cell as a blank in its own style, so the
+                // columns after it stay where they are.
+                if (isFullWidth && (offsetX < 0 || (clip && (offsetX < clip.x1! || cellEnd > clip.x2!)))) {
+                    const visibleStart = Math.max(offsetX, clip?.x1 ?? 0, 0);
+                    const visibleEnd = Math.min(cellEnd, clip?.x2 ?? Infinity, row.length);
+
+                    for (let col = visibleStart; col < visibleEnd; col++) {
+                        row.setCharFast(col, " ", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
+                    }
+
+                    offsetX = cellEnd;
+
+                    continue;
+                }
+
+                // Grow row if writing beyond current length (no clip active)
+                if (offsetX >= row.length) {
+                    row.ensureWidth(offsetX + 2);
+                }
+
+                repairWideOverlap(row, offsetX, isFullWidth ? 2 : 1);
+                row.setCharFast(offsetX, parsed.getValue(i), flags, span?.fgColor, span?.bgColor, span?.link);
+
+                if (isFullWidth) {
+                    offsetX++;
+
                     if (offsetX >= row.length) {
-                        row.ensureWidth(offsetX + 2);
+                        row.ensureWidth(offsetX + 1);
                     }
 
-                    const span = parsedSpans[spanCursor];
-                    const isFullWidth = parsed.getFullWidth(i);
-                    const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
-
-                    row.setCharFast(offsetX, parsed.getValue(i), flags, span?.fgColor, span?.bgColor, span?.link);
-
-                    if (isFullWidth) {
-                        offsetX++;
-
-                        if (offsetX >= row.length) {
-                            row.ensureWidth(offsetX + 1);
-                        }
-
-                        row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
-                    }
+                    row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
                 }
 
                 offsetX++;

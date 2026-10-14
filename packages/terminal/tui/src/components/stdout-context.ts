@@ -7,7 +7,7 @@ export type Props = {
     /**
      * Stdout stream passed to `render()` in `options.stdout` or `process.stdout` by default.
      */
-    readonly stdout: NodeJS.WriteStream;
+    readonly stdout: NodeJS.WritableStream;
 
     /**
      * Write any string to stdout while preserving Ink's output. It's useful when you want to display external information outside of Ink's rendering and ensure there's no conflict between the two. It's similar to `&lt;Static>`, except it can't accept components; it only works with strings.

@@ -62,12 +62,12 @@ describe("width-height", () => {
         expect(largerOutput).toBe("AAAAAB");
     });
 
-    it.fails("set min width in percent", () => {
+    it("set min width in columns", () => {
         expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
-                <Box minWidth="50%">
+                <Box minWidth={5}>
                     <Text>A</Text>
                 </Box>
                 <Text>B</Text>
@@ -341,19 +341,19 @@ describe("width-height", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n└──────┘\nY");
     });
 
-    it.fails("set max width in percent", () => {
+    it("set max width in columns", () => {
         expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
-                <Box maxWidth="50%">
+                <Box maxWidth={5}>
                     <Text>AAAAAAAAAA</Text>
                 </Box>
                 <Text>B</Text>
             </Box>,
         );
 
-        expect(output).toBe("AAAAAB");
+        expect(output).toBe("AAAAAB\nAAAAA");
     });
 
     it("set max height in percent", () => {

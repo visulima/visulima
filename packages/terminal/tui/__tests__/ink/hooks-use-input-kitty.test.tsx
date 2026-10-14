@@ -158,12 +158,13 @@ describe("hooks-use-input-kitty", () => {
         expect(ps.output).toContain("exited");
     });
 
-    it.skipIf(!ptyAvailable)("useInput - kitty protocol ctrl+letter via codepoint 1-26 produces input", async () => {
+    it.skipIf(!ptyAvailable)("useInput - kitty protocol Ctrl+letter produces input", async () => {
         expect.assertions(1);
 
         const ps = term("use-input-kitty", ["ctrlLetter"]);
 
-        ps.write("\u001B[1;5u");
+        // Ctrl+a uses the unshifted key code (modifier 5 = ctrl(4) + 1).
+        ps.write("\u001B[97;5u");
         await ps.waitForExit();
 
         expect(ps.output).toContain("exited");

@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
+import Yoga from "yoga-layout";
+
 import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
 import { isNodeSelectable } from "./dom";
@@ -205,6 +207,29 @@ const getReusableOutput = ({ caches, height, node, outputs, width }: ReusableOut
     return output;
 };
 
+// Static output is only written on the render that mounted its children; afterwards the <Static> box
+// keeps just its padding, which must not be written again. While the children are mounted, every row
+// is written, blank ones included, so a row that renders empty still takes up its line.
+const getVisibleStaticNode = (staticNode: DOMElement | undefined): DOMElement | undefined => {
+    for (let ancestor: DOMElement | undefined = staticNode; ancestor; ancestor = ancestor.parentNode) {
+        if (ancestor.yogaNode?.getDisplay() === Yoga.DISPLAY_NONE) {
+            return undefined;
+        }
+    }
+
+    return staticNode;
+};
+
+const serializeStaticOutput = (staticNode: DOMElement | undefined, staticOutput: Output | undefined): string => {
+    if (!staticNode || !staticOutput || staticNode.childNodes.length === 0) {
+        return "";
+    }
+
+    const { height, output } = staticOutput.get();
+
+    return height > 0 ? `${output}\n` : "";
+};
+
 const renderer = (
     node: DOMElement,
     isScreenReaderEnabled: boolean,
@@ -223,8 +248,11 @@ const renderer = (
 
             let staticOutput = "";
 
-            if (node.staticNode) {
-                staticOutput = renderNodeToScreenReaderOutput(node.staticNode, {
+            // Static output is rendered from its own subtree, so a hidden ancestor must be checked explicitly.
+            const staticNode = getVisibleStaticNode(node.staticNode);
+
+            if (staticNode) {
+                staticOutput = renderNodeToScreenReaderOutput(staticNode, {
                     skipStaticElements: false,
                 });
             }
@@ -267,10 +295,17 @@ const renderer = (
         if (node.staticNode?.yogaNode) {
             staticOutput = getReusableOutput({
                 caches: staticOutputCaches,
-                height: node.staticNode.yogaNode.getComputedHeight(),
+                // Include the offset and margins, or static rows that start below the top or end inside a margin get clipped.
+                height:
+                    node.staticNode.yogaNode.getComputedTop()
+                    + node.staticNode.yogaNode.getComputedHeight()
+                    + node.staticNode.yogaNode.getComputedMargin(Yoga.EDGE_BOTTOM),
                 node,
                 outputs: staticOutputs,
-                width: node.staticNode.yogaNode.getComputedWidth(),
+                width:
+                    node.staticNode.yogaNode.getComputedLeft()
+                    + node.staticNode.yogaNode.getComputedWidth()
+                    + node.staticNode.yogaNode.getComputedMargin(Yoga.EDGE_RIGHT),
             });
 
             renderNodeToOutput(node.staticNode, staticOutput, {
@@ -291,7 +326,7 @@ const renderer = (
                 outputBuffer,
                 outputHeight,
                 outputWidth: output.width,
-                staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+                staticOutput: serializeStaticOutput(node.staticNode, staticOutput),
             };
         }
 
@@ -305,7 +340,7 @@ const renderer = (
             outputHeight,
             // Newline at the end is needed, because static output doesn't have one, so
             // interactive output will override last line of static output
-            staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+            staticOutput: serializeStaticOutput(node.staticNode, staticOutput),
         };
     }
 

@@ -1,20 +1,20 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, unicorn/prevent-abbreviations */
 import type { Context } from "react";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 
 // ─── Focus context shape ──────────────────────────────────────────────────────
 
 export type FocusContextProps = {
-    activate: (id: string) => void;
+    activate: (id: string, holder?: string) => void;
     activeId: string | undefined;
     add: (id: string, options: { autoFocus: boolean }) => void;
-    deactivate: (id: string) => void;
+    deactivate: (id: string, holder?: string) => void;
     disableFocus: () => void;
     enableFocus: () => void;
     focus: (id: string) => void;
     focusNext: () => void;
     focusPrevious: () => void;
-    remove: (id: string) => void;
+    remove: (id: string, holder?: string) => void;
 };
 
 export const FocusContext: Context<FocusContextProps> = createContext<FocusContextProps>({
@@ -39,11 +39,20 @@ type FocusEntry = { autoFocus: boolean; id: string; isActive: boolean };
 export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Ordered list of registered focusable components
     const itemsRef = useRef<FocusEntry[]>([]);
+    // Components registered under the same ID share one Tab stop; it goes away with the last of them.
+    const holdersRef = useRef(new Map<string, number>());
+    // Holders of a shared ID that switched to inactive; the Tab stop is active while any holder is.
+    const inactiveRef = useRef(new Map<string, Set<string>>());
     const [activeId, setActiveId] = useState<string | undefined>(undefined);
     const [isEnabled, setIsEnabled] = useState(true);
+    const isEnabledRef = useRef(true);
+
+    isEnabledRef.current = isEnabled;
 
     const add = useCallback((id: string, options: { autoFocus: boolean }) => {
-        // Avoid duplicates
+        holdersRef.current.set(id, (holdersRef.current.get(id) ?? 0) + 1);
+
+        // Shared ID: already a Tab stop
         if (itemsRef.current.some((e) => e.id === id)) {
             return;
         }
@@ -51,6 +60,10 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const entry: FocusEntry = { autoFocus: options.autoFocus, id, isActive: true };
 
         itemsRef.current = [...itemsRef.current, entry];
+
+        if (!isEnabledRef.current) {
+            return;
+        }
 
         // Auto-focus: if no component is focused yet and autoFocus is set
         setActiveId((previous) => {
@@ -67,19 +80,57 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
     }, []);
 
-    const remove = useCallback((id: string) => {
-        itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
-        setActiveId((previous) => (previous === id ? undefined : previous));
+    const syncActive = useCallback((id: string) => {
+        const holders = holdersRef.current.get(id) ?? 0;
+        const isActive = (inactiveRef.current.get(id)?.size ?? 0) < holders;
+
+        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive } : e));
+
+        if (!isActive) {
+            setActiveId((previous) => (previous === id ? undefined : previous));
+        }
     }, []);
 
-    const activate = useCallback((id: string) => {
-        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive: true } : e));
-    }, []);
+    const remove = useCallback(
+        (id: string, holder = "") => {
+            const holders = (holdersRef.current.get(id) ?? 1) - 1;
 
-    const deactivate = useCallback((id: string) => {
-        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive: false } : e));
-        setActiveId((previous) => (previous === id ? undefined : previous));
-    }, []);
+            inactiveRef.current.get(id)?.delete(holder);
+
+            if (holders > 0) {
+                holdersRef.current.set(id, holders);
+                syncActive(id);
+
+                return;
+            }
+
+            holdersRef.current.delete(id);
+            inactiveRef.current.delete(id);
+            itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
+            setActiveId((previous) => (previous === id ? undefined : previous));
+        },
+        [syncActive],
+    );
+
+    const setHolderActive = useCallback(
+        (id: string, holder: string, isActive: boolean) => {
+            const inactive = inactiveRef.current.get(id) ?? new Set<string>();
+
+            if (isActive) {
+                inactive.delete(holder);
+            } else {
+                inactive.add(holder);
+            }
+
+            inactiveRef.current.set(id, inactive);
+            syncActive(id);
+        },
+        [syncActive],
+    );
+
+    const activate = useCallback((id: string, holder = "") => setHolderActive(id, holder, true), [setHolderActive]);
+
+    const deactivate = useCallback((id: string, holder = "") => setHolderActive(id, holder, false), [setHolderActive]);
 
     const enableFocus = useCallback(() => setIsEnabled(true), []);
     const disableFocus = useCallback(() => {
@@ -178,27 +229,30 @@ export type UseFocusResult = {
 export const useFocus = ({ autoFocus = false, id: customId, isActive = true }: UseFocusOptions = {}): UseFocusResult => {
     const { activate, activeId, add, deactivate, focus, remove } = useContext(FocusContext);
 
-    const id = useMemo(() => customId ?? Math.random().toString(36).slice(2, 7), [customId]);
+    const generatedId = useId();
+    const id = customId ?? generatedId;
+    // Identifies this hook instance among the components that share an ID.
+    const holder = useId();
 
     useEffect(() => {
         add(id, { autoFocus });
 
         return () => {
-            remove(id);
+            remove(id, holder);
         };
     }, [id, autoFocus]);
 
     useEffect(() => {
         if (isActive) {
-            activate(id);
+            activate(id, holder);
         } else {
-            deactivate(id);
+            deactivate(id, holder);
         }
-    }, [isActive, id]);
+    }, [isActive, id, holder]);
 
     return {
         focus,
-        isFocused: Boolean(id) && activeId === id,
+        isFocused: activeId === id,
     };
 };
 

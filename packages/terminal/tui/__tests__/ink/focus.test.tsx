@@ -335,17 +335,20 @@ describe("focus", () => {
 
         // Wait for the focus render to land instead of racing a fixed delay —
         // `.at(-1)` could otherwise catch an intermediate pending frame.
+        // disableFocus() blurs the focused component, and Tab is ignored while disabled.
+        await vi.waitUntil(() => (stdout.write as any).mock.calls.at(-1)?.[0] === ["First", "Second", "Third"].join("\n"));
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
+
+        rerender(<Test autoFocus />);
+        // enableFocus() runs in an effect and the Tab listener re-subscribes after that state change;
+        // give it room under load so the Tab is not delivered to the still-disabled manager.
+        await delay(250);
+        emitReadable(stdin, "\t");
+
         await vi.waitUntil(() => (stdout.write as any).mock.calls.at(-1)?.[0] === ["First ✔", "Second", "Third"].join("\n"));
 
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-
-        rerender(<Test autoFocus />);
-        await delay(50);
-        emitReadable(stdin, "\t");
-
-        await vi.waitUntil(() => (stdout.write as any).mock.calls.at(-1)?.[0] === ["First", "Second ✔", "Third"].join("\n"));
-
-        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
     });
 
     it("manually focus next component", async () => {

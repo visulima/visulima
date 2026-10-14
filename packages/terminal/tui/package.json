@@ -341,6 +341,7 @@
         "@visulima/string": "3.1.1",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
+        "@xterm/headless": "catalog:dev",
         "cli-boxes": "catalog:prod",
         "code-excerpt": "catalog:prod",
         "conventional-changelog-conventionalcommits": "catalog:dev",
