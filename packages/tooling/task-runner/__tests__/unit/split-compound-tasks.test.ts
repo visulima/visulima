@@ -90,22 +90,72 @@ describe(splitCompoundTasks, () => {
         expect(diagnostics).toHaveLength(1);
     });
 
-    it("refuses a when condition and an always target", () => {
-        expect.assertions(2);
+    it("refuses a when condition, with one diagnostic, and clears the flag", () => {
+        expect.assertions(3);
 
-        const whenGraph: TaskGraph = {
+        const diagnostics: string[] = [];
+        const graph: TaskGraph = {
             dependencies: { "app:build": [] },
             roots: ["app:build"],
             tasks: { "app:build": task("app:build", "a && b", { when: { branch: "main" } }) },
         };
-        const alwaysGraph: TaskGraph = {
+
+        const split = splitCompoundTasks(graph, { commandOf, onDiagnostic: (_id, message) => diagnostics.push(message) });
+
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build"]);
+        expect(split.tasks["app:build"]?.splitCompound).toBeUndefined();
+        expect(diagnostics).toStrictEqual([expect.stringContaining("a when condition")]);
+    });
+
+    it("refuses an always target, with one diagnostic, and clears the flag", () => {
+        expect.assertions(3);
+
+        const diagnostics: string[] = [];
+        const graph: TaskGraph = {
             dependencies: { "app:build": [] },
             roots: ["app:build"],
             tasks: { "app:build": task("app:build", "a && b", { always: true }) },
         };
 
-        expect(Object.keys(splitCompoundTasks(whenGraph, { commandOf }).tasks)).toStrictEqual(["app:build"]);
-        expect(Object.keys(splitCompoundTasks(alwaysGraph, { commandOf }).tasks)).toStrictEqual(["app:build"]);
+        const split = splitCompoundTasks(graph, { commandOf, onDiagnostic: (_id, message) => diagnostics.push(message) });
+
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build"]);
+        expect(split.tasks["app:build"]?.splitCompound).toBeUndefined();
+        expect(diagnostics).toStrictEqual([expect.stringContaining("always-run target")]);
+    });
+
+    it("refuses a trace-mode target, with one diagnostic, and clears the flag", () => {
+        expect.assertions(3);
+
+        const diagnostics: string[] = [];
+        const graph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b", { hashMode: "trace" }) },
+        };
+
+        const split = splitCompoundTasks(graph, { commandOf, onDiagnostic: (_id, message) => diagnostics.push(message) });
+
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build"]);
+        expect(split.tasks["app:build"]?.splitCompound).toBeUndefined();
+        expect(diagnostics).toStrictEqual([expect.stringContaining("traced hashing")]);
+    });
+
+    it("refuses every target when global auto-fingerprinting is on, even one declared in declared mode", () => {
+        expect.assertions(3);
+
+        const diagnostics: string[] = [];
+        const graph: TaskGraph = {
+            dependencies: { "app:build": [] },
+            roots: ["app:build"],
+            tasks: { "app:build": task("app:build", "a && b") },
+        };
+
+        const split = splitCompoundTasks(graph, { autoFingerprint: true, commandOf, onDiagnostic: (_id, message) => diagnostics.push(message) });
+
+        expect(Object.keys(split.tasks)).toStrictEqual(["app:build"]);
+        expect(split.tasks["app:build"]?.splitCompound).toBeUndefined();
+        expect(diagnostics).toStrictEqual([expect.stringContaining("traced hashing")]);
     });
 
     it("leaves tasks without the flag untouched", () => {

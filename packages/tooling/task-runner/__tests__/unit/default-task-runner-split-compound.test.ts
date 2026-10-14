@@ -201,23 +201,52 @@ describe("defaultTaskRunner with splitCompound", () => {
         expect(diagnostics[0]).toContain("traced hashing");
     });
 
-    it("replays segment output in order on a full cache hit", async () => {
+    it("re-runs every later segment, replayed in order, when only the first segment changes", async () => {
         expect.assertions(2);
 
         const counter = createCountingExecutor();
 
         await runCommand("step-one && step-two && step-three", counter);
+        counter.executed.length = 0;
 
-        const replayed: { id: string; output: string | undefined }[] = [];
+        const replayed: string[] = [];
         const lifeCycle: LifeCycleInterface = {
-            printTaskTerminalOutput: (task, _status, terminalOutput) => {
-                replayed.push({ id: task.id, output: terminalOutput });
+            printTaskTerminalOutput: (task) => {
+                replayed.push(task.id);
             },
         };
 
-        const results = await runCommand("step-one && step-two && step-three", counter, {}, lifeCycle);
+        await runCommand("step-one-changed && step-two && step-three", counter, {}, lifeCycle);
 
-        expect([...results.values()].map((result) => result.status)).toStrictEqual(["local-cache", "local-cache", "local-cache"]);
+        // Segments two and three have unchanged commands. They re-run only because
+        // each one folds in its predecessor's key, which the change to segment one moved.
+        expect(counter.executed).toStrictEqual(["app:build#1", "app:build#2", "app:build#3"]);
+        expect(replayed).toStrictEqual(["app:build#1", "app:build#2", "app:build#3"]);
+    });
+
+    it("serves the earlier segments from cache, replayed in order, when only the last segment changes", async () => {
+        expect.assertions(3);
+
+        const counter = createCountingExecutor();
+
+        await runCommand("step-one && step-two && step-three", counter);
+        counter.executed.length = 0;
+
+        const replayed: { id: string; status: TaskStatus }[] = [];
+        const lifeCycle: LifeCycleInterface = {
+            printTaskTerminalOutput: (task, status) => {
+                replayed.push({ id: task.id, status });
+            },
+        };
+
+        await runCommand("step-one && step-two && step-three-changed", counter, {}, lifeCycle);
+
+        expect(counter.executed).toStrictEqual(["app:build#3"]);
+        expect(replayed).toStrictEqual([
+            { id: "app:build#1", status: "local-cache" },
+            { id: "app:build#2", status: "local-cache" },
+            { id: "app:build#3", status: "success" },
+        ]);
         expect(replayed.map((entry) => entry.id)).toStrictEqual(["app:build#1", "app:build#2", "app:build#3"]);
     });
 
