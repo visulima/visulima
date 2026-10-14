@@ -9,12 +9,20 @@ import { errorResponse, okResponse } from "../response";
 
 const JSON_SUFFIX_PATTERN = /\.json$/;
 
+/**
+ * The fields of a run summary this tool reads. The summary vis writes (`RunSummary` in
+ * `@visulima/task-runner`) carries `id`, `startTime`, `stats` and per-task `exitCode`; the
+ * `runId` / `startedAt` / `status` spellings are accepted for summaries written by older tools.
+ */
 interface RunSummaryShape {
     [key: string]: unknown;
+    id?: string;
     runId?: string;
     startedAt?: string;
+    startTime?: string;
+    stats?: { failed?: number; total?: number };
     status?: string;
-    tasks?: { status?: string }[];
+    tasks?: { exitCode?: number; status?: string }[];
 }
 
 interface RunListEntry {
@@ -26,6 +34,18 @@ interface RunListEntry {
     taskCount?: number;
 }
 
+const isFailedTask = (task: { exitCode?: number; status?: string }): boolean =>
+    task.status === "failure" || task.status === "failed" || (typeof task.exitCode === "number" && task.exitCode !== 0);
+
+/** Failed-task count: the summary's own statistics when present, else counted from the tasks. */
+const countFailed = (summary: RunSummaryShape): number | undefined => {
+    if (typeof summary.stats?.failed === "number") {
+        return summary.stats.failed;
+    }
+
+    return summary.tasks?.filter((task) => isFailedTask(task)).length;
+};
+
 /**
  * Derive a coarse run status from a summary when it doesn't carry one
  * explicitly: any failed task makes the run a failure, otherwise success.
@@ -35,11 +55,13 @@ const deriveStatus = (summary: RunSummaryShape): string | undefined => {
         return summary.status;
     }
 
-    if (!summary.tasks) {
+    const failed = countFailed(summary);
+
+    if (failed === undefined) {
         return undefined;
     }
 
-    return summary.tasks.some((task) => task.status === "failure" || task.status === "failed") ? "failure" : "success";
+    return failed > 0 ? "failure" : "success";
 };
 
 export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): void => {
@@ -108,12 +130,12 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
                             const summary = JSON.parse(raw) as RunSummaryShape;
 
                             return {
-                                failedTasks: summary.tasks?.filter((task) => task.status === "failure" || task.status === "failed").length,
+                                failedTasks: countFailed(summary),
                                 modifiedMs,
-                                runId: summary.runId ?? file.replace(JSON_SUFFIX_PATTERN, ""),
-                                startedAt: summary.startedAt,
+                                runId: summary.id ?? summary.runId ?? file.replace(JSON_SUFFIX_PATTERN, ""),
+                                startedAt: summary.startTime ?? summary.startedAt,
                                 status: deriveStatus(summary),
-                                taskCount: summary.tasks?.length,
+                                taskCount: summary.stats?.total ?? summary.tasks?.length,
                             };
                         } catch {
                             // Skip unreadable / malformed run files rather than
