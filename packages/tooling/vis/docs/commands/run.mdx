@@ -57,7 +57,7 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | `--dry-run`          |       | `false`        | Show what would run without executing                                                                                                                                                                                                                                                                               |
 | `--summarize`        |       | `false`        | Generate a JSON run summary at `.vis/runs/<id>.json` (also enables historical diffs for `vis cache why` / `vis replay`)                                                                                                                                                                                             |
 | `--fail-fast`        |       | `false`        | Stop all tasks on first failure                                                                                                                                                                                                                                                                                     |
-| `--if-present`       |       | `false`        | Exit 0 with a one-line notice when no project defines the requested target. Without it, a missing target is an error (exit 1)                                                                                                                                                                                       |
+| `--if-present`       |       | `false`        | Exit 0 with a one-line notice when the target, or a `--filter` / `--query` / `--tag` selection, matches no project. Without it, an empty selection is an error (exit 1). See [Empty selections](#empty-selections)                                                                                                  |
 | `--partition`        |       |                | Partition for distributed CI (e.g. `1/4`). Falls back to `VIS_PARTITION`.                                                                                                                                                                                                                                           |
 | `--skip-constraints` |       | `false`        | Skip project constraint validation                                                                                                                                                                                                                                                                                  |
 | `--query`            |       |                | Filter by query (e.g. `language=typescript && tag=lib`)                                                                                                                                                                                                                                                             |
@@ -75,6 +75,17 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | `--last-details`     |       | `false`        | Render the most-recent run's saved summary (`.vis/last-summary.json`) and exit without executing any tasks. Use for "what happened in the last build?" without re-running.                                                                                                                                          |
 | `--reverse`          |       | `false`        | Run the dependency graph leaves-first (dependents before deps). Use for teardown targets like `destroy`/`undeploy` — see [Reverse order](#reverse-order-teardown).                                                                                                                                                  |
 | `--runner-tags`      |       |                | Comma-separated tags this runner advertises (e.g. `gpu,slow`). Tasks declaring `options.runnerTags` only run when at least one tag overlaps; untagged tasks always run. Falls back to `VIS_RUNNER_TAGS`.                                                                                                            |
+
+### Empty selections
+
+A run whose `--filter`, `--query` or `--tag` selects no project exits 1 with a message, the same way a missing target does, so a CI step cannot pass without running anything. Add `--if-present` to keep the quiet exit 0 with a one-line notice:
+
+```bash
+vis run :build --query "language=cobol"                # exit 1: no project matches
+vis run :build --query "language=cobol" --if-present   # exit 0: "Query ... matched no projects; skipping (--if-present)."
+```
+
+`--affected` is not affected: "No files changed" and "No projects affected by the changes" stay exit 0, because an empty affected set is a valid result.
 
 ### Positional args after the target
 

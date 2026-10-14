@@ -84,3 +84,61 @@ describe("vis run --if-present", () => {
         expect(infos.join("\n")).toContain("No projects have the \"lint\" target; skipping (--if-present).");
     });
 });
+
+describe("vis run selections that match no project", () => {
+    let workspaceRoot: string;
+
+    beforeEach(() => {
+        workspaceRoot = createTemporaryDirectory("vis-run-empty-selection-");
+        writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+        writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
+        mkdirSync(join(workspaceRoot, "packages", "app"), { recursive: true });
+        writeFileSync(join(workspaceRoot, "packages", "app", "package.json"), JSON.stringify({ name: "@my/app" }));
+        writeFileSync(join(workspaceRoot, "packages", "app", "project.json"), JSON.stringify({ targets: { build: { command: "echo hi", outputs: [] } } }));
+    });
+
+    afterEach(() => {
+        cleanupTemporaryDirectory(workspaceRoot);
+    });
+
+    const runSelection = async (selection: Record<string, unknown>, captured = capture()): Promise<ReturnType<typeof capture>> => {
+        await runExecute({
+            argument: ["build"],
+            logger: captured.logger,
+            options: { cache: false, dryRun: true, parallel: 1, skipToolchain: true, ...selection },
+            runtime: {} as never,
+            visConfig: undefined,
+            workspaceRoot,
+        } as never);
+
+        return captured;
+    };
+
+    it.each([
+        ["--filter", { filter: ["nope"] }, "Filter \"nope\" matched no projects"],
+        ["--query", { query: "language=cobol" }, "Query \"language=cobol\" matched no projects"],
+        ["--tag", { tag: ["nope"] }, "Tag filter \"nope\" matched no projects"],
+    ])("%s throws a VisUserError by default so CI cannot pass without running anything", async (_flag, selection, message) => {
+        expect.assertions(3);
+
+        const captured = capture();
+        const failure = await runSelection(selection, captured).catch((error: unknown) => error);
+
+        expect(failure).toBeInstanceOf(VisUserError);
+        expect((failure as Error).message).toContain(`${message}.`);
+        expect((failure as Error).message).toContain("--if-present");
+    });
+
+    it.each([
+        ["--filter", { filter: ["nope"] }, "Filter \"nope\" matched no projects"],
+        ["--query", { query: "language=cobol" }, "Query \"language=cobol\" matched no projects"],
+        ["--tag", { tag: ["nope"] }, "Tag filter \"nope\" matched no projects"],
+    ])("%s with --if-present returns quietly and logs a one-line notice", async (_flag, selection, message) => {
+        expect.assertions(2);
+
+        const { errors, infos } = await runSelection({ ...selection, ifPresent: true });
+
+        expect(errors).toStrictEqual([]);
+        expect(infos.join("\n")).toContain(`${message}; skipping (--if-present).`);
+    });
+});

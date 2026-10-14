@@ -134,7 +134,7 @@ const runOptionDefinitions = {
     },
     "if-present": {
         defaultValue: false,
-        description: "Succeed quietly when no project has the requested target",
+        description: "Exit 0 with a one-line notice when no project has the requested target or matches a --filter/--query/--tag selection",
         type: Boolean,
     },
     "last-details": {

@@ -1297,6 +1297,18 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         projectNames = filterProjectsByNames(projectNames, String(options.projects), Object.keys(workspace.projects));
     }
 
+    // A selection that matches nothing must not look like a pass: throw so the CLI exits
+    // non-zero. `--if-present` opts back into a quiet exit 0 with a one-line notice.
+    const onEmptySelection = (summary: string): void => {
+        if (options.ifPresent) {
+            logger.info(`${summary}; skipping (--if-present).`);
+
+            return;
+        }
+
+        throw new VisUserError(`${summary}.\n\nPass --if-present to skip quietly when nothing matches.`);
+    };
+
     // Apply pnpm-style `--filter`/`-F` selectors. They compose with the
     // selector + `--projects` set above (intersection) so a filter never
     // pulls in projects the selector already excluded. Multiple `--filter`
@@ -1320,7 +1332,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         projectNames = projectNames.filter((name) => filteredSet.has(name));
 
         if (projectNames.length === 0) {
-            logger.info(`Filter ${options.filter.map((f: string) => `"${f}"`).join(", ")} matched no projects.`);
+            onEmptySelection(`Filter ${options.filter.map((f: string) => `"${f}"`).join(", ")} matched no projects`);
 
             return;
         }
@@ -1331,7 +1343,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         projectNames = filterProjectsByQuery(projectNames, workspace, options.query);
 
         if (projectNames.length === 0) {
-            logger.info(`Query "${String(options.query)}" matched no projects.`);
+            onEmptySelection(`Query "${String(options.query)}" matched no projects`);
 
             return;
         }
@@ -1343,7 +1355,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         projectNames = filterProjectsByTags(projectNames, workspace, options.tag);
 
         if (projectNames.length === 0) {
-            logger.info(`Tag filter ${options.tag.map((t: string) => `"${t}"`).join(", ")} matched no projects.`);
+            onEmptySelection(`Tag filter ${options.tag.map((t: string) => `"${t}"`).join(", ")} matched no projects`);
 
             return;
         }
