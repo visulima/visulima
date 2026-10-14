@@ -52,23 +52,23 @@ pnpm add @visulima/disposable-email-domains
 
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository | Domains | Success | Performance |
-|------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 98,530 | ✅ | 0.42s (1.5 MB) |
-| willwhite/freemail | 88,162 | ✅ | 0.32s (1.3 MB) |
-| FGRibreau/mailchecker | 56,512 | ✅ | 0.27s (848.5 KB) |
-| wesbos/burner-email-providers | 27,277 | ✅ | 0.21s (388.0 KB) |
-| groundcat/disposable-email-domain-list | 21,453 | ✅ | 0.04s (329.4 KB) |
-| 7c/fakefilter | 10,630 | ✅ | 0.02s (146.1 KB) |
-| sublime-security/static-files | 10,522 | ✅ | 0.11s (144.0 KB) |
-| disposable-email-domains/disposable-email-domains | 9,881 | ✅ | 0.13s (139.6 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.19s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,616 | ✅ | 0.01s (45.7 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.14s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.18s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.11s (13.1 KB) |
-| jespernissen/disposable-maildomain-list | 982 | ✅ | 0.12s (12.6 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 1.20s (234 B) |
+| Repository                                        | Domains | Success | Performance      |
+| ------------------------------------------------- | ------- | ------- | ---------------- |
+| disposable/disposable-email-domains               | 98,530  | ✅      | 0.42s (1.5 MB)   |
+| willwhite/freemail                                | 88,162  | ✅      | 0.32s (1.3 MB)   |
+| FGRibreau/mailchecker                             | 56,512  | ✅      | 0.27s (848.5 KB) |
+| wesbos/burner-email-providers                     | 27,277  | ✅      | 0.21s (388.0 KB) |
+| groundcat/disposable-email-domain-list            | 21,453  | ✅      | 0.04s (329.4 KB) |
+| 7c/fakefilter                                     | 10,630  | ✅      | 0.02s (146.1 KB) |
+| sublime-security/static-files                     | 10,522  | ✅      | 0.11s (144.0 KB) |
+| disposable-email-domains/disposable-email-domains | 9,881   | ✅      | 0.13s (139.6 KB) |
+| eser/sanitizer-svc                                | 3,855   | ✅      | 0.19s (48.9 KB)  |
+| unkn0w/disposable-email-domain-list               | 3,616   | ✅      | 0.01s (45.7 KB)  |
+| MattKetmo/EmailChecker                            | 2,515   | ✅      | 0.14s (32.4 KB)  |
+| GeroldSetz/emailondeck.com-domains                | 1,121   | ✅      | 0.18s (15.4 KB)  |
+| castle/disposable-email-domains                   | 1,000   | ✅      | 0.11s (13.1 KB)  |
+| jespernissen/disposable-maildomain-list           | 982     | ✅      | 0.12s (12.6 KB)  |
+| TheDahoom/disposable-email                        | 18      | ✅      | 1.20s (234 B)    |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
@@ -161,7 +161,7 @@ extractDomain("User@Example.COM"); // "example.com"
 
 ### Edge / browser / bundled runtimes
 
-By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list every lookup returns `false` (and a single warning is logged), so inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, check `isListLoaded()` to make sure it took:
+By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged, so inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, check `isListLoaded()` to make sure it took:
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";
