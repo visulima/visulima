@@ -187,20 +187,6 @@ describe("defaultTaskRunner with splitCompound", () => {
         expect([...changed.keys()]).toStrictEqual(["app:build"]);
     });
 
-    it("warns and does not split when hashMode is trace", async () => {
-        expect.assertions(3);
-
-        const diagnostics: string[] = [];
-        const task = makeBuildTask("step-one && step-two", { hashMode: "trace" });
-        const context = createContext(workspaceRoot, [task], createCountingExecutor().executor);
-
-        const results = await defaultTaskRunner([task], { dryRun: true, onDiagnostic: (_id, message) => diagnostics.push(message) }, context);
-
-        expect([...results.keys()]).toStrictEqual(["app:build"]);
-        expect(diagnostics).toHaveLength(1);
-        expect(diagnostics[0]).toContain("traced hashing");
-    });
-
     it("re-runs every later segment, replayed in order, when only the first segment changes", async () => {
         expect.assertions(2);
 
@@ -296,18 +282,5 @@ describe("defaultTaskRunner with splitCompound", () => {
 
         expect([...results.values()].map((result) => result.status)).toStrictEqual(["local-cache", "local-cache"]);
         await expect(readFile(artifact, "utf8")).resolves.toBe("built");
-    });
-
-    it("warns and does not split when auto-fingerprinting is on for the run", async () => {
-        expect.assertions(2);
-
-        const diagnostics: string[] = [];
-        const task = makeBuildTask("step-one && step-two");
-        const context = createContext(workspaceRoot, [task], createCountingExecutor().executor);
-
-        const results = await defaultTaskRunner([task], { autoFingerprint: true, dryRun: true, onDiagnostic: (_id, message) => diagnostics.push(message) }, context);
-
-        expect([...results.keys()]).toStrictEqual(["app:build"]);
-        expect(diagnostics.filter((message) => message.startsWith("splitCompound"))).toHaveLength(1);
     });
 });

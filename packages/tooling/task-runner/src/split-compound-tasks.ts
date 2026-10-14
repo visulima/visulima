@@ -2,9 +2,6 @@ import { splitCompoundCommand } from "./command-parser/split-compound";
 import type { Task, TaskGraph } from "./types";
 
 export interface SplitCompoundOptions {
-    /** Whether the run uses global auto-fingerprinting, which routes every task through the tracker. */
-    autoFingerprint?: boolean;
-
     /** Resolves the shell command a task runs. `undefined` leaves the task whole. */
     commandOf: (task: Task) => string | undefined;
 
@@ -13,7 +10,9 @@ export interface SplitCompoundOptions {
 }
 
 /**
- * Returns the tasks that replace `task` in the graph. The result is either
+ * Returns the tasks that replace `task` in the graph. Declared and traced
+ * targets split alike: a traced segment is tracked on its own command, and the
+ * trace key of each segment folds in the one before it. The result is either
  * the segment chain or a single copy of the task with `splitCompound`
  * cleared, so running the split again finds nothing to do and emits no
  * second diagnostic.
@@ -25,10 +24,6 @@ const expandTask = (task: Task, options: SplitCompoundOptions): Task[] => {
 
         return [whole];
     };
-
-    if (task.hashMode === "trace" || options.autoFingerprint) {
-        return refuse("traced hashing fingerprints the whole target, so it cannot be split");
-    }
 
     if (task.always) {
         return refuse("an always-run target is not split");

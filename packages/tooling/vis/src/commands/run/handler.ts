@@ -2220,8 +2220,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     // dry-run plan and the scheduler read the graph. The runner's own split
     // pass then finds nothing left to do.
     taskGraph = splitCompoundTasks(taskGraph, {
-        // The runner takes the workspace switch from `taskRunner` config too.
-        autoFingerprint: config.taskRunner?.autoFingerprint,
         commandOf: (task) => task.overrides["command"] as string | undefined,
         onDiagnostic: (_taskId, message) => {
             logger.warn(message);

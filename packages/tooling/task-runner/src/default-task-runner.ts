@@ -325,22 +325,28 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         workspaceRoot,
     });
 
+    // The shell command a task runs. A segment of a `splitCompound` chain carries
+    // its own command in `overrides`, so that wins over the target's command.
+    // Shared by the split below and the trace/fingerprint path.
+    const resolveCommand = (task: Task): string | undefined => {
+        const overridden = task.overrides["command"];
+
+        if (typeof overridden === "string") {
+            return overridden;
+        }
+
+        const project = projectGraph.nodes[task.target.project];
+        const targetConfig = project?.data.targets?.[task.target.target];
+        const defaultConfig = options.targetDefaults?.[task.target.target];
+
+        return targetConfig?.command ?? defaultConfig?.command;
+    };
+
     // Targets that opted into `splitCompound` become chained segment tasks
     // here, before the scheduler and orchestrator read the graph. Idempotent:
     // a graph the caller already split passes through unchanged.
     const compoundGraph = splitCompoundTasks(taskGraph, {
-        autoFingerprint: options.autoFingerprint,
-        commandOf: (task) => {
-            const overridden = task.overrides["command"];
-
-            if (typeof overridden === "string") {
-                return overridden;
-            }
-
-            const project = projectGraph.nodes[task.target.project];
-
-            return project?.data.targets?.[task.target.target]?.command ?? options.targetDefaults?.[task.target.target]?.command;
-        },
+        commandOf: resolveCommand,
         onDiagnostic: options.onDiagnostic,
     });
 
@@ -359,17 +365,6 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
     // resolver, framework env-pattern inference) even when the global
     // `autoFingerprint` switch is off.
     const anyTraceTask = Object.values(scheduledGraph.tasks).some((task) => task.hashMode === "trace");
-
-    // Build command resolver for the trace/fingerprint path. Always
-    // supplied now: a per-target `hashMode: "trace"` needs to resolve
-    // its shell command even when `autoFingerprint` is off.
-    const resolveCommand = (task: Task): string | undefined => {
-        const project = projectGraph.nodes[task.target.project];
-        const targetConfig = project?.data.targets?.[task.target.target];
-        const defaultConfig = options.targetDefaults?.[task.target.target];
-
-        return targetConfig?.command ?? defaultConfig?.command;
-    };
 
     // Create remote cache if configured. `createRemoteCacheBackend`
     // centralizes backend selection so new backends (REAPI gRPC) can

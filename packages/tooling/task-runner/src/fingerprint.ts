@@ -65,6 +65,14 @@ export const envValueHash = (name: string, value: string | undefined): string =>
  * Represents a stored fingerprint for a task execution.
  */
 export interface TaskFingerprint {
+    /**
+     * The trace key of the previous segment of a `splitCompound` chain. It is
+     * folded into the key ({@link hashFingerprint}) and checked on lookup
+     * ({@link FingerprintManager.validateChain}), so a segment is not served
+     * when the segment before it moved. Absent on every other task, which
+     * keeps their keys unchanged.
+     */
+    chainKey?: string;
     /** Hash of the command arguments */
     commandHash: string;
     /** Directory listings recorded during execution (path -> sorted entries) */
@@ -73,6 +81,7 @@ export interface TaskFingerprint {
     envHashes: Record<string, string>;
     /** Content hashes of files that were read during execution */
     fileHashes: Record<string, string>;
+
     /** Paths of files that were probed but didn't exist (ENOENT) */
     missingFiles: string[];
 
@@ -101,7 +110,17 @@ export interface CacheMissReason {
     currentHash?: string;
     detail: string;
     previousHash?: string;
-    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint" | "declared-changed" | "tracker-changed";
+    type:
+        | "file-changed"
+        | "file-created"
+        | "file-deleted"
+        | "directory-changed"
+        | "env-changed"
+        | "args-changed"
+        | "no-fingerprint"
+        | "declared-changed"
+        | "tracker-changed"
+        | "chain-changed";
 }
 
 /**
@@ -136,6 +155,11 @@ export const hashFingerprint = (fingerprint: TaskFingerprint): string => {
 
     hash.update(`tracker:${fingerprint.tracker ?? ""}`);
 
+    // Only a chained segment carries a chain key, so ordinary keys stay as they were.
+    if (fingerprint.chainKey !== undefined) {
+        hash.update(`chain:${fingerprint.chainKey}`);
+    }
+
     return hash.digest();
 };
 
@@ -146,6 +170,10 @@ export const describeCacheMissReason = (reason: CacheMissReason): string => {
     switch (reason.type) {
         case "args-changed": {
             return "Command arguments changed";
+        }
+
+        case "chain-changed": {
+            return "Previous segment changed: its trace key moved, so this segment re-runs";
         }
 
         case "declared-changed": {
@@ -424,6 +452,26 @@ export class FingerprintManager {
         return {
             detail: `${fingerprint.tracker} -> ${tracker ?? "none"}`,
             type: "tracker-changed",
+        };
+    }
+
+    /**
+     * Rejects a segment whose predecessor's trace key moved. The segment's own
+     * observations can match while the chain before it did not, so the
+     * comparison is exact: an entry without a chain key does not match a
+     * chained lookup, and the reverse.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public validateChain(fingerprint: TaskFingerprint, chainKey: string | undefined): CacheMissReason | undefined {
+        if (fingerprint.chainKey === chainKey) {
+            return undefined;
+        }
+
+        return {
+            currentHash: chainKey,
+            detail: "previous segment",
+            previousHash: fingerprint.chainKey,
+            type: "chain-changed",
         };
     }
 

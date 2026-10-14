@@ -686,17 +686,19 @@ class TaskOrchestrator {
         let cacheMissReasons: CacheMissReason[] | undefined;
         // The declared hash, when the lookup computed it (see the declared-fallback branch below).
         let declaredKey: string | undefined;
+        // The predecessor's key for a segment (see #chainKeyFor). `null` means the segment cannot be keyed this run.
+        const chainKey = this.#chainKeyFor(task);
 
-        if (!this.#skipCache && task.cache !== false) {
+        if (!this.#skipCache && task.cache !== false && chainKey !== null) {
             const cachedResult = await this.#cache.getByTaskId(task.id);
 
             if (cachedResult?.fingerprint && this.#fingerprintManager) {
-                // A different command or tracker observed different accesses, so its
-                // file hashes say nothing about this run. Both are checked before any
-                // file is hashed.
+                // A different command, tracker or predecessor observed different state, so its
+                // file hashes say nothing about this run. All are checked before any file is hashed.
                 const identityMiss
                     = this.#fingerprintManager.validateCommand(cachedResult.fingerprint, `${task.target.project}:${task.target.target}`, this.#commandKey(task))
-                        ?? this.#fingerprintManager.validateTracker(cachedResult.fingerprint, this.#predictTracker(task));
+                        ?? this.#fingerprintManager.validateTracker(cachedResult.fingerprint, this.#predictTracker(task))
+                        ?? this.#fingerprintManager.validateChain(cachedResult.fingerprint, chainKey);
 
                 if (identityMiss) {
                     cacheMissReasons = [identityMiss];
@@ -711,6 +713,11 @@ class TaskOrchestrator {
                     );
 
                     if (!missReasons) {
+                        // A segment publishes its key on a hit as well as on a store, so the segment after it can fold it.
+                        if (task.segment !== undefined) {
+                            Object.assign(task, { hash: cachedResult.hash });
+                        }
+
                         return this.#applyCachedResult(task, cachedResult, startTime);
                     }
 
@@ -744,7 +751,31 @@ class TaskOrchestrator {
             }
         }
 
-        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons, declaredKey);
+        return this.#executeTaskWithTracking(task, startTime, cacheMissReasons, declaredKey, chainKey);
+    }
+
+    /**
+     * The key a `splitCompound` segment folds in: the key its predecessor settled
+     * on this run, so segment _n_ cannot be served while segment _n−1_ differs.
+     *
+     * `undefined` for a task that is not a segment after the first, which has no
+     * predecessor. `null` when the predecessor has no key because it ran without
+     * storing one (self-modifying, an empty tracker with no declared inputs, a
+     * `disableCache` hint, a warning that skips the cache). The chain before such
+     * a segment is then unknown, so the segment is neither served nor stored.
+     */
+    #chainKeyFor(task: Task): string | null | undefined {
+        const { segment } = task;
+
+        if (segment === undefined || segment.index === 1) {
+            return undefined;
+        }
+
+        const predecessor = (this.#taskGraph?.dependencies[task.id] ?? [])
+            .map((id) => this.#taskGraph?.tasks[id])
+            .find((candidate) => candidate?.segment?.index === segment.index - 1 && candidate.target.project === task.target.project && candidate.target.target === task.target.target);
+
+        return predecessor?.hash ?? null;
     }
 
     /**
@@ -899,7 +930,13 @@ class TaskOrchestrator {
         return spawn.inheritEnv ? { ...process.env, ...spawn.env } : spawn.env;
     }
 
-    async #executeTaskWithTracking(task: Task, startTime: number, cacheMissReasons?: CacheMissReason[], declaredKey?: string): Promise<TaskResult> {
+    async #executeTaskWithTracking(
+        task: Task,
+        startTime: number,
+        cacheMissReasons?: CacheMissReason[],
+        declaredKey?: string,
+        chainKey?: string | null,
+    ): Promise<TaskResult> {
         if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
         }
@@ -1017,6 +1054,11 @@ class TaskOrchestrator {
                 );
             }
 
+            // The predecessor's key joins the stored fingerprint, so the segment's trace key folds it in.
+            if (fingerprint && typeof chainKey === "string") {
+                fingerprint = { ...fingerprint, chainKey };
+            }
+
             const hadWarnings = code === 0 && detectWarnings(task.warningPattern, terminalOutput);
 
             const result: TaskResult = {
@@ -1037,7 +1079,7 @@ class TaskOrchestrator {
             const skipCacheOnWarning = hadWarnings && task.cacheOnWarning === false;
 
             // Same abort-gate as the declared path — see `#executeTask`.
-            if (code === 0 && task.cache !== false && fingerprint && !skipCacheOnWarning && !this.#aborted) {
+            if (code === 0 && task.cache !== false && fingerprint && chainKey !== null && !skipCacheOnWarning && !this.#aborted) {
                 const modified = this.#detectSelfModifiedFingerprint(fingerprint);
                 const emptyFingerprintReason = this.#describeEmptyFingerprint(fingerprint, usedRealTracker, trackerAccessCount);
 

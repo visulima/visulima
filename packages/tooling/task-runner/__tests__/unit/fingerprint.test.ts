@@ -42,6 +42,45 @@ describe(hashFingerprint, () => {
         expect(hashFingerprint(strace)).not.toBe(hashFingerprint(preload));
     });
 
+    it("keeps the trace key of an ordinary fingerprint unchanged", () => {
+        expect.assertions(2);
+
+        // Pinned against the key stored by earlier releases: a change here misses every existing trace entry.
+        expect(
+            hashFingerprint({
+                commandHash: "cmd-hash",
+                directoryListings: { "packages/app/src": ["a.ts", "b.ts"] },
+                envHashes: { FOO: "env-hash" },
+                fileHashes: { "packages/app/input.txt": "file-hash-1", "packages/app/src/index.ts": "file-hash-2" },
+                missingFiles: ["packages/app/missing.txt"],
+                tracker: "preload",
+            }),
+        ).toBe("95ae40c39207e16b798bfaa1524a2cdf");
+        expect(
+            hashFingerprint({
+                commandHash: "cmd-hash",
+                directoryListings: {},
+                envHashes: {},
+                fileHashes: { "packages/app/input.txt": "file-hash-1" },
+                missingFiles: [],
+            }),
+        ).toBe("613174d04d97304355cdc10cd03dfa69");
+    });
+
+    it("folds the predecessor's trace key into the key of a chained fingerprint", async () => {
+        expect.assertions(3);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const unchained = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const first = { ...unchained, chainKey: "segment-one-key" };
+        const second = { ...unchained, chainKey: "segment-one-key-moved" };
+
+        expect(hashFingerprint(first)).not.toBe(hashFingerprint(unchained));
+        expect(hashFingerprint(first)).not.toBe(hashFingerprint(second));
+        expect(hashFingerprint({ ...first })).toBe(hashFingerprint(first));
+    });
+
     it("records the tracker kind on the fingerprint", async () => {
         expect.assertions(2);
 
@@ -268,6 +307,35 @@ describe(FingerprintManager, () => {
             expect(reasons).toBeDefined();
 
             expect(reasons!.some((r) => r.type === "directory-changed")).toBe(true);
+        });
+    });
+
+    describe("validateChain", () => {
+        const base = { commandHash: "c", directoryListings: {}, envHashes: {}, fileHashes: {}, missingFiles: [] };
+
+        it("accepts a chained entry whose predecessor key is unchanged", () => {
+            expect.assertions(1);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, "k1")).toBeUndefined();
+        });
+
+        it("rejects a chained entry whose predecessor key moved", () => {
+            expect.assertions(1);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, "k2")).toMatchObject({ currentHash: "k2", previousHash: "k1", type: "chain-changed" });
+        });
+
+        it("rejects an entry without a chain key for a chained lookup, and the reverse", () => {
+            expect.assertions(2);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain(base, "k1")).toMatchObject({ type: "chain-changed" });
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, undefined)).toMatchObject({ type: "chain-changed" });
         });
     });
 
