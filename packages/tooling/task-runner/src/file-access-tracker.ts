@@ -6,7 +6,7 @@ import { platform } from "node:os";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { join, resolve } from "@visulima/path";
+import { join, relative, resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "./native-binding";
 import { withEnhancedPath } from "./path-utils";
@@ -770,9 +770,9 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                const inside = this.#contain(absolute);
+                const inside = this.resolveAccessPath(absolute);
 
-                if (this.#shouldExclude(absolute) || inside === undefined) {
+                if (inside === undefined) {
                     continue;
                 }
 
@@ -882,9 +882,9 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                const inside = this.#contain(absolute);
+                const inside = this.resolveAccessPath(absolute);
 
-                if (this.#shouldExclude(absolute) || inside === undefined) {
+                if (inside === undefined) {
                     continue;
                 }
 
@@ -977,8 +977,6 @@ export class FileAccessTracker {
 
         options.abortSignal?.addEventListener("abort", abortHandler, { once: true });
 
-        const workspaceLower = this.#workspaceRoot.toLowerCase();
-
         try {
             const result = await native.trackWithIatHook(argv, dllPath, { cwd, env: envFiltered }, onStarted);
 
@@ -989,11 +987,13 @@ export class FileAccessTracker {
                 // drive-qualified or rooted path as absolute, else resolve.
                 const absolute = /^(?:[a-z]:)?[/\\]/iu.test(a.path) ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !absolute.toLowerCase().startsWith(workspaceLower)) {
+                const inside = this.resolveAccessPath(absolute);
+
+                if (inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
@@ -1157,9 +1157,9 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            const inside = this.#contain(path);
+            const inside = this.resolveAccessPath(path);
 
-            if (this.#shouldExclude(path) || inside === undefined) {
+            if (inside === undefined) {
                 return undefined;
             }
 
@@ -1183,9 +1183,9 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            const inside = this.#contain(path);
+            const inside = this.resolveAccessPath(path);
 
-            if (this.#shouldExclude(path) || inside === undefined) {
+            if (inside === undefined) {
                 return undefined;
             }
 
@@ -1196,10 +1196,24 @@ export class FileAccessTracker {
     }
 
     /**
-     * Checks if a path should be excluded from tracking.
+     * The workspace-relative-canonical form of an access, or `undefined` when it lies
+     * outside the workspace or matches an exclude pattern. Containment comes first and the
+     * patterns are matched against the path *inside* the workspace: matching them against the
+     * absolute path drops every access of a workspace that itself lives under a `dev`, `tmp`
+     * or `etc` directory (`~/dev/project`), because the patterns describe system locations.
+     * @param absolutePath Absolute path the traced process touched.
+     * @returns The path in the workspace root's spelling, or `undefined` to ignore the access.
      */
-    #shouldExclude(filePath: string): boolean {
-        return this.#excludePatterns.some((pattern) => pattern.test(filePath));
+    public resolveAccessPath(absolutePath: string): string | undefined {
+        const inside = this.#contain(absolutePath);
+
+        if (inside === undefined) {
+            return undefined;
+        }
+
+        const insideWorkspace = `/${relative(this.#workspaceRoot, inside).replaceAll("\\", "/")}`;
+
+        return this.#excludePatterns.some((pattern) => pattern.test(insideWorkspace)) ? undefined : inside;
     }
 
     /**
