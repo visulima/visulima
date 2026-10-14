@@ -1,4 +1,5 @@
 /* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unsafe-assignment, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
+
 import type { ReactNode } from "react";
 import { LegacyRoot } from "react-reconciler/constants";
 import Yoga from "yoga-layout";
@@ -126,27 +127,35 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     let teardownSucceeded = false;
 
     try {
-        // Synchronously render the React tree into the container
-        reconciler.updateContainerSync(node, container, null, () => {});
-        reconciler.flushSyncWork();
+        let output = "";
 
-        // Yoga layout has already been calculated by onComputeLayout during commit.
-        // Render the DOM tree to a string — this captures the dynamic (non-static) output.
-        const { output } = renderer(rootNode, false);
+        try {
+            // Synchronously render the React tree into the container
+            reconciler.updateContainerSync(node, container, null, () => {});
+            reconciler.flushSyncWork();
 
-        // Tear down: unmount the tree so the reconciler cleans up child nodes
-        // and runs effect cleanup functions. Child Yoga nodes are freed by the
-        // reconciler's removeChildFromContainer → cleanupYogaNode → freeRecursive.
-        reconciler.updateContainerSync(null, container, null, () => {});
-        reconciler.flushSyncWork();
-        teardownSucceeded = true;
+            // Yoga layout has already been calculated by onComputeLayout during commit.
+            // Render the DOM tree to a string — this captures the dynamic (non-static) output.
+            ({ output } = renderer(rootNode, false));
+        } finally {
+            // Tear down: unmount the tree so the reconciler cleans up child nodes
+            // and runs effect cleanup functions. Child Yoga nodes are freed by the
+            // reconciler's removeChildFromContainer → cleanupYogaNode → freeRecursive.
+            // This runs even when producing the output throws, so effects still clean up.
+            reconciler.updateContainerSync(null, container, null, () => {});
+            reconciler.flushSyncWork();
+            teardownSucceeded = true;
 
-        // Free the root yoga node itself (children already freed by reconciler)
-        rootNode.yogaNode!.free();
+            // Free the root yoga node itself (children already freed by reconciler)
+            rootNode.yogaNode!.free();
+        }
 
         // Re-throw after full cleanup so callers see the original error.
         if (uncaught.has) {
-            throw uncaught.error instanceof Error ? uncaught.error : new Error(String(uncaught.error));
+            // Keep native errors (including ones from another realm) as they are; wrap any other thrown value.
+            const isError = uncaught.error instanceof Error || Object.prototype.toString.call(uncaught.error) === "[object Error]";
+
+            throw isError ? (uncaught.error as Error) : new Error(String(uncaught.error));
         }
 
         // The renderer appends a trailing newline to static output for terminal

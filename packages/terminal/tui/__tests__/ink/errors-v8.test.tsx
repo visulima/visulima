@@ -5,10 +5,12 @@ import { pathToFileURL } from "node:url";
 import vm from "node:vm";
 
 import { strip as stripAnsi } from "@visulima/ansi";
+import { useLayoutEffect } from "react";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ErrorOverview } from "../../src/components/index";
+import { ErrorOverview, Text, Transform } from "../../src/components/index";
 import { render } from "../../src/ink/index";
+import renderToString from "../../src/ink/render-to-string";
 import createStdout from "../helpers/ink-create-stdout";
 import { renderToString as renderToStringHelper } from "../helpers/ink-render";
 
@@ -182,5 +184,72 @@ describe("error reporting", () => {
         const app = render(<Test />, { stdout });
 
         await expect(app.waitUntilExit()).rejects.toBe(error);
+    });
+});
+
+describe("renderToString error handling", () => {
+    it("runs effect cleanup when a transform throws", () => {
+        expect.hasAssertions();
+
+        const error = new Error("Transform failed");
+        let setupCount = 0;
+        let cleanupCount = 0;
+
+        const Test = () => {
+            useLayoutEffect(() => {
+                setupCount += 1;
+
+                return () => {
+                    cleanupCount += 1;
+                };
+            }, []);
+
+            return (
+                <Transform
+                    transform={() => {
+                        throw error;
+                    }}
+                >
+                    <Text>Hello</Text>
+                </Transform>
+            );
+        };
+
+        expect(() => renderToString(<Test />)).toThrow(error);
+        expect(setupCount).toBe(1);
+        expect(cleanupCount).toBe(1);
+        expect(renderToString(<Text>Still works</Text>)).toBe("Still works");
+    });
+
+    it("preserves component errors from another realm", () => {
+        expect.hasAssertions();
+
+        const error = vm.runInNewContext("new TypeError(\"Invalid configuration\")") as Error;
+        const Broken = (): never => {
+            throw error;
+        };
+
+        let caught: unknown;
+
+        try {
+            renderToString(<Broken />);
+        } catch (error_: unknown) {
+            caught = error_;
+        }
+
+        expect(caught).toBe(error);
+        expect(renderToString(<Text>Still works</Text>)).toBe("Still works");
+    });
+
+    it("does not silently return empty output for a component that throws undefined", () => {
+        expect.hasAssertions();
+
+        const Broken = (): never => {
+            // eslint-disable-next-line @typescript-eslint/only-throw-error
+            throw undefined;
+        };
+
+        expect(() => renderToString(<Broken />)).toThrow("undefined");
+        expect(renderToString(<Text>Still works</Text>)).toBe("Still works");
     });
 });
