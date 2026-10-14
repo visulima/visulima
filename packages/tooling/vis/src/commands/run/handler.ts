@@ -621,6 +621,43 @@ const appendForwardedArgs = (command: string, task: Task): string => {
 };
 
 /**
+ * The shell command a task spawns: its configured command with the forwarded
+ * arguments and `affectedFiles: "args"` appended, then wrapped in the target's
+ * custom shell. The executor and the traced run both spawn this string, and the
+ * traced key hashes it, so the two cannot drift.
+ */
+const resolveTaskCommand = (task: Task, affectedFiles: string[] | undefined, currentOs: ReturnType<typeof detectCurrentOs>): string | undefined => {
+    // `overrides.command` is already token-expanded at the build site so the
+    // cache hasher sees the resolved form.
+    const expandedCommand = task.overrides["command"] as string | undefined;
+
+    if (!expandedCommand) {
+        return undefined;
+    }
+
+    const visOptions = getTaskOptions(task);
+
+    // Forwarded args and `affectedFiles: "args"` belong to the end of the
+    // whole `&&` chain, so only the last segment of a split target gets them.
+    const isChainHead = task.segment !== undefined && task.segment.index < task.segment.count;
+    const commandWithArgs = isChainHead ? expandedCommand : appendForwardedArgs(expandedCommand, task);
+    const commandWithAffected = isChainHead ? commandWithArgs : buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
+
+    const customShell = resolveTargetShell(visOptions, currentOs);
+    // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
+    // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
+    // An empty array would drop the flag entirely (turning `node 'cmd'`
+    // into a file lookup), so fall back to `-c`.
+    const shellArgs = visOptions?.shellArgs;
+    const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
+    // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
+    // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
+    // the command under cmd.exe, breaking e.g. `node -e` on Windows.
+
+    return customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
+};
+
+/**
  * Serializes tasks that share a mutex name. Keyed by mutex name, each
  * entry is the tail of a promise chain — a task acquires the mutex by
  * awaiting the current tail, then replaces it with its own completion
@@ -688,14 +725,6 @@ export const createRetryBudget = (limit: number): RetryBudget => {
 };
 
 interface ExecutorDependencies {
-    affectedFiles?: string[];
-
-    /**
-     * Host OS resolved once at run-start so the per-task executor
-     * doesn't call `os.platform()` on every invocation.
-     */
-    currentOs: ReturnType<typeof detectCurrentOs>;
-
     /**
      * Plugin hook bus. Used by the executor to fire `task:retry` before
      * each restart attempt — bridged from task-runner's per-attempt
@@ -714,6 +743,9 @@ interface ExecutorDependencies {
     mutexPool?: MutexPool;
     onOutput?: (taskId: string, text: string) => void;
     onOutputReplace?: (taskId: string, fullContent: string) => void;
+    /** The shell command one task spawns. Shared with the traced run. */
+    resolveCommand: (task: Task) => string | undefined;
+
     /** Optional global retry budget applied across all tasks in the run. */
     retryBudget?: RetryBudget;
 
@@ -736,12 +768,10 @@ interface ExecutorDependencies {
     stdinRegistry?: Map<string, StdinEntry>;
 
     /**
-     * When `true`, every task command is scanned for `${VAR}` / `$VAR`
-     * references before spawn — unset references fail the task instead
-     * of silently expanding to "". Falls back to per-target
-     * `options.strictEnv`, then `vis.config.ts strictEnv`, then `false`.
+     * The strict-env failure for one spawn, or `undefined` when the command may run.
+     * Built once per run from the run's `--strict-env` / `vis.config.ts strictEnv` setting.
      */
-    strictEnv?: boolean;
+    strictEnvFailure: (task: Task, command: string, execOptions: { cwd?: string }) => string | undefined;
 
     workspaceRoot: string;
 }
@@ -763,18 +793,17 @@ interface ExecutorDependencies {
 
 const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
     const {
-        affectedFiles,
-        currentOs,
         hooks,
         lifeCycle,
         mutexPool,
         onOutput,
         onOutputReplace,
+        resolveCommand,
         retryBudget,
         serviceEventBridge: bridge,
         spawnContext,
         stdinRegistry,
-        strictEnv: workspaceStrictEnv,
+        strictEnvFailure,
         workspaceRoot,
     } = deps;
 
@@ -782,63 +811,25 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Ta
 
     const resolvedCwd = resolveTaskCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
 
-    // `overrides.command` is already token-expanded at the build
-    // site so the cache hasher sees the resolved form. Forwarded
-    // args and the `affectedFiles: "args"` trailing-append both
-    // keep their existing append-at-end semantics.
-    const expandedCommand = task.overrides["command"] as string | undefined;
+    // The spawned command comes from the resolver the traced run also uses,
+    // so both paths run the same string.
+    const command = resolveCommand(task);
 
-    if (!expandedCommand) {
+    if (!command) {
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
-
-    // Forwarded args and `affectedFiles: "args"` belong to the end of the
-    // whole `&&` chain, so only the last segment of a split target gets them.
-    const isChainHead = task.segment !== undefined && task.segment.index < task.segment.count;
-    const commandWithArgs = isChainHead ? expandedCommand : appendForwardedArgs(expandedCommand, task);
-    const commandWithAffected = isChainHead ? commandWithArgs : buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
-
-    const customShell = resolveTargetShell(visOptions, currentOs);
-    // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
-    // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
-    // An empty array would drop the flag entirely (turning `node 'cmd'`
-    // into a file lookup), so fall back to `-c`.
-    const shellArgs = visOptions?.shellArgs;
-    const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
-    // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
-    // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
-    // the command under cmd.exe, breaking e.g. `node -e` on Windows.
-    const command = customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
 
     // Clean mode builds the complete child environment, so the child sees only
     // the policy's parent names plus the injected entries, and the spawn does not
     // inherit the parent env. Inherit mode keeps the spawner's default.
     const spawn = resolveTaskSpawn(spawnContext, task, execOptions);
-    const childPolicy = spawnContext.childEnvPolicy(task);
-    const cleanChild = childPolicy.mode === "clean";
 
-    // Per-target opt-in/out wins over the workspace flag — let a
-    // single target tolerate `$VAR` references when the rest of the
-    // workspace runs strict, and vice versa.
-    const strictEnvActive = visOptions?.strictEnv ?? workspaceStrictEnv ?? false;
+    const strictFailure = strictEnvFailure(task, command, execOptions);
 
-    if (strictEnvActive) {
-        const violation = checkStrictEnv({
-            command: commandWithAffected,
-            // A variable the clean child cannot see is unset for the check,
-            // so `$VAR` fails the task instead of expanding to "".
-            processEnv: cleanChild ? pickChildParentEnv(process.env, childPolicy) : process.env,
-            taskEnv: spawn.env,
-            taskId: task.id,
-        });
+    if (strictFailure !== undefined) {
+        lifeCycle?.onTaskStderr?.(task, strictFailure);
 
-        if (violation) {
-            const message = formatStrictEnvError(violation);
-
-            lifeCycle?.onTaskStderr?.(task, message);
-
-            return { code: 1, terminalOutput: message };
-        }
+        return { code: 1, terminalOutput: strictFailure };
     }
 
     // PTY stdio is enabled when either an interactive stdin registry is
@@ -2430,6 +2421,39 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         workspaceRoot,
     });
 
+    // The command a spawn runs, and the strict-env failure for it. The executor
+    // and the traced run both call these, so the two read the same command and
+    // the same child environment.
+    const resolveCommand = (task: Task): string | undefined => resolveTaskCommand(task, affectedFiles, currentOs);
+
+    const strictEnvFailure = (task: Task, command: string, execOptions: { cwd?: string }): string | undefined => {
+        // A per-target setting wins over the workspace flag, so one target can opt out (or in).
+        const strictEnvActive = getTaskOptions(task)?.strictEnv ?? resolvedStrictEnv;
+
+        if (!strictEnvActive) {
+            return undefined;
+        }
+
+        const spawn = resolveTaskSpawn(spawnContext, task, execOptions);
+        const childPolicy = spawnContext.childEnvPolicy(task);
+        const violation = checkStrictEnv({
+            command,
+            // A variable the clean child cannot see is unset for the check, so `$VAR` fails the task instead of expanding to "".
+            processEnv: childPolicy.mode === "clean" ? pickChildParentEnv(process.env, childPolicy) : process.env,
+            taskEnv: spawn.env,
+            taskId: task.id,
+        });
+
+        return violation ? formatStrictEnvError(violation) : undefined;
+    };
+
+    // The traced run's pre-spawn check: the same strict-env failure the executor reports.
+    const preTraceCheck = (task: Task, spawnOptions: { cwd: string }): string | undefined => {
+        const command = resolveCommand(task);
+
+        return command === undefined ? undefined : strictEnvFailure(task, command, spawnOptions);
+    };
+
     // Resolve the remote-cache config in three layers (CLI > vis.config.ts
     // > Turbo env-var compat). Fill missing HTTP fields from TURBO_API /
     // TURBO_TOKEN / TURBO_TEAM so a workspace migrating from Turbo keeps
@@ -2639,8 +2663,6 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             const lifeCycle = new CompositeLifeCycle([uiLifeCycle, hookLifeCycle, failureLogLifeCycle]);
             const mutexPool: MutexPool = new Map();
             const taskExecutor = createConcurrentExecutor({
-                affectedFiles,
-                currentOs,
                 hooks,
                 lifeCycle,
                 mutexPool,
@@ -2654,11 +2676,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 onOutputReplace: (taskId, fullContent) => {
                     store.setOutput(taskId, fullContent);
                 },
+                resolveCommand,
                 retryBudget: sharedRetryBudget,
                 serviceEventBridge: serviceEventBridge ?? undefined,
                 spawnContext,
                 stdinRegistry,
-                strictEnv: resolvedStrictEnv,
+                strictEnvFailure,
                 workspaceRoot,
             });
 
@@ -2672,8 +2695,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                     lastResults = await defaultTaskRunner(initialTasks, runnerOptions, {
                         childEnvPolicy: childEnvPolicyFor,
                         lifeCycle,
+                        preTraceCheck,
                         projectGraph,
                         resolveChildEnv: (task, spawnOptions) => resolveTaskSpawn(spawnContext, task, spawnOptions),
+                        resolveCommand,
                         taskExecutor,
                         taskGraph,
                         workspaceRoot,
@@ -2846,15 +2871,14 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             ]);
 
             const taskExecutor = createConcurrentExecutor({
-                affectedFiles,
-                currentOs,
                 hooks,
                 lifeCycle,
                 mutexPool,
+                resolveCommand,
                 retryBudget: sharedRetryBudget,
                 serviceEventBridge: serviceEventBridge ?? undefined,
                 spawnContext,
-                strictEnv: resolvedStrictEnv,
+                strictEnvFailure,
                 workspaceRoot,
             });
 
@@ -2864,8 +2888,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                 const results = await defaultTaskRunner(initialTasks, runnerOptions, {
                     childEnvPolicy: childEnvPolicyFor,
                     lifeCycle,
+                    preTraceCheck,
                     projectGraph,
                     resolveChildEnv: (task, spawnOptions) => resolveTaskSpawn(spawnContext, task, spawnOptions),
+                    resolveCommand,
                     taskExecutor,
                     taskGraph,
                     workspaceRoot,
