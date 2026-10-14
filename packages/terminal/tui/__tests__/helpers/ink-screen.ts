@@ -311,3 +311,27 @@ export const renderFrames = (frames: string[], { cols = 40, incremental = true, 
 
     return replayAfterPrompt(stdout.getWrites(), rows, cols);
 };
+
+/**
+ * Resizes the model the way a typical terminal does: rows that no longer fit leave the top of the screen into the
+ * scrollback, and the cursor stays on the same content where it can.
+ */
+export const resizeScreen = (screen: Screen, cols: number, height: number): void => {
+    while (screen.rows.length > height) {
+        screen.scrollback.push(screen.rows.shift()!.join("").trimEnd());
+        screen.styles.shift();
+        screen.cursorY = Math.max(0, screen.cursorY - 1);
+    }
+
+    while (screen.rows.length < height) {
+        screen.rows.push(Array.from({ length: cols }).fill(" ") as string[]);
+        screen.styles.push(Array.from({ length: cols }).fill(defaultPen) as Pen[]);
+    }
+
+    screen.rows = screen.rows.map((row) => Array.from({ length: cols }, (_, column) => row[column] ?? " "));
+    screen.styles = screen.styles.map((row) => Array.from({ length: cols }, (_, column) => row[column] ?? defaultPen));
+    screen.cols = cols;
+    screen.height = height;
+    screen.cursorX = Math.min(screen.cursorX, cols - 1);
+    screen.cursorY = Math.min(screen.cursorY, height - 1);
+};
