@@ -6,6 +6,7 @@ import type { Cache, CachedResult } from "./cache";
 import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
 import type { ChildEnvOptions } from "./child-env";
 import { pickChildParentEnv } from "./child-env";
+import type { TrackerKind } from "./file-access-tracker";
 import type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 import { FingerprintManager, hashFingerprint } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
@@ -680,17 +681,18 @@ class TaskOrchestrator {
             const cachedResult = await this.#cache.getByTaskId(task.id);
 
             if (cachedResult?.fingerprint && this.#fingerprintManager) {
-                const commandMiss = this.#fingerprintManager.validateCommand(
-                    cachedResult.fingerprint,
-                    `${task.target.project}:${task.target.target}`,
-                    task.overrides,
-                );
+                // A different command or tracker observed different accesses, so its
+                // file hashes say nothing about this run. Both are checked before any
+                // file is hashed.
+                const identityMiss
+                    = this.#fingerprintManager.validateCommand(cachedResult.fingerprint, `${task.target.project}:${task.target.target}`, task.overrides)
+                        ?? this.#fingerprintManager.validateTracker(cachedResult.fingerprint, this.#predictTracker(task));
 
-                if (commandMiss) {
-                    cacheMissReasons = [commandMiss];
+                if (identityMiss) {
+                    cacheMissReasons = [identityMiss];
 
                     if (this.#cacheDiagnostics) {
-                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([commandMiss]));
+                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([identityMiss]));
                     }
                 } else {
                     const missReasons = await this.#fingerprintManager.validate(cachedResult.fingerprint);
@@ -730,6 +732,24 @@ class TaskOrchestrator {
         }
 
         return this.#executeTaskWithTracking(task, startTime, cacheMissReasons, declaredKey);
+    }
+
+    /**
+     * The tracker kind the run will record, or `undefined` when it runs without
+     * one (no shell command, so the synthetic-reads branch). Decided before the
+     * run; mirrors the gate in {@link #executeTaskWithTracking}.
+     */
+    #predictTracker(task: Task): TrackerKind | undefined {
+        const shellCommand = this.#resolveCommand?.(task);
+
+        if (!shellCommand || !this.#trackedExecutor?.isTrackingSupported) {
+            return undefined;
+        }
+
+        // The same child-environment policy `execute` will receive: a clean environment changes which tracker runs.
+        const childSpawn = this.#resolveChildEnv?.(task, { cwd: resolveTaskCwd(this.#workspaceRoot, task) });
+
+        return this.#trackedExecutor.trackerKindFor(shellCommand, { inheritEnv: childSpawn?.inheritEnv });
     }
 
     async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number, hashSource?: TaskResult["hashSource"]): Promise<TaskResult> {

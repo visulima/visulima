@@ -96,6 +96,18 @@ describe("trace-mode cache explanations", () => {
         expect(text).toContain("Environment variable changed: NODE_ENV");
     });
 
+    it("cache why names the tracker that changed for a trace-mode task", async () => {
+        expect.assertions(1);
+
+        writeLastSummary(workspaceRoot, [traceTask({ cacheMissReasons: [{ detail: "strace -> preload", type: "tracker-changed" }] })], "run-tracker");
+
+        const logger = createMockLogger();
+
+        await runWhy("app:build", { format: "table", runId: undefined, workspaceRoot }, logger as unknown as Console);
+
+        expect(logger.lines.join("\n")).toContain("Tracker changed (strace -> preload): the stored trace saw different file accesses");
+    });
+
     it("cache why JSON carries cacheMissReasons", async () => {
         expect.assertions(1);
 

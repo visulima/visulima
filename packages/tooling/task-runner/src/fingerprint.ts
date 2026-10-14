@@ -94,7 +94,7 @@ export interface CacheMissReason {
     currentHash?: string;
     detail: string;
     previousHash?: string;
-    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint" | "declared-changed";
+    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint" | "declared-changed" | "tracker-changed";
 }
 
 /**
@@ -163,6 +163,10 @@ export const describeCacheMissReason = (reason: CacheMissReason): string => {
 
         case "file-deleted": {
             return `File deleted: ${reason.detail}`;
+        }
+
+        case "tracker-changed": {
+            return `Tracker changed (${reason.detail}): the stored trace saw different file accesses`;
         }
 
         default: {
@@ -391,6 +395,24 @@ export class FingerprintManager {
         }
 
         return undefined;
+    }
+
+    /**
+     * Rejects an entry that a different tracker recorded: a different
+     * mechanism sees a different set of files, so its file hashes say
+     * nothing about this run. An entry with no recorded tracker (written by
+     * an older release) is accepted, and the file hashes decide as before.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public validateTracker(fingerprint: TaskFingerprint, tracker: TrackerKind | undefined): CacheMissReason | undefined {
+        if (fingerprint.tracker === undefined || fingerprint.tracker === tracker) {
+            return undefined;
+        }
+
+        return {
+            detail: `${fingerprint.tracker} -> ${tracker ?? "none"}`,
+            type: "tracker-changed",
+        };
     }
 
     // eslint-disable-next-line class-methods-use-this

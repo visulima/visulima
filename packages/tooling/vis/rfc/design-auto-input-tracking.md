@@ -210,6 +210,29 @@ in `task-hasher` and avoids accidental cross-platform hits.
 
 **Recommendation:** include the tracker kind in the key as part of stage 1 of G1.
 
+**Lookup check (done).** The key only helps a remote cache. A local lookup goes
+through the task index, which returns the last stored entry, and that entry can
+come from a different tracker. Its file hashes then say nothing about this run,
+because a different mechanism sees a different set of files. So the lookup
+rejects such an entry with `tracker-changed` before any file is hashed.
+
+- **When the kind is known.** The kind is decided before the run, not after it.
+  `TrackedTaskExecutor.trackerKindFor(command)` applies the same host checks and
+  command shape that `execute` dispatches on, so the lookup can compare the
+  kinds without running the command. Validating after the run would have to run
+  the command just to learn that the stored entry is stale, and it could never
+  short-circuit a hit. A parity test pins the prediction to `execute` on every
+  dispatch branch.
+- **Command-less tasks.** A task with no shell command runs without a tracker,
+  so its prediction is `undefined`. A stored trace that recorded a tracker
+  misses against it.
+- **Older entries.** An entry with no recorded tracker (written before the kind
+  joined the key) still hits, and its file hashes decide as before.
+- **Declared-fallback entries.** They are keyed on the declared hash, which does
+  not depend on the tracker, so they are not checked against it.
+- **Cost.** A tracker change is one miss. The re-run stores its entry under the
+  new kind, so alternating between two trackers misses on each change.
+
 ## Not doing
 
 - Replacing the Node preload with a native shim for macOS shell commands. This
@@ -219,15 +242,16 @@ in `task-hasher` and avoids accidental cross-platform hits.
 
 ## Ordering
 
-| Stage | Item                                       | Native code | Breaking                                            | Status |
-| ----- | ------------------------------------------ | ----------- | --------------------------------------------------- | ------ |
-| 1     | G1-B declared fallback for empty trace     | no          | no                                                  | done   |
-| 1     | G4 tracker kind in the trace key           | no          | new trace keys after upgrade; old entries still hit | done   |
-| 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | done   |
-| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | done   |
-| 3     | G2-B opt-in clean env                      | no          | opt-in                                              | done   |
-| 3     | G2-C doctor env coverage check             | no          | no                                                  | done   |
-| 3     | G3.3 trace-mode segments                   | no          | no                                                  | open   |
+| Stage | Item                                       | Native code | Breaking                                                      | Status |
+| ----- | ------------------------------------------ | ----------- | ------------------------------------------------------------- | ------ |
+| 1     | G1-B declared fallback for empty trace     | no          | no                                                            | done   |
+| 1     | G4 tracker kind in the trace key           | no          | new trace keys after upgrade; old entries still hit           | done   |
+| 1     | G4 validate stored trace against tracker   | no          | one miss when the tracker kind changes; old entries still hit | done   |
+| 2     | G3.1 compound parser, refusing unsupported | no          | no                                                            | done   |
+| 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                            | done   |
+| 3     | G2-B opt-in clean env                      | no          | opt-in                                                        | done   |
+| 3     | G2-C doctor env coverage check             | no          | no                                                            | done   |
+| 3     | G3.3 trace-mode segments                   | no          | no                                                            | open   |
 
 ## References
 

@@ -82,6 +82,11 @@ Cache miss reasons:
   - Directory contents changed: src/components
 ```
 
+A stored trace recorded by a different tracker (`seccomp`, `strace`, `interpose`, `iat`
+or `preload`) misses with `Tracker changed (strace -> preload)` before any file is
+hashed. The tracker is predicted from the host and the command before the run, so the
+check does not need the command to run first.
+
 ## Untracked Environment Variables
 
 Some env vars should be available to tasks but not affect the cache (e.g., CI build IDs):

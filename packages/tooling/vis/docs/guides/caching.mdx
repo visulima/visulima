@@ -118,6 +118,14 @@ A traced key is a digest of the observed file hashes, the env values, and the tr
 that produced them (`seccomp`, `strace`, `interpose`, `iat` or `preload`). The same
 workspace traced on two platforms therefore never shares a key.
 
+A stored trace is also checked against the tracker the current run will use. The
+tracker is predicted before the command runs, from the same host and command checks,
+so a stored trace from a different tracker misses at once with
+`Tracker changed (strace -> preload)` in `vis cache why`, and the run re-stores its
+entry under the new tracker. The change costs one miss. Entries written by older
+releases record no tracker and still hit. Declared-fallback entries are keyed on the
+declared hash, which does not depend on the tracker, so they are not checked.
+
 Traced keys can differ between machines, because the observed read set depends on
 the platform. Keep targets on `"declared"` whenever you can list their inputs.
 

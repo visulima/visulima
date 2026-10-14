@@ -77,6 +77,39 @@ export class TrackedTaskExecutor {
     }
 
     /**
+     * The tracker {@link execute} will label its accesses with, decided before
+     * the run from the same host checks and command shape. The orchestrator
+     * validates a stored trace against it, so an entry recorded by another
+     * tracker misses. Must follow the dispatch in `execute`; the parity test
+     * in `tracked-executor.test.ts` pins the two together.
+     */
+    public trackerKindFor(command: string, options: { inheritEnv?: boolean } = {}): TrackerKind {
+        // Mirrors the dispatch in `execute`: under a clean environment (`inheritEnv: false`) the native
+        // trackers are skipped because they add their variables on top of the parent's environment.
+        const inheritEnv = options.inheritEnv !== false;
+
+        if (inheritEnv && this.#tracker.isSupported()) {
+            return this.#tracker.linuxTrackerKind();
+        }
+
+        if (!inheritEnv && this.#tracker.isStraceAvailable()) {
+            return "strace";
+        }
+
+        const directArgv = inheritEnv && (this.#tracker.isInterposeSupported() || this.#tracker.isIatHookSupported()) ? parseDirectExec(command) : undefined;
+
+        if (directArgv && this.#tracker.isInterposeSupported()) {
+            return "interpose";
+        }
+
+        if (directArgv && this.#tracker.isIatHookSupported()) {
+            return "iat";
+        }
+
+        return "preload";
+    }
+
+    /**
      * Executes a task command and tracks all file system accesses.
      *
      * On Linux, uses strace for comprehensive tracking.

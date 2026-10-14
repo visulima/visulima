@@ -60,11 +60,16 @@ describe("trace-mode declared fallback", () => {
         };
     };
 
-    /** Stubs the tracker: every run observes `accesses` and reports `tracker`. */
+    /**
+     * Stubs the tracker: every run observes `accesses` and reports `tracker`.
+     * The predicted tracker is stubbed to the same kind, so a stored entry is
+     * validated against the tracker the stubbed run records, on every host.
+     */
     const stubTracker = (accesses: TrackedExecutionResult["accesses"], tracker: TrackedExecutionResult["tracker"] = "preload") => {
         vi.spyOn(TrackedTaskExecutor.prototype, "execute").mockImplementation(async () => {
             return { accesses, code: 0, hints: emptyHints(), terminalOutput: "done", tracker };
         });
+        vi.spyOn(TrackedTaskExecutor.prototype, "trackerKindFor").mockReturnValue(tracker);
     };
 
     const run = async ({ declared, skipCache = false }: RunOptions) => {
