@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Cache } from "../../src/cache";
+import { cleanEnvEssentialNames } from "../../src/child-env";
 import { defaultTaskRunner } from "../../src/default-task-runner";
 import { EmptyLifeCycle } from "../../src/life-cycle";
 import type { ProjectGraph, Task, TaskGraph, TaskResults, TaskRunnerContext, TaskRunnerOptions } from "../../src/types";
@@ -199,7 +200,8 @@ describe("defaultTaskRunner with splitCompound on a traced target", () => {
         await expect(readRuns()).resolves.toStrictEqual(["b", "c"]);
     });
 
-    it("falls back to the declared hash for a segment whose tracker saw nothing, and chains the segment after it on that hash", async () => {
+    // `true` is a POSIX builtin. cmd.exe has none, so the two tests that rely on it are POSIX-only.
+    it.skipIf(process.platform === "win32")("falls back to the declared hash for a segment whose tracker saw nothing, and chains the segment after it on that hash", async () => {
         expect.assertions(6);
 
         // `true` reads no workspace file, so the tracker observes nothing for it.
@@ -225,7 +227,7 @@ describe("defaultTaskRunner with splitCompound on a traced target", () => {
         expect(changed.get("app:build#3")?.status).toBe("success");
     });
 
-    it("never serves a segment whose tracker saw nothing and which declares no inputs, so the segment after it cannot be keyed", async () => {
+    it.skipIf(process.platform === "win32")("never serves a segment whose tracker saw nothing and which declares no inputs, so the segment after it cannot be keyed", async () => {
         expect.assertions(4);
 
         const command = "node step.cjs a && true && node step.cjs c";
@@ -329,9 +331,11 @@ describe("defaultTaskRunner with splitCompound on a traced target", () => {
         expect.assertions(2);
 
         let flag = "one";
+        // The platform's essential names (PATH, and SystemRoot on Windows, without which node will not start).
+        const essentials = Object.fromEntries(cleanEnvEssentialNames().flatMap((name) => (process.env[name] === undefined ? [] : [[name, process.env[name]]])));
         const context = {
-            // Clean child environment: the children see only PATH and the flag, so the flag is what the key reads.
-            resolveChildEnv: () => { return { env: { CHILD_FLAG: flag, PATH: process.env["PATH"] ?? "" }, inheritEnv: false }; },
+            // Clean child environment: the children see only the essentials and the flag, so the flag is what the key reads.
+            resolveChildEnv: () => { return { env: { ...essentials, CHILD_FLAG: flag }, inheritEnv: false }; },
         };
         const task = { fingerprintEnv: ["CHILD_FLAG"] };
 
