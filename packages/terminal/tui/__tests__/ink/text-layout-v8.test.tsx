@@ -4,6 +4,18 @@ import { Box, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 
 describe("text characters", () => {
+    it("zero-width spaces do not overwrite box borders", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box borderStyle="single" width={7}>
+                <Text>{"he\u200Bllo"}</Text>
+            </Box>,
+        );
+
+        expect(output.replaceAll("​", "")).toBe("┌─────┐\n│hello│\n└─────┘");
+    });
+
     it("wide characters crossing the left output edge preserve visible columns", () => {
         expect.hasAssertions();
 

@@ -297,6 +297,8 @@ const parseOscHyperlink = (oscValue: string): string | undefined => {
 
 // ── Core Pipeline ────────────────────────────────────────────────────
 
+const defaultIgnorableRegex = /^\p{Default_Ignorable_Code_Point}+$/u;
+
 /**
  * Process text tokens: segment into graphemes, handle combining sequences,
  * and push each character to the StyledLine with current SGR state.
@@ -324,6 +326,11 @@ const processTextToken = (text: string, line: StyledLine, state: SgrState): void
 
         // Skip backspace characters
         if (value === "\b") {
+            continue;
+        }
+
+        // Standalone invisible characters (zero-width space, word joiner) must not take a terminal cell.
+        if (defaultIgnorableRegex.test(value)) {
             continue;
         }
 
