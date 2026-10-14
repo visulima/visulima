@@ -709,6 +709,7 @@ catalogs:
     '@vitest/coverage-v8': 4.1.11
     '@vitest/ui': 4.1.11
     eslint-plugin-playwright: 2.11.0
+    miniflare: 5.20260804.0-alpha
     next-test-api-route-handler: 5.0.6
     playwright: ^1.62.1
     test-runner: 0.11.1

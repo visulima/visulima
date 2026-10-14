@@ -2,13 +2,23 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 // These tests exercise the lazy `dist/domains.json` loader inside `src/index.ts`.
 // Because the loaded list is cached at module scope, each scenario imports a fresh
-// module instance via `vi.resetModules()` + dynamic `import()` after configuring the
-// `node:fs` mock.
+// module instance via `vi.resetModules()` + dynamic `import()` after stubbing the
+// `node:fs` builtin the loader resolves through `process.getBuiltinModule`.
+
+const mockReadFileSync = (readFileSync: () => string): void => {
+    const getBuiltinModule = process.getBuiltinModule.bind(process);
+    const mocked = (id: string): unknown => {
+        const actual = getBuiltinModule(id);
+
+        return id === "node:fs" ? { ...actual, readFileSync } : actual;
+    };
+
+    vi.spyOn(process, "getBuiltinModule").mockImplementation(mocked as typeof process.getBuiltinModule);
+};
 
 describe("domains.json loading", () => {
     afterEach(() => {
         vi.resetModules();
-        vi.doUnmock("node:fs");
         vi.restoreAllMocks();
     });
 
@@ -16,15 +26,8 @@ describe("domains.json loading", () => {
         expect.assertions(3);
 
         vi.resetModules();
-        vi.doMock(import("node:fs"), async (importOriginal) => {
-            const actual = await importOriginal<typeof import("node:fs")>();
-
-            return {
-                ...actual,
-                readFileSync: () => {
-                    throw new Error("ENOENT: no such file");
-                },
-            };
+        mockReadFileSync(() => {
+            throw new Error("ENOENT: no such file");
         });
 
         const { isFreeEmail, isListLoaded } = await import("../src/index");
@@ -41,14 +44,7 @@ describe("domains.json loading", () => {
         expect.assertions(3);
 
         vi.resetModules();
-        vi.doMock(import("node:fs"), async (importOriginal) => {
-            const actual = await importOriginal<typeof import("node:fs")>();
-
-            return {
-                ...actual,
-                readFileSync: () => JSON.stringify({ not: "an array" }),
-            };
-        });
+        mockReadFileSync(() => JSON.stringify({ not: "an array" }));
 
         const { isFreeEmail, isListLoaded } = await import("../src/index");
 
@@ -62,14 +58,7 @@ describe("domains.json loading", () => {
         expect.assertions(2);
 
         vi.resetModules();
-        vi.doMock(import("node:fs"), async (importOriginal) => {
-            const actual = await importOriginal<typeof import("node:fs")>();
-
-            return {
-                ...actual,
-                readFileSync: () => JSON.stringify(["mocked-free.com"]),
-            };
-        });
+        mockReadFileSync(() => JSON.stringify(["mocked-free.com"]));
 
         const { isFreeEmail } = await import("../src/index");
 
