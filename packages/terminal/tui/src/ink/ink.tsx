@@ -400,8 +400,8 @@ export default class Ink {
     // can reinstate the exact same protocol on resume.
     private kittyFlags?: KittyFlagName[];
 
-    // Set while suspendTerminal() has handed the terminal to a child process.
-    private isSuspended = false;
+    // The suspension that currently owns the terminal, set while suspendTerminal() has handed it to a child process.
+    private activeSuspension?: object;
 
     // Input pause/resume hooks registered by the App component, which owns raw
     // mode and bracketed paste state.
@@ -1770,20 +1770,20 @@ export default class Ink {
      * restores.
      */
     suspendTerminal = (async (callback?: () => Promise<void> | void): Promise<TerminalSuspension | undefined> => {
-        this.beginSuspend();
+        const suspension = this.beginSuspend();
 
         if (callback) {
             try {
                 await callback();
             } finally {
-                await this.endSuspend();
+                await this.endSuspend(suspension);
             }
 
             return undefined;
         }
 
         const resume = async (): Promise<void> => {
-            await this.endSuspend();
+            await this.endSuspend(suspension);
         };
 
         return { resume, [Symbol.asyncDispose]: resume };
@@ -1792,15 +1792,18 @@ export default class Ink {
         (): Promise<TerminalSuspension>;
     };
 
-    private beginSuspend(): void {
-        if (this.isSuspended) {
+    private beginSuspend(): object {
+        if (this.activeSuspension) {
             throw new Error("The terminal is already suspended. Resume the current suspension before suspending again.");
         }
 
-        this.isSuspended = true;
+        // Identifies this suspension, so a handle from an earlier one cannot resume a later one.
+        const suspension = {};
+
+        this.activeSuspension = suspension;
 
         if (!this.interactive || this.isUnmounted || this.isUnmounting) {
-            return;
+            return suspension;
         }
 
         try {
@@ -1822,7 +1825,7 @@ export default class Ink {
         } catch (error) {
             // If handing over the terminal fails partway, don't strand the app
             // suspended with no way back: reclaim input, clear the flag, rethrow.
-            this.isSuspended = false;
+            this.activeSuspension = undefined;
 
             try {
                 this.resumeInput?.();
@@ -1832,21 +1835,24 @@ export default class Ink {
 
             throw error;
         }
+
+        return suspension;
     }
 
-    private async endSuspend(): Promise<void> {
-        if (!this.isSuspended) {
+    private async endSuspend(suspension: object): Promise<void> {
+        // Already resumed, or superseded by a later suspension.
+        if (this.activeSuspension !== suspension) {
             return;
         }
 
-        this.isSuspended = false;
-
-        // Reclaim input even mid-unmount; pauseInput already ran, so this is symmetric.
-        this.resumeInput?.();
+        this.activeSuspension = undefined;
 
         if (!this.interactive || this.isUnmounted || this.isUnmounting) {
             return;
         }
+
+        // Reclaim input only while the app still owns the terminal. After unmount, App cleanup has already released it.
+        this.resumeInput?.();
 
         if (this.alternateScreen) {
             this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
