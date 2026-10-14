@@ -5,7 +5,7 @@ import { xxh3Hash } from "@shared/xxh3";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { collectFiles, createFailureResult, hashFile, hashStrings, isInsideWorkspace, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../../src/utils";
+import { collectFiles, createFailureResult, createWorkspaceContainment, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../../src/utils";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -240,12 +240,29 @@ describe(resolveTaskCwd, () => {
     });
 });
 
-describe(isInsideWorkspace, () => {
+describe(createWorkspaceContainment, () => {
+    let base: string;
+
+    beforeEach(async () => {
+        base = await createTemporaryDirectory();
+
+        await mkdir(join(base, "real", "ws"), { recursive: true });
+        await mkdir(join(base, "outside"), { recursive: true });
+        await writeFile(join(base, "real", "ws", "input.txt"), "input");
+        await writeFile(join(base, "outside", "secret.txt"), "secret");
+    });
+
+    afterEach(async () => {
+        await rm(base, { force: true, recursive: true });
+    });
+
     it("accepts paths strictly inside the workspace", () => {
         expect.assertions(2);
 
-        expect(isInsideWorkspace("/repo", "/repo/src/index.ts")).toBe(true);
-        expect(isInsideWorkspace("/repo", "/repo/packages/a/dist/out.js")).toBe(true);
+        const contain = createWorkspaceContainment("/repo");
+
+        expect(contain("/repo/src/index.ts")).toBeDefined();
+        expect(contain("/repo/packages/a/dist/out.js")).toBeDefined();
     });
 
     it("rejects a sibling directory sharing the workspace name as a string prefix", () => {
@@ -253,16 +270,66 @@ describe(isInsideWorkspace, () => {
 
         // The bug this replaces: `"/repo-cache/...".startsWith("/repo")` was
         // true, leaking sibling trees into the tracked access set.
-        expect(isInsideWorkspace("/repo", "/repo-cache/file.ts")).toBe(false);
-        expect(isInsideWorkspace("/repo", "/repo-backup/file.ts")).toBe(false);
-        expect(isInsideWorkspace("/proj", "/proj.worktrees/x/file.ts")).toBe(false);
+        const contain = createWorkspaceContainment("/repo");
+
+        expect(contain("/repo-cache/file.ts")).toBeUndefined();
+        expect(contain("/repo-backup/file.ts")).toBeUndefined();
+        expect(createWorkspaceContainment("/proj")("/proj.worktrees/x/file.ts")).toBeUndefined();
     });
 
     it("rejects the workspace root itself and outside paths", () => {
         expect.assertions(2);
 
-        expect(isInsideWorkspace("/repo", "/repo")).toBe(false);
-        expect(isInsideWorkspace("/repo", "/etc/hosts")).toBe(false);
+        const contain = createWorkspaceContainment("/repo");
+
+        expect(contain("/repo")).toBeUndefined();
+        expect(contain("/etc/hosts")).toBeUndefined();
+    });
+
+    // Windows: creating symlinks needs Developer Mode or admin rights, so the
+    // symlink cases are skipped there; the lexical cases above still run.
+    it.skipIf(process.platform === "win32")("maps a canonical path under a symlinked root to the root's spelling", async () => {
+        expect.assertions(1);
+
+        // A child process reports canonical paths (process.cwd() is
+        // symlink-resolved), while the workspace root is kept as configured.
+        await symlink(join(base, "real"), join(base, "link"));
+
+        const contain = createWorkspaceContainment(join(base, "link", "ws"));
+
+        expect(contain(join(base, "real", "ws", "input.txt"))).toBe(join(base, "link", "ws", "input.txt"));
+    });
+
+    it.skipIf(process.platform === "win32")("keeps a missing path under a symlinked root", async () => {
+        expect.assertions(1);
+
+        await symlink(join(base, "real"), join(base, "link"));
+
+        const contain = createWorkspaceContainment(join(base, "link", "ws"));
+
+        expect(contain(join(base, "real", "ws", "nope.txt"))).toBe(join(base, "link", "ws", "nope.txt"));
+    });
+
+    it.skipIf(process.platform === "win32")("treats a symlink that resolves outside the workspace as outside", async () => {
+        expect.assertions(2);
+
+        await symlink(join(base, "real"), join(base, "link"));
+        await symlink(join(base, "outside", "secret.txt"), join(base, "real", "ws", "ext.txt"));
+
+        // Real root: the symlink's own spelling is inside, its target is not.
+        expect(createWorkspaceContainment(join(base, "real", "ws"))(join(base, "real", "ws", "ext.txt"))).toBeUndefined();
+        // Symlinked root: same rule, reached through the link.
+        expect(createWorkspaceContainment(join(base, "link", "ws"))(join(base, "link", "ws", "ext.txt"))).toBeUndefined();
+    });
+
+    it.skipIf(process.platform === "win32")("keeps an in-workspace symlink in its own spelling", async () => {
+        expect.assertions(1);
+
+        await symlink(join(base, "real", "ws", "input.txt"), join(base, "real", "ws", "alias.txt"));
+
+        const alias = join(base, "real", "ws", "alias.txt");
+
+        expect(createWorkspaceContainment(join(base, "real", "ws"))(alias)).toBe(alias);
     });
 });
 

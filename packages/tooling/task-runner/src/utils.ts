@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
+import { realpathSync } from "node:fs";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
-import { join, relative } from "@visulima/path";
+import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
 
@@ -192,21 +193,70 @@ const readPackageDeps = async (
 };
 
 /**
- * Reports whether `absolutePath` lives strictly inside `workspaceRoot`.
- *
- * A bare `absolutePath.startsWith(workspaceRoot)` is wrong: a workspace
- * root of `/repo` also prefix-matches sibling trees like `/repo-cache`
- * or `/repo.worktrees`, leaking their files into auto-fingerprints and
- * `{ auto: true }` output capture. Comparing via `relative()` — the
- * same shape `output-resolver.ts` and `cache.ts` already use — closes
- * that gap: a `..` prefix (or an absolute result, e.g. a different
- * Windows drive) means the path escaped the root. The root itself
- * (`rel === ""`) is not "inside" either.
+ * Resolves symlinks in `absolutePath` even when its tail does not exist yet:
+ * the deepest existing ancestor is realpath'd and the missing segments are
+ * re-appended, so a missing-file probe under a symlinked root still lands in
+ * the same spelling as the real directory.
  */
-const isInsideWorkspace = (workspaceRoot: string, absolutePath: string): boolean => {
-    const rel = relative(workspaceRoot, absolutePath);
+const canonicalPath = (absolutePath: string): string => {
+    let existing = absolutePath;
+    const missing: string[] = [];
 
-    return rel.length > 0 && !rel.startsWith("..");
+    for (;;) {
+        try {
+            const real = realpathSync.native(existing);
+
+            return missing.length === 0 ? normalize(real) : join(normalize(real), ...missing.toReversed());
+        } catch {
+            const parent = dirname(existing);
+
+            if (parent === existing) {
+                return absolutePath;
+            }
+
+            missing.push(basename(existing));
+            existing = parent;
+        }
+    }
+};
+
+/**
+ * Maps an absolute path to its workspace-relative location, or `undefined` if
+ * it lies outside the workspace. Returned paths are in the workspace root's
+ * spelling, so fingerprint keys stay stable across machines.
+ */
+type WorkspaceContainment = (absolutePath: string) => string | undefined;
+
+const isInsideRelative = (rel: string): boolean => rel.length > 0 && !rel.startsWith("..") && !isAbsolute(rel);
+
+/**
+ * Builds a containment check for `workspaceRoot`. Both the root and each path
+ * are compared in canonical (symlink-resolved) form, so a workspace reached
+ * through a symlink (macOS `/var` -> `/private/var`, a `/tmp` alias) still
+ * matches the canonical paths a child process reports via `process.cwd()`.
+ * A symlink that resolves outside the root is outside, even when its own
+ * spelling is inside. The root's realpath is resolved once, here.
+ *
+ * A bare `startsWith(workspaceRoot)` is wrong: a root of `/repo` also
+ * prefix-matches sibling trees like `/repo-cache`, so comparison goes through
+ * `relative()`. The root itself is not "inside".
+ */
+const createWorkspaceContainment = (workspaceRoot: string): WorkspaceContainment => {
+    const root = normalize(resolve(workspaceRoot));
+    const canonicalRoot = canonicalPath(root);
+
+    return (absolutePath: string): string | undefined => {
+        const canonicalRel = relative(canonicalRoot, canonicalPath(absolutePath));
+
+        if (!isInsideRelative(canonicalRel)) {
+            return undefined;
+        }
+
+        // Keep the caller's spelling when it already sits under the root (the
+        // common case, and every pnpm-linked node_modules read), so only
+        // canonical-only spellings get rewritten.
+        return isInsideRelative(relative(root, absolutePath)) ? absolutePath : join(root, canonicalRel);
+    };
 };
 
 /**
@@ -220,4 +270,5 @@ const isInsideWorkspace = (workspaceRoot: string, absolutePath: string): boolean
  */
 const uniqueId = (): string => randomUUID();
 
-export { collectFiles, createFailureResult, hashFile, hashStrings, isInsideWorkspace, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };
+export { collectFiles, createFailureResult, createWorkspaceContainment, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };
+export type { WorkspaceContainment };

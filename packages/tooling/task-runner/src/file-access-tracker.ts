@@ -10,7 +10,8 @@ import { join, resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "./native-binding";
 import { withEnhancedPath } from "./path-utils";
-import { isInsideWorkspace, uniqueId } from "./utils";
+import type { WorkspaceContainment } from "./utils";
+import { createWorkspaceContainment, uniqueId } from "./utils";
 
 /**
  * Lazily checks whether strace is available on the current system.
@@ -492,6 +493,8 @@ const wireAbort = (signal: AbortSignal | undefined, target: Killable): (() => vo
 export class FileAccessTracker {
     readonly #workspaceRoot: string;
 
+    readonly #contain: WorkspaceContainment;
+
     readonly #excludePatterns: RegExp[];
 
     /**
@@ -503,6 +506,7 @@ export class FileAccessTracker {
 
     public constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
         this.#workspaceRoot = resolve(workspaceRoot);
+        this.#contain = createWorkspaceContainment(workspaceRoot);
         this.#excludePatterns = excludePatterns ?? [
             /\/proc\//,
             /\/sys\//,
@@ -766,11 +770,13 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
+                const inside = this.#contain(absolute);
+
+                if (this.#shouldExclude(absolute) || inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             // Concatenate stdout + stderr to mirror the strace path's
@@ -876,11 +882,13 @@ export class FileAccessTracker {
             for (const a of result.accesses) {
                 const absolute = a.path.startsWith("/") ? a.path : resolve(cwd, a.path);
 
-                if (this.#shouldExclude(absolute) || !isInsideWorkspace(this.#workspaceRoot, absolute)) {
+                const inside = this.#contain(absolute);
+
+                if (this.#shouldExclude(absolute) || inside === undefined) {
                     continue;
                 }
 
-                accesses.push({ path: absolute, type: a.kind });
+                accesses.push({ path: inside, type: a.kind });
             }
 
             const output = `${result.stdout.toString("utf8")}${result.stderr.toString("utf8")}`;
@@ -1149,17 +1157,19 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
+            const inside = this.#contain(path);
+
+            if (this.#shouldExclude(path) || inside === undefined) {
                 return undefined;
             }
 
             if (isMissing) {
-                return { path, type: "missing" };
+                return { path: inside, type: "missing" };
             }
 
             const type: FileAccess["type"] = kind === "open" ? parseOpenAccessType(line) : kind === "creat" ? "write" : "stat";
 
-            return { path, type };
+            return { path: inside, type };
         }
 
         // unlink/rename take a path but don't match the capturing patterns
@@ -1173,11 +1183,13 @@ export class FileAccessTracker {
                 path = resolve(cwd, path);
             }
 
-            if (this.#shouldExclude(path) || !isInsideWorkspace(this.#workspaceRoot, path)) {
+            const inside = this.#contain(path);
+
+            if (this.#shouldExclude(path) || inside === undefined) {
                 return undefined;
             }
 
-            return { path, type: "write" };
+            return { path: inside, type: "write" };
         }
 
         return undefined;

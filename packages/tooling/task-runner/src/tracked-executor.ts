@@ -11,7 +11,7 @@ import type { FileAccess, TrackerKind } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript, parseDirectExec } from "./file-access-tracker";
 import { withEnhancedPath } from "./path-utils";
 import type { Task, TaskExecutionOptions } from "./types";
-import { isInsideWorkspace, uniqueId } from "./utils";
+import { createWorkspaceContainment, uniqueId } from "./utils";
 
 /**
  * Result of a tracked task execution.
@@ -51,11 +51,14 @@ export class TrackedTaskExecutor {
 
     readonly #workspaceRoot: string;
 
+    readonly #contain: ReturnType<typeof createWorkspaceContainment>;
+
     /** Tracks active child processes for cleanup on abort */
     readonly #activeProcesses = new Set<ChildProcess>();
 
     public constructor(workspaceRoot: string) {
         this.#workspaceRoot = workspaceRoot;
+        this.#contain = createWorkspaceContainment(workspaceRoot);
         this.#tracker = new FileAccessTracker(workspaceRoot);
     }
 
@@ -349,10 +352,13 @@ export class TrackedTaskExecutor {
                 if (entry.path && !seen.has(entry.path)) {
                     seen.add(entry.path);
 
-                    // Only include workspace files
-                    if (isInsideWorkspace(this.#workspaceRoot, entry.path)) {
+                    // Only include workspace files. The preload reports canonical paths
+                    // (process.cwd() is symlink-resolved), so compare them via the containment check.
+                    const inside = this.#contain(entry.path);
+
+                    if (inside !== undefined) {
                         accesses.push({
-                            path: entry.path,
+                            path: inside,
                             type: entry.type as FileAccess["type"],
                         });
                     }

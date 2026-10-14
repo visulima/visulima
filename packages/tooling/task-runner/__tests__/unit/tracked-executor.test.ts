@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TRACKER_INJECTED_ENV_NAMES } from "../../src/child-env";
 import { FileAccessTracker } from "../../src/file-access-tracker";
+import { FingerprintManager } from "../../src/fingerprint";
 import { TrackedTaskExecutor } from "../../src/tracked-executor";
 import type { Task, TaskExecutionOptions } from "../../src/types";
 
@@ -346,5 +347,36 @@ describe(TrackedTaskExecutor, () => {
                 expect(result.tracker).toBe("strace");
             });
         });
+    });
+});
+
+describe("symlinked workspace root", () => {
+    // Fixtures live under node_modules/.cache: the default exclude list drops /tmp.
+    // Windows: creating symlinks needs Developer Mode or admin rights, so this is skipped there.
+    it.skipIf(process.platform === "win32")("records workspace reads made through a symlinked root", async () => {
+        expect.assertions(3);
+
+        // eslint-disable-next-line sonarjs/pseudo-random
+        const base = join(process.cwd(), "node_modules", ".cache", `task-runner-symlink-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+
+        try {
+            await mkdir(join(base, "real", "ws"), { recursive: true });
+            await symlink(join(base, "real"), join(base, "link"));
+            await writeFile(join(base, "real", "ws", "input.txt"), "input data");
+
+            // The child's process.cwd() is symlink-resolved, so it reports canonical paths.
+            const workspace = join(base, "link", "ws");
+            const command = `node -e "require('node:fs').readFileSync(require('node:path').join(process.cwd(), 'input.txt'))"`;
+            const result = await new TrackedTaskExecutor(workspace).execute(createTask(), { cwd: workspace }, command);
+
+            expect(result.code).toBe(0);
+            expect(result.accesses.map((a) => a.path)).toContain(join(workspace, "input.txt"));
+
+            const fingerprint = await new FingerprintManager(workspace).createFingerprint(result.accesses, command, {}, {});
+
+            expect(Object.keys(fingerprint.fileHashes)).toContain("input.txt");
+        } finally {
+            await rm(base, { force: true, recursive: true });
+        }
     });
 });
