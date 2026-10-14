@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Box, Cursor, Static, Text } from "../../src/components/index";
+import { useApp } from "../../src/ink/hooks/use-app";
 import { render } from "../../src/ink/index";
 import { createNative } from "../../src/ink/log-update-native";
 import createStdout from "../helpers/ink-create-stdout";
@@ -212,6 +213,41 @@ describe("native inline renderer", () => {
         const rows = visibleRows(replay(stdout.getWrites(), ROWS, COLS));
 
         expect(rows.slice(0, 3)).toEqual(["$ prompt", "log line", "hello native"]);
+        expect(rows.filter((row) => row === "hello native")).toHaveLength(1);
+
+        unmount();
+    });
+
+    it.skipIf(!nativeAvailable)("erases the inline frame while a child process owns the terminal and draws it once on resume", async () => {
+        expect.assertions(3);
+
+        const stdout = ttyStdout();
+        let suspend: (() => Promise<unknown>) | undefined;
+
+        const Probe = () => {
+            const { suspendTerminal } = useApp();
+
+            suspend = suspendTerminal;
+
+            return <Text>hello native</Text>;
+        };
+
+        stdout.write("$ prompt\n");
+
+        const { unmount, waitUntilRenderFlush } = render(<Probe />, { interactive: true, stdout, useNativeRenderer: true });
+
+        await waitUntilRenderFlush();
+
+        const suspension = (await suspend!()) as { resume: () => Promise<void> };
+
+        expect(visibleRows(replay(stdout.getWrites(), ROWS, COLS)).join("\n")).not.toContain("hello native");
+
+        await suspension.resume();
+        await waitUntilRenderFlush();
+
+        const rows = visibleRows(replay(stdout.getWrites(), ROWS, COLS));
+
+        expect(rows[0]).toBe("$ prompt");
         expect(rows.filter((row) => row === "hello native")).toHaveLength(1);
 
         unmount();

@@ -4,11 +4,12 @@
  * produces an Error instead of throwing while the error is being reported.
  */
 export const toError = (value: unknown): Error => {
-    if (value instanceof Error || Object.prototype.toString.call(value) === "[object Error]") {
-        return value as Error;
-    }
-
     try {
+        // Reading the tag can throw too (a throwing `Symbol.toStringTag` getter), so it shares the fallback.
+        if (value instanceof Error || Object.prototype.toString.call(value) === "[object Error]") {
+            return value as Error;
+        }
+
         return new Error(String(value));
     } catch {
         return new Error("Unknown error");

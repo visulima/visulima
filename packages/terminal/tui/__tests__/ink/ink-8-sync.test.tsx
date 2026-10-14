@@ -11,6 +11,7 @@ import { useFocusManager } from "../../src/ink/hooks/use-focus-manager";
 import { useInput } from "../../src/ink/hooks/use-input";
 import { measureElement, render } from "../../src/ink/index";
 import renderToStringSync from "../../src/ink/render-to-string";
+import { toError } from "../../src/ink/to-error";
 import wrapText from "../../src/ink/wrap-text";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
@@ -687,6 +688,18 @@ describe("error reporting", () => {
         };
 
         expect(() => renderToStringSync(<Bad />)).toThrow("Unknown error");
+    });
+
+    it("falls back when reading the error tag of a thrown value throws", () => {
+        expect.assertions(1);
+
+        const hostile = {
+            get [Symbol.toStringTag](): string {
+                throw new Error("no tag");
+            },
+        };
+
+        expect(toError(hostile).message).toBe("Unknown error");
     });
 
     it("clamps the client size of a box smaller than its borders", async () => {

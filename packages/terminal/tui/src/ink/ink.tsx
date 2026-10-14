@@ -1890,8 +1890,8 @@ export default class Ink {
         }
 
         try {
-            // Erase Ink's current frame so the child starts from a settled screen.
-            this.log.clear();
+            // Erase Ink's current frame (the string renderer's or an inline native one) so the child starts from a settled screen.
+            this.eraseFrame();
             this.log.done();
             this.nativeLog?.done();
 
