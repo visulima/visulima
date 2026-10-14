@@ -40,6 +40,7 @@ export type NativeLogUpdate = {
     clear: () => void;
     /** Forgets the frame without erasing it, e.g. after another program took the screen. */
     destroy: () => void;
+
     /**
      * Restores the terminal's default cursor shape if a frame changed it and, inline, moves the cursor below the frame.
      * Call once when the app stops rendering, before leaving the alternate screen.

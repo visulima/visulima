@@ -1216,7 +1216,8 @@ export default class Ink {
             return;
         }
 
-        if (this.nativeLog) {
+        // Inline native frames are anchored at the cursor and handled by the shared path below.
+        if (this.nativeLog && this.alternateScreen) {
             this.writeNativeAbove(data);
 
             return;
@@ -1255,7 +1256,7 @@ export default class Ink {
             return;
         }
 
-        if (this.nativeLog) {
+        if (this.nativeLog && this.alternateScreen) {
             // A terminal on stderr is the frame's terminal, so the text joins the frame's output above it.
             if (this.options.stderr.isTTY) {
                 this.writeNativeAbove(data);
