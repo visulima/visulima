@@ -1,11 +1,11 @@
 ---
 name: vis
-description: Use when the workspace contains a vis.config.ts (or vis.config.js/json) at the repo root, or when the user mentions "vis", "task-runner", or "@visulima/vis". This skill orchestrates the vis MCP server's eight read-only tools to inspect projects, plan task graphs, and diagnose remote-cache rotations.
+description: Use when the workspace contains a vis.config.ts (or vis.config.js/json) at the repo root, or when the user mentions "vis", "task-runner", or "@visulima/vis". This skill orchestrates the vis MCP server's thirteen read-only tools to inspect projects, plan task graphs, lint, and diagnose remote-cache rotations.
 ---
 
 # Working with the `vis` task runner
 
-`vis` is the Visulima monorepo task runner — a Turborepo/Nx-class tool with a remote cache, REAPI gRPC backend, and project graph. When this skill is active you have the **`@visulima/vis-mcp` server** mounted, exposing eight read-only tools. Use them in preference to running `vis` shell commands yourself: the tools give you structured JSON and run faster.
+`vis` is the Visulima monorepo task runner — a Turborepo/Nx-class tool with a remote cache, REAPI gRPC backend, and project graph. When this skill is active you have the **`@visulima/vis-mcp` server** mounted, exposing thirteen read-only tools. Use them in preference to running `vis` shell commands yourself: the tools give you structured JSON and run faster.
 
 The MCP server deliberately does NOT execute targets or scaffold templates — Nx-style "agent prepares, human executes". When the user wants to run `<project>:<target>` or `vis generate <template>`, prepare the command (use `list_targets`/`describe_template` to confirm it exists and capture required arguments) and ask the user to run it themselves; afterwards use `get_run_logs` to read the result of any task run.
 
@@ -18,9 +18,14 @@ The MCP server deliberately does NOT execute targets or scaffold templates — N
 | `list_targets`      | Per-target rows across the workspace, optionally narrowed to a single project                                                     |
 | `list_templates`    | Scaffolding templates discovered in `.vis/templates/`, `.moon/templates/`, and `vis.config.ts` `generator.templates`              |
 | `describe_template` | Variable schema, default destination, and description for a single template — required before suggesting a `vis generate` command |
-| `get_run_logs`      | Most recent run summary from `.vis/`, or a specific `runId`, optionally filtered to one task                              |
+| `list_runs`         | Recorded runs in `.vis/runs/`, newest first — the IDs feed `get_run_logs` and the cache tools                                     |
+| `get_run_logs`      | Most recent run summary from `.vis/`, or a specific `runId`, optionally filtered to one task                                      |
 | `cache_why`         | Diff a task's cache hash against the previous run — pinpoints what changed (command, nodes, runtime, implicit deps)               |
-| `cache_hash`        | Recorded hash and per-input hash details for a task                                                                               |
+| `cache_hash`        | Recorded hash and per-input hash details for a task (trace-mode tasks: the tracked files and env instead)                         |
+| `lint`              | Check-only lint across the detected linters, merged findings (never applies fixes)                                                |
+| `fmt`               | Check-only formatting: each finding is a file that would change (never writes)                                                    |
+| `audit`             | Vulnerability audit of installed packages; uses the offline advisory cache when one exists                                        |
+| `advisory_status`   | Freshness of the local advisory database — check it before an offline `audit`                                                     |
 
 ## Workflow patterns
 
@@ -34,16 +39,23 @@ Default opening move when the user asks about the workspace:
 ### Plan a build
 
 1. `list_targets` (optionally with `project: "@scope/name"`) to see what `build`/`test`/`lint`/etc. targets exist.
-2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it.
-3. Use `get_run_logs` afterwards to inspect status, cache hits, and stderr tails.
+2. Tell the user the exact command (`vis run @scope/name:build`) and let them run it. `vis run` exits 1 when the target is missing, or when `--filter`, `--query` or `--tag` selects no project; `vis ci` and `vis affected` behave the same. Suggest `--if-present` (quiet exit 0) only when an empty selection is acceptable, such as one script shared across repos that don't all define the target. An empty `--affected` set is not an error.
+3. Use `get_run_logs` afterwards to read each task's `exitCode`, `cacheStatus`, and the run's `stats`.
+
+### Check lint and formatting
+
+1. `lint` and `fmt` are check-only: `lint` returns findings, `fmt` returns the files that would change. `files` narrows either one.
+2. A clean `lint` does not mean the types check. The `typecheck` adapter (`tsc`) runs only when the workspace sets `lint.adapters.typecheck.enabled`, and then it checks the whole project, not just the listed files.
+3. Hand the user `vis lint --fix` or `vis fmt` to apply changes.
 
 ### Investigate a cache miss
 
 When a build that should have been cached re-ran:
 
-1. `get_run_logs` (no args → latest summary) — surfaces all task statuses for the last run.
-2. For any task with status `success` but `cacheStatus: "miss"`, call `cache_why` with that `taskId`. It diffs hashDetails against the previous run and tells you which input rotated (command string, file content, `implicitDependency`, runtime version, …).
-3. If `cache_why` shows the change but the user wants to see the raw hash inputs, `cache_hash` returns the full per-input breakdown.
+1. `get_run_logs` (no args → latest summary) — each task carries `exitCode` and `cacheStatus` (`HIT`, `MISS`, `REMOTE_HIT`, `SKIPPED`).
+2. For a task with `exitCode: 0` and `cacheStatus: "MISS"` that should have hit, call `cache_why` with that `taskId`. For a task with declared inputs it diffs `hashDetails` against the previous run and names the bucket that rotated (`command`, `nodes`, `runtime`, `implicitDeps`). A `hashMode: "trace"` task has no `hashDetails`; read `task.cacheMissReasons` instead. These are `{ type, detail }` entries such as `file-changed`, `env-changed`, or `tracker-changed` (the run used a different tracker than the stored trace). The field is `null` on a hit. `task.hashSource: "declared-fallback"` means the run was keyed on its declared inputs because the tracker saw no workspace access.
+3. If `cache_why` shows the change but the user wants the raw inputs, `cache_hash` returns the per-input breakdown. For a trace-mode task it returns `trackedFingerprint` (the files, env names, and missing paths the run tracked) instead.
+4. If `cache_why` shows nothing changed, the result was a hit, and it is still wrong, one possible cause is an env var the command reads that no cache key covers. Ask the user to run `vis doctor`: its Env Coverage section lists those variables per target, with the fixes (`fingerprintEnv`, `autoEnvVars`, or `untrackedEnv`). It is a warning; `vis doctor --exit-code --strict` turns it into a failure.
 
 ### Scaffold a new package or component
 
@@ -76,9 +88,9 @@ User: _"Scaffold a new React button component called PrimaryButton."_
 
 ### Diagnose a failed run
 
-1. `get_run_logs` to see which task(s) failed.
-2. `get_run_logs` with `taskId` set to the failing task — returns just that entry, including the captured stderr tail.
-3. Decide: is it a code bug (read the project's source), a cache poisoning issue (`cache_why`), or environmental (look at the run summary's `runtime` block)?
+1. `get_run_logs` to see which task(s) failed; `stats.failed` counts them.
+2. `get_run_logs` with `taskId` set to the failing task — returns just that entry. The summary records the exit code, cache status, and hash, not the task's output, so ask the user for the failing output if you need it.
+3. Decide: is it a code bug (read the project's source), a cache poisoning issue (`cache_why`), or environmental (the summary's `environment` block gives platform, arch, and Node version)?
 
 ## Safety rules
 
