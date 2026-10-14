@@ -393,6 +393,15 @@ export interface TrackingResult {
 }
 
 /**
+ * The variables a tracked child is spawned with before the PATH enhancement:
+ * the parent environment with `options.env` on top, or `options.env` alone
+ * when `inheritEnv` is `false` (clean mode, where the caller has already
+ * applied the policy).
+ */
+const spawnBaseEnv = (options: { env?: Record<string, string | undefined>; inheritEnv?: boolean }): Record<string, string | undefined> =>
+    options.inheritEnv === false ? { ...options.env } : { ...process.env, ...options.env };
+
+/**
  * Strace syscall patterns and their corresponding file access types.
  * Order matters — first match wins.
  *
@@ -535,6 +544,32 @@ export class FileAccessTracker {
     }
 
     /**
+     * True when the strace tracker can run on this host. Unlike {@link isSupported}
+     * it ignores seccomp, which inherits the parent environment and so cannot run
+     * under a complete child environment.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public isStraceAvailable(): boolean {
+        return platform() === "linux" && isStraceAvailable();
+    }
+
+    /**
+     * Tracks a command under strace. The clean-environment path uses this instead
+     * of {@link track}, which would dispatch to seccomp when it is available.
+     */
+    public async trackWithStrace(
+        command: string,
+        options: {
+            abortSignal?: AbortSignal;
+            cwd?: string;
+            env?: Record<string, string | undefined>;
+            inheritEnv?: boolean;
+        } = {},
+    ): Promise<TrackingResult> {
+        return this.#runWithStrace(command, options);
+    }
+
+    /**
      * Tracks a directly-exec'd `argv` via the macOS interpose dylib.
      * `argv` MUST come from {@link parseDirectExec} (a single binary,
      * no shell syntax) — it is exec'd directly, never through a shell,
@@ -548,6 +583,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         return this.#runWithInterpose(argv, options);
@@ -578,6 +615,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         return this.#runWithIatHook(argv, options);
@@ -603,6 +642,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         } = {},
     ): Promise<TrackingResult> {
         if (platform() !== "linux") {
@@ -638,6 +679,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -655,7 +698,7 @@ export class FileAccessTracker {
         // propagated through the native binding's spawn-options to
         // Command::current_dir / Command::env on the helper.
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -764,6 +807,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -774,7 +819,7 @@ export class FileAccessTracker {
         }
 
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -865,6 +910,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const native = loadNativeBindings();
@@ -875,7 +922,7 @@ export class FileAccessTracker {
         }
 
         const cwd = options.cwd ?? this.#workspaceRoot;
-        const env = withEnhancedPath({ ...process.env, ...options.env }, cwd);
+        const env = withEnhancedPath(spawnBaseEnv(options), cwd);
         const envFiltered: Record<string, string> = {};
 
         for (const [k, v] of Object.entries(env)) {
@@ -964,6 +1011,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         const traceDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
@@ -1004,7 +1053,7 @@ export class FileAccessTracker {
                 straceArgs,
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
+                    env: withEnhancedPath(spawnBaseEnv(options), options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024, // 50MB
                 },
                 async (_error, stdout, stderr) => {
@@ -1168,6 +1217,8 @@ export class FileAccessTracker {
             abortSignal?: AbortSignal;
             cwd?: string;
             env?: Record<string, string | undefined>;
+            /** `false`: `env` is the complete child environment, not an overlay on `process.env`. Default `true`. */
+            inheritEnv?: boolean;
         },
     ): Promise<TrackingResult> {
         return new Promise((_resolve) => {
@@ -1185,7 +1236,7 @@ export class FileAccessTracker {
                 ["-c", command],
                 {
                     cwd: options.cwd ?? this.#workspaceRoot,
-                    env: withEnhancedPath({ ...process.env, ...options.env }, options.cwd ?? this.#workspaceRoot),
+                    env: withEnhancedPath(spawnBaseEnv(options), options.cwd ?? this.#workspaceRoot),
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 (_error, stdout, stderr) => {

@@ -1,3 +1,4 @@
+import { HINTS_ENV, PROTOCOL_ENV } from "./cache-hints";
 import { createEnvMatcher } from "./fingerprint";
 
 /**
@@ -38,6 +39,21 @@ export const CLEAN_ENV_WIN32_NAMES: ReadonlyArray<string> = ["SystemRoot", "TEMP
  * family.
  */
 export const CLEAN_ENV_POSIX_NAMES: ReadonlyArray<string> = ["TMPDIR", "SHELL", "LANG", "LC_*", "USER"];
+
+/**
+ * Variables the file-access tracker writes into a traced child. They are laid
+ * on top of the policy, so clean mode never drops them and tracking keeps
+ * working:
+ * - `TASK_RUNNER_HINTS` / `TASK_RUNNER_PROTOCOL`: where the cooperative client
+ *   appends its hints, and the protocol version it speaks.
+ * - `NODE_OPTIONS`: the `--import` preload that records a Node child's file
+ *   accesses. Appended to any `NODE_OPTIONS` the child already has.
+ *
+ * Native trackers (seccomp, macOS interpose, IAT) also set variables on the
+ * child, but they inherit the parent environment, so the tracked path does not
+ * use them under clean mode (see `TrackedTaskExecutor.execute`).
+ */
+export const TRACKER_INJECTED_ENV_NAMES: ReadonlyArray<string> = [HINTS_ENV, PROTOCOL_ENV, "NODE_OPTIONS"];
 
 /**
  * Returns the names clean mode keeps from the parent environment for the

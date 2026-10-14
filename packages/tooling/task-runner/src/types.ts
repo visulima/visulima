@@ -1165,8 +1165,24 @@ export interface TaskExecutionOptions {
     cwd?: string;
     /** Environment variables */
     env?: Record<string, string>;
+
+    /**
+     * `false` makes {@link TaskExecutionOptions.env} the complete child
+     * environment instead of an overlay on `process.env`. Used by the clean
+     * environment policy. Default `true`.
+     */
+    inheritEnv?: boolean;
     /** Stream output as it arrives */
     streamOutput?: boolean;
+}
+
+/**
+ * The environment one task child is spawned with. `inheritEnv: false` means
+ * `env` is the whole environment.
+ */
+export interface ChildSpawnEnv {
+    env: Record<string, string>;
+    inheritEnv: boolean;
 }
 
 /**
@@ -1191,8 +1207,17 @@ export interface TaskRunnerContext {
     childEnvPolicy?: (task: Task) => ChildEnvOptions;
     /** Lifecycle hooks */
     lifeCycle: LifeCycleInterface;
+
     /** The project graph */
     projectGraph: ProjectGraph;
+
+    /**
+     * The environment a traced task child is spawned with. The caller owns the
+     * merge (injected variables, env files, service env) and returns the result,
+     * so a traced run and an executor run see the same environment. Absent means
+     * the child inherits the parent environment with nothing added.
+     */
+    resolveChildEnv?: (task: Task, options: { cwd: string }) => ChildSpawnEnv;
     /** The task executor */
     taskExecutor: TaskExecutor;
     /** The task graph */

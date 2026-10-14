@@ -102,18 +102,29 @@ export class TrackedTaskExecutor {
         try {
             let base: Omit<TrackedExecutionResult, "hints">;
 
+            // The child's complete environment: the parent's (unless the caller
+            // supplied a clean one, `inheritEnv: false`), the executor's
+            // injected entries, then the tracker's own variables, which are
+            // never filtered (see TRACKER_INJECTED_ENV_NAMES).
+            const inheritEnv = options.inheritEnv !== false;
+            const trackingEnv: Record<string, string> = { ...(inheritEnv ? process.env : {}), ...options.env, ...hintEnv } as Record<string, string>;
+            const completeEnv = { cwd, env: trackingEnv, inheritEnv: false };
+
             // Strategy 1: syscall-level tracking (Linux strace/seccomp — most complete).
             // Strategy 2: native injection for directly-exec'd commands only —
             //   macOS DYLD interpose / Windows IAT hooks. Shell-syntax commands
             //   can't be injected (SIP /bin/sh on macOS; no child propagation on
             //   Windows), so they fall through to the preload.
             // Strategy 3: Node preload script (cross-platform, Node.js processes only).
-            const trackingEnv = { ...options.env, ...hintEnv };
-            const nativeDirect = this.#tracker.isInterposeSupported() || this.#tracker.isIatHookSupported();
+            //
+            // The native strategies (seccomp, interpose, IAT) add their variables
+            // on top of the parent environment, so under a clean environment only
+            // strace (a plain spawn) and the preload run.
+            const nativeDirect = inheritEnv && (this.#tracker.isInterposeSupported() || this.#tracker.isIatHookSupported());
             const directArgv = nativeDirect ? parseDirectExec(command) : undefined;
 
-            if (this.#tracker.isSupported()) {
-                const trackingResult = await this.#tracker.track(command, { cwd, env: trackingEnv });
+            if (inheritEnv && this.#tracker.isSupported()) {
+                const trackingResult = await this.#tracker.track(command, completeEnv);
 
                 base = {
                     accesses: trackingResult.accesses,
@@ -121,8 +132,17 @@ export class TrackedTaskExecutor {
                     terminalOutput: trackingResult.output,
                     tracker: this.#tracker.linuxTrackerKind(),
                 };
+            } else if (!inheritEnv && this.#tracker.isStraceAvailable()) {
+                const trackingResult = await this.#tracker.trackWithStrace(command, completeEnv);
+
+                base = {
+                    accesses: trackingResult.accesses,
+                    code: trackingResult.code,
+                    terminalOutput: trackingResult.output,
+                    tracker: "strace",
+                };
             } else if (directArgv && this.#tracker.isInterposeSupported()) {
-                const trackingResult = await this.#tracker.trackInterpose(directArgv, { cwd, env: trackingEnv });
+                const trackingResult = await this.#tracker.trackInterpose(directArgv, completeEnv);
 
                 base = {
                     accesses: trackingResult.accesses,
@@ -131,7 +151,7 @@ export class TrackedTaskExecutor {
                     tracker: "interpose",
                 };
             } else if (directArgv && this.#tracker.isIatHookSupported()) {
-                const trackingResult = await this.#tracker.trackIatHook(directArgv, { cwd, env: trackingEnv });
+                const trackingResult = await this.#tracker.trackIatHook(directArgv, completeEnv);
 
                 base = {
                     accesses: trackingResult.accesses,
@@ -167,7 +187,7 @@ export class TrackedTaskExecutor {
      * Executes a command with a Node.js preload script to track fs accesses.
      * Works on macOS, Windows, and Linux for Node.js-based commands.
      */
-    async #executeWithPreload(command: string, cwd: string, env?: Record<string, string>): Promise<Omit<TrackedExecutionResult, "hints" | "tracker">> {
+    async #executeWithPreload(command: string, cwd: string, env: Record<string, string>): Promise<Omit<TrackedExecutionResult, "hints" | "tracker">> {
         const cacheDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
 
         await mkdir(cacheDirectory, { recursive: true });
@@ -194,12 +214,13 @@ export class TrackedTaskExecutor {
                 cwd,
                 env: withEnhancedPath(
                     {
-                        ...process.env,
                         ...env,
                         // `--import` needs a file URL, not a bare path: on Windows
                         // a `C:\…` path is parsed as a `c:` URL scheme and rejected,
                         // so the preload never loads and cooperative hints are lost.
-                        NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${pathToFileURL(preloadFile).href}`.trim(),
+                        // Appended to the child's own NODE_OPTIONS, which is the
+                        // parent's unless a clean environment dropped it.
+                        NODE_OPTIONS: `${env["NODE_OPTIONS"] ?? ""} --import ${pathToFileURL(preloadFile).href}`.trim(),
                     },
                     cwd,
                 ),

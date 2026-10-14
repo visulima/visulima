@@ -250,7 +250,7 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * ```
  */
 const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
-    const { childEnvPolicy, lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
+    const { childEnvPolicy, lifeCycle, projectGraph, resolveChildEnv, taskExecutor, taskGraph, workspaceRoot } = context;
 
     // Which env names a task's child can see. Only the executor that is given
     // `childEnvPolicy` enforces it; without the hook every name is keyed as the
@@ -382,6 +382,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         cache,
         cacheDiagnostics: options.cacheDiagnostics,
         captureOutput: true,
+        childEnvPolicy,
         dataDirectory: options.dataDirectory,
         dryRun: options.dryRun,
         fingerprintEnvPatterns,
@@ -391,6 +392,7 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         // observes upload failures regardless of where they originate.
         onRemoteUploadError: options.remoteCache?.onUploadError,
         remoteCache,
+        resolveChildEnv,
         resolveCommand,
         scheduler,
         skipCache: options.skipNxCache,

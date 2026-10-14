@@ -1,9 +1,10 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { TRACKER_INJECTED_ENV_NAMES } from "../../src/child-env";
 import { TrackedTaskExecutor } from "../../src/tracked-executor";
 import type { Task, TaskExecutionOptions } from "../../src/types";
 
@@ -151,6 +152,103 @@ describe(TrackedTaskExecutor, () => {
             const expectedKinds = executor.isStraceSupported ? ["seccomp", "strace"] : ["preload"];
 
             expect(expectedKinds).toContain(result.tracker);
+        });
+    });
+
+    describe("child environment", () => {
+        const PARENT_ONLY = "TRACKED_ENV_PARENT_ONLY";
+        const ALLOWED = "TRACKED_ENV_ALLOWED";
+
+        // Writes the child's whole environment to a file, so the assertion reads
+        // exactly what the real spawned process received.
+        const dumpScript = async (): Promise<string> => {
+            const script = join(workspaceRoot, "dump.cjs");
+            const out = join(workspaceRoot, "child-env.json");
+
+            await writeFile(script, `require("node:fs").writeFileSync(${JSON.stringify(out)}, JSON.stringify(process.env));\n`);
+
+            return out;
+        };
+
+        const readChildEnv = async (out: string): Promise<Record<string, string>> => JSON.parse(await readFile(out, "utf8")) as Record<string, string>;
+
+        const savedNodeOptions = process.env["NODE_OPTIONS"];
+
+        beforeEach(() => {
+            process.env[PARENT_ONLY] = "parent";
+            // A parent NODE_OPTIONS must not reach a clean child; the preload's
+            // `--import` is appended to the child's own value only.
+            process.env["NODE_OPTIONS"] = "--max-old-space-size=96";
+        });
+
+        afterEach(() => {
+            Reflect.deleteProperty(process.env, PARENT_ONLY);
+            Reflect.deleteProperty(process.env, ALLOWED);
+
+            if (savedNodeOptions === undefined) {
+                Reflect.deleteProperty(process.env, "NODE_OPTIONS");
+            } else {
+                process.env["NODE_OPTIONS"] = savedNodeOptions;
+            }
+        });
+
+        it("inherit: the child sees the parent environment with the given overlay", async () => {
+            expect.assertions(3);
+
+            const out = await dumpScript();
+
+            process.env[ALLOWED] = "parent-value";
+
+            const result = await executor.execute(createTask(), { cwd: workspaceRoot, env: { [ALLOWED]: "overlay" } }, "node dump.cjs");
+            const env = await readChildEnv(out);
+
+            expect(result.code).toBe(0);
+            expect(env[PARENT_ONLY]).toBe("parent");
+            expect(env[ALLOWED]).toBe("overlay");
+        });
+
+        it("clean: the child sees only the given environment plus the tracker's own variables", async () => {
+            expect.assertions(4);
+
+            const out = await dumpScript();
+            const result = await executor.execute(
+                createTask(),
+                { cwd: workspaceRoot, env: { [ALLOWED]: "allowed", PATH: process.env["PATH"] ?? "" }, inheritEnv: false },
+                "node dump.cjs",
+            );
+            const env = await readChildEnv(out);
+
+            expect(result.code).toBe(0);
+            expect(env[ALLOWED]).toBe("allowed");
+            expect(env).not.toHaveProperty(PARENT_ONLY);
+            // The parent's NODE_OPTIONS is dropped; the preload only appends to the child's value.
+            expect(env["NODE_OPTIONS"] ?? "").not.toContain("max-old-space-size");
+        });
+
+        it("clean: keeps every tracker-injected variable the run actually sets", async () => {
+            expect.hasAssertions();
+
+            const out = await dumpScript();
+            const result = await executor.execute(createTask(), { cwd: workspaceRoot, env: { PATH: process.env["PATH"] ?? "" }, inheritEnv: false }, "node dump.cjs");
+            const env = await readChildEnv(out);
+
+            // NODE_OPTIONS carries the `--import` preload only on the preload path;
+            // strace records file accesses without it.
+            for (const name of TRACKER_INJECTED_ENV_NAMES) {
+                if (name === "NODE_OPTIONS" && result.tracker !== "preload") {
+                    expect(env[name] ?? "").not.toContain("--import");
+                } else {
+                    expect(env[name], `${name} dropped under a clean environment`).toBeDefined();
+                }
+            }
+        });
+
+        it("clean: never runs a native tracker, which would inherit the parent environment", async () => {
+            expect.assertions(1);
+
+            const result = await executor.execute(createTask(), { cwd: workspaceRoot, env: { PATH: process.env["PATH"] ?? "" }, inheritEnv: false }, "node dump.cjs");
+
+            expect(["strace", "preload"]).toContain(result.tracker);
         });
     });
 });

@@ -4,6 +4,8 @@ import { retrieveByTaskHash, storeByTaskHash } from "./backends/hash-bridge";
 import type { RemoteCacheBackend } from "./backends/types";
 import type { Cache, CachedResult } from "./cache";
 import { applyAccessHints, mergeEnvPatterns, summarizeHints } from "./cache-hints";
+import type { ChildEnvOptions } from "./child-env";
+import { pickChildParentEnv } from "./child-env";
 import type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 import { FingerprintManager, hashFingerprint } from "./fingerprint";
 import { generateRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
@@ -12,7 +14,7 @@ import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
-import type { LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskHashDetails, TaskResult, TaskResults, TaskStatus } from "./types";
+import type { ChildSpawnEnv, LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskHashDetails, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
 import type { WhenContext } from "./when-condition";
 import { evaluateWhen, explainWhen, getCurrentBranch } from "./when-condition";
@@ -48,6 +50,9 @@ interface TaskOrchestratorOptions {
     cacheDiagnostics?: boolean;
     captureOutput?: boolean;
 
+    /** Child-environment policy per task. Under clean, a traced fingerprint keys only the names the child can see. */
+    childEnvPolicy?: (task: Task) => ChildEnvOptions;
+
     /**
      * Directory used to persist run summaries. Forwarded to
      * {@link writeRunSummary} / {@link writeLastRunSummary} so
@@ -57,6 +62,7 @@ interface TaskOrchestratorOptions {
     dataDirectory?: string;
     dryRun?: boolean;
     fingerprintEnvPatterns?: string[];
+
     lifeCycle: LifeCycleInterface;
 
     /**
@@ -67,6 +73,8 @@ interface TaskOrchestratorOptions {
      */
     onRemoteUploadError?: (hash: string, error: unknown) => void;
     remoteCache?: RemoteCacheBackend;
+    /** Spawn environment for a traced child. See `TaskRunnerContext.resolveChildEnv`. */
+    resolveChildEnv?: (task: Task, options: { cwd: string }) => ChildSpawnEnv;
     resolveCommand?: (task: Task) => string | undefined;
     scheduler: TaskScheduler;
     skipCache?: boolean;
@@ -206,6 +214,10 @@ class TaskOrchestrator {
 
     readonly #resolveCommand: ((task: Task) => string | undefined) | undefined;
 
+    readonly #childEnvPolicy: ((task: Task) => ChildEnvOptions) | undefined;
+
+    readonly #resolveChildEnv: ((task: Task, options: { cwd: string }) => ChildSpawnEnv) | undefined;
+
     readonly #remoteCache: RemoteCacheBackend | undefined;
 
     readonly #onRemoteUploadError: ((hash: string, error: unknown) => void) | undefined;
@@ -258,6 +270,8 @@ class TaskOrchestrator {
         this.#untrackedEnvVars = options.untrackedEnvVars ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
         this.#resolveCommand = options.resolveCommand ?? undefined;
+        this.#childEnvPolicy = options.childEnvPolicy ?? undefined;
+        this.#resolveChildEnv = options.resolveChildEnv ?? undefined;
         this.#remoteCache = options.remoteCache ?? undefined;
         this.#onRemoteUploadError = options.onRemoteUploadError ?? undefined;
         this.#dryRun = options.dryRun ?? false;
@@ -821,6 +835,18 @@ class TaskOrchestrator {
         return checks.filter((path): path is string => path !== undefined);
     }
 
+    /**
+     * The env a traced fingerprint reads. Under a clean policy only the parent
+     * names the child can see are keyed, so a hidden name hashes as unset. The
+     * child's own env (injected entries, the tracker's hints path) is never keyed:
+     * the hints path changes on every run.
+     */
+    #fingerprintEnv(task: Task): NodeJS.ProcessEnv {
+        const policy = this.#childEnvPolicy?.(task);
+
+        return policy?.mode === "clean" ? pickChildParentEnv(process.env, policy) : process.env;
+    }
+
     async #executeTaskWithTracking(task: Task, startTime: number, cacheMissReasons?: CacheMissReason[], declaredKey?: string): Promise<TaskResult> {
         if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
@@ -859,7 +885,12 @@ class TaskOrchestrator {
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
 
             if (canTrack && this.#trackedExecutor) {
-                const trackedResult = await this.#trackedExecutor.execute(task, { captureOutput: this.#captureOutput, cwd }, shellCommand);
+                const childSpawn = this.#resolveChildEnv?.(task, { cwd });
+                const trackedResult = await this.#trackedExecutor.execute(
+                    task,
+                    { captureOutput: this.#captureOutput, cwd, env: childSpawn?.env, inheritEnv: childSpawn?.inheritEnv },
+                    shellCommand,
+                );
 
                 code = trackedResult.code;
                 terminalOutput = trackedResult.terminalOutput;
@@ -880,7 +911,7 @@ class TaskOrchestrator {
                     accesses,
                     taskCommand,
                     task.overrides,
-                    process.env,
+                    this.#fingerprintEnv(task),
                     mergeEnvPatterns([...this.#fingerprintEnvPatterns, ...(task.fingerprintEnv ?? [])], trackedResult.hints),
                     [...this.#untrackedEnvVars, ...(task.untrackedEnv ?? [])],
                     trackedResult.tracker,
