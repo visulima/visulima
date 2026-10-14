@@ -99,7 +99,7 @@ Options:
 itself injects (`VIS_TASK_SLOTS`, service env, run-argument env). Those are the
 main correctness risk.
 
-**Status: B implemented, C not done.** `taskRunner.env` sets the workspace
+**Status: B and C done.** `taskRunner.env` sets the workspace
 policy and `options.env` overrides it per target. `vis run` applies the policy
 on every spawn path: the executor, persistent targets and the TUI retry. The
 names vis sets on its own process and the names it injects per task are listed
@@ -131,8 +131,17 @@ a `hashMode: "trace"` target that printed `VIS_TASK_SLOTS` as absent, next to a
 declared target that printed `1`. Fixing it means passing the vis environment
 into `TrackedTaskExecutor.execute`, which belongs to the trace work in G1 and G4.
 
-C (the `vis doctor` check) is not done. It needs a per-target analysis of env
-references against the key sources, which is a separate change.
+C is done: `vis doctor` lists, per declared target, the names its command
+references (`$VAR`, `${VAR}`, `%VAR%`) that no key source covers. The check
+reads the same discovery as `vis run`, exempts untracked, built-in and
+vis-owned names, and skips trace-mode, uncached, `always` and clean-hidden
+names. Docs: `commands/doctor.mdx` ("Env Coverage"). Only `--exit-code
+--strict` fails on a gap.
+
+Gap found while building C, not changed here: the built-in untracked patterns
+(`CI_*`, `GITHUB_*`, …) reach only the trace-mode orchestrator. The declared
+hasher gets just the user list, so under `autoEnvVars` a referenced CI name is
+keyed. The doctor check exempts those names, so it does not report that case.
 
 ### G3. Compound commands cache as one unit
 
@@ -211,6 +220,7 @@ in `task-hasher` and avoids accidental cross-platform hits.
 | 2     | G3.1 compound parser, refusing unsupported | no          | no                                                  | done   |
 | 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                  | done   |
 | 3     | G2-B opt-in clean env                      | no          | opt-in                                              | done   |
+| 3     | G2-C doctor env coverage check             | no          | no                                                  | done   |
 | 3     | G3.3 trace-mode segments                   | no          | no                                                  | open   |
 
 ## References

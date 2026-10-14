@@ -189,6 +189,10 @@ An env var enters a key only when a source names it:
 | `untrackedEnv` (target)             | both     | The task still receives the variables, but they stay out of the key. Wins over the other implicit sources.               |
 | `taskRunner.untrackedEnvVars`       | both     | Workspace-wide untracked list. The built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply to trace-mode keys. |
 
+A name the command reads that no source above covers can serve a stale result.
+`vis doctor` lists those names per target, with the source to add. See
+[Env Coverage](/commands/doctor#env-coverage).
+
 Patterns accept `*` anywhere in the name, for example `VITE_*`, `*_TOKEN` or
 `AWS_*_KEY`:
 
