@@ -97,6 +97,17 @@ describe(downloadGitSource, () => {
         await expect(authSentFor("https://example.com/starter.tar.gz")).resolves.toBeUndefined();
     });
 
+    it("never sends the gitlab.com token to a self-hosted GitLab", async () => {
+        expect.assertions(2);
+
+        process.env.GITLAB_TOKEN = "gl-token";
+
+        await expect(authSentFor("gitlab://git.example.com/group/repo")).resolves.toBeUndefined();
+
+        // Explicit config is the user's choice for that host, so it still applies.
+        await expect(authSentFor("gitlab://git.example.com/group/repo", { auth: "explicit" })).resolves.toBe("explicit");
+    });
+
     it("prefers explicit auth over a URL token over the environment", async () => {
         expect.assertions(2);
 

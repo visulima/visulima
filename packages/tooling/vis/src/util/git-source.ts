@@ -158,14 +158,16 @@ type DownloadOptions = NonNullable<Parameters<typeof downloadTemplate>[1]>;
 /**
  * Download a git template, normalising the source and choosing a host-matched token.
  * `options.auth` (explicit config) wins over a token embedded in the URL, which wins over
- * the host's environment variable. giget itself lets `GIGET_AUTH` override all of them.
+ * the host's environment variable, which is skipped for a self-hosted GitLab. giget itself lets `GIGET_AUTH` override all of them.
  * @param input Raw template source.
  * @param options Options forwarded to giget's `downloadTemplate`.
  * @returns giget's download result.
  */
 export const downloadGitSource = async (input: string, options: DownloadOptions): ReturnType<typeof downloadTemplate> => {
     const { auth: inlineAuth, gitlabUrl, source } = resolveGitSource(input);
-    const auth = options.auth || inlineAuth || tokenForSource(source, options.provider);
+    // GITLAB_TOKEN belongs to gitlab.com. A `gitlab://host/…` source names a host the template author chose, so
+    // the environment token is never sent there: use `create.auth`, a token in the URL, or GIGET_AUTH instead.
+    const auth = options.auth || inlineAuth || (gitlabUrl ? undefined : tokenForSource(source, options.provider));
 
     // ponytail: giget reads the GitLab base URL from the environment, so it is set for the
     // duration of one download; concurrent downloads to different GitLab hosts would race.

@@ -88,7 +88,7 @@ Templates can be downloaded from any git host using [giget](https://github.com/u
 
 Full URLs and `host/owner/repo` forms for GitHub, GitLab, Bitbucket, and Sourcehut are rewritten to the matching provider before download, and `tree/<ref>/<subdir>` paths become a subdirectory plus a ref. Any other `https://` URL is treated as a tarball.
 
-`git@host:group/repo` on a host other than GitHub, GitLab.com, Bitbucket, or Sourcehut clones over SSH with your own git credentials (keys or agent), which is the way to reach other private or self-hosted servers. On the four known hosts the same form downloads an archive with the host's token; prefix it with `git:` (`git:git@github.com:user/repo`) to force an SSH clone. Self-hosted GitLab (`gitlab://host/…`) downloads the repository archive over HTTPS from that host and uses `GITLAB_TOKEN` for private projects.
+`git@host:group/repo` on a host other than GitHub, GitLab.com, Bitbucket, or Sourcehut clones over SSH with your own git credentials (keys or agent), which is the way to reach other private or self-hosted servers. On the four known hosts the same form downloads an archive with the host's token; prefix it with `git:` (`git:git@github.com:user/repo`) to force an SSH clone. Self-hosted GitLab (`gitlab://host/…`) downloads the repository archive over HTTPS from that host. `GITLAB_TOKEN` is not sent there, since it belongs to gitlab.com; for a private project set `create.auth` or `GIGET_AUTH`, or put a token in the URL.
 
 ### Private Repositories
 
