@@ -5,16 +5,16 @@ import React, { createContext, useCallback, useContext, useEffect, useId, useMem
 // ─── Focus context shape ──────────────────────────────────────────────────────
 
 export type FocusContextProps = {
-    activate: (id: string) => void;
+    activate: (id: string, holder?: string) => void;
     activeId: string | undefined;
     add: (id: string, options: { autoFocus: boolean }) => void;
-    deactivate: (id: string) => void;
+    deactivate: (id: string, holder?: string) => void;
     disableFocus: () => void;
     enableFocus: () => void;
     focus: (id: string) => void;
     focusNext: () => void;
     focusPrevious: () => void;
-    remove: (id: string) => void;
+    remove: (id: string, holder?: string) => void;
 };
 
 export const FocusContext: Context<FocusContextProps> = createContext<FocusContextProps>({
@@ -41,6 +41,8 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const itemsRef = useRef<FocusEntry[]>([]);
     // Components registered under the same ID share one Tab stop; it goes away with the last of them.
     const holdersRef = useRef(new Map<string, number>());
+    // Holders of a shared ID that switched to inactive; the Tab stop is active while any holder is.
+    const inactiveRef = useRef(new Map<string, Set<string>>());
     const [activeId, setActiveId] = useState<string | undefined>(undefined);
     const [isEnabled, setIsEnabled] = useState(true);
     const isEnabledRef = useRef(true);
@@ -78,28 +80,57 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
     }, []);
 
-    const remove = useCallback((id: string) => {
-        const holders = (holdersRef.current.get(id) ?? 1) - 1;
+    const syncActive = useCallback((id: string) => {
+        const holders = holdersRef.current.get(id) ?? 0;
+        const isActive = (inactiveRef.current.get(id)?.size ?? 0) < holders;
 
-        if (holders > 0) {
-            holdersRef.current.set(id, holders);
+        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive } : e));
 
-            return;
+        if (!isActive) {
+            setActiveId((previous) => (previous === id ? undefined : previous));
         }
-
-        holdersRef.current.delete(id);
-        itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
-        setActiveId((previous) => (previous === id ? undefined : previous));
     }, []);
 
-    const activate = useCallback((id: string) => {
-        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive: true } : e));
-    }, []);
+    const remove = useCallback(
+        (id: string, holder = "") => {
+            const holders = (holdersRef.current.get(id) ?? 1) - 1;
 
-    const deactivate = useCallback((id: string) => {
-        itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive: false } : e));
-        setActiveId((previous) => (previous === id ? undefined : previous));
-    }, []);
+            inactiveRef.current.get(id)?.delete(holder);
+
+            if (holders > 0) {
+                holdersRef.current.set(id, holders);
+                syncActive(id);
+
+                return;
+            }
+
+            holdersRef.current.delete(id);
+            inactiveRef.current.delete(id);
+            itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
+            setActiveId((previous) => (previous === id ? undefined : previous));
+        },
+        [syncActive],
+    );
+
+    const setHolderActive = useCallback(
+        (id: string, holder: string, isActive: boolean) => {
+            const inactive = inactiveRef.current.get(id) ?? new Set<string>();
+
+            if (isActive) {
+                inactive.delete(holder);
+            } else {
+                inactive.add(holder);
+            }
+
+            inactiveRef.current.set(id, inactive);
+            syncActive(id);
+        },
+        [syncActive],
+    );
+
+    const activate = useCallback((id: string, holder = "") => setHolderActive(id, holder, true), [setHolderActive]);
+
+    const deactivate = useCallback((id: string, holder = "") => setHolderActive(id, holder, false), [setHolderActive]);
 
     const enableFocus = useCallback(() => setIsEnabled(true), []);
     const disableFocus = useCallback(() => {
@@ -200,22 +231,24 @@ export const useFocus = ({ autoFocus = false, id: customId, isActive = true }: U
 
     const generatedId = useId();
     const id = customId ?? generatedId;
+    // Identifies this hook instance among the components that share an ID.
+    const holder = useId();
 
     useEffect(() => {
         add(id, { autoFocus });
 
         return () => {
-            remove(id);
+            remove(id, holder);
         };
     }, [id, autoFocus]);
 
     useEffect(() => {
         if (isActive) {
-            activate(id);
+            activate(id, holder);
         } else {
-            deactivate(id);
+            deactivate(id, holder);
         }
-    }, [isActive, id]);
+    }, [isActive, id, holder]);
 
     return {
         focus,

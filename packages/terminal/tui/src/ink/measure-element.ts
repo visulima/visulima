@@ -59,7 +59,7 @@ export const getInnerWidth = (node: DOMElement): number => {
     const borderLeft = yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
     const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
 
-    return Math.round(width - borderLeft - borderRight);
+    return Math.max(0, Math.round(width - borderLeft - borderRight));
 };
 
 /**
@@ -76,7 +76,7 @@ export const getInnerHeight = (node: DOMElement): number => {
     const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
     const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
 
-    return Math.round(height - borderTop - borderBottom);
+    return Math.max(0, Math.round(height - borderTop - borderBottom));
 };
 
 /**

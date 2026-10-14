@@ -9,6 +9,7 @@ import { createNode } from "./dom";
 import reconciler from "./reconciler";
 import renderer from "./renderer";
 import { calculateScroll } from "./scroll";
+import { toError } from "./to-error";
 
 export type RenderToStringOptions = {
     /**
@@ -152,10 +153,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
 
         // Re-throw after full cleanup so callers see the original error.
         if (uncaught.has) {
-            // Keep native errors (including ones from another realm) as they are; wrap any other thrown value.
-            const isError = uncaught.error instanceof Error || Object.prototype.toString.call(uncaught.error) === "[object Error]";
-
-            throw isError ? (uncaught.error as Error) : new Error(String(uncaught.error));
+            throw toError(uncaught.error);
         }
 
         // The renderer appends a trailing newline to static output for terminal

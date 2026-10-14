@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 
+import { toError } from "../ink/to-error";
 import ErrorOverview from "./error-overview";
 
 type Props = {
@@ -23,10 +24,7 @@ export default class ErrorBoundary extends PureComponent<Props, State> {
     // Any thrown value (a string, `undefined`, an error from another realm) becomes an Error,
     // so the fallback always renders and the exit promise rejects with a real error.
     static getDerivedStateFromError(error: unknown): State {
-        // Matches errors from other realms by tag, since `instanceof` misses them.
-        const isError = error instanceof Error || Object.prototype.toString.call(error) === "[object Error]";
-
-        return { error: isError ? (error as Error) : new Error(String(error)) };
+        return { error: toError(error) };
     }
 
     override state: State = {

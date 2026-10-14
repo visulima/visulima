@@ -21,7 +21,15 @@ const cleanupPath = (path: string | undefined): string | undefined => {
     }
 
     const workingDirectory = cwd();
-    const fsPath = path.startsWith("file://") ? fileURLToPath(path) : path;
+    let fsPath = path;
+
+    if (path.startsWith("file://")) {
+        try {
+            fsPath = fileURLToPath(path);
+        } catch {
+            // A file URL this platform cannot map to a path (e.g. one with a remote host) stays visible as written.
+        }
+    }
 
     return fsPath.replace(`${workingDirectory}/`, "");
 };

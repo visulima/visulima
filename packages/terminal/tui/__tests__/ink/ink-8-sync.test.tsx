@@ -638,3 +638,81 @@ describe("styled text across newlines", () => {
         expect(second).not.toContain("\u001B[3m");
     });
 });
+
+describe("shared focus IDs with inactive holders", () => {
+    it("keeps the Tab stop while another holder of the ID is still active", async () => {
+        expect.assertions(2);
+
+        let manager: ReturnType<typeof useFocusManager> | undefined;
+
+        const Item = ({ active, label }: { readonly active: boolean; readonly label: string }) => {
+            const { isFocused } = useFocus({ id: "same", isActive: active });
+
+            return <Text>{`${label}${isFocused ? "*" : ""}`}</Text>;
+        };
+
+        const Tree = () => {
+            manager = useFocusManager();
+
+            return (
+                <Box flexDirection="column">
+                    <Item active={false} label="a" />
+                    <Item active label="b" />
+                </Box>
+            );
+        };
+
+        const stdout = createStdout();
+        const { unmount } = render(<Tree />, { debug: true, stdin: createStdin(), stdout });
+
+        await delay(50);
+        manager!.focusNext();
+        await delay(50);
+
+        const frame = lastFrame(stdout);
+
+        unmount();
+
+        expect(frame).toContain("a*");
+        expect(frame).toContain("b*");
+    });
+});
+
+describe("error reporting", () => {
+    it("reports a thrown value that cannot be converted to a string", () => {
+        expect.assertions(1);
+
+        const Bad = () => {
+            throw Object.create(null);
+        };
+
+        expect(() => renderToStringSync(<Bad />)).toThrow("Unknown error");
+    });
+
+    it("clamps the client size of a box smaller than its borders", async () => {
+        expect.assertions(1);
+
+        let measured: ReturnType<typeof measureElement> | undefined;
+
+        const Probe = () => {
+            const reference = useRef<any>(null);
+
+            useEffect(() => {
+                measured = measureElement(reference.current);
+            });
+
+            return (
+                <Box borderStyle="single" height={1} ref={reference} width={1}>
+                    <Text>x</Text>
+                </Box>
+            );
+        };
+
+        const { unmount } = render(<Probe />, { debug: true, stdin: createStdin(), stdout: createStdout() });
+
+        await delay(50);
+        unmount();
+
+        expect(measured).toMatchObject({ clientHeight: 0, clientWidth: 0 });
+    });
+});

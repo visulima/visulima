@@ -43,22 +43,25 @@ const useFocus = ({ autoFocus = false, id: customId, isActive = true }: Input = 
 
     const generatedId = useId();
     const id = customId ?? generatedId;
+    // Identifies this hook instance among the components that share an ID, so one of them switching to
+    // inactive does not take the shared Tab stop away from the others.
+    const holder = useId();
 
     useEffect(() => {
         add(id, { autoFocus });
 
         return () => {
-            remove(id);
+            remove(id, holder);
         };
     }, [id, autoFocus]);
 
     useEffect(() => {
         if (isActive) {
-            activate(id);
+            activate(id, holder);
         } else {
-            deactivate(id);
+            deactivate(id, holder);
         }
-    }, [isActive, id]);
+    }, [isActive, id, holder]);
 
     useEffect(() => {
         if (!isRawModeSupported || !isActive) {

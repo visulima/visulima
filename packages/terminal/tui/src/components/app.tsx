@@ -70,15 +70,37 @@ type Focusable = {
     /** Number of mounted components registered under this ID. They share one Tab stop. */
     readonly count: number;
     readonly id: string;
+    /** Holders (one per mounted component) that switched themselves to inactive. */
+    readonly inactive: ReadonlySet<string>;
+    /** The Tab stop is active while at least one of its holders is. */
     readonly isActive: boolean;
 };
 
-const withCount = (focusable: Focusable, id: string, delta: number): Focusable => {
+const updateHolders = (focusable: Focusable, change: { count?: number; inactive?: ReadonlySet<string> }): Focusable => {
+    const count = change.count ?? focusable.count;
+    const inactive = change.inactive ?? focusable.inactive;
+
+    return { ...focusable, count, inactive, isActive: inactive.size < count };
+};
+
+const replaceEntry = (focusable: Focusable, id: string, replace: (entry: Focusable) => Focusable): Focusable => {
     if (focusable.id !== id) {
         return focusable;
     }
 
-    return { ...focusable, count: focusable.count + delta };
+    return replace(focusable);
+};
+
+const withHolder = (inactive: ReadonlySet<string>, holder: string, isInactive: boolean): ReadonlySet<string> => {
+    const next = new Set(inactive);
+
+    if (isInactive) {
+        next.add(holder);
+    } else {
+        next.delete(holder);
+    }
+
+    return next;
 };
 
 // Root component for all Ink apps
@@ -651,12 +673,13 @@ const App = ({
     const addFocusable = useCallback((id: string, { autoFocus }: { autoFocus: boolean }): void => {
         const existing = focusablesRef.current.find((focusable) => focusable.id === id);
         const next = existing
-            ? focusablesRef.current.map((focusable) => withCount(focusable, id, 1))
+            ? focusablesRef.current.map((focusable) => replaceEntry(focusable, id, (entry) => updateHolders(entry, { count: entry.count + 1 })))
             : [
                 ...focusablesRef.current,
                 {
                     count: 1,
                     id,
+                    inactive: new Set<string>(),
                     isActive: true,
                 },
             ];
@@ -677,17 +700,9 @@ const App = ({
         }
     }, []);
 
-    const removeFocusable = useCallback((id: string): void => {
-        const remaining = focusablesRef.current.find((focusable) => focusable.id === id);
-
-        // Another mounted component still holds this ID: keep the shared Tab stop.
-        if (remaining && remaining.count > 1) {
-            const decremented = focusablesRef.current.map((focusable) => withCount(focusable, id, -1));
-
-            focusablesRef.current = decremented;
-
-            setFocusables(decremented);
-
+    // Blurs the focused component when its Tab stop has no active holder left.
+    const blurIfInactive = useCallback((id: string, isActive: boolean): void => {
+        if (isActive) {
             return;
         }
 
@@ -698,56 +713,74 @@ const App = ({
 
             return currentActiveFocusId;
         });
-
-        const filtered = focusablesRef.current.filter((focusable) => focusable.id !== id);
-
-        focusablesCountRef.current = filtered.length;
-        focusablesRef.current = filtered;
-
-        setFocusables(filtered);
     }, []);
 
-    const activateFocusable = useCallback((id: string): void => {
-        const next = focusablesRef.current.map((focusable) => {
-            if (focusable.id !== id) {
-                return focusable;
+    const removeFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            const entry = focusablesRef.current.find((focusable) => focusable.id === id);
+
+            // Another mounted component still holds this ID: keep the shared Tab stop.
+            if (entry && entry.count > 1) {
+                const updated = updateHolders(entry, { count: entry.count - 1, inactive: withHolder(entry.inactive, holder, false) });
+                const decremented = focusablesRef.current.map((focusable) => replaceEntry(focusable, id, () => updated));
+
+                focusablesRef.current = decremented;
+
+                blurIfInactive(id, updated.isActive);
+                setFocusables(decremented);
+
+                return;
             }
 
-            return {
-                ...focusable,
-                isActive: true,
-            };
-        });
+            blurIfInactive(id, false);
 
-        focusablesRef.current = next;
+            const filtered = focusablesRef.current.filter((focusable) => focusable.id !== id);
 
-        setFocusables(next);
-    }, []);
+            focusablesCountRef.current = filtered.length;
+            focusablesRef.current = filtered;
 
-    const deactivateFocusable = useCallback((id: string): void => {
-        setActiveFocusId((currentActiveFocusId) => {
-            if (currentActiveFocusId === id) {
-                return undefined;
-            }
+            setFocusables(filtered);
+        },
+        [blurIfInactive],
+    );
 
-            return currentActiveFocusId;
-        });
+    const setHolderActive = useCallback(
+        (id: string, holder: string, isActive: boolean): void => {
+            let isStopActive = true;
 
-        const next = focusablesRef.current.map((focusable) => {
-            if (focusable.id !== id) {
-                return focusable;
-            }
+            const next = focusablesRef.current.map((focusable) => {
+                if (focusable.id !== id) {
+                    return focusable;
+                }
 
-            return {
-                ...focusable,
-                isActive: false,
-            };
-        });
+                const updated = updateHolders(focusable, { inactive: withHolder(focusable.inactive, holder, !isActive) });
 
-        focusablesRef.current = next;
+                isStopActive = updated.isActive;
 
-        setFocusables(next);
-    }, []);
+                return updated;
+            });
+
+            focusablesRef.current = next;
+
+            blurIfInactive(id, isStopActive);
+            setFocusables(next);
+        },
+        [blurIfInactive],
+    );
+
+    const activateFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            setHolderActive(id, holder, true);
+        },
+        [setHolderActive],
+    );
+
+    const deactivateFocusable = useCallback(
+        (id: string, holder = ""): void => {
+            setHolderActive(id, holder, false);
+        },
+        [setHolderActive],
+    );
 
     // Handle cursor visibility, raw mode, and bracketed paste mode cleanup on unmount
     useEffect(
