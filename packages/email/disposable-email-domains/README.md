@@ -161,13 +161,23 @@ extractDomain("User@Example.COM"); // "example.com"
 
 ### Edge / browser / bundled runtimes
 
-By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
+For Cloudflare Workers, Next.js middleware/edge and other bundles, import from the `/edge` subpath. It exports the same API as the main entry, but ships the list inside your bundle and registers it for you, so there is no filesystem access and no `setDomains` call:
 
-Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, check `isListLoaded()` to make sure it took:
+```typescript
+import { isDisposableEmail } from "@visulima/disposable-email-domains/edge";
+
+isDisposableEmail("user@mailinator.com"); // true, no setup
+```
+
+The list is about 2.8 MB (about 0.9 MB gzipped) of your bundle and cannot be tree-shaken, which is why it is a separate entry: use `/edge` only where you need it, and use the main entry with `setDomains` if you supply your own list.
+
+**Using the main entry instead?** By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
+
+Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, call `assertListLoaded()` at startup so a missed or failed load throws instead of failing open (`isListLoaded()` is the non-throwing check):
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 setDomains(domains);
 
@@ -188,10 +198,10 @@ if (!isListLoaded()) {
 
 ### Raw domain list (`./domains`)
 
-The raw, sorted array of disposable domains is exported from the `./domains` subpath. In Node ESM you must use a JSON import attribute:
+The raw, sorted array of disposable domains is the default export of the `./domains` subpath. It is a plain ES module, so no JSON import attribute is needed:
 
 ```typescript
-import domains from "@visulima/disposable-email-domains/domains" with { type: "json" };
+import domains from "@visulima/disposable-email-domains/domains";
 
 console.log(domains.length); // number of disposable domains
 ```

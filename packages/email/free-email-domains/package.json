@@ -32,7 +32,9 @@
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "sideEffects": false,
+    "sideEffects": [
+        "./dist/edge.js"
+    ],
     "type": "module",
     "exports": {
         ".": {
@@ -41,7 +43,11 @@
         },
         "./domains": {
             "types": "./dist/domains.d.ts",
-            "default": "./dist/domains.json"
+            "default": "./dist/domains.js"
+        },
+        "./edge": {
+            "types": "./dist/edge.d.ts",
+            "default": "./dist/edge.js"
         },
         "./package.json": "./package.json"
     },

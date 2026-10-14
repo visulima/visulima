@@ -125,7 +125,7 @@ const getDomainSet = (): Set<string> => {
  *
  * ```ts
  * import { setDomains } from "@visulima/free-email-domains";
- * import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+ * import domains from "@visulima/free-email-domains/domains";
  *
  * setDomains(domains);
  * ```
@@ -165,6 +165,24 @@ const preload = async (): Promise<void> => {
  * @returns True if the built-in list is loaded and non-degraded.
  */
 const isListLoaded = (): boolean => listLoaded;
+
+/**
+ * Throws unless the built-in list is loaded, reading it from disk first on Node.
+ *
+ * Without a list every lookup returns `false`, so a missing `setDomains()` (or an unreadable
+ * `dist/domains.json`) fails open silently apart from one warning. Call this once at startup
+ * where free-provider detection matters, so that mistake fails loudly instead.
+ * @throws {Error} When the built-in list could not be loaded and no list was injected.
+ */
+const assertListLoaded = (): void => {
+    getDomainSet();
+
+    if (!listLoaded) {
+        throw new Error(
+            "[@visulima/free-email-domains] The built-in list is not loaded; call setDomains() with the list, or import from \"@visulima/free-email-domains/edge\" on runtimes without a filesystem.",
+        );
+    }
+};
 
 /**
  * Extracts and validates the domain from an email address.
@@ -293,4 +311,4 @@ const areFreeEmails = (emails: string[], options?: Set<string> | FreeEmailOption
 };
 
 export type { FreeEmailOptions };
-export { areFreeEmails, extractDomain, isFreeDomain, isFreeEmail, isListLoaded, preload, setDomains };
+export { areFreeEmails, assertListLoaded, extractDomain, isFreeDomain, isFreeEmail, isListLoaded, preload, setDomains };
