@@ -231,6 +231,24 @@ const ansiControlMarkerCodePoints = new Set<number>([27, 144, 152, 155, 157, 158
 const memoizationDisableRatio = 0.6;
 const memoizationProbeInterval = 30;
 
+/**
+ * Called before a character is written over `width` cells from `start`. Overwriting half of a wide character
+ * leaves the other half without a partner, so that half becomes a blank in the character's own style. Otherwise
+ * the cells after it would shift left when the row is serialized.
+ */
+const repairWideOverlap = (row: StyledLine, start: number, width: number): void => {
+    // A second half is an empty cell right after a wide head; an unwritten cell is empty too, so check the head.
+    if (start > 0 && start < row.length && row.getFullWidth(start - 1) && row.getValue(start) === "") {
+        row.setCharFast(start - 1, " ", row.getFormatFlags(start), row.getFgColor(start), row.getBgColor(start), row.getLink(start));
+    }
+
+    const end = start + width;
+
+    if (end > 0 && end < row.length && row.getFullWidth(end - 1) && row.getValue(end) === "") {
+        row.setCharFast(end, " ", row.getFormatFlags(end), row.getFgColor(end), row.getBgColor(end), row.getLink(end));
+    }
+};
+
 export default class Output {
     width: number;
 
@@ -333,37 +351,50 @@ export default class Output {
                     break;
                 }
 
-                if (clip && (offsetX < clip.x1! || offsetX >= clip.x2!)) {
-                    offsetX++;
+                const isFullWidth = parsed.getFullWidth(i);
+                const span = parsedSpans[spanCursor];
+                const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
+                const cellEnd = offsetX + (isFullWidth ? 2 : 1);
+                const isOutsideClip = clip !== undefined && (cellEnd <= clip.x1! || offsetX >= clip.x2!);
 
-                    if (parsed.getFullWidth(i)) {
-                        offsetX++;
-                    }
+                // Clipping works in columns, so a character entirely outside the clip or the output takes no cells.
+                if (isOutsideClip || cellEnd <= 0) {
+                    offsetX = cellEnd;
 
                     continue;
                 }
 
-                if (offsetX >= 0) {
-                    // Grow row if writing beyond current length (no clip active)
+                // A wide character cut by an edge keeps its visible cell as a blank in its own style, so the
+                // columns after it stay where they are.
+                if (isFullWidth && (offsetX < 0 || (clip && (offsetX < clip.x1! || cellEnd > clip.x2!)))) {
+                    const visibleStart = Math.max(offsetX, clip?.x1 ?? 0, 0);
+                    const visibleEnd = Math.min(cellEnd, clip?.x2 ?? Infinity, row.length);
+
+                    for (let col = visibleStart; col < visibleEnd; col++) {
+                        row.setCharFast(col, " ", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
+                    }
+
+                    offsetX = cellEnd;
+
+                    continue;
+                }
+
+                // Grow row if writing beyond current length (no clip active)
+                if (offsetX >= row.length) {
+                    row.ensureWidth(offsetX + 2);
+                }
+
+                repairWideOverlap(row, offsetX, isFullWidth ? 2 : 1);
+                row.setCharFast(offsetX, parsed.getValue(i), flags, span?.fgColor, span?.bgColor, span?.link);
+
+                if (isFullWidth) {
+                    offsetX++;
+
                     if (offsetX >= row.length) {
-                        row.ensureWidth(offsetX + 2);
+                        row.ensureWidth(offsetX + 1);
                     }
 
-                    const span = parsedSpans[spanCursor];
-                    const isFullWidth = parsed.getFullWidth(i);
-                    const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
-
-                    row.setCharFast(offsetX, parsed.getValue(i), flags, span?.fgColor, span?.bgColor, span?.link);
-
-                    if (isFullWidth) {
-                        offsetX++;
-
-                        if (offsetX >= row.length) {
-                            row.ensureWidth(offsetX + 1);
-                        }
-
-                        row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
-                    }
+                    row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
                 }
 
                 offsetX++;
