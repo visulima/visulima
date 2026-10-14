@@ -417,12 +417,9 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
     let parts;
 
     if (Buffer.isBuffer(s)) {
-        if (s[0]! > 127 && s[1] === undefined) {
-            (s[0] as unknown as number) -= 128;
-            s = `\u001B${String(s)}`;
-        } else {
-            s = String(s);
-        }
+        // Meta+character arrives as one byte with the high bit set. Compute the character instead of
+        // writing back into the caller's Buffer.
+        s = s[0]! > 127 && s[1] === undefined ? `\u001B${String.fromCharCode(s[0]! - 128)}` : String(s);
     } else if (s !== undefined && typeof s !== "string") {
         s = String(s);
     } else if (!s) {
