@@ -50,6 +50,7 @@ import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
 import { selectAffectedProjects } from "../../task/affected-selection";
+import { describeMisplacedTargetKeys, findMisplacedTargetKeys } from "../../task/misplaced-options";
 import { filterProjectsByNames } from "../../task/project-name-filter";
 import { decidePty } from "../../task/pty-decision";
 import { filterProjectsByQuery, filterProjectsByTags, resolveSelector } from "../../task/selectors";
@@ -1607,6 +1608,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
             return output.replaceAll("{projectRoot}", outputsProjectRoot).replaceAll("{projectName}", projectName);
         });
+
+        const misplacedKeys = findMisplacedTargetKeys(visTarget.options);
+
+        if (misplacedKeys.length > 0) {
+            logger.warn(describeMisplacedTargetKeys(taskId, misplacedKeys));
+        }
 
         return {
             cache: visTarget.cache,
