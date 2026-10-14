@@ -333,6 +333,35 @@ describe(FingerprintManager, () => {
             expect(fingerprint.modifiedInputs?.[0]).toBe("round.txt");
         });
 
+        it("keys an unset env name apart from the same name set to an empty string", async () => {
+            expect.assertions(2);
+
+            const unset = await manager.createFingerprint([], "app:build", {}, {}, ["FP_TEST_UNSET"]);
+            const empty = await manager.createFingerprint([], "app:build", {}, { FP_TEST_UNSET: "" }, ["FP_TEST_UNSET"]);
+
+            expect(unset.envHashes["FP_TEST_UNSET"]).toBeDefined();
+            expect(unset.envHashes["FP_TEST_UNSET"]).not.toBe(empty.envHashes["FP_TEST_UNSET"]);
+        });
+
+        it("reports an env change when a name goes from unset to empty, and reads the env it is given", async () => {
+            expect.assertions(3);
+
+            const fingerprint = await manager.createFingerprint([], "app:build", {}, { FP_TEST_VALUE: "a" }, ["FP_TEST_VALUE"]);
+
+            // Same value in the given env: a hit, even though the parent process does not set it.
+            await expect(manager.validate(fingerprint, { FP_TEST_VALUE: "a" })).resolves.toBeUndefined();
+
+            // A different value in the given env: a miss with the env name as the detail.
+            const changed = await manager.validate(fingerprint, { FP_TEST_VALUE: "b" });
+
+            expect(changed?.[0]).toStrictEqual(expect.objectContaining({ detail: "FP_TEST_VALUE", type: "env-changed" }));
+
+            // Unset in the given env is a different state from an empty value.
+            const empty = await manager.validate(fingerprint, { FP_TEST_VALUE: undefined });
+
+            expect(empty?.[0]).toStrictEqual(expect.objectContaining({ type: "env-changed" }));
+        });
+
         it("omits modifiedInputs when a path was only read", async () => {
             expect.assertions(1);
 

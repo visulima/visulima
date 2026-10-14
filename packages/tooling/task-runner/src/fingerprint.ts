@@ -55,6 +55,13 @@ export const resolveEnvPatterns = (patterns: ReadonlyArray<string>, envVariables
 };
 
 /**
+ * The key signature of one env value: presence-distinct, so an unset name, an
+ * empty value and a set value each key differently. Same scheme as the declared
+ * hasher's `envSignature`.
+ */
+export const envValueHash = (name: string, value: string | undefined): string => hashStrings(`${name}=${value === undefined ? "0:" : `1:${value}`}`);
+
+/**
  * Represents a stored fingerprint for a task execution.
  */
 export interface TaskFingerprint {
@@ -276,7 +283,7 @@ export class FingerprintManager {
                 continue;
             }
 
-            envHashes[key] = hashStrings(`${key}=${value ?? ""}`);
+            envHashes[key] = envValueHash(key, value);
         }
 
         const missingFiles = [...missingPaths].toSorted();
@@ -297,8 +304,13 @@ export class FingerprintManager {
      * Returns null if valid (cache hit), or an array of reasons (cache miss).
      *
      * Does NOT use the file hash cache — validation must see current disk state.
+     * `envVariables` is the environment the child receives; it defaults to the
+     * parent's `process.env`.
      */
-    public async validate(fingerprint: TaskFingerprint): Promise<CacheMissReason[] | undefined> {
+    public async validate(
+        fingerprint: TaskFingerprint,
+        envVariables: Record<string, string | undefined> = process.env,
+    ): Promise<CacheMissReason[] | undefined> {
         const reasons: CacheMissReason[] = [];
 
         const fileCheckPromises = Object.entries(fingerprint.fileHashes).map(async ([relativePath, previousHash]) => {
@@ -366,7 +378,7 @@ export class FingerprintManager {
 
         // Check environment variables (synchronous, no I/O)
         for (const [envName, previousHash] of Object.entries(fingerprint.envHashes)) {
-            const currentHash = hashStrings(`${envName}=${process.env[envName] ?? ""}`);
+            const currentHash = envValueHash(envName, envVariables[envName]);
 
             if (currentHash !== previousHash) {
                 reasons.push({
