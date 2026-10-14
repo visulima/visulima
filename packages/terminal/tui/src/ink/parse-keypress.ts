@@ -127,8 +127,9 @@ type ParsedKey = {
     text?: string;
 };
 
-// Kitty keyboard protocol: CSI codepoint ; modifiers [: eventType] [; text-as-codepoints] u
-const kittyKeyRe = /^\u001B\[(\d+)(?:;(\d+)(?::(\d+))?(?:;([\d:]+))?)?u$/;
+// Kitty keyboard protocol: CSI codepoint [: shifted-key [: base-layout-key]] ; modifiers [: eventType] [; text-as-codepoints] u
+// The modifiers field may be empty when only the text field is sent (e.g. CSI 0 ; ; 229 u).
+const kittyKeyRe = /^\u001B\[(\d+)(?::[\d:]*)?(?:;(\d*)(?::(\d+))?(?:;([\d:]+))?)?u$/;
 
 // Kitty-enhanced special keys: CSI number ; modifiers : eventType {letter|~}
 // These are legacy CSI sequences enhanced with the :eventType field.
