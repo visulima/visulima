@@ -1,7 +1,3 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
 /**
  * Options accepted by the lookup helpers.
  */
@@ -49,8 +45,12 @@ let listLoaded = false;
  */
 let hasWarnedOnDomainsFailure = false;
 
-const filename = fileURLToPath(import.meta.url);
-const dirnamePath = dirname(filename);
+/**
+ * Location of the generated list relative to this module (`dist/index.js` and `src/index.ts`
+ * both sit one level below the package root). Kept in a variable so bundlers that detect
+ * `new URL(a string literal, import.meta.url)` (e.g. Vite) do not turn it into an asset reference.
+ */
+const DOMAINS_FILE_PATH = "../dist/domains.json";
 
 /**
  * Reads and parses the generated `dist/domains.json` from disk (Node runtimes).
@@ -58,8 +58,16 @@ const dirnamePath = dirname(filename);
  */
 const readDomainsFile = (): string[] | undefined => {
     try {
-        const domainsPath = join(dirnamePath, "..", "dist", "domains.json");
-        const domainsContent = readFileSync(domainsPath, "utf8");
+        // Resolved here, never at module scope: bundled Workers-style runtimes have no
+        // `import.meta.url` and may have no `process` or `node:fs`, and importing must still work.
+        // A missing `process`/`getBuiltinModule` throws and takes the warn-once fallback below.
+        const fs = process.getBuiltinModule("node:fs");
+
+        if (typeof import.meta.url !== "string") {
+            throw new TypeError("import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
+        }
+
+        const domainsContent = fs.readFileSync(new URL(DOMAINS_FILE_PATH, import.meta.url), "utf8");
         const parsed: unknown = JSON.parse(domainsContent);
 
         if (!Array.isArray(parsed)) {

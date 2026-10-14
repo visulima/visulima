@@ -4226,6 +4226,9 @@ importers:
       fallow:
         specifier: catalog:lint
         version: 3.14.0
+      miniflare:
+        specifier: catalog:test
+        version: 5.20260804.0-alpha(@types/node@26.6.4)
       prettier:
         specifier: catalog:lint
         version: 3.9.9
