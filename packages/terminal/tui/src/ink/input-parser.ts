@@ -61,22 +61,23 @@ const parseCsiSequence = (input: string, startIndex: number, prefixLength: numbe
 };
 
 const parseSs3Sequence = (input: string, startIndex: number, prefixLength: number): ParsedSequence => {
-    const nextIndex = startIndex + prefixLength + 2;
+    for (let index = startIndex + prefixLength + 1; index < input.length; index++) {
+        const byte = input.codePointAt(index)!;
 
-    if (nextIndex > input.length) {
-        return "pending";
+        if (isCsiFinalByte(byte)) {
+            return {
+                nextIndex: index + 1,
+                sequence: input.slice(startIndex, index + 1),
+            };
+        }
+
+        // Modified SS3 keys (e.g. ESC O 1;5 A) carry numeric parameters separated by semicolons.
+        if ((byte < 0x30 || byte > 0x39) && byte !== 0x3b) {
+            return undefined;
+        }
     }
 
-    const finalByte = input.codePointAt(nextIndex - 1);
-
-    if (finalByte === undefined || !isCsiFinalByte(finalByte)) {
-        return undefined;
-    }
-
-    return {
-        nextIndex,
-        sequence: input.slice(startIndex, nextIndex),
-    };
+    return "pending";
 };
 
 const parseControlSequence = (input: string, startIndex: number, prefixLength: number): ParsedSequence => {
