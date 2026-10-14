@@ -39,6 +39,7 @@ import {
     markCodemodAvailability,
     runCodemod,
 } from "../optimize/handler";
+import { buildEnvCoveragePosture, describeEnvCoverageTarget } from "./env-coverage";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
 import type { DoctorResults, SectionId, SectionStatus } from "./sections";
@@ -117,6 +118,7 @@ const buildSectionFindings = (section: SectionId, payload: Pick<DoctorResults, "
     const partial: DoctorResults = {
         duplicates: payload.duplicates,
         elapsedMs: 0,
+        envCoverage: { status: "ok", targets: [] },
         installedCount: 0,
         optimizations: payload.optimizations,
         outdated: payload.outdated,
@@ -139,7 +141,7 @@ const buildSectionFindings = (section: SectionId, payload: Pick<DoctorResults, "
  * Async scans gate on the active section set so `--only security` skips
  * the e18e/socket-override fan-out entirely.
  */
-const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "elapsedMs">> => {
+const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "elapsedMs" | "envCoverage">> => {
     const { filterPatterns, installed, progress, resolveCodemods, sections, store, visConfig, workspaceRoot } = context;
     const wantsDeps = sections.has("dependencies");
     const wantsSec = sections.has("security");
@@ -686,6 +688,24 @@ const displaySupplyChain = (results: DoctorResults): void => {
     }
 };
 
+/**
+ * Render the env-coverage section: one line per target with the referenced
+ * names no cache key covers and the config keys that would cover them. Shown
+ * only when there is a gap, so a clean workspace prints nothing.
+ */
+const displayEnvCoverage = (results: DoctorResults): void => {
+    if (results.envCoverage.targets.length === 0) {
+        return;
+    }
+
+    pail.log("");
+    pail.log(heading("Env Coverage", "warn"));
+
+    for (const target of results.envCoverage.targets) {
+        pail.log(itemWarn(describeEnvCoverageTarget(target)));
+    }
+};
+
 const displayRuntime = (results: DoctorResults): void => {
     if (!results.sections.has("runtime")) {
         return;
@@ -787,6 +807,7 @@ const displayResults = (results: DoctorResults, quiet: boolean): void => {
         displayOptimization(results);
         displayRuntime(results);
         displaySupplyChain(results);
+        displayEnvCoverage(results);
     }
 
     displaySummary(results, quiet);
@@ -949,7 +970,7 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
     const cachedResults = cacheKey ? readDoctorCache(cacheKey) : undefined;
     const cacheHit = cachedResults !== undefined;
 
-    let scanResults: Omit<DoctorResults, "elapsedMs">;
+    let scanResults: Omit<DoctorResults, "elapsedMs" | "envCoverage">;
     let pendingAction: ReturnType<DoctorStore["getSnapshot"]>["pendingAction"];
 
     if (wantsInteractive) {
@@ -1011,7 +1032,13 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
         }
     }
 
-    const fullResults: DoctorResults = { ...scanResults, elapsedMs: Date.now() - startedAt };
+    // Computed on every run, cache hits included: a project.json edit does not
+    // change the doctor cache key, so a cached copy could be stale.
+    const fullResults: DoctorResults = {
+        ...scanResults,
+        elapsedMs: Date.now() - startedAt,
+        envCoverage: await buildEnvCoveragePosture(visConfig ?? {}, wsRoot),
+    };
 
     // Cache the full unfiltered results so a later run with a different
     // --filter still hits cache. Filtering happens post-cache.

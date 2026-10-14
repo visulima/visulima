@@ -2,6 +2,7 @@ import type { RuntimeDiagnostic } from "../../runtime/runtime-diagnostics";
 import type { DuplicatePackage } from "../../security/dependency-scan";
 import type { OptimizeEntry } from "../../tui/components/optimize/optimize-store";
 import type { OutdatedEntry } from "../../util/catalog";
+import type { EnvCoveragePosture } from "./env-coverage";
 
 export const SECTION_IDS = ["dependencies", "security", "optimization", "runtime"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -37,6 +38,12 @@ export interface SupplyChainFinding {
 export interface DoctorResults {
     duplicates: DuplicatePackage[];
     elapsedMs: number;
+
+    /**
+     * Referenced env vars no cache key covers, per target. Config-derived and
+     * recomputed on every run, so it is never served from the result cache.
+     */
+    envCoverage: EnvCoveragePosture;
     installedCount: number;
     optimizations: OptimizeEntry[];
     outdated: OutdatedEntry[];
@@ -171,7 +178,7 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
         security: sectionStatus(results, "security"),
     };
 
-    const statuses = new Set([...Object.values(sectionsObj), results.supplyChain.status]);
+    const statuses = new Set([...Object.values(sectionsObj), results.envCoverage.status, results.supplyChain.status]);
     const overall: SectionStatus = statuses.has("error") ? "error" : statuses.has("warn") ? "warn" : "ok";
 
     return {
@@ -182,6 +189,12 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
             status: sectionsObj.dependencies,
         },
         elapsedMs: results.elapsedMs,
+        envCoverage: {
+            status: results.envCoverage.status,
+            targets: results.envCoverage.targets.map((t) => {
+                return { hints: t.hints, target: t.target, total: t.total, variables: t.variables };
+            }),
+        },
         optimizations: {
             microUtilities: counts.micro,
             native: counts.native,
@@ -219,7 +232,7 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
 
 /**
  * Exit-code policy. `strict` widens the failure set to non-security
- * findings (outdated, duplicates, runtime warnings).
+ * findings (outdated, duplicates, runtime warnings, uncovered env).
  */
 export const shouldFail = (results: DoctorResults, strict: boolean): boolean => {
     const hasRuntimeWarn = results.runtime.some((d) => d.status === "warn");
@@ -229,5 +242,5 @@ export const shouldFail = (results: DoctorResults, strict: boolean): boolean => 
         return baseFail;
     }
 
-    return baseFail || results.outdated.length > 0 || results.duplicates.length > 0 || hasRuntimeWarn;
+    return baseFail || results.outdated.length > 0 || results.duplicates.length > 0 || hasRuntimeWarn || results.envCoverage.targets.length > 0;
 };
