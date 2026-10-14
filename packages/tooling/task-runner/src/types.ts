@@ -1432,6 +1432,14 @@ export interface LifeCycleInterface {
     printCacheMiss?: (task: Task, reasons: string) => void;
 
     /**
+     * Called when a traced task's tracker observed no workspace access, and
+     * the run was cached under its declared hash instead (the target declares
+     * `inputs`). Informational: nothing fails and nothing is skipped. It fires
+     * only on the run that stored the fallback entry, never on a later hit.
+     */
+    printDeclaredFallback?: (task: Task) => void;
+
+    /**
      * Called when caching was skipped because auto-fingerprint tracking
      * came back empty — a signal that the tracker (strace or Node
      * preload) couldn't observe the task's file access, typically

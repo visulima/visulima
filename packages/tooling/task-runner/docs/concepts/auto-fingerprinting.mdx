@@ -62,8 +62,9 @@ chooses a key based on the target's declared `inputs`:
 
 - **The target declares `inputs`.** The run is keyed on its declared hash, the same
   hash the declared path computes. The entry is stored without a fingerprint and the
-  task index points at it. `result.hashSource` is set to `"declared-fallback"`. A later
-  run hits while the declared inputs are unchanged, and a changed input misses with the
+  task index points at it. `result.hashSource` is set to `"declared-fallback"`, and
+  `printDeclaredFallback(task)` fires once on the run that stores it. A later run hits
+  while the declared inputs are unchanged, and a changed input misses with the
   `declared-changed` reason.
 - **The target declares no `inputs`.** The orchestrator skips the cache write, sets
   `result.emptyFingerprint = true`, and fires `printEmptyFingerprintWarning(task, reason)`.

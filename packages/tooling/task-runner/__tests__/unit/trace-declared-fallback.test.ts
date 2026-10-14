@@ -18,6 +18,12 @@ import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph } 
 class RecordingLifeCycle implements LifeCycleInterface {
     public readonly warnings: string[] = [];
 
+    public readonly fallbacks: string[] = [];
+
+    public printDeclaredFallback(task: Task): void {
+        this.fallbacks.push(task.id);
+    }
+
     public printEmptyFingerprintWarning(_task: Task, reason: string): void {
         this.warnings.push(reason);
     }
@@ -135,6 +141,36 @@ describe("trace-mode declared fallback", () => {
 
         expect(second?.status).toBe("local-cache");
         expect(second?.hashSource).toBe("declared-fallback");
+    });
+
+    it("announces the fallback once, on the run that stores it, and never on a hit", async () => {
+        expect.assertions(3);
+
+        stubTracker([]);
+
+        await run({ declared: true });
+
+        expect(lifeCycle.fallbacks).toStrictEqual(["app:build"]);
+
+        await run({ declared: true });
+
+        expect(lifeCycle.fallbacks).toStrictEqual(["app:build"]);
+
+        stubTracker([{ path: join(workspaceRoot, "packages/app/src/index.ts"), type: "read" }]);
+
+        await run({ declared: true, skipCache: true });
+
+        expect(lifeCycle.fallbacks).toStrictEqual(["app:build"]);
+    });
+
+    it("does not announce a fallback when the target declares no inputs", async () => {
+        expect.assertions(1);
+
+        stubTracker([]);
+
+        await run({ declared: false });
+
+        expect(lifeCycle.fallbacks).toHaveLength(0);
     });
 
     it("misses and re-executes when a declared input changes after a fallback run", async () => {

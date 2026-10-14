@@ -1018,6 +1018,8 @@ class TaskOrchestrator {
 
                     await this.#cache.put(hash, terminalOutput, task.outputs, code, undefined, autoWrites);
                     await this.#cache.setTaskIndex(task.id, hash);
+
+                    this.#lifeCycle.printDeclaredFallback?.(task);
                 } else {
                     const hash = hashFingerprint(fingerprint);
 
