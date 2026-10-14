@@ -1,4 +1,6 @@
+import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
@@ -89,7 +91,40 @@ describe("typecheckAdapter", () => {
             // JSONC: comments and a trailing comma must not hide the references.
             writeFileSync(join(workspaceRoot, "tsconfig.json"), "{\n  // solution\n  \"files\": [],\n  \"references\": [{ \"path\": \"./a\" },],\n}\n");
 
-            expect(typecheckAdapter.bin(presence())).toStrictEqual(["pnpm", "exec", "tsc", "-b", "--noEmit", "--pretty", "false", "tsconfig.json"]);
+            expect(typecheckAdapter.bin(presence())).toStrictEqual(["pnpm", "exec", "tsc", "-b", "--pretty", "false", "tsconfig.json"]);
+        });
+
+        it("checks a solution-style workspace whose projects import each other", () => {
+            expect.assertions(4);
+
+            const project = { compilerOptions: { composite: true, declaration: true, module: "esnext", moduleResolution: "bundler", outDir: "dist", strict: true, target: "es2022" }, include: ["src"] };
+
+            mkdirSync(join(workspaceRoot, "a/src"), { recursive: true });
+            mkdirSync(join(workspaceRoot, "b/src"), { recursive: true });
+            writePackageJson({ typescript: "^5.0.0" });
+            writeFileSync(join(workspaceRoot, "tsconfig.json"), JSON.stringify({ files: [], references: [{ path: "./a" }, { path: "./b" }] }));
+            writeFileSync(join(workspaceRoot, "a/tsconfig.json"), JSON.stringify(project));
+            writeFileSync(join(workspaceRoot, "b/tsconfig.json"), JSON.stringify({ ...project, references: [{ path: "../a" }] }));
+            writeFileSync(join(workspaceRoot, "a/src/index.ts"), "export const a: number = 1;\n");
+
+            // The argv the adapter builds, run with the TypeScript this package resolves instead of `pnpm exec`.
+            const tsc = createRequire(import.meta.url).resolve("typescript/bin/tsc");
+            const flags = typecheckAdapter.bin(presence()).slice(3);
+            const check = () => spawnSync(process.execPath, [tsc, ...flags], { cwd: workspaceRoot, encoding: "utf8" });
+
+            writeFileSync(join(workspaceRoot, "b/src/index.ts"), "import { a } from \"../../a/src/index\";\nexport const b: number = a;\n");
+
+            expect(check().status).toBe(0);
+
+            // A type error in the dependent project is found and parsed, not masked by a project-reference diagnostic.
+            writeFileSync(join(workspaceRoot, "b/src/index.ts"), "import { a } from \"../../a/src/index\";\nexport const b: string = a;\n");
+
+            const failing = check();
+            const findings = typecheckAdapter.parse({ durationMs: 1, exitCode: failing.status, stderr: failing.stderr, stdout: failing.stdout }, presence());
+
+            expect(failing.status).not.toBe(0);
+            expect(findings.map((finding) => finding.ruleId)).toStrictEqual(["TS2322"]);
+            expect(findings[0]?.file).toBe(join(workspaceRoot, "b/src/index.ts"));
         });
 
         it("picks tsgo only when the native preview is the sole TypeScript declared", () => {

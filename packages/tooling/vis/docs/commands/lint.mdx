@@ -163,7 +163,7 @@ It needs a `tsconfig.json` and a `typescript` (or `@typescript/native-preview`) 
 
 - **Whole project, not files.** `tsc` cannot check a file list without ignoring the tsconfig, so `vis lint src/a.ts`, `--staged` and `--since` run the type check only when at least one of the files is `.ts`/`.tsx`/`.mts`/`.cts`, then check the entire project. Findings can therefore point at files outside that list.
 - **No cache.** Results are never replayed from the lint cache, because a type error can come from a file that did not change.
-- **Solution-style roots.** When the root `tsconfig.json` has `references`, it is checked with `tsc -b --noEmit`. Plain `tsc` exits 0 on such a config without checking anything. Build mode writes `.tsbuildinfo` files for composite projects, so keep them in `.gitignore`.
+- **Solution-style roots.** When the root `tsconfig.json` has `references`, it is checked with `tsc -b`. Plain `tsc` exits 0 on such a config without checking anything. `--noEmit` cannot be used in build mode, because a project that references another consumes its declaration output (TypeScript rejects a referenced project that disables emit). Build mode therefore writes each project's `outDir` and `.tsbuildinfo` files, as `tsc -b` always does, so keep them in `.gitignore`.
 - **No auto-fix.** `--fix` runs the same check.
 - **Extra flags.** Add flags with `adapters.typecheck.extraArgs`, for example `["--incremental"]`.
 

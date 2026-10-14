@@ -20,8 +20,11 @@ import { declaredVersion, readRootPackageJson } from "../detect";
  * - **fix-less**: `argsFix` is the same as `argsCheck`.
  *
  * A tsconfig with `references` (a solution-style root) is checked in build mode
- * (`tsc -b --noEmit`): plain `tsc` exits 0 on such a config without checking anything.
- * Build mode writes `.tsbuildinfo` files for composite projects.
+ * (`tsc -b`): plain `tsc` exits 0 on such a config without checking anything.
+ * `--noEmit` is not passed there, because a project that references another consumes
+ * its declaration output and TypeScript rejects a referenced project that disables
+ * emit (TS6310). Build mode therefore writes each project's own `outDir` and
+ * `.tsbuildinfo`, exactly as `tsc -b` does.
  */
 
 const TSGO_PACKAGE = "@typescript/native-preview";
@@ -70,7 +73,7 @@ export const typecheckAdapter: ToolAdapter = {
         const config = presence.configFile ? relative(presence.root, presence.configFile) : "tsconfig.json";
 
         if (presence.configFile && hasReferences(presence.root)) {
-            return [...head, "-b", "--noEmit", "--pretty", "false", config];
+            return [...head, "-b", "--pretty", "false", config];
         }
 
         return [...head, "-p", config, "--noEmit", "--pretty", "false"];
@@ -87,8 +90,11 @@ export const typecheckAdapter: ToolAdapter = {
         const native = declaredVersion(packageJson, TSGO_PACKAGE);
         const found = findTsConfig(root);
 
-        // findTsConfigSync walks up; a parent directory's tsconfig is not this workspace's.
-        if ((!typescript && !native) || !found?.path.startsWith(`${root}/`)) {
+        // findTsConfigSync walks up; a parent directory's tsconfig is not this workspace's. Compared as a
+        // relative path so a root with Windows separators still recognises a config inside it.
+        const configRelative = found ? relative(root, found.path) : undefined;
+
+        if ((!typescript && !native) || !found || !configRelative || configRelative === ".." || configRelative.startsWith("../") || isAbsolutePath(configRelative)) {
             return undefined;
         }
 
