@@ -84,8 +84,7 @@ const VIS_OWNED = createEnvMatcher([
  * `%NAME%` references (cmd.exe). The task-runner extractor only reads `$`
  * forms, so this pass is local. The name needs two characters and no
  * neighbouring `%` or word character, which keeps date formats such as
- * `%Y%m%d` out. Known false positive: `%FT%T` (a date format) still matches
- * because the name is two characters.
+ * `%Y%m%d` and `%FT%T` out.
  */
 const WINDOWS_REFERENCE = /(?<![\w%])%([A-Z_]\w+)%(?![\w%])/gi;
 

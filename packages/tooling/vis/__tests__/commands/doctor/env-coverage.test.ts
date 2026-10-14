@@ -193,9 +193,10 @@ describe(buildEnvCoveragePosture, () => {
     });
 
     it("finds %NAME% references without flagging date formats", async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         expect(extractWindowsEnvVars("date +%Y%m%d%H%M && echo %USERNAME%")).toStrictEqual(["USERNAME"]);
+        expect(extractWindowsEnvVars("date +%FT%T")).toStrictEqual([]);
 
         writeApp(root, "date +%Y%m%d%H%M");
 
