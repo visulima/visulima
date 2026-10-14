@@ -114,6 +114,9 @@ const App = ({
     // Tracks a deferred terminal raw-mode teardown queued via queueMicrotask.
     // Lets a same-render useInput swap keep the terminal in raw mode without a disable/enable cycle.
     const pendingDisableRawModeRef = useRef(false);
+    // Set while suspendTerminal() has handed the terminal to a child process. Input hooks that
+    // change while it is set only update the counts; resumeInput restores the modes that still have an owner.
+    const isInputPausedRef = useRef(false);
     // Count how many components enabled bracketed paste mode
     const bracketedPasteModeEnabledCount = useRef(0);
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -397,15 +400,17 @@ const App = ({
 
                     pendingDisableRawModeRef.current = false;
 
-                    if (!isRawModeAlreadyEnabled) {
-                        stdin.ref?.();
+                    if (!isInputPausedRef.current) {
+                        if (!isRawModeAlreadyEnabled) {
+                            stdin.ref?.();
 
-                        if (isRawModeSupported) {
-                            stdin.setRawMode(true);
+                            if (isRawModeSupported) {
+                                stdin.setRawMode(true);
+                            }
                         }
-                    }
 
-                    attachReadableListener();
+                        attachReadableListener();
+                    }
                 }
 
                 rawModeEnabledCount.current++;
@@ -418,6 +423,11 @@ const App = ({
             }
 
             if (--rawModeEnabledCount.current === 0) {
+                // Nothing to release while suspended: pauseInput already did.
+                if (isInputPausedRef.current) {
+                    return;
+                }
+
                 // Stop owning input immediately so pending parser state cannot leak into
                 // a replacement useInput component mounted in the same React update.
                 clearInputState();
@@ -444,7 +454,7 @@ const App = ({
             }
 
             if (isEnabled) {
-                if (bracketedPasteModeEnabledCount.current === 0) {
+                if (bracketedPasteModeEnabledCount.current === 0 && !isInputPausedRef.current) {
                     stdout.write(enableBracketedPaste);
                 }
 
@@ -457,31 +467,24 @@ const App = ({
                 return;
             }
 
-            if (--bracketedPasteModeEnabledCount.current === 0) {
+            if (--bracketedPasteModeEnabledCount.current === 0 && !isInputPausedRef.current) {
                 stdout.write(disableBracketedPaste);
             }
         },
         [stdout],
     );
 
-    // Remembers which input modes were active so resumeInput can reinstate exactly
-    // what was on — the ownership counts are left untouched so components still
-    // "own" raw mode / bracketed paste across the suspension.
-    const suspendedInputStateRef = useRef({ bracketedPaste: false, rawMode: false });
-
+    // Pausing and resuming leave the ownership counts untouched: the components still "own"
+    // raw mode / bracketed paste across the suspension, and resumeInput restores whatever still has an owner.
     const pauseInput = useCallback((): void => {
-        const wasRawMode = isRawModeSupported && (rawModeEnabledCount.current > 0 || pendingDisableRawModeRef.current);
-        const wasBracketedPaste = bracketedPasteModeEnabledCount.current > 0;
+        isInputPausedRef.current = true;
 
-        suspendedInputStateRef.current = { bracketedPaste: wasBracketedPaste, rawMode: wasRawMode };
-
-        if (wasBracketedPaste && stdout.isTTY) {
+        if (bracketedPasteModeEnabledCount.current > 0 && stdout.isTTY) {
             stdout.write(disableBracketedPaste);
         }
 
-        if (wasRawMode) {
-            // Hand raw mode + input listeners back to the terminal without resetting
-            // the counts. Cancel any queued deferred disable so it can't fire mid-suspension.
+        if (isRawModeSupported && (rawModeEnabledCount.current > 0 || pendingDisableRawModeRef.current)) {
+            // Hand raw mode + input listeners back to the terminal. Cancel any queued deferred disable so it can't fire mid-suspension.
             pendingDisableRawModeRef.current = false;
             clearInputState();
             stdin.setRawMode(false);
@@ -490,19 +493,19 @@ const App = ({
     }, [isRawModeSupported, stdout, stdin, clearInputState]);
 
     const resumeInput = useCallback((): void => {
-        const { bracketedPaste, rawMode } = suspendedInputStateRef.current;
+        isInputPausedRef.current = false;
 
-        if (rawMode) {
+        if (isRawModeSupported && rawModeEnabledCount.current > 0) {
             stdin.ref?.();
             stdin.setRawMode(true);
             stdin.setEncoding("utf8");
             attachReadableListener();
         }
 
-        if (bracketedPaste && stdout.isTTY) {
+        if (bracketedPasteModeEnabledCount.current > 0 && stdout.isTTY) {
             stdout.write(enableBracketedPaste);
         }
-    }, [stdin, stdout, attachReadableListener]);
+    }, [isRawModeSupported, stdin, stdout, attachReadableListener]);
 
     // Register on every commit so a child component that calls suspendTerminal()
     // reaches the current pause/resume closures.
