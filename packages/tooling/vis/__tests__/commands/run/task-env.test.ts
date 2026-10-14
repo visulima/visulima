@@ -172,13 +172,17 @@ describe("vis run injected and parent environment", () => {
         try {
             const spawn = taskSpawnOptions(effectiveChildEnvPolicy(undefined, { mode: "clean" }), { PATH: String.raw`C:\injected` }, "win32");
 
+            // On a real Windows host process.env is case-insensitive and keeps the casing the variable was first
+            // created with, so names are matched without regard to case here.
+            const entries = (name: string): [string, string][] => Object.entries(spawn.env ?? {}).filter(([key]) => key.toUpperCase() === name.toUpperCase());
+
             expect(spawn.inheritEnv).toBe(false);
-            expect(spawn.env).toHaveProperty("SystemRoot", String.raw`C:\Windows`);
+            expect(entries("SystemRoot").map(([, value]) => value)).toStrictEqual([String.raw`C:\Windows`]);
             // The injected PATH replaces the parent's Path: one variable, not two.
-            expect(spawn.env).toHaveProperty("PATH", String.raw`C:\injected`);
-            expect(spawn.env).not.toHaveProperty("Path");
+            expect(entries("PATH").map(([, value]) => value)).toStrictEqual([String.raw`C:\injected`]);
+            expect(entries("PATH")).toHaveLength(1);
             // TMPDIR is a POSIX essential, so the Windows policy drops it.
-            expect(spawn.env).not.toHaveProperty("TMPDIR");
+            expect(entries("TMPDIR")).toStrictEqual([]);
             expect(cleanChildNameFilter([], "win32")("Path")).toBe(true);
         } finally {
             for (const name of names) {

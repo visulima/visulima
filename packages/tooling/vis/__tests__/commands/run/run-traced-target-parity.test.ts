@@ -259,7 +259,9 @@ describe("vis run traced targets", () => {
 
             await run(["strict-envfile"]);
 
-            expect(spawns()).toStrictEqual([{ argv: ["a"], keyed: "a" }]);
+            // `cmd.exe` does not expand `$VAR`, so on Windows the argument stays literal. The strictEnv check reads
+            // the reference either way, and the child still receives the value from the envFile.
+            expect(spawns()).toStrictEqual([{ argv: [process.platform === "win32" ? "$VIS_TEST_KEYED" : "a"], keyed: "a" }]);
             expect(process.env["VIS_TEST_KEYED"]).toBeUndefined();
         });
 

@@ -972,8 +972,9 @@ describe(TaskOrchestrator, () => {
             target: { project: "app", target: "build" },
         };
 
-        // A real command that reads a workspace file, so the tracker records a non-empty fingerprint.
-        const readsSource = (): string => `node -e "require('fs').readFileSync('${join(workspaceRoot, "packages/app/src/index.ts")}')"`;
+        // A real command that reads a workspace file, so the tracker records a non-empty fingerprint. The path is an
+        // argument, not source text: a Windows path inside a JS string literal reads as escape sequences.
+        const readsSource = (): string => `node -e "require('fs').readFileSync(process.argv[1])" "${join(workspaceRoot, "packages/app/src/index.ts")}"`;
 
         const runStatus = async (): Promise<string | undefined> => {
             const results = await createOrchestrator([task], successExecutor, { autoFingerprint: true, resolveCommand: readsSource }).run();

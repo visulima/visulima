@@ -80,7 +80,10 @@ describe("vis run splitCompound under a clean environment", () => {
 
         // Every name a segment may see: what the policy keeps from the parent, what vis
         // injects, and what the shell and the spawner add on top.
-        const allowed = new Set([
+        // Windows names are case-insensitive and Windows itself adds a set of them to every process it starts.
+        const windows = process.platform === "win32";
+        const normal = (name: string): string => (windows ? name.toUpperCase() : name);
+        const allowedNames = [
             ...Object.keys(pickChildParentEnv(process.env, effectiveChildEnvPolicy(undefined, { allow: [ALLOWED_VAR], mode: "clean" }))),
             ...Object.keys(VIS_TASK_INJECTED_NAMES),
             "_",
@@ -90,14 +93,17 @@ describe("vis run splitCompound under a clean environment", () => {
             "SHLVL",
             // macOS: CoreFoundation sets this in every Node process whose parent lacks it.
             ...(process.platform === "darwin" ? ["__CF_USER_TEXT_ENCODING"] : []),
-        ]);
+            // Windows: derived from the user profile and the system root for every new process.
+            ...(windows ? ["HOMEDRIVE", "HOMEPATH", "LOGONSERVER", "PROMPT", "SYSTEMDRIVE", "USERDOMAIN", "USERNAME", "WINDIR"] : []),
+        ];
+        const allowed = new Set(allowedNames.map((name) => normal(name)));
 
         for (const segment of ["a", "b"] as const) {
             const env = segmentEnv(segment);
 
             expect(env[ALLOWED_VAR], `segment ${segment} allowed`).toBe("allowed");
             expect(env, `segment ${segment} parent`).not.toHaveProperty(PARENT_VAR);
-            expect(Object.keys(env).filter((name) => !allowed.has(name)), `segment ${segment} leaked names`).toStrictEqual([]);
+            expect(Object.keys(env).filter((name) => !allowed.has(normal(name))), `segment ${segment} leaked names`).toStrictEqual([]);
         }
 
         // The injected names reach the later segment too, not only the first.

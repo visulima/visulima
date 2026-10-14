@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { join } from "@visulima/path";
 import type { Task } from "@visulima/task-runner";
 import { runConcurrently } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";

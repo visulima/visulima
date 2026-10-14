@@ -27,10 +27,12 @@ const kinds: { kind: SpawnKind; label: string }[] = [
     ...(directExecSafe ? [{ kind: "direct" as const, label: "direct exec (shell: false)" }] : []),
 ];
 
-// Quote for the platform shell. Plain `"…"` on purpose: JSON escaping would
-// double Windows backslashes. Direct exec gets no quotes at all, since it
-// splits on whitespace without a shell.
-const quoteFor = (kind: SpawnKind, value: string): string => (kind === "direct" ? value : `"${value}"`);
+// Quote for the platform shell, only where the value needs it. Plain `"…"` on
+// purpose: JSON escaping would double Windows backslashes. Quoting is skipped
+// for a value without whitespace because `cmd /c` drops the first and last
+// quote of a command that starts with one, which breaks `"node.exe" "a" "b"`.
+// Direct exec gets no quotes at all, since it splits on whitespace without a shell.
+const quoteFor = (kind: SpawnKind, value: string): string => (kind === "direct" || !/\s/.test(value) ? value : `"${value}"`);
 
 // Environment names are case-insensitive on Windows (`Path` vs `PATH`), so
 // read the child's map through a case-insensitive lookup.
