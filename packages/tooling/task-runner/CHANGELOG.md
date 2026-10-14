@@ -1,3 +1,495 @@
+## @visulima/task-runner [2.0.0](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.1.0...@visulima/task-runner@2.0.0) (2026-10-14)
+
+### ⚠ BREAKING CHANGES
+
+* **vis:** vis run <target> now exits 1 when no project defines the
+target. Scripts that relied on the silent exit 0 must pass --if-present.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* feat(task-runner): add tracker kind to trace key
+
+The trace key now includes which mechanism observed the file accesses:
+seccomp, strace, interpose, iat or preload. The same workspace traced on
+Linux and macOS can no longer produce the same key for different
+observations.
+
+Upgrade notes:
+- Traced entries written after this change are keyed on the new digest.
+  Entries written before it stay reachable through the task index and
+  are validated against their files as before, so there is no forced
+  miss on upgrade.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* feat(task-runner): fall back to declared hash
+
+A traced task whose tracker observed no workspace access was never
+cached. That left targets which declare inputs uncached on hosts without
+a working tracker. When the target declares inputs, such a run is now
+keyed on its declared hash instead. Targets without inputs keep the
+previous behaviour: no cache entry and a warning.
+
+The declared hash is computed only when the tracker is empty, so traced
+runs that observe files do no extra hashing. A fallback entry is stored
+without a fingerprint, and the next run validates it by recomputing the
+declared hash. A changed hash is reported as declared-changed. The task
+result and the run summary record hashSource: "declared-fallback".
+
+Upgrade notes:
+- Existing entries are unchanged. Only runs that observe no workspace
+  access, for targets that declare inputs, gain a cache entry.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* feat(vis): show declared-fallback key in cache why
+
+cache why and cache hash now say when a traced run was keyed on its
+declared hash, and the JSON output carries hashSource. The vis config
+schema is regenerated for the updated autoFingerprint description.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): describe declared fallback and trace key
+
+The caching guide and configuration reference now explain when an empty
+trace is keyed on the declared hash, how a trace key is built, and what
+cache why reports. The RFC marks G1-B and G4 done.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(task-runner): describe declared fallback for empty traces
+
+The empty-fingerprint section now explains both outcomes: a target that
+declares inputs is keyed on its declared hash, and one that does not is
+left uncached with a warning.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): correct trace caching claim in why-vis
+
+A run the tracker cannot observe is keyed on its declared inputs when
+the target declares them. It is not cached otherwise.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* feat(task-runner): parse top-level && chains
+
+Add splitCompoundCommand, a quote-aware splitter that cuts a shell
+command on top-level && only. Anything it does not model (;, ||, a
+background &, subshells, command substitution, heredocs, comments,
+empty segments, cd/export/source/set/trap/exec and VAR=value prefixes)
+leaves the whole command unsplit and reports why.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* feat(task-runner): add splitCompound segment chains
+
+Add the splitCompound target option. A declared-mode target whose
+* **vis:** `vis run` with --filter, --query or --tag that selects no
+project now exits 1. Scripts that relied on the silent exit 0 must pass
+--if-present.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* test(vis): keep empty --affected results exit 0
+
+Pins the behaviour the empty-selection fix must not change: when a --tag
+selects a project that --affected then excludes, the run prints "No
+projects affected by the changes." and returns. A mutation that throws
+there fails the test.
+
+The fixture repo runs with GIT_* variables cleared, so it cannot act on
+the repository that a git hook is committing.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): let ci and affected opt out of empty runs
+
+vis run now fails when a target, --query or tag selects no projects, and
+vis ci / vis affected hand their --query to it. A job whose query can
+legitimately match nothing had no way to say so. Add --if-present to both
+and forward it to vis run.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(task-runner): match excludes inside the workspace
+
+The tracker tested its exclude patterns (/dev/, /tmp/, /etc/, ...) against
+the absolute path before checking containment. A workspace under any of
+those directory names, such as ~/dev/project or a /tmp CI checkout,
+recorded no accesses at all on the strace, seccomp, interpose and IAT
+paths, so traced caching never engaged. The Windows IAT check was also a
+lowercase startsWith without a separator boundary, so a workspace /ws/app
+accepted /ws/app-other.
+
+Every path now goes through resolveAccessPath: containment first, then the
+patterns against the path inside the workspace.
+
+Upgrade notes: traced targets in a workspace under a dev, tmp or etc
+directory now cache where they previously never did. The IAT path no longer
+accepts sibling directories that share the workspace prefix.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(task-runner): key unset env names apart from empty ones
+
+A traced key recorded an unset name and an empty value the same way, so a
+name that went from unset to "" hit a stale entry. An unset name now keys
+differently from an empty one, using the same presence scheme as the
+declared hasher.
+
+validate takes the env to check against. It defaults to process.env, so
+existing callers see no change; the next commit passes the child env.
+
+Upgrade notes: traced entries that key an env name miss once after
+upgrading, because the stored env key format changed.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(task-runner): key traced runs on the child env
+
+A traced run keyed the parent's env values, so a value the child receives
+from another source (an envFile, service env, VIS_ARG_* or a per-target env)
+was not in the key, and changing it left a stale hit.
+
+The key now reads the names it covers from the resolved child env
+(TaskRunnerContext.resolveChildEnv). A name the clean policy hides hashes as
+unset. Validation reads the same env, so a hit needs the values the child
+will see. Untracked names stay out of the key, and the key does not cover
+the whole environment.
+
+The key also covers the command the run spawns. TaskRunnerContext.resolveCommand
+supplies it, so caller-side arguments and shell wrapping change the key.
+Without it the project target command is used, as before.
+
+TaskRunnerContext.preTraceCheck runs on a cache miss before tracking. A
+returned message fails the task with exit code 1; the child does not spawn
+and nothing is cached.
+
+Upgrade notes: a traced key changes when the spawned command differs from
+the configured one. Traced entries that key an env name also miss once,
+as in the previous commit.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): traced targets run the executor command
+
+A traced target ran the raw project command. Forwarded arguments
+(`vis run build -- --flag`) and `affectedFiles: "args"` paths never reached
+the child, `${...}` tokens and a custom `shell` did not apply, and
+`strictEnv` was not checked.
+
+The executor and the traced run now share one resolver for the spawned
+command, and one strict-env check that reads the child env the spawn gets.
+Both spawn the same string, and the traced key hashes it, so the arguments
+and affected files change the key.
+
+Upgrade notes:
+- Traced targets now receive forwarded arguments and `affectedFiles: "args"`
+  paths. A traced run with these misses once, since the key includes them.
+- Traced targets now run their configured command, with tokens expanded and
+  any custom shell applied, as the executor does. They used to run the raw
+  project command.
+- `strictEnv` (flag or config) now fails a traced target that references an
+  unset variable, before the child starts. A traced target that passed with
+  an unset reference now fails.
+- Traced keys hash the env values the child receives (see the task-runner
+  commits), so traced targets with env names in the key miss once.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): document the traced key and strict env
+
+The caching guide lists what a traced key covers: the spawned command and
+the env values the child receives for the names the key covers. The run
+guide says the strict-env check runs for traced targets too. The RFC
+records the resolution and the gaps that remain: the declared hasher still
+reads process.env for fingerprintEnv and envVars, and persistent targets and
+the TUI retry spawn the raw command, so forwarded arguments do not reach them.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): persistent and retried tasks keep args
+
+Persistent targets and a TUI retry spawned the raw override command, so
+forwarded arguments, affectedFiles args and a custom shell were dropped
+while the first attempt of the same task had them. Both now spawn the
+command the executor and the traced run use.
+
+Upgrade notes: vis run <persistent> -- <args> now passes the arguments to
+the persistent command.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(task-runner): key declared env on the child env
+
+The declared hasher read fingerprintEnv, envVars, env:// inputs,
+autoEnvVars and framework names from the parent's process.env, but the
+child also gets values from envFile layering, service env, task arguments
+and per-target env. A cached target keyed on a variable only its env file
+defines kept serving a stale hit after the file changed, and fingerprintEnv
+wildcards never matched names the parent lacked.
+
+The hasher takes a childEnv resolver, supplied from resolveChildEnv, and
+keys and expands patterns against the environment the task will receive.
+globalEnv is workspace-wide and still reads the parent's.
+
+Upgrade notes: a declared target whose child sees a different value than
+the parent for a keyed name gets one new key, and so one cache miss. Keys
+for names with equal values are unchanged.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(vis): doctor no longer crashes without a lockfile
+
+vis doctor looked the package manager up twice with a strict resolver that
+throws when a workspace has no lockfile and no packageManager field, the
+state of every new project. It crashed with a stack trace instead of
+reporting. Reuse the tolerant detection the command already performed.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* docs(vis-mcp): fix lint and cache tool text
+
+The lint description listed the default adapters without the opt-in
+typecheck adapter. cache_why and cache_hash described hashDetails only,
+but trace-mode tasks have no hashDetails: their reasons are in
+task.cacheMissReasons and their tracked state is in trackedFingerprint.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): cover run, cache and lint in the skill
+
+Add the tools the table left out, correct the tool count, and document
+the empty-selection exit code, the opt-in typecheck adapter, the trace
+miss reasons, and the doctor env coverage check. Replace the cache-miss
+flow's invented status and stderr fields with the real summary fields.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): sync ai guide tool reference
+
+The guide listed eight tools and described a run_task tool that does
+not exist. Add the five missing tools and the trace-mode fields that
+cache_why and cache_hash return.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis-mcp): read the run summary vis really writes
+
+list_runs read runId, startedAt, status and tasks[].status, none of which
+the run summary has: it carries id, startTime, stats and per-task
+exitCode. Every run therefore showed as a success with no failures and no
+start time, including failed ones, and get_run_logs echoed an undefined
+run id. Read the real fields, fall back to the old spellings, and test
+against a summary shaped like the one vis writes.
+
+Upgrade notes: list_runs now reports failed runs as failures, with their
+start time and task counts.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* feat(task-runner): chain trace keys per segment
+
+A `splitCompound` target with `hashMode: "trace"` (or workspace
+`autoFingerprint`) was refused and ran whole. It now splits like a declared
+target. Each segment runs through the tracker on its own command, and its
+trace key folds in the trace key of the segment before it.
+
+- fingerprint: `TaskFingerprint.chainKey` holds the predecessor's trace key.
+  It joins `hashFingerprint` only when set, so keys of ordinary tasks do not
+  move (a test pins two of them). `validateChain` checks it on lookup, after
+  the command and tracker checks and before any file is hashed, and a moved
+  predecessor misses with `chain-changed`.
+- orchestrator: a segment after the first keys on its predecessor's trace key.
+  A segment whose predecessor has no key this run is neither served nor stored.
+  A traced segment publishes its key on a hit as well as on a store.
+- default resolver: reads a segment's command from `overrides`, so the tracker
+  and the tracker-kind prediction see that segment's command, not the chain.
+- Refusals kept: `{ auto: true }` outputs, `when`, `always`, custom shell and
+  unsupported shell syntax. The trace and auto-fingerprint refusals are removed.
+
+Upgrade notes:
+
+- Targets that set `splitCompound` together with `hashMode: "trace"` or
+  `taskRunner.autoFingerprint` now run as `target#n` segments. They used to run
+  whole. Their first run after upgrading misses, because the segment entries
+  are new.
+- Keys of targets that do not split are unchanged, both traced and declared.
+- `vis run --dry-run` lists the segments of these targets, each marked `(trace)`.
+- `SplitCompoundOptions` (exported from `@visulima/task-runner`) no longer has
+  `autoFingerprint`. Passing it is now a type error. It had no effect once the
+  split refusal was gone.
+- The `splitCompound` description in the vis config schemas is regenerated.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): give segments their target's service env
+
+The service env of a run is keyed on the target's id, before a
+`splitCompound` target is split. A segment runs under its own id
+(`target#n`), so its spawn found no service env. A split target therefore
+lost the variables of the services it depends on, in declared mode as well
+as traced mode.
+
+`resolveTaskSpawn` now reads a segment's entry from the target it runs in
+place of. Every spawn path reads through that function, so the executor, the
+persistent launch and the retry get the same environment.
+
+Upgrade notes:
+
+- A `splitCompound` target's segments now receive the service env they used
+  to miss. A segment's key changes once after upgrading only when it names a
+  service variable, because keys cover the env values the child receives.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* test(vis): cover traced segments through vis run
+
+Runs a `hashMode: "trace"` target with `splitCompound` through the run
+handler. Covers the last-segment-only re-run, the re-run of every segment
+when the first segment's input changes, forwarded arguments on the last
+segment only, and the `(trace)` annotation on each segment in the dry-run
+plan.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): document traced segment keys
+
+The `splitCompound` option no longer refuses trace hashing. The run option
+row and the caching guide now describe how a traced segment's key chains to
+its predecessor, and the cases where a segment is neither served nor stored.
+The RFC marks G3.3 done and records the chain, the kept refusals and the
+limits found while implementing it.
+
+Upgrade notes:
+
+- The caching guide and the run option table no longer list trace hashing as
+  a reason the split is refused. Targets that combine `splitCompound` with
+  `hashMode: "trace"` split as described in the previous commits.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): annotate traced tasks under auto-fingerprint
+
+The dry-run plan marked a task `(trace)` only when its own `hashMode` was
+`"trace"`. Under `taskRunner.autoFingerprint` the engine traces every task,
+segments included, so their plan lines showed no trace mark.
+
+The annotation now follows the engine: `hashMode: "trace"` or the workspace
+switch.
+
+Tests cover the dry-run annotation under the workspace switch, and
+`vis cache why` on a segment that missed because the segment before it moved.
+
+Upgrade notes:
+
+- Under `taskRunner.autoFingerprint`, `vis run --dry-run` now marks every task
+  `(trace)`, including targets that do not split. Before, only per-target trace
+  targets were marked. The run itself is unchanged.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* test(task-runner): guard segment tests for win32
+
+Two segment tests use a bare `true` command as a segment whose tracker sees
+nothing. `true` is a POSIX builtin that cmd.exe lacks, so they now skip on
+win32. The clean-environment test passes the platform's essential names
+(SystemRoot on Windows) to the child, so node can start there.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* docs(vis): correct the chain miss reason in the RFC
+
+A moved predecessor misses with `chain-changed`, which `vis cache why` prints
+as `Previous segment changed`. The reason does not name the predecessor, so
+the RFC no longer says it does.
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+
+* fix(vis): report target properties under options
+
+splitCompound, hashMode, fingerprintEnv and the other target-level
+properties are read from the target, not from its options bag. Written
+under options they parsed fine and did nothing, and the run.mdx options
+table listed splitCompound there. Warn when a run finds one under options,
+and move splitCompound out of the options table with a note on which keys
+are target-level.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(task-runner): key dependents on traced hits
+
+A traced task published its key only when it ran and stored, not when
+it was served from cache. A declared task that dependsOn it then folded
+the traced key on a cold run and nothing on a warm one, so its key
+flipped with whether the dependency ran. Worse, the key without the
+dependency was shared across dependency states, so after the dependency
+changed and then hit again the dependent was served output built from
+the older state.
+
+Publish the key on every traced hit, as segments already did.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(vis): replace every match in two rewrites
+
+CodeQL flagged two string replaces that rewrite only the first match.
+Neither input holds a second match today, but replaceAll states the
+intent and keeps the code scan green.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(vis): check referenced tsconfigs in build mode
+
+tsc -b rejects --noEmit once one project references another (TS6310),
+so a solution-style workspace whose projects import each other could
+never pass the type check. Drop the flag in build mode and document
+that it writes each project's own outDir and tsbuildinfo.
+
+Also decide config ownership with a relative path, so a root with
+Windows separators still finds its own tsconfig.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(vis): keep the GitLab token off self-hosted hosts
+
+GITLAB_TOKEN belongs to gitlab.com, but a gitlab://host source names a
+host the template author chose, so the token was sent wherever the URL
+pointed. Skip the environment token there; create.auth, a token in the
+URL and GIGET_AUTH still apply.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(vis): apply review fixes to create, doctor, run
+
+- resolve a create.defaultTemplate alias before the org preflight
+- pass the config to the task overlay loader in the env check
+- keep doctor running when the env coverage check throws
+- retry a split target by segment id
+- declare if-present with negatable() and drop the tag claim from ci
+- correct the clean-env note for traced targets and the splitCompound
+  and if-present wording in the docs
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test: fix windows paths, quoting and env names
+
+- pass a file path to node as an argument, not inside a JS string
+- quote only values that contain whitespace, as cmd drops the first
+  and last quote of a command that starts with one
+- match env names without regard to case and allow the names Windows
+  adds to every process
+- compare paths in the normalised form the code returns
+- expect cmd to leave $VAR unexpanded
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **vis:** git templates, clean env cache keys, trace segments ([#969](https://github.com/visulima/visulima/issues/969)) ([f16cf03](https://github.com/visulima/visulima/commit/f16cf038f9827abcf814fa1c2a5821c004d6d746)), closes [id#1](https://github.com/visulima/id/issues/1) [id#2](https://github.com/visulima/id/issues/2)
+
 ## @visulima/task-runner [1.1.0](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.6...@visulima/task-runner@1.1.0) (2026-10-09)
 
 ### Features
