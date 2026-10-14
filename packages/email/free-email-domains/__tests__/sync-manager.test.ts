@@ -1,3 +1,7 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 // @ts-expect-error -- build-time script, no type declarations
@@ -143,5 +147,31 @@ describe("free-email sync manager parsing pipeline", () => {
         expect(manager.convertToRawGitHubUrl("https://github.com/owner/repo", "/refs/heads/main/list.txt")).toBe(
             "https://raw.githubusercontent.com/owner/repo/main/list.txt",
         );
+    });
+});
+
+// The opt-in `./edge` entry registers the bundled list on import, so runtimes without a
+// filesystem need no `setDomains()` call. It re-exports the main entry's API unchanged.
+describe("free-email sync manager edge entry", () => {
+    it("emits an edge entry that registers the bundled list and re-exports the main entry", async () => {
+        expect.assertions(4);
+
+        const outputPath = await mkdtemp(join(tmpdir(), "free-domains-edge-"));
+
+        try {
+            const manager = new FreeEmailSyncManager({ outputPath });
+
+            await manager.generateDomainsList();
+
+            const edge = await readFile(join(outputPath, "edge.js"), "utf8");
+            const declaration = await readFile(join(outputPath, "edge.d.ts"), "utf8");
+
+            expect(edge).toContain("import domains from \"./domains.json\" with { type: \"json\" };");
+            expect(edge).toContain("setDomains(domains);");
+            expect(edge).toContain("export * from \"./index.js\";");
+            expect(declaration).toContain("export * from \"./index.js\";");
+        } finally {
+            await rm(outputPath, { force: true, recursive: true });
+        }
     });
 });
