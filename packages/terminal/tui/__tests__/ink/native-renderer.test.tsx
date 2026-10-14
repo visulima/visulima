@@ -16,6 +16,8 @@ const ALT_SCREEN_ON = "\u001B[?1049h";
 const ALT_SCREEN_OFF = "\u001B[?1049l";
 const CURSOR_HIDE = "\u001B[?25l";
 const CURSOR_SHOW = "\u001B[?25h";
+const BAR_CURSOR = "\u001B[6 q";
+const DEFAULT_CURSOR = "\u001B[0 q";
 const COLS = 20;
 const ROWS = 6;
 
@@ -535,5 +537,40 @@ describe("native renderer", () => {
         expect(writes[staticAt + 1]).toBe("\u001B[?2026l");
 
         unmount();
+    });
+
+    it.skipIf(!nativeAvailable)("applies <Cursor shape> once and restores the default shape on unmount", async () => {
+        expect.assertions(3);
+
+        const stdout = ttyStdout();
+
+        const { rerender, unmount, waitUntilRenderFlush } = render(
+            <Box flexDirection="column">
+                <Text>hello</Text>
+                <Cursor shape="bar" />
+            </Box>,
+            { alternateScreen: true, interactive: true, stdout, useNativeRenderer: true },
+        );
+
+        await waitUntilRenderFlush();
+
+        expect(stdout.getWrites().join("")).toContain(BAR_CURSOR);
+
+        rerender(
+            <Box flexDirection="column">
+                <Text>again</Text>
+                <Cursor shape="bar" />
+            </Box>,
+        );
+        await waitUntilRenderFlush();
+
+        // The shape is only written when it changes, not on every frame.
+        expect(stdout.getWrites().join("").split(BAR_CURSOR)).toHaveLength(2);
+
+        unmount();
+
+        const output = stdout.getWrites().join("");
+
+        expect(output.lastIndexOf(DEFAULT_CURSOR)).toBeGreaterThan(output.lastIndexOf(BAR_CURSOR));
     });
 });

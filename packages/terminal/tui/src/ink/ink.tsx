@@ -974,6 +974,7 @@ export default class Ink {
 
             const cursor = this.getActiveCursorPosition();
 
+            this.nativeLog.setCursorShape(cursorRequested ? cursorShape : undefined);
             this.lastNativeFrame = { buffer: outputBuffer, cursor, height: outputHeight, width: outputWidth };
 
             if (this.alternateScreen) {
@@ -1296,6 +1297,7 @@ export default class Ink {
                     // any buffered content from leaking onto the primary screen.
                     this.log.clear();
                     this.log.done();
+                    this.nativeLog?.done();
                     this.lastOutput = "";
                     this.lastOutputToRender = "";
                     this.lastOutputHeight = 0;
@@ -1827,6 +1829,7 @@ export default class Ink {
             // Erase Ink's current frame so the child starts from a settled screen.
             this.log.clear();
             this.log.done();
+            this.nativeLog?.done();
 
             if (this.kittyProtocolEnabled) {
                 this.writeBestEffort(this.options.stdout, "[<u");

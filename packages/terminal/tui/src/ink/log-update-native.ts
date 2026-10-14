@@ -19,7 +19,8 @@ import { cursorDown, cursorHide, cursorShow, cursorTo, cursorUp } from "@visulim
 
 import loadNativeRootBinding from "../core/load-native-root-binding";
 import type { RendererConstructor, RendererInstance } from "../core/native-binding";
-import type { CursorPosition } from "./cursor-helpers";
+import type { CursorPosition, CursorShape } from "./cursor-helpers";
+import { createCursorShapeTracker } from "./log-update";
 import { bsu, esu } from "./write-synchronized";
 
 export type NativeFrameOptions = {
@@ -39,7 +40,10 @@ export type NativeLogUpdate = {
     clear: () => void;
     /** Forgets the frame without erasing it, e.g. after another program took the screen. */
     destroy: () => void;
-    /** Inline only: moves the cursor below the frame. Call once when the app stops rendering. */
+    /**
+     * Restores the terminal's default cursor shape if a frame changed it and, inline, moves the cursor below the frame.
+     * Call once when the app stops rendering, before leaving the alternate screen.
+     */
     done: () => void;
 
     /**
@@ -47,7 +51,10 @@ export type NativeLogUpdate = {
      * drawn from the cursor's row. Rows below the bottom of the terminal are dropped rather than wrapped onto it.
      */
     render: (buffer: Uint32Array, width: number, height: number, options?: NativeFrameOptions) => void;
+
     resize: (width: number, height: number) => void;
+    /** Declared cursor shape for the next frame; `undefined` when no Cursor is mounted. Written only when it changes. */
+    setCursorShape: (shape: CursorShape | undefined) => void;
 };
 
 const eraseBelow = "\u001B[J";
@@ -122,6 +129,7 @@ export const createNative = (stream: NodeJS.WriteStream, { inline = false }: { i
     let renderer: RendererInstance | undefined;
     let currentWidth = 0;
     let currentHeight = 0;
+    const shapeTracker = createCursorShapeTracker();
 
     const ensureRenderer = (width: number, height: number): void => {
         if (!renderer || currentWidth !== width || currentHeight !== height) {
@@ -155,6 +163,8 @@ export const createNative = (stream: NodeJS.WriteStream, { inline = false }: { i
         const diff = renderer.renderDiff(buffer);
         // A cursor below the clipped frame has no row to sit on, so it stays hidden.
         const placement = cursor && cursor.y < visibleHeight ? cursorTo(cursor.x, cursor.y + rowOffset) + cursorShow : "";
+        // DECSCUSR only changes when the declared shape does; it moves no cells, so it can lead the write.
+        const shapeDelta = shapeTracker.consumeDelta();
 
         // Wrap in synchronized update (DEC 2026); the prefix goes inside it so the frame never shows half-drawn.
         if (stream.isTTY) {
@@ -162,7 +172,7 @@ export const createNative = (stream: NodeJS.WriteStream, { inline = false }: { i
         }
 
         try {
-            stream.write(prefix + cursorHide + diff + placement);
+            stream.write(shapeDelta + prefix + cursorHide + diff + placement);
         } finally {
             if (stream.isTTY) {
                 stream.write(esu);
@@ -272,6 +282,12 @@ export const createNative = (stream: NodeJS.WriteStream, { inline = false }: { i
         },
 
         done(): void {
+            const restore = shapeTracker.consumeRestoreOnDone();
+
+            if (restore !== "") {
+                stream.write(restore);
+            }
+
             if (!inline || drawnRows === 0) {
                 return;
             }
@@ -309,5 +325,7 @@ export const createNative = (stream: NodeJS.WriteStream, { inline = false }: { i
         resize(width: number, height: number): void {
             ensureRenderer(width, height);
         },
+
+        setCursorShape: shapeTracker.setPending,
     };
 };

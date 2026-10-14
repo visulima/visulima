@@ -26,7 +26,7 @@ export type LogUpdate = {
 // = default" into one no-op once we've emitted the restore sequence.
 const normalizeShape = (shape: CursorShape | undefined): CursorShape => shape ?? "default";
 
-type CursorShapeTracker = {
+export type CursorShapeTracker = {
     consumeDelta: () => string;
     /** Returns the restore-default sequence if a non-default shape was emitted this session; resets state. */
     consumeRestoreOnDone: () => string;
@@ -39,7 +39,7 @@ type CursorShapeTracker = {
 // undefined when no <Cursor> is mounted). The diff is emitted alongside the
 // next render write; on done() we restore the default so the parent shell
 // never inherits a leaked shape.
-const createCursorShapeTracker = (): CursorShapeTracker => {
+export const createCursorShapeTracker = (): CursorShapeTracker => {
     let currentShape: CursorShape | undefined;
     let pendingShape: CursorShape | undefined;
 
