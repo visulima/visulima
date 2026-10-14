@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, class-methods-use-this, e18e/prefer-static-regex, import/no-namespace, jsdoc/no-undefined-types, jsdoc/tag-lines, no-empty, no-void, react-x/no-context-provider, sonarjs/different-types-comparison, sonarjs/no-async-constructor */
-import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import process from "node:process";
 
@@ -58,83 +57,6 @@ const yieldImmediate = async () =>
     new Promise<void>((resolve) => {
         setImmediate(resolve);
     });
-
-const kittyQueryEscapeByte = 0x1b;
-const kittyQueryOpenBracketByte = 0x5b;
-const kittyQueryQuestionMarkByte = 0x3f;
-const kittyQueryLetterByte = 0x75;
-const zeroByte = 0x30;
-const nineByte = 0x39;
-
-type KittyQueryResponseMatch = { endIndex: number; state: "complete" } | { state: "partial" };
-
-const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineByte;
-
-const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
-    if (
-        buffer[startIndex] !== kittyQueryEscapeByte
-        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
-        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
-    ) {
-        return undefined;
-    }
-
-    let index = startIndex + 3;
-    const digitsStartIndex = index;
-
-    while (index < buffer.length && isDigitByte(buffer[index]!)) {
-        index++;
-    }
-
-    if (index === digitsStartIndex) {
-        return undefined;
-    }
-
-    if (index === buffer.length) {
-        return { state: "partial" };
-    }
-
-    if (buffer[index] === kittyQueryLetterByte) {
-        return { endIndex: index, state: "complete" };
-    }
-
-    return undefined;
-};
-
-const hasCompleteKittyQueryResponse = (buffer: number[]): boolean => {
-    for (let index = 0; index < buffer.length; index++) {
-        const match = matchKittyQueryResponse(buffer, index);
-
-        if (match?.state === "complete") {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-const stripKittyQueryResponsesAndTrailingPartial = (buffer: number[]): number[] => {
-    const keptBytes: number[] = [];
-    let index = 0;
-
-    while (index < buffer.length) {
-        const match = matchKittyQueryResponse(buffer, index);
-
-        if (match?.state === "complete") {
-            index = match.endIndex + 1;
-            continue;
-        }
-
-        if (match?.state === "partial") {
-            break;
-        }
-
-        keptBytes.push(buffer[index]!);
-        index++;
-    }
-
-    return keptBytes;
-};
 
 const shouldClearTerminalForFrame = ({
     isTty,
@@ -412,7 +334,7 @@ export default class Ink {
 
     private resumeInput?: () => void;
 
-    private cancelKittyDetection?: () => void;
+    private finishKittyDetection?: (supported: boolean) => void;
 
     private nextRenderCommit?: { promise: Promise<void>; resolve: () => void };
 
@@ -1125,6 +1047,7 @@ export default class Ink {
                     exitOnCtrlC={this.options.exitOnCtrlC}
                     interactive={this.interactive}
                     onExit={this.handleAppExit}
+                    onKittyQueryResponse={this.handleKittyQueryResponse}
                     onRegisterInputControl={this.registerInputControl}
                     onSuspendTerminal={this.suspendTerminal}
                     onWaitUntilRenderFlush={this.waitUntilRenderFlush}
@@ -1280,13 +1203,12 @@ export default class Ink {
             }
 
             // Cancel any in-progress auto-detection before checking protocol state
-            if (this.cancelKittyDetection) {
-                this.cancelKittyDetection();
-            }
+            this.finishKittyDetection?.(false);
 
             if (canWriteToStdout) {
                 if (this.kittyProtocolEnabled) {
                     this.writeBestEffort(this.options.stdout, "\u{1B}[<u");
+                    this.kittyProtocolEnabled = false;
                 }
 
                 // Alternate-screen content is disposable by design. We intentionally
@@ -1727,73 +1649,39 @@ export default class Ink {
     }
 
     private async runKittySupportQuery(flags: KittyFlagName[]): Promise<void> {
-        const { stdin, stdout } = this.options;
+        const { stdout } = this.options;
 
-        let responseBuffer: number[] = [];
+        // The reply reaches us through App's input pipeline (see onKittyQueryResponse), so it is never read twice.
+        // Resolves when the reply arrives, when the window closes, or when suspension cancels the probe.
+        return new Promise<void>((resolve) => {
+            const timer = setTimeout(() => {
+                finish(false);
+            }, 200);
 
-        let timer: NodeJS.Timeout | undefined;
-        let settle: (() => void) | undefined;
-
-        const cleanup = (): void => {
-            this.cancelKittyDetection = undefined;
-
-            if (timer) {
+            const finish = (supported: boolean): void => {
                 clearTimeout(timer);
-            }
+                this.finishKittyDetection = undefined;
 
-            stdin.removeListener("data", onData);
-
-            // Re-emit any buffered data that wasn't the protocol response,
-            // so it isn't lost from Ink's normal input pipeline.
-            // Clear responseBuffer afterwards to make cleanup idempotent.
-            const remaining = stripKittyQueryResponsesAndTrailingPartial(responseBuffer);
-
-            responseBuffer = [];
-
-            if (remaining.length > 0) {
-                stdin.unshift(Buffer.from(remaining));
-            }
-        };
-
-        const onData = (data: Uint8Array | string): void => {
-            const chunk = typeof data === "string" ? Buffer.from(data) : data;
-
-            for (const byte of chunk) {
-                responseBuffer.push(byte);
-            }
-
-            if (hasCompleteKittyQueryResponse(responseBuffer)) {
-                cleanup();
-
-                if (!this.isUnmounted) {
+                if (supported && !this.isUnmounted) {
                     this.enableKittyProtocol(flags);
                 }
 
-                settle?.();
-            }
-        };
-
-        // Attach listener before writing the query so that synchronous
-        // or immediate responses are not missed.
-        stdin.on("data", onData);
-
-        stdout.write("\u{1B}[?u");
-
-        // Resolve when the answer lands or the window closes, so the next probe in the queue does
-        // not start while this listener is still attached.
-        return new Promise<void>((resolve) => {
-            settle = resolve;
-            timer = setTimeout(() => {
-                cleanup();
-                resolve();
-            }, 200);
-
-            this.cancelKittyDetection = () => {
-                cleanup();
                 resolve();
             };
+
+            // Register before writing the query so an immediate reply is not missed.
+            this.finishKittyDetection = finish;
+            stdout.write("\u001B[?u");
         });
     }
+
+    // Must stay referentially stable across `render()` calls: it feeds into App's
+    // `setRawMode` identity, so a new function per `rerender()` would make every
+    // `useInput`/`usePaste` re-run its raw-mode effect and reset the input parser,
+    // dropping keys and pastes that were still in flight.
+    handleKittyQueryResponse = (): void => {
+        this.finishKittyDetection?.(true);
+    };
 
     // Called by the App component to register how input is paused/resumed. Kept
     // as an arrow field so it can be passed as a prop without binding.
@@ -1841,6 +1729,9 @@ export default class Ink {
 
         this.activeSuspension = suspension;
 
+        // A reply that arrives while the child owns the terminal must not enable the protocol.
+        this.finishKittyDetection?.(false);
+
         if (!this.interactive || this.isUnmounted || this.isUnmounting) {
             return suspension;
         }
@@ -1852,6 +1743,7 @@ export default class Ink {
 
             if (this.kittyProtocolEnabled) {
                 this.writeBestEffort(this.options.stdout, "[<u");
+                this.kittyProtocolEnabled = false;
             }
 
             if (this.alternateScreen) {
@@ -1903,8 +1795,9 @@ export default class Ink {
             }
         }
 
-        if (this.kittyProtocolEnabled && this.kittyFlags) {
+        if (this.kittyFlags) {
             this.writeBestEffort(this.options.stdout, `\u{1B}[>${resolveFlags(this.kittyFlags)}u`);
+            this.kittyProtocolEnabled = true;
         }
 
         // Force a full redraw instead of diffing against the stale pre-suspension

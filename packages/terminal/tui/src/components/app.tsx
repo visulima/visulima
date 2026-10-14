@@ -20,6 +20,10 @@ import StderrContext from "./stderr-context";
 import StdinContext from "./stdin-context";
 import StdoutContext from "./stdout-context";
 
+// Kitty keyboard query reply: CSI ? <flags> u.
+// eslint-disable-next-line no-control-regex
+const kittyQueryReplyRe = /^\u001B\[\?\d+u$/;
+
 // Ctrl+C in any keyboard encoding (legacy 0x03 or kitty CSI u), excluding key release events.
 const isCtrlC = (input: string): boolean => {
     const key = parseKeypress(input);
@@ -49,6 +53,7 @@ type Props = {
      * Registers the App's input pause/resume callbacks with the Ink instance so
      * `suspendTerminal()` can hand raw mode + bracketed paste to a child process.
      */
+    readonly onKittyQueryResponse?: () => void;
     readonly onRegisterInputControl: (pauseInput: () => void, resumeInput: () => void) => void;
     readonly onSuspendTerminal: AppContextProps["suspendTerminal"];
     readonly onWaitUntilRenderFlush: () => Promise<void>;
@@ -84,6 +89,7 @@ const App = ({
     exitOnCtrlC,
     interactive,
     onExit,
+    onKittyQueryResponse,
     onRegisterInputControl,
     onSuspendTerminal,
     onWaitUntilRenderFlush,
@@ -351,6 +357,13 @@ const App = ({
 
             for (const event of inputEvents) {
                 if (typeof event === "string") {
+                    // Kitty keyboard query replies (CSI ? <flags> u) are protocol traffic, not input.
+                    if (kittyQueryReplyRe.test(event)) {
+                        onKittyQueryResponse?.();
+
+                        continue;
+                    }
+
                     emitInput(event);
 
                     // The app is exiting: input that rode in the same chunk after Ctrl+C must not be dispatched.
@@ -380,7 +393,7 @@ const App = ({
         if (inputParserRef.current!.hasPendingEscape()) {
             schedulePendingInputFlush();
         }
-    }, [stdin, emitInput, exitOnCtrlC, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter]);
+    }, [stdin, emitInput, exitOnCtrlC, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter, onKittyQueryResponse]);
 
     const attachReadableListener = useCallback((): void => {
         if (readableListenerRef.current) {
