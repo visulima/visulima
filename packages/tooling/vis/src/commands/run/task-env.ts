@@ -190,6 +190,13 @@ export const createTaskSpawnContext = (input: Omit<TaskSpawnContext, "envFileCac
 };
 
 /**
+ * The id a task's service env is keyed under. A `splitCompound` segment runs in
+ * place of its target, and the service env is keyed on the target's id, so a
+ * segment reads its target's entry.
+ */
+const serviceEnvTaskId = (task: Task): string => (task.segment === undefined ? task.id : task.id.slice(0, task.id.lastIndexOf("#")));
+
+/**
  * The environment one spawn of a task runs with. It is the single place the
  * child environment is built: the executor, the persistent-target launch and
  * the traced run all call it, so they cannot drift apart.
@@ -214,7 +221,7 @@ export const resolveTaskSpawn = (context: TaskSpawnContext, task: Task, options:
         envFileVars,
         execEnv: options.env,
         initCwd: context.initCwd,
-        serviceEnv: context.serviceEnvByTaskId?.get(task.id),
+        serviceEnv: context.serviceEnvByTaskId?.get(serviceEnvTaskId(task)),
         taskArgEnv: task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined,
         taskSlots: context.taskSlots,
     });
