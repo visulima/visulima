@@ -125,7 +125,7 @@ const getDomainSet = (): Set<string> => {
  *
  * ```ts
  * import { setDomains } from "@visulima/free-email-domains";
- * import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+ * import domains from "@visulima/free-email-domains/domains";
  *
  * setDomains(domains);
  * ```
