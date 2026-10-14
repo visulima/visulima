@@ -152,4 +152,18 @@ describe(resolveRetrySpawn, () => {
         expect(retryBranch).toContain("resolveRetrySpawn(spawnContext, task)");
         expect(retryBranch).not.toContain("taskSpawnOptions(");
     });
+
+    // The retry branch needs a TTY, so it cannot be driven here. The command it spawns must be the one
+    // the first attempt ran (forwarded arguments, affected files, custom shell), never the raw override.
+    it("retries the resolved task command, not the raw override", () => {
+        expect.assertions(3);
+
+        const handlerSource = readFileSync(fileURLToPath(new URL("../../../src/commands/run/handler.ts", import.meta.url)), "utf8");
+        const start = handlerSource.indexOf("loopAction === \"retry\" && retryTaskId");
+        const retryBranch = handlerSource.slice(start, handlerSource.indexOf("retryTaskId = null;", start));
+
+        expect(start).toBeGreaterThan(-1);
+        expect(retryBranch).toContain("resolveTaskCommand(task, spawnContext.affectedFiles, currentOs)");
+        expect(retryBranch).not.toContain("overrides[\"command\"]");
+    });
 });

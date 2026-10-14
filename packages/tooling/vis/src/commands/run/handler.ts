@@ -131,7 +131,9 @@ const runPersistentTasks = async (tasks: Task[], spawnContext: TaskSpawnContext,
 
     const commands = tasks
         .map((task) => {
-            const command = task.overrides["command"] as string | undefined;
+            // The same command the executor and the traced run spawn: tokens expanded, forwarded
+            // arguments and `affectedFiles: "args"` appended, custom shell applied.
+            const command = resolveTaskCommand(task, spawnContext.affectedFiles, detectCurrentOs());
 
             if (!command) {
                 return undefined;
@@ -2743,7 +2745,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                     }
                 } else if (loopAction === "retry" && retryTaskId) {
                     const task = initialTasks.find((t) => t.id === retryTaskId);
-                    const command = task?.overrides["command"] as string | undefined;
+                    // Same command the first attempt ran, so a retry keeps its forwarded arguments and shell.
+                    const command = task ? resolveTaskCommand(task, spawnContext.affectedFiles, currentOs) : undefined;
 
                     if (task && command) {
                         lifeCycle.startTasks?.([task]);
