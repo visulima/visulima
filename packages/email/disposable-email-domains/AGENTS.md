@@ -8,7 +8,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Architecture
 
-- The domain list itself is a **generated** asset, not hand-written. `src/index.ts` reads `dist/domains.json` at runtime via `readFileSync` — do not edit any `domains.json`; regenerate it.
+- The domain list itself is a **generated** asset, not hand-written. `src/index.ts` reads `dist/domains.json` lazily, on the first lookup, via `process.getBuiltinModule("node:fs")` and `new URL("../dist/domains.json", import.meta.url)` — do not edit any `domains.json`; regenerate it. **Nothing may touch `node:*`, `process` or `import.meta.url` at module scope**: the entry must import cleanly on runtimes that lack them (bundled Cloudflare Workers), and when the list cannot be read the loader warns once and returns an empty set. `__tests__/integration/import-safety.test.ts` and `workerd.test.ts` guard this against the built `dist`.
 - Regeneration pipeline (`scripts/sync-domains.js`, driven by `DisposableEmailSyncManager`):
     - Pulls from every entry in `scripts/config/repositories.json` (GitHub raw files + a few other sources).
     - **Adds** anything listed in `scripts/config/blacklist.json` — extra disposable domains the upstream sources miss. These survive even if the domain is whitelisted.

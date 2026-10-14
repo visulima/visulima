@@ -161,7 +161,7 @@ extractDomain("User@Example.COM"); // "example.com"
 
 ### Edge / browser / bundled runtimes
 
-By default the package reads `dist/domains.json` from disk via `node:fs`. That does not work in Cloudflare Workers, Next.js middleware/edge, Deno, or bundles that relocate `index.js` away from the data file. For those environments, import the list statically and inject it once at startup with `setDomains`:
+By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, Deno, or bundles that relocate `index.js` away from the data file. Importing the package is safe there, but without a list every lookup returns `false` (and a single warning is logged), so inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, check `isListLoaded()` to make sure it took:
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";

@@ -1,5 +1,3 @@
-import type { readFileSync } from "node:fs";
-
 /**
  * Options accepted by the lookup helpers.
  */
@@ -49,8 +47,8 @@ let hasWarnedOnDomainsFailure = false;
 
 /**
  * Location of the generated list relative to this module (`dist/index.js` and `src/index.ts`
- * both sit one level below the package root). Kept in a variable so bundlers do not treat
- * `new URL(a string literal, import.meta.url)` as an asset reference.
+ * both sit one level below the package root). Kept in a variable so bundlers that detect
+ * `new URL("&lt;literal>", import.meta.url)` (e.g. Vite) do not turn it into an asset reference.
  */
 const DOMAINS_FILE_PATH = "../dist/domains.json";
 
@@ -60,13 +58,13 @@ const DOMAINS_FILE_PATH = "../dist/domains.json";
  */
 const readDomainsFile = (): string[] | undefined => {
     try {
-        // Nothing here may run at import time: `import.meta.url` is undefined and `node:fs` is
-        // missing in some bundled runtimes (e.g. Cloudflare Workers), where `setDomains` is the
-        // supported way to provide the list.
-        const fs = (globalThis as { process?: { getBuiltinModule?: (id: "node:fs") => { readFileSync: typeof readFileSync } } }).process?.getBuiltinModule?.("node:fs");
+        // Resolved here, never at module scope: bundled Workers-style runtimes have no
+        // `import.meta.url` and may have no `process` or `node:fs`, and importing must still work.
+        // A missing `process`/`getBuiltinModule` throws and takes the warn-once fallback below.
+        const fs = process.getBuiltinModule("node:fs");
 
-        if (fs === undefined || typeof import.meta.url !== "string") {
-            throw new TypeError("The filesystem or import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
+        if (typeof import.meta.url !== "string") {
+            throw new TypeError("import.meta.url is unavailable in this runtime; call setDomains() to provide the list.");
         }
 
         const domainsContent = fs.readFileSync(new URL(DOMAINS_FILE_PATH, import.meta.url), "utf8");
