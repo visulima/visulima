@@ -271,7 +271,7 @@ Comparison uses semver ranges. `.nvmrc` `20` against `engines.node` `>=18` agree
 
 The top-level `status` rolls up the four diagnostic sections, `supplyChain.status` **and** `envCoverage.status` — a permissive supply-chain config or an uncovered env name can flip the overall result to `warn` even when every other section is `ok`.
 
-`envCoverage.targets` lists the targets with uncovered names. `variables` holds at most eight names, sorted; `total` counts all of them.
+`envCoverage` is present only when a target has uncovered names. Its `targets` list those targets; `variables` holds at most eight names, sorted, and `total` counts all of them.
 
 Status fields:
 

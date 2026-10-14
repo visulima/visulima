@@ -189,12 +189,17 @@ export const buildJsonPayload = (results: DoctorResults, packageManagerName: str
             status: sectionsObj.dependencies,
         },
         elapsedMs: results.elapsedMs,
-        envCoverage: {
-            status: results.envCoverage.status,
-            targets: results.envCoverage.targets.map((t) => {
-                return { hints: t.hints, target: t.target, total: t.total, variables: t.variables };
-            }),
-        },
+        // Present only when a target has uncovered names, so a clean run emits no key.
+        ...(results.envCoverage.targets.length > 0
+            ? {
+                envCoverage: {
+                    status: results.envCoverage.status,
+                    targets: results.envCoverage.targets.map((t) => {
+                        return { hints: t.hints, target: t.target, total: t.total, variables: t.variables };
+                    }),
+                },
+            }
+            : {}),
         optimizations: {
             microUtilities: counts.micro,
             native: counts.native,

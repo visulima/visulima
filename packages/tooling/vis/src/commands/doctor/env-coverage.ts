@@ -164,6 +164,9 @@ export const describeEnvCoverageTarget = (target: EnvCoverageTarget): string => 
     return `${target.target}: ${target.variables.join(", ")}${more}. fix: ${joinHints(target.hints)}`;
 };
 
+/** The lines of the human Env Coverage block. Empty when nothing is uncovered, so the block does not print. */
+export const describeEnvCoverage = (posture: EnvCoveragePosture): string[] => posture.targets.map((target) => describeEnvCoverageTarget(target));
+
 const toTarget = (target: string, gaps: ReadonlyArray<EnvCoverageGap>): EnvCoverageTarget => {
     const hints: EnvCoverageHint[] = ["fingerprintEnv"];
 

@@ -39,7 +39,7 @@ import {
     markCodemodAvailability,
     runCodemod,
 } from "../optimize/handler";
-import { buildEnvCoveragePosture, describeEnvCoverageTarget } from "./env-coverage";
+import { buildEnvCoveragePosture, describeEnvCoverage } from "./env-coverage";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
 import type { DoctorResults, SectionId, SectionStatus } from "./sections";
@@ -694,15 +694,17 @@ const displaySupplyChain = (results: DoctorResults): void => {
  * only when there is a gap, so a clean workspace prints nothing.
  */
 const displayEnvCoverage = (results: DoctorResults): void => {
-    if (results.envCoverage.targets.length === 0) {
+    const lines = describeEnvCoverage(results.envCoverage);
+
+    if (lines.length === 0) {
         return;
     }
 
     pail.log("");
     pail.log(heading("Env Coverage", "warn"));
 
-    for (const target of results.envCoverage.targets) {
-        pail.log(itemWarn(describeEnvCoverageTarget(target)));
+    for (const line of lines) {
+        pail.log(itemWarn(line));
     }
 };
 

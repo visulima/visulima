@@ -4,7 +4,13 @@ import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { EnvCoveragePosture, EnvCoverageTarget } from "../../../src/commands/doctor/env-coverage";
-import { buildEnvCoveragePosture, describeEnvCoverageTarget, ENV_COVERAGE_NAME_LIMIT, extractWindowsEnvVars } from "../../../src/commands/doctor/env-coverage";
+import {
+    buildEnvCoveragePosture,
+    describeEnvCoverage,
+    describeEnvCoverageTarget,
+    ENV_COVERAGE_NAME_LIMIT,
+    extractWindowsEnvVars,
+} from "../../../src/commands/doctor/env-coverage";
 import type { DoctorResults, SectionId } from "../../../src/commands/doctor/sections";
 import { buildJsonPayload, shouldFail } from "../../../src/commands/doctor/sections";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
@@ -281,10 +287,17 @@ describe("env coverage output", () => {
         expect(payload.status).toBe("warn");
     });
 
-    it("emits an empty ok section in JSON when there is no gap", () => {
+    it("omits the envCoverage key from JSON when nothing is uncovered", () => {
         expect.assertions(1);
 
-        expect(buildJsonPayload(results({ status: "ok", targets: [] }), "pnpm").envCoverage).toStrictEqual({ status: "ok", targets: [] });
+        expect(buildJsonPayload(results({ status: "ok", targets: [] }), "pnpm")).not.toHaveProperty("envCoverage");
+    });
+
+    it("produces human lines only when there is a gap, so a clean run prints no block", () => {
+        expect.assertions(2);
+
+        expect(describeEnvCoverage({ status: "ok", targets: [] })).toStrictEqual([]);
+        expect(describeEnvCoverage({ status: "warn", targets: [entry] })).toStrictEqual([describeEnvCoverageTarget(entry)]);
     });
 
     it("never changes the exit code by default, and fails under --strict like other warnings", () => {
