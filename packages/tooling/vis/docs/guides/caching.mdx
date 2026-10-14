@@ -165,6 +165,11 @@ and in the run summary, where each segment carries its position in the chain.
   because an earlier step can change files or state that a later step reads. A
   change to the last step re-runs only that step. A change to the first step
   re-runs all three.
+- **Traced segments.** A `hashMode: "trace"` target splits the same way. Each
+  segment is tracked on its own command, so it keys on the files that step
+  reads, and its trace key folds in the trace key of the segment before it. A
+  stored segment whose predecessor moved misses with
+  `Previous segment changed` in `vis cache why`.
 - **Failure stops the chain.** A failing segment ends the run for that target, as
   `&&` does on the command line. Later segments are neither run nor cached.
 - **Output order is kept.** On a cache hit, each segment's saved output is replayed
@@ -180,12 +185,18 @@ The split is refused, and the target runs as one unit with a warning, when:
   start of a segment (`cd`, `export`, `source`, `set`, `trap`, `exec`, a leading
   `VAR=value`). Quoted `&&` such as `echo "a && b"` is not a boundary and does not
   stop the split;
-- the target uses `hashMode: "trace"`, or the workspace enables auto-fingerprinting;
-- the workspace enables auto-fingerprinting, or the target declares an
-  `{ auto: true }` output. Auto outputs come from write tracking for the whole
-  target and cannot be attributed to one segment;
+- the target declares an `{ auto: true }` output. Auto outputs come from write
+  tracking for the whole target and cannot be attributed to one segment;
 - the target has a `when` condition or `always`, or a custom `shell`, which runs the
   command in another language.
+
+A traced chain has one more limit. A segment is keyed on its predecessor's key, so
+when a predecessor runs without storing a key, the segments after it are neither
+served nor stored, and they re-run each time until a keyed run comes through. A
+predecessor has no stored key when it modified its own input, when its tracker saw
+no workspace access and it declares no `inputs`, or when it asked not to be cached
+(`disableCache`). A segment whose tracker saw nothing still falls back to its
+declared key, as a whole target does, and the segment after it chains on that key.
 
 Declared `outputs` attach to the **last** segment, so a cache hit on the whole chain
 restores them. A partial hit does not restore an earlier segment's files. If a later

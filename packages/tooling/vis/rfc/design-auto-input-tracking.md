@@ -207,8 +207,8 @@ Staged:
    engine rewrites the task into chained segment tasks (`target#1`, `target#2`),
    each folding in the previous segment's key. A failing segment stops the chain.
    Declared outputs attach to the last segment. `{ auto: true }` outputs,
-   `when`, `always`, trace hashing, auto-fingerprinting and custom shells are
-   refused with a warning. Limitation: a partial cache hit does not restore an
+   `when`, `always`, and custom shells are refused with a warning. Stage 3
+   lifted the trace-hashing and auto-fingerprinting refusals. Limitation: a partial cache hit does not restore an
    earlier segment's files, so a later segment that reads one can fail on a
    clean checkout. The caching guide tells users to split such chains into
    separate targets. Integration tests cover the last-segment and
@@ -216,8 +216,52 @@ Staged:
    construct, trace and auto-fingerprint refusal, output restore on a full hit,
    and output replay order. A vis-level test covers the option forwarding, the
    last-segment-only forwarded arguments, and the dry-run plan.
-3. Trace mode per segment, after the tracker can attribute accesses to a
-   segment. Depends on G1. **Not started.**
+3. **Done.** Trace mode per segment. Each segment is a task of its own, so the
+   tracker runs on its own command and its reads belong to that segment. No
+   attribution across segments is needed.
+
+    The trace key chains. A segment's fingerprint carries `chainKey`, the trace
+    key its predecessor settled on in this run. `hashFingerprint` folds it in
+    only when it is set, so the key of every other task is unchanged (a test
+    pins two keys from before this change). On lookup, `validateChain` compares
+    the stored key with the current predecessor's, after the command and tracker
+    checks and before any file is hashed. A moved predecessor misses with
+    `chain-changed`, and the miss names the segment that moved in `vis cache why`.
+
+    The predecessor's key is its `hash`. A traced segment sets `hash` on a hit as
+    well as on a store, so the segment after it can fold it. The orchestrator
+    sets it only for segments, which leaves the declared dependents of other
+    traced targets as they were (see the limits below).
+
+    A segment whose predecessor has no key this run is neither served nor stored.
+    That happens when the predecessor modified its own input, when its tracker saw
+    nothing and it declares no `inputs`, or when it set `disableCache`. The chain
+    before such a segment is unknown.
+
+    Two existing pieces had to be made segment-aware. The default command resolver
+    now reads a segment's command from its overrides, so the tracker and the
+    tracker-kind prediction see the segment's command and not the whole chain. The
+    service env is keyed on the target's id, so a segment's spawn resolves its
+    target's entry.
+
+    Refusals kept: `{ auto: true }` outputs (write tracking covers the whole
+    target), `when`, `always`, a custom shell, and every unsupported construct.
+    The trace-mode and auto-fingerprint refusals are removed.
+
+    Limits:
+
+    - A partial hit does not restore an earlier segment's files. This is the same
+      as declared mode.
+    - An unkeyed predecessor makes its successors re-run on every run until a
+      keyed run comes through.
+    - Found while implementing, not changed here: a declared dependent of a traced
+      target folds that target's key only on runs where it stored. A hit leaves
+      `hash` unset, so the dependent's key flips with the hit and misses on the
+      next run. Fixing it changes keys for targets that are not split, so it
+      needs its own upgrade note.
+    - Found while testing, not changed here: the Node preload tracker loses the
+      reads of a process that calls `process.exit()`, so the run is observed as
+      empty. The integration tests set `process.exitCode` instead.
 
 ### G4. Trace keys are not portable across platforms
 
@@ -274,7 +318,7 @@ rejects such an entry with `tracker-changed` before any file is hashed.
 | 2     | G3.2 opt-in `splitCompound`, declared mode | no          | no                                                            | done   |
 | 3     | G2-B opt-in clean env                      | no          | opt-in                                                        | done   |
 | 3     | G2-C doctor env coverage check             | no          | no                                                            | done   |
-| 3     | G3.3 trace-mode segments                   | no          | no                                                            | open   |
+| 3     | G3.3 trace-mode segments                   | no          | no                                                            | done   |
 
 ## References
 
