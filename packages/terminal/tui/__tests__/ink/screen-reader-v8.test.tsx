@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Text, Transform } from "../../src/components/index";
-import type createStdout from "../helpers/ink-create-stdout";
+import { Box, Static, Text, Transform } from "../../src/components/index";
+import { useStderr } from "../../src/ink/hooks/use-stderr";
+import { useStdout } from "../../src/ink/hooks/use-stdout";
+import { render } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 import { renderToString } from "../helpers/ink-render";
 
 const CURSOR_HIDE = "\u001B[?25l";
@@ -96,5 +100,201 @@ describe("screen-reader output (upstream parity)", () => {
 
         expect(renderToString(element, { isScreenReaderEnabled: true })).toBe("Screen-reader only");
         expect(renderToString(element)).toBe("");
+    });
+
+    it("renders nested multi-line text", () => {
+        expect.hasAssertions();
+
+        const element = (
+            <Box flexDirection="row">
+                <Box flexDirection="column">
+                    <Text>Line 1</Text>
+                    <Text>Line 2</Text>
+                </Box>
+            </Box>
+        );
+
+        expect(renderToString(element, { isScreenReaderEnabled: true })).toBe("Line 1\nLine 2");
+    });
+
+    it("renders a nested row inline", () => {
+        expect.hasAssertions();
+
+        const element = (
+            <Box flexDirection="column">
+                <Box flexDirection="row">
+                    <Text>Line 1</Text>
+                    <Text>Line 2</Text>
+                </Box>
+            </Box>
+        );
+
+        expect(renderToString(element, { isScreenReaderEnabled: true })).toBe("Line 1 Line 2");
+    });
+
+    it("clears screen-reader output", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(10, true);
+        const instance = render(<Text>{"First line\nSecond line"}</Text>, {
+            interactive: true,
+            isScreenReaderEnabled: true,
+            patchConsole: false,
+            stdout,
+        });
+
+        expect(visibleLines(stdout.getWrites())).toEqual(["First line", "Second", "line"]);
+
+        instance.clear();
+
+        expect(visibleLines(stdout.getWrites())).toEqual([]);
+
+        instance.unmount();
+    });
+
+    it("restores screen-reader output after stdout writes without touching the cursor", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(40, true);
+        let write: (text: string) => void = () => {};
+
+        const Test = () => {
+            ({ write } = useStdout());
+
+            return <Text>Hello</Text>;
+        };
+
+        const instance = render(<Test />, { interactive: true, isScreenReaderEnabled: true, patchConsole: false, stdout });
+
+        await instance.waitUntilRenderFlush();
+
+        const before = stdout.getWrites().length;
+
+        write("External\n");
+
+        const afterExternal = stdout.getWrites().slice(before).join("");
+
+        expect(afterExternal).not.toContain(CURSOR_HIDE);
+        expect(visibleLines(stdout.getWrites())).toEqual(["External", "Hello"]);
+
+        instance.unmount();
+    });
+
+    it("restores screen-reader output after stderr writes without touching the cursor", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(40, true);
+        const stderr = createStdout(40, true);
+        let write: (text: string) => void = () => {};
+
+        const Test = () => {
+            ({ write } = useStderr());
+
+            return <Text>Hello</Text>;
+        };
+
+        const instance = render(<Test />, { interactive: true, isScreenReaderEnabled: true, patchConsole: false, stderr, stdout });
+
+        await instance.waitUntilRenderFlush();
+
+        const before = stdout.getWrites().length;
+
+        write("External\n");
+
+        expect(contentWrites(stderr)).toEqual(["External\n"]);
+        expect(stdout.getWrites().slice(before).join("")).not.toContain(CURSOR_HIDE);
+        expect(visibleLines(stdout.getWrites())).toEqual(["Hello"]);
+
+        instance.unmount();
+    });
+
+    it("restores screen-reader output after console.log without touching the cursor", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(40, true);
+        const instance = render(<Text>Hello</Text>, { interactive: true, isScreenReaderEnabled: true, stdout });
+
+        await instance.waitUntilRenderFlush();
+
+        // eslint-disable-next-line no-console -- console patching is what this test exercises
+        console.log("External");
+
+        expect(stdout.getWrites().join("")).not.toContain(`${CURSOR_HIDE}Hello${CURSOR_HIDE}`);
+        expect(visibleLines(stdout.getWrites())).toEqual(["External", "Hello"]);
+
+        instance.unmount();
+    });
+
+    it("keeps static history when screen-reader output resizes", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(20, true);
+        const instance = render(
+            <>
+                <Static items={["History"]}>{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                <Text>{"First line\nSecond line"}</Text>
+            </>,
+            { interactive: true, isScreenReaderEnabled: true, patchConsole: false, stdout },
+        );
+
+        await instance.waitUntilRenderFlush();
+
+        stdout.columns = 10;
+        stdout.emit("resize");
+        await instance.waitUntilRenderFlush();
+
+        expect(visibleLines(stdout.getWrites())).toEqual(["History", "First line", "Second", "line"]);
+
+        instance.unmount();
+    });
+
+    it("rewraps screen-reader output when the terminal gets wider", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(10, true);
+        const instance = render(<Text>Hello world</Text>, { interactive: true, isScreenReaderEnabled: true, patchConsole: false, stdout });
+
+        await instance.waitUntilRenderFlush();
+
+        expect(visibleLines(stdout.getWrites())).toEqual(["Hello", "world"]);
+
+        stdout.columns = 20;
+        stdout.emit("resize");
+        await instance.waitUntilRenderFlush();
+
+        expect(visibleLines(stdout.getWrites())).toEqual(["Hello world"]);
+
+        instance.unmount();
+    });
+
+    it("re-renders changing screen-reader content after static output", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(40, true);
+        let setState: (value: { items: string[]; live: string }) => void = () => {};
+
+        const App = () => {
+            const [state, setter] = useState({ items: ["A"], live: "Live 1" });
+
+            setState = setter;
+
+            return (
+                <>
+                    <Static items={state.items}>{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                    <Text>{state.live}</Text>
+                </>
+            );
+        };
+
+        const instance = render(<App />, { interactive: true, isScreenReaderEnabled: true, patchConsole: false, stdout });
+
+        await instance.waitUntilRenderFlush();
+
+        setState({ items: ["A", "B"], live: "Live 2" });
+        await instance.waitUntilRenderFlush();
+
+        expect(visibleLines(stdout.getWrites())).toEqual(["A", "B", "Live 2"]);
+
+        instance.unmount();
     });
 });

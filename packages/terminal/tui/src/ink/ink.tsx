@@ -630,6 +630,7 @@ export default class Ink {
             this.log.clear();
             this.lastOutput = "";
             this.lastOutputToRender = "";
+            this.lastOutputHeight = 0;
         }
 
         // Clear styled line cache on resize — cached measurements may be
@@ -684,6 +685,16 @@ export default class Ink {
     restoreLastOutput = (): void => {
         // A cleared frame stays cleared until the next render draws it again.
         if (!this.interactive || this.isFrameCleared) {
+            return;
+        }
+
+        // Screen-reader frames are written as plain text, so restore them the same way and
+        // only sync log-update's bookkeeping: no cursor hide or placement.
+        if (this.isScreenReaderEnabled) {
+            this.options.stdout.write(this.lastOutputToRender);
+            this.log.setCursorPosition(undefined);
+            this.log.sync(this.lastOutputToRender);
+
             return;
         }
 
@@ -1039,6 +1050,15 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
+            // Wrap before comparing so a terminal that changed width gets its output rewrapped.
+            const terminalWidth = getWindowSize(this.options.stdout).columns;
+
+            const wrappedOutput = wordWrap(output, {
+                trim: false,
+                width: terminalWidth,
+                wrapMode: "BREAK_WORDS",
+            }).replace(/\n$/, "");
+
             if (hasStaticOutput) {
                 // We need to erase the main output before writing new static output
                 const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
@@ -1048,21 +1068,13 @@ export default class Ink {
                 this.lastOutputHeight = 0;
             }
 
-            if (output === this.lastOutput && !hasStaticOutput) {
+            if (wrappedOutput === this.lastOutputToRender && !hasStaticOutput) {
                 if (isSync) {
                     this.options.stdout.write(esu);
                 }
 
                 return;
             }
-
-            const terminalWidth = getWindowSize(this.options.stdout).columns;
-
-            const wrappedOutput = wordWrap(output, {
-                trim: false,
-                width: terminalWidth,
-                wrapMode: "BREAK_WORDS",
-            }).replace(/\n$/, "");
 
             // If we haven't erased yet, do it now.
             if (hasStaticOutput) {
@@ -1076,6 +1088,15 @@ export default class Ink {
             this.lastOutput = output;
             this.lastOutputToRender = wrappedOutput;
             this.lastOutputHeight = wrappedOutput === "" ? 0 : wrappedOutput.split("\n").length;
+
+            // Keep log-update in step with the frame just written, so clear() and external-write
+            // restoration can erase it. An empty frame has nothing on screen to track.
+            if (wrappedOutput === "") {
+                this.log.reset();
+            } else {
+                this.log.setCursorPosition(undefined);
+                this.log.sync(wrappedOutput);
+            }
 
             if (isSync) {
                 this.options.stdout.write(esu);
