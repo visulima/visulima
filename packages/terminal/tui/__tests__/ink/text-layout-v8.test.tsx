@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, Static, Text } from "../../src/components/index";
+import { Box, Static, Text, Transform } from "../../src/components/index";
 import renderToStringDirect from "../../src/ink/render-to-string";
 import { renderToString } from "../helpers/ink-render";
 import { renderAsync } from "../helpers/ink-test-renderer";
@@ -368,5 +368,36 @@ describe("background inheritance", () => {
         );
 
         expect(output).toBe("\u001B[44mHello World\u001B[49m");
+    });
+});
+
+describe("overflow clipping and transforms", () => {
+    it("nested transforms receive each explicit line with its line index", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Text>
+                <Transform transform={(line, index) => line.replaceAll("x", String(index))}>
+                    <Text>{"xx\nxx"}</Text>
+                </Transform>
+            </Text>,
+        );
+
+        expect(output).toBe("00\n11");
+    });
+
+    it("nested transform line indices do not depend on preceding siblings", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Text>
+                prefix
+                <Transform transform={(line, index) => line.replaceAll("x", String(index))}>
+                    <Text>xx</Text>
+                </Transform>
+            </Text>,
+        );
+
+        expect(output).toBe("prefix00");
     });
 });

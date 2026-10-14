@@ -36,8 +36,14 @@ const squashTextNodes = (node: DOMElement): string => {
 
             // Since these text nodes are being concatenated, `Output` instance won't be able to
             // apply children transform, so we have to do it manually here for each text node
+            // Each line gets its own index, so line-based transforms do not depend on preceding siblings.
             if (nodeText.length > 0 && typeof childNode.internal_transform === "function") {
-                nodeText = childNode.internal_transform(nodeText, index);
+                const { internal_transform: transform } = childNode;
+
+                nodeText = nodeText
+                    .split("\n")
+                    .map((line, lineIndex) => transform(line, lineIndex))
+                    .join("\n");
             }
         }
 
@@ -104,8 +110,14 @@ export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, off
                 });
             }
 
+            // Each line gets its own index, so line-based transforms do not depend on preceding siblings.
             if (nodeText.length > 0 && typeof childNode.internal_transform === "function") {
-                nodeText = childNode.internal_transform(nodeText, index);
+                const { internal_transform: transform } = childNode;
+
+                nodeText = nodeText
+                    .split("\n")
+                    .map((line, lineIndex) => transform(line, lineIndex))
+                    .join("\n");
             }
         }
 
