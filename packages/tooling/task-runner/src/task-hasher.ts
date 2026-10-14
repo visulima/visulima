@@ -248,7 +248,7 @@ const SHELL_SPECIAL_VARS = new Set(["0", "!", "#", "$", "*", "-", "?", "@", "_"]
  * operator is stripped). Skips positional args (`$1`, `$2`, …) and
  * shell specials (`$?`, `$@`, …) since those aren't environment state.
  */
-const extractReferencedEnvVars = (command: string): string[] => {
+export const extractReferencedEnvVars = (command: string): string[] => {
     const found = new Set<string>();
     const pattern = /\$(?:\{([^}]+)\}|([A-Z_]\w*))/gi;
 

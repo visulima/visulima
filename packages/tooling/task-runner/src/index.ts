@@ -55,7 +55,7 @@ export { expandArguments, expandShortcut, expandTokens, expandTokensInString, ex
 export { runConcurrently } from "./concurrent";
 export { runConcurrentFallback } from "./concurrent-fallback";
 // Default task runner
-export { defaultTaskRunner } from "./default-task-runner";
+export { DEFAULT_UNTRACKED_ENV_PATTERNS, defaultTaskRunner } from "./default-task-runner";
 // Shell detection
 export { detectScriptShell } from "./detect-shell";
 // File access tracking
@@ -64,7 +64,7 @@ export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker"
 // Auto-fingerprinting (Vite Task-style caching)
 export type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 export { describeCacheMissReason } from "./fingerprint";
-export { FingerprintManager } from "./fingerprint";
+export { createEnvMatcher, FingerprintManager } from "./fingerprint";
 // Flow controllers
 export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
 export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
@@ -120,7 +120,7 @@ export {
 } from "./task-graph-utils";
 // Task hashing
 export type { TaskHasher, TaskHasherOptions } from "./task-hasher";
-export { computeTaskHash, InProcessTaskHasher } from "./task-hasher";
+export { computeTaskHash, extractReferencedEnvVars, InProcessTaskHasher } from "./task-hasher";
 // Task orchestrator
 export type { TaskOrchestratorOptions } from "./task-orchestrator";
 export { TaskOrchestrator } from "./task-orchestrator";

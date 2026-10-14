@@ -145,7 +145,7 @@ export const computeGlobalEnvNamespace = (globalEnv: string[] | undefined, isVis
  * User-supplied `untrackedEnvVars` are appended after these so users
  * can extend (not replace) the defaults.
  */
-const DEFAULT_UNTRACKED_ENV_PATTERNS: ReadonlyArray<string> = [
+export const DEFAULT_UNTRACKED_ENV_PATTERNS: ReadonlyArray<string> = [
     // GitHub Actions runner env (busts cache between local and CI)
     "GITHUB_*",
     "RUNNER_*",
