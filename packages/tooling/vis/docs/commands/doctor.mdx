@@ -67,7 +67,7 @@ vis doctor --exit-code --strict
 | `--exit-code`   | `false` | Exit with code 1 if security issues are found                                                                                                             |
 | `--fix`         | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install). Also SIGTERMs orphaned `vis` / `task-runner` processes the runtime check found.     |
 | `--fix-force`   | `false` | With `--fix`: escalate orphan cleanup to `SIGKILL` (or `taskkill /F` on Windows). Use when SIGTERM is ignored — Windows child trees, blocked event loops. |
-| `--strict`      | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings                                                                              |
+| `--strict`      | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings, uncovered env                                                               |
 | `--no-cache`    | `false` | Bypass the doctor result cache (`~/.vis/cache/doctor`)                                                                                                    |
 | `--filter`      |         | Comma-separated package name patterns to scope findings (supports `*` globs, e.g. `'@types/*,react'`)                                                     |
 
@@ -85,7 +85,7 @@ In those modes, every scan still emits a single completion line so the log stays
 
 ## What It Checks
 
-The dashboard is grouped into four diagnostic sections plus a static **Supply Chain** posture block. The four sections (`dependencies`, `security`, `optimization`, `runtime`) are gated by `--only` / `--skip`; the supply-chain block is config-only and always runs.
+The dashboard is grouped into four diagnostic sections plus two static blocks, **Supply Chain** and **Env Coverage**. The four sections (`dependencies`, `security`, `optimization`, `runtime`) are gated by `--only` / `--skip`; the two static blocks are config-derived and always run.
 
 ### Supply Chain
 
@@ -105,6 +105,35 @@ A doctor run with no `security` block at all surfaces a single warning pointing 
 `patchedDependencies` is read from `pnpm-workspace.yaml` (pnpm) or `package.json` (bun); npm and yarn use different formats and are skipped silently. The check resolves each entry's path relative to the workspace root and only reports problems — when every patch file resolves, the section adds a single `ok` finding with the entry count.
 
 When [aube](https://github.com/endevco/aube) is the active installer, doctor also surfaces aube's effective security posture next to vis's `security.policies.*` findings. The block reads `aube-workspace.yaml` (falling back to `pnpm-workspace.yaml`) and reports on `paranoid`, `trustPolicy`, `blockExoticSubdeps`, `jailBuilds`, `strictDepBuilds`, `minimumReleaseAge`, and `allowBuilds`. Aube's defaults are already hardened, so most entries render as `ok`; the section only escalates to `warn` when a hardening knob is explicitly relaxed (e.g. `trustPolicy: off`, `blockExoticSubdeps: false`, `minimumReleaseAge: 0`).
+
+### Env Coverage
+
+A target's command can read an environment variable that no cache key covers. That variable can change the output without changing the key, so the cache can serve a stale result. Doctor lists those names per target.
+
+Names are read from the command text: `$VAR`, `${VAR}` and `%VAR%`. A name counts as covered when a key source names it:
+
+- `envVars` and `globalEnv` in the workspace, and `env://NAME` inputs (also through named inputs);
+- `fingerprintEnv` on the target, with `*` patterns;
+- `autoEnvVars`, which covers `$VAR` and `${VAR}` only. A `%VAR%` reference stays uncovered;
+- framework-inferred env prefixes, when `frameworkInference` is on.
+
+These are not reported:
+
+- names in `untrackedEnv` or `taskRunner.untrackedEnvVars`, which you keep out of the key on purpose;
+- the built-in untracked patterns (CI and runner names such as `CI_*` and `GITHUB_*`);
+- names vis and the runner set for every child (`VIS_*`, `INIT_CWD`, `CI`, `PATH`, `HOME`, and similar);
+- names a clean-mode child cannot see (see [`vis run`](./run#clean-child-environment)).
+
+Targets with `hashMode: "trace"`, `cache: false` or `always: true` are skipped, and so is every target when `autoFingerprint` is on. Those targets do not use a declared key.
+
+Each target gets one line with up to eight of its names and the fix hints: `fingerprintEnv`, `autoEnvVars` (listed only when a `$VAR` form is uncovered) or `untrackedEnv`. A target with more names shows `(+N more)`. The section is omitted when nothing is uncovered.
+
+```text
+Env Coverage
+  app:build: API_TOKEN, NEXT_PUBLIC_API (+2 more). fix: fingerprintEnv, autoEnvVars or untrackedEnv
+```
+
+The check reads workspace config only and spawns nothing. It is recomputed on every run, so a cached result never hides a `project.json` edit. It is a warning: it does not change the exit code unless `--exit-code --strict` is set.
 
 ### Dependencies
 
@@ -174,6 +203,20 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
 
 `--fix` sends SIGTERM by default so the orphan can flush buffered output and tear down its child tree gracefully. Add `--fix-force` to escalate to SIGKILL (or `taskkill /F` on Windows) for processes that ignore SIGTERM — most commonly Windows child trees that hold open console handles, or processes with a blocked event loop. The doctor re-enumerates the process table on each `--fix` run rather than reusing the cached PIDs from the diagnostic, since the orphan set can change between the scan and the recovery step (a `vis run` in another terminal could exit, or a fresh crash could leave a new orphan).
 
+### Environment declarations
+
+The runtime block also cross-checks what the workspace declares about its toolchain. These are warnings only: vis reports the disagreement and never picks a winner.
+
+| Diagnostic id      | Status        | What it reports                                                                                                                                                                                                                                               |
+| ------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `env-conflict`     | `warn`        | Two Node.js or package-manager declarations allow no common version. Node.js sources: `.nvmrc`, `.node-version`, `engines.node`, `devEngines.runtime`, `volta.node`. Package-manager sources: `packageManager`, `devEngines.packageManager`.                  |
+| `env-integrity`    | `warn`        | The `packageManager` field carries an integrity suffix that is malformed. Expected `+<algo>.<hex>` with `sha1`, `sha224`, `sha256`, `sha384` or `sha512`, lowercase hex, and the length for that algorithm (sha512 is 128 characters). Nothing is downloaded. |
+| `env-declarations` | `ok` / `skip` | `ok` when every declaration agrees; `skip` when nothing is declared.                                                                                                                                                                                          |
+
+Comparison uses semver ranges. `.nvmrc` `20` against `engines.node` `>=18` agrees; `.nvmrc` `20` against `devEngines.runtime` `^22` conflicts. Values that are not semver (`lts/*`, `latest`) are ignored rather than guessed at. A `devEngines` array is read as alternatives, so one matching entry is enough. A `devEngines` entry without a `version` is compared by name only.
+
+`.nvmrc` and `.node-version` are read separately, so a disagreement between them is reported even though the toolchain resolver prefers `.nvmrc`. `vis toolchain status` prints the same conflicts (and lists them under `declarationWarnings` in its JSON output).
+
 ## JSON Output
 
 `--format json` (or `--json`) emits a stable schema suitable for CI:
@@ -198,6 +241,12 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
             { "label": "allowBuilds: 3 entries", "severity": "ok" }
         ]
     },
+    "envCoverage": {
+        "status": "warn",
+        "targets": [
+            { "target": "app:build", "variables": ["API_TOKEN", "NEXT_PUBLIC_API"], "total": 4, "hints": ["fingerprintEnv", "autoEnvVars", "untrackedEnv"] }
+        ]
+    },
     "runtimeStatus": "warn",
     "runtime": [
         {
@@ -220,7 +269,9 @@ The `orphans` warning is the only runtime check `--fix` can resolve. The auto-re
 }
 ```
 
-The top-level `status` rolls up the four diagnostic sections **and** `supplyChain.status` — a permissive supply-chain config can flip the overall result to `warn` even when every other section is `ok`.
+The top-level `status` rolls up the four diagnostic sections, `supplyChain.status` **and** `envCoverage.status` — a permissive supply-chain config or an uncovered env name can flip the overall result to `warn` even when every other section is `ok`.
+
+`envCoverage` is present only when a target has uncovered names. Its `targets` list those targets; `variables` holds at most eight names, sorted, and `total` counts all of them.
 
 Status fields:
 
@@ -231,10 +282,10 @@ Status fields:
 
 ## Exit Codes
 
-| Mode                    | Fails when                                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| `--exit-code` (default) | Vulnerabilities or provider alerts present                                                    |
-| `--exit-code --strict`  | Any of: vulnerabilities, provider alerts, outdated deps, duplicate versions, runtime warnings |
+| Mode                    | Fails when                                                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--exit-code` (default) | Vulnerabilities or provider alerts present                                                                                                       |
+| `--exit-code --strict`  | Any of: vulnerabilities, provider alerts, outdated deps, duplicate versions, runtime warnings, uncovered env (see [Env Coverage](#env-coverage)) |
 
 Without `--exit-code`, doctor always exits `0` so it stays usable as an informational command.
 

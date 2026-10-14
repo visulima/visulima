@@ -62,17 +62,20 @@ export default defineConfig({
 });
 ```
 
-| Property      | Type                         | Description                                             |
-| ------------- | ---------------------------- | ------------------------------------------------------- |
-| `command`     | `string`                     | Shell command (overrides package.json script)           |
-| `dependsOn`   | `(string \| object)[]`       | Dependencies. `^build` = run on dep projects first      |
-| `outputs`     | `string[]`                   | Output patterns (`{projectRoot}` placeholder supported) |
-| `inputs`      | `(string \| object)[]`       | Input patterns for cache invalidation                   |
-| `cache`       | `boolean`                    | Whether cacheable (default depends on `type`)           |
-| `parallelism` | `boolean`                    | Whether supports parallel execution                     |
-| `type`        | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                   |
-| `preset`      | `"server" \| "utility"`      | Preset bundle of options                                |
-| `options`     | `object`                     | See [target options](/commands/run#target-options)      |
+| Property         | Type                         | Description                                                                                                                                            |
+| ---------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `command`        | `string`                     | Shell command (overrides package.json script)                                                                                                          |
+| `dependsOn`      | `(string \| object)[]`       | Dependencies. `^build` = run on dep projects first                                                                                                     |
+| `outputs`        | `string[]`                   | Output patterns (`{projectRoot}` placeholder supported)                                                                                                |
+| `inputs`         | `(string \| object)[]`       | Input patterns for cache invalidation                                                                                                                  |
+| `hashMode`       | `"declared" \| "trace"`      | `declared` keys on `inputs`; `trace` keys on the files and env the command reads. See [Caching](/guides/caching#cache-keys-declared-and-traced-inputs) |
+| `fingerprintEnv` | `string[]`                   | Env vars (names or `*` patterns) folded into this target's cache key                                                                                   |
+| `untrackedEnv`   | `string[]`                   | Env vars the task receives but that stay out of its cache key. Wins over the other env sources                                                         |
+| `cache`          | `boolean`                    | Whether cacheable (default depends on `type`)                                                                                                          |
+| `parallelism`    | `boolean`                    | Whether supports parallel execution                                                                                                                    |
+| `type`           | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                                                                                                                  |
+| `preset`         | `"server" \| "utility"`      | Preset bundle of options                                                                                                                               |
+| `options`        | `object`                     | See [target options](/commands/run#target-options)                                                                                                     |
 
 ### File Groups
 
@@ -462,7 +465,12 @@ export default defineConfig({
 
 Notable options:
 
-- `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output.
+- `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output. A target can exclude a reference with `untrackedEnv`.
+- `autoFingerprint` — trace every task's file and env reads instead of hashing declared `inputs`. A traced run that observes no workspace access is keyed on the declared hash when the target declares `inputs`, and is not cached otherwise. The per-target equivalent is `hashMode: "trace"`. See [Caching](/guides/caching#cache-keys-declared-and-traced-inputs).
+- `fingerprintEnvPatterns` — env var names or `*` patterns folded into the trace-mode fingerprint of every traced task.
+- `untrackedEnvVars` — env var names or `*` patterns passed to tasks but kept out of their cache key. In trace mode the built-in CI defaults (`CI_*`, `GITHUB_*`, `BUILDKITE_*`, …) apply on top of this list.
+- `env` — `{ mode: "inherit" | "clean", allow?: string[] }`, default `"inherit"`. `clean` gives each task's child process only the `allow` names (exact or `*` patterns), `PATH`, `HOME`, `TERM`, `CI`, the platform essentials and what vis injects, instead of the whole environment. A target sets its own `options.env`, which overrides this. See [`vis run`: Clean child environment](/commands/run#clean-child-environment) and [Caching](/guides/caching#clean-child-environment).
+- `cacheDiagnostics` — when `true`, a traced task that misses fires the `task:cacheMiss` plugin hook with the reasons (changed file, changed env var, …).
 - `remoteCache.compression` — `"gzip"` (default) keeps Turborepo protocol compatibility; `"brotli"` reduces upload size at the cost of lock-in to vis clients on both ends.
 - `remoteCache.attestation` — keyless-sign artifacts with Sigstore in CI and pin the signer identity on download (provenance on top of the HMAC `signing` integrity layer). See the [Attested remote cache](./guides/attested-cache.mdx) guide.
 
@@ -695,6 +703,26 @@ export default defineConfig({
 | `generator.preferOffline` | `false` | Prefer the giget cache over re-downloading. Override per-invocation with `--prefer-offline`.                                            |
 
 Discovery and override semantics — including how to vendor a customised copy of a builtin (e.g. `buildkite-ci`) at `.vis/templates/<name>/` — are in the [`vis generate` reference](/commands/generate#discovery).
+
+### Create
+
+Defaults for [`vis create`](/commands/create#configuration).
+
+```typescript
+export default defineConfig({
+    create: {
+        // A bare `vis create` opens the picker for this organization's templates.
+        defaultTemplate: "@acme",
+        // Skip the package manager prompt.
+        defaultPm: "pnpm",
+    },
+});
+```
+
+| Field                    | Default | Description                                                                                                                                                                                 |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create.defaultTemplate` |         | Template used by a bare `vis create`. Accepts any template input, including `@org` (picker over the org's manifest) and `@org:name` (one entry). In a terminal the other prompts still run. |
+| `create.templates`       |         | Named aliases for template inputs. See [template aliases](/commands/create#template-aliases).                                                                                               |
 
 ---
 

@@ -1,4 +1,4 @@
-import type { Task, TaskResult } from "@visulima/task-runner";
+import type { LifeCycleInterface, Task, TaskResult } from "@visulima/task-runner";
 import { render } from "@visulima/tui";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -245,6 +245,96 @@ describe("tui/createDynamicOutputRenderer", () => {
         // scrollback rather than being re-emitted below it.
         expect(allOutput).toContain("Successfully ran target build");
         expect(allOutput).not.toContain("output for app-a:build");
+    });
+
+    it("keeps the terminal output and appends the declared-fallback notice after it", () => {
+        expect.assertions(2);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, store } = createRenderer(tasks);
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.printDeclaredFallback!(tasks[0]!);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+        // The orchestrator prints the terminal output after endTasks; it must not be dropped.
+        lifeCycle.printTaskTerminalOutput!(tasks[0]!, "success", "output for app-a:build");
+
+        const output = store.getSnapshot().outputs.get("app-a:build") ?? "";
+
+        expect(output).toContain("output for app-a:build");
+        expect(output).toContain("ⓘ app-a:build: tracker saw no workspace access; cached on declared inputs");
+    });
+
+    // The orchestrator fires these notices while the task is still running, so they arrive
+    // before endTasks and printTaskTerminalOutput. None of them may hide the task's output.
+    describe("pre-run cache notices", () => {
+        const notices: [string, (lifeCycle: LifeCycleInterface, task: Task) => void, string][] = [
+            ["printEmptyFingerprintWarning", (lc, task) => { lc.printEmptyFingerprintWarning!(task, "no tracker"); }, "ⓘ caching skipped — no tracker"],
+            ["printSelfModifyingSkip", (lc, task) => { lc.printSelfModifyingSkip!(task, ["src/a.ts"]); }, "ⓘ caching skipped — task modified its own input (src/a.ts)"],
+            ["printCacheDisabledByTask", (lc, task) => { lc.printCacheDisabledByTask!(task); }, "ⓘ caching disabled by task via disableCache()"],
+        ];
+
+        it.each(notices)("%s keeps the terminal output in the task buffer", (_name, fire, notice) => {
+            expect.assertions(2);
+
+            const tasks = [createTask("app-a", "build")];
+            const { lifeCycle, store } = createRenderer(tasks);
+
+            lifeCycle.startCommand!();
+            lifeCycle.startTasks!(tasks);
+            fire(lifeCycle, tasks[0]!);
+            lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+            lifeCycle.printTaskTerminalOutput!(tasks[0]!, "success", "output for app-a:build");
+
+            const output = store.getSnapshot().outputs.get("app-a:build") ?? "";
+
+            expect(output).toContain("output for app-a:build");
+            expect(output).toContain(notice);
+        });
+
+        it.each(notices)("%s keeps the terminal output in the post-exit dump", async (_name, fire, notice) => {
+            expect.assertions(2);
+
+            const tasks = [createTask("app-a", "build")];
+            const { lifeCycle, renderIsDone } = createRenderer(tasks);
+
+            lifeCycle.startCommand!();
+            lifeCycle.startTasks!(tasks);
+            fire(lifeCycle, tasks[0]!);
+            lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+            lifeCycle.printTaskTerminalOutput!(tasks[0]!, "success", "output for app-a:build");
+            lifeCycle.endCommand!();
+
+            writeSpy.mockClear();
+            mockUnmount();
+
+            await renderIsDone;
+
+            const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
+
+            expect(allOutput).toContain("output for app-a:build");
+            expect(allOutput).toContain(notice);
+        });
+    });
+
+    it("does not record a declared-fallback notice in quiet mode", () => {
+        expect.assertions(1);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, store } = createDynamicOutputRenderer({
+            args: { parallel: 3, targets: ["build"] },
+            outputStyle: "quiet",
+            projectNames: ["app-a"],
+            tasks,
+        });
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.printDeclaredFallback!(tasks[0]!);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+
+        expect(store.getSnapshot().outputs.get("app-a:build") ?? "").not.toContain("tracker saw no workspace access");
     });
 
     it("should collect task output via printTaskTerminalOutput", () => {

@@ -248,13 +248,20 @@
                     "type": "string",
                     "description": "The executor/command to run"
                 },
+                "fingerprintEnv": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Env vars folded into this target's cache key, as names or `*` patterns (`\"VITE_*\"`). In `\"declared\"` mode each match becomes an env input, the same as `env://NAME`; in `\"trace\"` mode it extends  {@link  TaskRunnerOptions.fingerprintEnvPatterns }  for this target."
+                },
                 "hashMode": {
                     "type": "string",
                     "enum": [
                         "declared",
                         "trace"
                     ],
-                    "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace on Linux, an fs preload shim elsewhere) and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
+                    "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace or seccomp on Linux; DYLD/IAT interposition on macOS and   Windows for directly-executed commands; a Node preload otherwise)   and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
                 },
                 "inputs": {
                     "type": "array",
@@ -390,6 +397,17 @@
                 "pty": {
                     "type": "boolean",
                     "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
+                },
+                "splitCompound": {
+                    "type": "boolean",
+                    "description": "Split the target's command on top-level `&amp;&amp;` into one chained task per segment, each with its own cache key. Segment _n_ folds in the key of segment _n−1_, so changing a later segment re-runs only that segment and later ones, and a failing segment stops the chain. Works in declared and trace mode. A traced segment is tracked on its own command, and its trace key folds in the trace key of the segment before it.\n\nDeclared `outputs` attach to the last segment, so a cache hit on the whole chain restores them. A partial hit does not restore an earlier segment's files, so a later segment that reads a file written by an earlier segment needs that file to be a declared output of its own target. Opt-in. The split is refused, with a diagnostic and the target run whole, when the command contains a construct the splitter does not model (`;`, `||`, subshells, `cd`, `export`, `VAR=…` prefixes, command substitution, …), when an output is `{ auto: true }` (write tracking covers the whole target, not one segment), when it has a `when` condition, or when it is `always`."
+                },
+                "untrackedEnv": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Env vars this target receives but keeps out of its cache key, as names or `*` patterns (`\"CI_*\"`). Applies on top of  {@link  TaskRunnerOptions.untrackedEnvVars }  and wins over `fingerprintEnv`, `autoEnvVars`, framework inference and trace-mode fingerprint patterns. Explicit `env://` inputs and the workspace `envVars` / `globalEnv` lists are not affected."
                 },
                 "warningPattern": {
                     "anyOf": [
@@ -764,6 +782,31 @@
                     "$ref": "#/$defs/AffectedFilesMode",
                     "description": "How to forward affected files to the task process. Only used when invoked via `vis affected &lt;target>`.",
                     "default": false
+                },
+                "env": {
+                    "type": "object",
+                    "properties": {
+                        "allow": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Names and `*` wildcard patterns kept from the parent environment in `clean` mode. Ignored under `inherit`. Matching is case-insensitive on Windows, where environment names are case-insensitive."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "inherit",
+                                "clean"
+                            ],
+                            "description": "Whether the child inherits the parent environment."
+                        }
+                    },
+                    "required": [
+                        "mode"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Child-process environment for this target. Overrides the workspace `taskRunner.env`.\n- `mode: \"inherit\"`: the child gets the whole parent environment, even   when the workspace is `clean`.\n- `mode: \"clean\"`: the child gets only the allow-listed names, `PATH`,   `HOME`, `TERM`, `CI`, the platform essentials and what vis injects   (`VIS_TASK_SLOTS`, `VIS_ARG_*`, `envFile` values, service env).\n- `allow`: names and `*` wildcard patterns kept under `clean`. Added to   the workspace allow-list when the workspace is also `clean`.\n\nA traced target (`hashMode: \"trace\"`, or a workspace `autoFingerprint`) can be `clean` too: it gets the same environment plus the tracker's own variables, and the tracker then runs without its native backends. Without this option the workspace `taskRunner.env` applies, and that defaults to `inherit`."
                 },
                 "envFile": {
                     "anyOf": [

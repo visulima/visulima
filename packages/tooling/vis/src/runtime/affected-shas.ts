@@ -4,7 +4,7 @@ import { isAccessibleSync, readFileSync } from "@visulima/fs";
 
 const ZERO_SHA = "0000000000000000000000000000000000000000";
 
-export type CiProvider = "buildkite" | "circleci" | "github" | "gitlab" | "local";
+export type CiProvider = "azure" | "buildkite" | "circleci" | "github" | "gitlab" | "local";
 
 export interface ResolvedShas {
     base: string;
@@ -142,6 +142,32 @@ const resolveGitlab = (env: NodeJS.ProcessEnv, defaultBase: string): ResolvedSha
     return { base: `origin/${defaultBranch}`, head: headSha, notes, provider: "gitlab" };
 };
 
+/**
+ * Azure Pipelines exposes the pipeline variables `System.PullRequest.*` and
+ * `Build.SourceVersion` as upper-cased env vars with dots replaced by
+ * underscores. The target branch is only set on PR builds; there is no
+ * previous-build SHA variable, so non-PR builds compare against the default
+ * branch, the same as Buildkite and CircleCI.
+ */
+const resolveAzure = (env: NodeJS.ProcessEnv, defaultBase: string): ResolvedShas => {
+    const notes: string[] = [];
+    const headSha = env["BUILD_SOURCEVERSION"] ?? "HEAD";
+
+    const targetName = env["SYSTEM_PULLREQUEST_TARGETBRANCHNAME"];
+    const targetRef = env["SYSTEM_PULLREQUEST_TARGETBRANCH"];
+    const targetBranch = targetName && targetName.length > 0 ? targetName : targetRef?.replace(/^refs\/heads\//, "");
+
+    if (targetBranch && targetBranch.length > 0) {
+        notes.push(`pull_request: target branch ${targetBranch}`);
+
+        return { base: `origin/${targetBranch}`, head: headSha, notes, provider: "azure" };
+    }
+
+    notes.push(`fallback: origin/${defaultBase} (azure has no canonical previous-build SHA env)`);
+
+    return { base: `origin/${defaultBase}`, head: headSha, notes, provider: "azure" };
+};
+
 const resolveBuildkite = (env: NodeJS.ProcessEnv, defaultBase: string): ResolvedShas => {
     const notes: string[] = [];
     const headSha = env["BUILDKITE_COMMIT"] ?? "HEAD";
@@ -195,7 +221,7 @@ const resolveLocal = (defaultBase: string, runGit: GitRunner, workspaceRoot: str
  * Resolve the `{base, head}` SHAs to feed `vis affected` / `vis ci` /
  * `vis run --affected` based on the active CI provider (or local fallback).
  *
- * Provider precedence: GitHub → GitLab → Buildkite → CircleCI → local. The
+ * Provider precedence: GitHub → GitLab → Azure → Buildkite → CircleCI → local. The
  * dispatcher checks each provider's "are we in this CI?" env var (e.g.
  * `$GITHUB_ACTIONS=true`) and delegates. Each resolver records a short
  * provenance line in `notes` so callers can log how the base was picked.
@@ -215,6 +241,11 @@ export const resolveAffectedShas = (options?: ResolveAffectedShasOptions): Resol
 
     if (env["GITLAB_CI"] === "true") {
         return resolveGitlab(env, defaultBase);
+    }
+
+    // Azure Pipelines sets TF_BUILD to Pascal-case "True"; compare case-insensitively.
+    if (env["TF_BUILD"]?.toLowerCase() === "true") {
+        return resolveAzure(env, defaultBase);
     }
 
     if (env["BUILDKITE"] === "true") {

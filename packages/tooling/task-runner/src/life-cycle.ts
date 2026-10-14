@@ -83,6 +83,12 @@ class CompositeLifeCycle implements LifeCycleInterface {
         }
     }
 
+    public printDeclaredFallback(task: Task): void {
+        for (const lc of this.#lifeCycles) {
+            lc.printDeclaredFallback?.(task);
+        }
+    }
+
     public printEmptyFingerprintWarning(task: Task, reason: string): void {
         for (const lc of this.#lifeCycles) {
             lc.printEmptyFingerprintWarning?.(task, reason);

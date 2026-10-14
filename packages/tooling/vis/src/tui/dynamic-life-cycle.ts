@@ -10,6 +10,7 @@ import { TaskStore } from "./components/task-store";
 import VisTaskRunnerApp from "./components/vis-task-runner-app";
 import { formatMs } from "./pretty-time";
 import type { OutputStyle } from "./static-life-cycle";
+import { declaredFallbackMessage, resolveTaskOutputStyle } from "./static-life-cycle";
 import { getStatusInfo } from "./status-utils";
 import type { StdinEntry } from "./types";
 
@@ -62,6 +63,21 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
     const store = new TaskStore(tasks, totalTaskCount);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
     const autoExitSeconds = autoExit === true ? 3 : typeof autoExit === "number" ? autoExit : 0;
+
+    // Notices fired while a task runs are held per task and appended in endTasks, after its
+    // output. The store seeds a task's terminal output only when nothing is buffered yet, so
+    // a line added earlier would make the real output disappear from the panel.
+    const pendingNotices = new Map<string, string[]>();
+
+    const queueNotice = (taskId: string, line: string): void => {
+        const queued = pendingNotices.get(taskId);
+
+        if (queued) {
+            queued.push(line);
+        } else {
+            pendingNotices.set(taskId, [line]);
+        }
+    };
 
     let instance: Instance | undefined;
     let resolveDone: () => void;
@@ -289,21 +305,36 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
         endTasks(results: TaskResult[]): void {
             store.endTasks(results);
+
+            for (const result of results) {
+                const notices = pendingNotices.get(result.task.id);
+
+                if (notices) {
+                    pendingNotices.delete(result.task.id);
+
+                    for (const line of notices) {
+                        store.addOutput(result.task.id, line);
+                    }
+                }
+            }
         },
 
         printCacheDisabledByTask(task: Task): void {
-            // Surface the skip in the task's output buffer (shown in the
-            // TUI output panel) — appending is layout-safe, unlike writing
-            // to stdout while the React tree is mounted.
-            store.addOutput(task.id, "ⓘ caching disabled by task via disableCache()\n");
+            queueNotice(task.id, "ⓘ caching disabled by task via disableCache()\n");
+        },
+
+        printDeclaredFallback(task: Task): void {
+            if (resolveTaskOutputStyle(task, outputStyle) !== "quiet") {
+                queueNotice(task.id, `ⓘ ${declaredFallbackMessage(task)}\n`);
+            }
         },
 
         printEmptyFingerprintWarning(task: Task, reason: string): void {
-            store.addOutput(task.id, `ⓘ caching skipped — ${reason}\n`);
+            queueNotice(task.id, `ⓘ caching skipped — ${reason}\n`);
         },
 
         printSelfModifyingSkip(task: Task, modifiedFiles: string[]): void {
-            store.addOutput(task.id, `ⓘ caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})\n`);
+            queueNotice(task.id, `ⓘ caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})\n`);
         },
 
         printTaskTerminalOutput(task: Task, _status: TaskStatus, output: string): void {

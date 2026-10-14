@@ -69,7 +69,7 @@ const doctorOptionDefinitions = {
     },
     strict: {
         defaultValue: false,
-        description: "With --exit-code: also fail on outdated and duplicate deps",
+        description: "With --exit-code: also fail on outdated and duplicate deps, runtime warnings and uncovered env",
         type: Boolean,
     },
 } as const;

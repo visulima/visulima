@@ -40,6 +40,10 @@ vis create gitlab:company/templates/node-service
 vis create bitbucket:team/starter
 vis create https://github.com/user/repo/tree/main/packages/template
 
+# Organization templates (picker over @acme/create's manifest)
+vis create @acme
+vis create @acme:service my-svc
+
 # Show available templates
 vis create --list
 ```
@@ -66,17 +70,25 @@ vis create --list
 
 Templates can be downloaded from any git host using [giget](https://github.com/unjs/giget):
 
-| Format              | Example                                        |
-| ------------------- | ---------------------------------------------- |
-| GitHub shorthand    | `user/repo`                                    |
-| GitHub with branch  | `user/repo#dev`                                |
-| GitHub subdirectory | `user/repo/tree/main/packages/template`        |
-| GitLab              | `gitlab:group/repo`                            |
-| Bitbucket           | `bitbucket:team/repo`                          |
-| Sourcehut           | `sourcehut:~user/repo`                         |
-| SSH                 | `git:git@github.com:user/repo`                 |
-| Full URL            | `https://github.com/user/repo`                 |
-| Tarball URL         | `https://example.com/templates/starter.tar.gz` |
+| Format                 | Example                                        |
+| ---------------------- | ---------------------------------------------- |
+| GitHub shorthand       | `user/repo`                                    |
+| GitHub with branch     | `user/repo#dev`                                |
+| GitHub subdirectory    | `user/repo/tree/main/packages/template`        |
+| GitLab                 | `gitlab:group/repo`                            |
+| GitLab nested groups   | `gitlab:group/subgroup/repo`                   |
+| Self-hosted GitLab     | `gitlab://git.example.com/group/repo`          |
+| Bitbucket              | `bitbucket:team/repo`                          |
+| Sourcehut              | `sourcehut:~user/repo`                         |
+| Full URL (known hosts) | `https://gitlab.com/group/repo`                |
+| Host without scheme    | `github.com/user/repo`, `git.sr.ht/~user/repo` |
+| SSH (any host)         | `git@git.example.com:group/repo`               |
+| Forced SSH clone       | `git:git@github.com:user/repo`                 |
+| Tarball URL            | `https://example.com/templates/starter.tar.gz` |
+
+Full URLs and `host/owner/repo` forms for GitHub, GitLab, Bitbucket, and Sourcehut are rewritten to the matching provider before download, and `tree/<ref>/<subdir>` paths become a subdirectory plus a ref. Any other `https://` URL is treated as a tarball.
+
+`git@host:group/repo` on a host other than GitHub, GitLab.com, Bitbucket, or Sourcehut clones over SSH with your own git credentials (keys or agent), which is the way to reach other private or self-hosted servers. On the four known hosts the same form downloads an archive with the host's token; prefix it with `git:` (`git:git@github.com:user/repo`) to force an SSH clone. Self-hosted GitLab (`gitlab://host/…`) downloads the repository archive over HTTPS from that host. `GITLAB_TOKEN` is not sent there, since it belongs to gitlab.com; for a private project set `create.auth` or `GIGET_AUTH`, or put a token in the URL.
 
 ### Private Repositories
 
@@ -92,6 +104,8 @@ export GITLAB_TOKEN=glpat-...
 # Bitbucket
 export BITBUCKET_TOKEN=...
 ```
+
+Each token is only sent to its own host: `GITHUB_TOKEN` (or `GH_TOKEN`) to GitHub, `GITLAB_TOKEN` to GitLab, `BITBUCKET_TOKEN` to Bitbucket. Tarball URLs receive no token unless you set `create.auth` or `GIGET_AUTH`.
 
 Or pass a token inline via URL:
 
@@ -140,6 +154,9 @@ export default defineConfig({
         // Skip the PM prompt — always use pnpm
         defaultPm: "pnpm",
 
+        // A bare `vis create` opens the picker for this organization's templates
+        defaultTemplate: "@acme",
+
         // Auto-generate VS Code config
         defaultEditor: "vscode",
 
@@ -179,6 +196,57 @@ vis create internal my-svc  # → gitlab:company/templates/node-service
 # Show all aliases
 vis create --list
 ```
+
+`create.defaultTemplate` sets the template for a bare `vis create`. Any template input works, including an organization (`"@acme"` or `"@acme:app"`). In a terminal the other prompts (name, directory, package manager, and so on) still run, minus the template step.
+
+## Organization Templates
+
+An organization can publish its own set of templates under its npm scope. `vis create @acme` resolves the package `@acme/create`:
+
+- If it declares a `createConfig.templates` manifest, vis shows a picker over the templates and runs the chosen one.
+- If it has no manifest, `@acme` runs `@acme/create` as an ordinary create-\* package, exactly as before.
+
+```bash
+vis create @acme                  # picker in a terminal; lists the templates and exits in CI
+vis create @acme:service my-svc   # run one entry directly, no picker
+vis create @acme --list           # print the templates
+```
+
+### Authoring `@acme/create`
+
+Add a `createConfig.templates` array to the package's `package.json`:
+
+```json
+{
+    "name": "@acme/create",
+    "version": "1.0.0",
+    "createConfig": {
+        "templates": [
+            { "name": "app", "description": "Web app with our defaults", "source": { "kind": "npm", "package": "@acme/create-app" } },
+            { "name": "service", "description": "Node service", "source": { "kind": "git", "url": "github:acme/service-template" } },
+            { "name": "lib", "description": "Shared library", "source": { "kind": "bundled", "path": "templates/lib" } }
+        ]
+    }
+}
+```
+
+The map form is also accepted: `"templates": { "app": { "description": "...", "source": { ... } } }`.
+
+Each entry has a `name`, a `description`, and a `source`. The source kinds are:
+
+| `source.kind` | Field     | Behaviour                                                                                                                                                                                |
+| ------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm`         | `package` | A package name without a version or flags, run like `vis create <package>`. It is used as written, without the `create-` shorthand expansion.                                            |
+| `git`         | `url`     | A `github:`, `gitlab:`, `bitbucket:` or `sourcehut:` source (host URLs for those providers also work). Downloaded like any git template. Raw `git:` clones and tarball URLs are refused. |
+| `bundled`     | `path`    | A directory inside `@acme/create`, copied out of the published tarball. The path is relative and made of plain segments. Symlinks are not copied.                                        |
+
+Validation is strict, because the manifest comes from the registry:
+
+- At most 50 templates. Names are unique, at most 64 characters, match `[a-z0-9][a-z0-9._-]*`, and cannot contain `/`, `\`, `:`, or a leading `_`, `-` or `.`.
+- Descriptions are 1 to 200 characters. Control characters are removed.
+- An invalid manifest fails the command. vis does not fall back to running `@acme/create`.
+
+The manifest is read from the registry configured for the `@acme` scope in `.npmrc`, falling back to the public npm registry, and uses the same `_authToken` you use for `npm install`. Bundled templates download the package tarball without credentials, so they need a publicly downloadable package.
 
 ## Monorepo Awareness
 

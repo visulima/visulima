@@ -1,6 +1,5 @@
 import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
-import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
@@ -13,6 +12,7 @@ import { pail } from "../../io/logger";
 import { SYMBOLS } from "../../io/symbols";
 import { applyOverrides, readLockfileText } from "../../pm/overrides";
 import { detectPm, runInstall } from "../../pm/pm-runner";
+import { checkProjectEnvironment } from "../../runtime/env-consistency";
 import type { RuntimeFinding } from "../../runtime/runtime-check";
 import { checkRuntimeVersions } from "../../runtime/runtime-check";
 import { killOrphanedRunners, ORPHANS_DIAGNOSTIC_ID, runRuntimeDiagnostics } from "../../runtime/runtime-diagnostics";
@@ -38,6 +38,8 @@ import {
     markCodemodAvailability,
     runCodemod,
 } from "../optimize/handler";
+import type { EnvCoveragePosture } from "./env-coverage";
+import { buildEnvCoveragePosture, describeEnvCoverage } from "./env-coverage";
 import { applyFilter, filterFindingsByPattern, parseFilterPatterns } from "./filter";
 import type { DoctorOptions } from "./index";
 import type { DoctorResults, SectionId, SectionStatus } from "./sections";
@@ -116,6 +118,7 @@ const buildSectionFindings = (section: SectionId, payload: Pick<DoctorResults, "
     const partial: DoctorResults = {
         duplicates: payload.duplicates,
         elapsedMs: 0,
+        envCoverage: { status: "ok", targets: [] },
         installedCount: 0,
         optimizations: payload.optimizations,
         outdated: payload.outdated,
@@ -138,7 +141,7 @@ const buildSectionFindings = (section: SectionId, payload: Pick<DoctorResults, "
  * Async scans gate on the active section set so `--only security` skips
  * the e18e/socket-override fan-out entirely.
  */
-const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "elapsedMs">> => {
+const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "elapsedMs" | "envCoverage">> => {
     const { filterPatterns, installed, progress, resolveCodemods, sections, store, visConfig, workspaceRoot } = context;
     const wantsDeps = sections.has("dependencies");
     const wantsSec = sections.has("security");
@@ -148,7 +151,8 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
         filterFindingsByPattern(buildSectionFindings(section, payload), filterPatterns);
 
     const pm = detectPm(workspaceRoot);
-    const { packageManager } = findPackageManagerSync(workspaceRoot);
+    // `detectPm` is tolerant; the strict lookup throws in a workspace that has no lockfile yet.
+    const packageManager = pm.name;
 
     // Collect deps across workspaces (shared by outdated + optimize scans)
     const rootDeps = collectDepsFromPkgJson(join(workspaceRoot, "package.json"), false);
@@ -195,7 +199,7 @@ const streamScans = async (context: ScanContext): Promise<Omit<DoctorResults, "e
     const e18eNames = new Set(e18eEntries.map((e) => e.packageName));
     const dedupedSocket = socketOverrideEntries.filter((e) => !e18eNames.has(e.packageName));
     const allOptimizations = [...e18eEntries, ...dedupedSocket];
-    const runtime = wantsRuntime ? runRuntimeDiagnostics(workspaceRoot) : [];
+    const runtime = wantsRuntime ? [...runRuntimeDiagnostics(workspaceRoot), ...checkProjectEnvironment(workspaceRoot)] : [];
 
     // Mark sections running so the TUI tabs show spinners straight away.
     // The messages are rendered as a single dim activity line beneath
@@ -685,6 +689,26 @@ const displaySupplyChain = (results: DoctorResults): void => {
     }
 };
 
+/**
+ * Render the env-coverage section: one line per target with the referenced
+ * names no cache key covers and the config keys that would cover them. Shown
+ * only when there is a gap, so a clean workspace prints nothing.
+ */
+const displayEnvCoverage = (results: DoctorResults): void => {
+    const lines = describeEnvCoverage(results.envCoverage);
+
+    if (lines.length === 0) {
+        return;
+    }
+
+    pail.log("");
+    pail.log(heading("Env Coverage", "warn"));
+
+    for (const line of lines) {
+        pail.log(itemWarn(line));
+    }
+};
+
 const displayRuntime = (results: DoctorResults): void => {
     if (!results.sections.has("runtime")) {
         return;
@@ -786,6 +810,7 @@ const displayResults = (results: DoctorResults, quiet: boolean): void => {
         displayOptimization(results);
         displayRuntime(results);
         displaySupplyChain(results);
+        displayEnvCoverage(results);
     }
 
     displaySummary(results, quiet);
@@ -895,7 +920,8 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
     // Pre-scan: cheap surveys we need before deciding which scan rows
     // to draw. Lockfile parse is ~80ms even on large monorepos.
 
-    const catalogs = readCatalogs(wsRoot, findPackageManagerSync(wsRoot).packageManager);
+    // `pm` is already detected above; a second strict lookup throws in a workspace that has no lockfile yet.
+    const catalogs = readCatalogs(wsRoot, pm.name);
     const installed = lockedPackages(wsRoot, pm.name);
     const installedCount = installed.length;
     const socketEnabled = buildEnabledProviders(visConfig?.security).length > 0;
@@ -948,7 +974,7 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
     const cachedResults = cacheKey ? readDoctorCache(cacheKey) : undefined;
     const cacheHit = cachedResults !== undefined;
 
-    let scanResults: Omit<DoctorResults, "elapsedMs">;
+    let scanResults: Omit<DoctorResults, "elapsedMs" | "envCoverage">;
     let pendingAction: ReturnType<DoctorStore["getSnapshot"]>["pendingAction"];
 
     if (wantsInteractive) {
@@ -1010,7 +1036,19 @@ const execute = async ({ fs, logger, options, visConfig, visConfigError, workspa
         }
     }
 
-    const fullResults: DoctorResults = { ...scanResults, elapsedMs: Date.now() - startedAt };
+    // Computed on every run, cache hits included: a project.json edit does not
+    // change the doctor cache key, so a cached copy could be stale.
+    const fullResults: DoctorResults = {
+        ...scanResults,
+        elapsedMs: Date.now() - startedAt,
+        // A discovery failure (a duplicated project name, an overlay that does not load) must not
+        // discard the security results above, so the section is left empty with a warning.
+        envCoverage: await buildEnvCoveragePosture(visConfig ?? {}, wsRoot).catch((error: unknown): EnvCoveragePosture => {
+            pail.warn(`Env coverage check failed: ${error instanceof Error ? error.message : String(error)}`);
+
+            return { status: "ok", targets: [] };
+        }),
+    };
 
     // Cache the full unfiltered results so a later run with a different
     // --filter still hits cache. Filtering happens post-cache.

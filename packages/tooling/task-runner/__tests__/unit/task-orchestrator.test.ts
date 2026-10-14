@@ -1,14 +1,16 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Cache } from "../../src/cache";
+import { FileAccessTracker } from "../../src/file-access-tracker";
 import { EmptyLifeCycle } from "../../src/life-cycle";
 import { InProcessTaskHasher } from "../../src/task-hasher";
 import { TaskOrchestrator } from "../../src/task-orchestrator";
 import { TaskScheduler } from "../../src/task-scheduler";
+import { TrackedTaskExecutor } from "../../src/tracked-executor";
 import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskResult, TaskStatus } from "../../src/types";
 
 const createTemporaryDirectory = async (): Promise<string> => {
@@ -53,6 +55,7 @@ describe(TaskOrchestrator, () => {
             dependencies?: Record<string, string[]>;
             dryRun?: boolean;
             lifeCycle?: LifeCycleInterface;
+            resolveChildEnv?: (task: Task, context: { cwd: string }) => { env?: Record<string, string>; inheritEnv?: boolean } | undefined;
             resolveCommand?: (task: Task) => string | undefined;
             skipCache?: boolean;
         } = {},
@@ -87,6 +90,7 @@ describe(TaskOrchestrator, () => {
             cache,
             dryRun: options.dryRun,
             lifeCycle,
+            resolveChildEnv: options.resolveChildEnv,
             resolveCommand: options.resolveCommand,
             scheduler,
             skipCache: options.skipCache,
@@ -956,6 +960,144 @@ describe(TaskOrchestrator, () => {
             const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
 
             expect(cached).toBeUndefined();
+        });
+    });
+
+    describe("trace key upgrade", () => {
+        const task: Task = {
+            id: "app:build",
+            outputs: [],
+            overrides: {},
+            projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
+        };
+
+        // A real command that reads a workspace file, so the tracker records a non-empty fingerprint. The path is an
+        // argument, not source text: a Windows path inside a JS string literal reads as escape sequences.
+        const readsSource = (): string => `node -e "require('fs').readFileSync(process.argv[1])" "${join(workspaceRoot, "packages/app/src/index.ts")}"`;
+
+        const runStatus = async (): Promise<string | undefined> => {
+            const results = await createOrchestrator([task], successExecutor, { autoFingerprint: true, resolveCommand: readsSource }).run();
+
+            return results.get("app:build")?.status;
+        };
+
+        // Replant the entry the way an older release stored it: under a different key, with no tracker kind.
+        const storeAsLegacyEntry = async (mutate?: (fileHashes: Record<string, string>) => void): Promise<void> => {
+            const cache = new Cache({ workspaceRoot });
+            const stored = await cache.getByTaskId("app:build");
+
+            expect(stored?.fingerprint).toBeDefined();
+
+            const legacy = { ...stored!.fingerprint! };
+
+            delete legacy.tracker;
+
+            const fileHashes = { ...legacy.fileHashes };
+
+            mutate?.(fileHashes);
+            await cache.put("legacy-pre-tracker-key", stored!.terminalOutput, task.outputs, stored!.code, { ...legacy, fileHashes });
+            await cache.setTaskIndex("app:build", "legacy-pre-tracker-key");
+        };
+
+        it("still hits an entry stored under a key from before the tracker kind was added", async () => {
+            expect.assertions(4);
+
+            await expect(runStatus()).resolves.toBe("success");
+
+            await storeAsLegacyEntry();
+
+            // The lookup goes through the task index and validates the recorded file hashes; it never recomputes the key.
+            await expect(runStatus()).resolves.toBe("local-cache");
+
+            const indexed = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(indexed?.hash).toBe("legacy-pre-tracker-key");
+        });
+
+        it("still misses when a recorded file changed, so the hit above is real validation", async () => {
+            expect.assertions(3);
+
+            await expect(runStatus()).resolves.toBe("success");
+
+            await storeAsLegacyEntry((fileHashes) => {
+                for (const key of Object.keys(fileHashes)) {
+                    fileHashes[key] = "stale";
+                }
+            });
+
+            await expect(runStatus()).resolves.toBe("success");
+        });
+
+        it("misses with tracker-changed when the stored trace came from another tracker, then hits once re-stored", async () => {
+            expect.assertions(5);
+
+            await expect(runStatus()).resolves.toBe("success");
+
+            // Keep the recorded file hashes valid, so only the tracker differs.
+            const expected = new TrackedTaskExecutor(workspaceRoot).trackerKindFor(readsSource());
+            const cache = new Cache({ workspaceRoot });
+            const stored = await cache.getByTaskId("app:build");
+
+            await cache.put("other-tracker-key", stored!.terminalOutput, task.outputs, stored!.code, {
+                ...stored!.fingerprint!,
+                tracker: expected === "preload" ? "iat" : "preload",
+            });
+            await cache.setTaskIndex("app:build", "other-tracker-key");
+
+            const results = await createOrchestrator([task], successExecutor, { autoFingerprint: true, resolveCommand: readsSource }).run();
+            const result = results.get("app:build");
+
+            expect(result?.status).toBe("success");
+            expect(result?.cacheMissReasons).toStrictEqual([expect.objectContaining({ type: "tracker-changed" })]);
+
+            // The re-run stored its entry under the predicted tracker, so the same kind hits next time.
+            await expect(runStatus()).resolves.toBe("local-cache");
+            await expect(new Cache({ workspaceRoot }).getByTaskId("app:build")).resolves.toMatchObject({ fingerprint: { tracker: expected } });
+        });
+    });
+
+    describe("clean child environment on a traced task", () => {
+        it("hits the cache on the second run instead of missing on a predicted tracker", async () => {
+            expect.assertions(3);
+
+            // Pretend a native tracker exists: an inherit run would predict it, a clean run never uses it.
+            // Without this the host may have no native tracker and the prediction cannot go wrong.
+            vi.spyOn(FileAccessTracker.prototype, "isSupported").mockReturnValue(false);
+            vi.spyOn(FileAccessTracker.prototype, "isStraceAvailable").mockReturnValue(false);
+            vi.spyOn(FileAccessTracker.prototype, "isInterposeSupported").mockReturnValue(true);
+            vi.spyOn(FileAccessTracker.prototype, "isIatHookSupported").mockReturnValue(false);
+
+            const task: Task = {
+                id: "app:build",
+                outputs: [],
+                overrides: {},
+                projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
+            };
+            // A direct command (no shell syntax), the only shape a native tracker would be predicted for.
+            const script = join(workspaceRoot, "read-source.cjs");
+
+            await writeFile(script, `require("node:fs").readFileSync(${JSON.stringify(join(workspaceRoot, "packages/app/src/index.ts"))});\n`);
+
+            const command = `node ${script}`;
+            const clean = { env: { PATH: process.env["PATH"] ?? "" }, inheritEnv: false };
+            const runStatus = async (): Promise<string | undefined> => {
+                const results = await createOrchestrator([task], successExecutor, { autoFingerprint: true, resolveChildEnv: () => clean, resolveCommand: () => command }).run();
+
+                return results.get("app:build")?.status;
+            };
+
+            await expect(runStatus()).resolves.toBe("success");
+            // A clean run skips the native trackers, so the stored tracker must be validated
+            // against the tracker a clean run really uses, not the one an inherit run would pick.
+            await expect(runStatus()).resolves.toBe("local-cache");
+
+            const cached = await new Cache({ workspaceRoot }).getByTaskId("app:build");
+
+            expect(cached?.fingerprint?.tracker).toBe("preload");
+
+            vi.restoreAllMocks();
         });
     });
 

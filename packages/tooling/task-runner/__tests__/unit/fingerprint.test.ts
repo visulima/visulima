@@ -5,7 +5,94 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { FileAccess } from "../../src/file-access-tracker";
-import { FingerprintManager } from "../../src/fingerprint";
+import { FingerprintManager, hashFingerprint } from "../../src/fingerprint";
+
+describe(hashFingerprint, () => {
+    let workspaceRoot: string;
+
+    beforeEach(async () => {
+        workspaceRoot = await createTemporaryDirectory();
+        await mkdir(join(workspaceRoot, "src"), { recursive: true });
+        await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 1;");
+    });
+
+    afterEach(async () => {
+        await rm(workspaceRoot, { force: true, recursive: true });
+    });
+
+    it("gives the same key for identical observations from the same tracker", async () => {
+        expect.assertions(1);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const first = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const second = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+
+        expect(hashFingerprint(first)).toBe(hashFingerprint(second));
+    });
+
+    it("gives a different key when the tracker kind differs for the same observations", async () => {
+        expect.assertions(1);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const strace = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const preload = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "preload");
+
+        expect(hashFingerprint(strace)).not.toBe(hashFingerprint(preload));
+    });
+
+    it("keeps the trace key of an ordinary fingerprint unchanged", () => {
+        expect.assertions(2);
+
+        // Pinned against the key stored by earlier releases: a change here misses every existing trace entry.
+        expect(
+            hashFingerprint({
+                commandHash: "cmd-hash",
+                directoryListings: { "packages/app/src": ["a.ts", "b.ts"] },
+                envHashes: { FOO: "env-hash" },
+                fileHashes: { "packages/app/input.txt": "file-hash-1", "packages/app/src/index.ts": "file-hash-2" },
+                missingFiles: ["packages/app/missing.txt"],
+                tracker: "preload",
+            }),
+        ).toBe("95ae40c39207e16b798bfaa1524a2cdf");
+        expect(
+            hashFingerprint({
+                commandHash: "cmd-hash",
+                directoryListings: {},
+                envHashes: {},
+                fileHashes: { "packages/app/input.txt": "file-hash-1" },
+                missingFiles: [],
+            }),
+        ).toBe("613174d04d97304355cdc10cd03dfa69");
+    });
+
+    it("folds the predecessor's trace key into the key of a chained fingerprint", async () => {
+        expect.assertions(3);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const unchained = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "strace");
+        const first = { ...unchained, chainKey: "segment-one-key" };
+        const second = { ...unchained, chainKey: "segment-one-key-moved" };
+
+        expect(hashFingerprint(first)).not.toBe(hashFingerprint(unchained));
+        expect(hashFingerprint(first)).not.toBe(hashFingerprint(second));
+        expect(hashFingerprint({ ...first })).toBe(hashFingerprint(first));
+    });
+
+    it("records the tracker kind on the fingerprint", async () => {
+        expect.assertions(2);
+
+        const manager = new FingerprintManager(workspaceRoot);
+        const accesses: FileAccess[] = [{ path: join(workspaceRoot, "src/index.ts"), type: "read" }];
+        const tagged = await manager.createFingerprint(accesses, "build", {}, {}, [], [], "interpose");
+        const untagged = await manager.createFingerprint(accesses, "build", {}, {});
+
+        expect(tagged.tracker).toBe("interpose");
+        expect(untagged).not.toHaveProperty("tracker");
+    });
+});
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -223,6 +310,35 @@ describe(FingerprintManager, () => {
         });
     });
 
+    describe("validateChain", () => {
+        const base = { commandHash: "c", directoryListings: {}, envHashes: {}, fileHashes: {}, missingFiles: [] };
+
+        it("accepts a chained entry whose predecessor key is unchanged", () => {
+            expect.assertions(1);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, "k1")).toBeUndefined();
+        });
+
+        it("rejects a chained entry whose predecessor key moved", () => {
+            expect.assertions(1);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, "k2")).toMatchObject({ currentHash: "k2", previousHash: "k1", type: "chain-changed" });
+        });
+
+        it("rejects an entry without a chain key for a chained lookup, and the reverse", () => {
+            expect.assertions(2);
+
+            const manager = new FingerprintManager(workspaceRoot);
+
+            expect(manager.validateChain(base, "k1")).toMatchObject({ type: "chain-changed" });
+            expect(manager.validateChain({ ...base, chainKey: "k1" }, undefined)).toMatchObject({ type: "chain-changed" });
+        });
+    });
+
     describe("validateCommand", () => {
         it("should return null when command matches", async () => {
             expect.assertions(1);
@@ -283,6 +399,35 @@ describe(FingerprintManager, () => {
 
             expect(fingerprint.modifiedInputs).toHaveLength(1);
             expect(fingerprint.modifiedInputs?.[0]).toBe("round.txt");
+        });
+
+        it("keys an unset env name apart from the same name set to an empty string", async () => {
+            expect.assertions(2);
+
+            const unset = await manager.createFingerprint([], "app:build", {}, {}, ["FP_TEST_UNSET"]);
+            const empty = await manager.createFingerprint([], "app:build", {}, { FP_TEST_UNSET: "" }, ["FP_TEST_UNSET"]);
+
+            expect(unset.envHashes["FP_TEST_UNSET"]).toBeDefined();
+            expect(unset.envHashes["FP_TEST_UNSET"]).not.toBe(empty.envHashes["FP_TEST_UNSET"]);
+        });
+
+        it("reports an env change when a name goes from unset to empty, and reads the env it is given", async () => {
+            expect.assertions(3);
+
+            const fingerprint = await manager.createFingerprint([], "app:build", {}, { FP_TEST_VALUE: "a" }, ["FP_TEST_VALUE"]);
+
+            // Same value in the given env: a hit, even though the parent process does not set it.
+            await expect(manager.validate(fingerprint, { FP_TEST_VALUE: "a" })).resolves.toBeUndefined();
+
+            // A different value in the given env: a miss with the env name as the detail.
+            const changed = await manager.validate(fingerprint, { FP_TEST_VALUE: "b" });
+
+            expect(changed?.[0]).toStrictEqual(expect.objectContaining({ detail: "FP_TEST_VALUE", type: "env-changed" }));
+
+            // Unset in the given env is a different state from an empty value.
+            const empty = await manager.validate(fingerprint, { FP_TEST_VALUE: undefined });
+
+            expect(empty?.[0]).toStrictEqual(expect.objectContaining({ type: "env-changed" }));
         });
 
         it("omits modifiedInputs when a path was only read", async () => {

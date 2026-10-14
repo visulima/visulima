@@ -22,6 +22,7 @@ vis pm publish --dry-run      # preview publishing
 vis pm list --depth 0         # list direct dependencies
 vis pm audit                  # run security audit
 vis pm whoami                 # show logged-in user
+vis pm pkg get name           # read a package.json field (any PM)
 vis pm plugin list            # yarn berry plugins (no-op on other PMs)
 ```
 
@@ -35,6 +36,8 @@ Some subcommands move between namespaces or were removed entirely depending on t
 
 | Subcommand                            | Substitution                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------- |
+| `pkg` (bun)                           | rewrites to `bun pm pkg`                                                   |
+| `pkg` (yarn, deno)                    | falls back to `npm pkg` (it only edits `package.json`)                     |
 | `whoami` (pnpm 11)                    | falls back to `npm whoami` (pnpm 11 removed `whoami`)                      |
 | `whoami` (yarn berry)                 | rewrites to `yarn npm whoami`                                              |
 | `whoami` (bun)                        | rewrites to `bun pm whoami`                                                |

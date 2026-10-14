@@ -81,6 +81,7 @@
                 "guides/attested-cache",
                 "guides/shell-alias",
                 "guides/ai-integration",
+                "guides/ide-integration",
                 "guides/release",
                 "guides/release-ci",
                 "guides/release-staged-publishing",

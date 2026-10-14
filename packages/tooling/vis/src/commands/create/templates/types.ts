@@ -1,11 +1,14 @@
-export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:git" | "remote:npm";
+export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:bundled" | "remote:git" | "remote:npm";
 
 export interface TemplateConfig {
     /** Extra CLI arguments forwarded to the template runner. */
     args: string[];
 
-    /** The npm package name (for remote:npm) or git URL (for remote:git). */
+    /** The npm package name (for remote:npm), git URL (for remote:git), or package tarball URL (for remote:bundled). */
     source: string;
+
+    /** Package-relative directory to scaffold from (for remote:bundled, already validated). */
+    subdir?: string;
 
     /** What kind of template this is. */
     type: TemplateType;
@@ -17,6 +20,8 @@ export interface CreateConfig {
     defaultEditor?: "vscode";
     defaultPm?: "bun" | "deno" | "npm" | "pnpm" | "yarn";
     defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
+    /** Template used by a bare `vis create`. Accepts any template input, including `@org` / `@org:name`. */
+    defaultTemplate?: string;
     gitInit?: boolean;
     install?: boolean;
     preferOffline?: boolean;

@@ -10,10 +10,10 @@
  */
 
 import { relative } from "@visulima/path";
-import { downloadTemplate } from "giget";
 
 import { pail } from "../../../io/logger";
 import { runDlx } from "../../../pm/pm-runner";
+import { downloadGitSource } from "../../../util/git-source";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
 interface AutoFix {
@@ -136,8 +136,8 @@ export const executeRemoteGit = async (config: TemplateConfig, context: Executio
     pail.info(`Downloading template from ${config.source}...`);
 
     try {
-        const result = await downloadTemplate(config.source, {
-            auth: createConfig?.auth || process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
+        const result = await downloadGitSource(config.source, {
+            auth: createConfig?.auth,
             dir: context.targetDir,
             // force: true is safe here — the caller (index.ts) already validated
             // the target directory is empty via canSafelyOverwrite() before reaching
@@ -155,6 +155,10 @@ export const executeRemoteGit = async (config: TemplateConfig, context: Executio
         const message = error instanceof Error ? error.message : String(error);
 
         pail.warn(`Failed to download template: ${message}`);
+
+        if (/\b(?:401|403|404)\b/.test(message)) {
+            pail.warn("Private or self-hosted repository? Set GITHUB_TOKEN, GITLAB_TOKEN or BITBUCKET_TOKEN, or use an SSH source such as git:git@host:group/repo.");
+        }
 
         return 1;
     }

@@ -4,6 +4,7 @@
  */
 
 import { executeBuiltin } from "./builtin";
+import { executeBundledTemplate } from "./bundled";
 import { executeGeneratorTemplate } from "./generator";
 import { executeMonorepoTemplate } from "./monorepo";
 import { executeRemoteGit, executeRemoteNpm } from "./remote";
@@ -26,6 +27,9 @@ export const executeTemplate = async (config: TemplateConfig, context: Execution
         }
         case "builtin:monorepo": {
             return executeMonorepoTemplate(context);
+        }
+        case "remote:bundled": {
+            return executeBundledTemplate(config, context);
         }
         case "remote:git": {
             return executeRemoteGit(config, context);

@@ -10,6 +10,8 @@ import { isValidRunId } from "../validation";
 
 interface RunSummary {
     [key: string]: unknown;
+    /** The run id vis writes; `runId` is the older spelling. */
+    id?: string;
     runId?: string;
     tasks?: { [key: string]: unknown; taskId?: string }[];
 }
@@ -46,10 +48,10 @@ export const registerGetRunLogs = ({ server }: ToolDeps, context: ToolContext): 
                     const task = summary.tasks?.find((entry) => entry.taskId === taskId);
 
                     if (!task) {
-                        return errorResponse(new Error(`Task "${taskId}" not found in run "${summary.runId ?? "(unknown)"}".`));
+                        return errorResponse(new Error(`Task "${taskId}" not found in run "${summary.id ?? summary.runId ?? runId ?? "(unknown)"}".`));
                     }
 
-                    return okResponse({ runId: summary.runId, task });
+                    return okResponse({ runId: summary.id ?? summary.runId ?? runId, task });
                 }
 
                 return okResponse(summary);

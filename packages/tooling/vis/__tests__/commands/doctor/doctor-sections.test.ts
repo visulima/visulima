@@ -27,6 +27,7 @@ const baseResults = (overrides: Partial<DoctorResults> = {}): DoctorResults => {
     return {
         duplicates: [],
         elapsedMs: 0,
+        envCoverage: { status: "ok", targets: [] },
         installedCount: 0,
         optimizations: [],
         outdated: [],

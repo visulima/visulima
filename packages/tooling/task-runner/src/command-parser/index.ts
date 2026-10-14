@@ -70,4 +70,6 @@ export { expandShortcut } from "./expand-shortcut";
 export type { TokenContext } from "./expand-tokens";
 export { expandTokens, expandTokensInString } from "./expand-tokens";
 export { expandWildcard } from "./expand-wildcard";
+export type { CompoundSplit } from "./split-compound";
+export { splitCompoundCommand } from "./split-compound";
 export { stripQuotes } from "./strip-quotes";

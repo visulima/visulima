@@ -1,14 +1,78 @@
 import { readdir, stat } from "node:fs/promises";
 
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher } from "@shared/xxh3";
 import { relative, resolve } from "@visulima/path";
 
-import type { FileAccess } from "./file-access-tracker";
+import type { FileAccess, TrackerKind } from "./file-access-tracker";
 import { hashFile, hashStrings, sortObjectKeys } from "./utils";
+
+/**
+ * Compiles one env-var pattern. A pattern is an exact name, or a name in
+ * which each `*` matches any run of characters (`VITE_*`, `*_TOKEN`).
+ */
+const envPatternToRegExp = (pattern: string): RegExp =>
+    new RegExp(
+        `^${pattern
+            .split("*")
+            .map((part) => part.replaceAll(/[$()+.?[\\\]^{|}]/gu, String.raw`\$&`))
+            .join(".*")}$`,
+        "u",
+    );
+
+/**
+ * Returns a predicate that is true when an env-var name matches any of
+ * `patterns`. An empty list matches nothing.
+ */
+export const createEnvMatcher = (patterns: ReadonlyArray<string>): ((name: string) => boolean) => {
+    const matchers = patterns.map(envPatternToRegExp);
+
+    return (name: string): boolean => matchers.some((matcher) => matcher.test(name));
+};
+
+/**
+ * Expands env-var patterns against `envVariables`. Exact names are kept
+ * even when unset (so an absent variable still hashes as absent).
+ */
+export const resolveEnvPatterns = (patterns: ReadonlyArray<string>, envVariables: Record<string, string | undefined>): Record<string, string | undefined> => {
+    const result: Record<string, string | undefined> = {};
+
+    for (const pattern of patterns) {
+        if (pattern.includes("*")) {
+            const matcher = envPatternToRegExp(pattern);
+
+            for (const [key, value] of Object.entries(envVariables)) {
+                if (matcher.test(key)) {
+                    result[key] = value;
+                }
+            }
+        } else {
+            result[pattern] = envVariables[pattern];
+        }
+    }
+
+    return result;
+};
+
+/**
+ * The key signature of one env value: presence-distinct, so an unset name, an
+ * empty value and a set value each key differently. Same scheme as the declared
+ * hasher's `envSignature`.
+ */
+export const envValueHash = (name: string, value: string | undefined): string => hashStrings(`${name}=${value === undefined ? "0:" : `1:${value}`}`);
 
 /**
  * Represents a stored fingerprint for a task execution.
  */
 export interface TaskFingerprint {
+    /**
+     * The trace key of the previous segment of a `splitCompound` chain. It is
+     * folded into the key ({@link hashFingerprint}) and checked on lookup
+     * ({@link FingerprintManager.validateChain}), so a segment is not served
+     * when the segment before it moved. Absent on every other task, which
+     * keeps their keys unchanged.
+     */
+    chainKey?: string;
     /** Hash of the command arguments */
     commandHash: string;
     /** Directory listings recorded during execution (path -> sorted entries) */
@@ -17,6 +81,7 @@ export interface TaskFingerprint {
     envHashes: Record<string, string>;
     /** Content hashes of files that were read during execution */
     fileHashes: Record<string, string>;
+
     /** Paths of files that were probed but didn't exist (ENOENT) */
     missingFiles: string[];
 
@@ -29,6 +94,13 @@ export interface TaskFingerprint {
      * and trigger false cache hits.
      */
     modifiedInputs?: string[];
+
+    /**
+     * Which mechanism observed the accesses. Part of the trace key
+     * ({@link hashFingerprint}), so the same workspace traced by a different
+     * tracker does not produce the same key.
+     */
+    tracker?: TrackerKind;
 }
 
 /**
@@ -38,8 +110,105 @@ export interface CacheMissReason {
     currentHash?: string;
     detail: string;
     previousHash?: string;
-    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
+    type:
+        | "file-changed"
+        | "file-created"
+        | "file-deleted"
+        | "directory-changed"
+        | "env-changed"
+        | "args-changed"
+        | "no-fingerprint"
+        | "declared-changed"
+        | "tracker-changed"
+        | "chain-changed";
 }
+
+/**
+ * The trace key: a digest of everything a {@link TaskFingerprint} records.
+ * Two fingerprints get the same key only if they agree on the command, every
+ * observed file hash, missing and listed paths, env values, and the tracker
+ * kind that produced them.
+ */
+export const hashFingerprint = (fingerprint: TaskFingerprint): string => {
+    const hash = createXxh3Hasher();
+
+    hash.update(fingerprint.commandHash);
+
+    for (const key of Object.keys(fingerprint.fileHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.fileHashes[key] as string);
+    }
+
+    for (const path of fingerprint.missingFiles) {
+        hash.update(`missing:${path}`);
+    }
+
+    for (const key of Object.keys(fingerprint.directoryListings).toSorted()) {
+        hash.update(`dir:${key}`);
+        hash.update(JSON.stringify(fingerprint.directoryListings[key]));
+    }
+
+    for (const key of Object.keys(fingerprint.envHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.envHashes[key] as string);
+    }
+
+    hash.update(`tracker:${fingerprint.tracker ?? ""}`);
+
+    // Only a chained segment carries a chain key, so ordinary keys stay as they were.
+    if (fingerprint.chainKey !== undefined) {
+        hash.update(`chain:${fingerprint.chainKey}`);
+    }
+
+    return hash.digest();
+};
+
+/**
+ * One-line, human-readable explanation of a cache miss reason.
+ */
+export const describeCacheMissReason = (reason: CacheMissReason): string => {
+    switch (reason.type) {
+        case "args-changed": {
+            return "Command arguments changed";
+        }
+
+        case "chain-changed": {
+            return "Previous segment changed: its trace key moved, so this segment re-runs";
+        }
+
+        case "declared-changed": {
+            return "Declared inputs changed (the run was keyed on its declared hash)";
+        }
+
+        case "directory-changed": {
+            return `Directory contents changed: ${reason.detail}`;
+        }
+
+        case "env-changed": {
+            return `Environment variable changed: ${reason.detail}`;
+        }
+
+        case "file-changed": {
+            return `File modified: ${reason.detail}`;
+        }
+
+        case "file-created": {
+            return `File created (was missing): ${reason.detail}`;
+        }
+
+        case "file-deleted": {
+            return `File deleted: ${reason.detail}`;
+        }
+
+        case "tracker-changed": {
+            return `Tracker changed (${reason.detail}): the stored trace saw different file accesses`;
+        }
+
+        default: {
+            return "No previous fingerprint found (first run)";
+        }
+    }
+};
 
 /**
  * Manages task fingerprints for auto-detection caching.
@@ -63,6 +232,7 @@ export class FingerprintManager {
         envVariables: Record<string, string | undefined>,
         envPatterns: string[] = [],
         untrackedEnvVariables: string[] = [],
+        tracker?: TrackerKind,
     ): Promise<TaskFingerprint> {
         const fileHashes: Record<string, string> = {};
         const missingPaths = new Set<string>();
@@ -133,15 +303,15 @@ export class FingerprintManager {
         const commandHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
         const envHashes: Record<string, string> = {};
-        const matchedEnvVariables = FingerprintManager.#resolveEnvPatterns(envPatterns, envVariables);
-        const untrackedSet = new Set(untrackedEnvVariables);
+        const matchedEnvVariables = resolveEnvPatterns(envPatterns, envVariables);
+        const isUntracked = createEnvMatcher(untrackedEnvVariables);
 
         for (const [key, value] of Object.entries(matchedEnvVariables)) {
-            if (untrackedSet.has(key)) {
+            if (isUntracked(key)) {
                 continue;
             }
 
-            envHashes[key] = hashStrings(`${key}=${value ?? ""}`);
+            envHashes[key] = envValueHash(key, value);
         }
 
         const missingFiles = [...missingPaths].toSorted();
@@ -153,6 +323,7 @@ export class FingerprintManager {
             fileHashes,
             missingFiles,
             ...(modifiedInputs.length > 0 ? { modifiedInputs } : {}),
+            ...(tracker === undefined ? {} : { tracker }),
         };
     }
 
@@ -161,8 +332,13 @@ export class FingerprintManager {
      * Returns null if valid (cache hit), or an array of reasons (cache miss).
      *
      * Does NOT use the file hash cache — validation must see current disk state.
+     * `envVariables` is the environment the child receives; it defaults to the
+     * parent's `process.env`.
      */
-    public async validate(fingerprint: TaskFingerprint): Promise<CacheMissReason[] | undefined> {
+    public async validate(
+        fingerprint: TaskFingerprint,
+        envVariables: Record<string, string | undefined> = process.env,
+    ): Promise<CacheMissReason[] | undefined> {
         const reasons: CacheMissReason[] = [];
 
         const fileCheckPromises = Object.entries(fingerprint.fileHashes).map(async ([relativePath, previousHash]) => {
@@ -230,7 +406,7 @@ export class FingerprintManager {
 
         // Check environment variables (synchronous, no I/O)
         for (const [envName, previousHash] of Object.entries(fingerprint.envHashes)) {
-            const currentHash = hashStrings(`${envName}=${process.env[envName] ?? ""}`);
+            const currentHash = envValueHash(envName, envVariables[envName]);
 
             if (currentHash !== previousHash) {
                 reasons.push({
@@ -261,73 +437,47 @@ export class FingerprintManager {
         return undefined;
     }
 
+    /**
+     * Rejects an entry that a different tracker recorded: a different
+     * mechanism sees a different set of files, so its file hashes say
+     * nothing about this run. An entry with no recorded tracker (written by
+     * an older release) is accepted, and the file hashes decide as before.
+     */
     // eslint-disable-next-line class-methods-use-this
-    public formatMissReasons(reasons: CacheMissReason[]): string {
-        const lines: string[] = ["Cache miss reasons:"];
-
-        for (const reason of reasons) {
-            switch (reason.type) {
-                case "args-changed": {
-                    lines.push(`  - Command arguments changed`);
-                    break;
-                }
-
-                case "directory-changed": {
-                    lines.push(`  - Directory contents changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "env-changed": {
-                    lines.push(`  - Environment variable changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "file-changed": {
-                    lines.push(`  - File modified: ${reason.detail}`);
-                    break;
-                }
-
-                case "file-created": {
-                    lines.push(`  - File created (was missing): ${reason.detail}`);
-                    break;
-                }
-
-                case "file-deleted": {
-                    lines.push(`  - File deleted: ${reason.detail}`);
-                    break;
-                }
-
-                case "no-fingerprint": {
-                    lines.push(`  - No previous fingerprint found (first run)`);
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
+    public validateTracker(fingerprint: TaskFingerprint, tracker: TrackerKind | undefined): CacheMissReason | undefined {
+        if (fingerprint.tracker === undefined || fingerprint.tracker === tracker) {
+            return undefined;
         }
 
-        return lines.join("\n");
+        return {
+            detail: `${fingerprint.tracker} -> ${tracker ?? "none"}`,
+            type: "tracker-changed",
+        };
     }
 
-    static #resolveEnvPatterns(patterns: string[], envVariables: Record<string, string | undefined>): Record<string, string | undefined> {
-        const result: Record<string, string | undefined> = {};
-
-        for (const pattern of patterns) {
-            if (pattern.includes("*")) {
-                const prefix = pattern.replace("*", "");
-
-                for (const [key, value] of Object.entries(envVariables)) {
-                    if (key.startsWith(prefix)) {
-                        result[key] = value;
-                    }
-                }
-            } else {
-                result[pattern] = envVariables[pattern];
-            }
+    /**
+     * Rejects a segment whose predecessor's trace key moved. The segment's own
+     * observations can match while the chain before it did not, so the
+     * comparison is exact: an entry without a chain key does not match a
+     * chained lookup, and the reverse.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public validateChain(fingerprint: TaskFingerprint, chainKey: string | undefined): CacheMissReason | undefined {
+        if (fingerprint.chainKey === chainKey) {
+            return undefined;
         }
 
-        return result;
+        return {
+            currentHash: chainKey,
+            detail: "previous segment",
+            previousHash: fingerprint.chainKey,
+            type: "chain-changed",
+        };
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    public formatMissReasons(reasons: CacheMissReason[]): string {
+        return ["Cache miss reasons:", ...reasons.map((reason) => `  - ${describeCacheMissReason(reason)}`)].join("\n");
     }
 
     async #hashFileWithCache(filePath: string): Promise<string | undefined> {

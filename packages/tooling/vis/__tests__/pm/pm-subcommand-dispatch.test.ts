@@ -42,6 +42,34 @@ describe(dispatchSubcommand, () => {
         });
     });
 
+    describe("pkg", () => {
+        it("passes through for npm and pnpm", () => {
+            expect.assertions(3);
+            expect(dispatchSubcommand(npm, "pkg", ["get", "name"])).toStrictEqual({ kind: "passthrough" });
+            expect(dispatchSubcommand(pnpm10, "pkg", ["get", "name"])).toStrictEqual({ kind: "passthrough" });
+            expect(dispatchSubcommand(pnpm11, "pkg", ["get", "name"])).toStrictEqual({ kind: "passthrough" });
+        });
+
+        it("rewrites bun to `bun pm pkg`", () => {
+            expect.assertions(1);
+            expect(dispatchSubcommand(bun, "pkg", ["set", "version=1.0.0"])).toStrictEqual({ args: ["pm", "pkg", "set", "version=1.0.0"], bin: "bun", kind: "rewrite" });
+        });
+
+        it.each([
+            ["yarn 1", yarn1],
+            ["yarn berry", yarn4],
+            ["deno", deno],
+        ])("falls back to `npm pkg` with a warning for %s", (_label, pm) => {
+            expect.assertions(1);
+            expect(dispatchSubcommand(pm, "pkg", ["get", "name"])).toMatchObject({
+                args: ["pkg", "get", "name"],
+                bin: "npm",
+                kind: "rewrite",
+                warning: expect.stringContaining("falling back to `npm pkg`"),
+            });
+        });
+    });
+
     describe("whoami", () => {
         it("passes through for npm and pnpm <11", () => {
             expect.assertions(2);

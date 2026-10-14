@@ -238,6 +238,27 @@ describe(registerListTargets, () => {
     });
 });
 
+/** A run summary shaped like the one vis writes: `id`, `startTime`, `stats`, tasks without a `status`. */
+const realRunSummary = (id: string, exitCodes: number[]): Record<string, unknown> => {
+    return {
+        duration: 1200,
+        endTime: "2026-10-13T10:00:01.200Z",
+        id,
+        startTime: "2026-10-13T10:00:00.000Z",
+        stats: {
+            cached: 0,
+            failed: exitCodes.filter((code) => code !== 0).length,
+            skipped: 0,
+            succeeded: exitCodes.filter((code) => code === 0).length,
+            total: exitCodes.length,
+        },
+        taskGraph: { dependencies: {}, roots: [] },
+        tasks: exitCodes.map((exitCode, index) => {
+            return { cacheStatus: "MISS", exitCode, taskId: `@scope/pkg-${String(index)}:build` };
+        }),
+    };
+};
+
 describe(registerGetRunLogs, () => {
     it("should reject runId values containing path-traversal segments", async () => {
         expect.assertions(2);
@@ -281,6 +302,22 @@ describe(registerGetRunLogs, () => {
         const result = parseOk(await calls[0]!.handler({})) as { runId: string };
 
         expect(result.runId).toBe("run-1");
+    });
+
+    it("echoes the run id vis writes (`id`) when filtering to one task", async () => {
+        expect.assertions(2);
+
+        mkdirSync(join(workspaceRoot, ".vis"), { recursive: true });
+        writeFileSync(join(workspaceRoot, ".vis", "last-summary.json"), JSON.stringify(realRunSummary("run-real", [0, 1])));
+
+        const { calls, server } = makeFakeServer();
+
+        registerGetRunLogs({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({ taskId: "@scope/pkg-1:build" })) as { runId?: string; task: { exitCode: number } };
+
+        expect(result.runId).toBe("run-real");
+        expect(result.task.exitCode).toBe(1);
     });
 
     it("should filter to a single task with `taskId`", async () => {
@@ -1002,6 +1039,64 @@ describe(registerListRuns, () => {
 
         expect(result.count).toBe(0);
         expect(result.runs).toStrictEqual([]);
+    });
+
+    it("reads the summary vis really writes: failures, start time and counts", async () => {
+        expect.assertions(1);
+
+        const runsDir = join(workspaceRoot, ".vis", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+        writeFileSync(join(runsDir, "20261013-100000.json"), JSON.stringify(realRunSummary("run-failed", [0, 1, 0])));
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({})) as { runs: Record<string, unknown>[] };
+
+        // The pre-fix tool reported this run as { status: "success", failedTasks: 0, startedAt: undefined }.
+        expect(result.runs[0]).toStrictEqual({
+            failedTasks: 1,
+            runId: "run-failed",
+            startedAt: "2026-10-13T10:00:00.000Z",
+            status: "failure",
+            taskCount: 3,
+        });
+    });
+
+    it("reports a fully green real run as a success with no failures", async () => {
+        expect.assertions(1);
+
+        const runsDir = join(workspaceRoot, ".vis", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+        writeFileSync(join(runsDir, "ok.json"), JSON.stringify(realRunSummary("run-ok", [0, 0])));
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({})) as { runs: { failedTasks?: number; status?: string }[] };
+
+        expect(result.runs[0]).toMatchObject({ failedTasks: 0, status: "success" });
+    });
+
+    it("falls back to the file name when a summary carries no id", async () => {
+        expect.assertions(1);
+
+        const runsDir = join(workspaceRoot, ".vis", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+        writeFileSync(join(runsDir, "from-file-name.json"), JSON.stringify({ tasks: [] }));
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({})) as { runs: { runId: string }[] };
+
+        expect(result.runs[0]?.runId).toBe("from-file-name");
     });
 
     it("should list runs newest-first with derived status and task counts", async () => {

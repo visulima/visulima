@@ -32,17 +32,30 @@ export { Cache, DEFAULT_CACHE_DIRECTORY_NAME, formatCacheSize, parseCacheSize } 
 export { digestBuffer, digestFile } from "./cas/digest";
 export { acEntryPath, casBlobPath, taskHashIndexPath, V2_AC, V2_CAS, V2_INDEX, V2_ROOT, V2_TMP } from "./cas/paths";
 export { containsBlob, fetchBlobToFile, putBlobFromBytes, putBlobFromFile, touchBlob, verifyBlob } from "./cas/store";
+// Child-process environment policy (clean mode)
+export type { ChildEnvOptions } from "./child-env";
+export {
+    buildChildEnv,
+    childEnvNameFilter,
+    CLEAN_ENV_BASE_NAMES,
+    CLEAN_ENV_POSIX_NAMES,
+    CLEAN_ENV_WIN32_NAMES,
+    cleanEnvEssentialNames,
+    pickChildParentEnv,
+    resolveChildEnvPolicy,
+} from "./child-env";
 // Chrome tracing profile (--profile)
 export type { ChromeTraceEvent } from "./chrome-trace";
 export { toChromeTrace, writeChromeTrace } from "./chrome-trace";
 // Command parser
 export type { ParseCommandsOptions, TokenContext } from "./command-parser";
-export { expandArguments, expandShortcut, expandTokens, expandTokensInString, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
+export type { CompoundSplit } from "./command-parser";
+export { expandArguments, expandShortcut, expandTokens, expandTokensInString, expandWildcard, parseCommands, splitCompoundCommand, stripQuotes } from "./command-parser";
 // Concurrent process runner
 export { runConcurrently } from "./concurrent";
 export { runConcurrentFallback } from "./concurrent-fallback";
 // Default task runner
-export { defaultTaskRunner } from "./default-task-runner";
+export { DEFAULT_UNTRACKED_ENV_PATTERNS, defaultTaskRunner } from "./default-task-runner";
 // Shell detection
 export { detectScriptShell } from "./detect-shell";
 // File access tracking
@@ -50,7 +63,8 @@ export type { FileAccess, TrackingResult } from "./file-access-tracker";
 export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
 // Auto-fingerprinting (Vite Task-style caching)
 export type { CacheMissReason, TaskFingerprint } from "./fingerprint";
-export { FingerprintManager } from "./fingerprint";
+export { describeCacheMissReason } from "./fingerprint";
+export { createEnvMatcher, FingerprintManager } from "./fingerprint";
 // Flow controllers
 export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
 export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
@@ -84,10 +98,11 @@ export { INPUT_URI_SCHEMES, InvalidInputUriError, looksLikeInputUri, parseInputU
 export { buildEnhancedPath, collectNodeModulesBinDirs, withEnhancedPath } from "./path-utils";
 // Project constraints
 export { enforceProjectConstraints } from "./project-constraints";
-
 // Run summary (--summarize and --last-details)
 export type { RunSummary, RunSummaryPathOptions, TaskSummary } from "./run-summary";
 export { generateRunSummary, getLastRunSummaryPath, readLastRunSummary, writeLastRunSummary, writeRunSummary } from "./run-summary";
+export type { SplitCompoundOptions } from "./split-compound-tasks";
+export { splitCompoundTasks } from "./split-compound-tasks";
 
 // Task graph
 export { createTaskGraph, getTaskId, parseTaskId } from "./task-graph";
@@ -105,7 +120,7 @@ export {
 } from "./task-graph-utils";
 // Task hashing
 export type { TaskHasher, TaskHasherOptions } from "./task-hasher";
-export { computeTaskHash, InProcessTaskHasher } from "./task-hasher";
+export { computeTaskHash, extractReferencedEnvVars, InProcessTaskHasher } from "./task-hasher";
 // Task orchestrator
 export type { TaskOrchestratorOptions } from "./task-orchestrator";
 export { TaskOrchestrator } from "./task-orchestrator";
@@ -124,6 +139,7 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 export type {
     AffectedScope,
     CacheRestoreOptions,
+    ChildSpawnEnv,
     ConcurrencyGroups,
     ConcurrentCloseEvent,
     ConcurrentCommandConfig,
