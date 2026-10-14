@@ -32,6 +32,36 @@ describe("text characters", () => {
 
         expect(output).toBe(" AB!");
     });
+
+    it("tabs are measured and rendered without overwriting adjacent text", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box width={20}>
+                <Text>
+                    A
+<Text>{"\tB"}</Text>
+                </Text>
+                <Text>!</Text>
+            </Box>,
+        );
+
+        // Tabs render as four spaces in this renderer; measurement must count the same columns.
+        expect(output).toBe("A    B!");
+    });
+
+    it("expanded tabs participate in text wrapping", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column" width={5}>
+                <Text>{"A\tB"}</Text>
+                <Text>!</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\nB\n!");
+    });
 });
 
 describe("wide characters at clip edges", () => {

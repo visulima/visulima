@@ -39,7 +39,8 @@ const squashTextNodes = (node: DOMElement): string => {
         text += nodeText;
     }
 
-    return sanitizeAnsi(text);
+    // Expand tabs here, before measurement and rendering both read this text, so they agree on columns.
+    return sanitizeAnsi(text).replaceAll("\t", "    ");
 };
 
 export default squashTextNodes;
