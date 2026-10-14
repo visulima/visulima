@@ -487,9 +487,11 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
 
             break;
         }
-        case "\t": {
-            // tab
+        case "\t":
+        case "\u001B\t": {
+            // tab (or meta+tab)
             key.name = "tab";
+            key.meta = s.length === 2;
 
             break;
         }
@@ -534,10 +536,16 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
             break;
         }
         default: {
-            if (s.length === 1 && s <= "\u001A") {
-                // ctrl+letter
-                key.name = String.fromCharCode(s.charCodeAt(0) + "a".charCodeAt(0) - 1);
+            if (/^\u001B?[\u0000-\u001F]$/.test(s)) {
+                // ctrl+letter, ctrl+punctuation (0x1c-0x1f) or ctrl+space (NUL), optionally with meta (ESC prefix)
+                const code = s.codePointAt(s.length - 1)!;
+
+                // Codes 1-26 map to a-z; 28-31 map to \ ] ^ _.
+                const letterCode = code <= 26 ? code + 96 : code + 64;
+
+                key.name = code === 0 ? "space" : String.fromCharCode(letterCode);
                 key.ctrl = true;
+                key.meta = s.length === 2;
             } else if (s.length === 1 && s >= "0" && s <= "9") {
                 // number
                 key.name = "number";
