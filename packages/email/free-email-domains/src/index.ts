@@ -48,7 +48,7 @@ let hasWarnedOnDomainsFailure = false;
 /**
  * Location of the generated list relative to this module (`dist/index.js` and `src/index.ts`
  * both sit one level below the package root). Kept in a variable so bundlers that detect
- * `new URL(a string literal, import.meta.url)` (e.g. Vite) do not turn it into an asset reference.
+ * `new URL("…", import.meta.url)` (e.g. Vite) do not turn it into an asset reference.
  */
 const DOMAINS_FILE_PATH = "../dist/domains.json";
 
