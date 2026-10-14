@@ -110,6 +110,10 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
         },
         ref,
     ) => {
+        const inheritedBackgroundColor = useContext(backgroundContext);
+        // Empty background colors inherit from the parent as well.
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        const effectiveBackgroundColor = backgroundColor || inheritedBackgroundColor;
         const { isScreenReaderEnabled } = useContext(accessibilityContext);
         const label = ariaLabel ? <ink-text>{ariaLabel}</ink-text> : undefined;
         const accessibility = role || ariaState ? { role, state: ariaState } : undefined;
@@ -150,12 +154,8 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
             </ink-box>
         );
 
-        // If this Box has a background color, provide it to children via context
-        if (backgroundColor) {
-            return <backgroundContext.Provider value={backgroundColor}>{boxElement}</backgroundContext.Provider>;
-        }
-
-        return boxElement;
+        // Always provide the background (own or inherited), so a child keeps its state when a background is added or removed
+        return <backgroundContext.Provider value={effectiveBackgroundColor}>{boxElement}</backgroundContext.Provider>;
     },
 );
 

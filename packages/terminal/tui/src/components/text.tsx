@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-shadow, import/no-named-as-default-member, jsdoc/escape-inline-tags, react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react/function-component-definition */
+/* eslint-disable @typescript-eslint/no-shadow, import/no-named-as-default-member, jsdoc/escape-inline-tags, react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react-x/no-context-provider, react/function-component-definition */
 import type { AnsiColors } from "@visulima/colorize";
 import colorizeDefault from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
@@ -96,6 +96,8 @@ export default function Text({
 }: Props): ReactElement | null {
     const { isScreenReaderEnabled } = useContext(accessibilityContext);
     const inheritedBackgroundColor = useContext(backgroundContext);
+    // Use explicit backgroundColor if provided, otherwise inherit from the nearest parent Text or Box.
+    const effectiveBackgroundColor = backgroundColor ?? inheritedBackgroundColor;
     // An empty label is a valid override: it hides decorative content from screen readers.
     const childrenOrAriaLabel = isScreenReaderEnabled ? ariaLabel ?? children : children;
 
@@ -108,9 +110,6 @@ export default function Text({
             if (color) {
                 children = colorize(children, color, "foreground");
             }
-
-            // Use explicit backgroundColor if provided, otherwise use inherited from parent Box
-            const effectiveBackgroundColor = backgroundColor ?? inheritedBackgroundColor;
 
             if (effectiveBackgroundColor) {
                 children = colorize(children, effectiveBackgroundColor, "background");
@@ -138,7 +137,7 @@ export default function Text({
 
             return children;
         },
-        [dimColor, color, backgroundColor, inheritedBackgroundColor, bold, italic, underline, strikethrough, inverse],
+        [dimColor, color, effectiveBackgroundColor, bold, italic, underline, strikethrough, inverse],
     );
 
     if (childrenOrAriaLabel === undefined || childrenOrAriaLabel === null) {
@@ -150,12 +149,14 @@ export default function Text({
     }
 
     return (
-        <ink-text
-            internal_transform={isScreenReaderEnabled ? undefined : transform}
-            style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1, textWrap: wrap }}
-        >
-            {childrenOrAriaLabel}
-        </ink-text>
+        <backgroundContext.Provider value={effectiveBackgroundColor}>
+            <ink-text
+                internal_transform={isScreenReaderEnabled ? undefined : transform}
+                style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1, textWrap: wrap }}
+            >
+                {childrenOrAriaLabel}
+            </ink-text>
+        </backgroundContext.Provider>
     );
 }
 

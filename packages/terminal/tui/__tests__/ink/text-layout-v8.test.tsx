@@ -1,7 +1,7 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/components/index";
+import { Box, Static, Text } from "../../src/components/index";
 import { renderToString } from "../helpers/ink-render";
 import { renderAsync } from "../helpers/ink-test-renderer";
 
@@ -292,5 +292,66 @@ Z
         );
 
         expect(output).toBe(expected);
+    });
+});
+
+describe("background inheritance", () => {
+    it("static background color is inherited by its text", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Static items={["A"]} style={{ backgroundColor: "blue", width: 3 }}>
+                {(item: string) => <Text key={item}>{item}</Text>}
+            </Static>,
+        );
+
+        expect(output).toBe("\u001B[44mA  \u001B[49m\n");
+    });
+
+    it("box preserves child state when a background color is added or removed", async () => {
+        expect.hasAssertions();
+
+        const Child = ({ initialValue }: { readonly initialValue: string }) => {
+            const [value] = useState(initialValue);
+
+            return <Text>{value}</Text>;
+        };
+
+        const { rerenderAsync, stdout, unmount } = await renderAsync(
+            <Box backgroundColor="red">
+                <Child initialValue="original" />
+            </Box>,
+        );
+
+        try {
+            expect(stdout.get()).toContain("original");
+
+            await rerenderAsync(
+                <Box>
+                    <Child initialValue="reset" />
+                </Box>,
+            );
+
+            expect(stdout.get()).toContain("original");
+            expect(stdout.get()).not.toContain("reset");
+        } finally {
+            unmount();
+        }
+    });
+
+    it("nested Text inherits the nearest Text background instead of the Box background", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box alignSelf="flex-start" backgroundColor="red">
+                <Text backgroundColor="blue">
+                    Hello
+{" "}
+<Text>World</Text>
+                </Text>
+            </Box>,
+        );
+
+        expect(output).toBe("\u001B[44mHello World\u001B[49m");
     });
 });
