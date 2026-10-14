@@ -118,18 +118,24 @@ Decisions taken while implementing B:
   says the executor enforces the policy. Without it every name is keyed as the
   parent sees it. Keying an omitted name gives a stale hit, while an extra name
   only costs a miss.
-- A clean target that would run with syscall tracking (`hashMode: "trace"`, or a
-  workspace `autoFingerprint`) fails before the run starts. Tracked runs bypass
-  the executor that builds the clean environment.
+- A clean target that runs with syscall tracking gets the same child environment as an
+  executor task. The orchestrator asks the caller for it (`TaskRunnerContext.resolveChildEnv`),
+  so a traced run and an executor run cannot diverge. The native trackers (seccomp,
+  interpose, IAT) inherit the parent environment and are not used under clean: Linux
+  traces with strace, other platforms with the Node preload. Its fingerprint keys only
+  the names the clean child can see.
 - `NODE_OPTIONS` and `npm_config_*` are dropped under clean mode unless
   allow-listed.
 
-Finding outside this change (already true under `inherit`): tasks on the
-tracked path run without the vis executor, so they never receive
-`VIS_TASK_SLOTS`, `VIS_ARG_*`, `envFile` values or service env. Reproduced with
-a `hashMode: "trace"` target that printed `VIS_TASK_SLOTS` as absent, next to a
-declared target that printed `1`. Fixing it means passing the vis environment
-into `TrackedTaskExecutor.execute`, which belongs to the trace work in G1 and G4.
+Resolved: traced and persistent tasks now receive the vis environment (`VIS_TASK_SLOTS`,
+`VIS_ARG_*`, `envFile` values, service env, `INIT_CWD`, affected-files env) through the
+same function as the executor (`resolveTaskSpawn`). The TUI retry of an interactive task
+still injects nothing; it only decides inheritance.
+
+Known gap: under clean, a traced run on macOS uses the Node preload instead of DYLD
+interpose. The native addon starts each child from the parent environment and adds to it,
+so it cannot honour a complete environment. Fixing that needs an explicit environment
+clear in the native spawners (`native/src/macos.rs`, seccomp, Windows). Not done.
 
 C is done: `vis doctor` lists, per declared target, the names its command
 references (`$VAR`, `${VAR}`, `%VAR%`) that no key source covers. The check

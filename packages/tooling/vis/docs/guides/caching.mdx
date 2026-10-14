@@ -241,10 +241,12 @@ child, and it is in the key:
 }
 ```
 
-A target that runs with syscall tracking (`hashMode: "trace"`, or a workspace
-`autoFingerprint`) cannot be `clean` yet. Those tasks bypass the executor that
-builds the clean environment, so `vis run` refuses them before anything runs.
-Set such a target to `{ "mode": "inherit" }`, or use declared hashing.
+A traced target (`hashMode: "trace"`, or a workspace `autoFingerprint`) can be
+`clean` too. It gets the same environment as any other task, and its key covers
+only the names its clean child can see, as above. The tracker runs without its
+native backends in this case, so a command that is not a Node process may record
+no file accesses; vis then skips caching it with a warning. For such a command use
+declared hashing, or set `{ "mode": "inherit" }`.
 
 ## Making the cache work in CI
 

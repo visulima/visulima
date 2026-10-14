@@ -323,20 +323,21 @@ Or override one target in `project.json`. A target's `allow` adds to the workspa
 { "targets": { "dev": { "command": "node server.js", "options": { "env": { "mode": "inherit" } } } } }
 ```
 
-Clean mode is never a default, and a `clean` target that would run with syscall tracking fails before anything runs (see [Caching](/guides/caching#clean-child-environment)).
+Clean mode is never a default. A traced target (`hashMode: "trace"`, or a workspace `autoFingerprint`) gets the same clean environment as any other task, plus the variables the tracker writes (see the table below). The tracker runs without its native backends in that case, because they inherit the parent environment: on Linux it traces with strace, elsewhere with the Node preload. A traced command that is not a Node process may then record no file accesses, and vis skips caching it. See [Caching](/guides/caching#clean-child-environment).
 
-| Group                      | Variables                                                                                                                                                           | Notes                                                              |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Set on `vis`'s own process | `VIS_VERSION`, `VIS_MONOREPO_ROOT`, `NODE_EXTRA_CA_CERTS`, `NO_COLOR`, `FORCE_COLOR`, and the variables the toolchain step exports when it activates a Node version | Every child inherits these under `inherit`. Clean mode keeps them. |
-| Injected per task          | `INIT_CWD`, `VIS_TASK_SLOTS`, `VIS_AFFECTED_FILES` (when `affectedFiles` is `env` or `both`), `VIS_ARG_<NAME>` (declared task arguments)                            | Never filtered, so clean mode always keeps them.                   |
-| User overlays              | `envFile` values, and the env of a registered service                                                                                                               | Never filtered. Their names come from your config.                 |
-| Spawner additions          | `PATH` with the `node_modules/.bin` chain prepended; `Path` and `PATHEXT` on Windows; `FORCE_COLOR=1` unless set; `TERM=xterm-256color` for PTY tasks               | Added by the spawner, after the policy has been applied.           |
+| Group                                 | Variables                                                                                                                                                           | Notes                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Set on `vis`'s own process            | `VIS_VERSION`, `VIS_MONOREPO_ROOT`, `NODE_EXTRA_CA_CERTS`, `NO_COLOR`, `FORCE_COLOR`, and the variables the toolchain step exports when it activates a Node version | Every child inherits these under `inherit`. Clean mode keeps them. |
+| Injected per task                     | `INIT_CWD`, `VIS_TASK_SLOTS`, `VIS_AFFECTED_FILES` (when `affectedFiles` is `env` or `both`), `VIS_ARG_<NAME>` (declared task arguments)                            | Never filtered, so clean mode always keeps them.                   |
+| Added by the tracker (traced targets) | `TASK_RUNNER_HINTS`, `TASK_RUNNER_PROTOCOL`, `NODE_OPTIONS` (the `--import` preload, appended to the child's own `NODE_OPTIONS`)                                    | Never filtered, so clean mode keeps them.                          |
+| User overlays                         | `envFile` values, and the env of a registered service                                                                                                               | Never filtered. Their names come from your config.                 |
+| Spawner additions                     | `PATH` with the `node_modules/.bin` chain prepended; `Path` and `PATHEXT` on Windows; `FORCE_COLOR=1` unless set; `TERM=xterm-256color` for PTY tasks               | Added by the spawner, after the policy has been applied.           |
 
-The table lists what a task receives. Two paths do not get every injected variable, under `inherit` as well as `clean`: persistent targets (`persistent: true`) do not receive `VIS_TASK_SLOTS`, and the TUI retry of an interactive task injects nothing. Both predate clean mode.
+The table lists what a task receives. Persistent and traced targets receive the same injected variables as an executor task. The TUI retry of an interactive task is the one path that injects nothing; it only decides whether the child inherits the parent environment.
 
 Under `clean`, a variable that is not allow-listed is dropped, including the ones you usually expect to inherit such as `NODE_OPTIONS` and `npm_config_*`. Add them to `allow` if the task needs them.
 
-A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string.
+A `$VAR` the clean child cannot see fails the task under `strictEnv`, the same as an unset variable, instead of expanding to an empty string. The strict check runs in the executor only, so a traced target does not run it: a `$VAR` it cannot see expands to an empty string there.
 
 ### Task conditions
 
