@@ -102,6 +102,24 @@ describe("screen-reader output (upstream parity)", () => {
         expect(renderToString(element)).toBe("");
     });
 
+    it("omits Static content inside a hidden ancestor from screen-reader output", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <>
+                <Box display="none">
+                    <Box>
+                        <Static items={["Hidden"]}>{(item: string) => <Text key={item}>{item}</Text>}</Static>
+                    </Box>
+                </Box>
+                <Text>Visible</Text>
+            </>,
+            { isScreenReaderEnabled: true },
+        );
+
+        expect(output).toBe("Visible");
+    });
+
     it("renders nested multi-line text", () => {
         expect.hasAssertions();
 

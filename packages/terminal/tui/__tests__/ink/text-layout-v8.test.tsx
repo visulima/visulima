@@ -2,6 +2,7 @@ import { Suspense, useState } from "react";
 import { describe, expect, it } from "vitest";
 
 import { Box, Static, Text } from "../../src/components/index";
+import renderToStringDirect from "../../src/ink/render-to-string";
 import { renderToString } from "../helpers/ink-render";
 import { renderAsync } from "../helpers/ink-test-renderer";
 
@@ -63,6 +64,20 @@ describe("text characters", () => {
         );
 
         expect(output).toBe("A\nB\n!");
+    });
+});
+
+describe("static layout", () => {
+    it("static preserves its margins and all items", () => {
+        expect.hasAssertions();
+
+        const output = renderToStringDirect(
+            <Static items={["A", "B"]} style={{ marginBottom: 1, marginLeft: 2, marginTop: 1 }}>
+                {(item: string) => <Text key={item}>{item}</Text>}
+            </Static>,
+        );
+
+        expect(output).toBe("\n  A\n  B\n");
     });
 });
 
