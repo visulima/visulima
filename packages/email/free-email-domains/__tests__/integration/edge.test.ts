@@ -16,6 +16,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = join(here, "..", "..");
 
 interface WorkerResult {
+    assertThrew: boolean;
     importMetaUrlType: string;
     listLoaded: boolean;
     matched: boolean;
@@ -24,14 +25,23 @@ interface WorkerResult {
 }
 
 const consumerSource = `
-import { isFreeDomain, isFreeEmail, isListLoaded } from "@visulima/free-email-domains/edge";
+import { assertListLoaded, isFreeDomain, isFreeEmail, isListLoaded } from "@visulima/free-email-domains/edge";
 
 export default {
     fetch() {
         let warnings = 0;
         console.warn = () => { warnings += 1; };
 
+        let assertThrew = false;
+
+        try {
+            assertListLoaded();
+        } catch {
+            assertThrew = true;
+        }
+
         return Response.json({
+            assertThrew,
             importMetaUrlType: typeof import.meta.url,
             listLoaded: isListLoaded(),
             matched: isFreeDomain("sub.gmail.com"),
@@ -75,7 +85,7 @@ describe("./edge entry inside workerd", () => {
     });
 
     it.each(compatibilityCases)("matches with no setDomains() call (compatibilityFlags: $flags)", async ({ flags }) => {
-        expect.assertions(5);
+        expect.assertions(6);
 
         const miniflare = new Miniflare(convertV4MiniflareOptions({ compatibilityDate: "2026-07-01", compatibilityFlags: flags, modules: true, script }));
 
@@ -88,6 +98,7 @@ describe("./edge entry inside workerd", () => {
             expect(result.matched).toBe(true);
             expect(result.otherMatched).toBe(false);
             expect(result.listLoaded).toBe(true);
+            expect(result.assertThrew).toBe(false);
             expect(result.warnings).toBe(0);
         } finally {
             await miniflare.dispose();
