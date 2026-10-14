@@ -21,7 +21,9 @@ if (scenario === "inject") {
     await api.preload();
 }
 
-// Twice, so a repeated warning would show up in the count.
-const disposable = api.isDisposableDomain("sub.mailinator.com") && api.isDisposableDomain("sub.mailinator.com");
+// Two separate calls (not `a && b`, which short-circuits on false), so a repeated warning shows up in the count.
+const first = api.isDisposableDomain("sub.mailinator.com");
+const second = api.isDisposableDomain("sub.mailinator.com");
+const disposable = first && second;
 
 process.stdout.write(JSON.stringify({ disposable, listLoaded: api.isListLoaded(), notDisposable: !api.isDisposableEmail("a@example.com"), warnings }));
