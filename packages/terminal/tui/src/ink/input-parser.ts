@@ -35,20 +35,23 @@ const parseCsiSequence = (input: string, startIndex: number, prefixLength: numbe
             return "pending";
         }
 
-        if (isCsiParameterByte(byte) || isCsiIntermediateByte(byte)) {
-            continue;
-        }
-
         // Preserve legacy terminal function-key sequences like ESC[[A and ESC[[5~.
         if (byte === 0x5b && index === csiPayloadStart) {
             continue;
         }
 
-        if (isCsiFinalByte(byte)) {
+        // Shifted editing keys in rxvt end in $, which is normally a CSI intermediate byte.
+        const isRxvtShiftKey = byte === 0x24 && index === csiPayloadStart + 1 && "235678".includes(input[csiPayloadStart]!);
+
+        if (isCsiFinalByte(byte) || isRxvtShiftKey) {
             return {
                 nextIndex: index + 1,
                 sequence: input.slice(startIndex, index + 1),
             };
+        }
+
+        if (isCsiParameterByte(byte) || isCsiIntermediateByte(byte)) {
+            continue;
         }
 
         return undefined;
