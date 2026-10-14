@@ -314,19 +314,11 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
             if (keypress.isKittyProtocol) {
                 // Use text-as-codepoints field for printable keys (needed when
-                // reportAllKeysAsEscapeCodes flag is enabled), suppress non-printable
-                if (keypress.isPrintable) {
-                    input = keypress.text ?? keypress.name;
-                } else if (keypress.ctrl && keypress.name.length === 1) {
-                    // Ctrl+letter via codepoint 1-26 form: not printable text, but
-                    // the letter name must flow through so handlers (e.g. exitOnCtrlC
-                    // checking `input === 'c' && key.ctrl`) still work.
-                    input = keypress.name;
-                } else {
-                    input = "";
-                }
+                // reportAllKeysAsEscapeCodes flag is enabled); functional and modifier keys produce no text.
+                input = keypress.isPrintable ? keypress.text ?? keypress.name : "";
             } else if (keypress.ctrl) {
-                input = keypress.name;
+                // Legacy Ctrl+Space arrives as the name "space"; its input is the space character.
+                input = keypress.name === "space" ? " " : keypress.name;
             } else {
                 input = keypress.sequence;
             }
@@ -341,12 +333,13 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
                 input = input.slice(1);
             }
 
-            if (input.length === 1 && typeof input[0] === "string" && /[A-Z]/.test(input[0])) {
+            // Kitty reports shift through its modifier bits; uppercase text (e.g. from Caps Lock) does not imply shift.
+            if (!keypress.isKittyProtocol && input.length === 1 && typeof input[0] === "string" && /[A-Z]/.test(input[0])) {
                 key.shift = true;
             }
 
-            // If app is supposed to exit on Ctrl+C, skip input listeners.
-            if (input === "c" && key.ctrl && internal_exitOnCtrlC) {
+            // If app is supposed to exit on Ctrl+C, skip input listeners. Releases do not trigger the exit.
+            if (keypress.name === "c" && key.ctrl && keypress.eventType !== "release" && internal_exitOnCtrlC) {
                 return;
             }
 

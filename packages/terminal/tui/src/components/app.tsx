@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { createInputParser } from "../ink/input-parser";
 import type { CursorPosition } from "../ink/log-update";
+import parseKeypress from "../ink/parse-keypress";
 import AnimationContext from "./animation-context";
 import type { Props as AppContextProps } from "./app-context";
 import AppContext from "./app-context";
@@ -19,9 +20,12 @@ import StderrContext from "./stderr-context";
 import StdinContext from "./stdin-context";
 import StdoutContext from "./stdout-context";
 
-const tab = "\t";
-const shiftTab = "\u001B[Z";
-const escape = "\u001B";
+// Ctrl+C in any keyboard encoding (legacy 0x03 or kitty CSI u), excluding key release events.
+const isCtrlC = (input: string): boolean => {
+    const key = parseKeypress(input);
+
+    return key.name === "c" && key.ctrl && key.eventType !== "release";
+};
 
 // Precomputed once at module load — `BracketedPasteMode` is a DEC private mode
 // (code 2004) exported by @visulima/ansi; setMode/resetMode emit `CSI ?2004h/l`.
@@ -290,14 +294,26 @@ const App = ({
 
     const handleInput = useCallback(
         (input: string): void => {
-            // eslint-disable-next-line unicorn/no-hex-escape
-            if (input.includes("\x03") && exitOnCtrlC) {
+            if (exitOnCtrlC && isCtrlC(input)) {
                 handleExit();
 
                 return;
             }
 
-            if (input === escape && isFocusEnabled) {
+            // Escape without modifiers resets focus; kitty release and modified escape keys do not.
+            const key = parseKeypress(input);
+
+            if (
+                isFocusEnabled
+                && key.name === "escape"
+                && key.eventType !== "release"
+                && !key.shift
+                && !key.ctrl
+                && !key.meta
+                && !key.option
+                && key.super !== true
+                && key.hyper !== true
+            ) {
                 setActiveFocusId(undefined);
             }
         },
@@ -338,7 +354,7 @@ const App = ({
                     emitInput(event);
 
                     // The app is exiting: input that rode in the same chunk after Ctrl+C must not be dispatched.
-                    if (exitOnCtrlC && event.includes("\u0003")) {
+                    if (exitOnCtrlC && isCtrlC(event)) {
                         return;
                     }
                 } else {
@@ -570,12 +586,25 @@ const App = ({
                 return;
             }
 
-            if (input === tab) {
-                focusNext();
+            const key = parseKeypress(input);
+
+            // Only plain Tab (or Shift+Tab) moves focus; releases and other modified Tabs do not.
+            if (
+                key.name !== "tab"
+                || key.eventType === "release"
+                || key.ctrl
+                || key.meta
+                || key.option
+                || key.super === true
+                || key.hyper === true
+            ) {
+                return;
             }
 
-            if (input === shiftTab) {
+            if (key.shift) {
                 focusPrevious();
+            } else {
+                focusNext();
             }
         };
 
