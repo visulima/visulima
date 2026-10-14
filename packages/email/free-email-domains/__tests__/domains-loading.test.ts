@@ -65,4 +65,45 @@ describe("domains.json loading", () => {
         expect(isFreeEmail("user@mocked-free.com")).toBe(true);
         expect(isFreeEmail("user@gmail.com")).toBe(false);
     });
+
+    it("assertListLoaded throws when the built-in list cannot be read", async () => {
+        expect.assertions(2);
+
+        vi.resetModules();
+        mockReadFileSync(() => {
+            throw new Error("ENOENT: no such file");
+        });
+
+        const { assertListLoaded } = await import("../src/index");
+
+        expect(assertListLoaded).toThrow("[@visulima/free-email-domains] The built-in list is not loaded");
+        expect(assertListLoaded).toThrow("setDomains()");
+    });
+
+    it("assertListLoaded passes once setDomains() has supplied a list", async () => {
+        expect.assertions(1);
+
+        vi.resetModules();
+        mockReadFileSync(() => {
+            throw new Error("ENOENT: no such file");
+        });
+
+        const { assertListLoaded, setDomains } = await import("../src/index");
+
+        setDomains(["injected-free.example"]);
+
+        expect(assertListLoaded).not.toThrow();
+    });
+
+    it("assertListLoaded loads the list from disk and passes when it is readable", async () => {
+        expect.assertions(2);
+
+        vi.resetModules();
+        mockReadFileSync(() => JSON.stringify(["mocked-free.example"]));
+
+        const { assertListLoaded, isListLoaded } = await import("../src/index");
+
+        expect(assertListLoaded).not.toThrow();
+        expect(isListLoaded()).toBe(true);
+    });
 });

@@ -16,6 +16,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const distEntry = join(here, "..", "..", "dist", "index.js");
 
 interface WorkerResult {
+    assertThrew: boolean;
     importMetaUrlType: string;
     listLoaded: boolean;
     matched: boolean;
@@ -23,7 +24,7 @@ interface WorkerResult {
 }
 
 const workerSource = `
-import { isFreeDomain, isListLoaded, setDomains } from ${JSON.stringify(distEntry)};
+import { assertListLoaded, isFreeDomain, isListLoaded, setDomains } from ${JSON.stringify(distEntry)};
 
 export default {
     fetch(request) {
@@ -37,7 +38,15 @@ export default {
         const first = isFreeDomain("sub.gmail.com");
         const second = isFreeDomain("sub.gmail.com");
 
-        return Response.json({ importMetaUrlType: typeof import.meta.url, listLoaded: isListLoaded(), matched: first && second, warnings });
+        let assertThrew = false;
+
+        try {
+            assertListLoaded();
+        } catch {
+            assertThrew = true;
+        }
+
+        return Response.json({ assertThrew, importMetaUrlType: typeof import.meta.url, listLoaded: isListLoaded(), matched: first && second, warnings });
     },
 };
 `;
@@ -75,7 +84,7 @@ describe("built entry inside workerd", () => {
     });
 
     it.each(compatibilityCases)("imports and matches after setDomains() (compatibilityFlags: $flags)", async ({ flags }) => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const result = await request("?inject", flags);
 
@@ -83,16 +92,18 @@ describe("built entry inside workerd", () => {
         expect(result.importMetaUrlType).toBe("undefined");
         expect(result.matched).toBe(true);
         expect(result.listLoaded).toBe(true);
+        expect(result.assertThrew).toBe(false);
         expect(result.warnings).toBe(0);
     });
 
     it.each(compatibilityCases)("falls back to the empty list with one warning when no list is injected (compatibilityFlags: $flags)", async ({ flags }) => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const result = await request("", flags);
 
         expect(result.matched).toBe(false);
         expect(result.listLoaded).toBe(false);
+        expect(result.assertThrew).toBe(true);
         expect(result.warnings).toBe(1);
     });
 });

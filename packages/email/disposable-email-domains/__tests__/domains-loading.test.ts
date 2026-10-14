@@ -66,4 +66,45 @@ describe("domains.json loading", () => {
         expect(isDisposableEmail("user@mocked-disposable.com")).toBe(true);
         expect(isDisposableEmail("user@10minutemail.com")).toBe(false);
     });
+
+    it("assertListLoaded throws when the built-in list cannot be read", async () => {
+        expect.assertions(2);
+
+        vi.resetModules();
+        mockReadFileSync(() => {
+            throw new Error("ENOENT: no such file");
+        });
+
+        const { assertListLoaded } = await import("../src/index");
+
+        expect(assertListLoaded).toThrow("[@visulima/disposable-email-domains] The built-in list is not loaded");
+        expect(assertListLoaded).toThrow("setDomains()");
+    });
+
+    it("assertListLoaded passes once setDomains() has supplied a list", async () => {
+        expect.assertions(1);
+
+        vi.resetModules();
+        mockReadFileSync(() => {
+            throw new Error("ENOENT: no such file");
+        });
+
+        const { assertListLoaded, setDomains } = await import("../src/index");
+
+        setDomains(["injected-disposable.com"]);
+
+        expect(assertListLoaded).not.toThrow();
+    });
+
+    it("assertListLoaded loads the list from disk and passes when it is readable", async () => {
+        expect.assertions(2);
+
+        vi.resetModules();
+        mockReadFileSync(() => JSON.stringify(["mocked-disposable.com"]));
+
+        const { assertListLoaded, isListLoaded } = await import("../src/index");
+
+        expect(assertListLoaded).not.toThrow();
+        expect(isListLoaded()).toBe(true);
+    });
 });

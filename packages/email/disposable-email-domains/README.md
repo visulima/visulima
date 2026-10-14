@@ -173,7 +173,7 @@ The list is about 2.8 MB (about 0.9 MB gzipped) of your bundle and cannot be tre
 
 **Using the main entry instead?** By default the package reads `dist/domains.json` from disk via `node:fs`, the first time a lookup needs it. That is not possible in Cloudflare Workers, Next.js middleware/edge, or bundles that relocate `index.js` away from the data file, and in Deno it needs `process.getBuiltinModule`, `import.meta.url` and read permission for the data file. Importing the package is safe everywhere, but when the loader cannot read the list nothing matches the built-in list (only `customDomains` you pass per call still match) and a single warning is logged.
 
-Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, check `isListLoaded()` to make sure it took:
+Inject the list once at startup with `setDomains` and, since disposable detection is often a signup gate, call `assertListLoaded()` at startup so a missed or failed load throws instead of failing open (`isListLoaded()` is the non-throwing check):
 
 ```typescript
 import { setDomains, isDisposableEmail } from "@visulima/disposable-email-domains";
