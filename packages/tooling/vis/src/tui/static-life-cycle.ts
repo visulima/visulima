@@ -73,7 +73,7 @@ interface StaticOutputOptions {
  * precedence over the runner-wide default so a single noisy linter
  * can opt into quiet mode without changing the global flag.
  */
-const resolveTaskOutputStyle = (task: Task, fallback: OutputStyle): OutputStyle => {
+export const resolveTaskOutputStyle = (task: Task, fallback: OutputStyle): OutputStyle => {
     const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
 
     if (visOptions?.outputStyle === "normal" || visOptions?.outputStyle === "quiet") {
@@ -82,6 +82,12 @@ const resolveTaskOutputStyle = (task: Task, fallback: OutputStyle): OutputStyle 
 
     return fallback;
 };
+
+/**
+ * The one-line notice for a declared-fallback run. Shared with the dynamic
+ * lifecycle so both surfaces say the same thing.
+ */
+export const declaredFallbackMessage = (task: Task): string => `${task.id}: tracker saw no workspace access; cached on declared inputs`;
 
 /**
  * A lifecycle handler for CI environments that produces static, append-only output.
@@ -213,6 +219,16 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         this.#printCacheNotice(
             `${task.id}: caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})`,
         );
+    }
+
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
+    public printDeclaredFallback(task: Task): void {
+        // Quiet hides output for successful tasks, and a fallback run always succeeds.
+        if (resolveTaskOutputStyle(task, this.#outputStyle) === "quiet") {
+            return;
+        }
+
+        this.#printCacheNotice(declaredFallbackMessage(task));
     }
 
     // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components

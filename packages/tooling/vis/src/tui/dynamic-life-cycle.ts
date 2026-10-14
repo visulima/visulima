@@ -10,6 +10,7 @@ import { TaskStore } from "./components/task-store";
 import VisTaskRunnerApp from "./components/vis-task-runner-app";
 import { formatMs } from "./pretty-time";
 import type { OutputStyle } from "./static-life-cycle";
+import { declaredFallbackMessage, resolveTaskOutputStyle } from "./static-life-cycle";
 import { getStatusInfo } from "./status-utils";
 import type { StdinEntry } from "./types";
 
@@ -62,6 +63,11 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
     const store = new TaskStore(tasks, totalTaskCount);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
     const autoExitSeconds = autoExit === true ? 3 : typeof autoExit === "number" ? autoExit : 0;
+
+    // Fallback notices are appended after endTasks, not when the hook fires: the store
+    // seeds a task's terminal output only when nothing is buffered yet, so an earlier
+    // line would make the real output disappear from the panel.
+    const pendingFallbackNotices = new Set<string>();
 
     let instance: Instance | undefined;
     let resolveDone: () => void;
@@ -289,6 +295,12 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
         endTasks(results: TaskResult[]): void {
             store.endTasks(results);
+
+            for (const result of results) {
+                if (pendingFallbackNotices.delete(result.task.id)) {
+                    store.addOutput(result.task.id, `ⓘ ${declaredFallbackMessage(result.task)}\n`);
+                }
+            }
         },
 
         printCacheDisabledByTask(task: Task): void {
@@ -296,6 +308,12 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             // TUI output panel) — appending is layout-safe, unlike writing
             // to stdout while the React tree is mounted.
             store.addOutput(task.id, "ⓘ caching disabled by task via disableCache()\n");
+        },
+
+        printDeclaredFallback(task: Task): void {
+            if (resolveTaskOutputStyle(task, outputStyle) !== "quiet") {
+                pendingFallbackNotices.add(task.id);
+            }
         },
 
         printEmptyFingerprintWarning(task: Task, reason: string): void {

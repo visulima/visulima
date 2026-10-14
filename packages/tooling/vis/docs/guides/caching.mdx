@@ -111,6 +111,9 @@ on a host without `strace`), what happens next depends on the target:
   key `declared` mode uses. A later run hits as long as the declared inputs have not
   changed, and a change re-executes the task. `vis cache why` prints
   `key: declared-fallback`, and the run summary records `hashSource: "declared-fallback"`.
+  The run that stores the fallback prints one line,
+  `tracker saw no workspace access; cached on declared inputs`. It is informational:
+  nothing fails, and quiet output hides it like other successful output.
 - **The target declares no `inputs`.** Nothing declared can key the run, so it is not
   cached. vis prints a warning instead of storing an entry under an empty key.
 

@@ -247,6 +247,44 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(allOutput).not.toContain("output for app-a:build");
     });
 
+    it("keeps the terminal output and appends the declared-fallback notice after it", () => {
+        expect.assertions(2);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, store } = createRenderer(tasks);
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.printDeclaredFallback!(tasks[0]!);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+        // The orchestrator prints the terminal output after endTasks; it must not be dropped.
+        lifeCycle.printTaskTerminalOutput!(tasks[0]!, "success", "output for app-a:build");
+
+        const output = store.getSnapshot().outputs.get("app-a:build") ?? "";
+
+        expect(output).toContain("output for app-a:build");
+        expect(output).toContain("ⓘ app-a:build: tracker saw no workspace access; cached on declared inputs");
+    });
+
+    it("does not record a declared-fallback notice in quiet mode", () => {
+        expect.assertions(1);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, store } = createDynamicOutputRenderer({
+            args: { parallel: 3, targets: ["build"] },
+            outputStyle: "quiet",
+            projectNames: ["app-a"],
+            tasks,
+        });
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.printDeclaredFallback!(tasks[0]!);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+
+        expect(store.getSnapshot().outputs.get("app-a:build") ?? "").not.toContain("tracker saw no workspace access");
+    });
+
     it("should collect task output via printTaskTerminalOutput", () => {
         expect.assertions(1);
 

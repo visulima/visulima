@@ -184,6 +184,20 @@ describe("tui/StaticOutputLifeCycle", () => {
         expect(allOutput).toContain("Error: something broke");
     });
 
+    it("prints one declared-fallback notice per fallback run", () => {
+        expect.assertions(2);
+
+        const task = createTask("app-a", "build");
+        const lc = createLifeCycle([task]);
+
+        lc.printDeclaredFallback(task);
+
+        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+        expect(allOutput).toContain("app-a:build: tracker saw no workspace access; cached on declared inputs");
+        expect(allOutput.match(/tracker saw no workspace access/g)).toHaveLength(1);
+    });
+
     describe("outputStyle: quiet", () => {
         const createQuietLifeCycle = (tasks: Task[]): StaticOutputLifeCycle =>
             new StaticOutputLifeCycle({
@@ -219,6 +233,19 @@ describe("tui/StaticOutputLifeCycle", () => {
 
             expect(allOutput).not.toContain("cached output");
             expect(allOutput).not.toContain("remote cached");
+        });
+
+        it("suppresses the declared-fallback notice for the successful run", () => {
+            expect.assertions(1);
+
+            const task = createTask("app-a", "build");
+            const lc = createQuietLifeCycle([task]);
+
+            lc.printDeclaredFallback(task);
+
+            const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+            expect(allOutput).not.toContain("tracker saw no workspace access");
         });
 
         it("still prints failed task output", () => {

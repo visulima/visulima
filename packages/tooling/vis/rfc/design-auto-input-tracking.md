@@ -77,6 +77,12 @@ lookup computes the declared hash only for an indexed fallback entry (one with
 no fingerprint), so non-fallback runs do no extra hashing. `TaskResult.hashSource`
 (`"declared-fallback"`) records the key, and `vis cache why` prints it.
 
+The fallback used to be visible only in `vis cache why` and the run summary. The
+run that stores a fallback entry now also fires `printDeclaredFallback(task)`,
+and vis prints one informational line for it, so the choice is visible while the
+run is still on screen. It is never a warning, it fails nothing, and quiet output
+hides it. A cache hit does not print it.
+
 ### G2. No clean-environment default
 
 Every task inherits the full `process.env`. Env vars the command reads but that
