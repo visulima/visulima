@@ -138,7 +138,7 @@ describe("terminal emulator: <Static> output", () => {
         TIMEOUT,
     );
 
-    it.skipIf(!ptyAvailable).fails(
+    it.skipIf(!ptyAvailable)(
         "writes the overflowing live region once on a full-clear frame",
         async () => {
             expect.assertions(1);

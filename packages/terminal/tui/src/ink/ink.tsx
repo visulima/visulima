@@ -1584,6 +1584,12 @@ export default class Ink {
                 return;
             }
 
+            // A throttled trailing render can arrive with the frame already on screen. Clearing again would push
+            // that copy into scrollback, so skip it unless something changed. The final frame on unmount is still drawn.
+            if (output === this.lastOutput && !hasPrepend && !isFrameCleared && !this.log.isCursorDirty() && !this.isUnmounting) {
+                return;
+            }
+
             const isSync = this.shouldSync();
 
             if (isSync) {
