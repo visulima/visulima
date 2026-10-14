@@ -57,6 +57,15 @@ The Ink layer follows Ink 8 for these points:
 - Components that share a focus ID are one Tab stop, `""` is a valid ID, and `disableFocus()` blurs the focused component.
 - Text drops stray control characters (anything below U+0020 except tab and newline, and DEL) and each line of `wrap="truncate*"` text is truncated on its own.
 
+Keyboard input follows the Kitty keyboard protocol and legacy terminals more closely:
+
+- Kitty codepoint 8 is no longer reported as Backspace, and codepoints 1-26 no longer map to Ctrl+letter.
+- Keypad arrows and Enter use the standard key names (`left`, `return`, ...); keypad Enter reports `\r` as its text.
+- The legacy modifier bit 8 is reported as `super` instead of `meta`.
+- A plain `ESC [ 3 ~` (Delete) reports `isKittyProtocol: true`.
+- `reportAssociatedText` enables `reportAllKeysAsEscapeCodes` automatically.
+- Writing with `render()` calls `onRender` after the frame has been written, once per frame.
+
 `@visulima/tui` keeps `react ^19.2.6` as its peer range.
 
 ## Render Option Differences
