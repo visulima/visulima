@@ -1,5 +1,14 @@
-import type { ChildEnvOptions, Task } from "@visulima/task-runner";
-import { buildChildEnv, childEnvNameFilter } from "@visulima/task-runner";
+import type { ChildEnvOptions, ChildSpawnEnv, Task } from "@visulima/task-runner";
+import { buildChildEnv, childEnvNameFilter, resolveChildEnvPolicy } from "@visulima/task-runner";
+
+import type { VisTargetOptions } from "../../task/target-options";
+import { loadEnvFile, resolveTaskCwd } from "../../task/target-options";
+
+/** Environment variable that carries the affected file paths (`affectedFiles: "env"` / `"both"`). */
+export const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
+
+/** Override key carrying validated `VIS_ARG_*` env vars for the target task. */
+export const TASK_ARG_ENV_KEY = "visTaskArgEnv";
 
 /**
  * Names vis writes into its own `process.env`. Every child inherits them under
@@ -51,7 +60,7 @@ export const VIS_TASK_INJECTED_NAMES: Readonly<Record<string, string>> = {
 /** Prefix of the variables that carry validated task arguments (`VIS_ARG_&lt;NAME>`). */
 export const VIS_TASK_ARG_PREFIX = "VIS_ARG_";
 
-/** The parts the run executor merges into a task child's environment. */
+/** The parts the run merges into a task child's environment. */
 export interface TaskEnvParts {
     affectedFilesEnv?: Record<string, string>;
     envFileVars?: Record<string, string>;
@@ -83,55 +92,132 @@ export const composeTaskEnv = (parts: TaskEnvParts): Record<string, string> => {
     };
 };
 
-/** Allow-list a clean child gets on top of the policy: the names vis sets on the parent. */
-export const cleanChildAllowList = (allow: ReadonlyArray<string>): string[] => [...allow, ...VIS_PARENT_ENV_NAMES];
+/**
+ * The child-env policy of one target: the task-runner resolution, with the
+ * vis-owned parent names added to a clean allow-list. Hashing and spawning both
+ * use this, so a name the child can see is always a name the key covers.
+ */
+export const effectiveChildEnvPolicy = (workspace?: ChildEnvOptions, target?: ChildEnvOptions): Required<ChildEnvOptions> => {
+    const policy = resolveChildEnvPolicy(workspace, target);
+
+    return policy.mode === "clean" ? { allow: [...policy.allow, ...VIS_PARENT_ENV_NAMES], mode: "clean" } : policy;
+};
 
 /**
- * The full environment for a clean task child: the parent names the policy
- * keeps, plus the executor's injected entries laid on top.
+ * Whether a parent variable survives clean mode for a policy. Used for the
+ * strict-env check, so an unset-by-clean `$VAR` fails the task instead of
+ * expanding to an empty string.
  */
-export const buildCleanTaskEnv = (options: {
-    allow: ReadonlyArray<string>;
-    injected: Record<string, string>;
-    parentEnv: NodeJS.ProcessEnv;
-}): Record<string, string> =>
-    buildChildEnv({
-        injected: options.injected,
-        parentEnv: options.parentEnv,
-        policy: { allow: cleanChildAllowList(options.allow), mode: "clean" },
-    });
-
-/**
- * Whether a parent variable survives clean mode for a task with `allow`. Used
- * for the strict-env check, so an unset-by-clean `$VAR` fails the task instead
- * of expanding to an empty string.
- */
-export const cleanChildNameFilter = (allow: ReadonlyArray<string>): ((name: string) => boolean) =>
-    childEnvNameFilter({ allow: cleanChildAllowList(allow), mode: "clean" });
-
-/**
- * Tasks that would run through syscall tracking while their policy is `clean`.
- * Tracked runs bypass the executor that builds the clean environment, so these
- * must fail loudly instead of inheriting. `always` tasks always use the
- * executor, so they are not included.
- */
-export const findTrackedCleanTasks = (
-    tasks: ReadonlyArray<Task>,
-    options: { autoFingerprint: boolean; policyFor: (task: Task) => ChildEnvOptions },
-): string[] =>
-    tasks
-        .filter((task) => !task.always && options.policyFor(task).mode === "clean" && (options.autoFingerprint || task.hashMode === "trace"))
-        .map((task) => task.id);
+export const cleanChildNameFilter = (
+    allow: ReadonlyArray<string>,
+    platform: NodeJS.Platform = process.platform,
+): ((name: string) => boolean) => childEnvNameFilter({ allow: [...allow, ...VIS_PARENT_ENV_NAMES], mode: "clean" }, platform);
 
 /**
  * How one spawn of a task is launched under its child-env policy. Clean builds
- * the complete environment here and turns parent inheritance off on the spawn.
- * Inherit leaves the spawner's default, which merges the parent env in.
+ * the complete environment from the parent (policy-filtered) and the injected
+ * entries, and turns parent inheritance off on the spawn. Inherit leaves the
+ * spawner's default, which merges the parent env in.
  */
-export const taskSpawnOptions = (policy: Required<ChildEnvOptions>, injected: Record<string, string>): { env: Record<string, string>; inheritEnv: boolean } => {
+export const taskSpawnOptions = (
+    policy: Required<ChildEnvOptions>,
+    injected: Record<string, string>,
+    platform: NodeJS.Platform = process.platform,
+): ChildSpawnEnv => {
     if (policy.mode === "clean") {
-        return { env: buildCleanTaskEnv({ allow: policy.allow, injected, parentEnv: process.env }), inheritEnv: false };
+        return {
+            env: buildChildEnv({ injected, parentEnv: process.env, platform, policy: { allow: policy.allow, mode: "clean" } }),
+            inheritEnv: false,
+        };
     }
 
     return { env: injected, inheritEnv: true };
+};
+
+/** Returns the visible target options of a task, as the executor reads them. */
+export const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
+    const options = task.overrides["visOptions"];
+
+    if (options && typeof options === "object") {
+        return options;
+    }
+
+    return undefined;
+};
+
+/**
+ * Per-run env-file cache: (cwd, envFileSpec) → parsed env vars.
+ * With `envFile: true` or a shared config pointing at one dotenv
+ * path, every task would otherwise re-read + re-parse the same file.
+ */
+type EnvFileCache = Map<string, Record<string, string>>;
+
+const loadEnvFileCached = (cache: EnvFileCache, cwd: string, envFileSpec: NonNullable<VisTargetOptions["envFile"]>): Record<string, string> => {
+    const key = `${cwd}\0${typeof envFileSpec === "string" ? envFileSpec : String(envFileSpec)}`;
+    const hit = cache.get(key);
+
+    if (hit) {
+        return hit;
+    }
+
+    const parsed = loadEnvFile(cwd, envFileSpec);
+
+    cache.set(key, parsed);
+
+    return parsed;
+};
+
+/**
+ * What every spawn of a task in one run shares: the affected files, the
+ * policy, the invocation directory, service env and the granted parallelism.
+ */
+export interface TaskSpawnContext {
+    affectedFiles?: string[];
+    childEnvPolicy: (task: Task) => Required<ChildEnvOptions>;
+    envFileCache: EnvFileCache;
+    initCwd: string;
+    serviceEnvByTaskId?: ReadonlyMap<string, Record<string, string>>;
+    taskSlots: number;
+    workspaceRoot: string;
+}
+
+/** Creates the per-run spawn context, with its own env-file cache. */
+export const createTaskSpawnContext = (input: Omit<TaskSpawnContext, "envFileCache">): TaskSpawnContext => {
+    return {
+        ...input,
+        envFileCache: new Map(),
+    };
+};
+
+/**
+ * The environment one spawn of a task runs with. It is the single place the
+ * child environment is built: the executor, the persistent-target launch and
+ * the traced run all call it, so they cannot drift apart.
+ *
+ * `cwd` and `env` mirror the task-runner's `TaskExecutionOptions`. The
+ * `envFile` cascade is resolved from the same working directory the child runs in.
+ */
+export const resolveTaskSpawn = (context: TaskSpawnContext, task: Task, options: { cwd?: string; env?: Record<string, string> } = {}): ChildSpawnEnv => {
+    const visOptions = getTaskOptions(task);
+    const cwd = resolveTaskCwd(context.workspaceRoot, options.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
+
+    const envFileVars = visOptions?.envFile ? loadEnvFileCached(context.envFileCache, cwd, visOptions.envFile) : undefined;
+
+    const affectedFilesEnv: Record<string, string> = {};
+
+    if (context.affectedFiles && context.affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
+        affectedFilesEnv[AFFECTED_FILES_ENV] = context.affectedFiles.join("\n");
+    }
+
+    const injected = composeTaskEnv({
+        affectedFilesEnv,
+        envFileVars,
+        execEnv: options.env,
+        initCwd: context.initCwd,
+        serviceEnv: context.serviceEnvByTaskId?.get(task.id),
+        taskArgEnv: task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined,
+        taskSlots: context.taskSlots,
+    });
+
+    return taskSpawnOptions(context.childEnvPolicy(task), injected);
 };

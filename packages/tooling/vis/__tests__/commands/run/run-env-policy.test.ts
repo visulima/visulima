@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -15,7 +15,7 @@ const PARENT_VAR = "G2_VIS_UNRELATED";
 const ALLOWED_VAR = "G2_VIS_ALLOWED";
 const HIDDEN_VAR = "G2_VIS_HIDDEN";
 
-const seedWorkspace = (workspaceRoot: string, envOut: string, countFile: string): void => {
+const seedWorkspace = (workspaceRoot: string, envOut: string, countFile: string, tracedCountFile: string): void => {
     writeFileSync(join(workspaceRoot, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
     writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ name: "root" }));
 
@@ -30,6 +30,9 @@ const seedWorkspace = (workspaceRoot: string, envOut: string, countFile: string)
     writeFileSync(join(packageDir, "dump.cjs"), `require("node:fs").writeFileSync(${JSON.stringify(envOut)}, JSON.stringify(process.env));\n`);
     // A cached target counts its own runs, so a cache hit leaves the count unchanged.
     writeFileSync(join(packageDir, "count.cjs"), `require("node:fs").appendFileSync(${JSON.stringify(countFile)}, "x");\n`);
+    // A traced counter that writes outside the workspace, so the tracker does not see it as a self-modified input.
+    // It reads its own source, which the tracker records as a workspace input, and counts outside the workspace.
+    writeFileSync(join(packageDir, "count-traced.cjs"), `const fs = require("node:fs");\nfs.readFileSync(__filename);\nfs.appendFileSync(${JSON.stringify(tracedCountFile)}, "x");\n`);
 
     writeFileSync(
         join(packageDir, "project.json"),
@@ -65,8 +68,17 @@ const seedWorkspace = (workspaceRoot: string, envOut: string, countFile: string)
                     options: { strictEnv: true },
                     outputs: [],
                 },
-                // Hashing traced: a clean policy must refuse this rather than inherit.
-                traced: { command: "node dump.cjs", hashMode: "trace", outputs: [] },
+                // Traced hashing: the tracker runs the command, so it gets the same environment as an executor run.
+                traced: { command: "node dump.cjs", hashMode: "trace", options: { envFile: ".env.test" }, outputs: [] },
+                // Traced and clean, keyed on the names its child can see.
+                "traced-keyed": {
+                    cache: true,
+                    command: "node count-traced.cjs",
+                    fingerprintEnv: ["G2_VIS_*"],
+                    hashMode: "trace",
+                    options: { env: { allow: [ALLOWED_VAR], mode: "clean" } },
+                    outputs: [],
+                },
             },
         }),
     );
@@ -76,9 +88,22 @@ describe("vis run taskRunner.env and options.env are forwarded to the spawned ch
     let workspaceRoot: string;
     let envOut: string;
     let countFile: string;
+    let tracedCountFile: string;
     const saved = { ...process.env };
 
     const readEnv = (): Record<string, string> => JSON.parse(readFileSync(envOut, "utf8")) as Record<string, string>;
+
+    // Traced targets are only tracked when the run is cached, so their tests opt in.
+    const cachedOptions = (): Record<string, unknown> => { return { cache: true, cacheDir: join(workspaceRoot, ".cache") }; };
+
+    // How many times the traced counter ran; a cache hit adds nothing.
+    const tracedRuns = (): number => {
+        try {
+            return readFileSync(tracedCountFile, "utf8").length;
+        } catch {
+            return 0;
+        }
+    };
 
     // How many times the cached target actually ran; a cache hit adds nothing.
     const count = (): number => {
@@ -103,10 +128,12 @@ describe("vis run taskRunner.env and options.env are forwarded to the spawned ch
     };
 
     beforeEach(() => {
-        workspaceRoot = createTemporaryDirectory("vis-run-env-policy-");
+        // The tracker reports real paths, so the workspace must be too (macOS temp dirs are symlinks).
+        workspaceRoot = realpathSync(createTemporaryDirectory("vis-run-env-policy-"));
         envOut = join(workspaceRoot, "child-env.json");
         countFile = join(workspaceRoot, "count.txt");
-        seedWorkspace(workspaceRoot, envOut, countFile);
+        tracedCountFile = join(createTemporaryDirectory("vis-run-traced-count-"), "count.txt");
+        seedWorkspace(workspaceRoot, envOut, countFile, tracedCountFile);
 
         process.env[PARENT_VAR] = "parent";
         process.env[ALLOWED_VAR] = "allowed";
@@ -154,6 +181,17 @@ describe("vis run taskRunner.env and options.env are forwarded to the spawned ch
 
         expect(env).not.toHaveProperty(PARENT_VAR);
         expect(env["G2_FROM_ENVFILE"]).toBe("file-value");
+        expect(env["INIT_CWD"]).toBeDefined();
+    });
+
+    it("gives a persistent target VIS_TASK_SLOTS under the default inherit policy", async () => {
+        expect.assertions(2);
+
+        await run(["serve"], undefined);
+
+        const env = readEnv();
+
+        expect(env["VIS_TASK_SLOTS"]).toBe("1");
         expect(env["INIT_CWD"]).toBeDefined();
     });
 
@@ -224,10 +262,56 @@ describe("vis run taskRunner.env and options.env are forwarded to the spawned ch
         expect(existsSync(envOut)).toBe(true);
     });
 
-    it("refuses a clean target that would run with syscall tracking", async () => {
-        expect.assertions(1);
+    it("gives a clean traced target the clean environment, vis variables and the tracker's own", async () => {
+        expect.assertions(5);
 
-        await expect(run(["traced"], { taskRunner: { env: { mode: "clean" } } })).rejects.toThrow(/syscall tracking/);
+        await run(["traced"], { taskRunner: { env: { mode: "clean" } } }, cachedOptions());
+
+        const env = readEnv();
+
+        expect(env).not.toHaveProperty(PARENT_VAR);
+        expect(env["VIS_TASK_SLOTS"]).toBe("1");
+        expect(env["INIT_CWD"]).toBeDefined();
+        expect(env["G2_FROM_ENVFILE"]).toBe("file-value");
+        // The tracker writes its hints path into the child, so the run went through it.
+        expect(env["TASK_RUNNER_HINTS"]).toBeDefined();
+    });
+
+    it("gives a traced target the vis variables under the default inherit policy", async () => {
+        expect.assertions(5);
+
+        await run(["traced"], undefined, cachedOptions());
+
+        const env = readEnv();
+
+        expect(env[PARENT_VAR]).toBe("parent");
+        expect(env["VIS_TASK_SLOTS"]).toBe("1");
+        expect(env["INIT_CWD"]).toBeDefined();
+        expect(env["G2_FROM_ENVFILE"]).toBe("file-value");
+        expect(env["TASK_RUNNER_HINTS"]).toBeDefined();
+    });
+
+    it("keys a clean traced target on the names its child can see", async () => {
+        expect.assertions(3);
+
+        const cached = cachedOptions();
+        const visConfig = undefined;
+
+        await run(["traced-keyed"], visConfig, cached);
+
+        expect(tracedRuns()).toBe(1);
+
+        // HIDDEN is not visible to the clean child, so the traced key does not change.
+        process.env[HIDDEN_VAR] = "2";
+        await run(["traced-keyed"], visConfig, cached);
+
+        expect(tracedRuns()).toBe(1);
+
+        // ALLOWED is visible and matches `G2_VIS_*`: the traced key changes.
+        process.env[ALLOWED_VAR] = "changed";
+        await run(["traced-keyed"], visConfig, cached);
+
+        expect(tracedRuns()).toBe(2);
     });
 
     it("keys the cache on the clean child's visible names only", async () => {

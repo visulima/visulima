@@ -1,14 +1,13 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { Task } from "@visulima/task-runner";
 import { describe, expect, it } from "vitest";
 
 import {
-    buildCleanTaskEnv,
     cleanChildNameFilter,
     composeTaskEnv,
-    findTrackedCleanTasks,
+    effectiveChildEnvPolicy,
+    taskSpawnOptions,
     VIS_PARENT_ENV_EXEMPT,
     VIS_PARENT_ENV_NAMES,
     VIS_TASK_INJECTED_NAMES,
@@ -76,16 +75,6 @@ const findAssignments = (): Assignment[] => {
     return found;
 };
 
-const task = (id: string, extra: Partial<Task> = {}): Task => {
-    return {
-        id,
-        outputs: [],
-        overrides: {},
-        target: { project: "app", target: id.split(":").pop() ?? id },
-        ...extra,
-    };
-};
-
 describe("vis run injected and parent environment", () => {
     it("every process.env write in the source is allowed under clean mode or exempt", () => {
         expect.assertions(2);
@@ -146,7 +135,11 @@ describe("vis run injected and parent environment", () => {
             taskSlots: 3,
         });
 
-        const clean = buildCleanTaskEnv({ allow: [], injected, parentEnv: { G2_UNRELATED: "parent", PATH: "/bin" } });
+        process.env["G2_UNRELATED"] = "parent";
+
+        const clean = taskSpawnOptions(effectiveChildEnvPolicy(undefined, { mode: "clean" }), injected, "linux").env;
+
+        Reflect.deleteProperty(process.env, "G2_UNRELATED");
 
         expect(Object.keys(injected).map((name) => clean[name])).toStrictEqual(Object.values(injected));
         // Every name the table documents is really set by the composer.
@@ -154,21 +147,49 @@ describe("vis run injected and parent environment", () => {
         expect(clean).not.toHaveProperty("G2_UNRELATED");
     });
 
-    it("selects a task for the tracked-path refusal only when it is clean and would be tracked", () => {
-        expect.assertions(2);
+    it("adds the vis parent names to a clean policy only, so hashing and spawning see the same names", () => {
+        expect.assertions(3);
 
-        const tasks = [
-            task("app:declared"),
-            task("app:traced", { hashMode: "trace" }),
-            task("app:always", { always: true }),
-            task("app:inherit-trace", { hashMode: "trace" }),
-        ];
-        const policyFor = (candidate: Task) =>
-            (candidate.id === "app:inherit-trace" ? { allow: [], mode: "inherit" as const } : { allow: [], mode: "clean" as const });
+        expect(effectiveChildEnvPolicy(undefined, { mode: "inherit" })).toStrictEqual({ allow: [], mode: "inherit" });
+        expect(effectiveChildEnvPolicy({ allow: ["NODE_ENV"], mode: "clean" })).toStrictEqual({
+            allow: ["NODE_ENV", ...VIS_PARENT_ENV_NAMES],
+            mode: "clean",
+        });
+        expect(effectiveChildEnvPolicy(undefined, { mode: "clean" }).allow).toStrictEqual([...VIS_PARENT_ENV_NAMES]);
+    });
 
-        // Without autoFingerprint only the trace-mode clean task is tracked.
-        expect(findTrackedCleanTasks(tasks, { autoFingerprint: false, policyFor })).toStrictEqual(["app:traced"]);
-        // autoFingerprint tracks every task, except always-tasks, which use the executor.
-        expect(findTrackedCleanTasks(tasks, { autoFingerprint: true, policyFor })).toStrictEqual(["app:declared", "app:traced"]);
+    it("builds a Windows clean spawn from the Windows names, folding Path against PATH", () => {
+        expect.assertions(6);
+
+        // Set the names as Windows holds them in process.env, and restore them after.
+        const names = ["Path", "SystemRoot", "TMPDIR"];
+        const saved = new Map(names.map((name) => [name, process.env[name]]));
+
+        process.env["Path"] = String.raw`C:\bin`;
+        process.env["SystemRoot"] = String.raw`C:\Windows`;
+        process.env["TMPDIR"] = "/tmp";
+
+        try {
+            const spawn = taskSpawnOptions(effectiveChildEnvPolicy(undefined, { mode: "clean" }), { PATH: String.raw`C:\injected` }, "win32");
+
+            expect(spawn.inheritEnv).toBe(false);
+            expect(spawn.env).toHaveProperty("SystemRoot", String.raw`C:\Windows`);
+            // The injected PATH replaces the parent's Path: one variable, not two.
+            expect(spawn.env).toHaveProperty("PATH", String.raw`C:\injected`);
+            expect(spawn.env).not.toHaveProperty("Path");
+            // TMPDIR is a POSIX essential, so the Windows policy drops it.
+            expect(spawn.env).not.toHaveProperty("TMPDIR");
+            expect(cleanChildNameFilter([], "win32")("Path")).toBe(true);
+        } finally {
+            for (const name of names) {
+                const value = saved.get(name);
+
+                if (value === undefined) {
+                    Reflect.deleteProperty(process.env, name);
+                } else {
+                    process.env[name] = value;
+                }
+            }
+        }
     });
 });

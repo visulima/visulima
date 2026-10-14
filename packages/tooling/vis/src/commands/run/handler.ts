@@ -24,7 +24,6 @@ import {
     parsePartition,
     pickChildParentEnv,
     readLastRunSummary,
-    resolveChildEnvPolicy,
     resolveTurboEnvCompat,
     reverseTaskGraph,
     runConcurrently,
@@ -65,7 +64,7 @@ import {
     suggestTargets,
 } from "../../task/target-discovery";
 import type { VisTargetConfiguration, VisTargetOptions } from "../../task/target-options";
-import { detectCurrentOs, loadEnvFile, matchesRunnerTags, resolveTargetShell, resolveTaskCwd, shouldRunInCI } from "../../task/target-options";
+import { detectCurrentOs, matchesRunnerTags, resolveTargetShell, resolveTaskCwd, shouldRunInCI } from "../../task/target-options";
 import { ServiceDockStore } from "../../tui/components/service-dock/service-dock-store";
 import type { TaskStore } from "../../tui/components/task-store";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
@@ -87,9 +86,16 @@ import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
 import { buildBootstrapPaths, describeServicesPolicySource, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
 import { resolveTaskArguments } from "./task-arguments";
-import { cleanChildAllowList, composeTaskEnv, findTrackedCleanTasks, taskSpawnOptions } from "./task-env";
-
-const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
+import type { TaskSpawnContext } from "./task-env";
+import {
+    AFFECTED_FILES_ENV,
+    createTaskSpawnContext,
+    effectiveChildEnvPolicy,
+    getTaskOptions,
+    resolveTaskSpawn,
+    TASK_ARG_ENV_KEY,
+    taskSpawnOptions,
+} from "./task-env";
 
 /**
  * Per-service readiness re-check budget for the auto-attach probe.
@@ -120,15 +126,9 @@ interface PersistentTasksLifecycleHooks {
  * forces the JS fallback in `runConcurrently` (the variant with
  * hardened SIGINT/SIGTERM/exit cleanup).
  */
-const runPersistentTasks = async (
-    tasks: Task[],
-    workspaceRoot: string,
-    affectedFiles: string[] | undefined,
-    initCwd: string,
-    lifecycleHooks: PersistentTasksLifecycleHooks | undefined,
-    serviceEnvByTaskId: ReadonlyMap<string, Record<string, string>> | undefined,
-    childEnvPolicy: (task: Task) => Required<ChildEnvOptions>,
-): Promise<void> => {
+const runPersistentTasks = async (tasks: Task[], spawnContext: TaskSpawnContext, lifecycleHooks: PersistentTasksLifecycleHooks | undefined): Promise<void> => {
+    const { workspaceRoot } = spawnContext;
+
     const commands = tasks
         .map((task) => {
             const command = task.overrides["command"] as string | undefined;
@@ -139,13 +139,6 @@ const runPersistentTasks = async (
 
             const visOptions = task.overrides["visOptions"] as VisTargetOptions | undefined;
             const cwd = resolveTaskCwd(workspaceRoot, task.projectRoot, Boolean(visOptions?.runFromWorkspaceRoot));
-
-            const envFileVars = visOptions?.envFile ? loadEnvFile(cwd, visOptions.envFile) : {};
-            const affectedEnv: Record<string, string>
-                = affectedFiles && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")
-                    ? { [AFFECTED_FILES_ENV]: affectedFiles.join("\n") }
-                    : {};
-            const serviceEnv = serviceEnvByTaskId?.get(task.id) ?? {};
 
             // Persistent tasks are dev servers / watchers. Under the live
             // TUI run them through a PTY by default so TTY-aware CLIs
@@ -167,15 +160,8 @@ const runPersistentTasks = async (
                 workspacePty: visOptions?.pty,
             });
 
-            // The same child-env policy as the executor: a clean target gets only
-            // its allow-listed parent names plus the variables injected here.
-            const spawn = taskSpawnOptions(childEnvPolicy(task), {
-                INIT_CWD: initCwd,
-                ...envFileVars,
-                ...serviceEnv,
-                ...affectedEnv,
-                ...(task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined),
-            });
+            // The same spawn as the executor and the traced run, so the three cannot drift.
+            const spawn = resolveTaskSpawn(spawnContext, task);
 
             return {
                 command,
@@ -573,21 +559,6 @@ class OutputRingBuffer {
 }
 
 /**
- * Extract vis target options from a Task. Target options travel through
- * task-runner as part of `task.overrides.visOptions`, opaquely to the
- * runner but recovered here for per-task behaviour tweaks.
- */
-const getTaskOptions = (task: Task): VisTargetOptions | undefined => {
-    const options = task.overrides["visOptions"];
-
-    if (options && typeof options === "object") {
-        return options;
-    }
-
-    return undefined;
-};
-
-/**
  * Wraps a string in single quotes for safe POSIX shell execution.
  * Used when we know the consumer is a POSIX shell — e.g. when forwarding
  * a value as the argument of `&lt;shell> -c &lt;value>` regardless of OS.
@@ -630,9 +601,6 @@ const buildAffectedFilesArgs = (command: string, affectedFiles: string[] | undef
 
 /** Override key carrying CLI args that should only reach the target task. */
 const FORWARDED_ARGS_KEY = "visForwardedArgs";
-
-/** Override key carrying validated `VIS_ARG_*` env vars for the target task. */
-const TASK_ARG_ENV_KEY = "visTaskArgEnv";
 
 /**
  * Appends forwarded positional args (`vis run test --reporter=verbose`)
@@ -723,13 +691,6 @@ interface ExecutorDependencies {
     affectedFiles?: string[];
 
     /**
-     * Child-environment policy for one task, after the per-target
-     * `options.env` override. A clean policy builds the child environment
-     * exactly and turns parent inheritance off on the spawn.
-     */
-    childEnvPolicy: (task: Task) => Required<ChildEnvOptions>;
-
-    /**
      * Host OS resolved once at run-start so the per-task executor
      * doesn't call `os.platform()` on every invocation.
      */
@@ -744,32 +705,17 @@ interface ExecutorDependencies {
     hooks?: Hookable<VisHooks>;
 
     /**
-     * The directory the user launched `vis` from, captured before any
-     * workspace/package discovery changes cwd. Surfaced to child tasks
-     * as `INIT_CWD`, matching pnpm/npm/yarn convention so scripts can
-     * reference the original invocation directory.
-     */
-    initCwd: string;
-
-    /**
      * Optional task-runner lifecycle to receive streaming stdout/stderr
      * chunks. Plumbed so plugin authors get live output without having
      * to wait for the buffered dump at task-end.
      */
     lifeCycle?: LifeCycleInterface;
+
     mutexPool?: MutexPool;
     onOutput?: (taskId: string, text: string) => void;
     onOutputReplace?: (taskId: string, fullContent: string) => void;
     /** Optional global retry budget applied across all tasks in the run. */
     retryBudget?: RetryBudget;
-
-    /**
-     * Per-dependent task env contributed by externally-registered
-     * services. Pre-computed by `applyServiceRegistry` before the
-     * service edges are pruned, so the executor doesn't need to walk
-     * the post-prune graph to find what env to merge.
-     */
-    serviceEnvByTaskId?: Map<string, Record<string, string>>;
 
     /**
      * Set when auto-start is active. The executor calls
@@ -780,6 +726,13 @@ interface ExecutorDependencies {
      * boot-phase events through the stdout marker channel instead.
      */
     serviceEventBridge?: ServiceEventBridge;
+
+    /**
+     * The run's spawn context: child-env policy, invocation directory, service env,
+     * granted parallelism and the env-file cache. Every spawn reads its environment
+     * through resolveTaskSpawn with it.
+     */
+    spawnContext: TaskSpawnContext;
     stdinRegistry?: Map<string, StdinEntry>;
 
     /**
@@ -790,14 +743,6 @@ interface ExecutorDependencies {
      */
     strictEnv?: boolean;
 
-    /**
-     * Effective parallelism for this run (the resolved `--parallel` value).
-     * Surfaced to every child task as `VIS_TASK_SLOTS` so nested worker
-     * pools (e.g. Vitest's `maxWorkers`) can size themselves against the
-     * concurrency vis already grants them and avoid CPU oversubscription —
-     * `5 × cores` worker processes when 5 projects each spawn a full pool.
-     */
-    taskSlots: number;
     workspaceRoot: string;
 }
 
@@ -816,326 +761,278 @@ interface ExecutorDependencies {
  * `affectedFiles`, and per-target `shell`/`unixShell`/`windowsShell`.
  */
 
-/**
- * Per-run env-file cache: (cwd, envFileSpec) → parsed env vars.
- * With `envFile: true` or a shared config pointing at one dotenv
- * path, every task would otherwise re-read + re-parse the same file.
- */
-type EnvFileCache = Map<string, Record<string, string>>;
+const createConcurrentExecutor = (deps: ExecutorDependencies) => async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
+    const {
+        affectedFiles,
+        currentOs,
+        hooks,
+        lifeCycle,
+        mutexPool,
+        onOutput,
+        onOutputReplace,
+        retryBudget,
+        serviceEventBridge: bridge,
+        spawnContext,
+        stdinRegistry,
+        strictEnv: workspaceStrictEnv,
+        workspaceRoot,
+    } = deps;
 
-const loadEnvFileCached = (cache: EnvFileCache, cwd: string, envFileSpec: NonNullable<VisTargetOptions["envFile"]>): Record<string, string> => {
-    const key = `${cwd}\0${typeof envFileSpec === "string" ? envFileSpec : String(envFileSpec)}`;
-    const hit = cache.get(key);
+    const visOptions = getTaskOptions(task);
 
-    if (hit) {
-        return hit;
+    const resolvedCwd = resolveTaskCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
+
+    // `overrides.command` is already token-expanded at the build
+    // site so the cache hasher sees the resolved form. Forwarded
+    // args and the `affectedFiles: "args"` trailing-append both
+    // keep their existing append-at-end semantics.
+    const expandedCommand = task.overrides["command"] as string | undefined;
+
+    if (!expandedCommand) {
+        return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
-    const parsed = loadEnvFile(cwd, envFileSpec);
+    // Forwarded args and `affectedFiles: "args"` belong to the end of the
+    // whole `&&` chain, so only the last segment of a split target gets them.
+    const isChainHead = task.segment !== undefined && task.segment.index < task.segment.count;
+    const commandWithArgs = isChainHead ? expandedCommand : appendForwardedArgs(expandedCommand, task);
+    const commandWithAffected = isChainHead ? commandWithArgs : buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
 
-    cache.set(key, parsed);
+    const customShell = resolveTargetShell(visOptions, currentOs);
+    // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
+    // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
+    // An empty array would drop the flag entirely (turning `node 'cmd'`
+    // into a file lookup), so fall back to `-c`.
+    const shellArgs = visOptions?.shellArgs;
+    const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
+    // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
+    // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
+    // the command under cmd.exe, breaking e.g. `node -e` on Windows.
+    const command = customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
 
-    return parsed;
-};
+    // Clean mode builds the complete child environment, so the child sees only
+    // the policy's parent names plus the injected entries, and the spawn does not
+    // inherit the parent env. Inherit mode keeps the spawner's default.
+    const spawn = resolveTaskSpawn(spawnContext, task, execOptions);
+    const childPolicy = spawnContext.childEnvPolicy(task);
+    const cleanChild = childPolicy.mode === "clean";
 
-const createConcurrentExecutor = (deps: ExecutorDependencies) => {
-    const envFileCache: EnvFileCache = new Map();
+    // Per-target opt-in/out wins over the workspace flag — let a
+    // single target tolerate `$VAR` references when the rest of the
+    // workspace runs strict, and vice versa.
+    const strictEnvActive = visOptions?.strictEnv ?? workspaceStrictEnv ?? false;
 
-    return async (task: Task, execOptions: { cwd?: string; env?: Record<string, string> }) => {
-        const {
-            affectedFiles,
-            currentOs,
-            hooks,
-            initCwd,
-            lifeCycle,
-            mutexPool,
-            onOutput,
-            onOutputReplace,
-            retryBudget,
-            serviceEnvByTaskId,
-            serviceEventBridge: bridge,
-            stdinRegistry,
-            strictEnv: workspaceStrictEnv,
-            taskSlots,
-            workspaceRoot,
-        } = deps;
-
-        const visOptions = getTaskOptions(task);
-
-        const resolvedCwd = resolveTaskCwd(workspaceRoot, execOptions.cwd ?? task.projectRoot, visOptions?.runFromWorkspaceRoot === true);
-
-        // `overrides.command` is already token-expanded at the build
-        // site so the cache hasher sees the resolved form. Forwarded
-        // args and the `affectedFiles: "args"` trailing-append both
-        // keep their existing append-at-end semantics.
-        const expandedCommand = task.overrides["command"] as string | undefined;
-
-        if (!expandedCommand) {
-            return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
-        }
-
-        // Forwarded args and `affectedFiles: "args"` belong to the end of the
-        // whole `&&` chain, so only the last segment of a split target gets them.
-        const isChainHead = task.segment !== undefined && task.segment.index < task.segment.count;
-        const commandWithArgs = isChainHead ? expandedCommand : appendForwardedArgs(expandedCommand, task);
-        const commandWithAffected = isChainHead ? commandWithArgs : buildAffectedFilesArgs(commandWithArgs, affectedFiles, visOptions?.affectedFiles);
-
-        const customShell = resolveTargetShell(visOptions, currentOs);
-        // `shellArgs` lets a target pick a non-`-c` interpreter (e.g.
-        // `shell: "node", shellArgs: ["-e"]` runs the command as inline JS).
-        // An empty array would drop the flag entirely (turning `node 'cmd'`
-        // into a file lookup), so fall back to `-c`.
-        const shellArgs = visOptions?.shellArgs;
-        const shellInvokeArgs = shellArgs && shellArgs.length > 0 ? shellArgs.join(" ") : "-c";
-        // `shellQuote` is platform-aware (POSIX single-quote / cmd.exe
-        // double-quote) — `singleQuoteEscape` would leave literal `'…'` around
-        // the command under cmd.exe, breaking e.g. `node -e` on Windows.
-        const command = customShell ? `${customShell} ${shellInvokeArgs} ${shellQuote(commandWithAffected)}` : commandWithAffected;
-
-        const envFileVars = visOptions?.envFile ? loadEnvFileCached(envFileCache, resolvedCwd, visOptions.envFile) : undefined;
-
-        const affectedFilesEnv: Record<string, string> = {};
-
-        if (affectedFiles && affectedFiles.length > 0 && (visOptions?.affectedFiles === "env" || visOptions?.affectedFiles === "both")) {
-            affectedFilesEnv[AFFECTED_FILES_ENV] = affectedFiles.join("\n");
-        }
-
-        const serviceEnv = serviceEnvByTaskId?.get(task.id);
-
-        const mergedEnv = composeTaskEnv({
-            affectedFilesEnv,
-            envFileVars,
-            execEnv: execOptions.env,
-            initCwd,
-            serviceEnv,
-            taskArgEnv: task.overrides[TASK_ARG_ENV_KEY] as Record<string, string> | undefined,
-            taskSlots,
+    if (strictEnvActive) {
+        const violation = checkStrictEnv({
+            command: commandWithAffected,
+            // A variable the clean child cannot see is unset for the check,
+            // so `$VAR` fails the task instead of expanding to "".
+            processEnv: cleanChild ? pickChildParentEnv(process.env, childPolicy) : process.env,
+            taskEnv: spawn.env,
+            taskId: task.id,
         });
 
-        // Clean mode builds the child environment here, so the child sees only
-        // the allow-listed parent names plus `mergedEnv`, and the spawn does not
-        // inherit the parent env. Inherit mode keeps the spawner's default.
-        const childPolicy = deps.childEnvPolicy(task);
-        const cleanChild = childPolicy.mode === "clean";
-        const spawn = taskSpawnOptions(childPolicy, mergedEnv);
+        if (violation) {
+            const message = formatStrictEnvError(violation);
 
-        // Per-target opt-in/out wins over the workspace flag — let a
-        // single target tolerate `$VAR` references when the rest of the
-        // workspace runs strict, and vice versa.
-        const strictEnvActive = visOptions?.strictEnv ?? workspaceStrictEnv ?? false;
+            lifeCycle?.onTaskStderr?.(task, message);
 
-        if (strictEnvActive) {
-            const violation = checkStrictEnv({
-                command: commandWithAffected,
-                // A variable the clean child cannot see is unset for the check,
-                // so `$VAR` fails the task instead of expanding to "".
-                processEnv: cleanChild ? pickChildParentEnv(process.env, { allow: cleanChildAllowList(childPolicy.allow), mode: "clean" }) : process.env,
-                taskEnv: mergedEnv,
-                taskId: task.id,
-            });
+            return { code: 1, terminalOutput: message };
+        }
+    }
 
-            if (violation) {
-                const message = formatStrictEnvError(violation);
+    // PTY stdio is enabled when either an interactive stdin registry is
+    // present (live TUI dev tasks) or the target config opts in via
+    // `options.pty`. In both cases output flows through TerminalBuffer,
+    // which normalizes ANSI escapes into a deterministic final frame.
+    //
+    // Per-target `task.pty` (from TargetConfiguration.pty) overrides
+    // both workspace-level signals so individual targets can opt in
+    // or out independent of the ambient setup. Subtly different from
+    // the pre-spawn builder: here a TUI stdin registry forces PTY
+    // even when `visOptions.pty === false` (the user needs to pass
+    // input through), so we don't gate `ptyInteractive` on the
+    // workspace toggle.
+    const ptyOptIn = visOptions?.pty === true;
+    const ptyInteractive = Boolean(stdinRegistry);
+    const isPty = task.pty === true ? true : task.pty === false ? false : ptyInteractive || ptyOptIn;
 
-                lifeCycle?.onTaskStderr?.(task, message);
+    if (isPty) {
+        task.cache = false;
+    }
 
-                return { code: 1, terminalOutput: message };
+    const output = isPty ? undefined : new OutputRingBuffer(MAX_OUTPUT_BYTES);
+    const termBuf = isPty ? new TerminalBuffer(MAX_OUTPUT_BYTES) : undefined;
+
+    // Held across the runOnce lifetime so the timeout watchdog can
+    // SIGTERM the child process when the wall-clock budget is exceeded.
+    let killCurrentProcess: ((signal?: string) => void) | undefined;
+
+    const onEvent = (event: ProcessEvent): void => {
+        if (event.kind === "started") {
+            killCurrentProcess = event.kill;
+
+            if (event.write && stdinRegistry) {
+                stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
             }
+
+            // Registry-mode service tasks: the wrapper (`vis service
+            // start <id>`) just spawned. The bridge transitions the
+            // dock row to `starting`. Ephemeral entries no-op here —
+            // they receive boot events from the stdout marker channel.
+            bridge?.onRegistryTaskStarted(task.id);
         }
 
-        // PTY stdio is enabled when either an interactive stdin registry is
-        // present (live TUI dev tasks) or the target config opts in via
-        // `options.pty`. In both cases output flows through TerminalBuffer,
-        // which normalizes ANSI escapes into a deterministic final frame.
-        //
-        // Per-target `task.pty` (from TargetConfiguration.pty) overrides
-        // both workspace-level signals so individual targets can opt in
-        // or out independent of the ambient setup. Subtly different from
-        // the pre-spawn builder: here a TUI stdin registry forces PTY
-        // even when `visOptions.pty === false` (the user needs to pass
-        // input through), so we don't gate `ptyInteractive` on the
-        // workspace toggle.
-        const ptyOptIn = visOptions?.pty === true;
-        const ptyInteractive = Boolean(stdinRegistry);
-        const isPty = task.pty === true ? true : task.pty === false ? false : ptyInteractive || ptyOptIn;
-
-        if (isPty) {
-            task.cache = false;
-        }
-
-        const output = isPty ? undefined : new OutputRingBuffer(MAX_OUTPUT_BYTES);
-        const termBuf = isPty ? new TerminalBuffer(MAX_OUTPUT_BYTES) : undefined;
-
-        // Held across the runOnce lifetime so the timeout watchdog can
-        // SIGTERM the child process when the wall-clock budget is exceeded.
-        let killCurrentProcess: ((signal?: string) => void) | undefined;
-
-        const onEvent = (event: ProcessEvent): void => {
-            if (event.kind === "started") {
-                killCurrentProcess = event.kill;
-
-                if (event.write && stdinRegistry) {
-                    stdinRegistry.set(task.id, { kill: event.kill, resize: event.resize, write: event.write });
-                }
-
-                // Registry-mode service tasks: the wrapper (`vis service
-                // start <id>`) just spawned. The bridge transitions the
-                // dock row to `starting`. Ephemeral entries no-op here —
-                // they receive boot events from the stdout marker channel.
-                bridge?.onRegistryTaskStarted(task.id);
+        if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
+            // Stream the raw chunk to the lifecycle first so plugins
+            // (notifiers, metrics, log shippers) see output as it
+            // arrives — before we store it in a buffer for the
+            // buffered `printTaskTerminalOutput` at task-end.
+            if (event.kind === "stdout") {
+                lifeCycle?.onTaskStdout?.(task, event.text);
+            } else {
+                lifeCycle?.onTaskStderr?.(task, event.text);
             }
 
-            if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
-                // Stream the raw chunk to the lifecycle first so plugins
-                // (notifiers, metrics, log shippers) see output as it
-                // arrives — before we store it in a buffer for the
-                // buffered `printTaskTerminalOutput` at task-end.
-                if (event.kind === "stdout") {
-                    lifeCycle?.onTaskStdout?.(task, event.text);
-                } else {
-                    lifeCycle?.onTaskStderr?.(task, event.text);
+            if (termBuf) {
+                termBuf.write(event.text);
+
+                // Stream to the live TUI only when a stdin registry is
+                // wired up; non-interactive PTY tasks are captured and
+                // flushed at task completion via terminalOutput.
+                if (ptyInteractive) {
+                    onOutputReplace?.(task.id, termBuf.toString());
                 }
 
-                if (termBuf) {
-                    termBuf.write(event.text);
-
-                    // Stream to the live TUI only when a stdin registry is
-                    // wired up; non-interactive PTY tasks are captured and
-                    // flushed at task completion via terminalOutput.
-                    if (ptyInteractive) {
-                        onOutputReplace?.(task.id, termBuf.toString());
-                    }
-
-                    // Service-task wrappers run in PTY mode like everything
-                    // else, but their `[[VIS_BOOT]]…` markers must also reach
-                    // the bridge's parser — without this, the dock stays on
-                    // "booting…" while the wrapper completes happily and the
-                    // regular task list shows the row as ✓.
-                    if (bridge) {
-                        bridge.onTaskOutput(task.id, event.text);
-                    }
-                } else {
-                    const line = `${event.text}\n`;
-
-                    output!.append(line);
-                    onOutput?.(task.id, line);
-                }
-            }
-
-            if (event.kind === "close") {
-                if (stdinRegistry) {
-                    stdinRegistry.delete(task.id);
-                }
-
-                // Registry-mode: the wrapper exited. On success, the
-                // bridge reads the registry entry to surface pid/logFile,
-                // then transitions the dock to `ready` and starts the
-                // running-phase log tail. On non-zero exit, transitions
-                // to `failed`. Awaiting isn't needed here — the call is
-                // fire-and-forget; the dock updates asynchronously via
-                // its store.
+                // Service-task wrappers run in PTY mode like everything
+                // else, but their `[[VIS_BOOT]]…` markers must also reach
+                // the bridge's parser — without this, the dock stays on
+                // "booting…" while the wrapper completes happily and the
+                // regular task list shows the row as ✓.
                 if (bridge) {
-                    bridge.onRegistryTaskClosed(task.id, event.exitCode ?? 0, Boolean(event.killed)).catch(() => {});
+                    bridge.onTaskOutput(task.id, event.text);
                 }
+            } else {
+                const line = `${event.text}\n`;
+
+                output!.append(line);
+                onOutput?.(task.id, line);
             }
-        };
+        }
 
-        const runOnce = async (): Promise<{ code: number; retryAttempts: number; terminalOutput: string }> => {
-            const requestedRetries = visOptions?.retryCount ?? 0;
-            const retryDelay = visOptions?.retryDelay;
-            // Global retry budget caps per-task retries from above. The budget
-            // grants up to the requested amount; when it's exhausted, tasks
-            // run with retries disabled so a single flaky task can't eat the
-            // entire CI wall clock.
-            const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
+        if (event.kind === "close") {
+            if (stdinRegistry) {
+                stdinRegistry.delete(task.id);
+            }
 
-            const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
-            const killGracePeriodMs
-                = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
-            let timedOut = false;
-            let retryAttempts = 0;
+            // Registry-mode: the wrapper exited. On success, the
+            // bridge reads the registry entry to surface pid/logFile,
+            // then transitions the dock to `ready` and starts the
+            // running-phase log tail. On non-zero exit, transitions
+            // to `failed`. Awaiting isn't needed here — the call is
+            // fire-and-forget; the dock updates asynchronously via
+            // its store.
+            if (bridge) {
+                bridge.onRegistryTaskClosed(task.id, event.exitCode ?? 0, Boolean(event.killed)).catch(() => {});
+            }
+        }
+    };
 
-            const timeoutKill = scheduleTimeoutKill({
-                killGracePeriodMs,
-                onTimeout: () => {
-                    timedOut = true;
-                },
-                sendSignal: (signal) => {
-                    killCurrentProcess?.(signal);
-                },
-                timeoutMs,
-            });
+    const runOnce = async (): Promise<{ code: number; retryAttempts: number; terminalOutput: string }> => {
+        const requestedRetries = visOptions?.retryCount ?? 0;
+        const retryDelay = visOptions?.retryDelay;
+        // Global retry budget caps per-task retries from above. The budget
+        // grants up to the requested amount; when it's exhausted, tasks
+        // run with retries disabled so a single flaky task can't eat the
+        // entire CI wall clock.
+        const retryCount = retryBudget ? retryBudget.claim(requestedRetries) : requestedRetries;
 
-            let result: Awaited<ReturnType<typeof runConcurrently>>;
+        const timeoutMs = typeof visOptions?.timeout === "number" && visOptions.timeout > 0 ? visOptions.timeout : 0;
+        const killGracePeriodMs
+            = typeof visOptions?.killGracePeriodMs === "number" && visOptions.killGracePeriodMs >= 0 ? visOptions.killGracePeriodMs : 5000;
+        let timedOut = false;
+        let retryAttempts = 0;
 
-            try {
-                result = await runConcurrently(
-                    [
-                        {
-                            command,
-                            cwd: resolvedCwd,
-                            env: spawn.env,
-                            inheritEnv: spawn.inheritEnv,
-                            name: task.id,
-                            ...(isPty
-                                ? {
-                                    ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
-                                    stdin: "pty" as const,
-                                }
-                                : {}),
-                        },
-                    ],
+        const timeoutKill = scheduleTimeoutKill({
+            killGracePeriodMs,
+            onTimeout: () => {
+                timedOut = true;
+            },
+            sendSignal: (signal) => {
+                killCurrentProcess?.(signal);
+            },
+            timeoutMs,
+        });
+
+        let result: Awaited<ReturnType<typeof runConcurrently>>;
+
+        try {
+            result = await runConcurrently(
+                [
                     {
-                        killOthers: ["failure"],
-                        onEvent,
-                        ...(retryCount > 0
+                        command,
+                        cwd: resolvedCwd,
+                        env: spawn.env,
+                        inheritEnv: spawn.inheritEnv,
+                        name: task.id,
+                        ...(isPty
                             ? {
-                                restart: {
-                                    delay: retryDelay ?? "exponential",
-                                    // Bridge task-runner's per-attempt callback into the
-                                    // typed task:retry hook. Throwing from a plugin
-                                    // handler aborts the retry — task-runner unwraps
-                                    // the rejection and surfaces it as a failure.
-                                    onRetry: async (attempt, _commandIndex, prevExitCode) => {
-                                        retryAttempts = attempt;
-
-                                        if (hooks) {
-                                            await hooks.callHook("task:retry", task, attempt, prevExitCode);
-                                        }
-                                    },
-                                    tries: retryCount,
-                                },
+                                ptySize: { cols: process.stdout.columns ?? 80, rows: process.stdout.rows ?? 24 },
+                                stdin: "pty" as const,
                             }
                             : {}),
                     },
-                );
-            } finally {
-                timeoutKill.cancel();
-            }
+                ],
+                {
+                    killOthers: ["failure"],
+                    onEvent,
+                    ...(retryCount > 0
+                        ? {
+                            restart: {
+                                delay: retryDelay ?? "exponential",
+                                // Bridge task-runner's per-attempt callback into the
+                                // typed task:retry hook. Throwing from a plugin
+                                // handler aborts the retry — task-runner unwraps
+                                // the rejection and surfaces it as a failure.
+                                onRetry: async (attempt, _commandIndex, prevExitCode) => {
+                                    retryAttempts = attempt;
 
-            const closeEvent = result.closeEvents[0];
-            const buffered = termBuf ? termBuf.toString() : output!.toString();
+                                    if (hooks) {
+                                        await hooks.callHook("task:retry", task, attempt, prevExitCode);
+                                    }
+                                },
+                                tries: retryCount,
+                            },
+                        }
+                        : {}),
+                },
+            );
+        } finally {
+            timeoutKill.cancel();
+        }
 
-            if (timedOut) {
-                // Mark the result with a distinctive prefix so reporters and
-                // CI log grep can surface timeouts separately from ordinary
-                // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
-                return {
-                    code: 124,
-                    retryAttempts,
-                    terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
-                };
-            }
+        const closeEvent = result.closeEvents[0];
+        const buffered = termBuf ? termBuf.toString() : output!.toString();
 
+        if (timedOut) {
+            // Mark the result with a distinctive prefix so reporters and
+            // CI log grep can surface timeouts separately from ordinary
+            // failures. Exit code 124 mirrors GNU `timeout(1)` convention.
             return {
-                code: closeEvent?.exitCode ?? 1,
+                code: 124,
                 retryAttempts,
-                terminalOutput: buffered,
+                terminalOutput: `${buffered}\n[timeout] Task "${task.id}" exceeded ${timeoutMs}ms budget.\n`,
             };
-        };
+        }
 
-        return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
+        return {
+            code: closeEvent?.exitCode ?? 1,
+            retryAttempts,
+            terminalOutput: buffered,
+        };
     };
+
+    return mutexPool ? withMutex(mutexPool, visOptions?.mutex, runOnce) : runOnce();
 };
 
 /**
@@ -2501,24 +2398,21 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     };
 
     // Child-environment policy per task: the workspace `taskRunner.env`, unless
-    // the target sets its own `options.env`. The executor builds the child env
-    // with it, and the task hasher keys on the names it lets through.
-    const childEnvPolicyFor = (task: Task): Required<ChildEnvOptions> => resolveChildEnvPolicy(runnerOptions.env, getTaskOptions(task)?.env);
+    // the target sets its own `options.env`. The executor, the persistent launch
+    // and the traced run build the child env with it, and the task hasher keys on
+    // the names it lets through.
+    const childEnvPolicyFor = (task: Task): Required<ChildEnvOptions> => effectiveChildEnvPolicy(runnerOptions.env, getTaskOptions(task)?.env);
 
-    // Tracked runs bypass the executor, so a clean child cannot be applied to
-    // them. Fail before anything runs rather than inherit silently.
-    const trackedCleanTasks = findTrackedCleanTasks(Object.values(taskGraph.tasks), {
-        autoFingerprint: runnerOptions.autoFingerprint === true,
-        policyFor: childEnvPolicyFor,
+    // Built once per run. Every spawn of a task (executor, persistent launch and
+    // traced run) reads its child environment from this context.
+    const spawnContext = createTaskSpawnContext({
+        affectedFiles,
+        childEnvPolicy: childEnvPolicyFor,
+        initCwd: invocationCwd,
+        serviceEnvByTaskId,
+        taskSlots: resolvedParallel,
+        workspaceRoot,
     });
-
-    if (trackedCleanTasks.length > 0) {
-        throw new VisUserError(
-            `A clean environment (taskRunner.env or options.env) cannot apply to tasks that run with syscall tracking `
-            + `(autoFingerprint or hashMode "trace"): ${trackedCleanTasks.join(", ")}. `
-            + `Set those targets to { mode: "inherit" } or use declared hashing.`,
-        );
-    }
 
     // Resolve the remote-cache config in three layers (CLI > vis.config.ts
     // > Turbo env-var compat). Fill missing HTTP fields from TURBO_API /
@@ -2730,10 +2624,8 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             const mutexPool: MutexPool = new Map();
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
-                childEnvPolicy: childEnvPolicyFor,
                 currentOs,
                 hooks,
-                initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
                 onOutput: (taskId, text) => {
@@ -2747,11 +2639,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                     store.setOutput(taskId, fullContent);
                 },
                 retryBudget: sharedRetryBudget,
-                serviceEnvByTaskId,
                 serviceEventBridge: serviceEventBridge ?? undefined,
+                spawnContext,
                 stdinRegistry,
                 strictEnv: resolvedStrictEnv,
-                taskSlots: resolvedParallel,
                 workspaceRoot,
             });
 
@@ -2766,6 +2657,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                         childEnvPolicy: childEnvPolicyFor,
                         lifeCycle,
                         projectGraph,
+                        resolveChildEnv: (task, spawnOptions) => resolveTaskSpawn(spawnContext, task, spawnOptions),
                         taskExecutor,
                         taskGraph,
                         workspaceRoot,
@@ -2801,20 +2693,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                                 });
                         });
 
-                        await runPersistentTasks(
-                            persistentTasks,
-                            workspaceRoot,
-                            affectedFiles,
-                            invocationCwd,
-                            {
-                                abortSignal,
-                                lifeCycle,
-                                stdinRegistry,
-                                store,
-                            },
-                            serviceEnvByTaskId,
-                            childEnvPolicyFor,
-                        );
+                        await runPersistentTasks(persistentTasks, spawnContext, {
+                            abortSignal,
+                            lifeCycle,
+                            stdinRegistry,
+                            store,
+                        });
                     }
                 } else if (loopAction === "retry" && retryTaskId) {
                     const task = initialTasks.find((t) => t.id === retryTaskId);
@@ -2950,17 +2834,14 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
             const taskExecutor = createConcurrentExecutor({
                 affectedFiles,
-                childEnvPolicy: childEnvPolicyFor,
                 currentOs,
                 hooks,
-                initCwd: invocationCwd,
                 lifeCycle,
                 mutexPool,
                 retryBudget: sharedRetryBudget,
-                serviceEnvByTaskId,
                 serviceEventBridge: serviceEventBridge ?? undefined,
+                spawnContext,
                 strictEnv: resolvedStrictEnv,
-                taskSlots: resolvedParallel,
                 workspaceRoot,
             });
 
@@ -2971,6 +2852,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
                     childEnvPolicy: childEnvPolicyFor,
                     lifeCycle,
                     projectGraph,
+                    resolveChildEnv: (task, spawnOptions) => resolveTaskSpawn(spawnContext, task, spawnOptions),
                     taskExecutor,
                     taskGraph,
                     workspaceRoot,
@@ -3286,7 +3168,7 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {
-                await runPersistentTasks(persistentTasks, workspaceRoot, affectedFiles, invocationCwd, undefined, serviceEnvByTaskId, childEnvPolicyFor);
+                await runPersistentTasks(persistentTasks, spawnContext, undefined);
             }
 
             if (registryStartedCount > 0) {
