@@ -393,8 +393,15 @@ const measureTextNode = function (node: DOMNode, width: number): { height: numbe
 
     const textWrap = node.style?.textWrap ?? "wrap";
     const wrappedText = wrapText(text, Math.floor(width), textWrap);
+    const wrappedDimensions = measureText(wrappedText);
 
-    return measureText(wrappedText);
+    // Truncated text reserves the whole available width. Measuring only the cut text lets the next render
+    // truncate again at a narrower width when a wide character leaves a column unused.
+    if (textWrap.startsWith("truncate")) {
+        return { height: wrappedDimensions.height, width };
+    }
+
+    return wrappedDimensions;
 };
 
 const findClosestYogaNode = (node?: DOMNode): YogaNode | undefined => {

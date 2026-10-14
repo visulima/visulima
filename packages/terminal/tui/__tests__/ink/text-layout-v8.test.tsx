@@ -64,6 +64,55 @@ describe("text characters", () => {
     });
 });
 
+describe("truncated text width", () => {
+    for (const [wrap, expected] of [
+        ["truncate", "你…"],
+        ["truncate-end", "你…"],
+        ["truncate-middle", "你…"],
+        ["truncate-start", "…界"],
+    ] as const) {
+        it(`${wrap} keeps wide characters that fit`, () => {
+            expect.hasAssertions();
+
+            const output = renderToString(
+                <Box width={4}>
+                    <Text wrap={wrap}>你好世界</Text>
+                </Box>,
+            );
+
+            expect(output).toBe(expected);
+        });
+
+        it(`${wrap} preserves the adjacent column`, () => {
+            expect.hasAssertions();
+
+            const output = renderToString(
+                <Box width={5}>
+                    <Text wrap={wrap}>你好世界</Text>
+                    <Box flexShrink={0}>
+                        <Text>|</Text>
+                    </Box>
+                </Box>,
+            );
+
+            expect(output).toBe(`${expected} |`);
+        });
+    }
+
+    it("text that fits does not reserve extra width", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box width={10}>
+                <Text wrap="truncate-middle">你好</Text>
+                <Text>|</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("你好|");
+    });
+});
+
 describe("wide characters at clip edges", () => {
     const blue = (text: string): string => `\u001B[44m${text}\u001B[49m`;
 
