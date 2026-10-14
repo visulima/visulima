@@ -39,6 +39,11 @@ const ciOptionDefinitions = {
         description: "Git head ref for affected detection (default: HEAD)",
         type: String,
     },
+    "if-present": {
+        defaultValue: false,
+        description: "Succeed quietly when a target, --query or tag selects no projects (forwarded to `vis run`)",
+        type: Boolean,
+    },
     parallel: {
         defaultValue: 4,
         description: "Maximum number of parallel tasks per target",

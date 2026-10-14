@@ -352,4 +352,69 @@ describe("vis ci", () => {
         expect(affectedCall.argv).toContain("--parallel=8");
         expect(affectedCall.argv).toContain("--partition=1/4");
     });
+
+    it("forwards --if-present to the affected run only when set", async () => {
+        expect.assertions(2);
+
+        const run = async (ifPresent: boolean): Promise<string[]> => {
+            const { logger } = makeLogger();
+            const { calls, runtime } = makeRuntime();
+
+            await ciExecute({
+                argument: ["build"],
+                logger,
+                options: { ifPresent, query: "language=go", skipToolchain: true },
+                runtime,
+                visConfig: undefined,
+                workspaceRoot,
+            } as never);
+
+            return calls.find((c) => c.name === "affected")!.argv;
+        };
+
+        await expect(run(true)).resolves.toContain("--if-present");
+        await expect(run(false)).resolves.not.toContain("--if-present");
+    });
+
+    it("carries --if-present through affected all the way to vis run", async () => {
+        expect.assertions(2);
+
+        const runCalls: RuntimeCall[] = [];
+        const runtime = {
+            runCommand: async (name: string, options: { argv: string[] }): Promise<void> => {
+                if (name !== "affected") {
+                    runCalls.push({ argv: options.argv, name });
+
+                    return;
+                }
+
+                await affectedExecute({
+                    argument: [options.argv[0]],
+                    logger: makeLogger().logger,
+                    options: {},
+                    rawArgv: options.argv,
+                    runtime: runtime as never,
+                    visConfig: {},
+                    workspaceRoot,
+                } as never);
+            },
+        };
+        const ci = async (ifPresent: boolean): Promise<string[]> => {
+            runCalls.length = 0;
+
+            await ciExecute({
+                argument: ["build"],
+                logger: makeLogger().logger,
+                options: { base: "main", head: "HEAD", ifPresent, install: false, query: "language=go" },
+                runtime: runtime as never,
+                visConfig: {},
+                workspaceRoot,
+            } as never);
+
+            return runCalls.find((call) => call.name === "run")?.argv ?? [];
+        };
+
+        await expect(ci(true)).resolves.toContain("--if-present");
+        await expect(ci(false)).resolves.not.toContain("--if-present");
+    });
 });

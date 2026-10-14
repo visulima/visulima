@@ -48,6 +48,11 @@ const affectedOptionDefinitions = {
         description: "Show what would run without executing",
         type: Boolean,
     },
+    "if-present": {
+        defaultValue: false,
+        description: "Succeed quietly when the target, --query or tag selects no projects. Forwarded to `vis run`.",
+        type: Boolean,
+    },
     partition: {
         description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
         type: String,
