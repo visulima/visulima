@@ -96,7 +96,8 @@ export default function Text({
 }: Props): ReactElement | null {
     const { isScreenReaderEnabled } = useContext(accessibilityContext);
     const inheritedBackgroundColor = useContext(backgroundContext);
-    const childrenOrAriaLabel = isScreenReaderEnabled && ariaLabel ? ariaLabel : children;
+    // An empty label is a valid override: it hides decorative content from screen readers.
+    const childrenOrAriaLabel = isScreenReaderEnabled ? ariaLabel ?? children : children;
 
     const transform = useCallback(
         (children: string): string => {
@@ -149,8 +150,11 @@ export default function Text({
     }
 
     return (
-        <ink-text internal_transform={transform} style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1, textWrap: wrap }}>
-            {isScreenReaderEnabled && ariaLabel ? ariaLabel : children}
+        <ink-text
+            internal_transform={isScreenReaderEnabled ? undefined : transform}
+            style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1, textWrap: wrap }}
+        >
+            {childrenOrAriaLabel}
         </ink-text>
     );
 }
