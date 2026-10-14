@@ -227,16 +227,16 @@ const kittyCodepointNames: Record<number, string> = {
     57_414: "kpenter",
     57_415: "kpequal",
     57_416: "kpseparator",
-    57_417: "kpleft",
-    57_418: "kpright",
-    57_419: "kpup",
-    57_420: "kpdown",
-    57_421: "kppageup",
-    57_422: "kppagedown",
-    57_423: "kphome",
-    57_424: "kpend",
-    57_425: "kpinsert",
-    57_426: "kpdelete",
+    57_417: "left",
+    57_418: "right",
+    57_419: "up",
+    57_420: "down",
+    57_421: "pageup",
+    57_422: "pagedown",
+    57_423: "home",
+    57_424: "end",
+    57_425: "insert",
+    57_426: "delete",
     57_427: "kpbegin",
     57_428: "mediaplay",
     57_429: "mediapause",
@@ -307,7 +307,13 @@ const parseKittyKeypress = (s: string): ParsedKey | null => {
         return null;
     }
 
-    const codepoint = Number.parseInt(match[1]!, 10);
+    let codepoint = Number.parseInt(match[1]!, 10);
+
+    // Keypad Enter is the same key as Return: same name, text and sequence semantics.
+    if (codepoint === 57_414) {
+        codepoint = 13;
+    }
+
     const modifiers = match[2] ? Math.max(0, Number.parseInt(match[2], 10) - 1) : 0;
     const eventType = match[3] ? Number.parseInt(match[3], 10) : 1;
     const textField = match[4];
@@ -362,7 +368,8 @@ const parseKittyKeypress = (s: string): ParsedKey | null => {
         ...parseKittyModifiers(modifiers),
         eventType: resolveEventType(eventType),
         isKittyProtocol: true,
-        isPrintable,
+        // Keypad keys carry printable associated text, so a text field makes them printable.
+        isPrintable: isPrintable || text !== undefined,
         raw: s,
         sequence: s,
         text,
