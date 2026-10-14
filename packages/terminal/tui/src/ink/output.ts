@@ -50,7 +50,10 @@ const sgrColorTarget: Record<number, string> = { 38: "fg", 39: "fg", 48: "bg", 4
  * most one entry, so the state stays small however many sequences a text contains.
  */
 const applySgrToOpenAttributes = (open: Map<string, string>, parameterString: string): void => {
-    const params = parameterString.replaceAll(":", ";").split(";").filter((parameter) => parameter.length > 0).map(Number);
+    // A colon sub-parameter on underline (`4:3` curly, `4:0` none) belongs to code 4 and must not be split
+    // into a second code. Colour codes use colons as separators (`38:2::r:g:b`), which read like semicolons.
+    const normalized = parameterString.replaceAll(/(^|;)4:(\d)(?=;|$)/g, (_match, lead: string, style: string) => `${lead}${style === "0" ? "24" : "4"}`);
+    const params = normalized.replaceAll(":", ";").split(";").filter((parameter) => parameter.length > 0).map(Number);
 
     if (params.length === 0) {
         open.clear();

@@ -1413,7 +1413,12 @@ export default class Ink {
         }
 
         this.log.clear();
-        this.isFrameCleared = true;
+
+        // Only the string renderer consumes the flag; the native renderer returns before reading it, which
+        // would leave it set and suppress the final frame on unmount.
+        if (!(this.useNativeRenderer && this.nativeLog)) {
+            this.isFrameCleared = true;
+        }
     }
 
     patchConsole(): void {
@@ -1574,9 +1579,15 @@ export default class Ink {
             // `output` here would leave the log believing the live region is one
             // row taller than it is, and the next clear() would erase the bottom
             // line of the static block above it. See vadimdemedes/ink#974.
-            // <Static> output is not replayed here: it was already written once, and replaying it on every
-            // full clear would stack another copy of the static history into the terminal's scrollback.
-            this.options.stdout.write(clearScreenAndHomeCursor + backbufferOutput + outputToRender);
+            // <Static> output the previous frame already pushed off-screen is not replayed: it lives in the
+            // terminal's scrollback, and replaying it on every full clear would stack another copy there.
+            // When the previous live region did not fill the viewport, the static block is still on screen
+            // and the clear would erase it, so the whole static history is written again. Static output new
+            // in this frame has not been written anywhere yet, so it is always written.
+            const isStaticOnScreen = this.lastOutputHeight < viewportRows;
+            const staticToWrite = isStaticOnScreen ? this.fullStaticOutput : staticOutput;
+
+            this.options.stdout.write(clearScreenAndHomeCursor + staticToWrite + backbufferOutput + outputToRender);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;

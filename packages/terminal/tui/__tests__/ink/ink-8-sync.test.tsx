@@ -208,6 +208,14 @@ describe("useInput control sequences", () => {
         expect(exited).toBe(true);
     });
 
+    it("does not dispatch input that follows an exiting Ctrl+C in the same chunk", async () => {
+        expect.assertions(1);
+
+        const received = await run(["\u0003abc"]);
+
+        expect(received).toStrictEqual([]);
+    });
+
     it("treats application keypad Enter like Return", async () => {
         expect.assertions(2);
 
@@ -614,5 +622,19 @@ describe("colors", () => {
 
         expect(renderToString(<Text backgroundColor="#12">hi</Text>)).toBe("hi");
         expect(renderToString(<Text color="#12345">hi</Text>)).toBe("hi");
+    });
+});
+
+describe("styled text across newlines", () => {
+    it("treats a colon underline style as one attribute", () => {
+        expect.assertions(2);
+
+        // Curly underline (4:3) must carry as underline only; read as 4 then 3 it would also italicise line two.
+        const output = renderToString(<Text>{"\u001B[31;4:3mone\ntwo\u001B[0m"}</Text>);
+
+        const second = output.split("\n")[1]!;
+
+        expect(second).toContain("\u001B[4m");
+        expect(second).not.toContain("\u001B[3m");
     });
 });

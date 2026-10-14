@@ -268,6 +268,7 @@ const App = ({
             stdin.setRawMode(false);
         }
 
+        // ref()/unref() only exist on socket-backed streams; a custom stream (e.g. a `PassThrough`) has neither.
         stdin.unref?.();
         rawModeEnabledCount.current = 0;
         clearInputState();
@@ -332,6 +333,11 @@ const App = ({
             for (const event of inputEvents) {
                 if (typeof event === "string") {
                     emitInput(event);
+
+                    // The app is exiting: input that rode in the same chunk after Ctrl+C must not be dispatched.
+                    if (exitOnCtrlC && event.includes("\u0003")) {
+                        return;
+                    }
                 } else {
                     if (internal_eventEmitter.listenerCount("paste") === 0) {
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
@@ -355,7 +361,7 @@ const App = ({
         if (inputParserRef.current!.hasPendingEscape()) {
             schedulePendingInputFlush();
         }
-    }, [stdin, emitInput, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter]);
+    }, [stdin, emitInput, exitOnCtrlC, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr, internal_eventEmitter]);
 
     const attachReadableListener = useCallback((): void => {
         if (readableListenerRef.current) {

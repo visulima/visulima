@@ -539,29 +539,67 @@ const ALT_SCREEN_ON = "\u001B[?1049h";
 describe("inline renderer: static output", () => {
     const staticItem = (item: string) => <Text key={item}>{item}</Text>;
 
-    it("does not replay static output on a full-clear frame", async () => {
+    const staticTree = (height: number, items: string[]) => (
+        <>
+            <Static items={items}>{staticItem}</Static>
+            <Box flexDirection="column" height={height}>
+                <Text>live</Text>
+            </Box>
+        </>
+    );
+
+    it("does not replay static output that is already in scrollback on a full-clear frame", async () => {
         expect.assertions(1);
 
         const stdout = createStdout(40, true, 6);
-
-        const tree = (height: number) => (
-            <>
-                <Static items={["static-one"]}>{staticItem}</Static>
-                <Box flexDirection="column" height={height}>
-                    <Text>live</Text>
-                </Box>
-            </>
-        );
-
-        const { rerender, unmount, waitUntilRenderFlush } = render(tree(2), { interactive: true, stdout });
+        const { rerender, unmount, waitUntilRenderFlush } = render(staticTree(7, ["static-one"]), { interactive: true, stdout });
 
         await waitUntilRenderFlush();
 
-        rerender(tree(7));
+        // The previous frame already filled the viewport, so the static block is above the screen.
+        rerender(staticTree(8, ["static-one"]));
 
         await waitUntilRenderFlush();
 
         expect(countOccurrences(stdout.getWrites().join(""), "static-one")).toBe(1);
+
+        unmount();
+    });
+
+    it("rewrites an on-screen static block that the clear would erase", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, 6);
+        const { rerender, unmount, waitUntilRenderFlush } = render(staticTree(2, ["static-one"]), { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        rerender(staticTree(7, ["static-one"]));
+
+        await waitUntilRenderFlush();
+
+        const screen = inkScreen(stdout, 6);
+
+        // The clear erases the screen without sending it to scrollback, so the static block has to be
+        // written again; it then scrolls into history above the grown live region.
+        expect([...screen.scrollback, ...visibleRows(screen)].join("\n")).toContain("static-one");
+
+        unmount();
+    });
+
+    it("writes static output that is new in a full-clear frame", async () => {
+        expect.assertions(1);
+
+        const stdout = createStdout(40, true, 6);
+        const { rerender, unmount, waitUntilRenderFlush } = render(staticTree(7, ["static-one"]), { interactive: true, stdout });
+
+        await waitUntilRenderFlush();
+
+        rerender(staticTree(8, ["static-one", "static-two"]));
+
+        await waitUntilRenderFlush();
+
+        expect(stdout.getWrites().join("")).toContain("static-two");
 
         unmount();
     });
