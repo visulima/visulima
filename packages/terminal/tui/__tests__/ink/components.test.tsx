@@ -700,7 +700,7 @@ describe("components", () => {
             );
         };
 
-        const { rerender } = render(<Test renderFirstInput renderSecondInput />, options as any);
+        const { rerender } = render(<Test renderFirstInput renderSecondInput />, options);
 
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(1);
         expect(stdin.ref as any).toHaveBeenCalledTimes(1);
@@ -785,7 +785,7 @@ describe("components", () => {
             return <Input setRawMode={setRawMode} />;
         };
 
-        const { unmount } = render(<Test onInput={onFirstMountInput} />, options as any);
+        const { unmount } = render(<Test onInput={onFirstMountInput} />, options);
 
         expect(stdin.ref as any).toHaveBeenCalledTimes(1);
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(1);
@@ -802,7 +802,7 @@ describe("components", () => {
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(2);
         expect((stdin.setRawMode as any).mock.calls.at(-1)).toStrictEqual([false]);
 
-        const { unmount: unmount2 } = render(<Test onInput={onSecondMountInput} />, options as any);
+        const { unmount: unmount2 } = render(<Test onInput={onSecondMountInput} />, options);
 
         expect(stdin.ref as any).toHaveBeenCalledTimes(2);
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(3);
@@ -930,7 +930,7 @@ describe("components", () => {
             );
         };
 
-        const { rerender } = render(<Test renderFirstInput renderSecondInput />, options as any);
+        const { rerender } = render(<Test renderFirstInput renderSecondInput />, options);
 
         expect(stdin.setRawMode as any).toHaveBeenCalledTimes(0);
 
