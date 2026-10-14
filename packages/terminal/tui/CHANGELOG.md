@@ -1,3 +1,602 @@
+## @visulima/tui [5.0.0](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.30...@visulima/tui@5.0.0) (2026-10-14)
+
+### ⚠ BREAKING CHANGES
+
+* **tui:** stdin, stdout and stderr are typed as generic Node.js
+streams in render() options and in useStdin(), useStdout() and
+useStderr(); read the terminal size with useWindowSize() instead of
+stdout.columns. Box minWidth and maxWidth accept numbers only.
+useInput no longer receives terminal reports. disableFocus() now blurs
+the focused component. Control characters other than tab and newline
+are stripped from text. A Box with overflow set on one axis no longer
+clips the other axis.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): parse spaced rgb colors and buffered ^C
+
+- rgb() colors accept whitespace around every component, so
+  "rgb( 255 , 0 , 0 )" is colored instead of ignored.
+- A malformed hex color leaves the text uncolored instead of being
+  read as black.
+- Ctrl+C that arrives in the same chunk as ordinary text is split into
+  its own key event, so exitOnCtrlC and handlers see it.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): make isRawModeSupported a boolean
+
+isRawModeSupported was the stream's isTTY property combined with &&, so
+it evaluated to undefined for streams that do not define isTTY (for
+example a PassThrough) instead of false. Coerce it to a boolean so
+consumers can compare it directly.
+
+Document that useInput() and usePaste() throw unless stdin is a TTY
+with setRawMode(), that useFocus() does not throw, and that setRawMode()
+throws unless isRawModeSupported is true. Add tests for custom streams.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): align incremental updates to frame rows
+
+The incremental writer measured the cursor from the frame's last line, but
+a frame written with a trailing newline leaves the cursor one row below it.
+Every update therefore landed one row too low and overwrote the row under
+the changed line. A zero-row move was also emitted as CSI 0 A, which
+terminals read as one row.
+
+Measure the cursor row from how the previous frame ended, skip zero-row
+moves, and always write rows that were not part of the previous frame.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): park cursor on the last frame line
+
+A frame written without a trailing newline leaves the terminal cursor on
+its last line, but the cursor suffix assumed the line below it. A cursor
+placed on that last line ended one row too high.
+
+Position the cursor relative to the row the output actually ends on.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): move cursor below the frame before exit
+
+A cursor left inside the frame by a <Cursor> stayed there when the output
+was finished. The next line printed by the shell, or by the app after exit,
+then landed on the frame's first row and overwrote it.
+
+Return to the bottom of the output before releasing the frame.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): redraw the frame after clear()
+
+clear() erased the frame but told the log it was still on screen. A later
+render with the same output was skipped, so the frame never came back, and
+the next write to stdout erased as many rows as the stale frame claimed,
+which reached into the shell history above it.
+
+Forget the frame on clear() instead. The next render draws it again, and
+console output printed while it is cleared leaves it hidden. Unmount still
+does not draw a cleared frame.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): redraw the frame when the terminal loses rows
+
+Only a narrower terminal triggered a redraw. When rows were lost instead,
+the terminal scrolled the frame while the log still measured it at its old
+position, so the next update erased and wrote at the wrong rows.
+
+Treat a loss of rows the same way as a loss of columns: erase the frame and
+draw it again. Content above the frame is not part of the erase.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): stop replaying static on full clears
+
+A frame that filled or overflowed the viewport cleared the screen and then
+wrote the whole accumulated <Static> output again, so the static history was
+repeated after every full clear.
+
+Write only the frame after the clear. Static output is still written once,
+when it first renders.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): replay static output after terminal resume
+
+Resuming after a suspend re-enters the alternate screen, which starts blank.
+The frame was redrawn, but the <Static> output written before the suspend
+was not, so it was missing from the screen for the rest of the session.
+
+Write the accumulated static output again when the alternate screen is
+re-entered, before the frame is drawn.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep blank rows from <Static> output
+
+A <Static> item that renders to blank rows was dropped, because a region
+whose output was only a newline was treated as "no static output". The
+lines it takes up were lost, and the live frame moved up into them.
+
+Write static rows whenever their children are mounted, blank rows included.
+Once the children are gone the box keeps only its padding, which is still
+not written again.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep static output consistent on removal
+
+The renderer kept a reference to the <Static> node after the node was
+removed with an ancestor, so stale static output stayed in the
+accumulated output and was replayed later, for example when the alternate
+screen was re-entered after a suspend. Clear the reference when the node
+leaves the tree, directly or inside a removed subtree.
+
+Output written by a render that React abandons before committing is also
+kept: it was already flushed to the terminal, so dropping it would replay
+or lose lines.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): cover cursor, static identity and incremental render
+
+Pin behaviour that already holds: a cursor kept by a sibling re-render, a
+<Static> replaced by one with a new key, and single-line and blank-row
+updates through render() with incremental rendering.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): guard scrollback against erase sequences
+
+Check that a full-clear frame and clear() never emit the scrollback erase
+(CSI 3 J) or a terminal reset (RIS).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* refactor(tui): share cell offsets and tidy layout code
+
+- toCellOffset lives in one module used by both renderers.
+- The per-axis clip region is computed by one named helper instead of
+  nested ternaries with magic bounds.
+- Box metric hooks compare every field with one loop, so a new field
+  cannot be forgotten in the change check.
+- The react layer rounds the client size like the Ink layer does.
+- minWidth and maxWidth ignore non-number values from untyped callers
+  instead of handing them to the layout engine.
+- Detached doc comments are back on the functions they describe, and the
+  unrelated blank-line churn in react/styles.ts is reverted.
+- The previous cursor row is derived from the helper that already
+  describes it.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep static output on full clears and stop after exit
+
+- A full-clear frame now writes the <Static> output that is new in that
+  frame, which was dropped before. When the previous live region did not
+  fill the viewport the static block is still on screen and the clear
+  would erase it, so the whole history is written again.
+- clear() no longer leaves the redraw flag set on the native renderer,
+  where nothing consumed it and the final frame on unmount was skipped.
+- A curly or dashed underline (4:3) stays one attribute when a style is
+  carried across a newline instead of also turning on italic.
+- Input that follows an exiting Ctrl+C in the same chunk is no longer
+  dispatched.
+- Documented that unrecognised escape sequences, such as F13 and above,
+  are dropped by useInput.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): drop an unused screen helper
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): share the VT screen model with renderer tests
+
+Move the screen model used by the inline renderer tests into a helper and
+teach it grapheme widths and SGR state, so later tests can assert styling
+and wide-character placement.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* perf(tui): write only the changed part of a line
+
+Changed rows in incremental rendering keep their unchanged prefix on
+screen: the cursor moves to the first differing cell and only the rest
+of the row is written. The prefix is skipped only where graphemes and
+SGR state can be reproduced exactly; otherwise the whole row is
+rewritten, as before.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep input off while suspended
+
+Input hooks that change while the terminal is suspended only update the
+ownership counts. Resuming restores raw mode and bracketed paste for the
+modes that still have an owner.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): ignore stale suspend handles on resume
+
+A suspend handle from an earlier suspension can no longer resume a later
+one, and a handle resumed after unmount does not reclaim input.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): call onRender after the frame is written
+
+The render callback used to run before the frame was drawn. It now runs
+once the frame has been written, with the render time measured around the
+render pass.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): avoid repeating static output on exit
+
+Static output was only tracked on some render paths, so the final frame
+on unmount could write it a second time. Track whether it was written on
+every path and skip the extra frame when it was.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): cover lifecycle regressions
+
+Covers input ownership across suspension, suspend handles, non-interactive
+suspension, unmount with throttled and ended output, static output on exit,
+and onRender ordering.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): honour screen-reader labels in text
+
+Empty accessibility labels were ignored, and screen-reader output kept
+the ANSI styling of nested text. Labels now override children even when
+empty, and text transforms are skipped in screen-reader mode.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep screen-reader output in sync
+
+Screen-reader frames bypassed log-update, so clearing or restoring
+around external writes erased nothing and re-hid the cursor. Frames
+are now synced into log-update, restored without cursor changes, and
+rewrapped when the terminal width changes. Shrinking the terminal also
+resets the height so static history is not erased.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): show error source excerpts for file urls
+
+Stack frames report file URLs, so excerpts were never found for paths
+with spaces and an unreadable source path could hide the original
+error. Frames without a file or position (such as native frames) now
+print as raw lines.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): reject exit with non-error throws
+
+A thrown string or undefined was stored as the boundary error as is.
+Those falsy values did not render the fallback, so waitUntilExit could
+hang or resolve. Non-Error throws are now wrapped in an Error.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): run effect cleanup on render failure
+
+Effects were not torn down when the output step threw, and native
+errors from another realm were re-wrapped in a new Error.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep wide characters whole at clip edges
+
+Wide characters cut by a clip or output edge keep their cell as a blank in
+their own style. Overwriting half of a wide character no longer leaves its
+other half without a partner, so the columns after it stay in place.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep zero-width characters out of cells
+
+A standalone zero-width character, such as a zero-width space, took a
+terminal cell and pushed the rest of the line over the box border.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): expand tabs before measuring text
+
+Tabs render as four spaces but were measured as zero width, so text after a
+tab overlapped its neighbours. Expanding them before measurement keeps both
+on the same columns.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep truncated text at its full width
+
+Measuring only the cut text let the render pass truncate again at a narrower
+width when a wide character left a column unused.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep suspended text hidden
+
+Text under a pending Suspense boundary stayed in its parent's output, and
+resuming a boundary showed nodes that their own style hides.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): inherit background colour in text
+
+Nested text, Box and Static now pass their effective background to their
+children, so an inner text keeps the colour of its nearest ancestor. Boxes
+always provide the context, so children keep their state when a background
+is added or removed.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep static margins in their output
+
+Static output was sized without its offset and margins, which clipped rows
+that start below the top or end inside the bottom margin. In screen-reader
+mode, static output under a hidden ancestor is skipped too.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): pass each transformed line its own index
+
+Transforms ran once per text child, so line-based transforms saw the child
+index instead of the line index for every line of a nested text.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): pin wrapping and clipping behaviour
+
+Cover wrapping, offsets, overflow axes, static layout and cache keys that
+already behave correctly, and record a known gap for fractional-column
+boxes, which Yoga rounds to zero columns.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep rxvt shifted editing keys intact
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): parse modified SS3 keys
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): accept kitty alternate keys and empty fields
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): name unknown kitty control codes as empty
+
+Ctrl+letter arrives as the letter codepoint, and backspace is 127.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): map kitty keypad keys to standard names
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): apply kitty modifiers to functional keys
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): parse legacy ctrl+space, ctrl+punctuation, meta+tab
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): handle kitty ctrl+c, escape and tab
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): read meta keys without mutating Buffer
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): read kitty query replies through input
+
+The keyboard query reply is now consumed by App's normal input pipeline
+instead of a private stdin listener. The old listener saw every chunk
+and pushed the remainder back with unshift, so input around a reply was
+read twice or reordered.
+
+Suspending the terminal cancels a pending query, and the protocol flag
+is cleared on suspend so resume re-enables it only when appropriate.
+The callback handed to App is a stable class field so rerender() does
+not reset input state.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): enable all-key kitty reporting with text
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): cover kitty keyboard input handling
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): cover key routing and suspended unmount
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* docs(tui): document the keyboard and onRender changes
+* **tui:** Kitty codepoint 8 is no longer reported as Backspace and
+codepoints 1-26 no longer map to Ctrl+letter. Keypad arrows and Enter use
+the standard key names, with keypad Enter reporting "\r" as its text. The
+legacy modifier bit 8 is reported as super instead of meta, and a plain
+ESC [ 3 ~ reports isKittyProtocol as true. reportAssociatedText now
+enables reportAllKeysAsEscapeCodes. onRender is now called once per frame
+after the frame is written; it was never called before.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): drop casts the widened stream types make redundant
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): spell the unreadable source path per platform
+
+The error overview renders the path as the platform writes it, with a
+trailing backslash on Windows, so the assertion no longer hard-codes a
+forward slash.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): wrap text into the column left by a fractional box
+
+A box narrower than one column still gives its text the one column the
+layout engine rounds it up to. The text is now measured and drawn wrapped
+into that column instead of being left at natural width, which also made
+the reserved rows disagree with what was drawn. Text with no room at all
+(a zero-width box) keeps its natural width.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): harden error reporting and shared focus stops
+
+- A thrown value that cannot be converted to a string no longer makes
+  the error boundary or renderToString fail while reporting it.
+- A file URL the platform cannot map to a path stays visible in the
+  error overview instead of aborting the render.
+- clientWidth and clientHeight never go below zero for a box smaller
+  than its borders.
+- Components that share a focus ID track their own active state, so one
+  of them turning inactive no longer takes the Tab stop from the others;
+  the stop is inactive only when every holder is.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): model CUP row and column
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): align native renderer with string path
+
+- write native frames to the render stdout instead of the process stdout
+- use the native path only on an interactive alternate screen
+- make clear() erase the native frame so a rerender draws it again
+- redraw the frame after resize, resume and console output
+- hide the cursor while drawing and place it at <Cursor>
+- keep <Static> output above the frame and replay it on resume
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* build(tui): add a headless terminal emulator
+
+Adds @xterm/headless as a dev dependency of the tui package so PTY tests
+can read the output back through a real terminal emulator.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): check inline output in a pty emulator
+
+Runs fixtures in a pty and reads the output back through a headless terminal
+emulator, covering clear(), row shrinking, static output, the cursor on exit and
+incremental partial-line writes. Two defects are pinned as expected failures
+until their fixes land.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): erase parked cursor frame from its row
+
+With a <Cursor> parked inside the frame, the terminal can trim the blank row
+below it on resize. Returning to that row first then clamps at the viewport
+bottom, and the erase reaches one row too far up and removes history.
+Erase from the cursor's own row instead; the frame's top is that many rows up
+whatever the terminal did.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): skip redundant full clear of same frame
+
+A throttled trailing render can reach the full-clear path with the frame that is
+already on screen. Clearing again pushed that copy into scrollback, so the
+live region appeared twice. Skip the redraw when nothing changed, except on
+unmount, which still draws the final frame.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* feat(tui): render inline frames with native renderer
+
+The native renderer only drew frames on the alternate screen, because its
+diff addressed absolute rows. Its cursor moves are now rewritten relative
+to the row the cursor is on, so an inline frame starts where rendering
+began and grows by scrolling the terminal. No cursor position query is
+needed.
+
+The frame is capped one row short of the viewport. New static and
+scrolled-off lines are written above it after the old frame is erased, and
+console writes erase and redraw it the same way. Unmount parks the cursor
+below the frame.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* test(tui): cover native inline rendering
+
+A VT screen model replays the inline frame's bytes, so the tests assert
+what the user sees: the frame below the prompt, growth past the bottom
+with the prompt in scrollback, shrinking without stale rows, the cursor
+parked below the frame on unmount, a <Cursor> inside the frame, clear(),
+<Static> output above the frame, console output above the frame, and a
+resize that erases and redraws the frame. The model also gets a
+resizeScreen helper for replaying across a size change.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): apply cursor shape on native path
+
+Write DECSCUSR when the declared <Cursor> shape changes and restore the
+default shape on unmount and suspend, matching the string renderer.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* perf(tui): draw only new static rows on native path
+
+Add static output above the native frame by erasing the frame's old rows
+and writing the new rows where it started, instead of redrawing the whole
+static history on every item. The full replay is kept for a disturbed
+screen (resize, resume). The VT test model gains CSI S (scroll up).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): draw console output above native frame
+
+Console and stdout writes on the native path now go above the frame and
+the frame is drawn again below them, instead of landing on the frame's
+cells and leaving the text behind when the frame moves.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): keep inline native console output on the shared path
+
+Writing the console text above the frame by absolute rows only applies to
+the alternate screen. An inline native frame is anchored at the cursor,
+so its console output goes through the same path as the string renderer.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+* fix(tui): erase native inline frames on suspend and tag errors
+
+- Suspending the terminal now erases an inline native frame before the
+  child process takes over, so resuming no longer leaves the old frame
+  above a second copy.
+- Reading the tag of a thrown value can throw too (a throwing
+  Symbol.toStringTag); that case now falls back to a generic error.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+### Features
+
+* **tui:** align the Ink layer with Ink 8 ([#963](https://github.com/visulima/visulima/issues/963)) ([6b54141](https://github.com/visulima/visulima/commit/6b5414196924d57a1ffe0b7cdf47c51a5e3f018b))
+
 ## @visulima/tui [4.0.30](https://github.com/visulima/visulima/compare/@visulima/tui@4.0.29...@visulima/tui@4.0.30) (2026-10-13)
 
 ### Continuous Integration
