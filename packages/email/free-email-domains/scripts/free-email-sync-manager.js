@@ -433,13 +433,37 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
 
+        // The `./domains` subpath resolves to this wrapper rather than the JSON itself.
+        // Pointing the export straight at `domains.json` made a plain
+        // `import domains from "@visulima/free-email-domains/domains"` fail at runtime with
+        // ERR_IMPORT_ATTRIBUTE_MISSING, because Node requires `with { type: "json" }` on a JSON
+        // module, and made bundler resolution read the JSON as `module.exports =`, which
+        // contradicts an `export default` declaration. The wrapper carries the attribute so
+        // callers do not have to, and gives the subpath a genuine ESM default export. It
+        // re-exports rather than inlining, so the list still ships once. Mirrors the sibling
+        // `@visulima/disposable-email-domains`.
+        await fs.writeFile(
+            join(this.syncOptions.outputPath, "domains.js"),
+            "import domains from \"./domains.json\" with { type: \"json\" };\n\nexport default domains;\n",
+            "utf8",
+        );
+
         // Emit a type declaration so the `./domains` subpath export carries types.
-        // Use `export =` to match the JSON module's `module.exports =` shape (the
-        // subpath's runtime is the raw `domains.json`). `export default` trips
-        // are-the-types-wrong's FalseExportDefault check under node16/bundler
-        // resolution; `import domains from "…/domains"` still type-checks via
-        // esModuleInterop. Mirrors the sibling `@visulima/disposable-email-domains`.
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport = domains;\n", "utf8");
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
+
+        // The opt-in `./edge` entry: the main entry's API with the bundled list already
+        // registered, for runtimes without a filesystem (Cloudflare Workers, edge middleware)
+        // where the lazy disk loader cannot work. It is a separate entry because a bundler
+        // cannot tree-shake the list, so only callers who ask for it pay for its size.
+        //
+        // Registering is a side effect of importing this file, so `package.json` lists it in
+        // `sideEffects`; without that a bundler would skip it and import `index.js` directly.
+        await fs.writeFile(
+            join(this.syncOptions.outputPath, "edge.js"),
+            "import { setDomains } from \"./index.js\";\nimport domains from \"./domains.json\" with { type: \"json\" };\n\nsetDomains(domains);\n\nexport * from \"./index.js\";\n",
+            "utf8",
+        );
+        await fs.writeFile(join(this.syncOptions.outputPath, "edge.d.ts"), "export * from \"./index.js\";\n", "utf8");
     }
 
     /**

@@ -16,6 +16,6 @@ export default defineConfig({
             builtinNodeModules: true,
         },
     },
-    ignoreExportKeys: ["domains"],
+    ignoreExportKeys: ["domains", "edge"],
     transformer,
 }) as BuildConfig;

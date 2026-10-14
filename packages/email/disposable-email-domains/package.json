@@ -34,7 +34,9 @@
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "sideEffects": false,
+    "sideEffects": [
+        "./dist/edge.js"
+    ],
     "type": "module",
     "exports": {
         ".": {
@@ -44,6 +46,10 @@
         "./domains": {
             "types": "./dist/domains.d.ts",
             "default": "./dist/domains.js"
+        },
+        "./edge": {
+            "types": "./dist/edge.d.ts",
+            "default": "./dist/edge.js"
         },
         "./package.json": "./package.json"
     },
@@ -89,6 +95,7 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
+        "miniflare": "catalog:test",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
