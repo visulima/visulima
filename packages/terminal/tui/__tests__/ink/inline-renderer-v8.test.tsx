@@ -170,16 +170,6 @@ const replay = (writes: string[], rows = 12, cols = 40): Screen => {
     return screen;
 };
 
-const trimTrailingBlankRows = (lines: string[]): string[] => {
-    const result = [...lines];
-
-    while (result.length > 0 && result.at(-1) === "") {
-        result.pop();
-    }
-
-    return result;
-};
-
 const SENTINEL = "$ prompt\n";
 
 /** Replays what the renderer wrote after some shell output that is already on screen. */
