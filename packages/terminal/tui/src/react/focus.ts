@@ -59,11 +59,11 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         itemsRef.current = [...itemsRef.current, entry];
 
-        // Auto-focus: if no component is focused yet and autoFocus is set
         if (!isEnabledRef.current) {
             return;
         }
 
+        // Auto-focus: if no component is focused yet and autoFocus is set
         setActiveId((previous) => {
             if (options.autoFocus && previous === undefined) {
                 return id;

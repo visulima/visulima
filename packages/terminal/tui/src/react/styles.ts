@@ -121,39 +121,39 @@ export type Styles = {
     contentOffsetX?: number;
     /** Shifts the node's children up by this many rows (truncated toward zero; non-finite counts as 0). */
     contentOffsetY?: number;
-
     dim?: boolean;
     display?: "flex" | "none";
+
     // Terminal-specific numeric props (native renderer)
     fg?: number | string;
     flexBasis?: number | string;
     flexDirection?: "row" | "column" | "row-reverse" | "column-reverse";
-
     flexGrow?: number;
     flexShrink?: number;
+
     flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
     gap?: number;
-
     height?: number | string;
     /** Internal flag for sticky header alternate nodes */
     internalStickyAlternate?: boolean;
+
     inverse?: boolean;
     italic?: boolean;
     justifyContent?: "flex-start" | "flex-end" | "space-between" | "space-around" | "space-evenly" | "center";
     left?: number | string;
     margin?: number;
-
     marginBottom?: number;
     marginLeft?: number;
 
     marginRight?: number;
     marginTop?: number;
+
     marginX?: number;
     marginY?: number;
     maxHeight?: number | string;
-
     maxWidth?: number;
     minHeight?: number | string;
+
     minWidth?: number;
     overflow?: "hidden" | "scroll" | "visible";
     overflowX?: "hidden" | "scroll" | "visible";
@@ -388,7 +388,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("minWidth" in style) {
-        node.setMinWidth(style.minWidth ?? 0);
+        node.setMinWidth(typeof style.minWidth === "number" ? style.minWidth : 0);
     }
 
     if ("minHeight" in style) {
@@ -400,7 +400,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("maxWidth" in style) {
-        node.setMaxWidth(style.maxWidth);
+        node.setMaxWidth(typeof style.maxWidth === "number" ? style.maxWidth : undefined);
     }
 
     if ("maxHeight" in style) {

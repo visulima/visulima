@@ -81,13 +81,6 @@ const diff = (before: AnyObject, after: AnyObject): AnyObject | undefined => {
 };
 
 /**
- * Recursively clean up a node tree, freeing Yoga nodes, clearing
- * resize observers, and resetting references to prevent memory leaks.
- *
- * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
- */
-
-/**
  * Returns the &lt;Static> node that is part of `root`'s tree. A render can create a &lt;Static> and then be
  * abandoned before it commits, and a removed &lt;Static> leaves the tree too; in both cases `root.staticNode`
  * points at a node that is no longer attached. The committed &lt;Static>, if there is one, is found by
@@ -129,6 +122,12 @@ const resolveCommittedStaticNode = (root: DOMElement): DOMElement | undefined =>
     return search(root);
 };
 
+/**
+ * Recursively clean up a node tree, freeing Yoga nodes, clearing
+ * resize observers, and resetting references to prevent memory leaks.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
 const cleanupNodeTree = (node?: DOMNode): void => {
     if (!node) {
         return;

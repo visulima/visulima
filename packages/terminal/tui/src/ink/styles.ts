@@ -773,7 +773,8 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("minWidth" in style) {
-        node.setMinWidth(style.minWidth ?? 0);
+        // Numbers only: a string from untyped callers would otherwise reach Yoga unparsed.
+        node.setMinWidth(typeof style.minWidth === "number" ? style.minWidth : 0);
     }
 
     if ("minHeight" in style) {
@@ -785,7 +786,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("maxWidth" in style) {
-        node.setMaxWidth(style.maxWidth);
+        node.setMaxWidth(typeof style.maxWidth === "number" ? style.maxWidth : undefined);
     }
 
     if ("maxHeight" in style) {

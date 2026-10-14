@@ -1,6 +1,7 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
+import { toCellOffset } from "../core/cell-offset";
 import { getAbsoluteContentPosition } from "./absolute-position";
 import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
@@ -16,21 +17,33 @@ import { getScrollTop } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
 import wrapText from "./wrap-text";
 
+const unboundedClip = 1_000_000;
+
+/**
+ * Clip region (start, size) along one axis. A clipping axis is limited to this node's content box; an axis
+ * that is not clipped keeps the bounds of the enclosing clip, so `overflow="hidden"` with
+ * `overflowX="visible"` still lets content spill horizontally.
+ */
+const axisRegion = (
+    clips: boolean,
+    contentStart: number,
+    contentSize: number,
+    enclosingStart = -unboundedClip,
+    enclosingEnd = unboundedClip,
+): [start: number, size: number] => {
+    if (clips) {
+        return [contentStart, contentSize];
+    }
+
+    return [enclosingStart, enclosingEnd - enclosingStart];
+};
+
 // If parent container is `<Box>`, text nodes will be treated as separate nodes in
 // the tree and will have their own coordinates in the layout.
 // To ensure text nodes are aligned correctly, take X and Y of the first text node
 // and use it as offset for the rest of the nodes
 // Only first node is taken into account, because other text nodes can't have margin or padding,
 // so their coordinates will be relative to the first node anyway
-// Offsets are terminal cell coordinates: truncate toward zero, treat non-finite values as 0.
-const toCellOffset = (value: number | undefined): number => {
-    if (value === undefined || !Number.isFinite(value)) {
-        return 0;
-    }
-
-    return Math.trunc(value);
-};
-
 const applyPaddingToText = (node: DOMElement, text: string): string => {
     const yogaNode = node.childNodes[0]?.yogaNode;
 
@@ -389,20 +402,21 @@ const renderNodeToOutput = (
                 const nodeW = Math.round(yogaNode.getComputedWidth());
                 const nodeH = Math.round(yogaNode.getComputedHeight());
 
-                // An axis that is not clipped keeps the bounds of the enclosing clip instead of this node's box,
-                // so `overflow="hidden"` with `overflowX="visible"` still lets content spill horizontally.
                 const enclosingClip = output.getCurrentClip();
-                const unclippedX = enclosingClip?.x1 ?? -1_000_000;
-                const unclippedY = enclosingClip?.y1 ?? -1_000_000;
-
-                const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : unclippedX;
-                const regionW = clipHorizontally
-                    ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT)
-                    : (enclosingClip?.x2 ?? 1_000_000) - unclippedX;
-                const regionY = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : unclippedY;
-                const regionH = clipVertically
-                    ? nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM)
-                    : (enclosingClip?.y2 ?? 1_000_000) - unclippedY;
+                const [regionX, regionW] = axisRegion(
+                    clipHorizontally,
+                    x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT),
+                    nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
+                    enclosingClip?.x1,
+                    enclosingClip?.x2,
+                );
+                const [regionY, regionH] = axisRegion(
+                    clipVertically,
+                    y + yogaNode.getComputedBorder(Yoga.EDGE_TOP),
+                    nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM),
+                    enclosingClip?.y1,
+                    enclosingClip?.y2,
+                );
 
                 output.startChildRegion(regionX, regionY, Math.max(0, regionW), Math.max(0, regionH));
                 clipped = true;

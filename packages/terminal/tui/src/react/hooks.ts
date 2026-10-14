@@ -352,8 +352,8 @@ export const measureElement = (node: LayoutNode | null): { clientHeight: number;
 
     return {
         // Size without borders: the space the content can occupy.
-        clientHeight: Math.max(0, height - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM)),
-        clientWidth: Math.max(0, width - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT)),
+        clientHeight: Math.max(0, Math.round(height - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM))),
+        clientWidth: Math.max(0, Math.round(width - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT))),
         height,
         width,
     };
@@ -395,18 +395,9 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
         const { clientHeight, clientWidth } = measureElement(ref.current);
 
         setMetrics((previous) => {
-            if (
-                previous.width === layout.width
-                && previous.height === layout.height
-                && previous.left === layout.left
-                && previous.top === layout.top
-                && previous.clientWidth === clientWidth
-                && previous.clientHeight === clientHeight
-            ) {
-                return previous;
-            }
+            const next: BoxMetrics = { clientHeight, clientWidth, height: layout.height, left: layout.left, top: layout.top, width: layout.width };
 
-            return { clientHeight, clientWidth, height: layout.height, left: layout.left, top: layout.top, width: layout.width };
+            return (Object.keys(next) as (keyof BoxMetrics)[]).some((key) => previous[key] !== next[key]) ? next : previous;
         });
         setHasMeasured(true);
     }, [ref]);

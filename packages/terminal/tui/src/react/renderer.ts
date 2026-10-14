@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/restrict-plus-operands, no-bitwise, no-console, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
 import cliBoxes from "cli-boxes";
 
+import { toCellOffset } from "../core/cell-offset";
 import type { LayoutNode } from "./layout";
 import { resolveColor } from "./styles";
 import { getCodePointWidth } from "./text-width";
@@ -28,10 +29,6 @@ function getEffectiveBorderWidths(nodeStyle: Record<string, unknown> | undefined
         right: nodeStyle?.borderRight === false ? 0 : base,
         top: nodeStyle?.borderTop === false ? 0 : base,
     };
-}
-
-function toCellOffset(value: unknown): number {
-    return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : 0;
 }
 
 function getScrollContentHeight(node: LayoutNode): number {

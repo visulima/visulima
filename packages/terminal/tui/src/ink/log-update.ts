@@ -156,9 +156,7 @@ const writeIncrementalFrame: WriteFrame = (frame, stream) => {
     // Shape delta is prepended so DECSCUSR lands before any cursor motion/erase from this frame.
     const buffer: string[] = [shapeDelta, returnPrefix];
 
-    // Row the cursor sits on after the previous frame: the row below the last line when that frame
-    // ended in a newline, otherwise the last line itself.
-    const previousCursorRow = previous.endsWith("\n") ? previousVisible : previousVisible - 1;
+    const previousCursorRow = cursorRowAfterWrite(previousLines);
     // `CSI 0 A` moves one row in terminals, so a zero-row move must not be emitted.
     const moveUp = (rows: number): string => (rows > 0 ? cursorUp(rows) : "");
 

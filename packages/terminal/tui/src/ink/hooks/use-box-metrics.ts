@@ -120,13 +120,7 @@ const useBoxMetrics = (ref: RefObject<DOMElement | null>): UseBoxMetricsResult =
             : emptyMetrics;
 
         setMetrics((previousMetrics) => {
-            const hasChanged
-                = previousMetrics.clientHeight !== layout.clientHeight
-                    || previousMetrics.clientWidth !== layout.clientWidth
-                    || previousMetrics.width !== layout.width
-                    || previousMetrics.height !== layout.height
-                    || previousMetrics.left !== layout.left
-                    || previousMetrics.top !== layout.top;
+            const hasChanged = (Object.keys(layout) as (keyof BoxMetrics)[]).some((key) => previousMetrics[key] !== layout[key]);
 
             return hasChanged ? layout : previousMetrics;
         });
