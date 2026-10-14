@@ -43,7 +43,7 @@
         },
         "./domains": {
             "types": "./dist/domains.d.ts",
-            "default": "./dist/domains.json"
+            "default": "./dist/domains.js"
         },
         "./edge": {
             "types": "./dist/edge.d.ts",

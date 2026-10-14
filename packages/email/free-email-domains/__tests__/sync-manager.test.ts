@@ -175,3 +175,44 @@ describe("free-email sync manager edge entry", () => {
         }
     });
 });
+
+describe("free-email sync manager generated ./domains entry", () => {
+    const generate = async (): Promise<{ declaration: string; wrapper: string }> => {
+        const outputPath = await mkdtemp(join(tmpdir(), "free-domains-wrapper-"));
+
+        try {
+            await new FreeEmailSyncManager({ outputPath }).generateDomainsList();
+
+            return {
+                declaration: await readFile(join(outputPath, "domains.d.ts"), "utf8"),
+                wrapper: await readFile(join(outputPath, "domains.js"), "utf8"),
+            };
+        } finally {
+            await rm(outputPath, { force: true, recursive: true });
+        }
+    };
+
+    it("emits an ESM default export, not a CJS `export =`", async () => {
+        expect.assertions(2);
+
+        const { declaration } = await generate();
+
+        expect(declaration).toContain("export default domains;");
+        expect(declaration).not.toContain("export =");
+    });
+
+    // The `./domains` subpath resolves to this wrapper, not to `domains.json`: Node requires
+    // `with { type: "json" }` on a JSON module, so exporting the JSON directly made a plain
+    // `import domains from "@visulima/free-email-domains/domains"` throw
+    // ERR_IMPORT_ATTRIBUTE_MISSING.
+    it("emits a wrapper carrying the json import attribute", async () => {
+        expect.assertions(3);
+
+        const { wrapper } = await generate();
+
+        expect(wrapper).toContain("with { type: \"json\" }");
+        expect(wrapper).toContain("export default domains;");
+        // Re-exported, never inlined: the list ships once.
+        expect(wrapper).not.toContain("[");
+    });
+});

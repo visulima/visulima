@@ -147,7 +147,7 @@ Inject the list once at startup with `setDomains` and call `assertListLoaded()` 
 
 ```typescript
 import { setDomains, isFreeEmail } from "@visulima/free-email-domains";
-import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+import domains from "@visulima/free-email-domains/domains";
 
 setDomains(domains);
 
@@ -168,10 +168,10 @@ if (!isListLoaded()) {
 
 ### Raw domain list (`./domains`)
 
-The raw, sorted array of free-provider domains is exported from the `./domains` subpath. In Node ESM you must use a JSON import attribute:
+The raw, sorted array of free-provider domains is the default export of the `./domains` subpath. It is a plain ES module, so no JSON import attribute is needed:
 
 ```typescript
-import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+import domains from "@visulima/free-email-domains/domains";
 
 console.log(domains.length); // number of free-provider domains
 ```
